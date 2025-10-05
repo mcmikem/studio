@@ -7,9 +7,9 @@ export type StatCard = {
 
 export type WeeklyActivity = {
   day: string;
-  GirlChildDay: number;
-  TreePlanting: number;
-  PTAMeeting: number;
+  "Girl Child Day": number;
+  "Tree Planting": number;
+  "PTA Meeting": number;
 };
 
 export type RecentCheckout = {

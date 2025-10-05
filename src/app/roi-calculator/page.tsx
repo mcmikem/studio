@@ -7,23 +7,27 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect } from 'react';
+import { Slider } from '@/components/ui/slider';
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX' }).format(value);
+  return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
 };
+
+const multipliers = [
+    { id: 'combine', label: 'Combining with another activity', value: 5000 },
+    { id: 'train', label: 'Training volunteer to lead next time', value: 10000 },
+    { id: 'content', label: 'Capturing content for fundraising', value: 15000 },
+    { id: 'process', label: 'Testing new process for replication', value: 20000 },
+];
 
 export default function ROICalculatorPage() {
   const [transportCost, setTransportCost] = useState(15000);
   const [staffTimeCost, setStaffTimeCost] = useState(20000);
   const [materialsCost, setMaterialsCost] = useState(10000);
-
-  const [actualCost, setActualCost] = useState(0);
-  const [directValue, setDirectValue] = useState(15000);
-  const [indirectValue, setIndirectValue] = useState({
-    volunteerTrained: 10000,
-    contentCaptured: 15000,
-    systemEstablished: 20000,
-  });
+  const [selectedMultipliers, setSelectedMultipliers] = useState<string[]>([]);
+  
+  const [actualCost, setActualCost] = useState(45000);
+  const [directValue, setDirectValue] = useState(20000);
 
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -31,12 +35,26 @@ export default function ROICalculatorPage() {
   }, []);
 
   const preActivityCost = useMemo(() => transportCost + staffTimeCost + materialsCost, [transportCost, staffTimeCost, materialsCost]);
-  const totalIndirectValue = useMemo(() => Object.values(indirectValue).reduce((a, b) => a + b, 0), [indirectValue]);
-  const totalValue = useMemo(() => directValue + totalIndirectValue, [directValue, totalIndirectValue]);
-  const roi = useMemo(() => {
+
+  const estimatedIndirectValue = useMemo(() => {
+    return multipliers.reduce((total, m) => selectedMultipliers.includes(m.id) ? total + m.value : total, 0);
+  }, [selectedMultipliers]);
+
+  const estimatedTotalValue = useMemo(() => directValue + estimatedIndirectValue, [directValue, estimatedIndirectValue]);
+  
+  const estimatedRoi = useMemo(() => {
+    if (preActivityCost === 0) return 0;
+    return ((estimatedTotalValue - preActivityCost) / preActivityCost) * 100;
+  }, [estimatedTotalValue, preActivityCost]);
+
+  const postActivityRoi = useMemo(() => {
     if (actualCost === 0) return 0;
-    return ((totalValue - actualCost) / actualCost) * 100;
-  }, [totalValue, actualCost]);
+    return ((estimatedTotalValue - actualCost) / actualCost) * 100;
+  }, [estimatedTotalValue, actualCost]);
+
+  const handleMultiplierChange = (id: string, checked: boolean) => {
+    setSelectedMultipliers(prev => checked ? [...prev, id] : prev.filter(mId => mId !== id));
+  };
   
   if (!isClient) {
     return null;
@@ -49,12 +67,13 @@ export default function ROICalculatorPage() {
         <p className="text-muted-foreground">Ensure every trip pays multiple dividends.</p>
       </header>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
         <Card>
           <CardHeader>
-            <CardTitle>Pre-Activity ROI Assessment</CardTitle>
+            <CardTitle>1. Pre-Activity ROI Assessment</CardTitle>
+            <CardDescription>Plan your activity to maximize its impact before you even go.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
               <Label htmlFor="activityName">Activity Name</Label>
               <Input id="activityName" placeholder="e.g., Tree Planting @ Greenhill" />
@@ -62,83 +81,93 @@ export default function ROICalculatorPage() {
             
             <Separator />
 
-            <h3 className="font-semibold text-lg">Basic Cost</h3>
-            <div className="space-y-2">
-              <Label>Transport: {formatCurrency(transportCost)}</Label>
-              <Input type="range" min="0" max="50000" step="1000" value={transportCost} onChange={e => setTransportCost(Number(e.target.value))} />
+            <h3 className="font-semibold text-lg">Estimated Costs</h3>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Transport: {formatCurrency(transportCost)}</Label>
+                <Slider defaultValue={[15000]} min={0} max={50000} step={1000} onValueChange={(value) => setTransportCost(value[0])} />
+              </div>
+              <div className="space-y-2">
+                <Label>Staff Time: {formatCurrency(staffTimeCost)}</Label>
+                <Slider defaultValue={[20000]} min={0} max={100000} step={1000} onValueChange={(value) => setStaffTimeCost(value[0])} />
+              </div>
+              <div className="space-y-2">
+                <Label>Materials: {formatCurrency(materialsCost)}</Label>
+                <Slider defaultValue={[10000]} min={0} max={50000} step={1000} onValueChange={(value) => setMaterialsCost(value[0])} />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>Staff Time: {formatCurrency(staffTimeCost)}</Label>
-              <Input type="range" min="0" max="100000" step="1000" value={staffTimeCost} onChange={e => setStaffTimeCost(Number(e.target.value))} />
-            </div>
-            <div className="space-y-2">
-              <Label>Materials: {formatCurrency(materialsCost)}</Label>
-              <Input type="range" min="0" max="50000" step="1000" value={materialsCost} onChange={e => setMaterialsCost(Number(e.target.value))} />
-            </div>
-            <div className="text-right font-bold text-lg">
+            <div className="text-right font-bold text-lg p-2 bg-muted rounded-md">
               Total Estimated Cost: {formatCurrency(preActivityCost)}
             </div>
             
             <Separator />
             
-            <h3 className="font-semibold text-lg">ROI Multipliers Being Activated</h3>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2"><Checkbox id="m1" /> <Label htmlFor="m1">Combining with another activity</Label></div>
-              <div className="flex items-center space-x-2"><Checkbox id="m2" /> <Label htmlFor="m2">Training volunteer to lead next time</Label></div>
-              <div className="flex items-center space-x-2"><Checkbox id="m3" /> <Label htmlFor="m3">Capturing content for fundraising</Label></div>
-              <div className="flex items-center space-x-2"><Checkbox id="m4" /> <Label htmlFor="m4">Testing new process for replication</Label></div>
+            <h3 className="font-semibold text-lg">ROI Multipliers</h3>
+            <CardDescription>Select actions you'll take to add value beyond the primary goal.</CardDescription>
+            <div className="space-y-3 pt-2">
+              {multipliers.map(m => (
+                <div key={m.id} className="flex items-center space-x-3">
+                  <Checkbox id={m.id} onCheckedChange={(checked) => handleMultiplierChange(m.id, !!checked)} />
+                  <Label htmlFor={m.id} className="flex-1 cursor-pointer">{m.label} <span className="text-muted-foreground text-xs">({formatCurrency(m.value)})</span></Label>
+                </div>
+              ))}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4 pt-2">
+                <div className="flex justify-between items-center text-md">
+                    <span className="text-muted-foreground">Direct Value (Primary Goal):</span>
+                    <span className="font-bold">{formatCurrency(directValue)}</span>
+                </div>
+                <div className="flex justify-between items-center text-md">
+                    <span className="text-muted-foreground">Indirect Value (Multipliers):</span>
+                    <span className="font-bold">{formatCurrency(estimatedIndirectValue)}</span>
+                </div>
+                <div className="flex justify-between items-center text-lg">
+                    <span className="text-muted-foreground">Total Estimated Value:</span>
+                    <span className="font-bold">{formatCurrency(estimatedTotalValue)}</span>
+                </div>
+                <div className="flex justify-between items-center text-2xl">
+                    <span className="font-headline">Estimated ROI:</span>
+                    <span className={`font-bold font-headline ${estimatedRoi >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {estimatedRoi.toFixed(0)}%
+                    </span>
+                </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="sticky top-6">
           <CardHeader>
-            <CardTitle>Post-Activity ROI Calculation</CardTitle>
+            <CardTitle>2. Post-Activity ROI Calculation</CardTitle>
+            <CardDescription>Enter the final numbers to see your real impact.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="actualCost">Actual Cost</Label>
+              <Label htmlFor="actualCost">Actual Final Cost</Label>
               <Input id="actualCost" type="number" value={actualCost} onChange={e => setActualCost(Number(e.target.value))} placeholder="e.g., 42000" />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="directValue">Direct Value (e.g., 30 trees planted = 15K value)</Label>
-              <Input id="directValue" type="number" value={directValue} onChange={e => setDirectValue(Number(e.target.value))} placeholder="e.g., 15000" />
-            </div>
-            
-            <Separator />
-
-            <h3 className="font-semibold text-lg">Indirect Value</h3>
-            <div className="space-y-2">
-              <Label htmlFor="volunteerValue">Volunteer trained</Label>
-              <Input id="volunteerValue" type="number" value={indirectValue.volunteerTrained} onChange={e => setIndirectValue(v => ({...v, volunteerTrained: Number(e.target.value)}))} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contentValue">Content captured</Label>
-              <Input id="contentValue" type="number" value={indirectValue.contentCaptured} onChange={e => setIndirectValue(v => ({...v, contentCaptured: Number(e.target.value)}))} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="systemValue">System established</Label>
-              <Input id="systemValue" type="number" value={indirectValue.systemEstablished} onChange={e => setIndirectValue(v => ({...v, systemEstablished: Number(e.target.value)}))} />
-            </div>
             
             <Separator />
             
-            <div className="space-y-6 pt-4">
+            <div className="space-y-4 pt-2">
               <div className="flex justify-between items-center text-lg">
-                <span className="text-muted-foreground">Total Value:</span>
-                <span className="font-bold">{formatCurrency(totalValue)}</span>
+                <span className="text-muted-foreground">Total Value Created:</span>
+                <span className="font-bold">{formatCurrency(estimatedTotalValue)}</span>
               </div>
               <div className="flex justify-between items-center text-lg">
                 <span className="text-muted-foreground">Actual Cost:</span>
                 <span className="font-bold">{formatCurrency(actualCost)}</span>
               </div>
-              <div className="flex justify-between items-center text-2xl">
-                <span className="font-headline">ROI:</span>
-                <span className={`font-bold font-headline ${roi >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {roi.toFixed(2)}%
+              <div className="flex justify-between items-center text-2xl pt-4">
+                <span className="font-headline">Final ROI:</span>
+                <span className={`font-bold font-headline ${postActivityRoi >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {postActivityRoi.toFixed(0)}%
                 </span>
               </div>
             </div>
+            <Button className="w-full">Log this Activity & ROI</Button>
           </CardContent>
         </Card>
       </div>

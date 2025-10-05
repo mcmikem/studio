@@ -29,37 +29,37 @@ export const statsCards: StatCard[] = [
 ];
 
 export const weeklyActivityData: WeeklyActivity[] = [
-    { day: 'Mon', GirlChildDay: 2, TreePlanting: 1, PTAMeeting: 0 },
-    { day: 'Tue', GirlChildDay: 3, TreePlanting: 2, PTAMeeting: 1 },
-    { day: 'Wed', GirlChildDay: 5, TreePlanting: 1, PTAMeeting: 1 },
-    { day: 'Thu', GirlChildDay: 1, TreePlanting: 0, PTAMeeting: 2 },
-    { day: 'Fri', GirlChildDay: 4, TreePlanting: 3, PTAMeeting: 1 },
+    { day: 'Mon', "Girl Child Day": 2, "Tree Planting": 1, "PTA Meeting": 0 },
+    { day: 'Tue', "Girl Child Day": 3, "Tree Planting": 2, "PTA Meeting": 1 },
+    { day: 'Wed', "Girl Child Day": 5, "Tree Planting": 1, "PTA Meeting": 1 },
+    { day: 'Thu', "Girl Child Day": 1, "Tree Planting": 0, "PTA Meeting": 2 },
+    { day: 'Fri', "Girl Child Day": 4, "Tree Planting": 3, "PTA Meeting": 1 },
 ];
 
 export const recentCheckouts: RecentCheckout[] = [
   {
-    name: 'Programs Manager',
+    name: 'Purity (Programs)',
     role: 'PPM',
-    avatar: 'https://picsum.photos/seed/ppm/40/40',
+    avatar: 'https://picsum.photos/seed/purity/40/40',
     task: '✅ PTA meeting successful - 3 parent champions identified',
     time: '5:02 PM',
   },
   {
-    name: 'Operations Manager',
+    name: 'Grace (Operations)',
     role: 'OPM',
-    avatar: 'https://picsum.photos/seed/opm/40/40',
+    avatar: 'https://picsum.photos/seed/grace/40/40',
     task: '✅ 8 campus ambassadors trained on event setup & photo basics',
     time: '5:01 PM',
   },
   {
-    name: 'Executive Director',
+    name: 'McMike (ED)',
     role: 'ED',
-    avatar: 'https://picsum.photos/seed/ed/40/40',
+    avatar: 'https://picsum.photos/seed/mcmike/40/40',
     task: '❗ YoSkills graduates concerned about exclusivity clause',
     time: '4:58 PM',
   },
   {
-    name: 'Alex (Media Lead)',
+    name: 'Alex (Media)',
     role: 'Media',
     avatar: 'https://picsum.photos/seed/alex/40/40',
     task: '🔄 Newsletter content plan shared for review.',
@@ -72,23 +72,18 @@ export const nonNegotiableGoals: PlanGoal[] = [
     {
         title: "Girl Child Day (Oct 11)",
         description: "Our flagship public event that builds visibility, recruits future leaders, and raises crucial funds.",
-        details: "Success looks like: 150+ students engaged, 300K raised, campus ambassadors recruited."
+        details: "Success: 150+ students engaged, 300K raised, campus ambassadors recruited."
     },
     {
         title: "Fundraising Target (1.5M by Oct 31)",
-        description: "Resources enable everything else we do.",
-        details: "Success looks like: 60% from new donors, clear pipeline for November."
+        description: "Resources that enable everything else we do.",
+        details: "Success: 60% from new donors, clear pipeline for November."
     },
     {
         title: "RED Campaign Documentary (Oct 26)",
         description: "Professional storytelling that drives future fundraising and awareness.",
-        details: "Success looks like: High-quality video being used in donor meetings and social media."
+        details: "Success: High-quality video used in donor meetings and social media."
     },
-    {
-        title: "Three Operational Templates (Oct 25)",
-        description: "Systems that save time and ensure quality.",
-        details: "Success looks like: Every team member using templates consistently."
-    }
 ];
 
 export const flexibleTargets: PlanGoal[] = [
@@ -101,8 +96,8 @@ export const flexibleTargets: PlanGoal[] = [
 
 export const teamRoles: TeamMemberRole[] = [
     { member: "McMike (ED)", focus: "Strategic oversight & systems", deliverables: "Template creation, partnership protection, team wellbeing" },
-    { member: "Programs Manager", focus: "Planning & partnerships", deliverables: "Weekly plans, PTA meetings, Dignity Pads development" },
-    { member: "Operations Manager", focus: "Field execution & volunteers", deliverables: "Daily check-ins, tree planting, event logistics" },
+    { member: "Purity (Programs)", focus: "Planning & partnerships", deliverables: "Weekly plans, PTA meetings, Dignity Pads development" },
+    { member: "Grace (Operations)", focus: "Field execution & volunteers", deliverables: "Daily check-ins, tree planting, event logistics" },
     { member: "Alex (Media Lead)", focus: "Communications strategy", deliverables: "Newsletter coordination, content planning" },
     { member: "Jimmy (Media Officer)", focus: "Content production", deliverables: "Documentary, photography, video editing" },
     { member: "Fundraising Consultant", focus: "Resource mobilization", deliverables: "Donor engagement, proposal writing, campaign management" },
@@ -129,12 +124,5 @@ export const successMetrics: SuccessMetric[] = [
         yellow: "50-80% on track",
         red: "<50% by Oct 20",
         response: "Reallocate resources, adjust goals"
-    },
-    {
-        metric: "Template Adoption",
-        green: "100% using",
-        yellow: "80-99% using",
-        red: "<80% using",
-        response: "Retraining, simplification"
     }
 ];

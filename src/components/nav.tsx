@@ -8,7 +8,7 @@ import {
   HeartHandshake,
   LayoutGrid,
   Sparkles,
-  Users,
+  Wrench,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -38,7 +38,7 @@ const OmutoLogo = () => (
 export function AppSidebar() {
   const pathname = usePathname();
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => pathname === path || (path !== '/' && pathname.startsWith(path));
 
   return (
     <>
@@ -62,7 +62,7 @@ export function AppSidebar() {
         </SidebarMenu>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Planning</SidebarGroupLabel>
+          <SidebarGroupLabel>Core</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton
@@ -72,19 +72,19 @@ export function AppSidebar() {
                 >
                   <Link href="/plan">
                     <ClipboardList />
-                    <span>October 2025 Plan</span>
+                    <span>Operational Plan</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/templates')}
-                  tooltip="Form Templates"
+                  isActive={isActive('/reports')}
+                  tooltip="Reports"
                 >
-                  <Link href="/templates">
-                    <BookOpen />
-                    <span>Form Templates</span>
+                  <Link href="/reports">
+                    <FileText />
+                    <span>Reports</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
@@ -106,26 +106,13 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator">
                     <Link href="/impact-story">
                         <Sparkles />
-                        <span>Impact Story Generator</span>
+                        <span>Story Generator</span>
                     </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Reporting</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/reports')} tooltip="Reports">
-                    <Link href="/reports">
-                        <FileText />
-                        <span>Reports</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <Separator className="my-2" />

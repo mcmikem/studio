@@ -1,4 +1,3 @@
-import { Activity, DollarSign, Heart, TrendingUp } from 'lucide-react';
 import { ActivityChart } from '@/components/dashboard/activity-chart';
 import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
 import { StatsCards } from '@/components/dashboard/stats-cards';

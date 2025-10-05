@@ -6,12 +6,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import {
   Table,
   TableBody,
   TableCell,
@@ -26,7 +20,7 @@ import {
   teamRoles,
   successMetrics,
 } from '@/lib/data';
-import { CheckCircle2, Clock, Users, BarChart2 } from 'lucide-react';
+import { CheckCircle2, Clock } from 'lucide-react';
 
 export default function PlanPage() {
   return (
