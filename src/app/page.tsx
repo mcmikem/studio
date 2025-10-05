@@ -3,6 +3,7 @@
 import { ActivityChart } from '@/components/dashboard/activity-chart';
 import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
 import { StatsCards } from '@/components/dashboard/stats-cards';
+import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
 import { useUser } from '@/firebase';
 
 export default function DashboardPage() {
@@ -25,6 +26,7 @@ export default function DashboardPage() {
             <ActivityChart />
           </div>
           <div className="col-span-1 lg:col-span-2">
+            <NewCheckoutForm />
             <RecentCheckouts />
           </div>
         </div>

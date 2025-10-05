@@ -1,3 +1,5 @@
+import type { Timestamp } from 'firebase/firestore';
+
 export type StatCard = {
   title: string;
   value: string;
@@ -7,17 +9,19 @@ export type StatCard = {
 
 export type WeeklyActivity = {
   day: string;
-  "Girl Child Day": number;
-  "Tree Planting": number;
-  "PTA Meeting": number;
+  'Girl Child Day': number;
+  'Tree Planting': number;
+  'PTA Meeting': number;
 };
 
 export type RecentCheckout = {
+  id?: string;
   name: string;
   role: string;
   avatar: string;
   task: string;
   time: string;
+  timestamp?: Timestamp;
 };
 
 export type PlanGoal = {

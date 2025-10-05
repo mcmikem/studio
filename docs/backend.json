@@ -377,7 +377,7 @@
         },
         "budgetId": {
           "type": "string",
-          "description": "Reference to Budget. (Relationship: Budget 1:N Expenditure)"
+          "description": "Reference to Budget. (Rela tionship: Budget 1:N Expenditure)"
         },
         "activityId": {
           "type": "string",
@@ -443,221 +443,69 @@
         "contactNumber",
         "email"
       ]
+    },
+    "Checkout": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Checkout",
+      "type": "object",
+      "description": "Represents a user's end-of-day checkout update.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the checkout."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user submitting the checkout."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the user."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role of the user (e.g., ED, PPM, OPM)."
+        },
+        "avatar": {
+          "type": "string",
+          "description": "URL to the user's avatar image."
+        },
+        "task": {
+          "type": "string",
+          "description": "The checkout message or task update."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "The server timestamp of when the checkout was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "role",
+        "task",
+        "timestamp"
+      ]
     }
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profile information. User-owned data is stored under this path.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            }
-          ]
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/User"
       },
-      {
-        "path": "/strategic_plans/{strategicPlanId}",
-        "definition": {
-          "entityName": "StrategicPlan",
-          "schema": {
-            "$ref": "#/backend/entities/StrategicPlan"
-          },
-          "description": "Stores strategic plans. Includes user role for authorization independence.",
-          "params": [
-            {
-              "name": "strategicPlanId",
-              "description": "The unique identifier for the strategic plan."
-            }
-          ]
-        }
+      "description": "Stores user profile information."
+    },
+    "/checkouts/{checkoutId}": {
+      "schema": {
+        "$ref": "#/entities/Checkout"
       },
-      {
-        "path": "/strategic_plans/{strategicPlanId}/objectives/{objectiveId}",
-        "definition": {
-          "entityName": "Objective",
-          "schema": {
-            "$ref": "#/backend/entities/Objective"
-          },
-          "description": "Stores objectives associated with a strategic plan. Includes user role for authorization independence.",
-          "params": [
-            {
-              "name": "strategicPlanId",
-              "description": "The unique identifier for the strategic plan."
-            },
-            {
-              "name": "objectiveId",
-              "description": "The unique identifier for the objective."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/activities/{activityId}",
-        "definition": {
-          "entityName": "Activity",
-          "schema": {
-            "$ref": "#/backend/entities/Activity"
-          },
-          "description": "Stores activities performed by users. Includes user role for authorization independence.",
-          "params": [
-            {
-              "name": "activityId",
-              "description": "The unique identifier for the activity."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/form_templates/{formTemplateId}",
-        "definition": {
-          "entityName": "FormTemplate",
-          "schema": {
-            "$ref": "#/backend/entities/FormTemplate"
-          },
-          "description": "Stores form templates accessible by admins.",
-          "params": [
-            {
-              "name": "formTemplateId",
-              "description": "The unique identifier for the form template."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/partnerships/{partnershipId}",
-        "definition": {
-          "entityName": "Partnership",
-          "schema": {
-            "$ref": "#/backend/entities/Partnership"
-          },
-          "description": "Stores partnership information. Includes user role for authorization independence.",
-          "params": [
-            {
-              "name": "partnershipId",
-              "description": "The unique identifier for the partnership."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/reports/{reportId}",
-        "definition": {
-          "entityName": "Report",
-          "schema": {
-            "$ref": "#/backend/entities/Report"
-          },
-          "description": "Stores report data. Includes user role for authorization independence.",
-          "params": [
-            {
-              "name": "reportId",
-              "description": "The unique identifier for the report."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/budgets/{budgetId}",
-        "definition": {
-          "entityName": "Budget",
-          "schema": {
-            "$ref": "#/backend/entities/Budget"
-          },
-          "description": "Stores budget information. Includes user role for authorization independence.",
-          "params": [
-            {
-              "name": "budgetId",
-              "description": "The unique identifier for the budget."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/expenditures/{expenditureId}",
-        "definition": {
-          "entityName": "Expenditure",
-          "schema": {
-            "$ref": "#/backend/entities/Expenditure"
-          },
-          "description": "Stores expenditure data, associated with budgets and activities.",
-          "params": [
-            {
-              "name": "expenditureId",
-              "description": "The unique identifier for the expenditure."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/volunteers/{volunteerId}",
-        "definition": {
-          "entityName": "Volunteer",
-          "schema": {
-            "$ref": "#/backend/entities/Volunteer"
-          },
-          "description": "Stores volunteer data. Accessible to admins.",
-          "params": [
-            {
-              "name": "volunteerId",
-              "description": "The unique identifier for the volunteer."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/form_data/{formDataId}",
-        "definition": {
-          "entityName": "FormData",
-          "schema": {
-            "$ref": "#/backend/entities/FormData"
-          },
-          "description": "Stores form data submitted by a user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
-            {
-              "name": "formDataId",
-              "description": "The unique identifier for the form data."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/reports/{reportId}",
-        "definition": {
-          "entityName": "Report",
-          "schema": {
-            "$ref": "#/backend/entities/Report"
-          },
-          "description": "Stores reports generated by a user.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
-            {
-              "name": "reportId",
-              "description": "The unique identifier for the report."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore structure is designed to support Omuto Foundation's operational needs, focusing on strategic planning, activity tracking, and data-driven decision-making. The structure prioritizes authorization independence and simplifies security rules by denormalizing authorization data. All data related to a user is stored under the `/users/{userId}` path, ensuring clear ownership and easy rule definition. Collaborative data, such as Strategic Plans, Objectives, Activities, Partnerships, Budgets and reports use a separate collection, with relevant user roles denormalized to the documents to maintain Authorization Independence.\n\n**Authorization Independence and Denormalization:**\n\n*   **User-owned data:** Data like `FormData` and `Reports` created by users are stored under `/users/{userId}` ensuring that only the user and admins can access it. This eliminates the need for complex `get()` calls in security rules.\n*   **Collaborative data:** Strategic Plans, Objectives, Activities, Partnerships, Budgets are accessible by team members with the appropriate roles. The structure denormalizes the user's role into these collections, avoiding `get()` calls to `/users/{userId}`.\n\n**QAPs (Rules are not Filters):**\n\n*   **Segregation:** The structure segregates data based on access control needs. User-specific data resides under `/users/{userId}`, while collaborative data resides in top-level collections.\n*   **Membership Map (Denormalized Role):** The `role` property in entities such as `StrategicPlan`, `Objective`, `Activity`, `Partnership`, `Budget` and `Report` enables secure `list` operations. Rules can efficiently check if the user's role matches the required role without fetching additional documents.\n\n**Explanation of Paths:**\n\n*   `/users/{userId}`: Stores individual user profiles, ensuring private user data is accessible only to the user and authorized admins.\n*   `/strategic_plans/{strategicPlanId}`: Stores strategic plans. Includes the user role for authorization.\n*   `/strategic_plans/{strategicPlanId}/objectives/{objectiveId}`: Stores objectives related to a strategic plan. Includes the user role for authorization.\n*   `/activities/{activityId}`: Stores activities performed by users. Includes the user role for authorization.\n*   `/form_templates/{formTemplateId}`: Stores form templates. Accessible to admins for creating forms.\n*   `/partnerships/{partnershipId}`: Stores partnership information. Includes the user role for authorization.\n*   `/budgets/{budgetId}`: Stores budgets allocated for strategic plans. Includes the user role for authorization.\n*   `/expenditures/{expenditureId}`: Stores expenditure data, associated with budgets and activities.\n*   `/volunteers/{volunteerId}`: Stores volunteer data. Accessed by admins.\n*   `/users/{userId}/form_data/{formDataId}`: Stores form data submitted by a user.\n*   `/users/{userId}/reports/{reportId}`: Stores reports generated by a user."
+      "description": "Stores daily checkout updates from team members."
+    }
   }
 }
