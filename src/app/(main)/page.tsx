@@ -3,8 +3,6 @@
 import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { useUser } from '@/firebase';
 import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ListChecks } from 'lucide-react';
 import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
 import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
 import { Alerts } from '@/components/dashboard/alerts';
@@ -35,22 +33,21 @@ export default function DashboardPage() {
         </p>
       </header>
       
-      {/* Main Body */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* CENTER PANEL – Main content */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           <QuickStatsSummary />
           <RecentCheckouts />
         </div>
 
-        {/* RIGHT PANEL – Actions & Info */}
         <div className="lg:col-span-4 flex flex-col gap-6">
            <NewCheckoutForm />
            <DashboardCalendar />
            <Alerts isLoading={false} />
         </div>
+
       </div>
+
        <footer className="text-center text-xs text-muted-foreground mt-4">
         “Omuto Central – Empowering Youth, Transforming Communities.” © {new Date().getFullYear()} Omuto Foundation | Built for Impact, by Youth.
       </footer>
