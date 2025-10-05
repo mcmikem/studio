@@ -6,9 +6,6 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AuthProvider } from '@/components/auth-provider';
-import { AppHeader } from '@/components/header';
-import { AppSidebar } from '@/components/nav';
-import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({
@@ -37,17 +34,7 @@ export default function RootLayout({
         )}
       >
         <FirebaseClientProvider>
-          <AuthProvider>
-            <SidebarProvider>
-              <Sidebar>
-                <AppSidebar />
-              </Sidebar>
-              <SidebarInset>
-                <AppHeader />
-                <main className="p-4 lg:p-6">{children}</main>
-              </SidebarInset>
-            </SidebarProvider>
-          </AuthProvider>
+          <AuthProvider>{children}</AuthProvider>
         </FirebaseClientProvider>
         <Toaster />
       </body>

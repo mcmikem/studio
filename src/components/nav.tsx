@@ -2,27 +2,20 @@
 'use client';
 
 import {
-  BookOpen,
   Calculator,
   ClipboardList,
   FileText,
   HeartHandshake,
-  LayoutGrid,
+  Home,
   Sparkles,
-  Users,
   Briefcase,
   AreaChart,
   MessageSquare,
   Bell,
-  Settings,
-  Building,
-  School,
+  User,
   Truck,
-  Film,
   Banknote,
   Handshake,
-  User,
-  Home
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -37,7 +30,6 @@ import {
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { Separator } from './ui/separator';
-import Image from 'next/image';
 
 const OmutoLogo = () => (
     <div className="flex items-center gap-2" data-ai-hint="logo">
@@ -81,12 +73,12 @@ export function AppSidebar() {
             <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/management/programs') || isActive('/management/partnerships')}
+                  isActive={isActive('/management')}
                   tooltip="Programs & Partnerships"
                 >
                   <Link href="/management/programs">
                     <Briefcase />
-                    <span>Programs & Partnerships</span>
+                    <span>Management</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
