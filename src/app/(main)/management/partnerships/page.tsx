@@ -144,15 +144,6 @@ export default function PartnershipsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Partnerships
-        </h1>
-        <p className="text-muted-foreground">
-          Manage and track all partner relations and engagements.
-        </p>
-      </header>
-
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
