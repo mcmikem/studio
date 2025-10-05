@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type StatCard = {
@@ -49,3 +50,20 @@ export type CalendarEvent = {
     title: string;
     description: string;
 };
+
+export type Program = {
+    title: string;
+    description: string;
+    lead: string;
+    status: "On Track" | "At Risk" | "Delayed" | "Completed";
+    deadline: string;
+    objectives: string[];
+}
+
+export type Partnership = {
+    name: string;
+    contactPerson: string;
+    contactEmail: string;
+    status: "Active" | "Potential" | "Inactive";
+    nextStep: string;
+}

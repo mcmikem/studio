@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -9,7 +10,9 @@ import {
   LayoutGrid,
   Sparkles,
   Wrench,
-  History
+  History,
+  Users,
+  Briefcase
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -65,6 +68,30 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Core</SidebarGroupLabel>
           <SidebarMenu>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/programs')}
+                  tooltip="Programs"
+                >
+                  <Link href="/programs">
+                    <Briefcase />
+                    <span>Programs</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/partnerships')}
+                  tooltip="Partnerships"
+                >
+                  <Link href="/partnerships">
+                    <Users />
+                    <span>Partnerships</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
@@ -86,7 +113,7 @@ export function AppSidebar() {
                   <Link href="/activity-log">
                     <History />
                     <span>Activity Log</span>
-                  </Link>
+                  </Link>LI>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

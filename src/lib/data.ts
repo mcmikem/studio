@@ -1,4 +1,5 @@
-import { StatCard, WeeklyActivity, RecentCheckout, PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent } from './types';
+
+import { StatCard, WeeklyActivity, RecentCheckout, PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, Program, Partnership } from './types';
 import { DollarSign, Users, Activity, Heart } from 'lucide-react';
 
 export const statsCards: StatCard[] = [
@@ -118,3 +119,85 @@ export const operationalPlanEvents: CalendarEvent[] = [
         description: "Final day to meet the 1.5M fundraising goal for October."
     }
 ];
+
+export const programs: Program[] = [
+  {
+    title: "RED Campaign",
+    description: "Rural Education Drive to provide resources and support to rural schools.",
+    lead: "Dianah",
+    status: "On Track",
+    deadline: "Dec 2024",
+    objectives: [
+        "Distribute 10,000 textbooks",
+        "Train 50 teachers on new curriculum",
+        "Establish 5 new school libraries"
+    ]
+  },
+  {
+    title: "GreenSchools Initiative",
+    description: "Promoting environmental conservation through school-based programs.",
+    lead: "Kasirye",
+    status: "On Track",
+    deadline: "Ongoing",
+    objectives: [
+        "Plant 10,000 trees across 20 schools",
+        "Establish 20 school gardening clubs",
+        "Conduct 5 workshops on waste management"
+    ]
+  },
+    {
+    title: "YoSkills for Work",
+    description: "Equipping youth with vocational and entrepreneurial skills.",
+    lead: "Dianah",
+    status: "At Risk",
+    deadline: "Jan 2025",
+    objectives: [
+        "Train 200 youth in tailoring and hairdressing",
+        "Provide startup kits to 50 graduates",
+        "Secure 20 internship placements"
+    ]
+  },
+    {
+    title: "Dignity Plus",
+    description: "A social enterprise for producing and distributing reusable sanitary pads.",
+    lead: "Kasirye",
+    status: "Delayed",
+    deadline: "Mar 2025",
+    objectives: [
+        "Finalize pad prototype",
+        "Set up a production unit",
+        "Train 10 women in pad production"
+    ]
+  }
+];
+
+export const partnerships: Partnership[] = [
+    {
+        name: "Ministry of Education",
+        contactPerson: "Jane Doe",
+        contactEmail: "jane.doe@moe.gov.ug",
+        status: "Active",
+        nextStep: "Quarterly review meeting on Oct 20th"
+    },
+    {
+        name: "EcoBank",
+        contactPerson: "John Smith",
+        contactEmail: "jsmith@ecobank.com",
+        status: "Active",
+        nextStep: "Follow up on GreenSchools sponsorship proposal"
+    },
+    {
+        name: "UNICEF Uganda",
+        contactPerson: "Alice Johnson",
+        contactEmail: "ajohnson@unicef.org",
+        status: "Potential",
+        nextStep: "Send concept note for YoSkills partnership"
+    },
+     {
+        name: "Rotary Club of Kampala",
+        contactPerson: "Peter Jones",
+        contactEmail: "pjones@rotary.org",
+        status: "Inactive",
+        nextStep: "Re-engage for potential collaboration in 2025"
+    }
+]
