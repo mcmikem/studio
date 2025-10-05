@@ -65,7 +65,7 @@ export default function PlanPage() {
               Important but adjustable goals we pursue within available
               capacity.
             </CardDescription>
-          </Header>
+          </CardHeader>
           <CardContent className="space-y-4">
             {flexibleTargets.map((goal, index) => (
               <div key={index} className="flex items-start gap-4">
