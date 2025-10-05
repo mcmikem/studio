@@ -5,7 +5,7 @@ import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
 import { useUser } from '@/firebase';
-import { ProjectsOverview } from '@/components/dashboard/projects-overview';
+import { ProgramsOverview } from '@/components/dashboard/programs-overview';
 import { ImpactOverview } from '@/components/dashboard/impact-overview';
 import { Alerts } from '@/components/dashboard/alerts';
 
@@ -29,7 +29,7 @@ export default function DashboardPage() {
         {/* CENTER PANEL – Organization Pulse */}
         <div className="lg:col-span-8 flex flex-col gap-6">
           <StatsCards isLoading={isUserLoading} />
-          <ProjectsOverview isLoading={isUserLoading} />
+          <ProgramsOverview />
           <ImpactOverview isLoading={isUserLoading} />
           <RecentCheckouts />
         </div>

@@ -91,7 +91,7 @@ export const operationalPlanEvents: CalendarEvent[] = [
         location: "Buwama"
     },
     {
-        date: new Date(2025, 9, 20),
+        date: new date(2025, 9, 20),
         title: "Watermelon Body Wash Launch",
         description: "Launch for Omuto Essentials product.",
         responsible: "Alex",
