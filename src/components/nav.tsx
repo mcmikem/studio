@@ -113,7 +113,7 @@ export function AppSidebar() {
                   <Link href="/activity-log">
                     <History />
                     <span>Activity Log</span>
-                  </Link>LI>
+                  </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
