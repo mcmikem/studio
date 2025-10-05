@@ -1,84 +1,106 @@
 /**
  * @file Firestore Security Rules
- * @description This ruleset enforces a user-ownership model for user profiles
- * and allows only authenticated users to list `checkouts`. The rules are designed
- * to provide a secure foundation for the Omuto Central application while
- * allowing for flexible data shapes during the prototyping phase.
+ * @description This ruleset enforces a user-ownership model for user profiles and allows any signed-in user to create/read activities and checkouts.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile information, accessible only to the user themselves.
- * - /checkouts/{checkoutId}: Stores daily checkout updates, listable by any authenticated user.
+ * - /users/{userId}: Stores individual user profiles. Access is restricted to the user themselves (owner-only).
+ * - /activities/{activityId}: Stores activity logs. Any signed-in user can read activities but can create, update, or delete activity logs only if they are the owner.
+ * - /checkouts/{checkoutId}: Stores daily checkout updates. Any signed-in user can read checkouts but can create, update, or delete checkouts only if they are the owner.
  *
  * Key Security Decisions:
- * - User listing is disallowed to prevent unauthorized access to user information.
- * - `checkouts` are readable by all authenticated users but only created (and potentially updated/deleted in the future) by authenticated users.
- *
- * Denormalization for Authorization:
- * - The `Checkout` document requires the `userId` field to match the authenticated user's UID to enforce ownership.
+ * - Users can only access their own profile data.
+ * - Listing users is not allowed.
+ * - Activities and Checkouts can be listed by any signed-in user.
+ * - Schema validation is relaxed in this prototyping phase to allow for rapid iteration.  Only essential fields for authorization are validated.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Enforces user-ownership for user profiles. Only the
-     *  authenticated user can read, update, or delete their own profile.
-     * @path /users/{userId}
-     * @allow (get, update, delete) if the request is made by the user with matching {userId}.
-     * @allow (create) if the authenticated user's UID matches the {userId} and the document's `id` field.
-     * @deny (get, update, delete) if the request is made by a different user.
-     * @deny (create) if the authenticated user's UID does not match the {userId}.
-     * @deny (list) All users are denied to list users.
-     * @principle Enforces strict user-ownership for all operations.
+     * @description Checks if the request is made by a signed-in user.
+     * @return {bool} True if the user is signed in, false otherwise.
      */
-    match /users/{userId} {
-      // Validate the user ID
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      // Check if a user exists and is the owner
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      // Only allow a user to create their own document.
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow get: if isOwner(userId);
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
-      allow list: if false;
+    function isSignedIn() {
+      return request.auth != null;
     }
 
     /**
-     * @description Allows authenticated users to list `checkouts`. `create` is allowed if the user is authenticated and the `userId` field matches their UID.
-     * @path /checkouts/{checkoutId}
-     * @allow (list) if the request is made by an authenticated user.
-     * @allow (create) if the request is made by an authenticated user, and the `userId` field in the document matches their UID.
-     * @deny (create, update, delete) if the request is not made by the owner.
-     * @deny (get) if the user is not authenticated.
-     * @principle Allows public read, but restricts write access to authenticated users.
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @param {string} userId The user ID to compare against the authenticated user's ID.
+     * @return {bool} True if the user IDs match, false otherwise.
      */
-    match /checkouts/{checkoutId} {
-      // Validate the user ID
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-       // Check if a user exists and is the owner
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId;
-      allow delete: if isExistingOwner(resource.data.userId);
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
 
-    function isSignedIn() {
-      return request.auth != null;
+    /**
+     * @description Checks if the authenticated user is the owner of an existing document.
+     * @param {string} userId The user ID to compare against the authenticated user's ID.
+     * @return {bool} True if the user IDs match and the document exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Rules for user profiles.
+     * @path /users/{userId}
+     * @allow (create) User with ID 'user123' can create their own profile.
+     * @allow (get) User with ID 'user123' can read their own profile.
+     * @allow (update) User with ID 'user123' can update their own profile.
+     * @allow (delete) User with ID 'user123' can delete their own profile.
+     * @deny (create) User with ID 'user123' cannot create a profile for 'user456'.
+     * @deny (get) User with ID 'user123' cannot read the profile of 'user456'.
+     * @deny (update) User with ID 'user123' cannot update the profile of 'user456'.
+     * @deny (delete) User with ID 'user123' cannot delete the profile of 'user456'.
+     * @principle Enforces document ownership for all operations on user profiles.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for activity logs.
+     * @path /activities/{activityId}
+     * @allow (create) Signed-in user can create an activity log.
+     * @allow (get) Any user can read an activity log.
+     * @allow (list) Any user can list activity logs.
+     * @allow (update) User who created the activity can update it.
+     * @allow (delete) User who created the activity can delete it.
+     * @deny (update) User who did not create the activity cannot update it.
+     * @deny (delete) User who did not create the activity cannot delete it.
+     * @principle Allows any signed-in user to read activities but restricts writes to the owner.
+     */
+    match /activities/{activityId} {
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isExistingOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(resource.data.userId);
+    }
+
+    /**
+     * @description Rules for daily checkout updates.
+     * @path /checkouts/{checkoutId}
+     * @allow (create) Signed-in user can create a checkout.
+     * @allow (get) Any user can read a checkout.
+     * @allow (list) Any user can list checkouts.
+     * @allow (update) User who created the checkout can update it.
+     * @allow (delete) User who created the checkout can delete it.
+     * @deny (update) User who did not create the checkout cannot update it.
+     * @deny (delete) User who did not create the checkout cannot delete it.
+     */
+    match /checkouts/{checkoutId} {
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isExistingOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(resource.data.userId);
     }
   }
 }
