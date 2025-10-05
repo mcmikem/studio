@@ -51,14 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <AppSidebar />
-      </Sidebar>
-      <SidebarInset>
-        <AppHeader />
-        <main className="p-4 lg:p-6">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <>{children}</>
   );
 }
