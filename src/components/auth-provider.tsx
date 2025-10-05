@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
-const protectedRoutes = ['/', '/plan', '/reports', '/roi-calculator', '/impact-story'];
+const protectedRoutes = ['/', '/plan', '/reports', '/roi-calculator', '/impact-story', '/programs', '/partnerships', '/activity-log'];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user, isUserLoading } = useUser();
@@ -17,7 +17,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return; // Wait for user status to be determined
     }
 
-    const isProtectedRoute = protectedRoutes.includes(pathname);
+    const isProtectedRoute = protectedRoutes.includes(pathname) || protectedRoutes.some(p => p !== '/' && pathname.startsWith(p));
 
     if (!user && isProtectedRoute) {
       router.push('/login');
@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, isUserLoading, router, pathname]);
 
-  if (isUserLoading && protectedRoutes.includes(pathname)) {
+  if (isUserLoading && (protectedRoutes.includes(pathname) || protectedRoutes.some(p => p !== '/' && pathname.startsWith(p)))) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // If user is not logged in and it is a protected route, don't render children to avoid flash of content
-  if (!user && protectedRoutes.includes(pathname)) {
+  if (!user && (protectedRoutes.includes(pathname) || protectedRoutes.some(p => p !== '/' && pathname.startsWith(p)))) {
     return null;
   }
   

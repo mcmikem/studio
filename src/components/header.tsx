@@ -13,13 +13,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, User, Settings, Bell, PlusCircle } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser } from '@/firebase';
-import { getAuth, signOut } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import { Badge } from './ui/badge';
+import { useEffect, useState } from 'react';
 
 export function AppHeader() {
     const { user } = useUser();
-    const userRole = (user?.stsTokenManager as any)?.claims?.role || 'Staff';
+    const [userRole, setUserRole] = useState('Staff');
 
+    useEffect(() => {
+        user?.getIdTokenResult().then(idTokenResult => {
+            const role = (idTokenResult.claims.role as string) || 'Staff';
+            setUserRole(role);
+        });
+    }, [user]);
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">

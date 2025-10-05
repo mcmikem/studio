@@ -14,14 +14,22 @@ import { FirestorePermissionError } from './errors';
 
 // This maps specific emails to roles within the Omuto organization.
 const emailToRoleMap: Record<string, string> = {
+    // Executive
     'mcmike@omuto.org': 'Executive Director',
-    'dianah@omuto.org': 'Programs & Partnerships',
-    'kasirye@omuto.org': 'Operations & Field',
-    'alex@omuto.org': 'Media & Finance',
-    'bashir@omuto.org': 'Field Coordinator',
-    'akera@omuto.org': 'Resource Mobilization',
-    // Allow personal emails for key staff for easier login
     '1mark2mike@gmail.com': 'Executive Director',
+    
+    // Programs & Partnerships
+    'dianah@omuto.org': 'Programs & Partnerships',
+
+    // Operations & Field
+    'kasirye@omuto.org': 'Operations & Field',
+    'bashir@omuto.org': 'Field Coordinator',
+    
+    // Media, Comms & Finance
+    'alex@omuto.org': 'Media & Finance',
+
+    // Resource Mobilization
+    'akera@omuto.org': 'Resource Mobilization',
 };
 
 async function createUserProfile(userCredential: UserCredential) {
