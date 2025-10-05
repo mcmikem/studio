@@ -14,7 +14,7 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = checkout.timestamp ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) : 'Just now';
 
   const tag = checkout.task.split(' ')[0].startsWith('#') ? checkout.task.split(' ')[0] : '#Update';
-  const taskText = checkout.task.startsWith('#') ? checkout.task.substring(tag.length).trim() : checkout.task;
+  const taskText = checkout.task.startsWith(tag) ? checkout.task.substring(tag.length).trim() : checkout.task;
   const colorClass = tagColors[tag as keyof typeof tagColors] || tagColors['#Update'];
 
 

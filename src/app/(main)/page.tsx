@@ -4,7 +4,10 @@ import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { useUser } from '@/firebase';
 import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ListChecks, Newspaper } from 'lucide-react';
+import { ListChecks } from 'lucide-react';
+import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
+import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
+import { Alerts } from '@/components/dashboard/alerts';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -19,9 +22,6 @@ export default function DashboardPage() {
   const today = new Date();
   const dateString = today.toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  });
-  const timeString = today.toLocaleTimeString('en-US', {
-    hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
   });
 
   return (
@@ -38,39 +38,17 @@ export default function DashboardPage() {
       {/* Main Body */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* CENTER PANEL – Calendar & Stats */}
+        {/* CENTER PANEL – Main content */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <DashboardCalendar />
           <QuickStatsSummary />
+          <RecentCheckouts />
         </div>
 
-        {/* RIGHT PANEL – Tasks & Announcements */}
+        {/* RIGHT PANEL – Actions & Info */}
         <div className="lg:col-span-4 flex flex-col gap-6">
-           <Card>
-              <CardHeader>
-                <CardTitle>Daily & Weekly Tasks</CardTitle>
-                <CardDescription>Your upcoming priorities.</CardDescription>
-              </CardHeader>
-              <CardContent className="h-48 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <ListChecks className="mx-auto h-8 w-8" />
-                  <p className="mt-2 text-sm">Task board coming soon.</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Announcements & Feed</CardTitle>
-                 <CardDescription>Team updates and milestones.</CardDescription>
-              </CardHeader>
-               <CardContent className="h-72 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <Newspaper className="mx-auto h-8 w-8" />
-                  <p className="mt-2 text-sm">Live feed coming soon.</p>
-                </div>
-              </CardContent>
-            </Card>
+           <NewCheckoutForm />
+           <DashboardCalendar />
+           <Alerts isLoading={false} />
         </div>
       </div>
        <footer className="text-center text-xs text-muted-foreground mt-4">
