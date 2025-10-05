@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
 
 export function NewCheckoutForm() {
   const { user } = useUser();
@@ -48,19 +50,24 @@ export function NewCheckoutForm() {
     <Card>
       <CardHeader>
         <CardTitle>Post an Update</CardTitle>
+        <CardDescription>Report your impact for the day.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Textarea
-            placeholder="What did you wrap up today? Use #tags to categorize (e.g. #FieldVisit)"
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
-            required
-            className="min-h-[60px]"
-          />
+          <div>
+            <Label htmlFor="task-update" className="mb-2">What did you achieve?</Label>
+            <Textarea
+              id="task-update"
+              placeholder="e.g., Finalized RED Campaign proposal #Fundraising"
+              value={task}
+              onChange={(e) => setTask(e.target.value)}
+              required
+              className="min-h-[80px]"
+            />
+          </div>
           <Button type="submit" className="w-full" disabled={loading || !task.trim()}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Post to Activity Feed
+            Check Out & Submit Report
           </Button>
         </form>
       </CardContent>

@@ -5,12 +5,8 @@ import { useUser } from '@/firebase';
 import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
 import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
 import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
-import { Alerts } from '@/components/dashboard/alerts';
-import { ImpactOverview } from '@/components/dashboard/impact-overview';
-import { ProgramsOverview } from '@/components/dashboard/programs-overview';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, ClipboardList, Users } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+import { ClipboardList, Users } from 'lucide-react';
 
 export default function DashboardPage() {
   const { user } = useUser();

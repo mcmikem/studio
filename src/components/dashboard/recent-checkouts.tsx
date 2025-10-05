@@ -13,8 +13,10 @@ import { tagColors } from '@/lib/data';
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = checkout.timestamp ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) : 'Just now';
 
-  const tag = checkout.task.split(' ')[0].startsWith('#') ? checkout.task.split(' ')[0] : '#Update';
-  const taskText = checkout.task.startsWith(tag) ? checkout.task.substring(tag.length).trim() : checkout.task;
+  // Improved tag extraction: finds the first word starting with #
+  const words = checkout.task.split(' ');
+  const tag = words.find(word => word.startsWith('#')) || '#Update';
+  const taskText = checkout.task;
   const colorClass = tagColors[tag as keyof typeof tagColors] || tagColors['#Update'];
 
 
@@ -24,7 +26,7 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
         <AvatarImage src={checkout.avatar} alt="Avatar" />
         <AvatarFallback>{checkout.role}</AvatarFallback>
       </Avatar>
-      <div className="grid gap-1">
+      <div className="grid gap-1 flex-1">
         <p className="text-sm font-medium leading-none">{checkout.name}</p>
         <p className="text-sm text-muted-foreground">{taskText}</p>
       </div>
@@ -72,7 +74,7 @@ export function RecentCheckouts() {
         {checkouts && checkouts.length > 0 ? (
           checkouts.map((checkout) => <CheckoutItem key={checkout.id} checkout={checkout} />)
         ) : (
-          !isLoading && <p className="text-sm text-muted-foreground text-center py-4">No activity yet today.</p>
+          !isLoading && <p className="text-sm text-muted-foreground text-center py-4">No activity yet today. Post an update to get started!</p>
         )}
       </CardContent>
     </Card>
