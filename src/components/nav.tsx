@@ -15,6 +15,7 @@ import {
   Truck,
   Banknote,
   Handshake,
+  ClipboardEdit,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -123,6 +124,18 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarMenu>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/forms')}
+                  tooltip="Forms Hub"
+                >
+                  <Link href="/forms">
+                    <ClipboardEdit />
+                    <span>Forms</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
