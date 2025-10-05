@@ -209,6 +209,34 @@
         "task",
         "timestamp"
       ]
+    },
+    "Project": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Project",
+      "type": "object",
+      "description": "Represents a high-level project with its own dashboard and metrics.",
+      "properties": {
+        "name": { "type": "string" },
+        "manager": { "type": "string" },
+        "districts": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Moderate", "At Risk", "Delayed"] },
+        "completion": { "type": "number" },
+        "nextMilestone": { "type": "string" }
+      },
+      "required": ["name", "manager", "status"]
+    },
+    "ImpactMetric": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ImpactMetric",
+      "type": "object",
+      "description": "Represents a single, trackable impact metric.",
+      "properties": {
+        "metric": { "type": "string" },
+        "target": { "type": "number" },
+        "current": { "type": "number" },
+        "unit": { "type": "string" }
+      },
+      "required": ["metric", "target", "current"]
     }
   },
   "auth": {

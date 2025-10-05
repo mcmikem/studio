@@ -41,7 +41,7 @@ export const teamRoles: TeamMemberRole[] = [
     { member: "Kasirye Constantine (Operations)", focus: "Field execution & volunteers", deliverables: "Daily check-ins, tree planting, event logistics" },
     { member: "Alex (Media Lead)", focus: "Communications strategy", deliverables: "Newsletter coordination, content planning" },
     { member: "Jimmy (Media Officer)", focus: "Content production", deliverables: "Documentary, photography, video editing" },
-    { member: "Jon Paul Akera (Fundraising)", focus: "Resource mobilization", deliverables: "Donor engagement, proposal writing, campaign management" },
+    { member: "Bwire Bashir (Field Coordinator)", focus: "Resource mobilization", deliverables: "Donor engagement, proposal writing, campaign management" },
 ];
 
 export const successMetrics: SuccessMetric[] = [
@@ -91,7 +91,7 @@ export const operationalPlanEvents: CalendarEvent[] = [
         location: "Buwama"
     },
     {
-        date: new date(2025, 9, 20),
+        date: new Date(2025, 9, 20),
         title: "Watermelon Body Wash Launch",
         description: "Launch for Omuto Essentials product.",
         responsible: "Alex",
