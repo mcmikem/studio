@@ -20,7 +20,7 @@ export type RecentCheckout = {
   role: string;
   avatar: string;
   task: string;
-  time: string;
+  time?: string;
   timestamp?: Timestamp;
 };
 
@@ -42,4 +42,10 @@ export type SuccessMetric = {
   yellow: string;
   red: string;
   response: string;
+};
+
+export type CalendarEvent = {
+    date: Date;
+    title: string;
+    description: string;
 };

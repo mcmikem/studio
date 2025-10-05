@@ -1,6 +1,6 @@
 'use client';
 
-import { ActivityChart } from '@/components/dashboard/activity-chart';
+import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
@@ -23,7 +23,7 @@ export default function DashboardPage() {
         <StatsCards />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
           <div className="col-span-1 lg:col-span-3">
-            <ActivityChart />
+            <DashboardCalendar />
           </div>
           <div className="col-span-1 lg:col-span-2">
             <NewCheckoutForm />

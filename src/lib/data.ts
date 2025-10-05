@@ -1,4 +1,4 @@
-import { StatCard, WeeklyActivity, RecentCheckout, PlanGoal, TeamMemberRole, SuccessMetric } from './types';
+import { StatCard, WeeklyActivity, RecentCheckout, PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent } from './types';
 import { DollarSign, Users, Activity, Heart } from 'lucide-react';
 
 export const statsCards: StatCard[] = [
@@ -34,37 +34,6 @@ export const weeklyActivityData: WeeklyActivity[] = [
     { day: 'Wed', "Girl Child Day": 5, "Tree Planting": 1, "PTA Meeting": 1 },
     { day: 'Thu', "Girl Child Day": 1, "Tree Planting": 0, "PTA Meeting": 2 },
     { day: 'Fri', "Girl Child Day": 4, "Tree Planting": 3, "PTA Meeting": 1 },
-];
-
-export const recentCheckouts: RecentCheckout[] = [
-  {
-    name: 'Purity (Programs)',
-    role: 'PPM',
-    avatar: 'https://picsum.photos/seed/purity/40/40',
-    task: '✅ PTA meeting successful - 3 parent champions identified',
-    time: '5:02 PM',
-  },
-  {
-    name: 'Grace (Operations)',
-    role: 'OPM',
-    avatar: 'https://picsum.photos/seed/grace/40/40',
-    task: '✅ 8 campus ambassadors trained on event setup & photo basics',
-    time: '5:01 PM',
-  },
-  {
-    name: 'McMike (ED)',
-    role: 'ED',
-    avatar: 'https://picsum.photos/seed/mcmike/40/40',
-    task: '❗ YoSkills graduates concerned about exclusivity clause',
-    time: '4:58 PM',
-  },
-  {
-    name: 'Alex (Media)',
-    role: 'Media',
-    avatar: 'https://picsum.photos/seed/alex/40/40',
-    task: '🔄 Newsletter content plan shared for review.',
-    time: '4:55 PM',
-  },
 ];
 
 
@@ -124,5 +93,28 @@ export const successMetrics: SuccessMetric[] = [
         yellow: "50-80% on track",
         red: "<50% by Oct 20",
         response: "Reallocate resources, adjust goals"
+    }
+];
+
+export const operationalPlanEvents: CalendarEvent[] = [
+    {
+        date: new Date(2025, 9, 11),
+        title: "Girl Child Day",
+        description: "Flagship public event. Success: 150+ students, 300K raised."
+    },
+    {
+        date: new Date(2025, 9, 15),
+        title: "Fundraising Checkpoint",
+        description: "Review progress towards 1.5M target. Should be at >60%."
+    },
+    {
+        date: new Date(2025, 9, 26),
+        title: "RED Campaign Documentary Premiere",
+        description: "Internal premiere of the fundraising documentary."
+    },
+    {
+        date: new Date(2025, 9, 31),
+        title: "Fundraising Target Deadline",
+        description: "Final day to meet the 1.5M fundraising goal for October."
     }
 ];
