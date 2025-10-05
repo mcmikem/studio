@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -33,8 +32,8 @@ import { Separator } from './ui/separator';
 
 const OmutoLogo = () => (
     <div className="flex items-center gap-2" data-ai-hint="logo">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
-            <HeartHandshake className="h-5 w-5 text-accent-foreground" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <HeartHandshake className="h-5 w-5" />
         </div>
         <span className="font-headline text-lg font-bold">Omuto Central</span>
     </div>
