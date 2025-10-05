@@ -1,24 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth, useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-
-// A mapping of user emails to their roles and avatar seeds
-const userProfileMap: { [key: string]: { role: string, avatarSeed: string } } = {
-    'mcmike@omuto.org': { role: 'ED', avatarSeed: 'mcmike' },
-    'purity@omuto.org': { role: 'PPM', avatarSeed: 'purity' },
-    'grace@omuto.org': { role: 'OPM', avatarSeed: 'grace' },
-    'alex@omuto.org': { role: 'Media', avatarSeed: 'alex' },
-    'jimmy@omuto.org': { role: 'Media', avatarSeed: 'jimmy' },
-    'consultant@omuto.org': { role: 'FR', avatarSeed: 'consultant' },
-};
-
 
 export function NewCheckoutForm() {
   const { user } = useUser();
@@ -33,13 +22,10 @@ export function NewCheckoutForm() {
 
     setLoading(true);
 
-    const userEmail = user.email || 'default';
-    const userProfile = userProfileMap[userEmail] || { role: 'User', avatarSeed: 'default' };
-
     const checkoutData = {
       name: user.displayName || user.email,
-      role: userProfile.role,
-      avatar: `https://picsum.photos/seed/${userProfile.avatarSeed}/40/40`,
+      role: 'User', // This will be updated based on custom claims or user profile in the future
+      avatar: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
       task: task,
       timestamp: serverTimestamp(),
       userId: user.uid,
@@ -47,8 +33,6 @@ export function NewCheckoutForm() {
     
     const checkoutsCollection = collection(firestore, 'checkouts');
 
-    // addDocumentNonBlocking does not return a promise that resolves on completion,
-    // so we'll reset the form optimistically.
     addDocumentNonBlocking(checkoutsCollection, checkoutData);
     
     toast({
