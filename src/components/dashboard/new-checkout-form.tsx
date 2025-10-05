@@ -49,16 +49,16 @@ export function NewCheckoutForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Post an Update</CardTitle>
-        <CardDescription>Report your impact for the day.</CardDescription>
+        <CardTitle>Report Your Impact</CardTitle>
+        <CardDescription>What did you achieve today?</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="task-update" className="mb-2">What did you achieve?</Label>
+            <Label htmlFor="task-update" className="sr-only">What did you achieve?</Label>
             <Textarea
               id="task-update"
-              placeholder="e.g., Finalized RED Campaign proposal #Fundraising"
+              placeholder="e.g., Finalized RED Campaign proposal and met with 2 new potential partners. #Fundraising #Partnerships"
               value={task}
               onChange={(e) => setTask(e.target.value)}
               required
@@ -67,7 +67,7 @@ export function NewCheckoutForm() {
           </div>
           <Button type="submit" className="w-full" disabled={loading || !task.trim()}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Check Out & Submit Report
+            🏁 Check Out & Submit Report
           </Button>
         </form>
       </CardContent>
