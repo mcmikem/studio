@@ -81,7 +81,7 @@ export function AppSidebar() {
             <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/programs')}
+                  isActive={isActive('/programs') || isActive('/partnerships')}
                   tooltip="Programs"
                 >
                   <Link href="/programs">

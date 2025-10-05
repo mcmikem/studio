@@ -1,6 +1,4 @@
-import { StatCard, WeeklyActivity, RecentCheckout, PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, Alert } from './types';
-import { Users, Activity, Briefcase, TrendingUp, HandCoins, Video } from 'lucide-react';
-import { format } from 'date-fns';
+import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent } from './types';
 
 export const tagColors: { [key: string]: string } = {
     '#FieldVisit': 'border-blue-500 bg-blue-500/10 text-blue-500',
@@ -11,16 +9,6 @@ export const tagColors: { [key: string]: string } = {
     '#Finance': 'border-pink-500 bg-pink-500/10 text-pink-500',
     '#Update': 'border-gray-500 bg-gray-500/10 text-gray-500',
 };
-
-
-export const weeklyActivityData: WeeklyActivity[] = [
-    { day: 'Mon', "Girl Child Day": 2, "Tree Planting": 1, "PTA Meeting": 0 },
-    { day: 'Tue', "Girl Child Day": 3, "Tree Planting": 2, "PTA Meeting": 1 },
-    { day: 'Wed', "Girl Child Day": 5, "Tree Planting": 1, "PTA Meeting": 1 },
-    { day: 'Thu', "Girl Child Day": 1, "Tree Planting": 0, "PTA Meeting": 2 },
-    { day: 'Fri', "Girl Child Day": 4, "Tree Planting": 3, "PTA Meeting": 1 },
-];
-
 
 export const nonNegotiableGoals: PlanGoal[] = [
     {
@@ -47,14 +35,13 @@ export const flexibleTargets: PlanGoal[] = [
     { title: "Newsletter (2 Sunday editions)", description: "Keep our community informed and engaged.", details: "" },
 ];
 
-
 export const teamRoles: TeamMemberRole[] = [
-    { member: "McMike (ED)", focus: "Strategic oversight & systems", deliverables: "Template creation, partnership protection, team wellbeing" },
-    { member: "Purity (Programs)", focus: "Planning & partnerships", deliverables: "Weekly plans, PTA meetings, Dignity Pads development" },
-    { member: "Grace (Operations)", focus: "Field execution & volunteers", deliverables: "Daily check-ins, tree planting, event logistics" },
+    { member: "McMike Mutumba (ED)", focus: "Strategic oversight & systems", deliverables: "Template creation, partnership protection, team wellbeing" },
+    { member: "Nansikombi Dianah (Programs)", focus: "Planning & partnerships", deliverables: "Weekly plans, PTA meetings, Dignity Pads development" },
+    { member: "Kasirye Constantine (Operations)", focus: "Field execution & volunteers", deliverables: "Daily check-ins, tree planting, event logistics" },
     { member: "Alex (Media Lead)", focus: "Communications strategy", deliverables: "Newsletter coordination, content planning" },
     { member: "Jimmy (Media Officer)", focus: "Content production", deliverables: "Documentary, photography, video editing" },
-    { member: "Fundraising Consultant", focus: "Resource mobilization", deliverables: "Donor engagement, proposal writing, campaign management" },
+    { member: "Jon Paul Akera (Fundraising)", focus: "Resource mobilization", deliverables: "Donor engagement, proposal writing, campaign management" },
 ];
 
 export const successMetrics: SuccessMetric[] = [

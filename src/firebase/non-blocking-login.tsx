@@ -17,19 +17,23 @@ const emailToRoleMap: Record<string, string> = {
     // Executive
     'mcmike@omuto.org': 'Executive Director',
     '1mark2mike@gmail.com': 'Executive Director',
+    'mcmike.mutumba@gmail.com': 'Executive Director',
     
     // Programs & Partnerships
-    'dianah@omuto.org': 'Programs & Partnerships',
+    'dianah@omuto.org': 'Programs & Partnerships Manager',
+    'nansikombidianah@gmail.com': 'Programs & Partnerships Manager',
 
     // Operations & Field
-    'kasirye@omuto.org': 'Operations & Field',
+    'kasirye@omuto.org': 'Operations & Field Manager',
+    'kasirye.connie@gmail.com': 'Operations & Field Manager',
     'bashir@omuto.org': 'Field Coordinator',
     
     // Media, Comms & Finance
-    'alex@omuto.org': 'Media & Finance',
+    'alex@omuto.org': 'Media & Communications Lead',
 
     // Resource Mobilization
-    'akera@omuto.org': 'Resource Mobilization',
+    'akera@omuto.org': 'Resource Mobilization Lead',
+    'akerajonpaul@gmail.com': 'Resource Mobilization Lead',
 };
 
 async function createUserProfile(userCredential: UserCredential) {

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, Clock, Briefcase, PlusCircle } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,6 +33,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
 const statusIcons: { [key: string]: React.ReactNode } = {
@@ -63,6 +64,9 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
   const { toast } = useToast();
   const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm({
     resolver: zodResolver(programSchema),
+    defaultValues: {
+      status: 'On Track',
+    },
   });
 
   const onSubmit = async (data: z.infer<typeof programSchema>) => {
@@ -97,7 +101,7 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="lead">Program Lead</Label>
-          <Input id="lead" {...register("lead")} placeholder="e.g., Dianah" />
+          <Input id="lead" {...register("lead")} placeholder="e.g., Nansikombi Dianah" />
           {errors.lead && <p className="text-sm text-destructive">{`${errors.lead.message}`}</p>}
         </div>
         <div className="space-y-2">
@@ -167,7 +171,7 @@ export default function ProgramsPage() {
               New Program
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Add New Program</DialogTitle>
               <DialogDescription>
