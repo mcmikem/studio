@@ -6,6 +6,8 @@ import { SidebarProvider, Sidebar, SidebarInset } from '@/components/ui/sidebar'
 import { AppHeader } from '@/components/header';
 import { AppSidebar } from '@/components/nav';
 import { Toaster } from '@/components/ui/toaster';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { AuthProvider } from '@/components/auth-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -23,15 +25,19 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={cn('font-body antialiased', inter.variable, spaceGrotesk.variable)}>
-        <SidebarProvider>
-          <Sidebar>
-            <AppSidebar />
-          </Sidebar>
-          <SidebarInset>
-            <AppHeader />
-            <main className="p-4 lg:p-6">{children}</main>
-          </SidebarInset>
-        </SidebarProvider>
+        <FirebaseClientProvider>
+          <AuthProvider>
+            <SidebarProvider>
+              <Sidebar>
+                <AppSidebar />
+              </Sidebar>
+              <SidebarInset>
+                <AppHeader />
+                <main className="p-4 lg:p-6">{children}</main>
+              </SidebarInset>
+            </SidebarProvider>
+          </AuthProvider>
+        </FirebaseClientProvider>
         <Toaster />
       </body>
     </html>

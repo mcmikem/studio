@@ -1,8 +1,13 @@
+'use client';
+
 import { ActivityChart } from '@/components/dashboard/activity-chart';
 import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
 import { StatsCards } from '@/components/dashboard/stats-cards';
+import { useUser } from '@/firebase';
 
 export default function DashboardPage() {
+  const { user } = useUser();
+
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -10,7 +15,7 @@ export default function DashboardPage() {
           Dashboard
         </h1>
         <p className="text-muted-foreground">
-          Welcome back! Here&apos;s a snapshot of Omuto&apos;s activities.
+          Welcome back, {user?.displayName || user?.email || 'User'}! Here&apos;s a snapshot of Omuto&apos;s activities.
         </p>
       </header>
       <div className="grid gap-6">
