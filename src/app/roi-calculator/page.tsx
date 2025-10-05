@@ -8,6 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
+import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
@@ -21,6 +25,12 @@ const multipliers = [
 ];
 
 export default function ROICalculatorPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const [activityName, setActivityName] = useState('');
   const [transportCost, setTransportCost] = useState(15000);
   const [staffTimeCost, setStaffTimeCost] = useState(20000);
   const [materialsCost, setMaterialsCost] = useState(10000);
@@ -56,6 +66,43 @@ export default function ROICalculatorPage() {
     setSelectedMultipliers(prev => checked ? [...prev, id] : prev.filter(mId => mId !== id));
   };
   
+  const handleLogActivity = async () => {
+    if (!activityName.trim() || !user || !firestore) {
+        toast({
+            variant: "destructive",
+            title: "Missing Information",
+            description: "Please enter an activity name before logging."
+        });
+        return;
+    }
+    setLoading(true);
+
+    const activityData = {
+        title: activityName,
+        userId: user.uid,
+        userName: user.displayName || user.email,
+        estimatedCost: preActivityCost,
+        actualCost: actualCost,
+        directValue: directValue,
+        indirectValue: estimatedIndirectValue,
+        totalValue: estimatedTotalValue,
+        estimatedRoi: estimatedRoi,
+        finalRoi: postActivityRoi,
+        loggedAt: serverTimestamp(),
+    };
+
+    const activitiesCollection = collection(firestore, 'activities');
+    addDocumentNonBlocking(activitiesCollection, activityData);
+
+    toast({
+        title: "Activity Logged!",
+        description: `${activityName} has been saved.`
+    });
+
+    setActivityName('');
+    setLoading(false);
+  };
+
   if (!isClient) {
     return null;
   }
@@ -76,7 +123,7 @@ export default function ROICalculatorPage() {
           <CardContent className="space-y-6">
             <div>
               <Label htmlFor="activityName">Activity Name</Label>
-              <Input id="activityName" placeholder="e.g., Tree Planting @ Greenhill" />
+              <Input id="activityName" placeholder="e.g., Tree Planting @ Greenhill" value={activityName} onChange={e => setActivityName(e.target.value)} />
             </div>
             
             <Separator />
@@ -167,7 +214,10 @@ export default function ROICalculatorPage() {
                 </span>
               </div>
             </div>
-            <Button className="w-full">Log this Activity & ROI</Button>
+            <Button className="w-full" onClick={handleLogActivity} disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Log this Activity & ROI
+            </Button>
           </CardContent>
         </Card>
       </div>

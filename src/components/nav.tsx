@@ -9,6 +9,7 @@ import {
   LayoutGrid,
   Sparkles,
   Wrench,
+  History
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -73,6 +74,18 @@ export function AppSidebar() {
                   <Link href="/plan">
                     <ClipboardList />
                     <span>Operational Plan</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/activity-log')}
+                  tooltip="Activity Log"
+                >
+                  <Link href="/activity-log">
+                    <History />
+                    <span>Activity Log</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
