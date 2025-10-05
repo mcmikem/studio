@@ -4,7 +4,6 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
-  signInWithRedirect,
   signInWithPopup,
   UserCredential,
 } from 'firebase/auth';
@@ -15,13 +14,14 @@ import { FirestorePermissionError } from './errors';
 
 // This maps specific emails to roles within the Omuto organization.
 const emailToRoleMap: Record<string, string> = {
-    'mcmike@omuto.org': 'ED',
-    'programs@omuto.org': 'PPM', // Programs Manager
-    'partnerships@omuto.org': 'PPL', // Programs Lead
-    'communications@omuto.org': 'Media', // Media Lead
-    'info@omuto.org': 'OPM', // Operations Manager
+    'mcmike@omuto.org': 'Executive Director',
+    'dianah@omuto.org': 'Programs & Partnerships',
+    'kasirye@omuto.org': 'Operations & Field',
+    'alex@omuto.org': 'Media & Finance',
+    'bashir@omuto.org': 'Field Coordinator',
+    'akera@omuto.org': 'Resource Mobilization',
     // Allow personal emails for key staff for easier login
-    '1mark2mike@gmail.com': 'ED',
+    '1mark2mike@gmail.com': 'Executive Director',
 };
 
 async function createUserProfile(userCredential: UserCredential) {
@@ -30,7 +30,7 @@ async function createUserProfile(userCredential: UserCredential) {
 
     const db = getFirestore(user.auth.app);
     const userRef = doc(db, 'users', user.uid);
-    const role = emailToRoleMap[user.email.toLowerCase()] || 'Volunteer';
+    const role = emailToRoleMap[user.email.toLowerCase()] || 'Staff';
 
     const userProfile = {
         id: user.uid,

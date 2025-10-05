@@ -1,33 +1,134 @@
-
-import { StatCard, WeeklyActivity, RecentCheckout, PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, Program, Partnership } from './types';
-import { DollarSign, Users, Activity, Heart } from 'lucide-react';
+import { StatCard, WeeklyActivity, RecentCheckout, PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, Program, Partnership, Project, ImpactMetric, Alert } from './types';
+import { Users, Activity, Briefcase, TrendingUp, HandCoins, Video } from 'lucide-react';
+import { format } from 'date-fns';
 
 export const statsCards: StatCard[] = [
   {
-    title: 'Fundraising Progress',
-    value: 'UGX 900K / 1.5M',
-    change: '+20.1% from last month',
-    icon: DollarSign,
+    title: 'Active Projects',
+    value: '6',
+    change: 'RED, GreenSchools, YoSkills...',
+    icon: Briefcase,
   },
   {
-    title: 'Volunteers Engaged',
-    value: '+23',
-    change: '+180.1% from last month',
+    title: 'Youth Reached (Month)',
+    value: '2,473',
+    change: '+15% from last month',
     icon: Users,
   },
   {
-    title: 'Activities Logged',
-    value: '12',
-    change: '+19% from last week',
+    title: 'Schools Engaged',
+    value: '15',
+    change: '2 new schools this month',
     icon: Activity,
   },
   {
-    title: 'Team Wellbeing',
-    value: '4.2 / 5.0',
-    change: '+0.2 from last week',
-    icon: Heart,
+    title: 'Funds Spent (Oct)',
+    value: '68%',
+    change: 'UGX 1.35M / 2M',
+    icon: HandCoins,
+  },
+  {
+    title: 'New Media Uploads',
+    value: '39',
+    change: '12 posts, 3 videos',
+    icon: Video,
   },
 ];
+
+export const projects: Project[] = [
+    {
+        name: "RED Campaign",
+        manager: "Dianah",
+        districts: "Mpigi, Butambala",
+        status: "Active",
+        completion: 65,
+        nextMilestone: "Launch RED Pads – Oct 11"
+    },
+    {
+        name: "GreenSchools",
+        manager: "Dianah",
+        districts: "Mpigi",
+        status: "Active",
+        completion: 45,
+        nextMilestone: "Tree Planting – Oct 15"
+    },
+    {
+        name: "YoSkills Circles",
+        manager: "Dianah",
+        districts: "Mpigi",
+        status: "Moderate",
+        completion: 40,
+        nextMilestone: "Graduation Prep – Nov 1"
+    },
+    {
+        name: "Omuto Football Alliance",
+        manager: "Kasirye",
+        districts: "Mpigi, Butambala",
+        status: "Active",
+        completion: 70,
+        nextMilestone: "Omuto Cup Finals – Dec 5"
+    },
+    {
+        name: "Omuto Essentials",
+        manager: "Alex",
+        districts: "Mpigi",
+        status: "Active",
+        completion: 85,
+        nextMilestone: "Launch Body Wash – Oct 20"
+    },
+    {
+        name: "Omuto Pulse",
+        manager: "Alex",
+        districts: "Central Uganda",
+        status: "Active",
+        completion: 55,
+        nextMilestone: "RED Campaign Feature – Oct 10"
+    }
+];
+
+export const impactMetrics: ImpactMetric[] = [
+    {
+        metric: "Trees Planted",
+        target: 700,
+        current: 612,
+        unit: ""
+    },
+    {
+        metric: "Girls Supported (RED)",
+        target: 600,
+        current: 520,
+        unit: ""
+    },
+    {
+        metric: "Schools with PureWater",
+        target: 5,
+        current: 3,
+        unit: ""
+    },
+    {
+        metric: "YoSkills Graduates",
+        target: 80,
+        current: 52,
+        unit: ""
+    },
+    {
+        metric: "Youth in OFA",
+        target: 200,
+        current: 147,
+        unit: ""
+    }
+];
+
+export const tagColors: { [key: string]: string } = {
+    '#FieldVisit': 'border-blue-500 bg-blue-500/10 text-blue-500',
+    '#Media': 'border-purple-500 bg-purple-500/10 text-purple-500',
+    '#Programs': 'border-green-500 bg-green-500/10 text-green-500',
+    '#FieldWork': 'border-orange-500 bg-orange-500/10 text-orange-500',
+    '#Approval': 'border-teal-500 bg-teal-500/10 text-teal-500',
+    '#Finance': 'border-pink-500 bg-pink-500/10 text-pink-500',
+    '#Update': 'border-gray-500 bg-gray-500/10 text-gray-500',
+};
+
 
 export const weeklyActivityData: WeeklyActivity[] = [
     { day: 'Mon', "Girl Child Day": 2, "Tree Planting": 1, "PTA Meeting": 0 },
@@ -99,26 +200,64 @@ export const successMetrics: SuccessMetric[] = [
 
 export const operationalPlanEvents: CalendarEvent[] = [
     {
+        date: new Date(2025, 9, 10),
+        title: "Int'l Girl Child Day Celebration",
+        description: "Event at Kammengo SS.",
+        responsible: "Dianah",
+        location: "Kammengo SS"
+    },
+    {
         date: new Date(2025, 9, 11),
-        title: "Girl Child Day",
-        description: "Flagship public event. Success: 150+ students, 300K raised."
+        title: "RED Pads Launch",
+        description: "Public launch of the RED Pads initiative.",
+        responsible: "Dianah & Alex",
+        location: "Mpigi Town"
     },
     {
         date: new Date(2025, 9, 15),
-        title: "Fundraising Checkpoint",
-        description: "Review progress towards 1.5M target. Should be at >60%."
+        title: "GreenSchools Tree Planting",
+        description: "Community tree planting event.",
+        responsible: "Kasirye",
+        location: "Buwama"
     },
     {
-        date: new Date(2025, 9, 26),
-        title: "RED Campaign Documentary Premiere",
-        description: "Internal premiere of the fundraising documentary."
+        date: new Date(2025, 9, 20),
+        title: "Watermelon Body Wash Launch",
+        description: "Launch for Omuto Essentials product.",
+        responsible: "Alex",
+        location: "Omuto Essentials Outlet"
     },
     {
-        date: new Date(2025, 9, 31),
-        title: "Fundraising Target Deadline",
-        description: "Final day to meet the 1.5M fundraising goal for October."
+        date: new Date(2025, 9, 25),
+        title: "Team Meeting & Reporting",
+        description: "Weekly team sync and reporting.",
+        responsible: "All",
+        location: "Youth Centre"
     }
 ];
+
+
+export const alerts: Alert[] = [
+    {
+        type: "Urgent",
+        message: "YoSkills Circle Mpigi needs new materials – stock low.",
+        priority: "High",
+        action: "Notify Alex"
+    },
+    {
+        type: "Reminder",
+        message: "Butambala report overdue (Bwire).",
+        priority: "Medium",
+        action: "Ping Field"
+    },
+    {
+        type: "Info",
+        message: "RED Campaign coverage posted on Omuto Pulse.",
+        priority: "Low",
+        action: "View Post"
+    }
+];
+
 
 export const programs: Program[] = [
   {

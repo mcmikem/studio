@@ -49,6 +49,8 @@ export type CalendarEvent = {
     date: Date;
     title: string;
     description: string;
+    responsible: string;
+    location: string;
 };
 
 export type Program = {
@@ -66,4 +68,27 @@ export type Partnership = {
     contactEmail: string;
     status: "Active" | "Potential" | "Inactive";
     nextStep: string;
+}
+
+export type Project = {
+    name: string;
+    manager: string;
+    districts: string;
+    status: "Active" | "Moderate" | "At Risk" | "Delayed";
+    completion: number;
+    nextMilestone: string;
+}
+
+export type ImpactMetric = {
+    metric: string;
+    target: number;
+    current: number;
+    unit: string;
+}
+
+export type Alert = {
+    type: "Urgent" | "Reminder" | "Info";
+    message: string;
+    priority: "High" | "Medium" | "Low";
+    action: string;
 }

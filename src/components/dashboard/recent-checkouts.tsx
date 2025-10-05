@@ -7,9 +7,16 @@ import type { RecentCheckout } from '@/lib/types';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
+import { Badge } from '../ui/badge';
+import { tagColors } from '@/lib/data';
 
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = checkout.timestamp ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) : 'Just now';
+
+  const tag = checkout.task.split(' ')[0].startsWith('#') ? checkout.task.split(' ')[0] : '#Update';
+  const taskText = checkout.task.startsWith('#') ? checkout.task.substring(tag.length).trim() : checkout.task;
+  const colorClass = tagColors[tag as keyof typeof tagColors] || tagColors['#Update'];
+
 
   return (
     <div className="flex items-start gap-4">
@@ -19,9 +26,12 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
       </Avatar>
       <div className="grid gap-1">
         <p className="text-sm font-medium leading-none">{checkout.name}</p>
-        <p className="text-sm text-muted-foreground">{checkout.task}</p>
+        <p className="text-sm text-muted-foreground">{taskText}</p>
       </div>
-      <div className="ml-auto text-sm text-muted-foreground">{timeAgo}</div>
+      <div className="ml-auto text-right">
+        <div className="text-sm text-muted-foreground whitespace-nowrap">{timeAgo}</div>
+        <Badge variant="outline" className={`mt-1 ${colorClass}`}>{tag}</Badge>
+      </div>
     </div>
   );
 }
@@ -32,40 +42,37 @@ export function RecentCheckouts() {
 
   const checkoutsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5));
+    return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10));
   }, [firestore]);
 
   const { data: checkouts, isLoading } = useCollection<RecentCheckout>(checkoutsQuery);
 
   return (
-    <Card className="mt-6">
+    <Card>
       <CardHeader>
-        <CardTitle>Recent Check-outs</CardTitle>
-        <CardDescription>Latest updates from the team at the end of the day.</CardDescription>
+        <CardTitle>Team Activity Feed</CardTitle>
+        <CardDescription>Real-time updates from departments.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading && (
-            <>
-                <div className="flex items-center space-x-4">
+            Array.from({ length: 5 }).map((_, i) => (
+                 <div key={i} className="flex items-center space-x-4">
                     <Skeleton className="h-9 w-9 rounded-full" />
-                    <div className="space-y-2">
+                    <div className="space-y-2 flex-1">
                         <Skeleton className="h-4 w-[150px]" />
                         <Skeleton className="h-4 w-[250px]" />
                     </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                    <Skeleton className="h-9 w-9 rounded-full" />
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-[150px]" />
-                        <Skeleton className="h-4 w-[250px]" />
+                    <div className="space-y-2 text-right">
+                        <Skeleton className="h-4 w-[60px] ml-auto" />
+                        <Skeleton className="h-5 w-[80px] ml-auto" />
                     </div>
                 </div>
-            </>
+            ))
         )}
         {checkouts && checkouts.length > 0 ? (
           checkouts.map((checkout) => <CheckoutItem key={checkout.id} checkout={checkout} />)
         ) : (
-          !isLoading && <p className="text-sm text-muted-foreground text-center py-4">No check-outs yet today.</p>
+          !isLoading && <p className="text-sm text-muted-foreground text-center py-4">No activity yet today.</p>
         )}
       </CardContent>
     </Card>

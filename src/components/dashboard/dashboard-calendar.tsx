@@ -8,7 +8,7 @@ import { operationalPlanEvents } from '@/lib/data';
 import { format, isSameDay, isSameMonth } from 'date-fns';
 
 export function DashboardCalendar() {
-  const [date, setDate] = useState<Date | undefined>(new Date(2025, 9, 1));
+  const [date, setDate] = useState<Date | undefined>(new Date(2025, 9, 10));
 
   const selectedDayEvents = date
     ? operationalPlanEvents.filter((event) => isSameDay(event.date, date))
@@ -20,7 +20,7 @@ export function DashboardCalendar() {
 
   const modifiersStyles = {
     event: {
-      border: '2px solid hsl(var(--primary))',
+      border: '2px solid hsl(var(--accent))',
       borderRadius: '50%',
     },
   };
@@ -31,12 +31,12 @@ export function DashboardCalendar() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>October 2025 Plan</CardTitle>
+        <CardTitle>Upcoming Events</CardTitle>
         <CardDescription>
-          Key dates and activities for the month. Click a day to see events.
+          Key dates and activities for the current month.
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col md:flex-row gap-6">
+      <CardContent>
         <div className="flex justify-center">
             <Calendar
             mode="single"
@@ -48,34 +48,22 @@ export function DashboardCalendar() {
             className="rounded-md border"
             />
         </div>
-        <div className="flex-1 space-y-4">
+        <div className="mt-4 space-y-2">
             <h3 className="font-headline text-lg font-semibold">
-                {date ? format(date, "MMMM d, yyyy") : 'Select a date'}
+                Events for {date ? format(date, "MMMM d") : 'the month'}:
             </h3>
             {selectedDayEvents.length > 0 ? (
                 <ul className="space-y-3">
                 {selectedDayEvents.map((event) => (
                     <li key={event.title} className="p-3 bg-muted rounded-lg">
                         <p className="font-semibold">{event.title}</p>
-                        <p className="text-sm text-muted-foreground">{event.description}</p>
+                        <p className="text-sm text-muted-foreground">{event.responsible} - {event.location}</p>
                     </li>
                 ))}
                 </ul>
             ) : (
-                <p className="text-sm text-muted-foreground">No events for this day.</p>
+                <p className="text-sm text-muted-foreground pt-2">No events scheduled for this day.</p>
             )}
-
-            <div className="pt-4">
-                <h3 className="font-headline text-lg font-semibold mb-2">Upcoming this Month</h3>
-                <div className="space-y-2">
-                    {monthEvents.length > 0 ? monthEvents.map(event => (
-                        <div key={event.title} className="flex items-center justify-between text-sm">
-                            <span>{event.title}</span>
-                            <Badge variant="outline">{format(event.date, "MMM d")}</Badge>
-                        </div>
-                    )) : <p className="text-sm text-muted-foreground">No events scheduled this month.</p>}
-                </div>
-            </div>
         </div>
       </CardContent>
     </Card>

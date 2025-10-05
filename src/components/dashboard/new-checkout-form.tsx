@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -46,10 +46,13 @@ export function NewCheckoutForm() {
 
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardHeader>
+        <CardTitle>Post an Update</CardTitle>
+      </CardHeader>
+      <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Textarea
-            placeholder="What did you wrap up today?"
+            placeholder="What did you wrap up today? Use #tags to categorize (e.g. #FieldVisit)"
             value={task}
             onChange={(e) => setTask(e.target.value)}
             required
@@ -57,7 +60,7 @@ export function NewCheckoutForm() {
           />
           <Button type="submit" className="w-full" disabled={loading || !task.trim()}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Post Check-out
+            Post to Activity Feed
           </Button>
         </form>
       </CardContent>

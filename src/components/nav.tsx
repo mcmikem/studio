@@ -9,10 +9,20 @@ import {
   HeartHandshake,
   LayoutGrid,
   Sparkles,
-  Wrench,
-  History,
   Users,
-  Briefcase
+  Briefcase,
+  AreaChart,
+  MessageSquare,
+  Bell,
+  Settings,
+  Building,
+  School,
+  Truck,
+  Film,
+  Banknote,
+  Handshake,
+  User,
+  Home
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -31,8 +41,8 @@ import Image from 'next/image';
 
 const OmutoLogo = () => (
     <div className="flex items-center gap-2" data-ai-hint="logo">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <HeartHandshake className="h-5 w-5 text-primary-foreground" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
+            <HeartHandshake className="h-5 w-5 text-accent-foreground" />
         </div>
         <span className="font-headline text-lg font-bold">Omuto Central</span>
     </div>
@@ -54,21 +64,21 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              isActive={isActive('/')}
+              isActive={pathname === '/'}
               tooltip="Dashboard"
             >
               <Link href="/">
-                <LayoutGrid />
+                <Home />
                 <span>Dashboard</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-
+        
         <SidebarGroup>
-          <SidebarGroupLabel>Core</SidebarGroupLabel>
-          <SidebarMenu>
-             <SidebarMenuItem>
+          <SidebarGroupLabel>Core Modules</SidebarGroupLabel>
+           <SidebarMenu>
+            <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/programs')}
@@ -76,23 +86,53 @@ export function AppSidebar() {
                 >
                   <Link href="/programs">
                     <Briefcase />
-                    <span>Programs</span>
+                    <span>Programs & Partnerships</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/partnerships')}
-                  tooltip="Partnerships"
+                  isActive={isActive('/operations')}
+                  tooltip="Operations"
                 >
-                  <Link href="/partnerships">
-                    <Users />
-                    <span>Partnerships</span>
+                  <Link href="/operations">
+                    <Truck />
+                    <span>Operations & Field</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/media-finance')}
+                  tooltip="Media & Finance"
+                >
+                  <Link href="/media-finance">
+                    <Banknote />
+                    <span>Media & Finance</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/resources')}
+                  tooltip="Resource Mobilization"
+                >
+                  <Link href="/resources">
+                    <Handshake />
+                    <span>Resource Mobilization</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Tools</SidebarGroupLabel>
+          <SidebarMenu>
+             <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/plan')}
@@ -104,6 +144,14 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive('/roi-calculator')} tooltip="ROI Calculator">
+                    <Link href="/roi-calculator">
+                        <Calculator />
+                        <span>ROI Calculator</span>
+                    </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
@@ -111,9 +159,17 @@ export function AppSidebar() {
                   tooltip="Activity Log"
                 >
                   <Link href="/activity-log">
-                    <History />
+                    <AreaChart />
                     <span>Activity Log</span>
                   </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator">
+                    <Link href="/impact-story">
+                        <Sparkles />
+                        <span>Story Generator</span>
+                    </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -130,27 +186,35 @@ export function AppSidebar() {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-
+        
         <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/roi-calculator')} tooltip="ROI Calculator">
-                    <Link href="/roi-calculator">
-                        <Calculator />
-                        <span>ROI Calculator</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator">
-                    <Link href="/impact-story">
-                        <Sparkles />
-                        <span>Story Generator</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
+            <SidebarGroupLabel>General</SidebarGroupLabel>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/chat')} tooltip="Team Chat">
+                        <Link href="/chat">
+                            <MessageSquare />
+                            <span>Chat & Team Space</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/notifications')} tooltip="Notifications">
+                        <Link href="/notifications">
+                            <Bell />
+                            <span>Notifications</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="My Profile">
+                        <Link href="/profile">
+                            <User />
+                            <span>My Profile</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
         </SidebarGroup>
 
       </SidebarContent>

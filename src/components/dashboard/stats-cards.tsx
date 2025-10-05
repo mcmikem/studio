@@ -3,9 +3,9 @@ import { statsCards } from '@/lib/data';
 
 export function StatsCards() {
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
       {statsCards.map((card) => (
-        <Card key={card.title}>
+        <Card key={card.title} className="cursor-pointer hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
             <card.icon className="h-4 w-4 text-muted-foreground" />
