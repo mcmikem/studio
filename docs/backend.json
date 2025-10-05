@@ -161,7 +161,10 @@
         "title",
         "estimatedCost",
         "actualCost",
+        "directValue",
+        "indirectValue",
         "totalValue",
+        "estimatedRoi",
         "finalRoi",
         "loggedAt"
       ]
