@@ -130,8 +130,8 @@ export default function PlanPage() {
               {successMetrics.map((metric, index) => (
                 <TableRow key={index}>
                   <TableCell className="font-medium">{metric.metric}</TableCell>
-                  <TableCell><Badge variant="outline" className="border-green-500 text-green-500">{metric.green}</Badge></TableCell>
-                  <TableCell><Badge variant="outline" className="border-yellow-500 text-yellow-500">{metric.yellow}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className="border-green-500 bg-green-500/10 text-green-500">{metric.green}</Badge></TableCell>
+                  <TableCell><Badge variant="outline" className="border-yellow-500 bg-yellow-500/10 text-yellow-500">{metric.yellow}</Badge></TableCell>
                   <TableCell><Badge variant="destructive">{metric.red}</Badge></TableCell>
                   <TableCell>{metric.response}</TableCell>
                 </TableRow>

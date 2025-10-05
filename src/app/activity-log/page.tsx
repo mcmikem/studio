@@ -107,8 +107,8 @@ export default function ActivityLogPage() {
                       <Badge
                         className={
                           activity.finalRoi >= 0
-                            ? 'border-green-500 text-green-500'
-                            : 'border-red-500 text-red-500'
+                            ? 'border-green-500 bg-green-500/10 text-green-500'
+                            : 'border-red-500 bg-red-500/10 text-red-500'
                         }
                         variant="outline"
                       >
