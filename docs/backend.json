@@ -31,77 +31,73 @@
         "email"
       ]
     },
-    "StrategicPlan": {
+    "Program": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StrategicPlan",
+      "title": "Program",
       "type": "object",
-      "description": "Represents a strategic plan for Omuto, such as the October 2025 Operational Plan.",
+      "description": "Represents a core program or initiative of Omuto Foundation.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the strategic plan entity."
-        },
         "title": {
           "type": "string",
-          "description": "The title of the strategic plan (e.g., October 2025 Operational Plan)."
-        },
-        "startDate": {
-          "type": "string",
-          "description": "The start date of the strategic plan.",
-          "format": "date-time"
-        },
-        "endDate": {
-          "type": "string",
-          "description": "The end date of the strategic plan.",
-          "format": "date-time"
+          "description": "The title of the program (e.g., RED Campaign)."
         },
         "description": {
           "type": "string",
-          "description": "A detailed description of the strategic plan."
-        }
-      },
-      "required": [
-        "id",
-        "title",
-        "startDate",
-        "endDate",
-        "description"
-      ]
-    },
-    "Objective": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Objective",
-      "type": "object",
-      "description": "Represents a specific objective within a strategic plan.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the objective entity."
+          "description": "A brief description of the program."
         },
-        "strategicPlanId": {
+        "lead": {
           "type": "string",
-          "description": "Reference to StrategicPlan. (Relationship: StrategicPlan 1:N Objective)"
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the objective."
-        },
-        "target": {
-          "type": "string",
-          "description": "The target or goal to be achieved for this objective."
+          "description": "The name of the team member leading the program."
         },
         "status": {
           "type": "string",
-          "description": "The current status of the objective (e.g., On Track, Delayed, Completed)."
+          "enum": ["On Track", "At Risk", "Delayed", "Completed"],
+          "description": "The current status of the program."
+        },
+        "deadline": {
+          "type": "string",
+          "description": "The target completion date for the program."
+        },
+        "objectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of key objectives for the program."
         }
       },
-      "required": [
-        "id",
-        "strategicPlanId",
-        "description",
-        "target",
-        "status"
-      ]
+      "required": ["title", "lead", "status"]
+    },
+    "Partnership": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Partnership",
+      "type": "object",
+      "description": "Represents a partnership with another organization.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the partner organization."
+        },
+        "contactPerson": {
+          "type": "string",
+          "description": "The primary contact at the partner organization."
+        },
+        "contactEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "The email address of the primary contact."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Potential", "Inactive"],
+          "description": "The current status of the partnership."
+        },
+        "nextStep": {
+          "type": "string",
+          "description": "The next actionable step for this partnership."
+        }
+      },
+      "required": ["name", "contactPerson", "contactEmail", "status"]
     },
     "Activity": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -170,285 +166,6 @@
         "loggedAt"
       ]
     },
-    "FormTemplate": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "FormTemplate",
-      "type": "object",
-      "description": "Represents a template for data input forms.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the form template entity."
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the form template (e.g., Weekly Plan, Field Activity ROI Calculator)."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the form template and its purpose."
-        },
-        "fields": {
-          "type": "array",
-          "description": "An array of field definitions for the form template.",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "title",
-        "description",
-        "fields"
-      ]
-    },
-    "FormData": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "FormData",
-      "type": "object",
-      "description": "Represents data submitted through a form, associated with a specific form template and activity.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the form data entity."
-        },
-        "formTemplateId": {
-          "type": "string",
-          "description": "Reference to FormTemplate. (Relationship: FormTemplate 1:N FormData)"
-        },
-        "activityId": {
-          "type": "string",
-          "description": "Reference to Activity. (Relationship: Activity 1:N FormData)"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N FormData)"
-        },
-        "submissionDate": {
-          "type": "string",
-          "description": "The date and time when the form data was submitted.",
-          "format": "date-time"
-        },
-        "data": {
-          "type": "string",
-          "description": "JSON string containing the submitted data for the form."
-        }
-      },
-      "required": [
-        "id",
-        "formTemplateId",
-        "activityId",
-        "userId",
-        "submissionDate",
-        "data"
-      ]
-    },
-    "Partnership": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Partnership",
-      "type": "object",
-      "description": "Represents a partnership with another organization.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the partnership entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the partner organization."
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the partnership and its goals."
-        },
-        "startDate": {
-          "type": "string",
-          "description": "The start date of the partnership.",
-          "format": "date-time"
-        },
-        "endDate": {
-          "type": "string",
-          "description": "The end date of the partnership.",
-          "format": "date-time"
-        },
-        "contactPerson": {
-          "type": "string",
-          "description": "The name of the primary contact person at the partner organization."
-        },
-        "contactEmail": {
-          "type": "string",
-          "description": "The email address of the primary contact person.",
-          "format": "email"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "startDate",
-        "endDate",
-        "contactPerson",
-        "contactEmail"
-      ]
-    },
-    "Report": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Report",
-      "type": "object",
-      "description": "Represents a generated report, either automated or custom.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the report entity."
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the report (e.g., Weekly Progress Report, Monthly Financial Report)."
-        },
-        "reportType": {
-          "type": "string",
-          "description": "The type of report (e.g., Weekly, Monthly, Quarterly, Custom)."
-        },
-        "generationDate": {
-          "type": "string",
-          "description": "The date and time when the report was generated.",
-          "format": "date-time"
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Report) The user who generated the report."
-        },
-        "data": {
-          "type": "string",
-          "description": "JSON string containing the report data."
-        }
-      },
-      "required": [
-        "id",
-        "title",
-        "reportType",
-        "generationDate",
-        "userId",
-        "data"
-      ]
-    },
-    "Budget": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Budget",
-      "type": "object",
-      "description": "Represents the budget allocated for a specific period and program.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the budget entity."
-        },
-        "strategicPlanId": {
-          "type": "string",
-          "description": "Reference to StrategicPlan. (Relationship: StrategicPlan 1:N Budget)"
-        },
-        "amount": {
-          "type": "number",
-          "description": "The total budget amount."
-        },
-        "startDate": {
-          "type": "string",
-          "description": "The start date of the budget period.",
-          "format": "date-time"
-        },
-        "endDate": {
-          "type": "string",
-          "description": "The end date of the budget period.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "strategicPlanId",
-        "amount",
-        "startDate",
-        "endDate"
-      ]
-    },
-    "Expenditure": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Expenditure",
-      "type": "object",
-      "description": "Represents an expenditure made against a budget.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the expenditure entity."
-        },
-        "budgetId": {
-          "type": "string",
-          "description": "Reference to Budget. (Rela tionship: Budget 1:N Expenditure)"
-        },
-        "activityId": {
-          "type": "string",
-          "description": "Reference to Activity. (Relationship: Activity 1:N Expenditure)"
-        },
-        "amount": {
-          "type": "number",
-          "description": "The amount of the expenditure."
-        },
-        "date": {
-          "type": "string",
-          "description": "The date of the expenditure.",
-          "format": "date-time"
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the expenditure."
-        }
-      },
-      "required": [
-        "id",
-        "budgetId",
-        "activityId",
-        "amount",
-        "date",
-        "description"
-      ]
-    },
-    "Volunteer": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Volunteer",
-      "type": "object",
-      "description": "Represents a volunteer associated with Omuto Foundation.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the volunteer entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the volunteer."
-        },
-        "contactNumber": {
-          "type": "string",
-          "description": "The contact number of the volunteer."
-        },
-        "email": {
-          "type": "string",
-          "description": "The email address of the volunteer.",
-          "format": "email"
-        },
-        "skills": {
-          "type": "array",
-          "description": "An array of skills possessed by the volunteer.",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "contactNumber",
-        "email"
-      ]
-    },
     "Checkout": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Checkout",
@@ -514,10 +231,22 @@
       "description": "Stores daily checkout updates from team members."
     },
     "/activities/{activityId}": {
-        "schema": {
-            "$ref": "#/entities/Activity"
-        },
-        "description": "Stores logged activities from the ROI Calculator."
+      "schema": {
+        "$ref": "#/entities/Activity"
+      },
+      "description": "Stores logged activities from the ROI Calculator."
+    },
+    "/programs/{programId}": {
+      "schema": {
+        "$ref": "#/entities/Program"
+      },
+      "description": "Stores Omuto's core programs and initiatives."
+    },
+    "/partnerships/{partnershipId}": {
+      "schema": {
+        "$ref": "#/entities/Partnership"
+      },
+      "description": "Stores information about partner organizations."
     }
   }
 }

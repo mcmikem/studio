@@ -1,3 +1,4 @@
+'use client';
 
 import {
   Card,
@@ -15,7 +16,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { partnerships } from '@/lib/data';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { Partnership } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Users } from 'lucide-react';
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
@@ -24,6 +29,13 @@ const statusColors: { [key: string]: string } = {
 };
 
 export default function PartnershipsPage() {
+  const firestore = useFirestore();
+  const partnershipsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'partnerships'), orderBy('name'));
+  }, [firestore]);
+  const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
+
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -52,23 +64,60 @@ export default function PartnershipsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {partnerships.map((partner) => (
-                <TableRow key={partner.name}>
-                  <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell>{partner.contactPerson}</TableCell>
-                  <TableCell>
-                    <a href={`mailto:${partner.contactEmail}`} className="text-primary hover:underline">
-                      {partner.contactEmail}
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={statusColors[partner.status]}>
-                      {partner.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{partner.nextStep}</TableCell>
-                </TableRow>
-              ))}
+              {isLoading &&
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton className="h-5 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-24" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-40" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-6 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-48" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              {partnerships && partnerships.length > 0 ? (
+                partnerships.map((partner) => (
+                  <TableRow key={partner.id}>
+                    <TableCell className="font-medium">{partner.name}</TableCell>
+                    <TableCell>{partner.contactPerson}</TableCell>
+                    <TableCell>
+                      <a href={`mailto:${partner.contactEmail}`} className="text-primary hover:underline">
+                        {partner.contactEmail}
+                      </a>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={statusColors[partner.status]}>
+                        {partner.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{partner.nextStep}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                !isLoading && (
+                    <TableRow>
+                        <TableCell
+                        colSpan={5}
+                        className="h-48 text-center text-muted-foreground"
+                        >
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <Users className="h-12 w-12" />
+                                <span className="text-lg font-semibold">No Partners Found</span>
+                                <p className="text-sm">Your partner database is empty. Add a partner to get started.</p>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                )
+              )}
             </TableBody>
           </Table>
         </CardContent>

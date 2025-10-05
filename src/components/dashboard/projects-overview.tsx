@@ -16,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { projects } from '@/lib/data';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
@@ -25,7 +25,7 @@ const statusColors: { [key: string]: string } = {
     "Delayed": "border-orange-500 bg-orange-500/10 text-orange-500",
 };
 
-export function ProjectsOverview() {
+export function ProjectsOverview({ isLoading = true }: { isLoading?: boolean }) {
   return (
     <Card>
       <CardHeader>
@@ -44,22 +44,26 @@ export function ProjectsOverview() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {projects.map((project) => (
-              <TableRow key={project.name} className="cursor-pointer hover:bg-muted/50">
-                <TableCell className="font-medium">{project.name}</TableCell>
-                <TableCell className="hidden sm:table-cell">{project.manager}</TableCell>
-                <TableCell className="hidden md:table-cell">{project.districts}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={statusColors[project.status]}>
-                    {project.status === 'Active' && '🟢'}
-                    {project.status === 'Moderate' && '🟡'}
-                    {project.status}
-                  </Badge>
+            {isLoading && (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                  <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-20" /></TableCell>
+                  <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-32" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-16" /></TableCell>
+                  <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-12" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                </TableRow>
+              ))
+            )}
+            {!isLoading && (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  No projects to display. Connect to a data source.
                 </TableCell>
-                <TableCell className="hidden lg:table-cell">{project.completion}%</TableCell>
-                <TableCell>{project.nextMilestone}</TableCell>
               </TableRow>
-            ))}
+            )}
+            {/* Live data will be mapped here */}
           </TableBody>
         </Table>
       </CardContent>

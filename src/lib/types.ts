@@ -54,6 +54,7 @@ export type CalendarEvent = {
 };
 
 export type Program = {
+    id: string;
     title: string;
     description: string;
     lead: string;
@@ -63,6 +64,7 @@ export type Program = {
 }
 
 export type Partnership = {
+    id: string;
     name: string;
     contactPerson: string;
     contactEmail: string;
@@ -71,6 +73,7 @@ export type Partnership = {
 }
 
 export type Project = {
+    id: string;
     name: string;
     manager: string;
     districts: string;

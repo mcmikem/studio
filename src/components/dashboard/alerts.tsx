@@ -1,10 +1,10 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { alerts } from '@/lib/data';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { Skeleton } from '../ui/skeleton';
 
 const alertIcons = {
     Urgent: <AlertTriangle className="h-4 w-4 text-red-500" />,
@@ -19,7 +19,7 @@ const alertColors = {
 };
 
 
-export function Alerts() {
+export function Alerts({isLoading = true}: {isLoading?: boolean}) {
   return (
     <Card>
       <CardHeader>
@@ -27,20 +27,24 @@ export function Alerts() {
         <CardDescription>Urgent issues and important reminders.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {alerts.map((alert, index) => (
-          <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted">
-            <div className="mt-1">
-              {alertIcons[alert.type]}
+        {isLoading && (
+            Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted">
+                    <Skeleton className="h-5 w-5 mt-1" />
+                    <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-5 w-24" />
+                    </div>
+                    <Skeleton className="h-8 w-16 self-center" />
+                </div>
+            ))
+        )}
+        {!isLoading && (
+            <div className="text-center text-muted-foreground py-8">
+                No alerts to display.
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">{alert.message}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className={`text-xs ${alertColors[alert.priority]}`}>{alert.priority} Priority</Badge>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" className="text-primary self-center">{alert.action}</Button>
-          </div>
-        ))}
+        )}
+        {/* Live data will be mapped here */}
       </CardContent>
     </Card>
   );

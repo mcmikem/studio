@@ -10,7 +10,7 @@ import { ImpactOverview } from '@/components/dashboard/impact-overview';
 import { Alerts } from '@/components/dashboard/alerts';
 
 export default function DashboardPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
 
   return (
     <div className="flex flex-col gap-6">
@@ -28,9 +28,9 @@ export default function DashboardPage() {
         
         {/* CENTER PANEL – Organization Pulse */}
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <StatsCards />
-          <ProjectsOverview />
-          <ImpactOverview />
+          <StatsCards isLoading={isUserLoading} />
+          <ProjectsOverview isLoading={isUserLoading} />
+          <ImpactOverview isLoading={isUserLoading} />
           <RecentCheckouts />
         </div>
 
@@ -38,7 +38,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-4 flex flex-col gap-6">
           <NewCheckoutForm />
           <DashboardCalendar />
-          <Alerts />
+          <Alerts isLoading={isUserLoading} />
         </div>
       </div>
     </div>
