@@ -48,15 +48,16 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <Link href="/" legacyBehavior passHref>
-              <SidebarMenuButton
-                isActive={isActive('/')}
-                tooltip="Dashboard"
-              >
+            <SidebarMenuButton
+              asChild
+              isActive={isActive('/')}
+              tooltip="Dashboard"
+            >
+              <Link href="/">
                 <LayoutGrid />
                 <span>Dashboard</span>
-              </SidebarMenuButton>
-            </Link>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
 
@@ -64,26 +65,28 @@ export function AppSidebar() {
           <SidebarGroupLabel>Planning</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/plan" legacyBehavior passHref>
                 <SidebarMenuButton
+                  asChild
                   isActive={isActive('/plan')}
                   tooltip="October 2025 Plan"
                 >
-                  <ClipboardList />
-                  <span>October 2025 Plan</span>
+                  <Link href="/plan">
+                    <ClipboardList />
+                    <span>October 2025 Plan</span>
+                  </Link>
                 </SidebarMenuButton>
-              </Link>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <Link href="/templates" legacyBehavior passHref>
                 <SidebarMenuButton
+                  asChild
                   isActive={isActive('/templates')}
                   tooltip="Form Templates"
                 >
-                  <BookOpen />
-                  <span>Form Templates</span>
+                  <Link href="/templates">
+                    <BookOpen />
+                    <span>Form Templates</span>
+                  </Link>
                 </SidebarMenuButton>
-              </Link>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
@@ -92,20 +95,20 @@ export function AppSidebar() {
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-                <Link href="/roi-calculator" legacyBehavior passHref>
-                    <SidebarMenuButton isActive={isActive('/roi-calculator')} tooltip="ROI Calculator">
+                <SidebarMenuButton asChild isActive={isActive('/roi-calculator')} tooltip="ROI Calculator">
+                    <Link href="/roi-calculator">
                         <Calculator />
                         <span>ROI Calculator</span>
-                    </SidebarMenuButton>
-                </Link>
+                    </Link>
+                </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <Link href="/impact-story" legacyBehavior passHref>
-                    <SidebarMenuButton isActive={isActive('/impact-story')} tooltip="Impact Story Generator">
+                <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator">
+                    <Link href="/impact-story">
                         <Sparkles />
                         <span>Impact Story Generator</span>
-                    </SidebarMenuButton>
-                </Link>
+                    </Link>
+                </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
@@ -114,12 +117,12 @@ export function AppSidebar() {
           <SidebarGroupLabel>Reporting</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-                <Link href="/reports" legacyBehavior passHref>
-                    <SidebarMenuButton isActive={isActive('/reports')} tooltip="Reports">
+                <SidebarMenuButton asChild isActive={isActive('/reports')} tooltip="Reports">
+                    <Link href="/reports">
                         <FileText />
                         <span>Reports</span>
-                    </SidebarMenuButton>
-                </Link>
+                    </Link>
+                </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
