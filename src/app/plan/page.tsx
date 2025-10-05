@@ -65,7 +65,7 @@ export default function PlanPage() {
               Important but adjustable goals we pursue within available
               capacity.
             </CardDescription>
-          </CardHeader>
+          </Header>
           <CardContent className="space-y-4">
             {flexibleTargets.map((goal, index) => (
               <div key={index} className="flex items-start gap-4">
@@ -120,7 +120,7 @@ export default function PlanPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Metric</TableHead>
-                <TableHead>Green Zone (>80%)</TableHead>
+                <TableHead>Green Zone (&gt;80%)</TableHead>
                 <TableHead>Yellow Zone (50-80%)</TableHead>
                 <TableHead>Red Zone (&lt;50%)</TableHead>
                 <TableHead>Response</TableHead>
