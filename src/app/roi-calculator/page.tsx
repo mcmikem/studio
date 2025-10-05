@@ -142,7 +142,7 @@ export default function ROICalculatorPage() {
               </div>
               <div className="space-y-2">
                 <Label>Materials: {formatCurrency(materialsCost)}</Label>
-                <Slider defaultValue={[10000]} min={0} max={50000} step={1000} onValueChange={(value) => setMaterialsCost(value[0])} />
+                <Slider defaultValue={[10000]} min={0} max={50000} step={1000} onValueganoChange={(value) => setMaterialsCost(value[0])} />
               </div>
             </div>
             <div className="text-right font-bold text-lg p-2 bg-muted rounded-md">
