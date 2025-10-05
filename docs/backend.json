@@ -1,0 +1,663 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user within the Omuto Central application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role within the organization (e.g., Program Manager, Operations, Media, ED, Intern, Volunteer)."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "name",
+        "email"
+      ]
+    },
+    "StrategicPlan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StrategicPlan",
+      "type": "object",
+      "description": "Represents a strategic plan for Omuto, such as the October 2025 Operational Plan.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the strategic plan entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the strategic plan (e.g., October 2025 Operational Plan)."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date of the strategic plan.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The end date of the strategic plan.",
+          "format": "date-time"
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the strategic plan."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "startDate",
+        "endDate",
+        "description"
+      ]
+    },
+    "Objective": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Objective",
+      "type": "object",
+      "description": "Represents a specific objective within a strategic plan.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the objective entity."
+        },
+        "strategicPlanId": {
+          "type": "string",
+          "description": "Reference to StrategicPlan. (Relationship: StrategicPlan 1:N Objective)"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the objective."
+        },
+        "target": {
+          "type": "string",
+          "description": "The target or goal to be achieved for this objective."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the objective (e.g., On Track, Delayed, Completed)."
+        }
+      },
+      "required": [
+        "id",
+        "strategicPlanId",
+        "description",
+        "target",
+        "status"
+      ]
+    },
+    "Activity": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Activity",
+      "type": "object",
+      "description": "Represents a specific activity or task performed by Omuto staff.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the activity entity."
+        },
+        "objectiveId": {
+          "type": "string",
+          "description": "Reference to Objective. (Relationship: Objective 1:N Activity)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Activity)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the activity (e.g., Tree Planting at St. Mary's)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the activity."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The planned start date of the activity.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The planned end date of the activity.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the activity (e.g., Planned, In Progress, Completed, Cancelled)."
+        },
+        "actualStartDate": {
+          "type": "string",
+          "description": "The actual start date of the activity.",
+          "format": "date-time"
+        },
+        "actualEndDate": {
+          "type": "string",
+          "description": "The actual end date of the activity.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "objectiveId",
+        "userId",
+        "title",
+        "description",
+        "startDate",
+        "endDate",
+        "status"
+      ]
+    },
+    "FormTemplate": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FormTemplate",
+      "type": "object",
+      "description": "Represents a template for data input forms.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the form template entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the form template (e.g., Weekly Plan, Field Activity ROI Calculator)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the form template and its purpose."
+        },
+        "fields": {
+          "type": "array",
+          "description": "An array of field definitions for the form template.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "fields"
+      ]
+    },
+    "FormData": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "FormData",
+      "type": "object",
+      "description": "Represents data submitted through a form, associated with a specific form template and activity.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the form data entity."
+        },
+        "formTemplateId": {
+          "type": "string",
+          "description": "Reference to FormTemplate. (Relationship: FormTemplate 1:N FormData)"
+        },
+        "activityId": {
+          "type": "string",
+          "description": "Reference to Activity. (Relationship: Activity 1:N FormData)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N FormData)"
+        },
+        "submissionDate": {
+          "type": "string",
+          "description": "The date and time when the form data was submitted.",
+          "format": "date-time"
+        },
+        "data": {
+          "type": "string",
+          "description": "JSON string containing the submitted data for the form."
+        }
+      },
+      "required": [
+        "id",
+        "formTemplateId",
+        "activityId",
+        "userId",
+        "submissionDate",
+        "data"
+      ]
+    },
+    "Partnership": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Partnership",
+      "type": "object",
+      "description": "Represents a partnership with another organization.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the partnership entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the partner organization."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the partnership and its goals."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date of the partnership.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The end date of the partnership.",
+          "format": "date-time"
+        },
+        "contactPerson": {
+          "type": "string",
+          "description": "The name of the primary contact person at the partner organization."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "The email address of the primary contact person.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "startDate",
+        "endDate",
+        "contactPerson",
+        "contactEmail"
+      ]
+    },
+    "Report": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Report",
+      "type": "object",
+      "description": "Represents a generated report, either automated or custom.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the report entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the report (e.g., Weekly Progress Report, Monthly Financial Report)."
+        },
+        "reportType": {
+          "type": "string",
+          "description": "The type of report (e.g., Weekly, Monthly, Quarterly, Custom)."
+        },
+        "generationDate": {
+          "type": "string",
+          "description": "The date and time when the report was generated.",
+          "format": "date-time"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Report) The user who generated the report."
+        },
+        "data": {
+          "type": "string",
+          "description": "JSON string containing the report data."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "reportType",
+        "generationDate",
+        "userId",
+        "data"
+      ]
+    },
+    "Budget": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Budget",
+      "type": "object",
+      "description": "Represents the budget allocated for a specific period and program.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the budget entity."
+        },
+        "strategicPlanId": {
+          "type": "string",
+          "description": "Reference to StrategicPlan. (Relationship: StrategicPlan 1:N Budget)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The total budget amount."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The start date of the budget period.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The end date of the budget period.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "strategicPlanId",
+        "amount",
+        "startDate",
+        "endDate"
+      ]
+    },
+    "Expenditure": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Expenditure",
+      "type": "object",
+      "description": "Represents an expenditure made against a budget.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the expenditure entity."
+        },
+        "budgetId": {
+          "type": "string",
+          "description": "Reference to Budget. (Relationship: Budget 1:N Expenditure)"
+        },
+        "activityId": {
+          "type": "string",
+          "description": "Reference to Activity. (Relationship: Activity 1:N Expenditure)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "The amount of the expenditure."
+        },
+        "date": {
+          "type": "string",
+          "description": "The date of the expenditure.",
+          "format": "date-time"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the expenditure."
+        }
+      },
+      "required": [
+        "id",
+        "budgetId",
+        "activityId",
+        "amount",
+        "date",
+        "description"
+      ]
+    },
+    "Volunteer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Volunteer",
+      "type": "object",
+      "description": "Represents a volunteer associated with Omuto Foundation.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the volunteer entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the volunteer."
+        },
+        "contactNumber": {
+          "type": "string",
+          "description": "The contact number of the volunteer."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the volunteer.",
+          "format": "email"
+        },
+        "skills": {
+          "type": "array",
+          "description": "An array of skills possessed by the volunteer.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "contactNumber",
+        "email"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. User-owned data is stored under this path.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/strategic_plans/{strategicPlanId}",
+        "definition": {
+          "entityName": "StrategicPlan",
+          "schema": {
+            "$ref": "#/backend/entities/StrategicPlan"
+          },
+          "description": "Stores strategic plans. Includes user role for authorization independence.",
+          "params": [
+            {
+              "name": "strategicPlanId",
+              "description": "The unique identifier for the strategic plan."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/strategic_plans/{strategicPlanId}/objectives/{objectiveId}",
+        "definition": {
+          "entityName": "Objective",
+          "schema": {
+            "$ref": "#/backend/entities/Objective"
+          },
+          "description": "Stores objectives associated with a strategic plan. Includes user role for authorization independence.",
+          "params": [
+            {
+              "name": "strategicPlanId",
+              "description": "The unique identifier for the strategic plan."
+            },
+            {
+              "name": "objectiveId",
+              "description": "The unique identifier for the objective."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/activities/{activityId}",
+        "definition": {
+          "entityName": "Activity",
+          "schema": {
+            "$ref": "#/backend/entities/Activity"
+          },
+          "description": "Stores activities performed by users. Includes user role for authorization independence.",
+          "params": [
+            {
+              "name": "activityId",
+              "description": "The unique identifier for the activity."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/form_templates/{formTemplateId}",
+        "definition": {
+          "entityName": "FormTemplate",
+          "schema": {
+            "$ref": "#/backend/entities/FormTemplate"
+          },
+          "description": "Stores form templates accessible by admins.",
+          "params": [
+            {
+              "name": "formTemplateId",
+              "description": "The unique identifier for the form template."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/partnerships/{partnershipId}",
+        "definition": {
+          "entityName": "Partnership",
+          "schema": {
+            "$ref": "#/backend/entities/Partnership"
+          },
+          "description": "Stores partnership information. Includes user role for authorization independence.",
+          "params": [
+            {
+              "name": "partnershipId",
+              "description": "The unique identifier for the partnership."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/reports/{reportId}",
+        "definition": {
+          "entityName": "Report",
+          "schema": {
+            "$ref": "#/backend/entities/Report"
+          },
+          "description": "Stores report data. Includes user role for authorization independence.",
+          "params": [
+            {
+              "name": "reportId",
+              "description": "The unique identifier for the report."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/budgets/{budgetId}",
+        "definition": {
+          "entityName": "Budget",
+          "schema": {
+            "$ref": "#/backend/entities/Budget"
+          },
+          "description": "Stores budget information. Includes user role for authorization independence.",
+          "params": [
+            {
+              "name": "budgetId",
+              "description": "The unique identifier for the budget."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/expenditures/{expenditureId}",
+        "definition": {
+          "entityName": "Expenditure",
+          "schema": {
+            "$ref": "#/backend/entities/Expenditure"
+          },
+          "description": "Stores expenditure data, associated with budgets and activities.",
+          "params": [
+            {
+              "name": "expenditureId",
+              "description": "The unique identifier for the expenditure."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/volunteers/{volunteerId}",
+        "definition": {
+          "entityName": "Volunteer",
+          "schema": {
+            "$ref": "#/backend/entities/Volunteer"
+          },
+          "description": "Stores volunteer data. Accessible to admins.",
+          "params": [
+            {
+              "name": "volunteerId",
+              "description": "The unique identifier for the volunteer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/form_data/{formDataId}",
+        "definition": {
+          "entityName": "FormData",
+          "schema": {
+            "$ref": "#/backend/entities/FormData"
+          },
+          "description": "Stores form data submitted by a user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "formDataId",
+              "description": "The unique identifier for the form data."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/reports/{reportId}",
+        "definition": {
+          "entityName": "Report",
+          "schema": {
+            "$ref": "#/backend/entities/Report"
+          },
+          "description": "Stores reports generated by a user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "reportId",
+              "description": "The unique identifier for the report."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support Omuto Foundation's operational needs, focusing on strategic planning, activity tracking, and data-driven decision-making. The structure prioritizes authorization independence and simplifies security rules by denormalizing authorization data. All data related to a user is stored under the `/users/{userId}` path, ensuring clear ownership and easy rule definition. Collaborative data, such as Strategic Plans, Objectives, Activities, Partnerships, Budgets and reports use a separate collection, with relevant user roles denormalized to the documents to maintain Authorization Independence.\n\n**Authorization Independence and Denormalization:**\n\n*   **User-owned data:** Data like `FormData` and `Reports` created by users are stored under `/users/{userId}` ensuring that only the user and admins can access it. This eliminates the need for complex `get()` calls in security rules.\n*   **Collaborative data:** Strategic Plans, Objectives, Activities, Partnerships, Budgets are accessible by team members with the appropriate roles. The structure denormalizes the user's role into these collections, avoiding `get()` calls to `/users/{userId}`.\n\n**QAPs (Rules are not Filters):**\n\n*   **Segregation:** The structure segregates data based on access control needs. User-specific data resides under `/users/{userId}`, while collaborative data resides in top-level collections.\n*   **Membership Map (Denormalized Role):** The `role` property in entities such as `StrategicPlan`, `Objective`, `Activity`, `Partnership`, `Budget` and `Report` enables secure `list` operations. Rules can efficiently check if the user's role matches the required role without fetching additional documents.\n\n**Explanation of Paths:**\n\n*   `/users/{userId}`: Stores individual user profiles, ensuring private user data is accessible only to the user and authorized admins.\n*   `/strategic_plans/{strategicPlanId}`: Stores strategic plans. Includes the user role for authorization.\n*   `/strategic_plans/{strategicPlanId}/objectives/{objectiveId}`: Stores objectives related to a strategic plan. Includes the user role for authorization.\n*   `/activities/{activityId}`: Stores activities performed by users. Includes the user role for authorization.\n*   `/form_templates/{formTemplateId}`: Stores form templates. Accessible to admins for creating forms.\n*   `/partnerships/{partnershipId}`: Stores partnership information. Includes the user role for authorization.\n*   `/budgets/{budgetId}`: Stores budgets allocated for strategic plans. Includes the user role for authorization.\n*   `/expenditures/{expenditureId}`: Stores expenditure data, associated with budgets and activities.\n*   `/volunteers/{volunteerId}`: Stores volunteer data. Accessed by admins.\n*   `/users/{userId}/form_data/{formDataId}`: Stores form data submitted by a user.\n*   `/users/{userId}/reports/{reportId}`: Stores reports generated by a user."
+  }
+}

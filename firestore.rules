@@ -1,0 +1,284 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Grants the user read and write access to their own profile data.
+     * @path /users/{userId}
+     * @allow (create) User with ID 'user123' creates their profile.
+     * @allow (get) User with ID 'user123' reads their profile.
+     * @allow (update) User with ID 'user123' updates their profile.
+     * @deny (create) User with ID 'user123' tries to create a profile with a different ID ('user456').
+     * @deny (update) User with ID 'user123' tries to update someone else's profile ('user456').
+     * @deny (delete) User with ID 'user123' tries to delete someone else's profile ('user456').
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Grants read and write access to strategic plans.
+     * @path /strategic_plans/{strategicPlanId}
+     * @allow (create) User creates a new strategic plan.
+     * @allow (get) Any signed-in user can read a strategic plan.
+     * @allow (update) User updates a strategic plan.
+     * @deny (create) User attempts to create a strategic plan without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /strategic_plans/{strategicPlanId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants read and write access to objectives within a strategic plan.
+     * @path /strategic_plans/{strategicPlanId}/objectives/{objectiveId}
+     * @allow (create) User creates a new objective within a strategic plan.
+     * @allow (get) Any signed-in user can read an objective.
+     * @allow (update) User updates an objective.
+     * @deny (create) User attempts to create an objective without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /strategic_plans/{strategicPlanId}/objectives/{objectiveId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants read and write access to activities.
+     * @path /activities/{activityId}
+     * @allow (create) User creates a new activity.
+     * @allow (get) Any signed-in user can read an activity.
+     * @allow (update) User updates an activity.
+     * @deny (create) User attempts to create an activity without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /activities/{activityId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants read and write access to form templates.
+     * @path /form_templates/{formTemplateId}
+     * @allow (create) Signed-in user creates a new form template.
+     * @allow (get) Any signed-in user can read a form template.
+     * @allow (update) Signed-in user updates a form template.
+     * @deny (create) User attempts to create a form template without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /form_templates/{formTemplateId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants read and write access to partnerships.
+     * @path /partnerships/{partnershipId}
+     * @allow (create) User creates a new partnership.
+     * @allow (get) Any signed-in user can read a partnership.
+     * @allow (update) User updates a partnership.
+     * @deny (create) User attempts to create a partnership without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /partnerships/{partnershipId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants read and write access to reports.
+     * @path /reports/{reportId}
+     * @allow (create) User creates a new report.
+     * @allow (get) Any signed-in user can read a report.
+     * @allow (update) User updates a report.
+     * @deny (create) User attempts to create a report without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /reports/{reportId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants read and write access to budgets.
+     * @path /budgets/{budgetId}
+     * @allow (create) User creates a new budget.
+     * @allow (get) Any signed-in user can read a budget.
+     * @allow (update) User updates a budget.
+     * @deny (create) User attempts to create a budget without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /budgets/{budgetId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants read and write access to expenditures.
+     * @path /expenditures/{expenditureId}
+     * @allow (create) User creates a new expenditure.
+     * @allow (get) Any signed-in user can read an expenditure.
+     * @allow (update) User updates an expenditure.
+     * @deny (create) User attempts to create an expenditure without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /expenditures/{expenditureId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants read and write access to volunteers.
+     * @path /volunteers/{volunteerId}
+     * @allow (create) Signed-in user creates a new volunteer profile.
+     * @allow (get) Any signed-in user can read a volunteer profile.
+     * @allow (update) Signed-in user updates a volunteer profile.
+     * @deny (create) User attempts to create a volunteer profile without being signed in.
+     * @principle Allows any signed-in user to read.
+     */
+    match /volunteers/{volunteerId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn();
+      allow list: if false;
+
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    /**
+     * @description Grants the user read and write access to their own form data.
+     * @path /users/{userId}/form_data/{formDataId}
+     * @allow (create) User with ID 'user123' creates their form data.
+     * @allow (get) User with ID 'user123' reads their form data.
+     * @allow (update) User with ID 'user123' updates their form data.
+     * @deny (create) User with ID 'user123' tries to create form data with a different user ID ('user456').
+     * @deny (update) User with ID 'user123' tries to update someone else's form data ('user456').
+     * @deny (delete) User with ID 'user123' tries to delete someone else's form data ('user456').
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/form_data/{formDataId} {
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Grants the user read and write access to their own reports.
+     * @path /users/{userId}/reports/{reportId}
+     * @allow (create) User with ID 'user123' creates their report.
+     * @allow (get) User with ID 'user123' reads their report.
+     * @allow (update) User with ID 'user123' updates their report.
+     * @deny (create) User with ID 'user123' tries to create a report with a different user ID ('user456').
+     * @deny (update) User with ID 'user123' tries to update someone else's report ('user456').
+     * @deny (delete) User with ID 'user123' tries to delete someone else's report ('user456').
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/reports/{reportId} {
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
+    }
+  }
+}
