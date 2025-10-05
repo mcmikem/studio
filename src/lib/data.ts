@@ -1,4 +1,4 @@
-import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent } from './types';
+import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard } from './types';
 
 export const tagColors: { [key: string]: string } = {
     '#FieldVisit': 'border-blue-500 bg-blue-500/10 text-blue-500',
@@ -9,6 +9,15 @@ export const tagColors: { [key: string]: string } = {
     '#Finance': 'border-pink-500 bg-pink-500/10 text-pink-500',
     '#Update': 'border-gray-500 bg-gray-500/10 text-gray-500',
 };
+
+export const quickStats: Omit<StatCard, 'icon'>[] = [
+    { title: 'Active Schools', value: '12' },
+    { title: 'Students Engaged', value: '1,250' },
+    { title: 'Projects Running', value: '3' },
+    { title: 'Events this Month', value: '6' },
+    { title: 'Funds Raised (Cycle of Dignity)', value: 'UGX 1.2M / 2M', change: '60% of target' },
+    { title: 'New Media Uploads', value: '5 stories' },
+];
 
 export const nonNegotiableGoals: PlanGoal[] = [
     {
@@ -70,18 +79,39 @@ export const successMetrics: SuccessMetric[] = [
 
 export const operationalPlanEvents: CalendarEvent[] = [
     {
+        date: new Date(2025, 9, 6),
+        title: "RED Campaign Planning Mtg",
+        description: "Planning session for the RED campaign.",
+        responsible: "Dianah & Team",
+        location: "Youth Centre"
+    },
+    {
+        date: new Date(2025, 9, 7),
+        title: "Omuto Pulse Filming",
+        description: "Filming for Omuto Pulse.",
+        responsible: "Alex & Jimmy",
+        location: "On location"
+    },
+    {
+        date: new Date(2025, 9, 8),
+        title: "Butambala Field Visit",
+        description: "Field visit to Butambala.",
+        responsible: "Bwire & Kasirye",
+        location: "Butambala"
+    },
+    {
         date: new Date(2025, 9, 10),
-        title: "Int'l Girl Child Day Celebration",
-        description: "Event at Kammengo SS.",
-        responsible: "Dianah",
-        location: "Kammengo SS"
+        title: "World Mental Health Day",
+        description: "Internal activity suggestion.",
+        responsible: "All",
+        location: "Youth Centre"
     },
     {
         date: new Date(2025, 9, 11),
-        title: "RED Pads Launch",
-        description: "Public launch of the RED Pads initiative.",
-        responsible: "Dianah & Alex",
-        location: "Mpigi Town"
+        title: "International Girl Child Day Celebration",
+        description: "Event at Kammengo SS.",
+        responsible: "Dianah",
+        location: "Kammengo SS"
     },
     {
         date: new Date(2025, 9, 15),

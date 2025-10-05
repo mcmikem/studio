@@ -10,33 +10,33 @@
     --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
-    --primary: 165 73% 22%; /* Deep Green #0E6655 */
+    --primary: 282 68% 34%; /* Omuto Purple #6A1B9A */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 90%;
-    --secondary-foreground: 20 14.3% 4.1%;
+    --secondary: 122 47% 44%; /* Omuto Green #43A047 */
+    --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 90%;
     --muted-foreground: 24 9.8% 30%;
-    --accent: 45 100% 61%; /* Omuto Yellow #FFD43B */
-    --accent-foreground: 165 73% 12%;
+    --accent: 33 98% 58%; /* Omuto Orange #FB8C00 */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 88%;
     --input: 0 0% 88%;
-    --ring: 45 100% 61%;
-    --chart-1: 165 73% 22%;
-    --chart-2: 45 100% 61%;
-    --chart-3: 197 37% 24%;
+    --ring: 282 68% 34%;
+    --chart-1: 282 68% 34%;
+    --chart-2: 122 47% 44%;
+    --chart-3: 33 98% 58%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 20 14.3% 4.1%;
-    --sidebar-primary: 165 73% 22%;
+    --sidebar-primary: 282 68% 34%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 94.1%;
-    --sidebar-accent-foreground: 165 73% 22%;
+    --sidebar-accent-foreground: 282 68% 34%;
     --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 45 100% 61%;
+    --sidebar-ring: 33 98% 58%;
   }
 
   .dark {
@@ -46,30 +46,31 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 165 73% 32%; /* Dark mode Deep Green */
+    --primary: 282 68% 44%; /* Dark Omuto Purple */
     --primary-foreground: 0 0% 100%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 122 47% 34%; /* Dark Omuto Green */
+    --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 45 100% 51%; /* Dark mode Omuto Yellow */
-    --accent-foreground: 165 73% 12%;
+    --accent: 33 98% 48%; /* Dark Omuto Orange */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 45 100% 51%;
+    --ring: 282 68% 44%;
     --radius: 0.5rem;
-    --chart-1: 165 73% 32%;
-    --chart-2: 45 100% 51%;
+    --chart-1: 282 68% 44%;
+    --chart-2: 122 47% 34%;
+    --chart-3: 33 98% 48%;
     --sidebar-background: 222.2 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 165 73% 32%;
+    --sidebar-primary: 282 68% 44%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 45 100% 51%;
+    --sidebar-accent-foreground: 33 98% 48%;
     --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 45 100% 51%;
+    --sidebar-ring: 33 98% 48%;
   }
 }
 

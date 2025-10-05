@@ -4,7 +4,7 @@ import type { Timestamp } from 'firebase/firestore';
 export type StatCard = {
   title: string;
   value: string;
-  change: string;
+  change?: string;
   icon: React.ElementType;
 };
 

@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { operationalPlanEvents } from '@/lib/data';
-import { format, isSameDay, isSameMonth } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
+import { Button } from '../ui/button';
 
 export function DashboardCalendar() {
   const [date, setDate] = useState<Date | undefined>(new Date(2025, 9, 10));
@@ -20,34 +20,18 @@ export function DashboardCalendar() {
 
   const modifiersStyles = {
     event: {
-      border: '2px solid hsl(var(--accent))',
+      border: '2px solid hsl(var(--primary))',
       borderRadius: '50%',
     },
   };
-  
-  const monthEvents = date ? operationalPlanEvents.filter(event => isSameMonth(event.date, date)) : [];
-
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Upcoming Events</CardTitle>
+    <Card className="flex flex-col lg:flex-row">
+      <div className="flex-grow p-6">
+        <CardTitle>Omuto Calendar</CardTitle>
         <CardDescription>
-          Key dates and activities for the current month.
+          Key events, deadlines, and activities for October 2025.
         </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-center">
-            <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            defaultMonth={new Date(2025, 9, 1)}
-            modifiers={modifiers}
-            modifiersStyles={modifiersStyles}
-            className="rounded-md border"
-            />
-        </div>
         <div className="mt-4 space-y-2">
             <h3 className="font-headline text-lg font-semibold">
                 Events for {date ? format(date, "MMMM d") : 'the month'}:
@@ -56,7 +40,7 @@ export function DashboardCalendar() {
                 <ul className="space-y-3">
                 {selectedDayEvents.map((event) => (
                     <li key={event.title} className="p-3 bg-muted rounded-lg">
-                        <p className="font-semibold">{event.title}</p>
+                        <p className="font-semibold text-primary">{event.title}</p>
                         <p className="text-sm text-muted-foreground">{event.responsible} - {event.location}</p>
                     </li>
                 ))}
@@ -65,7 +49,18 @@ export function DashboardCalendar() {
                 <p className="text-sm text-muted-foreground pt-2">No events scheduled for this day.</p>
             )}
         </div>
-      </CardContent>
+      </div>
+       <div className="border-t lg:border-t-0 lg:border-l p-2">
+         <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            defaultMonth={new Date(2025, 9, 1)}
+            modifiers={modifiers}
+            modifiersStyles={modifiersStyles}
+            className="rounded-md"
+            />
+      </div>
     </Card>
   );
 }
