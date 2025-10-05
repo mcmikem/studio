@@ -4,6 +4,8 @@ import {
   signInAnonymously,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithRedirect,
   // Assume getAuth and app are initialized elsewhere
 } from 'firebase/auth';
 
@@ -26,4 +28,13 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
   // CRITICAL: Call signInWithEmailAndPassword directly. Do NOT use 'await signInWithEmailAndPassword(...)'.
   signInWithEmailAndPassword(authInstance, email, password);
   // Code continues immediately. Auth state change is handled by onAuthStateChanged listener.
+}
+
+/** Initiate Google sign-in (non-blocking). */
+export function initiateGoogleSignIn(authInstance: Auth): void {
+    const provider = new GoogleAuthProvider();
+    // CRITICAL: Call signInWithRedirect directly. Do NOT use 'await signInWithRedirect(...)'.
+    signInWithRedirect(authInstance, provider);
+    // The browser will redirect to Google for sign-in, and then redirect back to your app.
+    // The onAuthStateChanged listener will pick up the user session upon returning.
 }
