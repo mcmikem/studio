@@ -51,6 +51,7 @@ export type CalendarEvent = {
     description: string;
     responsible: string;
     location: string;
+    category: "Team Meetings" | "Field Visits" | "Campaigns/Events" | "Deadlines" | "Social Days";
 };
 
 export type Program = {

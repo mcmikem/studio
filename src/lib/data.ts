@@ -83,55 +83,47 @@ export const operationalPlanEvents: CalendarEvent[] = [
         title: "RED Campaign Planning Mtg",
         description: "Planning session for the RED campaign.",
         responsible: "Dianah & Team",
-        location: "Youth Centre"
+        location: "Youth Centre",
+        category: "Campaigns/Events"
     },
     {
         date: new Date(2025, 9, 7),
         title: "Omuto Pulse Filming",
         description: "Filming for Omuto Pulse.",
         responsible: "Alex & Jimmy",
-        location: "On location"
+        location: "On location",
+        category: "Team Meetings"
     },
     {
         date: new Date(2025, 9, 8),
         title: "Butambala Field Visit",
         description: "Field visit to Butambala.",
         responsible: "Bwire & Kasirye",
-        location: "Butambala"
+        location: "Butambala",
+        category: "Field Visits"
     },
     {
         date: new Date(2025, 9, 10),
         title: "World Mental Health Day",
         description: "Internal activity suggestion.",
         responsible: "All",
-        location: "Youth Centre"
+        location: "Youth Centre",
+        category: "Social Days"
     },
     {
-        date: new Date(2025, 9, 11),
-        title: "International Girl Child Day Celebration",
-        description: "Event at Kammengo SS.",
-        responsible: "Dianah",
-        location: "Kammengo SS"
-    },
-    {
-        date: new Date(2025, 9, 15),
-        title: "GreenSchools Tree Planting",
-        description: "Community tree planting event.",
-        responsible: "Kasirye",
-        location: "Buwama"
-    },
-    {
-        date: new Date(2025, 9, 20),
-        title: "Watermelon Body Wash Launch",
-        description: "Launch for Omuto Essentials product.",
-        responsible: "Alex",
-        location: "Omuto Essentials Outlet"
-    },
-    {
-        date: new Date(2025, 9, 25),
-        title: "Team Meeting & Reporting",
-        description: "Weekly team sync and reporting.",
+        date: new Date(2025, 9, 9),
+        title: "International Day of the Girl Child",
+        description: "International Day of the Girl Child. A key day for our RED Campaign.",
         responsible: "All",
-        location: "Youth Centre"
-    }
+        location: "Global",
+        category: "Social Days"
+    },
+     {
+        date: new Date(2025, 9, 10),
+        title: "RED Pads Launch Event",
+        description: "Launch event for RED Pads in Mpigi Town.",
+        responsible: "All Staff",
+        location: "Mpigi Town",
+        category: "Campaigns/Events"
+    },
 ];

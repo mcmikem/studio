@@ -2,35 +2,49 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { School, Users, Briefcase, Calendar, HandCoins, Image as ImageIcon } from 'lucide-react';
-import { quickStats } from '@/lib/data';
+import { Progress } from '@/components/ui/progress';
 
-const icons = {
-    "Active Schools": School,
-    "Students Engaged": Users,
-    "Projects Running": Briefcase,
-    "Events this Month": Calendar,
-    "Funds Raised (Cycle of Dignity)": HandCoins,
-    "New Media Uploads": ImageIcon,
-};
+const quickStats = [
+    { title: 'Youth Reached', value: 247, target: 500, icon: Users },
+    { title: 'Schools Visited', value: 4, target: 8, icon: School },
+    { title: 'Trees Planted', value: 612, target: 700, icon: Briefcase }, // Using Briefcase as a placeholder
+    { title: 'Cycle of Dignity', value: 1350000, target: 2000000, icon: HandCoins, isCurrency: true },
+    { title: 'Pulse Stories', value: 3, icon: ImageIcon },
+    { title: 'Soap Units Sold', value: 45, icon: Briefcase }, // Placeholder icon
+];
 
 export function QuickStatsSummary() {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {quickStats.map((stat) => {
-        const Icon = icons[stat.title as keyof typeof icons] || Briefcase;
-        return (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              {stat.change && <p className="text-xs text-muted-foreground">{stat.change}</p>}
-            </CardContent>
-          </Card>
-        );
-      })}
+    <div>
+        <h2 className="text-lg font-semibold mb-2 ml-1">🌍 Our Impact This Week</h2>
+        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+        {quickStats.map((stat) => {
+            const Icon = stat.icon;
+            const progress = stat.target ? (stat.value / stat.target) * 100 : 0;
+            const displayValue = stat.isCurrency ? new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(stat.value) : stat.value;
+            const displayTarget = stat.target ? (stat.isCurrency ? new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(stat.target) : stat.target) : null;
+            
+            return (
+            <Card key={stat.title}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                <div className="text-2xl font-bold">{displayValue}</div>
+                {stat.target && (
+                    <>
+                        <p className="text-xs text-muted-foreground">
+                            {`of ${displayTarget}`}
+                        </p>
+                        <Progress value={progress} className="mt-2 h-2" />
+                    </>
+                )}
+                </CardContent>
+            </Card>
+            );
+        })}
+        </div>
     </div>
   );
 }
