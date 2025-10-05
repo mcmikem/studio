@@ -10,14 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { programs } from '@/lib/data';
 import { CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 
-const statusIcons = {
+const statusIcons: { [key: string]: React.ReactNode } = {
     "On Track": <CheckCircle2 className="h-4 w-4 text-green-500" />,
     "At Risk": <AlertTriangle className="h-4 w-4 text-yellow-500" />,
     "Delayed": <Clock className="h-4 w-4 text-red-500" />,
     "Completed": <CheckCircle2 className="h-4 w-4 text-primary" />
 };
 
-const statusColors = {
+const statusColors: { [key: string]: string } = {
     "On Track": "border-green-500 bg-green-500/10 text-green-500",
     "At Risk": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
     "Delayed": "border-red-500 bg-red-500/10 text-red-500",
