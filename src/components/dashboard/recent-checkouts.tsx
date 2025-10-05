@@ -13,12 +13,10 @@ import { tagColors } from '@/lib/data';
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = checkout.timestamp ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) : 'Just now';
 
-  // Improved tag extraction: finds the first word starting with #
-  const words = checkout.task.split(' ');
-  const tag = words.find(word => word.startsWith('#')) || '#Update';
-  const taskText = checkout.task;
-  const colorClass = tagColors[tag as keyof typeof tagColors] || tagColors['#Update'];
-
+  // Extract all hashtags from the task
+  const tags = checkout.task.match(/#\w+/g) || [];
+  const primaryTag = tags[0] || '#Update';
+  const colorClass = tagColors[primaryTag as keyof typeof tagColors] || tagColors['#Update'];
 
   return (
     <div className="flex items-start gap-4">
@@ -28,11 +26,11 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
       </Avatar>
       <div className="grid gap-1 flex-1">
         <p className="text-sm font-medium leading-none">{checkout.name}</p>
-        <p className="text-sm text-muted-foreground">{taskText}</p>
+        <p className="text-sm text-muted-foreground">{checkout.task}</p>
       </div>
-      <div className="ml-auto text-right">
+      <div className="ml-auto text-right flex-shrink-0">
         <div className="text-sm text-muted-foreground whitespace-nowrap">{timeAgo}</div>
-        <Badge variant="outline" className={`mt-1 ${colorClass}`}>{tag}</Badge>
+        <Badge variant="outline" className={`mt-1 ${colorClass}`}>{primaryTag}</Badge>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ export const tagColors: { [key: string]: string } = {
     '#Finance': 'border-pink-500 bg-pink-500/10 text-pink-500',
     '#Update': 'border-gray-500 bg-gray-500/10 text-gray-500',
     '#Fundraising': 'border-red-500 bg-red-500/10 text-red-500',
+    '#Partnerships': 'border-indigo-500 bg-indigo-500/10 text-indigo-500',
 };
 
 export const quickStats: Omit<StatCard, 'icon'>[] = [
