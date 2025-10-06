@@ -90,7 +90,7 @@ export function UserTasks() {
   const firestore = useFirestore();
 
   const tasksQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || !firestore) return null;
     return query(
       collection(firestore, 'users', user.uid, 'tasks'),
       orderBy('createdAt', 'desc')
@@ -189,4 +189,3 @@ export function UserTasks() {
     </Card>
   );
 }
-    

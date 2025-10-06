@@ -27,7 +27,7 @@ export function Alerts() {
   const firestore = useFirestore();
   const alertsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'alerts'), orderBy('priority'), limit(5));
+    return query(collection(firestore, 'alerts'), orderBy('createdAt', 'desc'), limit(5));
   }, [firestore]);
 
   const { data: alerts, isLoading } = useCollection<AlertType>(alertsQuery);

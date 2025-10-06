@@ -712,10 +712,11 @@ export function CheckinForm() {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
+
   const { data: keyResults, isLoading: isLoadingKR } =
     useCollection<KeyResult>(keyResultsQuery);
   
-  const yesterday = useMemo(() => {
+  const yesterday = useMemoFirebase(() => {
     const d = new Date();
     d.setDate(d.getDate() - 1);
     return Timestamp.fromDate(d);
