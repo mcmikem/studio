@@ -8,9 +8,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, AlertTriangle, Clock, Briefcase, PlusCircle } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock, Briefcase, PlusCircle, Edit } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -59,37 +59,72 @@ const programSchema = z.object({
   valuePerObjective: z.coerce.number().min(0, "Value must be a positive number.").optional(),
 });
 
-function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
+type ProgramFormData = z.infer<typeof programSchema>;
+
+function ProgramForm({
+  program,
+  onFormSubmit,
+}: {
+  program?: Program;
+  onFormSubmit: () => void;
+}) {
   const firestore = useFirestore();
   const { toast } = useToast();
-  const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ProgramFormData>({
     resolver: zodResolver(programSchema),
     defaultValues: {
-      status: 'On Track',
-      valuePerObjective: 0,
+      title: program?.title || '',
+      description: program?.description || '',
+      lead: program?.lead || '',
+      status: program?.status || 'On Track',
+      deadline: program?.deadline || '',
+      objectives: program?.objectives.join('\n') || '',
+      valuePerObjective: program?.valuePerObjective || 0,
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof programSchema>) => {
+  const onSubmit = async (data: ProgramFormData) => {
     if (!firestore) return;
-    const programsCollection = collection(firestore, 'programs');
-    const newProgram = {
+
+    const programData = {
       ...data,
-      objectives: data.objectives.split('\n').filter(o => o.trim() !== ''),
-      createdAt: serverTimestamp(),
+      objectives: data.objectives.split('\n').filter((o) => o.trim() !== ''),
     };
-    addDocumentNonBlocking(programsCollection, newProgram);
-    toast({
-      title: "Program Added!",
-      description: `${data.title} has been added to your program tracker.`,
-    });
+
+    if (program) {
+      // Update existing program
+      const programRef = doc(firestore, 'programs', program.id);
+      await updateDoc(programRef, programData);
+      toast({
+        title: 'Program Updated!',
+        description: `${data.title} has been successfully updated.`,
+      });
+    } else {
+      // Add new program
+      const programsCollection = collection(firestore, 'programs');
+      const newProgram = {
+        ...programData,
+        createdAt: serverTimestamp(),
+      };
+      addDocumentNonBlocking(programsCollection, newProgram);
+      toast({
+        title: 'Program Added!',
+        description: `${data.title} has been added to your program tracker.`,
+      });
+    }
     reset();
     onFormSubmit();
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
+       <div className="space-y-2">
         <Label htmlFor="title">Program Title</Label>
         <Input id="title" {...register("title")} placeholder="e.g., RED Campaign" />
         {errors.title && <p className="text-sm text-destructive">{`${errors.title.message}`}</p>}
@@ -146,7 +181,7 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
       </div>
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Adding...' : 'Add Program'}
+          {isSubmitting ? (program ? 'Saving...' : 'Adding...') : (program ? 'Save Changes' : 'Add Program')}
         </Button>
       </DialogFooter>
     </form>
@@ -155,7 +190,9 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 
 
 export default function ProgramsPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
+  const [editingProgram, setEditingProgram] = useState<Program | null>(null);
+
   const firestore = useFirestore();
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -170,7 +207,7 @@ export default function ProgramsPage() {
           <CardTitle>Program Tracker</CardTitle>
           <CardDescription>A high-level overview of all Omuto Foundation programs.</CardDescription>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -184,7 +221,7 @@ export default function ProgramsPage() {
                 Fill in the details below to add a new program to the tracker.
               </DialogDescription>
             </DialogHeader>
-            <NewProgramForm onFormSubmit={() => setIsDialogOpen(false)} />
+            <ProgramForm onFormSubmit={() => setIsNewDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </CardHeader>
@@ -215,16 +252,30 @@ export default function ProgramsPage() {
             {programs.map((program) => (
               <Card key={program.id} className="flex flex-col">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl">{program.title}</CardTitle>
-                    <Badge variant="outline" className={statusColors[program.status]}>
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-xl pr-4">{program.title}</CardTitle>
+                     <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg">
+                            <DialogHeader>
+                                <DialogTitle>Edit Program</DialogTitle>
+                                <DialogDescription>Update the details for the "{program.title}" program.</DialogDescription>
+                            </DialogHeader>
+                            <ProgramForm program={program} onFormSubmit={() => {}} />
+                        </DialogContent>
+                    </Dialog>
+                  </div>
+                   <Badge variant="outline" className={`${statusColors[program.status]} mt-2 w-fit`}>
                       <div className="flex items-center gap-1">
                         {statusIcons[program.status]}
                         {program.status}
                       </div>
                     </Badge>
-                  </div>
-                  <CardDescription>{program.description}</CardDescription>
+                  <CardDescription className="pt-2">{program.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow flex flex-col justify-between pt-6">
                     <div>
@@ -255,6 +306,15 @@ export default function ProgramsPage() {
               </div>
             )
         )}
+         <Dialog open={!!editingProgram} onOpenChange={(open) => !open && setEditingProgram(null)}>
+            <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>Edit Program</DialogTitle>
+                    <DialogDescription>Update the details for the "{editingProgram?.title}" program.</DialogDescription>
+                </DialogHeader>
+                {editingProgram && <ProgramForm program={editingProgram} onFormSubmit={() => setEditingProgram(null)} />}
+            </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
