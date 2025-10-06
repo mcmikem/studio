@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
@@ -32,30 +32,42 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Wand2, Sparkles, LogIn } from 'lucide-react';
+import { Loader2, Wand2, Sparkles, LogIn, Trash2, PlusCircle } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
 import { MultiSelect } from '../ui/multi-select';
+import { Separator } from '../ui/separator';
+import { Checkbox } from '../ui/checkbox';
+
+const timeBlockSchema = z.object({
+  startTime: z.string().min(1, 'Required'),
+  endTime: z.string().min(1, 'Required'),
+  description: z.string().min(3, 'Required'),
+});
 
 const checkinSchema = z.object({
   mainFocus: z.array(z.string()).min(1, 'Please select at least one main focus.'),
   customTask: z.string().optional(),
   workLocation: z.string().min(1, "Please select your work location."),
-  timeBlocks: z.array(
-    z.object({
-      startTime: z.string().min(1, 'Required'),
-      endTime: z.string().min(1, 'Required'),
-      description: z.string().min(3, 'Required'),
-    })
-  ).optional(),
+  timeBlocks: z.array(timeBlockSchema).optional(),
   multiWinConnections: z.array(z.string()).optional(),
   otherConnection: z.string().optional(),
   teamSupport: z.array(z.string()).optional(),
   budget: z.coerce.number().optional(),
   challenges: z.string().optional(),
+  materials: z.string().optional(),
+  transport: z.string().optional(),
 });
 
 type CheckinFormData = z.infer<typeof checkinSchema>;
+
+const multiWinOptions = [
+    { id: 'volunteer', label: 'Recruit a volunteer' },
+    { id: 'content', label: 'Capture content (photos/video)' },
+    { id: 'story', label: 'Gather a testimonial or story' },
+    { id: 'partner', label: 'Identify a potential new partner' },
+    { id: 'process', label: 'Improve a process/template' },
+];
 
 export function CheckinForm() {
   const { toast } = useToast();
@@ -71,11 +83,18 @@ export function CheckinForm() {
       workLocation: 'Office',
       multiWinConnections: [],
       budget: 0,
-      timeBlocks: [],
+      timeBlocks: [{ startTime: '09:00', endTime: '11:00', description: '' }],
       teamSupport: [],
       otherConnection: '',
       challenges: '',
+      materials: '',
+      transport: '',
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "timeBlocks",
   });
 
   const [aiSuggestions, setAiSuggestions] = useState<DailyPlannerAIOutput | null>(null);
@@ -137,15 +156,17 @@ export function CheckinForm() {
     }).filter(Boolean).join('; ');
 
     const sanitizedDetails = {
-      mainFocus: data.mainFocus || [],
-      customTask: data.customTask || '',
-      workLocation: data.workLocation || 'Not specified',
-      timeBlocks: data.timeBlocks || [],
-      multiWinConnections: data.multiWinConnections || [],
-      otherConnection: data.otherConnection || '',
-      teamSupport: data.teamSupport || [],
-      budget: data.budget || 0,
-      challenges: data.challenges || '',
+        mainFocus: data.mainFocus || [],
+        customTask: data.customTask || '',
+        workLocation: data.workLocation || 'Not specified',
+        timeBlocks: data.timeBlocks || [],
+        multiWinConnections: data.multiWinConnections || [],
+        otherConnection: data.otherConnection || '',
+        teamSupport: data.teamSupport || [],
+        budget: data.budget || 0,
+        challenges: data.challenges || '',
+        materials: data.materials || '',
+        transport: data.transport || '',
     };
 
     const checkinData = {
@@ -207,11 +228,12 @@ export function CheckinForm() {
           <CardTitle>AI-Powered Daily Check-in & Plan</CardTitle>
           <CardDescription>Strategize your day for maximum impact.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
           
           <section className="space-y-4">
+              <h3 className="font-semibold text-lg">Section 1: Your Mission</h3>
               <div className="flex justify-between items-center">
-                  <Label className="font-semibold text-base">Priority Selection</Label>
+                  <Label>Priority Selection</Label>
                   <Button type="button" variant="outline" size="sm" onClick={handleBrainstorm} disabled={isAiLoading || mainFocus.length === 0}>
                       {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
                       Brainstorm with AI
@@ -242,8 +264,71 @@ export function CheckinForm() {
             )}
           </section>
 
+          <Separator />
+          
+           <section className="space-y-4">
+            <h3 className="font-semibold text-lg">Section 2: Time Blocking</h3>
+             {fields.map((field, index) => (
+                <div key={field.id} className="flex items-end gap-2">
+                    <div className="grid grid-cols-2 gap-2 flex-grow">
+                        <div className="space-y-1">
+                            <Label>Start</Label>
+                            <Input type="time" {...form.register(`timeBlocks.${index}.startTime`)} />
+                        </div>
+                         <div className="space-y-1">
+                            <Label>End</Label>
+                            <Input type="time" {...form.register(`timeBlocks.${index}.endTime`)} />
+                        </div>
+                    </div>
+                    <div className="flex-grow space-y-1">
+                        <Label>Description</Label>
+                        <Input {...form.register(`timeBlocks.${index}.description`)} placeholder="What will you do?" />
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </div>
+            ))}
+             <Button type="button" variant="outline" size="sm" onClick={() => append({ startTime: '', endTime: '', description: '' })}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Time Block
+            </Button>
+          </section>
+
+          <Separator />
+
           <section className="space-y-4">
-            <Label className="font-semibold text-base">Logistics</Label>
+              <h3 className="font-semibold text-lg">Section 3: Multi-Win Framework</h3>
+              <p className="text-sm text-muted-foreground">How can this activity create extra value?</p>
+                <Controller
+                  name="multiWinConnections"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="space-y-2">
+                        {multiWinOptions.map(option => (
+                           <div key={option.id} className="flex items-center gap-2">
+                                <Checkbox
+                                    id={`multiwin-${option.id}`}
+                                    checked={field.value?.includes(option.label)}
+                                    onCheckedChange={checked => {
+                                        return checked
+                                            ? field.onChange([...(field.value || []), option.label])
+                                            : field.onChange(field.value?.filter(v => v !== option.label))
+                                    }}
+                                />
+                               <Label htmlFor={`multiwin-${option.id}`}>{option.label}</Label>
+                           </div>
+                        ))}
+                    </div>
+                  )}
+                />
+              <Input {...form.register('otherConnection')} placeholder="Other connection opportunity..."/>
+          </section>
+
+          <Separator />
+
+          <section className="space-y-4">
+            <h3 className="font-semibold text-lg">Section 4: Logistics & Support</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Work Location</Label>
@@ -268,6 +353,14 @@ export function CheckinForm() {
                 <Label>Budget Required (UGX)</Label>
                 <Input {...form.register('budget')} type="number" placeholder="e.g., 50000" />
               </div>
+               <div className="space-y-2">
+                <Label>Transport Needed</Label>
+                <Input {...form.register('transport')} placeholder="e.g., Boda boda to Mpigi Town" />
+              </div>
+               <div className="space-y-2">
+                <Label>Materials Needed</Label>
+                <Input {...form.register('materials')} placeholder="e.g., Chart paper, markers" />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Support Needed From</Label>
@@ -286,6 +379,10 @@ export function CheckinForm() {
                 )}
               />
             </div>
+             <div className="space-y-2">
+                <Label>Potential Challenges</Label>
+                <Textarea {...form.register('challenges')} placeholder="What obstacles might you face?" />
+              </div>
           </section>
         </CardContent>
         <CardFooter>
