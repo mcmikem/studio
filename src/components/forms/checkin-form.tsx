@@ -9,7 +9,6 @@ import {
   useFirestore,
   useUser,
   useCollection,
-  useMemoFirebase,
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
@@ -703,7 +702,7 @@ export function CheckinForm() {
     },
   });
 
-  const keyResultsQuery = useMemoFirebase(() => {
+  const keyResultsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
@@ -716,38 +715,31 @@ export function CheckinForm() {
     async function fetchLastCheckout() {
       if (!firestore || !user) return;
   
-      // This simplified query fetches the last 5 checkouts for the user.
-      // It doesn't require a composite index.
       const checkoutQuery = query(
         collection(firestore, 'checkouts'),
         where('userId', '==', user.uid),
         orderBy('timestamp', 'desc'),
-        limit(5)
+        limit(1)
       );
   
       try {
         const querySnapshot = await getDocs(checkoutQuery);
         if (!querySnapshot.empty) {
-          // Find the most recent checkout that has a tomorrowPlan
-          const lastCheckoutWithPlan = querySnapshot.docs
-            .map(doc => doc.data() as Checkout)
-            .find(checkout => checkout.tomorrowPlan);
-          
-          if (lastCheckoutWithPlan?.tomorrowPlan) {
-            setMissionFromYesterday(lastCheckoutWithPlan.tomorrowPlan);
-            form.setValue('mainFocus', lastCheckoutWithPlan.tomorrowPlan);
+          const lastCheckout = querySnapshot.docs[0].data() as Checkout;
+          if (lastCheckout.tomorrowPlan) {
+            setMissionFromYesterday(lastCheckout.tomorrowPlan);
+            form.setValue('mainFocus', lastCheckout.tomorrowPlan);
           }
         }
       } catch (error) {
         console.error("Error fetching last checkout:", error);
-        // Don't show a toast for this, as it's a background operation
       }
     }
     fetchLastCheckout();
   }, [firestore, user, form]);
 
 
-  const usersQuery = useMemoFirebase(() => {
+  const usersQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'users'), orderBy('name'));
   }, [firestore]);
@@ -819,28 +811,26 @@ export function CheckinForm() {
   return (
     <Card>
       <Stepper initialStep={0} steps={steps}>
-        {steps.map((step, index) => (
-          <Step key={step.id}>
-            {index === 0 && <Step1 location={location} />}
-            {index === 1 && (
-              <Step2
-                form={form}
-                keyResults={keyResults}
-                isLoadingKR={isLoadingKR}
-                selectedKR={selectedKR}
-                teamMembers={teamMembers}
-                profile={profile}
-                missionFromYesterday={missionFromYesterday}
-              />
-            )}
-            {index === 2 && (
-              <Step3
-                form={form}
-                keyResults={keyResults}
-              />
-            )}
-          </Step>
-        ))}
+        <Step>
+          <Step1 location={location} />
+        </Step>
+        <Step>
+          <Step2
+            form={form}
+            keyResults={keyResults}
+            isLoadingKR={isLoadingKR}
+            selectedKR={selectedKR}
+            teamMembers={teamMembers}
+            profile={profile}
+            missionFromYesterday={missionFromYesterday}
+          />
+        </Step>
+        <Step>
+          <Step3
+            form={form}
+            keyResults={keyResults}
+          />
+        </Step>
         <StepFooter form={form} onSubmit={onSubmit} handleNext={handleNext} />
       </Stepper>
     </Card>
