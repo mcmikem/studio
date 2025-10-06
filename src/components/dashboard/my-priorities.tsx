@@ -14,13 +14,12 @@ export function MyPriorities() {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  // No longer need useMemoFirebase because the firestore instance is stable
   const tasksQuery = useMemo(() => {
     if (!firestore || !user) return null;
     return query(
       collection(firestore, 'users', user.uid, 'tasks'),
       where('completed', '==', false),
-      orderBy('createdAt', 'desc'),
+      orderBy('createdAt', 'asc'),
       limit(3)
     );
   }, [firestore, user]);
