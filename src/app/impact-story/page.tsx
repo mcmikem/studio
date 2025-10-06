@@ -1,4 +1,4 @@
-import { ImpactStoryForm } from "@/components/impact-story-form";
+import { ImpactStoryGenerator } from "@/components/impact-story-form";
 
 export default function ImpactStoryPage() {
   return (
@@ -11,7 +11,7 @@ export default function ImpactStoryPage() {
           Automatically generate compelling narratives from your activity data.
         </p>
       </header>
-      <ImpactStoryForm />
+      <ImpactStoryGenerator />
     </div>
   );
 }

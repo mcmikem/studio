@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,28 +17,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Copy, Sparkles } from "lucide-react";
+import { Loader2, Copy, Sparkles, Wand } from "lucide-react";
 import Image from "next/image";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
+import type { Activity } from "@/lib/types";
+import { Skeleton } from "./ui/skeleton";
+import { useRouter } from "next/navigation";
 
-const formSchema = z.object({
-  activityName: z.string().min(3, "Activity name is required."),
-  activityDescription: z.string().min(10, "Description is too short."),
-  activityImpact: z.string().min(3, "Impact details are required."),
-  userName: z.string().min(2, "User name is required."),
-  userQuote: z.string().min(10, "Quote is too short."),
-  photo: z.any().refine((files) => files?.length === 1, "Photo is required."),
-});
 
 const fileToDataUri = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -49,36 +45,46 @@ const fileToDataUri = (file: File): Promise<string> => {
   });
 };
 
-export function ImpactStoryForm() {
+export function ImpactStoryGenerator() {
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [generatedStory, setGeneratedStory] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { toast } = useToast();
+  const firestore = useFirestore();
+  const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      activityName: "RED Campaign at Greenhill PTA Meeting",
-      activityDescription: "We hosted a session for parents, discussing menstrual health and introducing our reusable Dignity Pads. The engagement was fantastic, with parents opening up about the challenges their daughters face.",
-      activityImpact: "Reached 45 parents, sold 20 Dignity Pad kits, and recruited 3 new parent-volunteers.",
-      userName: "Mama Sarah",
-      userQuote: "I never knew these pads existed! This is going to change my daughter's life. She will never have to miss school again.",
-      photo: undefined,
-    },
-  });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const activitiesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "activities"), orderBy("loggedAt", "desc"));
+  }, [firestore]);
+
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
+  
+  const selectedActivity = useMemo(() => {
+    return activities?.find(a => a.id === selectedActivityId);
+  }, [activities, selectedActivityId]);
+
+  const generateStory = async () => {
+    if (!selectedActivity) {
+      toast({ variant: 'destructive', title: 'Please select an activity.'});
+      return;
+    }
+
     setIsLoading(true);
     setGeneratedStory("");
+
     try {
-      const photoDataUri = await fileToDataUri(values.photo[0]);
+      // For now, we use a placeholder image as we haven't stored the uploaded one
+      const photoDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
       const input: ImpactStoryInput = {
-        activityName: values.activityName,
-        activityDescription: values.activityDescription,
-        activityImpact: values.activityImpact,
-        userName: values.userName,
-        userQuote: values.userQuote,
+        activityName: selectedActivity.title,
+        activityDescription: `An activity that resulted in a final ROI of ${selectedActivity.finalRoi.toFixed(0)}%.`,
+        activityImpact: `This activity generated a total value of ${selectedActivity.totalValue.toLocaleString()} UGX from an actual cost of ${selectedActivity.actualCost.toLocaleString()} UGX.`,
+        userName: selectedActivity.userName,
+        userQuote: "This program is making a real difference in our community!", // Placeholder quote
         photoDataUri,
       };
 
@@ -103,140 +109,56 @@ export function ImpactStoryForm() {
       title: "Copied to clipboard!",
     });
   };
-  
-  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      form.setValue("photo", event.target.files);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-        form.setValue("photo", null);
-        setPreviewImage(null);
-    }
-  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       <Card>
         <CardHeader>
-          <CardTitle>Activity Details</CardTitle>
+          <CardTitle>Select an Activity</CardTitle>
           <CardDescription>
-            Fill in the details of the activity to generate a story.
+            Choose a logged activity to generate a story from its data.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="activityName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Activity Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Girl Child Day @ Makerere" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="activityDescription"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Activity Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Describe the activity in detail..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="activityImpact"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Measurable Impact</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., 150 students engaged, 300K raised" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="userName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quote Source Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., Sarah, a student leader" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="userQuote"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Quote Text</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="A quote from a user about the activity..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="photo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Related Photo</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoChange}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      A photo related to the activity.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-               {previewImage && (
-                  <div className="mt-4">
-                      <Image
-                          src={previewImage}
-                          alt="Photo preview"
-                          width={150}
-                          height={150}
-                          className="rounded-lg object-cover"
-                      />
-                  </div>
-              )}
-              <Button type="submit" disabled={isLoading} className="w-full">
-                {isLoading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                    <Sparkles className="mr-2 h-4 w-4" />
-                )}
-                Generate Story
-              </Button>
-            </form>
-          </Form>
+        <CardContent className="space-y-6">
+           <div className="space-y-2">
+            <Label htmlFor="activity-select">Recent Activities</Label>
+            {isLoadingActivities ? <Skeleton className="h-10 w-full" /> : (
+                 <Select onValueChange={setSelectedActivityId} value={selectedActivityId || ''}>
+                  <SelectTrigger id="activity-select">
+                    <SelectValue placeholder="Select a logged activity..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activities?.map(activity => (
+                        <SelectItem key={activity.id} value={activity.id}>
+                            {activity.title} ({new Date(activity.loggedAt.toDate()).toLocaleDateString()})
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+            )}
+          </div>
+          
+          {selectedActivity && (
+             <Card className="bg-muted/50 p-4">
+                 <CardTitle className="text-lg">{selectedActivity.title}</CardTitle>
+                 <CardDescription>Logged by {selectedActivity.userName}</CardDescription>
+                 <CardContent className="text-sm pt-4 space-y-1">
+                     <p><strong>Final ROI:</strong> <span className={selectedActivity.finalRoi >= 0 ? 'text-green-500' : 'text-red-500'}>{selectedActivity.finalRoi.toFixed(0)}%</span></p>
+                     <p><strong>Actual Cost:</strong> {selectedActivity.actualCost.toLocaleString()} UGX</p>
+                     <p><strong>Total Value:</strong> {selectedActivity.totalValue.toLocaleString()} UGX</p>
+                 </CardContent>
+             </Card>
+          )}
+
+          <Button onClick={generateStory} disabled={isLoading || !selectedActivity} className="w-full">
+            {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                <Wand className="mr-2 h-4 w-4" />
+            )}
+            Generate Story from Activity
+          </Button>
+
         </CardContent>
       </Card>
       <Card className="sticky top-6">
@@ -266,7 +188,7 @@ export function ImpactStoryForm() {
               <Textarea
                 readOnly
                 value={generatedStory}
-                className="h-full min-h-[500px] bg-muted"
+                className="h-full min-h-[400px] bg-muted"
               />
             </div>
           )}
@@ -274,7 +196,7 @@ export function ImpactStoryForm() {
              <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center p-8">
                 <Sparkles className="h-16 w-16 text-muted-foreground" />
                 <p className="mt-4 text-lg font-semibold">Your Story Awaits</p>
-                <p className="mt-1 text-sm text-muted-foreground">Fill out the form to generate a compelling narrative about your work.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Select a logged activity to generate a compelling narrative about your work.</p>
             </div>
           )}
         </CardContent>

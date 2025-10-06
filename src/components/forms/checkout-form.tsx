@@ -34,6 +34,7 @@ const checkoutSchema = z.object({
   prototypesTested: z.coerce.number().optional(),
   learning: z.string().optional(),
   tomorrowPlan: z.string().optional(),
+  photo: z.any().optional(),
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
@@ -197,10 +198,15 @@ export function CheckoutForm() {
             <Label className="text-base font-semibold">
               Section 2: Evidence & Documentation
             </Label>
-            <Button variant="outline" className="w-full" type="button" disabled>
-              <FileUp className="mr-2 h-4 w-4" />
-              Add Photo/Video Proof (Coming Soon)
-            </Button>
+             <div className="space-y-2">
+                <Label htmlFor="photo">Attach Photo</Label>
+                <Input
+                  id="photo"
+                  type="file"
+                  accept="image/*"
+                  {...register('photo')}
+                />
+              </div>
             <p className="text-xs text-muted-foreground text-center">
               Photos will be automatically tagged with activity and location.
             </p>
