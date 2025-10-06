@@ -145,104 +145,99 @@ export default function PartnershipsPage() {
   const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Partner Database</CardTitle>
-            <CardDescription>A central list of all Omuto Foundation partners.</CardDescription>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                New Partnership
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Add New Partnership</DialogTitle>
-                <DialogDescription>
-                  Enter the details of the new partner organization.
-                </DialogDescription>
-              </DialogHeader>
-              <NewPartnershipForm onFormSubmit={() => setIsDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Organization</TableHead>
-                <TableHead>Contact Person</TableHead>
-                <TableHead>Contact Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Next Step</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading &&
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
-                      <Skeleton className="h-5 w-32" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-40" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-6 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-48" />
-                    </TableCell>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Partner Database</CardTitle>
+          <CardDescription>A central list of all Omuto Foundation partners.</CardDescription>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Partnership
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add New Partnership</DialogTitle>
+              <DialogDescription>
+                Enter the details of the new partner organization.
+              </DialogDescription>
+            </DialogHeader>
+            <NewPartnershipForm onFormSubmit={() => setIsDialogOpen(false)} />
+          </DialogContent>
+        </Dialog>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Organization</TableHead>
+              <TableHead>Contact Person</TableHead>
+              <TableHead>Contact Email</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Next Step</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading &&
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="h-5 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-40" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-48" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            {partnerships && partnerships.length > 0 ? (
+              partnerships.map((partner) => (
+                <TableRow key={partner.id}>
+                  <TableCell className="font-medium">{partner.name}</TableCell>
+                  <TableCell>{partner.contactPerson}</TableCell>
+                  <TableCell>
+                    <a href={`mailto:${partner.contactEmail}`} className="text-primary hover:underline">
+                      {partner.contactEmail}
+                    </a>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={statusColors[partner.status]}>
+                      {partner.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{partner.nextStep}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              !isLoading && (
+                  <TableRow>
+                      <TableCell
+                      colSpan={5}
+                      className="h-48 text-center text-muted-foreground"
+                      >
+                          <div className="flex flex-col items-center justify-center gap-2">
+                              <Users className="h-12 w-12" />
+                              <span className="text-lg font-semibold">No Partners Found</span>
+                              <p className="text-sm">Your partner database is empty. Add a partner to get started.</p>
+                          </div>
+                      </TableCell>
                   </TableRow>
-                ))}
-              {partnerships && partnerships.length > 0 ? (
-                partnerships.map((partner) => (
-                  <TableRow key={partner.id}>
-                    <TableCell className="font-medium">{partner.name}</TableCell>
-                    <TableCell>{partner.contactPerson}</TableCell>
-                    <TableCell>
-                      <a href={`mailto:${partner.contactEmail}`} className="text-primary hover:underline">
-                        {partner.contactEmail}
-                      </a>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={statusColors[partner.status]}>
-                        {partner.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{partner.nextStep}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
-                    <TableRow>
-                        <TableCell
-                        colSpan={5}
-                        className="h-48 text-center text-muted-foreground"
-                        >
-                            <div className="flex flex-col items-center justify-center gap-2">
-                                <Users className="h-12 w-12" />
-                                <span className="text-lg font-semibold">No Partners Found</span>
-                                <p className="text-sm">Your partner database is empty. Add a partner to get started.</p>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+              )
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }
-
-    
-    

@@ -164,15 +164,11 @@ export default function ProgramsPage() {
   const { data: programs, isLoading } = useCollection<Program>(programsQuery);
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="flex items-center justify-between">
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <h1 className="font-headline text-3xl font-bold tracking-tight">
-            Program Tracker
-          </h1>
-          <p className="text-muted-foreground">
-            A high-level overview of all Omuto Foundation programs and their current status.
-          </p>
+          <CardTitle>Program Tracker</CardTitle>
+          <CardDescription>A high-level overview of all Omuto Foundation programs.</CardDescription>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -192,77 +188,74 @@ export default function ProgramsPage() {
           </DialogContent>
         </Dialog>
       </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <CardContent>
         {isLoading && (
-          Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2 mt-2" />
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-                <Skeleton className="h-4 w-full" />
-                <div className="mt-4 pt-4 border-t">
-                  <Skeleton className="h-4 w-1/3" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-4 w-1/2 mt-2" />
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-full" />
+                  <div className="mt-4 pt-4 border-t">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-4 w-1/2 mt-2" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
         {programs && programs.length > 0 ? (
-          programs.map((program) => (
-            <Card key={program.id} className="flex flex-col">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl">{program.title}</CardTitle>
-                  <Badge variant="outline" className={statusColors[program.status]}>
-                    <div className="flex items-center gap-1">
-                      {statusIcons[program.status]}
-                      {program.status}
-                    </div>
-                  </Badge>
-                </div>
-                <CardDescription>{program.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow flex flex-col justify-between pt-6">
-                  <div>
-                      <h4 className="font-semibold text-sm mb-2">Key Objectives:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                          {program.objectives.map((obj, index) => (
-                              <li key={index}>{obj}</li>
-                          ))}
-                      </ul>
-                  </div>
-                  <div className="mt-4 pt-4 border-t">
-                      <div className="text-xs text-muted-foreground">
-                          <p><strong>Lead:</strong> {program.lead}</p>
-                          <p><strong>Deadline:</strong> {program.deadline}</p>
-                          {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {programs.map((program) => (
+              <Card key={program.id} className="flex flex-col">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xl">{program.title}</CardTitle>
+                    <Badge variant="outline" className={statusColors[program.status]}>
+                      <div className="flex items-center gap-1">
+                        {statusIcons[program.status]}
+                        {program.status}
                       </div>
+                    </Badge>
                   </div>
-              </CardContent>
-            </Card>
-          ))
+                  <CardDescription>{program.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-grow flex flex-col justify-between pt-6">
+                    <div>
+                        <h4 className="font-semibold text-sm mb-2">Key Objectives:</h4>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                            {program.objectives.map((obj, index) => (
+                                <li key={index}>{obj}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="mt-4 pt-4 border-t">
+                        <div className="text-xs text-muted-foreground">
+                            <p><strong>Lead:</strong> {program.lead}</p>
+                            <p><strong>Deadline:</strong> {program.deadline}</p>
+                            {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
+                        </div>
+                    </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : (
             !isLoading && (
-                 <Card className="md:col-span-2 lg:col-span-3">
-                    <CardContent className="pt-6">
-                        <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center">
-                            <Briefcase className="h-16 w-16 text-muted-foreground" />
-                            <p className="mt-4 text-lg font-semibold">No Programs Found</p>
-                            <p className="mt-1 text-sm text-muted-foreground">Get started by adding the first program using the 'New Program' button.</p>
-                        </div>
-                    </CardContent>
-                </Card>
+              <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center">
+                  <Briefcase className="h-16 w-16 text-muted-foreground" />
+                  <p className="mt-4 text-lg font-semibold">No Programs Found</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Get started by adding the first program using the 'New Program' button.</p>
+              </div>
             )
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
-
-    
