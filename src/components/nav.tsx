@@ -16,6 +16,7 @@ import {
   Banknote,
   Handshake,
   ClipboardEdit,
+  Target,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -74,7 +75,7 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/management')}
-                  tooltip="Programs & Partnerships"
+                  tooltip="Management"
                 >
                   <Link href="/management/programs">
                     <Briefcase />

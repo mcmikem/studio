@@ -122,6 +122,7 @@ export type Project = {
 }
 
 export type ImpactMetric = {
+    id: string;
     metric: string;
     target: number;
     current: number;

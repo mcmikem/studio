@@ -3,14 +3,11 @@
 import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { useUser } from '@/firebase';
 import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClipboardList, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
 import { ProgramsOverview } from '@/components/dashboard/programs-overview';
 import { MyPriorities } from '@/components/dashboard/my-priorities';
 import { TeamToday } from '@/components/dashboard/team-today';
+import { ImpactOverview } from '@/components/dashboard/impact-overview';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -44,6 +41,7 @@ export default function DashboardPage() {
       </header>
 
       <div className="space-y-6">
+        <ImpactOverview />
         <ProgramsOverview />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

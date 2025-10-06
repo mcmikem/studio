@@ -337,6 +337,12 @@
         "$ref": "#/entities/Partnership"
       },
       "description": "Stores information about partner organizations."
+    },
+    "/impact-metrics/{metricId}": {
+      "schema": {
+        "$ref": "#/entities/ImpactMetric"
+      },
+      "description": "Stores key performance indicators (KPIs) for the organization."
     }
   }
 }
