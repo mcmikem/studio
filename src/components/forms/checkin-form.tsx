@@ -307,8 +307,8 @@ function Step2({
             Section 2: Time-Blocked Planning
           </Label>
           {fields.map((field, index) => (
-            <div key={field.id} className="flex items-end gap-2">
-              <div className="grid grid-cols-2 gap-2 flex-grow">
+            <div key={field.id} className="flex flex-col sm:flex-row items-end gap-2">
+              <div className="grid grid-cols-2 gap-2 flex-grow w-full sm:w-auto">
                  <div className="space-y-1">
                     <Label htmlFor={`start-time-${index}`} className="text-xs">Start</Label>
                     <Controller
@@ -358,7 +358,7 @@ function Step2({
                     />
                  </div>
               </div>
-              <div className="flex-grow space-y-1">
+              <div className="flex-grow space-y-1 w-full sm:w-auto">
                 <Label htmlFor={`desc-${index}`} className="text-xs">Description</Label>
                 <Input
                     {...form.register(`timeBlocks.${index}.description`)}

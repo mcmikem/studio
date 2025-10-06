@@ -3,6 +3,8 @@
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import {
   Table,
@@ -17,7 +19,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { History } from 'lucide-react';
+import { History, User, Calendar, TrendingUp, DollarSign } from 'lucide-react';
 import type { Activity } from '@/lib/types';
 import type { Timestamp } from 'firebase/firestore';
 
@@ -54,83 +56,141 @@ export default function ActivityLogPage() {
       </header>
       <Card>
         <CardContent className="pt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Activity</TableHead>
-                <TableHead>Logged By</TableHead>
-                <TableHead>Actual Cost</TableHead>
-                <TableHead>Total Value</TableHead>
-                <TableHead>Final ROI</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading &&
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
-                      <Skeleton className="h-5 w-32" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-5 w-16" />
-                    </TableCell>
-                     <TableCell>
-                      <Skeleton className="h-5 w-24" />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              {activities && activities.length > 0 ? (
+          {/* Mobile View */}
+          <div className="space-y-4 sm:hidden">
+            {isLoading && Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="pt-6 space-y-3">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {activities && activities.length > 0 ? (
                 activities.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell className="font-medium">{activity.title}</TableCell>
-                    <TableCell>{activity.userName}</TableCell>
-                    <TableCell>{formatCurrency(activity.actualCost)}</TableCell>
-                    <TableCell>{formatCurrency(activity.totalValue)}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          activity.finalRoi >= 0
-                            ? 'border-green-500 bg-green-500/10 text-green-500'
-                            : 'border-red-500 bg-red-500/10 text-red-500'
-                        }
-                        variant="outline"
-                      >
-                        {activity.finalRoi.toFixed(0)}%
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(activity.loggedAt as Timestamp | undefined)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="h-48 text-center text-muted-foreground"
-                    >
-                        <div className="flex flex-col items-center justify-center gap-2">
-                            <History className="h-12 w-12" />
-                            <span className="text-lg font-semibold">No Activities Logged</span>
-                            <p className="text-sm">Use the ROI Calculator to log an activity.</p>
+                  <Card key={activity.id}>
+                    <CardHeader>
+                      <CardTitle>{activity.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4 text-sm">
+                      <div className="flex items-center text-muted-foreground">
+                        <User className="h-4 w-4 mr-2" />
+                        <span>Logged by {activity.userName}</span>
+                      </div>
+                      <div className="flex items-center text-muted-foreground">
+                         <Calendar className="h-4 w-4 mr-2" />
+                         <span>{formatDate(activity.loggedAt as Timestamp | undefined)}</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-center pt-2">
+                        <div>
+                          <p className="font-bold text-lg">{formatCurrency(activity.actualCost)}</p>
+                          <p className="text-xs text-muted-foreground">Actual Cost</p>
                         </div>
-                    </TableCell>
-                  </TableRow>
+                         <div>
+                          <p className="font-bold text-lg">{formatCurrency(activity.totalValue)}</p>
+                          <p className="text-xs text-muted-foreground">Total Value</p>
+                        </div>
+                        <div>
+                          <Badge
+                            className={`text-lg font-bold w-full justify-center ${
+                              activity.finalRoi >= 0
+                                ? 'border-green-500 bg-green-500/10 text-green-500'
+                                : 'border-red-500 bg-red-500/10 text-red-500'
+                            }`}
+                            variant="outline"
+                          >
+                            {activity.finalRoi.toFixed(0)}%
+                          </Badge>
+                           <p className="text-xs text-muted-foreground mt-1">Final ROI</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+            ) : (
+                 !isLoading && (
+                  <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
+                    <History className="h-12 w-12" />
+                    <span className="text-lg font-semibold mt-2">No Activities Logged</span>
+                    <p className="text-sm">Use the ROI Calculator to log an activity.</p>
+                  </div>
                 )
-              )}
-            </TableBody>
-          </Table>
+            )}
+          </div>
+
+          {/* Desktop View */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Activity</TableHead>
+                  <TableHead>Logged By</TableHead>
+                  <TableHead>Actual Cost</TableHead>
+                  <TableHead>Total Value</TableHead>
+                  <TableHead>Final ROI</TableHead>
+                  <TableHead>Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading &&
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    </TableRow>
+                  ))}
+                {activities && activities.length > 0 ? (
+                  activities.map((activity) => (
+                    <TableRow key={activity.id}>
+                      <TableCell className="font-medium">{activity.title}</TableCell>
+                      <TableCell>{activity.userName}</TableCell>
+                      <TableCell>{formatCurrency(activity.actualCost)}</TableCell>
+                      <TableCell>{formatCurrency(activity.totalValue)}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={
+                            activity.finalRoi >= 0
+                              ? 'border-green-500 bg-green-500/10 text-green-500'
+                              : 'border-red-500 bg-red-500/10 text-red-500'
+                          }
+                          variant="outline"
+                        >
+                          {activity.finalRoi.toFixed(0)}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {formatDate(activity.loggedAt as Timestamp | undefined)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="h-48 text-center text-muted-foreground"
+                      >
+                          <div className="flex flex-col items-center justify-center gap-2">
+                              <History className="h-12 w-12" />
+                              <span className="text-lg font-semibold">No Activities Logged</span>
+                              <p className="text-sm">Use the ROI Calculator to log an activity.</p>
+                          </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
