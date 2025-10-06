@@ -38,7 +38,6 @@ import { Loader2, Check, PlusCircle, X, ArrowRight, Wand2, Sparkles } from 'luci
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
-import { cn } from '@/lib/utils';
 import {
   MultiSelect,
   MultiSelectContent,
@@ -200,34 +199,37 @@ function Step2({
                     Brainstorm with AI
                 </Button>
             </div>
-          <Controller
-            name="mainFocus"
-            control={form.control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your main focus..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {isLoadingKR ? (
-                    <SelectItem value="loading" disabled>
-                      Loading...
-                    </SelectItem>
-                  ) : (
-                    <>
-                    {missionFromYesterday && <SelectItem value={missionFromYesterday}>{missionFromYesterday}</SelectItem>}
-                    {keyResults?.map((kr) => (
-                      <SelectItem key={kr.id} value={kr.id}>
-                        {kr.title}: {kr.description}
+            <Controller
+              name="mainFocus"
+              control={form.control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value || ''}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your main focus..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingKR ? (
+                      <SelectItem value="loading" disabled>
+                        Loading...
                       </SelectItem>
-                    ))}
-                    </>
-                  )}
-                  <SelectItem value="custom">Custom Task</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
+                    ) : (
+                      <>
+                        {missionFromYesterday && <SelectItem value={missionFromYesterday}>{missionFromYesterday}</SelectItem>}
+                        {keyResults?.map((kr) => (
+                          <SelectItem key={kr.id} value={kr.id}>
+                            {kr.title}: {kr.description}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                    <SelectItem value="custom">Custom Task</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
           {form.formState.errors.mainFocus && (
             <p className="text-sm text-destructive">{`${form.formState.errors.mainFocus.message}`}</p>
           )}
