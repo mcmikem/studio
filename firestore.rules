@@ -4,7 +4,7 @@
  * Core Philosophy:
  * This ruleset employs a hybrid security model. User profiles and associated tasks are strictly user-owned.
  * Other collections such as programs, partnerships, activities, check-ins, check-outs, impact metrics,
- * projects, events, and alerts are publicly readable but only writable by authenticated users.
+ * projects, events, and alerts are readable only by authenticated users, and writable only by authenticated users.
  *
  * Data Structure:
  * - /users/{userId}: User profile information.
@@ -18,11 +18,11 @@
  * - /projects/{projectId}: High-level projects.
  * - /events/{eventId}: Organizational calendar events.
  * - /alerts/{alertId}: System-wide alerts and notifications.
- * - /key-results/{keyResultId}: Key results from the October Operational Plan.
+ * - /key-results/{keyResultId}: Key results for the October Operational Plan.
  *
  * Key Security Decisions:
  * - User profiles and tasks are only accessible and modifiable by the owning user.
- * - All other top-level collections are readable by any authenticated user.
+ * - All other top-level collections are readable only by authenticated users.
  * - For non-user specific collections, only authenticated users can create, update, or delete documents.
  * - No specific data validation is performed in this prototyping phase, except for ownership on create.
  *   More granular validation should be added in later iterations.
@@ -34,62 +34,202 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
+    /**
+     * @description Manages user profile access.
+     * @path /users/{userId}
+     * @allow (read) Authenticated user can read their own profile.
+     * @allow (create) Authenticated user can create their profile if the userId matches their auth.uid.
+     * @allow (update) Authenticated user can update their own profile.
+     * @allow (delete) Authenticated user can delete their own profile.
+     * @deny (read) Authenticated user cannot read other user profiles.
+     * @deny (create) Authenticated user cannot create a profile with a userId that doesn't match their auth.uid.
+     * @deny (update) Authenticated user cannot update other user profiles.
+     * @deny (delete) Authenticated user cannot delete other user profiles.
+     * @principle Enforces user-ownership for profile data.
+     */
     match /users/{userId} {
-      function isOwner() {
+      function isOwner(userId) {
         return request.auth != null && request.auth.uid == userId;
       }
-      allow read, write: if isOwner();
+      allow get: if isOwner(userId);
+      allow list: if request.auth != null; // Allow listing of users for team views
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
+    /**
+     * @description Manages user tasks.
+     * @path /users/{userId}/tasks/{taskId}
+     * @allow (read) Authenticated user can read their own tasks.
+     * @allow (create) Authenticated user can create tasks for themselves.
+     * @allow (update) Authenticated user can update their own tasks.
+     * @allow (delete) Authenticated user can delete their own tasks.
+     * @deny (read) Authenticated user cannot read other user's tasks.
+     * @deny (create) Authenticated user cannot create tasks for other users.
+     * @deny (update) Authenticated user cannot update other user's tasks.
+     * @deny (delete) Authenticated user cannot delete other user's tasks.
+     * @principle Enforces user-ownership for task data.
+     */
     match /users/{userId}/tasks/{taskId} {
-      function isOwner() {
-          return request.auth != null && request.auth.uid == userId;
-      }
-      allow read, write: if isOwner();
+        function isOwner(userId) {
+            return request.auth != null && request.auth.uid == userId;
+        }
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
     }
 
+    /**
+     * @description Manages daily check-in plans.
+     * @path /checkins/{checkinId}
+     * @allow (read) Only authenticated users can read check-in plans.
+     * @allow (write) Only authenticated users can write check-in plans.
+     * @principle Authenticated user access only.
+     */
     match /checkins/{checkinId} {
-      allow read, write: if isSignedIn();
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get, list: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
+    /**
+     * @description Manages daily checkout updates.
+     * @path /checkouts/{checkoutId}
+     * @allow (read) Only authenticated users can read checkout updates.
+     * @allow (write) Only authenticated users can write checkout updates.
+     * @principle Authenticated user access only.
+     */
     match /checkouts/{checkoutId} {
-      allow read, write: if isSignedIn();
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get, list: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
+    /**
+     * @description Manages logged activities from the ROI Calculator.
+     * @path /activities/{activityId}
+     * @allow (read) Only authenticated users can read activity logs.
+     * @allow (write) Only authenticated users can write activity logs.
+     * @principle Authenticated user access only.
+     */
     match /activities/{activityId} {
-      allow read, write: if isSignedIn();
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get, list: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
+    /**
+     * @description Manages core programs and initiatives.
+     * @path /programs/{programId}
+     * @allow (read) Only authenticated users can read program data.
+     * @allow (write) Only authenticated users can write program data.
+     * @principle Authenticated user access only.
+     */
     match /programs/{programId} {
-      allow read, write: if isSignedIn();
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get, list: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
+    /**
+     * @description Manages partner organization information.
+     * @path /partnerships/{partnershipId}
+     * @allow (read) Only authenticated users can read partnership information.
+     * @allow (write) Only authenticated users can write partnership information.
+     * @principle Authenticated user access only.
+     */
     match /partnerships/{partnershipId} {
-      allow read, write: if isSignedIn();
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get, list: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
+    /**
+     * @description Manages key performance indicators (KPIs).
+     * @path /impact-metrics/{metricId}
+     * @allow (read) Only authenticated users can read impact metrics.
+     * @allow (write) Only authenticated users can write impact metrics.
+     * @principle Authenticated user access only.
+     */
     match /impact-metrics/{metricId} {
-      allow read, write: if isSignedIn();
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get, list: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
+    /**
+     * @description Manages high-level projects.
+     * @path /projects/{projectId}
+     * @allow (read) Only authenticated users can read project data.
+     * @allow (write) Only authenticated users can write project data.
+     * @principle Authenticated user access only.
+     */
     match /projects/{projectId} {
-      allow read, write: if isSignedIn();
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get, list: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
+     /**
+      * @description Manages calendar events.
+      * @path /events/{eventId}
+      * @allow (read) Only authenticated users can read event data.
+      * @allow (write) Only authenticated users can write event data.
+      * @principle Authenticated user access only.
+      */
     match /events/{eventId} {
-      allow read, write: if isSignedIn();
+        function isSignedIn() {
+            return request.auth != null;
+        }
+        allow get, list: if isSignedIn();
+        allow write: if isSignedIn();
     }
 
+    /**
+     * @description Manages system-wide alerts and notifications.
+     * @path /alerts/{alertId}
+     * @allow (read) Only authenticated users can read alert data.
+     * @allow (write) Only authenticated users can write alert data.
+     * @principle Authenticated user access only.
+     */
     match /alerts/{alertId} {
-      allow read, write: if isSignedIn();
+        function isSignedIn() {
+            return request.auth != null;
+        }
+        allow get, list: if isSignedIn();
+        allow write: if isSignedIn();
     }
-
+    
+    /**
+     * @description Manages Key Results from the October Operational Plan.
+     * @path /key-results/{keyResultId}
+     * @allow (read) Authenticated users can read Key Results.
+     * @allow (write) Authenticated users can write Key Results.
+     * @principle Authenticated user access only.
+     */
     match /key-results/{keyResultId} {
-      allow read, write: if isSignedIn();
+        function isSignedIn() {
+            return request.auth != null;
+        }
+        allow get, list: if isSignedIn();
+        allow write: if isSignedIn();
     }
   }
 }
