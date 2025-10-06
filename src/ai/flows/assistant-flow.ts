@@ -263,10 +263,8 @@ const assistantFlow = ai.defineFlow(
 
 export async function streamAssistant(prompt: string) {
     const { stream } = await ai.generateStream({
-        prompt: {
-            ...assistantPrompt,
-            input: { prompt },
-        }
+        prompt: assistantPrompt,
+        input: { prompt },
     });
     return stream;
 }
