@@ -14,7 +14,8 @@ import type { KeyResult } from '@/lib/types';
 import { Target, Flag } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
-import { format, parseISO, isValid } from 'date-fns';
+import { format, parseISO, isValid, isPast } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -49,8 +50,6 @@ export function KeyResultsTracker() {
     try {
       const date = parseISO(dateString);
       if (isValid(date)) {
-        // The date from the string might be off by one day due to timezone.
-        // A safer way is to use UTC to avoid timezone shifts.
         return format(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()), 'MMM dd, yyyy');
       }
     } catch (e) {
@@ -79,12 +78,15 @@ export function KeyResultsTracker() {
         {keyResults && keyResults.length > 0 ? (
           keyResults.map((kr) => {
              const progressPercentage = kr.target > 0 ? (kr.currentProgress / kr.target) * 100 : 0;
+             const deadlineDate = parseISO(kr.deadline);
+             const isDeadlinePast = isPast(deadlineDate) && progressPercentage < 100;
+             
             return (
                 <div key={kr.id} className="space-y-2">
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="font-semibold">{kr.title}: {kr.description}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
                                 <Flag className="inline h-3 w-3 mr-1" />
                                 Deadline: {formatDate(kr.deadline)}
                             </p>

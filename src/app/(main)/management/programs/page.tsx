@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, Clock, Briefcase, PlusCircle, Edit } from 'lucide-react';
@@ -33,7 +34,8 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { format, parseISO, isValid } from 'date-fns';
+import { format, parseISO, isValid, isPast } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 
 const statusIcons: { [key: string]: React.ReactNode } = {
@@ -229,7 +231,7 @@ export default function ProgramsPage() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <CardTitle>Program Tracker</CardTitle>
           <CardDescription>A high-level overview of all Omuto Foundation programs.</CardDescription>
@@ -276,42 +278,49 @@ export default function ProgramsPage() {
         )}
         {programs && programs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {programs.map((program) => (
-              <Card key={program.id} className="flex flex-col">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-xl pr-4">{program.title}</CardTitle>
-                     <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={() => setEditingProgram(program)}>
-                        <Edit className="h-4 w-4" />
-                    </Button>
-                  </div>
-                   <Badge variant="outline" className={`${statusColors[program.status]} mt-2 w-fit`}>
-                      <div className="flex items-center gap-1">
-                        {statusIcons[program.status]}
-                        {program.status}
-                      </div>
-                    </Badge>
-                  <CardDescription className="pt-2">{program.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-grow flex flex-col justify-between pt-0">
-                    <div>
-                        <h4 className="font-semibold text-sm mb-2">Key Objectives:</h4>
-                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                            {program.objectives.map((obj, index) => (
-                                <li key={index}>{obj}</li>
-                            ))}
-                        </ul>
+            {programs.map((program) => {
+              const deadlineDate = new Date(program.deadline);
+              const isDeadlinePast = isPast(deadlineDate) && program.status !== 'Completed';
+
+              return (
+                <Card key={program.id} className="flex flex-col">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <CardTitle className="text-xl pr-4">{program.title}</CardTitle>
+                       <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={() => setEditingProgram(program)}>
+                          <Edit className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div className="mt-4 pt-4 border-t">
-                        <div className="text-xs text-muted-foreground">
-                            <p><strong>Lead:</strong> {program.lead}</p>
-                            <p><strong>Deadline:</strong> {format(new Date(program.deadline), "dd MMM, yyyy")}</p>
-                            {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
+                     <Badge variant="outline" className={`${statusColors[program.status]} mt-2 w-fit`}>
+                        <div className="flex items-center gap-1">
+                          {statusIcons[program.status]}
+                          {program.status}
                         </div>
-                    </div>
-                </CardContent>
-              </Card>
-            ))}
+                      </Badge>
+                    <CardDescription className="pt-2">{program.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-grow flex flex-col justify-between pt-0">
+                      <div>
+                          <h4 className="font-semibold text-sm mb-2">Key Objectives:</h4>
+                          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                              {program.objectives.map((obj, index) => (
+                                  <li key={index}>{obj}</li>
+                              ))}
+                          </ul>
+                      </div>
+                      <div className="mt-4 pt-4 border-t">
+                          <div className="text-xs text-muted-foreground">
+                              <p><strong>Lead:</strong> {program.lead}</p>
+                              <p className={cn("font-medium", isDeadlinePast && "text-destructive")}>
+                                  <strong>Deadline:</strong> {format(deadlineDate, "dd MMM, yyyy")}
+                              </p>
+                              {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
+                          </div>
+                      </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
           </div>
         ) : (
             !isLoading && (
