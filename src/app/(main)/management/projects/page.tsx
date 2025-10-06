@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -21,6 +21,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,9 +47,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Truck } from 'lucide-react';
+import { PlusCircle, Truck, Edit, Trash2 } from 'lucide-react';
 import type { Project } from '@/lib/types';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -58,7 +69,16 @@ const projectSchema = z.object({
   nextMilestone: z.string().min(3, 'Next milestone is required.'),
 });
 
-function NewProjectForm({ onFormSubmit }: { onFormSubmit: () => void }) {
+type ProjectFormData = z.infer<typeof projectSchema>;
+
+
+function ProjectForm({
+  project,
+  onFormSubmit,
+}: {
+  project?: Project;
+  onFormSubmit: () => void;
+}) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const {
@@ -67,9 +87,12 @@ function NewProjectForm({ onFormSubmit }: { onFormSubmit: () => void }) {
     control,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm({
+  } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
-    defaultValues: {
+    defaultValues: project ? {
+      ...project,
+      completion: project.completion || 0
+    } : {
       status: 'Active',
       completion: 0,
     },
@@ -77,16 +100,29 @@ function NewProjectForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 
   const onSubmit = async (data: z.infer<typeof projectSchema>) => {
     if (!firestore) return;
-    const projectsCollection = collection(firestore, 'projects');
-    const newProject = {
-      ...data,
-      createdAt: serverTimestamp(),
-    };
-    addDocumentNonBlocking(projectsCollection, newProject);
-    toast({
-      title: 'Project Added!',
-      description: `${data.name} has been added to your dashboard.`,
-    });
+    
+    if (project) {
+        // Update existing project
+        const projectRef = doc(firestore, 'projects', project.id);
+        updateDocumentNonBlocking(projectRef, data);
+        toast({
+            title: 'Project Updated!',
+            description: `${data.name} has been successfully updated.`,
+        });
+    } else {
+        // Add new project
+        const projectsCollection = collection(firestore, 'projects');
+        const newProject = {
+            ...data,
+            createdAt: serverTimestamp(),
+        };
+        addDocumentNonBlocking(projectsCollection, newProject);
+        toast({
+            title: 'Project Added!',
+            description: `${data.name} has been added to your dashboard.`,
+        });
+    }
+
     reset();
     onFormSubmit();
   };
@@ -149,7 +185,7 @@ function NewProjectForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Adding...' : 'Add Project'}
+          {isSubmitting ? (project ? 'Saving...' : 'Adding...') : (project ? 'Save Changes' : 'Add Project')}
         </Button>
       </DialogFooter>
     </form>
@@ -157,7 +193,9 @@ function NewProjectForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 }
 
 export default function ProjectsPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+
   const firestore = useFirestore();
   const projectsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -165,6 +203,12 @@ export default function ProjectsPage() {
   }, [firestore]);
 
   const { data: projects, isLoading } = useCollection<Project>(projectsQuery);
+
+  const handleDelete = (projectId: string) => {
+    if (!firestore) return;
+    const projectRef = doc(firestore, 'projects', projectId);
+    deleteDocumentNonBlocking(projectRef);
+  };
 
   return (
     <Card>
@@ -175,7 +219,7 @@ export default function ProjectsPage() {
             A high-level view of all ongoing field projects.
           </CardDescription>
         </div>
-         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+         <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -189,7 +233,7 @@ export default function ProjectsPage() {
                 Define a new project to track on the dashboard.
               </DialogDescription>
             </DialogHeader>
-            <NewProjectForm onFormSubmit={() => setIsDialogOpen(false)} />
+            <ProjectForm onFormSubmit={() => setIsNewDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </CardHeader>
@@ -199,10 +243,10 @@ export default function ProjectsPage() {
             <TableRow>
               <TableHead>Project Name</TableHead>
               <TableHead>Manager</TableHead>
-              <TableHead>Districts</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Completion</TableHead>
               <TableHead>Next Milestone</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -219,13 +263,13 @@ export default function ProjectsPage() {
                     <Skeleton className="h-5 w-20" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="h-5 w-20" />
-                  </TableCell>
-                   <TableCell>
                     <Skeleton className="h-5 w-32" />
                   </TableCell>
                    <TableCell>
                     <Skeleton className="h-5 w-40" />
+                  </TableCell>
+                   <TableCell>
+                    <Skeleton className="h-8 w-20 ml-auto" />
                   </TableCell>
                 </TableRow>
               ))}
@@ -234,7 +278,6 @@ export default function ProjectsPage() {
                  <TableRow key={project.id}>
                     <TableCell className="font-medium">{project.name}</TableCell>
                     <TableCell>{project.manager}</TableCell>
-                    <TableCell>{project.districts}</TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
@@ -250,6 +293,32 @@ export default function ProjectsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{project.nextMilestone}</TableCell>
+                    <TableCell className="text-right">
+                       <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => setEditingProject(project)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the project "{project.name}".
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(project.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                       </div>
+                    </TableCell>
                   </TableRow>
               ))
             ) : (
@@ -275,6 +344,17 @@ export default function ProjectsPage() {
           </TableBody>
         </Table>
       </CardContent>
+      {editingProject && (
+         <Dialog open={!!editingProject} onOpenChange={(open) => !open && setEditingProject(null)}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Edit Project</DialogTitle>
+                    <DialogDescription>Update the details for the "{editingProject.name}" project.</DialogDescription>
+                </DialogHeader>
+                <ProjectForm project={editingProject} onFormSubmit={() => setEditingProject(null)} />
+            </DialogContent>
+        </Dialog>
+      )}
     </Card>
   );
 }
