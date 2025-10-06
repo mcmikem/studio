@@ -1,12 +1,11 @@
 'use client';
 
 import type { User } from '@/lib/types';
-import { ImpactOverview } from './impact-overview';
-import { ProgramsOverview } from './programs-overview';
 import { TeamActivityFeed } from './team-activity-feed';
-import { DailyActions } from './daily-actions';
 import { DashboardCalendar } from './dashboard-calendar';
 import { Alerts } from './alerts';
+import { QuickStatsSummary } from './quick-stats-summary';
+import { ProgramsOverview } from './programs-overview';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -39,7 +38,7 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
                 </p>
             </header>
              <div className="space-y-6">
-                <ImpactOverview />
+                <QuickStatsSummary />
                 <ProgramsOverview />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">

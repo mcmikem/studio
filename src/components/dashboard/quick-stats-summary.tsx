@@ -1,8 +1,9 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { School, Users, Briefcase, Calendar, HandCoins, Image as ImageIcon } from 'lucide-react';
+import { School, Users, Briefcase, HandCoins, Image as ImageIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 
 const quickStats = [
     { title: 'Youth Reached', value: 247, target: 500, icon: Users },
@@ -16,35 +17,45 @@ const quickStats = [
 export function QuickStatsSummary() {
   return (
     <div>
-        <h2 className="text-lg font-semibold mb-2 ml-1">🌍 Our Impact This Week</h2>
-        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        {quickStats.map((stat) => {
+      <h2 className="text-lg font-semibold mb-2 ml-1">🌍 Our Impact This Week</h2>
+       <Carousel
+        opts={{
+          align: "start",
+          dragFree: true,
+        }}
+        className="w-full"
+      >
+        <CarouselContent>
+          {quickStats.map((stat, index) => {
             const Icon = stat.icon;
             const progress = stat.target ? (stat.value / stat.target) * 100 : 0;
             const displayValue = stat.isCurrency ? new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(stat.value) : stat.value;
             const displayTarget = stat.target ? (stat.isCurrency ? new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(stat.target) : stat.target) : null;
-            
+
             return (
-            <Card key={stat.title}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                <div className="text-2xl font-bold">{displayValue}</div>
-                {stat.target && (
-                    <>
-                        <p className="text-xs text-muted-foreground">
-                            {`of ${displayTarget}`}
-                        </p>
-                        <Progress value={progress} className="mt-2 h-2" />
-                    </>
-                )}
-                </CardContent>
-            </Card>
+              <CarouselItem key={index} className="basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/6">
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                        <Icon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{displayValue}</div>
+                        {stat.target && (
+                            <>
+                                <p className="text-xs text-muted-foreground">
+                                    {`of ${displayTarget}`}
+                                </p>
+                                <Progress value={progress} className="mt-2 h-2" />
+                            </>
+                        )}
+                    </CardContent>
+                </Card>
+              </CarouselItem>
             );
-        })}
-        </div>
+          })}
+        </CarouselContent>
+      </Carousel>
     </div>
   );
 }
