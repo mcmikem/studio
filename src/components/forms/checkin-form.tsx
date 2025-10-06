@@ -99,6 +99,13 @@ const steps = [
 ];
 
 function Step1({ location }: { location: string | null }) {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <>
       <CardHeader>
@@ -111,7 +118,7 @@ function Step1({ location }: { location: string | null }) {
         <div className="flex justify-between items-center p-3 border rounded-lg">
           <span className="text-muted-foreground">Time:</span>
           <span className="font-semibold">
-            {new Date().toLocaleTimeString()}
+            {time.toLocaleTimeString()}
           </span>
         </div>
         <div className="flex justify-between items-center p-3 border rounded-lg">
@@ -153,7 +160,7 @@ function Step2({
 
   const [aiSuggestions, setAiSuggestions] = useState<DailyPlannerAIOutput | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const toast = useToast();
+  const { toast } = useToast();
 
   const { watch } = form;
   const mainFocus = watch('mainFocus');
