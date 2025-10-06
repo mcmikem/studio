@@ -24,6 +24,14 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Check, X, Receipt } from 'lucide-react';
 import { format, parseISO, isValid } from 'date-fns';
+import { useMemo } from 'react';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', {
@@ -77,6 +85,32 @@ export default function ExpensesPage() {
   }, [firestore]);
 
   const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery);
+  
+  const chartData = useMemo(() => {
+    if (!expenses) return [];
+    const categoryTotals = expenses.reduce((acc, expense) => {
+      if(expense.status === 'Approved') {
+          if (!acc[expense.category]) {
+            acc[expense.category] = 0;
+          }
+          acc[expense.category] += expense.amount;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(categoryTotals).map(([name, total]) => ({
+      name,
+      total,
+    }));
+  }, [expenses]);
+  
+  const chartConfig = {
+    total: {
+      label: "Total",
+      color: "hsl(var(--primary))",
+    },
+  };
+
 
   const handleStatusUpdate = (expenseId: string, status: 'Approved' | 'Rejected') => {
     if (!firestore) return;
@@ -89,98 +123,132 @@ export default function ExpensesPage() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Expense Management</CardTitle>
-        <CardDescription>
-          Review, approve, or reject expense reports submitted by the team.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading &&
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
-                </TableRow>
-              ))}
-            {expenses && expenses.length > 0 ? (
-              expenses.map((expense) => (
-                <TableRow key={expense.id}>
-                  <TableCell className="font-medium">{expense.userName}</TableCell>
-                  <TableCell>{formatDateSafe(expense.date)}</TableCell>
-                  <TableCell>{expense.description}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{expense.category}</Badge>
-                  </TableCell>
-                  <TableCell>{formatCurrency(expense.amount)}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={statusColors[expense.status]}>
-                      {expense.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {expense.status === 'Pending' && (
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-green-500 hover:text-green-600"
-                          onClick={() => handleStatusUpdate(expense.id, 'Approved')}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-600"
-                          onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Expense Management</CardTitle>
+                    <CardDescription>
+                    Review, approve, or reject expense reports submitted by the team.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading &&
+                        Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i}>
+                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                            </TableRow>
+                        ))}
+                        {expenses && expenses.length > 0 ? (
+                        expenses.map((expense) => (
+                            <TableRow key={expense.id}>
+                            <TableCell className="font-medium">{expense.userName}</TableCell>
+                            <TableCell>{formatDateSafe(expense.date)}</TableCell>
+                            <TableCell>{expense.description}</TableCell>
+                            <TableCell>
+                                <Badge variant="outline">{expense.category}</Badge>
+                            </TableCell>
+                            <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                            <TableCell>
+                                <Badge variant="outline" className={statusColors[expense.status]}>
+                                {expense.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                {expense.status === 'Pending' && (
+                                <div className="flex justify-end gap-2">
+                                    <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-green-500 hover:text-green-600"
+                                    onClick={() => handleStatusUpdate(expense.id, 'Approved')}
+                                    >
+                                    <Check className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-red-500 hover:text-red-600"
+                                    onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
+                                    >
+                                    <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                )}
+                            </TableCell>
+                            </TableRow>
+                        ))
+                        ) : (
+                        !isLoading && (
+                            <TableRow>
+                            <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                <Receipt className="h-12 w-12" />
+                                <span className="text-lg font-semibold">
+                                    No Expenses Found
+                                </span>
+                                <p className="text-sm">
+                                    No expense reports have been submitted yet.
+                                </p>
+                                </div>
+                            </TableCell>
+                            </TableRow>
+                        )
+                        )}
+                    </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+        <div className="lg:col-span-1">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Spending by Category</CardTitle>
+                    <CardDescription>Approved expenses for the current period.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     {isLoading && <Skeleton className="w-full h-64" />}
+                     {!isLoading && chartData.length > 0 && (
+                        <ChartContainer config={chartConfig} className="w-full h-64">
+                            <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                                <XAxis type="number" hide />
+                                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))' }} />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)}/>}
+                                />
+                                <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+                            </BarChart>
+                        </ChartContainer>
                     )}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              !isLoading && (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <Receipt className="h-12 w-12" />
-                      <span className="text-lg font-semibold">
-                        No Expenses Found
-                      </span>
-                      <p className="text-sm">
-                        No expense reports have been submitted yet.
-                      </p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+                    {!isLoading && chartData.length === 0 && (
+                        <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
+                            <Receipt className="h-12 w-12" />
+                            <p className="mt-4 font-semibold">No approved expenses to show.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    </div>
   );
 }
