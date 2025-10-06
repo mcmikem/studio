@@ -1,13 +1,12 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp, query, where, orderBy, limit } from 'firebase/firestore';
+import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
 import {
   Select,
@@ -43,25 +42,31 @@ export function NewCheckinForm() {
     resolver: zodResolver(checkinSchema),
   });
 
-  const recentCheckoutQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return query(
-      collection(firestore, 'checkouts'),
-      where('userId', '==', user.uid),
-      orderBy('timestamp', 'desc'),
-      limit(1)
-    );
-  }, [firestore, user]);
+  useEffect(() => {
+    async function fetchLastCheckout() {
+        if (!firestore || !user) return;
 
-  const { data: recentCheckouts } = useCollection<Checkout>(recentCheckoutQuery);
-  
-  const missionFromYesterday = recentCheckouts?.[0]?.tomorrowPlan;
+        const checkoutQuery = query(
+            collection(firestore, 'checkouts'),
+            where("userId", "==", user.uid),
+            orderBy("timestamp", "desc"),
+            limit(1)
+        );
 
-  useMemo(() => {
-    if (missionFromYesterday) {
-      setValue('primaryMission', missionFromYesterday);
+        try {
+            const querySnapshot = await getDocs(checkoutQuery);
+            if (!querySnapshot.empty) {
+                const lastCheckout = querySnapshot.docs[0].data() as Checkout;
+                if (lastCheckout.tomorrowPlan) {
+                    setValue('primaryMission', lastCheckout.tomorrowPlan);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching last checkout:", error);
+        }
     }
-  }, [missionFromYesterday, setValue]);
+    fetchLastCheckout();
+  }, [firestore, user, setValue]);
 
 
   const onSubmit = (data: CheckinFormData) => {
@@ -104,7 +109,6 @@ export function NewCheckinForm() {
                     <SelectValue placeholder="Select or type your mission..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {missionFromYesterday && <SelectItem value={missionFromYesterday}>{missionFromYesterday}</SelectItem>}
                     <SelectItem value="Fundraising & Partnerships">Fundraising & Partnerships</SelectItem>
                     <SelectItem value="Program Development">Program Development</SelectItem>
                     <SelectItem value="Field Operations">Field Operations</SelectItem>

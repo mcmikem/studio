@@ -12,7 +12,7 @@ import {
   useMemoFirebase,
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { KeyResult, User, Checkout } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -691,6 +691,7 @@ export function CheckinForm() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const [location, setLocation] = useState<string | null>(null);
+  const [missionFromYesterday, setMissionFromYesterday] = useState<string | null>(null);
   
   const form = useForm<CheckinFormData>({
     resolver: zodResolver(checkinSchema),
@@ -710,24 +711,35 @@ export function CheckinForm() {
   const { data: keyResults, isLoading: isLoadingKR } =
     useCollection<KeyResult>(keyResultsQuery);
   
-  const recentCheckoutQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return query(
-        collection(firestore, "checkouts"),
-        where("userId", "==", user.uid),
-        orderBy("timestamp", "desc"),
-        limit(1)
-    );
-  }, [firestore, user]);
-
-  const { data: recentCheckouts } = useCollection<Checkout>(recentCheckoutQuery);
-  const missionFromYesterday = recentCheckouts?.[0]?.tomorrowPlan;
-
+  
   useEffect(() => {
-    if (missionFromYesterday) {
-        form.setValue('mainFocus', missionFromYesterday);
+    async function fetchLastCheckout() {
+        if (!firestore || !user) return;
+
+        const checkoutQuery = query(
+            collection(firestore, 'checkouts'),
+            where("userId", "==", user.uid),
+            orderBy("timestamp", "desc"),
+            limit(1)
+        );
+
+        try {
+            const querySnapshot = await getDocs(checkoutQuery);
+            if (!querySnapshot.empty) {
+                const lastCheckout = querySnapshot.docs[0].data() as Checkout;
+                if (lastCheckout.tomorrowPlan) {
+                    setMissionFromYesterday(lastCheckout.tomorrowPlan);
+                    form.setValue('mainFocus', lastCheckout.tomorrowPlan);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching last checkout:", error);
+            // Don't show a toast for this, as it's a background operation
+        }
     }
-  }, [missionFromYesterday, form]);
+    fetchLastCheckout();
+  }, [firestore, user, form]);
+
 
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
