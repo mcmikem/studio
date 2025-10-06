@@ -115,7 +115,7 @@ function FinancialOverview() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card className="flex flex-col justify-between">
         <CardHeader>
-          <CardTitle size="lg" className="flex items-center gap-2 text-primary">
+          <CardTitle className="flex items-center gap-2 text-primary">
             <DollarSign />
             Monthly Spending
           </CardTitle>
@@ -129,7 +129,7 @@ function FinancialOverview() {
       </Card>
       <Card className="flex flex-col justify-between">
         <CardHeader>
-          <CardTitle size="lg" className="flex items-center gap-2 text-green-500">
+          <CardTitle className="flex items-center gap-2 text-green-500">
             <Target />
             Value Generated
           </CardTitle>
@@ -143,7 +143,7 @@ function FinancialOverview() {
       </Card>
       <Card className="flex flex-col justify-between">
         <CardHeader>
-          <CardTitle size="lg" className="flex items-center gap-2 text-blue-500">
+          <CardTitle className="flex items-center gap-2 text-blue-500">
             <VenetianMask />
             Remaining Budget
           </CardTitle>
@@ -182,7 +182,7 @@ function RecentExpenses() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle size="lg">Pending Expense Reports</CardTitle>
+        <CardTitle>Pending Expense Reports</CardTitle>
         <CardDescription>Awaiting review and approval.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -254,7 +254,7 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle size="xl">Financial Overview</CardTitle>
+            <CardTitle>Financial Overview</CardTitle>
             <CardDescription>
               A summary of this month's spending and value generation.
             </CardDescription>
@@ -275,7 +275,7 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
           <div className="md:col-span-3">
             <Card>
               <CardHeader>
-                <CardTitle size="lg">Media Asset Library</CardTitle>
+                <CardTitle>Media Asset Library</CardTitle>
                 <CardDescription>
                   A central place for all photos, videos, and brand assets.
                 </CardDescription>
