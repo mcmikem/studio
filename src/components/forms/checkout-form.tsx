@@ -140,9 +140,24 @@ export function CheckoutForm() {
 
     const checkoutsCollection = collection(firestore, 'checkouts');
     try {
+        // We now expect addDocumentNonBlocking to return a promise that resolves with the doc ref
         const docRef = await addDocumentNonBlocking(checkoutsCollection, checkoutData);
         if (docRef) {
-            setSubmittedCheckoutId(docRef.id);
+            // Firestore creates activities from checkouts, so we use the checkout ID
+            const activitiesCollection = collection(firestore, 'activities');
+            const activityData = {
+                title: data.missionAccomplished.substring(0, 50), // Truncate for title
+                userId: user.uid,
+                userName: profile.name,
+                actualCost: 0, // Default value, can be updated later
+                totalValue: 0, // Default value
+                finalRoi: 0, // Default value
+                loggedAt: serverTimestamp(),
+            };
+            const activityRef = await addDocumentNonBlocking(activitiesCollection, activityData);
+            if (activityRef) {
+              setSubmittedCheckoutId(activityRef.id);
+            }
         }
         toast({
         title: 'Check-out Submitted!',
@@ -150,6 +165,7 @@ export function CheckoutForm() {
         });
     } catch (e) {
         // Error is handled by non-blocking-updates
+        console.error("Failed to submit checkout", e)
     }
   };
   

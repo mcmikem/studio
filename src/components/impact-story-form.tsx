@@ -135,7 +135,7 @@ export function ImpactStoryGenerator() {
                   <SelectContent>
                     {activities?.map(activity => (
                         <SelectItem key={activity.id} value={activity.id}>
-                            {activity.title} ({new Date(activity.loggedAt.toDate()).toLocaleDateString()})
+                            {activity.title} ({activity.loggedAt ? new Date(activity.loggedAt.toDate()).toLocaleDateString() : 'Date N/A'})
                         </SelectItem>
                     ))}
                   </SelectContent>
