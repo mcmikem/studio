@@ -4,7 +4,6 @@ import {
   Calculator,
   ClipboardList,
   FileText,
-  HeartHandshake,
   Home,
   Sparkles,
   Briefcase,
@@ -17,6 +16,7 @@ import {
   Handshake,
   ClipboardEdit,
   Target,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -35,7 +35,7 @@ import { Separator } from './ui/separator';
 const OmutoLogo = () => (
     <div className="flex items-center gap-2" data-ai-hint="logo">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <HeartHandshake className="h-5 w-5" />
+            <Users className="h-5 w-5" />
         </div>
         <span className="font-headline text-lg font-bold">Omuto Central</span>
     </div>

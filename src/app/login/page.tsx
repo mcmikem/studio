@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { HeartHandshake, Loader2 } from 'lucide-react';
+import { Users, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FirebaseError } from 'firebase/app';
 
@@ -112,10 +112,10 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
-        <div className="flex justify-center mb-6">
-            <div className="flex items-center gap-2" data-ai-hint="logo">
+        <div className="flex justify-center mb-8">
+            <div className="flex items-center gap-3" data-ai-hint="logo">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-                    <HeartHandshake className="h-8 w-8 text-primary-foreground" />
+                    <Users className="h-7 w-7 text-primary-foreground" />
                 </div>
                 <span className="font-headline text-3xl font-bold">Omuto Central</span>
             </div>
