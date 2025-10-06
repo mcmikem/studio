@@ -33,6 +33,7 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { format } from 'date-fns';
 
 
 const statusIcons: { [key: string]: React.ReactNode } = {
@@ -82,9 +83,11 @@ function ProgramForm({
       ...program,
       objectives: program.objectives.join('\n'),
       valuePerObjective: program.valuePerObjective || 0,
+      deadline: program.deadline ? format(new Date(program.deadline), 'yyyy-MM-dd') : '',
     } : {
       status: 'On Track',
       valuePerObjective: 0,
+      deadline: format(new Date(), 'yyyy-MM-dd'),
     },
   });
 

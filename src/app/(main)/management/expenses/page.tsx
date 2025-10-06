@@ -39,18 +39,33 @@ const statusColors: { [key: string]: string } = {
   Rejected: 'border-red-500 bg-red-500/10 text-red-500',
 };
 
-const formatDateSafe = (timestamp: Timestamp | { toDate: () => Date } | null | undefined): string => {
-  if (!timestamp) return 'Invalid Date';
-  if (typeof (timestamp as any).toDate === 'function') {
+const formatDateSafe = (dateValue: Timestamp | { toDate: () => Date } | string | null | undefined): string => {
+  if (!dateValue) return 'Invalid Date';
+
+  // Handle Firestore Timestamp
+  if (typeof (dateValue as any).toDate === 'function') {
     try {
-      const date = (timestamp as { toDate: () => Date }).toDate();
+      const date = (dateValue as { toDate: () => Date }).toDate();
       if (!isNaN(date.getTime())) {
         return format(date, 'dd MMM yyyy');
       }
     } catch (e) {
-       // Fall through
+      // Fall through if toDate fails
     }
   }
+
+  // Handle ISO string or other date string formats
+  if (typeof dateValue === 'string') {
+    try {
+      const date = new Date(dateValue);
+      if (!isNaN(date.getTime())) {
+        return format(date, 'dd MMM yyyy');
+      }
+    } catch (e) {
+      // Fall through if string parsing fails
+    }
+  }
+
   return 'Invalid Date';
 };
 
