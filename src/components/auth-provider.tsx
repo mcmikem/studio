@@ -15,42 +15,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const isAuthRoute = unprotectedRoutes.includes(pathname);
+
   useEffect(() => {
     if (isUserLoading) return; // Wait for user status
 
-    const isUnprotected = unprotectedRoutes.includes(pathname);
-
-    if (!user && !isUnprotected) {
+    if (!user && !isAuthRoute) {
       router.push('/login');
     }
-    if (user && isUnprotected) {
+    if (user && isAuthRoute) {
       router.push('/');
     }
-  }, [user, isUserLoading, router, pathname]);
+  }, [user, isUserLoading, router, pathname, isAuthRoute]);
 
-  const isAuthRoute = unprotectedRoutes.includes(pathname);
-
+  // If loading, and not on an auth route, show a loader
   if (isUserLoading && !isAuthRoute) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
   }
-  
+
+  // If on an auth route (like /login), render children directly
+  // This also handles the case where the user is not yet loaded but the route is public
   if (isAuthRoute) {
     return <>{children}</>;
   }
 
+  // If no user and we are on a protected route, we show a loader while redirecting
   if (!user && !isAuthRoute) {
      return (
-      <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
   }
 
+  // If user is logged in, and it's a protected route, render the app layout
   return (
-    <>{children}</>
+    <SidebarProvider>
+        <Sidebar>
+            <AppSidebar />
+        </Sidebar>
+        <SidebarInset>
+            <AppHeader />
+            {children}
+        </SidebarInset>
+    </SidebarProvider>
   );
 }
