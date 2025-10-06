@@ -48,6 +48,7 @@ export const flexibleTargets: PlanGoal[] = [
 
 export const sampleUsers: Omit<User, 'id'>[] = [
     { name: 'McMike Mutumba', email: 'mcmike@omuto.org', role: 'Executive Director' },
+    { name: 'McMike Mutumba', email: '1mark2mike@gmail.com', role: 'Executive Director' },
     { name: 'Dianah Nansikombi', email: 'programs@omuto.org', role: 'Programs & Partnerships Manager' },
     { name: 'Kasirye Constantine', email: 'operations@omuto.org', role: 'Operations & Field Manager' },
     { name: 'Nsereko Alex', email: 'communications@omuto.org', role: 'Media & Communications Lead' },
