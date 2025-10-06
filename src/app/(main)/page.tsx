@@ -1,72 +1,46 @@
 'use client';
 
-import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { ProgramsOverview } from '@/components/dashboard/programs-overview';
-import { ImpactOverview } from '@/components/dashboard/impact-overview';
-import { Alerts } from '@/components/dashboard/alerts';
-import { DailyActions } from '@/components/dashboard/daily-actions';
-import { TeamActivityFeed } from '@/components/dashboard/team-activity-feed';
+import { Loader2 } from 'lucide-react';
+import { ExecutiveDashboard } from '@/components/dashboard/executive-dashboard';
+import { ProgramManagerDashboard } from '@/components/dashboard/program-manager-dashboard';
+import { FieldStaffDashboard } from '@/components/dashboard/field-staff-dashboard';
+import { DefaultDashboard } from '@/components/dashboard/default-dashboard';
+
 
 export default function DashboardPage() {
   const { user } = useUser();
-  const { profile } = useUserProfile(user);
+  const { profile, isLoading } = useUserProfile(user);
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  const today = new Date();
-  const dateString = today.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  if (isLoading || !profile) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
   
-  const firstName = profile?.name?.split(' ')[0] || 'User';
+  const renderDashboardByRole = () => {
+    switch (profile.role) {
+      case 'Executive Director':
+        return <ExecutiveDashboard profile={profile} />;
+      case 'Programs & Partnerships Manager':
+        return <ProgramManagerDashboard profile={profile} />;
+      case 'Operations & Field Manager':
+      case 'Field Coordinator':
+        return <FieldStaffDashboard profile={profile} />;
+      // TODO: Add Media & Finance Dashboard
+      // case 'Media & Communications Lead':
+      //   return <MediaFinanceDashboard profile={profile} />;
+      default:
+        return <DefaultDashboard profile={profile} />;
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6">
-      <header className="space-y-1">
-        <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">
-          {getGreeting()},{' '}
-          {firstName} 🚀 |
-          Building Youth. Building Change.
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dateString} | Mpigi District, Uganda (EAT)
-        </p>
-      </header>
-
-      <div className="space-y-6">
-        <ImpactOverview />
-        <ProgramsOverview />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            <TeamActivityFeed />
-          </div>
-          <div className="flex flex-col gap-6">
-             <DailyActions />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           <div className="lg:col-span-2">
-             <DashboardCalendar />
-           </div>
-           <div>
-             <Alerts />
-           </div>
-        </div>
-
-      </div>
-
+      {renderDashboardByRole()}
       <footer className="text-center text-xs text-muted-foreground mt-4">
         “Omuto Central – Empowering Youth, Transforming Communities.” ©{' '}
         {new Date().getFullYear()} Omuto Foundation | Built for Impact, by
