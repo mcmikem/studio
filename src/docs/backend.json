@@ -284,7 +284,8 @@
         "metric": { "type": "string" },
         "target": { "type": "number" },
         "current": { "type": "number" },
-        "unit": { "type": "string" }
+        "unit": { "type": "string" },
+        "valuePerUnit": { "type": "number" }
       },
       "required": ["metric", "target", "current"]
     }

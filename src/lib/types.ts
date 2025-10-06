@@ -1,4 +1,3 @@
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type StatCard = {
@@ -126,7 +125,8 @@ export type ImpactMetric = {
     metric: string;
     target: number;
     current: number;
-    unit: string;
+    unit?: string;
+    valuePerUnit?: number;
 }
 
 export type Alert = {
@@ -142,5 +142,3 @@ export type Task = {
     completed: boolean;
     dueDate?: string;
 }
-
-    

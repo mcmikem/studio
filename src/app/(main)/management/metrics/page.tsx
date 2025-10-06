@@ -50,6 +50,7 @@ const metricSchema = z.object({
   current: z.coerce.number().min(0, 'Current value cannot be negative.'),
   target: z.coerce.number().min(1, 'Target must be greater than zero.'),
   unit: z.string().optional(),
+  valuePerUnit: z.coerce.number().min(0, 'Value per unit cannot be negative.').optional(),
 });
 
 function NewMetricForm({ onFormSubmit }: { onFormSubmit: () => void }) {
@@ -66,6 +67,7 @@ function NewMetricForm({ onFormSubmit }: { onFormSubmit: () => void }) {
     defaultValues: {
         current: 0,
         target: 100,
+        valuePerUnit: 0,
     }
   });
 
@@ -102,10 +104,17 @@ function NewMetricForm({ onFormSubmit }: { onFormSubmit: () => void }) {
            {errors.target && <p className="text-sm text-destructive">{`${errors.target.message}`}</p>}
         </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="unit">Unit</Label>
-        <Input id="unit" {...register('unit')} placeholder="e.g., students, trees, UGX" />
-         {errors.unit && <p className="text-sm text-destructive">{`${errors.unit.message}`}</p>}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+            <Label htmlFor="unit">Unit</Label>
+            <Input id="unit" {...register('unit')} placeholder="e.g., students, trees" />
+            {errors.unit && <p className="text-sm text-destructive">{`${errors.unit.message}`}</p>}
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="valuePerUnit">Value per Unit (UGX)</Label>
+            <Input id="valuePerUnit" type="number" {...register('valuePerUnit')} placeholder="e.g., 1000" />
+            {errors.valuePerUnit && <p className="text-sm text-destructive">{`${errors.valuePerUnit.message}`}</p>}
+        </div>
       </div>
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
@@ -157,9 +166,10 @@ export default function MetricsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40%]">Metric</TableHead>
-              <TableHead>Current Value</TableHead>
+              <TableHead className="w-[30%]">Metric</TableHead>
+              <TableHead>Current</TableHead>
               <TableHead>Target</TableHead>
+              <TableHead>Value/Unit</TableHead>
               <TableHead>Progress</TableHead>
             </TableRow>
           </TableHeader>
@@ -169,6 +179,9 @@ export default function MetricsPage() {
                 <TableRow key={i}>
                   <TableCell>
                     <Skeleton className="h-5 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-20" />
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-5 w-20" />
@@ -189,6 +202,7 @@ export default function MetricsPage() {
                     <TableCell className="font-medium">{metric.metric}</TableCell>
                     <TableCell>{metric.current.toLocaleString()} {metric.unit}</TableCell>
                     <TableCell>{metric.target.toLocaleString()} {metric.unit}</TableCell>
+                     <TableCell>{(metric.valuePerUnit || 0).toLocaleString()} UGX</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Progress value={progress} className="h-2 flex-1" />
@@ -204,7 +218,7 @@ export default function MetricsPage() {
               !isLoading && (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={5}
                     className="h-48 text-center text-muted-foreground"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
