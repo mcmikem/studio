@@ -61,7 +61,7 @@ interface MultiSelectProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 
-const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
+const MultiSelectComponent = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
   (
     {
       options,
@@ -244,9 +244,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
   },
 )
 
-MultiSelect.displayName = "MultiSelect"
-
-export { MultiSelect }
+MultiSelectComponent.displayName = "MultiSelectComponent"
 
 
 type MultiSelectContextValue = {
@@ -292,10 +290,12 @@ const MultiSelectProvider = ({
 const MultiSelectTrigger = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(
   ({ children, ...props }, ref) => {
   return (
-    <Button ref={ref} {...props} variant="outline" className="h-10 w-full justify-between p-2">
-      {children}
-      <ChevronDown className="h-4 w-4 opacity-50" />
-    </Button>
+    <PopoverTrigger asChild>
+        <Button ref={ref} {...props} variant="outline" className="h-10 w-full justify-between p-2">
+            {children}
+            <ChevronDown className="h-4 w-4 opacity-50" />
+        </Button>
+    </PopoverTrigger>
   );
 });
 
@@ -318,7 +318,7 @@ const MultiSelectValue = React.forwardRef<HTMLDivElement, React.ComponentProps<t
 
   return (
     <div ref={ref} className="flex gap-1 flex-wrap">
-      <Badge variant="secondary">{first}</Badge>
+      {first && <Badge variant="secondary">{first}</Badge>}
       {second && <Badge variant="secondary">{second}</Badge>}
       {rest.length > 0 && <Badge variant="secondary">+{rest.length}</Badge>}
     </div>
@@ -328,12 +328,10 @@ const MultiSelectValue = React.forwardRef<HTMLDivElement, React.ComponentProps<t
 MultiSelectValue.displayName = 'MultiSelectValue';
 
 
-const MultiSelectContent = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof Command>>(
+const MultiSelectContent = React.forwardRef<HTMLDivElement, React.ComponentProps<typeof PopoverContent> & {children: React.ReactNode}>(
   ({ children, ...props }, ref) => {
     return (
-      <Popover>
-        <PopoverTrigger asChild>{props.children}</PopoverTrigger>
-        <PopoverContent className="p-0 w-[--radix-popover-trigger-width]">
+        <PopoverContent ref={ref} className="p-0 w-[--radix-popover-trigger-width]" {...props}>
           <Command>
             <CommandInput placeholder="Search..." />
             <CommandList>
@@ -344,7 +342,6 @@ const MultiSelectContent = React.forwardRef<HTMLDivElement, React.ComponentProps
             </CommandList>
           </Command>
         </PopoverContent>
-      </Popover>
     );
   }
 );
@@ -371,14 +368,14 @@ const MultiSelectItem = React.forwardRef<HTMLDivElement, React.ComponentProps<ty
 
 MultiSelectItem.displayName = 'MultiSelectItem';
 
-const MultiSelectRoot = ({
+const MultiSelect = ({
   children,
-  defaultValue,
   onValueChange,
+  defaultValue = [],
 }: {
   children: React.ReactNode,
-  defaultValue: string[],
   onValueChange: (value: string[]) => void,
+  defaultValue?: string[],
 }) => {
   const [value, setValue] = React.useState(defaultValue);
 
@@ -396,44 +393,10 @@ const MultiSelectRoot = ({
   );
 }
 
-const NewMultiSelect = ({
-  children,
-  onValueChange,
-  defaultValue = [],
-}: {
-  children: React.ReactNode,
-  onValueChange: (value: string[]) => void,
-  defaultValue?: string[],
-}) => {
-  const [value, setValue] = React.useState(defaultValue);
-
-  const handleValueChange = (newVal: string[]) => {
-    setValue(newVal);
-    onValueChange(newVal);
-  };
-  return <MultiSelectProvider value={value} onValueChange={handleValueChange}>{children}</MultiSelectProvider>
-}
-
-const NewMultiSelectContent = ({children}: {children: React.ReactNode}) => {
-  return (
-    <PopoverContent className="p-0 w-[--radix-popover-trigger-width]">
-      <Command>
-        <CommandInput placeholder="Search..." />
-        <CommandList>
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup>
-              {children}
-            </CommandGroup>
-        </CommandList>
-      </Command>
-    </PopoverContent>
-  );
-}
-
 export {
-  NewMultiSelect as MultiSelect,
+  MultiSelect,
   MultiSelectTrigger,
   MultiSelectValue,
-  NewMultiSelectContent as MultiSelectContent,
+  MultiSelectContent,
   MultiSelectItem
 }
