@@ -81,29 +81,31 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<'google' | 'email' | null>(null);
 
-  const handleAuthError = (error: FirebaseError) => {
+  const handleAuthError = (error: Error | FirebaseError) => {
     let title = 'An error occurred';
     let description = error.message;
 
-    switch (error.code) {
-        case 'auth/invalid-credential':
-            title = 'Invalid Credentials';
-            description = 'Please check your email and password and try again.';
-            break;
-        case 'auth/email-already-in-use':
-            title = 'Email Already in Use';
-            description = 'This email address is already registered. Please sign in or use a different email.';
-            break;
-        case 'auth/weak-password':
-            title = 'Weak Password';
-            description = 'The password must be at least 6 characters long.';
-            break;
-        case 'auth/popup-closed-by-user':
-            title = 'Sign-in Canceled';
-            description = 'The Google sign-in popup was closed before completion.';
-            break;
-        default:
-            break;
+    if (error instanceof FirebaseError) {
+        switch (error.code) {
+            case 'auth/invalid-credential':
+                title = 'Invalid Credentials';
+                description = 'Please check your email and password and try again.';
+                break;
+            case 'auth/email-already-in-use':
+                title = 'Email Already in Use';
+                description = 'This email address is already registered. Please sign in or use a different email.';
+                break;
+            case 'auth/weak-password':
+                title = 'Weak Password';
+                description = 'The password must be at least 6 characters long.';
+                break;
+            case 'auth/popup-closed-by-user':
+                title = 'Sign-in Canceled';
+                description = 'The Google sign-in popup was closed before completion.';
+                break;
+            default:
+                break;
+        }
     }
     
     toast({

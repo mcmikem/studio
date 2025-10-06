@@ -12,43 +12,60 @@ import { errorEmitter } from './error-emitter';
 import { FirestorePermissionError } from './errors';
 
 
-// This maps specific emails to roles within the Omuto organization.
-const emailToRoleMap: Record<string, string> = {
+// This maps specific emails to roles and names within the Omuto organization.
+const approvedUsers: Record<string, { name: string; role: string }> = {
     // Executive
-    'mcmike@omuto.org': 'Executive Director',
-    '1mark2mike@gmail.com': 'Executive Director',
-    'mcmike.mutumba@gmail.com': 'Executive Director',
+    'mcmike@omuto.org': { name: 'McMike Mutumba', role: 'Executive Director' },
+    '1mark2mike@gmail.com': { name: 'McMike Mutumba', role: 'Executive Director' },
+    'mcmike.mutumba@gmail.com': { name: 'McMike Mutumba', role: 'Executive Director' },
     
     // Programs & Partnerships
-    'dianah@omuto.org': 'Programs & Partnerships Manager',
-    'nansikombidianah@gmail.com': 'Programs & Partnerships Manager',
+    'programs@omuto.org': { name: 'Dianah Nansikombi', role: 'Programs & Partnerships Manager' },
+    'nansikombidianah@gmail.com': { name: 'Dianah Nansikombi', role: 'Programs & Partnerships Manager' },
 
     // Operations & Field
-    'kasirye@omuto.org': 'Operations & Field Manager',
-    'kasirye.connie@gmail.com': 'Operations & Field Manager',
-    'bashir@omuto.org': 'Field Coordinator',
+    'operations@omuto.org': { name: 'Kasirye Constantine', role: 'Operations & Field Manager' },
+    'kasirye.connie@gmail.com': { name: 'Kasirye Constantine', role: 'Operations & Field Manager' },
+    'bashir@omuto.org': { name: 'Bashir', role: 'Field Coordinator' },
     
     // Media, Comms & Finance
-    'alex@omuto.org': 'Media & Communications Lead',
+    'communications@omuto.org': { name: 'Nsereko Alex', role: 'Media & Communications Lead' },
+    'alex@omuto.org': { name: 'Nsereko Alex', role: 'Media & Communications Lead' },
 
     // Resource Mobilization
-    'akera@omuto.org': 'Resource Mobilization Lead',
-    'akerajonpaul@gmail.com': 'Resource Mobilization Lead',
+    'partnerships@omuto.org': { name: 'John Paul Akera', role: 'Resource Mobilization Lead' },
+    'akera@omuto.org': { name: 'John Paul Akera', role: 'Resource Mobilization Lead' },
+    'akerajonpaul@gmail.com': { name: 'John Paul Akera', role: 'Resource Mobilization Lead' },
+
+    // General
+    'info@omuto.org': { name: 'Omuto General', role: 'Administrator' },
 };
+
+const isEmailApproved = (email: string | null): boolean => {
+    if (!email) return false;
+    return Object.keys(approvedUsers).includes(email.toLowerCase());
+}
 
 async function createUserProfile(userCredential: UserCredential) {
     const user = userCredential.user;
     if (!user || !user.email) return userCredential;
 
+    if (!isEmailApproved(user.email)) {
+        // This is a failsafe. This user should not have been created.
+        // We delete the user and throw an error.
+        await user.delete();
+        throw new Error('This email address is not authorized to use this application.');
+    }
+
     const db = getFirestore(user.auth.app);
     const userRef = doc(db, 'users', user.uid);
-    const role = emailToRoleMap[user.email.toLowerCase()] || 'Staff';
+    const userData = approvedUsers[user.email.toLowerCase()];
 
     const userProfile = {
         id: user.uid,
-        name: user.displayName || user.email.split('@')[0],
+        name: userData.name,
         email: user.email,
-        role: role,
+        role: userData.role,
     };
 
     // Use a non-blocking write to create the user profile document
@@ -70,6 +87,9 @@ async function createUserProfile(userCredential: UserCredential) {
 
 /** Initiate email/password sign-up and create user profile. */
 export function initiateEmailSignUp(authInstance: Auth, email: string, password: string) {
+  if (!isEmailApproved(email)) {
+    return Promise.reject(new Error("This email address is not authorized for sign-up."));
+  }
   return createUserWithEmailAndPassword(authInstance, email, password)
     .then(createUserProfile)
     .catch(error => {
@@ -80,6 +100,9 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
 
 /** Initiate email/password sign-in (non-blocking). */
 export function initiateEmailSignIn(authInstance: Auth, email: string, password: string) {
+  if (!isEmailApproved(email)) {
+    return Promise.reject(new Error("This email address is not authorized to sign in."));
+  }
   return signInWithEmailAndPassword(authInstance, email, password).catch(error => {
       console.error("Email sign-in error:", error);
       throw error;
@@ -90,11 +113,17 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
 export function initiateGoogleSignIn(authInstance: Auth) {
     const provider = new GoogleAuthProvider();
     return signInWithPopup(authInstance, provider)
-      .then(createUserProfile)
+      .then(userCredential => {
+          if (!isEmailApproved(userCredential.user.email)) {
+              // Important: Sign the user out immediately and throw an error.
+              authInstance.signOut();
+              throw new Error("This Google account is not authorized to use this application.");
+          }
+          // If approved, proceed to create their profile.
+          return createUserProfile(userCredential);
+      })
       .catch(error => {
         console.error("Google sign-in error:", error);
         throw error;
       });
 }
-
-    
