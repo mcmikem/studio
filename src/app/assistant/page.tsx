@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Bot, User, Loader2 } from 'lucide-react';
-import { streamAssistant } from '@/ai/flows/assistant-flow';
+import { assistantFlow } from '@/ai/flows/assistant-flow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -54,16 +54,12 @@ export default function AssistantPage() {
     setMessages((prev) => [...prev, assistantMessage]);
 
     try {
-      const stream = await streamAssistant(prompt);
-      let content = '';
-      for await (const chunk of stream) {
-        content += chunk;
-        setMessages((prev) =>
-          prev.map((msg, i) =>
-            i === prev.length - 1 ? { ...msg, content } : msg
-          )
-        );
-      }
+      const response = await assistantFlow(prompt);
+      setMessages((prev) =>
+        prev.map((msg, i) =>
+          i === prev.length - 1 ? { ...msg, content: response } : msg
+        )
+      );
     } catch (e) {
       console.error(e);
       setMessages((prev) =>
@@ -145,6 +141,18 @@ export default function AssistantPage() {
                   )}
                 </div>
               ))}
+              {isLoading && messages[messages.length -1].role === 'assistant' && (
+                <div className="flex items-start gap-3">
+                    <Avatar className="h-9 w-9 border">
+                      <AvatarFallback>
+                        <Bot />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="rounded-lg p-3 max-w-lg bg-muted flex items-center">
+                       <Loader2 className="animate-spin h-5 w-5 text-muted-foreground" />
+                    </div>
+                </div>
+              )}
               {messages.length === 0 && (
                 <div className="text-center text-muted-foreground pt-16 flex flex-col items-center">
                     <Bot className="h-12 w-12 mb-4" />

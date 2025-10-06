@@ -180,6 +180,7 @@ const getRecentCheckoutsTool = ai.defineTool(
 
 const assistantPrompt = ai.definePrompt({
   name: 'assistantPrompt',
+  input: { schema: z.object({ prompt: z.string() }) },
   system: `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
 
 You have access to live data about the organization through your tools. Use them whenever possible to provide real-time information.
@@ -236,6 +237,9 @@ This is your knowledge base. It is the complete operational DNA of Omuto Foundat
 - **Daily Operating Rhythm**: 9 AM WhatsApp check-in, 5 PM checkout, Friday reviews, Sunday "Omuto This Week" publication.
 - **Innovation & Sustainability**: Focus on models like commission-based production for Dignity Pads and non-financial motivation for volunteers.
 - **Data-Driven Adaptation**: Use real-time data to track progress, monitor health, and mitigate risks.
+
+Here is the user's question:
+{{{prompt}}}
 `,
   tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
   output: {
@@ -251,10 +255,8 @@ const assistantFlow = ai.defineFlow(
   },
   async (prompt) => {
     const llmResponse = await ai.generate({
-      prompt: {
-        ...assistantPrompt,
-        input: { prompt }
-      }
+      prompt: assistantPrompt,
+      input: { prompt },
     });
     return llmResponse.text();
   }
@@ -266,5 +268,10 @@ export async function streamAssistant(prompt: string) {
         prompt: assistantPrompt,
         input: { prompt },
     });
-    return stream;
+    
+    let content = '';
+    for await (const chunk of stream) {
+        content += chunk;
+    }
+    return content;
 }
