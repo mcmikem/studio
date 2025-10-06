@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Copy } from "lucide-react";
+import { Loader2, Copy, Sparkles } from "lucide-react";
 import Image from "next/image";
 
 const formSchema = z.object({
@@ -37,7 +37,7 @@ const formSchema = z.object({
   activityImpact: z.string().min(3, "Impact details are required."),
   userName: z.string().min(2, "User name is required."),
   userQuote: z.string().min(10, "Quote is too short."),
-  photo: z.any().refine((file) => file?.length == 1, "Photo is required."),
+  photo: z.any().refine((files) => files?.length === 1, "Photo is required."),
 });
 
 const fileToDataUri = (file: File): Promise<string> => {
@@ -52,16 +52,18 @@ const fileToDataUri = (file: File): Promise<string> => {
 export function ImpactStoryForm() {
   const [generatedStory, setGeneratedStory] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      activityName: "",
-      activityDescription: "",
-      activityImpact: "",
-      userName: "",
-      userQuote: "",
+      activityName: "RED Campaign at Greenhill PTA Meeting",
+      activityDescription: "We hosted a session for parents, discussing menstrual health and introducing our reusable Dignity Pads. The engagement was fantastic, with parents opening up about the challenges their daughters face.",
+      activityImpact: "Reached 45 parents, sold 20 Dignity Pad kits, and recruited 3 new parent-volunteers.",
+      userName: "Mama Sarah",
+      userQuote: "I never knew these pads existed! This is going to change my daughter's life. She will never have to miss school again.",
+      photo: undefined,
     },
   });
 
@@ -86,8 +88,8 @@ export function ImpactStoryForm() {
       console.error("Error generating story:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Failed to generate impact story. Please try again.",
+        title: "Error Generating Story",
+        description: "There was an issue connecting to the AI service. Please try again later.",
       });
     } finally {
       setIsLoading(false);
@@ -95,14 +97,30 @@ export function ImpactStoryForm() {
   };
 
   const copyToClipboard = () => {
+    if (!generatedStory) return;
     navigator.clipboard.writeText(generatedStory);
     toast({
       title: "Copied to clipboard!",
     });
   };
+  
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      form.setValue("photo", event.target.files);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+        form.setValue("photo", null);
+        setPreviewImage(null);
+    }
+  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       <Card>
         <CardHeader>
           <CardTitle>Activity Details</CardTitle>
@@ -157,7 +175,7 @@ export function ImpactStoryForm() {
                 name="userName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>User Name</FormLabel>
+                    <FormLabel>Quote Source Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Sarah, a student leader" {...field} />
                     </FormControl>
@@ -170,7 +188,7 @@ export function ImpactStoryForm() {
                 name="userQuote"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>User Quote</FormLabel>
+                    <FormLabel>Quote Text</FormLabel>
                     <FormControl>
                       <Textarea placeholder="A quote from a user about the activity..." {...field} />
                     </FormControl>
@@ -188,7 +206,7 @@ export function ImpactStoryForm() {
                       <Input
                         type="file"
                         accept="image/*"
-                        onChange={(e) => field.onChange(e.target.files)}
+                        onChange={handlePhotoChange}
                       />
                     </FormControl>
                     <FormDescription>
@@ -197,20 +215,34 @@ export function ImpactStoryForm() {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
-              <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                 {previewImage && (
+                    <div className="mt-4">
+                        <Image
+                            src={previewImage}
+                            alt="Photo preview"
+                            width={150}
+                            height={150}
+                            className="rounded-lg object-cover"
+                        />
+                    </div>
+                )}
+              <Button type="submit" disabled={isLoading} className="w-full">
+                {isLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <Sparkles className="mr-2 h-4 w-4" />
+                )}
                 Generate Story
               </Button>
             </form>
           </Form>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="sticky top-6">
         <CardHeader>
           <CardTitle>Generated Impact Story</CardTitle>
           <CardDescription>
-            Your AI-generated story will appear here.
+            Your AI-generated story will appear here. Review and edit before use.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -220,7 +252,7 @@ export function ImpactStoryForm() {
               <p className="mt-4 text-muted-foreground">Generating your story...</p>
             </div>
           )}
-          {generatedStory && (
+          {generatedStory && !isLoading && (
             <div className="relative">
               <Button
                 variant="ghost"
@@ -238,16 +270,10 @@ export function ImpactStoryForm() {
             </div>
           )}
           {!isLoading && !generatedStory && (
-             <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center">
-                <Image
-                    src="https://picsum.photos/seed/impact-photo/800/600"
-                    width={200}
-                    height={150}
-                    alt="Placeholder for impact story"
-                    className="rounded-lg"
-                    data-ai-hint="writing story"
-                />
-                <p className="mt-4 text-sm text-muted-foreground">Your generated story will be shown here.</p>
+             <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center p-8">
+                <Sparkles className="h-16 w-16 text-muted-foreground" />
+                <p className="mt-4 text-lg font-semibold">Your Story Awaits</p>
+                <p className="mt-1 text-sm text-muted-foreground">Fill out the form to generate a compelling narrative about your work.</p>
             </div>
           )}
         </CardContent>
@@ -255,3 +281,5 @@ export function ImpactStoryForm() {
     </div>
   );
 }
+
+    
