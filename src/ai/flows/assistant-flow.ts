@@ -13,6 +13,8 @@ import {
   getDocs,
   query,
   where,
+  orderBy,
+  limit
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server';
 
@@ -140,6 +142,41 @@ const getPartnershipsTool = ai.defineTool(
     }
 );
 
+const getRecentCheckoutsTool = ai.defineTool(
+    {
+        name: 'getRecentCheckouts',
+        description: "Get the most recent daily checkout updates from team members.",
+        inputSchema: z.object({
+            userName: z.string().optional().describe("Filter checkouts by a specific team member's name."),
+            limit: z.number().optional().default(5).describe('The number of recent checkouts to retrieve.'),
+        }),
+        outputSchema: z.array(z.object({
+            name: z.string(),
+            task: z.string(),
+            timestamp: z.string(),
+        })),
+    },
+    async (input) => {
+        const { firestore } = await initializeFirebase();
+        const checkoutsCol = collection(firestore, 'checkouts');
+        let q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
+
+        if (input?.userName) {
+            q = query(q, where('name', '==', input.userName));
+        }
+
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                name: data.name,
+                task: data.task,
+                timestamp: data.timestamp.toDate().toLocaleString(),
+            }
+        });
+    }
+);
+
 
 const assistantPrompt = ai.definePrompt({
   name: 'assistantPrompt',
@@ -155,8 +192,8 @@ Your role is to provide accurate, helpful, and concise information to team membe
 - **Data-Driven Adaptation:** Your analysis should help the team track progress against the October Plan, monitor ecosystem health, and mitigate risks proactively.
 
 ## Your Capabilities
-You have access to live data about the organization's programs, finances, key results, and partnerships through the tools you are given. Use these tools to answer questions whenever possible. Be friendly, professional, and always frame your answers within the context of Omuto's mission and operational philosophy. For example, when asked to brainstorm, suggest ideas that align with the "Multiple Wins Framework".`,
-  tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool],
+You have access to live data about the organization's programs, finances, key results, partnerships, and recent team checkouts through the tools you are given. Use these tools to answer questions whenever possible. Be friendly, professional, and always frame your answers within the context of Omuto's mission and operational philosophy. For example, when asked to brainstorm, suggest ideas that align with the "Multiple Wins Framework".`,
+  tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
   output: {
     format: 'text'
   }

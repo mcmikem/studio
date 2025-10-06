@@ -7,9 +7,10 @@ import {
   signInWithPopup,
   UserCredential,
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, writeBatch, collection, getDocs, query, limit } from 'firebase/firestore';
 import { errorEmitter } from './error-emitter';
 import { FirestorePermissionError } from './errors';
+import { sampleUsers, samplePrograms, samplePartnerships, sampleKeyResults, sampleProjects, sampleImpactMetrics } from '@/lib/data';
 
 
 // This maps specific emails to roles and names within the Omuto organization.
@@ -46,18 +47,61 @@ const isEmailApproved = (email: string | null): boolean => {
     return Object.keys(approvedUsers).includes(email.toLowerCase());
 }
 
+async function seedInitialData(db: ReturnType<typeof getFirestore>) {
+    console.log("Checking if initial data seeding is needed...");
+
+    const collectionsToSeed = [
+        { name: 'users', data: sampleUsers },
+        { name: 'programs', data: samplePrograms },
+        { name: 'partnerships', data: samplePartnerships },
+        { name: 'key-results', data: sampleKeyResults },
+        { name: 'projects', data: sampleProjects },
+        { name: 'impact-metrics', data: sampleImpactMetrics },
+    ];
+    
+    const usersCollection = collection(db, 'users');
+    const userSnapshot = await getDocs(query(usersCollection, limit(1)));
+    
+    if (!userSnapshot.empty) {
+        console.log("Data already exists. Skipping seed.");
+        return;
+    }
+    
+    console.log("Seeding initial data...");
+    const batch = writeBatch(db);
+
+    collectionsToSeed.forEach(coll => {
+        const collectionRef = collection(db, coll.name);
+        coll.data.forEach((item: any) => {
+            // For the users collection, we use a specific ID if available (email)
+            // For other collections, we let Firestore generate the ID.
+            const docRef = coll.name === 'users' ? doc(collectionRef, item.email) : doc(collectionRef);
+            batch.set(docRef, item);
+        });
+    });
+
+    await batch.commit();
+    console.log("Initial data seeded successfully.");
+}
+
+
 async function createUserProfile(userCredential: UserCredential) {
     const user = userCredential.user;
     if (!user || !user.email) return userCredential;
 
     if (!isEmailApproved(user.email)) {
         // This is a failsafe. This user should not have been created.
-        // We delete the user and throw an error.
         await user.delete();
         throw new Error('This email address is not authorized to use this application.');
     }
 
     const db = getFirestore(user.auth.app);
+    
+    // Seed data on first user creation if needed
+    if (userCredential.additionalUserInfo?.isNewUser) {
+        await seedInitialData(db);
+    }
+    
     const userRef = doc(db, 'users', user.uid);
     const userData = approvedUsers[user.email.toLowerCase()];
 
