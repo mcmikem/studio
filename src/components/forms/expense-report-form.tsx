@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -86,7 +85,7 @@ export function ExpenseReportForm() {
 
     const expensesCollection = collection(firestore, 'expenses');
     try {
-      await addDocumentNonBlocking(expensesCollection, expenseData);
+      await addDoc(expensesCollection, expenseData);
       toast({
         title: 'Expense Report Submitted!',
         description: 'Your report has been sent for approval.',
@@ -104,15 +103,8 @@ export function ExpenseReportForm() {
 
 
   return (
-    <Card>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardHeader>
-          <CardTitle>New Expense Report</CardTitle>
-          <CardDescription>
-            Submit a new expense for reimbursement.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="space-y-2">
                 <Label htmlFor="date">Date of Expense</Label>
@@ -157,10 +149,7 @@ export function ExpenseReportForm() {
             />
             {errors.description && <p className="text-sm text-destructive">{`${errors.description.message}`}</p>}
           </div>
-          
-        </CardContent>
-        <CardFooter>
-            <Button
+           <Button
                 className="w-full"
                 type="submit"
                 disabled={isSubmitting}
@@ -173,8 +162,7 @@ export function ExpenseReportForm() {
                 )}
                 Submit for Approval
             </Button>
-        </CardFooter>
+        </div>
       </form>
-    </Card>
   );
 }

@@ -13,10 +13,15 @@ import { ClipboardEdit, LogIn, LogOut, BarChart3, Receipt } from 'lucide-react';
 import { ActivityReportForm } from '@/components/forms/activity-report-form';
 import { ExpenseReportForm } from '@/components/forms/expense-report-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function FormsPage() {
+function FormsContent() {
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'check-in';
+
   return (
-    <div className="flex flex-col gap-6">
+     <div className="flex flex-col gap-6">
       <header>
         <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
           <ClipboardEdit className="h-8 w-8" />
@@ -27,7 +32,7 @@ export default function FormsPage() {
         </p>
       </header>
 
-      <Tabs defaultValue="check-in" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
           <TabsTrigger value="check-in" className="py-2">
             <LogIn className="mr-2 h-4 w-4" />
@@ -50,7 +55,17 @@ export default function FormsPage() {
           <CheckinForm />
         </TabsContent>
         <TabsContent value="check-out">
-          <CheckoutForm />
+          <Card>
+            <CardHeader>
+              <CardTitle>Daily Check-out</CardTitle>
+              <CardDescription>
+                Report your impact, share learnings, and plan tomorrow's win.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CheckoutForm />
+            </CardContent>
+          </Card>
         </TabsContent>
         <TabsContent value="activity">
           <Card>
@@ -66,9 +81,27 @@ export default function FormsPage() {
           </Card>
         </TabsContent>
         <TabsContent value="expense">
-          <ExpenseReportForm />
+          <Card>
+             <CardHeader>
+              <CardTitle>New Expense Report</CardTitle>
+              <CardDescription>
+                Submit a new expense for reimbursement.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ExpenseReportForm />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
   );
+}
+
+export default function FormsPage() {
+    return (
+        <Suspense>
+            <FormsContent />
+        </Suspense>
+    );
 }
