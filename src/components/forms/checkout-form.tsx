@@ -141,7 +141,7 @@ export function CheckoutForm() {
     const checkoutsCollection = collection(firestore, 'checkouts');
     try {
         const docRef = await addDocumentNonBlocking(checkoutsCollection, checkoutData);
-        if (docRef) {
+        if (docRef?.id) {
           setSubmittedCheckoutId(docRef.id);
         }
         toast({
@@ -176,7 +176,7 @@ export function CheckoutForm() {
                     Submit another report
                 </Button>
                  <Button asChild>
-                    <Link href={`/impact-story?activityId=${submittedCheckoutId}`}>
+                    <Link href={`/impact-story?checkoutId=${submittedCheckoutId}`}>
                         <Wand className="mr-2 h-4 w-4" />
                         Generate Impact Story
                     </Link>

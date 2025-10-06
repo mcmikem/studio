@@ -20,7 +20,7 @@ function ImpactStoryContent() {
 
 export default function ImpactStoryPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense>
       <ImpactStoryContent />
     </Suspense>
   )

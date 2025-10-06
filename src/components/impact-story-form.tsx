@@ -27,9 +27,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Copy, Sparkles, Wand } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
-import type { Activity } from "@/lib/types";
+import { useCollection, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
+import { collection, query, orderBy, doc } from "firebase/firestore";
+import type { Activity, Checkout } from "@/lib/types";
 import { Skeleton } from "./ui/skeleton";
 import { useSearchParams } from 'next/navigation';
 
@@ -45,6 +45,7 @@ const fileToDataUri = (file: File): Promise<string> => {
 
 export function ImpactStoryGenerator() {
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+  const [selectedCheckoutId, setSelectedCheckoutId] = useState<string | null>(null);
   const [generatedStory, setGeneratedStory] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
@@ -52,12 +53,18 @@ export function ImpactStoryGenerator() {
   const searchParams = useSearchParams();
 
   const activityIdFromUrl = searchParams.get('activityId');
+  const checkoutIdFromUrl = searchParams.get('checkoutId');
 
   useEffect(() => {
     if (activityIdFromUrl) {
       setSelectedActivityId(activityIdFromUrl);
+      setSelectedCheckoutId(null);
     }
-  }, [activityIdFromUrl]);
+     if (checkoutIdFromUrl) {
+      setSelectedCheckoutId(checkoutIdFromUrl);
+      setSelectedActivityId(null);
+    }
+  }, [activityIdFromUrl, checkoutIdFromUrl]);
 
 
   const activitiesQuery = useMemoFirebase(() => {
@@ -68,31 +75,49 @@ export function ImpactStoryGenerator() {
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
   
   const selectedActivity = useMemo(() => {
+    if (!selectedActivityId) return null;
     return activities?.find(a => a.id === selectedActivityId);
   }, [activities, selectedActivityId]);
 
+  const checkoutDocRef = useMemoFirebase(() => {
+    if (!firestore || !selectedCheckoutId) return null;
+    return doc(firestore, 'checkouts', selectedCheckoutId);
+  }, [firestore, selectedCheckoutId]);
+
+  const { data: selectedCheckout } = useDoc<Checkout>(checkoutDocRef);
+
+
   const generateStory = async () => {
-    if (!selectedActivity) {
-      toast({ variant: 'destructive', title: 'Please select an activity.'});
-      return;
+    let input: ImpactStoryInput | null = null;
+    const photoDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // Placeholder
+
+    if (selectedActivity) {
+        input = {
+            activityName: selectedActivity.title,
+            activityDescription: `An activity resulting in a ${selectedActivity.finalRoi.toFixed(0)}% ROI.`,
+            activityImpact: `Total value of ${selectedActivity.totalValue.toLocaleString()} UGX generated from a cost of ${selectedActivity.actualCost.toLocaleString()} UGX.`,
+            userName: selectedActivity.userName,
+            userQuote: "This program is making a real difference in our community!", // Placeholder quote
+            photoDataUri,
+        };
+    } else if (selectedCheckout) {
+        input = {
+            activityName: `Daily update from ${selectedCheckout.name}`,
+            activityDescription: selectedCheckout.task,
+            activityImpact: selectedCheckout.learning || "Reflecting on the day's progress and impact.",
+            userName: selectedCheckout.name,
+            userQuote: selectedCheckout.tomorrowPlan ? `Tomorrow's focus: ${selectedCheckout.tomorrowPlan}` : "Planning for another impactful day.",
+            photoDataUri,
+        };
+    } else {
+        toast({ variant: 'destructive', title: 'Please select an activity or checkout report.'});
+        return;
     }
 
     setIsLoading(true);
     setGeneratedStory("");
 
     try {
-      // For now, we use a placeholder image as we haven't stored the uploaded one
-      const photoDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
-
-      const input: ImpactStoryInput = {
-        activityName: selectedActivity.title,
-        activityDescription: `An activity that resulted in a final ROI of ${selectedActivity.finalRoi.toFixed(0)}%.`,
-        activityImpact: `This activity generated a total value of ${selectedActivity.totalValue.toLocaleString()} UGX from an actual cost of ${selectedActivity.actualCost.toLocaleString()} UGX.`,
-        userName: selectedActivity.userName,
-        userQuote: "This program is making a real difference in our community!", // Placeholder quote
-        photoDataUri,
-      };
-
       const result = await generateImpactStory(input);
       setGeneratedStory(result.impactStory);
     } catch (error) {
@@ -114,23 +139,26 @@ export function ImpactStoryGenerator() {
       title: "Copied to clipboard!",
     });
   };
+  
+  const dataToDisplay = selectedActivity || selectedCheckout;
+  const isCheckout = !!selectedCheckout;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
       <Card>
         <CardHeader>
-          <CardTitle>Select an Activity</CardTitle>
+          <CardTitle>Select a Source</CardTitle>
           <CardDescription>
-            Choose a logged activity to generate a story from its data.
+            Choose a logged report to generate a story from its data.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
            <div className="space-y-2">
-            <Label htmlFor="activity-select">Recent Activities</Label>
+            <Label htmlFor="activity-select">Recent Activity Reports (ROI)</Label>
             {isLoadingActivities ? <Skeleton className="h-10 w-full" /> : (
-                 <Select onValueChange={setSelectedActivityId} value={selectedActivityId || ''}>
+                 <Select onValueChange={id => { setSelectedActivityId(id); setSelectedCheckoutId(null); }} value={selectedActivityId || ''}>
                   <SelectTrigger id="activity-select">
-                    <SelectValue placeholder="Select a logged activity..." />
+                    <SelectValue placeholder="Select an ROI report..." />
                   </SelectTrigger>
                   <SelectContent>
                     {activities?.map(activity => (
@@ -143,25 +171,45 @@ export function ImpactStoryGenerator() {
             )}
           </div>
           
-          {selectedActivity && (
+           <div className="space-y-2">
+             <Label>Or use a Checkout Report</Label>
+             <p className="text-sm text-muted-foreground">You can also generate a story from a daily checkout update. If you just submitted one, it should be pre-selected.</p>
+             {checkoutIdFromUrl && !selectedCheckout && <Skeleton className="h-10 w-full" />}
+             {selectedCheckout && (
+                <div className="p-2 border rounded-md bg-muted text-sm">
+                    Selected: Daily checkout from {selectedCheckout.name} on {selectedCheckout.timestamp ? new Date(selectedCheckout.timestamp.toDate()).toLocaleDateString() : '...'}
+                </div>
+             )}
+          </div>
+          
+          {dataToDisplay && (
              <Card className="bg-muted/50 p-4">
-                 <CardTitle className="text-lg">{selectedActivity.title}</CardTitle>
-                 <CardDescription>Logged by {selectedActivity.userName}</CardDescription>
+                 <CardTitle className="text-lg">{isCheckout ? `Update from ${dataToDisplay.name}` : (dataToDisplay as Activity).title}</CardTitle>
+                 <CardDescription>Logged by {dataToDisplay.userName || dataToDisplay.name}</CardDescription>
                  <CardContent className="text-sm pt-4 space-y-1">
-                     <p><strong>Final ROI:</strong> <span className={selectedActivity.finalRoi >= 0 ? 'text-green-500' : 'text-red-500'}>{selectedActivity.finalRoi.toFixed(0)}%</span></p>
-                     <p><strong>Actual Cost:</strong> {selectedActivity.actualCost.toLocaleString()} UGX</p>
-                     <p><strong>Total Value:</strong> {selectedActivity.totalValue.toLocaleString()} UGX</p>
+                    {isCheckout ? (
+                       <>
+                        <p><strong>Task:</strong> {(dataToDisplay as Checkout).task}</p>
+                        <p><strong>Learning:</strong> {(dataToDisplay as Checkout).learning}</p>
+                       </>
+                    ) : (
+                       <>
+                        <p><strong>Final ROI:</strong> <span className={(dataToDisplay as Activity).finalRoi >= 0 ? 'text-green-500' : 'text-red-500'}>{(dataToDisplay as Activity).finalRoi.toFixed(0)}%</span></p>
+                        <p><strong>Actual Cost:</strong> {(dataToDisplay as Activity).actualCost.toLocaleString()} UGX</p>
+                        <p><strong>Total Value:</strong> {(dataToDisplay as Activity).totalValue.toLocaleString()} UGX</p>
+                       </>
+                    )}
                  </CardContent>
              </Card>
           )}
 
-          <Button onClick={generateStory} disabled={isLoading || !selectedActivity} className="w-full">
+          <Button onClick={generateStory} disabled={isLoading || !dataToDisplay} className="w-full">
             {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
                 <Wand className="mr-2 h-4 w-4" />
             )}
-            Generate Story from Activity
+            Generate Story
           </Button>
 
         </CardContent>
@@ -201,7 +249,7 @@ export function ImpactStoryGenerator() {
              <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center p-8">
                 <Sparkles className="h-16 w-16 text-muted-foreground" />
                 <p className="mt-4 text-lg font-semibold">Your Story Awaits</p>
-                <p className="mt-1 text-sm text-muted-foreground">Select a logged activity to generate a compelling narrative about your work.</p>
+                <p className="mt-1 text-sm text-muted-foreground">Select a report to generate a compelling narrative about your work.</p>
             </div>
           )}
         </CardContent>
