@@ -10,7 +10,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckinForm } from '@/components/forms/checkin-form';
 import { CheckoutForm } from '@/components/forms/checkout-form';
-import { ClipboardEdit, LogIn, LogOut } from 'lucide-react';
+import { ClipboardEdit, LogIn, LogOut, BarChart3 } from 'lucide-react';
+import { ActivityReportForm } from '@/components/forms/activity-report-form';
 
 export default function FormsPage() {
   return (
@@ -26,7 +27,7 @@ export default function FormsPage() {
       </header>
 
       <Tabs defaultValue="check-in" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-5">
           <TabsTrigger value="check-in">
             <LogIn className="mr-2 h-4 w-4" />
             Daily Check-in
@@ -35,7 +36,8 @@ export default function FormsPage() {
             <LogOut className="mr-2 h-4 w-4" />
             Daily Check-out
           </TabsTrigger>
-          <TabsTrigger value="activity" disabled>
+          <TabsTrigger value="activity">
+             <BarChart3 className="mr-2 h-4 w-4" />
             Activity Report
           </TabsTrigger>
           <TabsTrigger value="volunteer" disabled>
@@ -50,6 +52,19 @@ export default function FormsPage() {
         </TabsContent>
         <TabsContent value="check-out">
           <CheckoutForm />
+        </TabsContent>
+         <TabsContent value="activity">
+          <Card>
+             <CardHeader>
+              <CardTitle>Field Activity ROI Calculator</CardTitle>
+              <CardDescription>
+                Plan and log your field activities to calculate and track their return on investment.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ActivityReportForm />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
