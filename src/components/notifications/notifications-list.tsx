@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { AlertTriangle, Info, BellRing, Bell } from 'lucide-react';
+import { AlertTriangle, Info, BellRing } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
