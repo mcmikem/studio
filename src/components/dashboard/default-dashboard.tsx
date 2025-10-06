@@ -1,4 +1,3 @@
-
 'use client';
 
 import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
@@ -43,24 +42,10 @@ export function DefaultDashboard({ profile }: { profile: User }) {
        <div className="space-y-6">
         <ImpactOverview />
         <ProgramsOverview />
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            <TeamActivityFeed />
-          </div>
-          <div className="flex flex-col gap-6">
-             <DailyActions />
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-           <div className="lg:col-span-2">
-             <DashboardCalendar />
-           </div>
-           <div>
-             <Alerts />
-           </div>
-        </div>
+        <TeamActivityFeed />
+        <DailyActions />
+        <DashboardCalendar />
+        <Alerts />
       </div>
     </>
   );

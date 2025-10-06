@@ -41,15 +41,9 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
              <div className="space-y-6">
                 <ImpactOverview />
                 <ProgramsOverview />
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
-                        <TeamActivityFeed />
-                    </div>
-                    <div>
-                         <PartnershipsOverview />
-                    </div>
-                </div>
-                 <DashboardCalendar />
+                <TeamActivityFeed />
+                <PartnershipsOverview />
+                <DashboardCalendar />
             </div>
         </>
     )
