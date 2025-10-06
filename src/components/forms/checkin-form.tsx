@@ -518,6 +518,7 @@ export function CheckinForm() {
         { startTime: '01:00 PM', endTime: '03:00 PM', description: '' },
         { startTime: '03:00 PM', endTime: '05:00 PM', description: '' },
       ],
+      teamSupport: [],
     },
   });
 
