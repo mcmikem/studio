@@ -42,8 +42,12 @@ export type Checkin = {
     id: string;
     userId: string;
     name: string;
+    primaryMission: string;
+    secondaryWins: string[];
+    communityResources: string[];
     timestamp: Timestamp;
 }
+
 
 export type PlanGoal = {
   title: string;
