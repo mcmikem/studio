@@ -4,39 +4,39 @@
 
 @layer base {
   :root {
-    --background: 240 10% 97%; /* light grey */
+    --background: 0 0% 94%; /* light grey #F0F0F0 */
     --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
-    --primary: 282 80% 36%; /* Omuto Purple #6A1B9A */
+    --primary: 16 100% 60%; /* Omuto Red-Orange #FF6B35 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 122 47% 44%; /* Omuto Green #43A047 */
+    --secondary: 215 100% 60%; /* Omuto Blue #3591FF */
     --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 90%;
     --muted-foreground: 24 9.8% 30%;
-    --accent: 33 98% 58%; /* Omuto Orange #FB8C00 */
+    --accent: 215 100% 60%; /* Omuto Blue #3591FF */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 88%;
     --input: 0 0% 88%;
-    --ring: 282 80% 36%;
-    --chart-1: 282 80% 36%;
-    --chart-2: 122 47% 44%;
+    --ring: 16 100% 60%;
+    --chart-1: 16 100% 60%;
+    --chart-2: 215 100% 60%;
     --chart-3: 33 98% 58%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 20 14.3% 4.1%;
-    --sidebar-primary: 282 80% 36%;
+    --sidebar-primary: 16 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 94.1%;
-    --sidebar-accent-foreground: 282 80% 36%;
+    --sidebar-accent-foreground: 16 100% 60%;
     --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 33 98% 58%;
+    --sidebar-ring: 215 100% 60%;
   }
 
   .dark {
@@ -46,31 +46,31 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 282 80% 46%; /* Dark Omuto Purple */
+    --primary: 16 95% 55%; /* Dark Omuto Red-Orange */
     --primary-foreground: 0 0% 100%;
-    --secondary: 122 47% 34%; /* Dark Omuto Green */
+    --secondary: 215 95% 55%; /* Dark Omuto Blue */
     --secondary-foreground: 0 0% 100%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 33 98% 48%; /* Dark Omuto Orange */
+    --accent: 215 95% 55%; /* Dark Omuto Blue */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 282 80% 46%;
+    --ring: 16 95% 55%;
     --radius: 0.5rem;
-    --chart-1: 282 80% 46%;
-    --chart-2: 122 47% 34%;
+    --chart-1: 16 95% 55%;
+    --chart-2: 215 95% 55%;
     --chart-3: 33 98% 48%;
     --sidebar-background: 222.2 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 282 80% 46%;
+    --sidebar-primary: 16 95% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 33 98% 48%;
+    --sidebar-accent-foreground: 215 95% 55%;
     --sidebar-border: 217.2 32.6% 17.5%;
-    --sidebar-ring: 33 98% 48%;
+    --sidebar-ring: 215 95% 55%;
   }
 }
 
