@@ -85,6 +85,7 @@ export type Program = {
     status: "On Track" | "At Risk" | "Delayed" | "Completed";
     deadline: string;
     objectives: string[];
+    valuePerObjective?: number;
     createdAt?: Timestamp;
 }
 
@@ -108,6 +109,9 @@ export type Activity = {
     loggedAt: {
       toDate: () => Date;
     };
+    primaryGoalType?: 'Metric' | 'Program';
+    primaryGoalId?: string;
+    primaryGoalQuantity?: number;
 };
 
 export type Project = {
@@ -153,3 +157,5 @@ export type User = {
     email: string;
     role: string;
 }
+
+    

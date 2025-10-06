@@ -56,6 +56,7 @@ const programSchema = z.object({
   status: z.enum(["On Track", "At Risk", "Delayed", "Completed"]),
   deadline: z.string().min(1, "Deadline is required."),
   objectives: z.string().min(10, "Objectives are required."),
+  valuePerObjective: z.coerce.number().min(0, "Value must be a positive number.").optional(),
 });
 
 function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
@@ -65,6 +66,7 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
     resolver: zodResolver(programSchema),
     defaultValues: {
       status: 'On Track',
+      valuePerObjective: 0,
     },
   });
 
@@ -109,7 +111,8 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
           {errors.deadline && <p className="text-sm text-destructive">{`${errors.deadline.message}`}</p>}
         </div>
       </div>
-       <div className="space-y-2">
+       <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Controller
             name="status"
@@ -130,6 +133,12 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
           />
           {errors.status && <p className="text-sm text-destructive">{`${errors.status.message}`}</p>}
         </div>
+         <div className="space-y-2">
+            <Label htmlFor="valuePerObjective">Value per Objective (UGX)</Label>
+            <Input id="valuePerObjective" type="number" {...register("valuePerObjective")} placeholder="e.g., 50000" />
+            {errors.valuePerObjective && <p className="text-sm text-destructive">{`${errors.valuePerObjective.message}`}</p>}
+        </div>
+      </div>
       <div className="space-y-2">
         <Label htmlFor="objectives">Key Objectives (one per line)</Label>
         <Textarea id="objectives" {...register("objectives")} placeholder="List each objective on a new line." />
@@ -232,6 +241,7 @@ export default function ProgramsPage() {
                       <div className="text-xs text-muted-foreground">
                           <p><strong>Lead:</strong> {program.lead}</p>
                           <p><strong>Deadline:</strong> {program.deadline}</p>
+                          {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
                       </div>
                   </div>
               </CardContent>
@@ -254,3 +264,5 @@ export default function ProgramsPage() {
     </div>
   );
 }
+
+    

@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { ImpactMetric } from '@/lib/types';
+import type { ImpactMetric, Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formatCurrency = (value: number) => {
@@ -57,8 +57,9 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
   const [selectedMultipliers, setSelectedMultipliers] = useState<string[]>([]);
   const [actualCost, setActualCost] = useState(45000);
   
-  const [selectedMetricId, setSelectedMetricId] = useState<string | null>(null);
-  const [metricQuantity, setMetricQuantity] = useState(0);
+  const [goalType, setGoalType] = useState<'Metric' | 'Program'>('Metric');
+  const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [goalQuantity, setGoalQuantity] = useState(0);
 
   const metricsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -66,13 +67,30 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
   }, [firestore]);
   const { data: metrics, isLoading: isLoadingMetrics } = useCollection<ImpactMetric>(metricsQuery);
 
+  const programsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'programs'), orderBy('title'));
+  }, [firestore]);
+  const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery);
+
   const selectedMetric = useMemo(() => {
-    return metrics?.find(m => m.id === selectedMetricId) || null;
-  }, [metrics, selectedMetricId]);
+    if (goalType !== 'Metric') return null;
+    return metrics?.find(m => m.id === selectedGoalId) || null;
+  }, [metrics, selectedGoalId, goalType]);
+
+  const selectedProgram = useMemo(() => {
+    if (goalType !== 'Program') return null;
+    return programs?.find(p => p.id === selectedGoalId) || null;
+  }, [programs, selectedGoalId, goalType]);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+  
+  useEffect(() => {
+    setSelectedGoalId(null);
+    setGoalQuantity(0);
+  }, [goalType]);
 
   const preActivityCost = useMemo(
     () => transportCost + staffTimeCost + materialsCost,
@@ -93,9 +111,14 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
   }, [selectedMultipliers]);
   
   const directValue = useMemo(() => {
-    if (!selectedMetric || !selectedMetric.valuePerUnit) return 0;
-    return metricQuantity * selectedMetric.valuePerUnit;
-  }, [selectedMetric, metricQuantity]);
+    if (goalType === 'Metric' && selectedMetric?.valuePerUnit) {
+      return goalQuantity * selectedMetric.valuePerUnit;
+    }
+    if (goalType === 'Program' && selectedProgram?.valuePerObjective) {
+      return goalQuantity * selectedProgram.valuePerObjective;
+    }
+    return 0;
+  }, [goalType, selectedMetric, selectedProgram, goalQuantity]);
 
 
   const totalValue = useMemo(
@@ -120,12 +143,11 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
   };
 
   const handleLogActivity = async () => {
-    if (!activityName.trim() || !user || !firestore) {
+    if (!activityName.trim() || !user || !firestore || !selectedGoalId) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
-        description:
-          'Please provide an activity name and be logged in to save.',
+        description: 'Please provide an activity name, select a primary goal, and be logged in to save.',
       });
       return;
     }
@@ -143,6 +165,9 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
       estimatedRoi: estimatedRoi,
       finalRoi: finalRoi,
       loggedAt: serverTimestamp(),
+      primaryGoalType: goalType,
+      primaryGoalId: selectedGoalId,
+      primaryGoalQuantity: goalQuantity,
     };
 
     const activitiesCollection = collection(firestore, 'activities');
@@ -156,12 +181,67 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
     // Reset some fields after logging
     setActivityName('');
     setSelectedMultipliers([]);
-    setSelectedMetricId(null);
-    setMetricQuantity(0);
+    setSelectedGoalId(null);
+    setGoalQuantity(0);
     setLoading(false);
   };
 
   if (!isClient) {
+    return null;
+  }
+  
+  const renderGoalSelectors = () => {
+    const isLoading = isLoadingMetrics || isLoadingPrograms;
+    if (goalType === 'Metric') {
+        return (
+            <div className="grid grid-cols-3 gap-4 items-end">
+                <div className="col-span-2 space-y-2">
+                    <Label htmlFor="primary-metric">Primary Metric</Label>
+                    {isLoading ? <Skeleton className="h-10 w-full" /> : (
+                        <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
+                            <SelectTrigger id="primary-metric">
+                                <SelectValue placeholder="Select a metric..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {metrics?.map(metric => (
+                                    <SelectItem key={metric.id} value={metric.id}>{metric.metric}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="metric-quantity">Quantity ({selectedMetric?.unit || 'units'})</Label>
+                    <Input id="metric-quantity" type="number" placeholder="e.g., 50" value={goalQuantity} onChange={e => setGoalQuantity(Number(e.target.value))} disabled={!selectedGoalId} />
+                </div>
+             </div>
+        )
+    }
+     if (goalType === 'Program') {
+        return (
+             <div className="grid grid-cols-3 gap-4 items-end">
+                <div className="col-span-2 space-y-2">
+                    <Label htmlFor="primary-program">Program</Label>
+                    {isLoading ? <Skeleton className="h-10 w-full" /> : (
+                        <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
+                            <SelectTrigger id="primary-program">
+                                <SelectValue placeholder="Select a program..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {programs?.map(program => (
+                                    <SelectItem key={program.id} value={program.id}>{program.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="program-quantity">Objectives</Label>
+                    <Input id="program-quantity" type="number" placeholder="e.g., 1" value={goalQuantity} onChange={e => setGoalQuantity(Number(e.target.value))} disabled={!selectedGoalId} />
+                </div>
+             </div>
+        )
+    }
     return null;
   }
   
@@ -187,28 +267,22 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
 
             <Separator />
              <h3 className="font-semibold text-lg">Primary Goal</h3>
-             <div className="grid grid-cols-3 gap-4 items-end">
-                <div className="col-span-2 space-y-2">
-                    <Label htmlFor="primary-metric">Primary Metric</Label>
-                    {isLoadingMetrics ? <Skeleton className="h-10 w-full" /> : (
-                        <Select onValueChange={setSelectedMetricId} value={selectedMetricId || undefined}>
-                            <SelectTrigger id="primary-metric">
-                                <SelectValue placeholder="Select a metric..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {metrics?.map(metric => (
-                                    <SelectItem key={metric.id} value={metric.id}>{metric.metric}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="metric-quantity">Quantity</Label>
-                    <Input id="metric-quantity" type="number" placeholder="e.g., 50" value={metricQuantity} onChange={e => setMetricQuantity(Number(e.target.value))} disabled={!selectedMetricId} />
-                </div>
+             <div className='space-y-2'>
+                <Label htmlFor="goal-type">Goal Type</Label>
+                 <Select onValueChange={(value: 'Metric' | 'Program') => setGoalType(value)} value={goalType}>
+                    <SelectTrigger id="goal-type">
+                        <SelectValue placeholder="Select goal type..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Metric">KPI Metric</SelectItem>
+                        <SelectItem value="Program">Program Objective</SelectItem>
+                    </SelectContent>
+                </Select>
              </div>
-             <p className="text-sm text-muted-foreground">The "Direct Value" of your activity is now automatically calculated based on the metric's value per unit.</p>
+             
+             {renderGoalSelectors()}
+
+             <p className="text-sm text-muted-foreground">The "Direct Value" of your activity is now automatically calculated based on the selected goal's value.</p>
 
 
             <h3 className="font-semibold text-lg">Estimated Costs</h3>
