@@ -30,6 +30,7 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { Separator } from '../ui/separator';
+import { Badge } from '../ui/badge';
 
 const taskSchema = z.object({
   title: z.string().min(3, 'Task title must be at least 3 characters.'),
@@ -46,7 +47,7 @@ function NewTaskForm() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm({
+  } = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
   });
 
@@ -125,7 +126,7 @@ export function UserTasks() {
           <div className="space-y-2">
             {isLoading &&
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3">
+                <div key={i} className="flex items-center gap-3 p-2">
                   <Skeleton className="h-5 w-5" />
                   <Skeleton className="h-5 w-4/5" />
                 </div>
@@ -152,12 +153,14 @@ export function UserTasks() {
           </div>
         </div>
 
+        <Separator />
+        
         <div>
           <h3 className="text-lg font-semibold mb-2">Completed Tasks</h3>
            <div className="space-y-2">
             {isLoading &&
               Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3">
+                <div key={i} className="flex items-center gap-3 p-2">
                   <Skeleton className="h-5 w-5" />
                   <Skeleton className="h-5 w-4/5" />
                 </div>
@@ -186,3 +189,4 @@ export function UserTasks() {
     </Card>
   );
 }
+    
