@@ -806,51 +806,51 @@ export function CheckinForm() {
 
   return (
     <Card>
-      <nav aria-label="Progress">
-        <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0 p-6">
-          {steps.map((step, stepIdx) => (
-            <li key={step.name} className="md:flex-1">
-              {stepIdx < currentStep ? (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(stepIdx)}
-                  className="group flex w-full flex-col border-l-4 border-primary py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
-                >
-                  <span className="text-sm font-medium text-primary transition-colors ">
-                    {step.id}
-                  </span>
-                  <span className="text-sm font-medium">{step.name}</span>
-                </button>
-              ) : stepIdx === currentStep ? (
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(stepIdx)}
-                  className="flex w-full flex-col border-l-4 border-primary py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
-                  aria-current="step"
-                >
-                  <span className="text-sm font-medium text-primary">
-                    {step.id}
-                  </span>
-                  <span className="text-sm font-medium">{step.name}</span>
-                </button>
-              ) : (
-                 <button
-                  type="button"
-                  onClick={() => setCurrentStep(stepIdx)}
-                  className="group flex w-full flex-col border-l-4 border-border py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
-                >
-                  <span className="text-sm font-medium text-muted-foreground transition-colors">
-                    {step.id}
-                  </span>
-                  <span className="text-sm font-medium">{step.name}</span>
-                </button>
-              )}
-            </li>
-          ))}
-        </ol>
-      </nav>
-
       <form onSubmit={form.handleSubmit(onSubmit)}>
+        <nav aria-label="Progress">
+          <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0 p-6">
+            {steps.map((step, stepIdx) => (
+              <li key={step.name} className="md:flex-1">
+                {stepIdx < currentStep ? (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(stepIdx)}
+                    className="group flex w-full flex-col border-l-4 border-primary py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+                  >
+                    <span className="text-sm font-medium text-primary transition-colors ">
+                      {step.id}
+                    </span>
+                    <span className="text-sm font-medium">{step.name}</span>
+                  </button>
+                ) : stepIdx === currentStep ? (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(stepIdx)}
+                    className="flex w-full flex-col border-l-4 border-primary py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+                    aria-current="step"
+                  >
+                    <span className="text-sm font-medium text-primary">
+                      {step.id}
+                    </span>
+                    <span className="text-sm font-medium">{step.name}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(stepIdx)}
+                    className="group flex w-full flex-col border-l-4 border-border py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+                  >
+                    <span className="text-sm font-medium text-muted-foreground transition-colors">
+                      {step.id}
+                    </span>
+                    <span className="text-sm font-medium">{step.name}</span>
+                  </button>
+                )}
+              </li>
+            ))}
+          </ol>
+        </nav>
+
         {currentStep === 0 && <Step1 location={location} />}
         {currentStep === 1 && (
           <Step2
