@@ -236,9 +236,6 @@ This is your knowledge base. It is the complete operational DNA of Omuto Foundat
 - **Daily Operating Rhythm**: 9 AM WhatsApp check-in, 5 PM checkout, Friday reviews, Sunday "Omuto This Week" publication.
 - **Innovation & Sustainability**: Focus on models like commission-based production for Dignity Pads and non-financial motivation for volunteers.
 - **Data-Driven Adaptation**: Use real-time data to track progress, monitor health, and mitigate risks.
-
-Here is the user's question:
-{{{prompt}}}
 `,
   tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
   output: {
@@ -253,24 +250,37 @@ export const assistantFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (prompt) => {
+    const history = [
+        assistantPrompt,
+        { role: 'user', content: [{ text: prompt }] },
+    ];
+
     const llmResponse = await ai.generate({
-      prompt: assistantPrompt,
-      input: { prompt },
+      prompt: 'Your goal is to answer the user prompt based on the context provided in the system message.',
+      history,
+      tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
     });
+    
     return llmResponse.text();
   }
 );
 
 
 export async function streamAssistant(prompt: string) {
+    const history = [
+        assistantPrompt,
+        { role: 'user', content: [{ text: prompt }] },
+    ];
+    
     const { stream } = ai.generateStream({
-        prompt: assistantPrompt,
-        input: { prompt },
+        prompt: 'Your goal is to answer the user prompt based on the context provided in the system message.',
+        history,
+        tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
     });
     
     let content = '';
     for await (const chunk of stream) {
-        content += chunk;
+        content += chunk.text;
     }
     return content;
 }
