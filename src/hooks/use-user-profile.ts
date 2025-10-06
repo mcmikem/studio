@@ -18,31 +18,37 @@ export function useUserProfile(user: AuthUser | null) {
     return null;
   }, [firestore, user]);
 
-  const { data, isLoading: isDocLoading } = useDoc<UserProfile>(userDocRef);
+  const { data, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
 
   useEffect(() => {
-    if (isDocLoading) {
-      setIsLoading(true);
+    setIsLoading(true);
+    if (!user) {
+      setProfile(null);
+      setIsLoading(false);
       return;
     }
+
+    if (isDocLoading) {
+      return; // Wait for the doc to load
+    }
+    
     if (data) {
       setProfile(data);
-    } else {
-      // If no doc, create a default profile structure.
-      // This is a fallback and might indicate a race condition on sign-up.
-      if (user) {
-        setProfile({
-          id: user.uid,
-          name: user.displayName || 'User',
-          email: user.email || '',
-          role: 'Staff',
-        });
-      } else {
-        setProfile(null);
-      }
+    } else if (!isDocLoading && !data) {
+      // If loading is finished and there's still no data,
+      // it's likely a new user whose profile doc hasn't been created yet.
+      // We'll provide a temporary, safe-to-render profile.
+      setProfile({
+        id: user.uid,
+        name: user.displayName || 'New User',
+        email: user.email || '',
+        role: 'Staff', // Default role
+      });
     }
+
     setIsLoading(false);
-  }, [data, isDocLoading, user]);
+
+  }, [data, user, isDocLoading, error]);
 
   return { profile, isLoading };
 }

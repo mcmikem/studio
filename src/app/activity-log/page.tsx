@@ -38,10 +38,16 @@ export default function ActivityLogPage() {
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
   
-  const formatDate = (timestamp: Timestamp | { toDate: () => Date } | undefined) => {
-    if (!timestamp) return 'N/A';
-    const date = timestamp instanceof Date ? timestamp : (timestamp as { toDate: () => Date }).toDate();
-    return formatDistanceToNow(date, { addSuffix: true });
+  const formatDate = (timestamp: Timestamp | { toDate: () => Date } | null | undefined) => {
+    if (!timestamp || typeof (timestamp as any).toDate !== 'function') {
+      return 'a few moments ago';
+    }
+    try {
+      const date = (timestamp as { toDate: () => Date }).toDate();
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (e) {
+      return 'a few moments ago';
+    }
   };
 
   return (
@@ -84,7 +90,7 @@ export default function ActivityLogPage() {
                       </div>
                       <div className="flex items-center text-muted-foreground">
                          <Calendar className="h-4 w-4 mr-2" />
-                         <span>{formatDate(activity.loggedAt as Timestamp | undefined)}</span>
+                         <span>{formatDate(activity.loggedAt)}</span>
                       </div>
                       <div className="grid grid-cols-3 gap-2 text-center pt-2">
                         <div>
@@ -168,7 +174,7 @@ export default function ActivityLogPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {formatDate(activity.loggedAt as Timestamp | undefined)}
+                        {formatDate(activity.loggedAt)}
                       </TableCell>
                     </TableRow>
                   ))

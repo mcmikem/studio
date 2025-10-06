@@ -115,7 +115,7 @@ const getProgramsTool = ai.defineTool(
         });
     } catch(e) {
         console.error("Error fetching active programs:", e);
-        throw e;
+        return [];
     }
   }
 );
@@ -164,7 +164,7 @@ const getKeyResultsTool = ai.defineTool(
         });
     } catch(e) {
         console.error("Error fetching key results:", e);
-        throw e;
+        return [];
     }
   }
 );
@@ -211,7 +211,7 @@ const getPartnershipsTool = ai.defineTool(
             });
         } catch(e) {
             console.error("Error fetching partnerships:", e);
-            throw e;
+            return [];
         }
     }
 );
@@ -251,7 +251,7 @@ const getRecentCheckoutsTool = ai.defineTool(
             });
         } catch(e) {
             console.error("Error fetching recent checkouts:", e);
-            throw e;
+            return [];
         }
     }
 );
@@ -269,13 +269,13 @@ export const assistantFlow = ai.defineFlow(
       tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
     });
     
-    return llmResponse.text();
+    return llmResponse.text;
   }
 );
 
 
 export async function streamAssistant(prompt: string) {
-    const { stream } = ai.generateStream({
+    const { stream, response } = ai.generateStream({
         prompt: prompt,
         system: KNOWLEDGE_BASE,
         tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
