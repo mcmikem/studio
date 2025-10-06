@@ -1,6 +1,7 @@
 'use client';
 
 import { ActivityReportForm } from '@/components/forms/activity-report-form';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function ROICalculatorPage() {
 
@@ -15,7 +16,11 @@ export default function ROICalculatorPage() {
         </p>
       </header>
 
-     <ActivityReportForm isPage />
+      <Card>
+        <CardContent className="pt-6">
+          <ActivityReportForm />
+        </CardContent>
+      </Card>
     </div>
   );
 }

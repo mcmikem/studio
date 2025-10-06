@@ -55,14 +55,8 @@ export default function FormsPage() {
         </TabsContent>
          <TabsContent value="activity">
           <Card>
-             <CardHeader>
-              <CardTitle>Field Activity ROI Calculator</CardTitle>
-              <CardDescription>
-                Plan and log your field activities to calculate and track their return on investment.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ActivityReportForm />
+            <CardContent className="pt-6">
+              <ActivityReportForm />
             </CardContent>
           </Card>
         </TabsContent>
