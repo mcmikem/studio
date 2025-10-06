@@ -123,8 +123,8 @@ export default function LoginPage() {
         
         <Card>
             <CardHeader>
-                <CardTitle>Welcome</CardTitle>
-                <CardDescription>Sign in or create an account to continue.</CardDescription>
+                <CardTitle>Sign In to Your Account</CardTitle>
+                <CardDescription>Enter your credentials to access Omuto Central.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={!!loading}>
