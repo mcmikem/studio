@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -101,7 +102,7 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 h-full">
       <header>
         <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
           <Sparkles className="h-8 w-8" />
@@ -112,7 +113,7 @@ export default function AssistantPage() {
         </p>
       </header>
 
-      <Card className="flex flex-col flex-grow h-[70vh]">
+      <Card className="flex flex-col flex-grow">
         <CardHeader>
           <CardTitle>Omuto AI Chat</CardTitle>
           <CardDescription>
