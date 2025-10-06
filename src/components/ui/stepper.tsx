@@ -173,7 +173,16 @@ const Stepper = React.forwardRef<HTMLDivElement, StepperProps>(
               </div>
             ))}
           </div>
-          {React.Children.toArray(children)[activeStep]}
+          <div className="w-full">
+            {React.Children.map(children, (child, index) => {
+              const isReactElement = React.isValidElement(child);
+              if (!isReactElement) {
+                return child;
+              }
+              const isActive = index === activeStep;
+              return isActive ? child : null;
+            })}
+          </div>
         </div>
       </StepperContext.Provider>
     )
