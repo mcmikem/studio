@@ -4,19 +4,11 @@ import { useMemo } from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users } from 'lucide-react';
-import { collection, query, where, Timestamp } from 'firebase/firestore';
+import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Checkin } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
+import type { User as UserProfile } from '@/lib/types';
 
-// Static list of all team members for now. In the future, this would come from the `users` collection.
-const allTeamMembers = [
-    { name: 'McMike', status: 'In Field', location: 'Nindye SS'},
-    { name: 'Kasirye', status: 'Online', location: 'HQ' },
-    { name: 'Dianah', status: 'In Meeting', location: 'Kampala' },
-    { name: 'Bwire', status: 'Not Checked In', location: ''},
-    { name: 'Alex', status: 'Not Checked In', location: ''},
-    { name: 'Jimmy', status: 'Not Checked In', location: ''},
-];
 
 const getStatusColor = (status: string) => {
     switch (status) {
@@ -47,25 +39,32 @@ export function TeamToday() {
     );
   }, [firestore, startOfDay]);
 
-  const { data: checkins, isLoading } = useCollection<Checkin>(checkinsQuery);
+  const usersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'users'), orderBy('name'));
+  }, [firestore]);
+
+  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
+  const { data: allTeamMembers, isLoading: isLoadingUsers } = useCollection<UserProfile>(usersQuery);
 
   const teamStatus = useMemo(() => {
-    if (isLoading) return allTeamMembers.map(t => ({ ...t, status: 'Loading' }));
+    const isLoading = isLoadingUsers || isLoadingCheckins;
+    if (isLoading || !allTeamMembers) return Array.from({ length: 5 }).map((_, i) => ({ id: `${i}`, name: 'Loading...', status: 'Loading' }));
     
     const checkedInUserIds = new Set(checkins?.map(c => c.userId));
     
-    // This is a simplified logic. A real implementation would fetch user details.
     return allTeamMembers.map(member => {
-        // A more robust system would match by user ID
-        const hasCheckedIn = checkins?.some(c => c.name.includes(member.name));
+        const hasCheckedIn = checkedInUserIds.has(member.id);
         
         if (hasCheckedIn) {
-            // Here you could add more detailed logic based on check-in data
-             return { ...member, status: member.status === "Not Checked In" ? 'Online' : member.status };
+             // In a future version, we could pull location/status from the checkin document
+             return { id: member.id, name: member.name, status: 'Online' };
         }
-        return { ...member, status: 'Not Checked In' };
+        return { id: member.id, name: member.name, status: 'Not Checked In' };
     });
-  }, [checkins, isLoading]);
+  }, [checkins, isLoadingCheckins, allTeamMembers, isLoadingUsers]);
+  
+  const isLoading = isLoadingUsers || isLoadingCheckins;
 
   return (
     <Card>
@@ -77,7 +76,7 @@ export function TeamToday() {
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
         {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
+            Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-2">
                     <Skeleton className="h-3 w-3 rounded-full" />
                     <Skeleton className="h-4 w-32" />
@@ -85,9 +84,9 @@ export function TeamToday() {
             ))
         ) : (
           teamStatus.map((member) => (
-            <div key={member.name} className="flex items-center gap-2">
+            <div key={member.id} className="flex items-center gap-2">
               <span className={`flex h-3 w-3 rounded-full ${getStatusColor(member.status)}`}></span>
-              <span>{member.name} ({member.status}{member.location ? ` - ${member.location}`: ''})</span>
+              <span>{member.name} ({member.status})</span>
             </div>
           ))
         )}
