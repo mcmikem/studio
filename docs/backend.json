@@ -197,7 +197,15 @@
         },
         "task": {
           "type": "string",
-          "description": "The checkout message or task update."
+          "description": "The primary checkout message or task update summary."
+        },
+        "learning": {
+            "type": "string",
+            "description": "Key learnings or what to do differently next time."
+        },
+        "tomorrowPlan": {
+            "type": "string",
+            "description": "The user's stated priority for the next day."
         },
         "timestamp": {
           "type": "string",
