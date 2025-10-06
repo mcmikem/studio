@@ -37,12 +37,22 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
                     {dateString} | Mpigi District, Uganda (EAT)
                 </p>
             </header>
-             <div className="space-y-6">
-                <QuickStatsSummary />
-                <ProgramsOverview />
-                <TeamActivityFeed />
-                <Alerts />
-                <DashboardCalendar />
+             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="xl:col-span-3">
+                    <QuickStatsSummary />
+                </div>
+                 <div className="xl:col-span-3">
+                    <ProgramsOverview />
+                </div>
+                <div className="lg:col-span-2 xl:col-span-2">
+                    <TeamActivityFeed />
+                </div>
+                <div className="lg:col-span-1 xl:col-span-1">
+                    <Alerts />
+                </div>
+                <div className="xl:col-span-3">
+                    <DashboardCalendar />
+                </div>
             </div>
         </>
     )

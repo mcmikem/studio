@@ -3,7 +3,6 @@
 import type { User } from '@/lib/types';
 import { ProgramsOverview } from './programs-overview';
 import { TeamActivityFeed } from './team-activity-feed';
-import { Alerts } from './alerts';
 import { DashboardCalendar } from './dashboard-calendar';
 import { ImpactOverview } from './impact-overview';
 import { PartnershipsOverview } from './partnerships-overview';
@@ -38,12 +37,22 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
                     {dateString} | Mpigi District, Uganda (EAT)
                 </p>
             </header>
-             <div className="space-y-6">
-                <ImpactOverview />
-                <ProgramsOverview />
-                <TeamActivityFeed />
-                <PartnershipsOverview />
-                <DashboardCalendar />
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="lg:col-span-2">
+                    <ImpactOverview />
+                </div>
+                <div className="lg:col-span-2">
+                    <ProgramsOverview />
+                </div>
+                <div className="lg:col-span-2">
+                    <TeamActivityFeed />
+                </div>
+                <div className="lg:col-span-1">
+                    <PartnershipsOverview />
+                </div>
+                 <div className="lg:col-span-1">
+                    <DashboardCalendar />
+                </div>
             </div>
         </>
     )

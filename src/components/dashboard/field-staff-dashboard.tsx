@@ -37,11 +37,19 @@ export function FieldStaffDashboard({ profile }: { profile: User }) {
                     {dateString} | Mpigi District, Uganda (EAT)
                 </p>
             </header>
-             <div className="space-y-6">
-                <TeamActivityFeed />
-                <DailyActions />
-                <MyPriorities />
-                <DashboardCalendar />
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="lg:col-span-1">
+                    <DailyActions />
+                </div>
+                <div className="lg:col-span-1">
+                    <MyPriorities />
+                </div>
+                <div className="lg:col-span-2">
+                    <TeamActivityFeed />
+                </div>
+                <div className="lg:col-span-2">
+                    <DashboardCalendar />
+                </div>
             </div>
         </>
     )

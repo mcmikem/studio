@@ -39,13 +39,25 @@ export function DefaultDashboard({ profile }: { profile: User }) {
         </p>
       </header>
 
-       <div className="space-y-6">
-        <ImpactOverview />
-        <ProgramsOverview />
-        <TeamActivityFeed />
-        <DailyActions />
-        <DashboardCalendar />
-        <Alerts />
+       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-3">
+            <ImpactOverview />
+        </div>
+        <div className="xl:col-span-3">
+            <ProgramsOverview />
+        </div>
+        <div className="lg:col-span-2 xl:col-span-2">
+            <TeamActivityFeed />
+        </div>
+        <div className="lg:col-span-1 xl:col-span-1">
+            <DailyActions />
+        </div>
+         <div className="lg:col-span-2 xl:col-span-2">
+            <DashboardCalendar />
+        </div>
+        <div className="lg:col-span-1 xl:col-span-1">
+             <Alerts />
+        </div>
       </div>
     </>
   );
