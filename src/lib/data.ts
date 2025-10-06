@@ -1,4 +1,4 @@
-import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard } from './types';
+import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult } from './types';
 
 export const tagColors: { [key: string]: string } = {
     '#FieldVisit': 'border-blue-500 bg-blue-500/10 text-blue-500',
@@ -44,4 +44,31 @@ export const flexibleTargets: PlanGoal[] = [
     { title: "Tree Planting (510 trees with 85% survival)", description: "Environmental impact and community engagement.", details: "" },
     { title: "Dignity Pads (5 prototype types)", description: "Develop our social enterprise.", details: "" },
     { title: "Newsletter (2 Sunday editions)", description: "Keep our community informed and engaged.", details: "" },
+];
+
+export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
+    {
+        title: 'OCT-KR1',
+        description: 'Successfully execute Girl Child Day event.',
+        currentProgress: 50,
+        target: 100,
+        deadline: '2025-10-11',
+        priority: 'High',
+    },
+    {
+        title: 'OCT-KR2',
+        description: 'Secure 1.5M UGX in new funding.',
+        currentProgress: 750000,
+        target: 1500000,
+        deadline: '2025-10-31',
+        priority: 'High',
+    },
+    {
+        title: 'OCT-KR3',
+        description: 'Complete RED Campaign documentary.',
+        currentProgress: 80,
+        target: 100,
+        deadline: '2025-10-26',
+        priority: 'Medium',
+    },
 ];

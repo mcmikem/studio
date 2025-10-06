@@ -4,11 +4,13 @@ import { useMemo, useEffect, useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { collection, query, where, doc, writeBatch, serverTimestamp, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, doc, writeBatch, serverTimestamp, orderBy, limit, getDocs } from 'firebase/firestore';
 import { ClipboardList, Loader2 } from 'lucide-react';
 import type { Task } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
 import Link from 'next/link';
+import { sampleKeyResults } from '@/lib/data';
+
 
 // Sample alerts to pre-populate for the demo user
 const sampleAlerts = [
@@ -35,10 +37,10 @@ export function MyPriorities() {
 
   const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
   
-  // Effect to seed sample alerts for the current user if they don't have any
+  // Effect to seed sample data for the demo user
   useEffect(() => {
     if (user && firestore && !isLoading && !isSeeding) {
-        const hasSeeded = localStorage.getItem(`seeded_alerts_${user.uid}`);
+        const hasSeeded = localStorage.getItem(`seeded_demo_data_${user.uid}`);
         if (!hasSeeded) {
             setIsSeeding(true);
             const batch = writeBatch(firestore);
@@ -50,10 +52,21 @@ export function MyPriorities() {
                 batch.set(alertRef, {...alert, createdAt: serverTimestamp()});
             });
 
-            batch.commit().then(() => {
-                localStorage.setItem(`seeded_alerts_${user.uid}`, 'true');
-                setIsSeeding(false);
-            }).catch(console.error);
+            // Seed Key Results if collection is empty
+            const keyResultsCollection = collection(firestore, 'key-results');
+            getDocs(query(keyResultsCollection, limit(1))).then(snapshot => {
+                if (snapshot.empty) {
+                     sampleKeyResults.forEach(kr => {
+                        const krRef = doc(keyResultsCollection);
+                        batch.set(krRef, kr);
+                    });
+                }
+                
+                batch.commit().then(() => {
+                    localStorage.setItem(`seeded_demo_data_${user.uid}`, 'true');
+                    setIsSeeding(false);
+                }).catch(console.error);
+            });
         }
     }
   }, [user, firestore, isLoading, isSeeding]);
