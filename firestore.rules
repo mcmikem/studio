@@ -1,151 +1,165 @@
 /**
- * @file Firebase Security Rules for Omuto Central Firestore database.
+ * @fileoverview Firestore Security Rules for Omuto Central.
  *
- * @Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user profiles,
- * allows public read access to checkouts, activities, programs, and partnerships,
- * while restricting write access to authenticated users with matching IDs.
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user-specific data
+ * and public read access for general content. Write access is generally restricted
+ * to authorized users with appropriate roles or ownership.
  *
- * @Data Structure:
- * - /users/{userId}: Stores individual user profiles, accessible only to the owning user.
- * - /checkouts/{checkoutId}: Stores daily checkout updates. Public read, owner-only write.
- * - /activities/{activityId}: Stores logged activities. Public read, owner-only write.
- * - /programs/{programId}: Stores program information. Public read, owner-only write.
- * - /partnerships/{partnershipId}: Stores partnership details. Public read, owner-only write.
+ * Data Structure:
+ * - /users/{userId}: Stores individual user profiles.  Only the authenticated user can read/write their own profile.
+ * - /checkouts/{checkoutId}: Stores daily checkout updates. Anyone can read, only the user who created the checkout can modify it.
+ * - /activities/{activityId}: Stores activity logs. Anyone can read, only the user who created the activity can modify it.
+ * - /programs/{programId}: Stores core program information. Publicly readable. Owner-only writes are intended but cannot be enforced due to missing schema info.
+ * - /partnerships/{partnershipId}: Stores partner organization data. Publicly readable. Owner-only writes are intended but cannot be enforced due to missing schema info.
  *
- * @Key Security Decisions:
- * - User listing is disallowed for privacy.
- * - Read-only collections (e.g., for configuration data) are not present in this data model.
- * - All write operations require user authentication.
+ * Key Security Decisions:
+ * - User listing is disabled.
+ * - Public read access is granted for programs, partnerships and activities.
+ * - Strict ownership is enforced for user profiles and checkouts.
  *
- * @Denormalization for Authorization:
- * - Checkouts, activities, programs, and partnerships documents require a `userId` field
- *   to associate them with the user who created them, enabling owner-only write permissions.
- *   The `userId` value MUST match the `request.auth.uid` on `create`.
- *
- * @Structural Segregation:
- * - No structural segregation is applied in this data model. Public and private data are
- *   not separated into different collections.
+ * Denormalization for Authorization:
+ * - The rules rely on the `request.auth.uid` for identity verification.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description: Controls access to user profile information.
-     * @path: /users/{userId}
-     * @allow: User 'znBqhM6pR9hypuw86hFP00dtJFF2' (get) their own profile.
-     * @deny: User 'randomUser' (get) User 'znBqhM6pR9hypuw86hFP00dtJFF2' profile.
-     * @principle: Enforces document ownership for all operations.
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the request is made by the owner of the resource.
+     * @param {string} userId - The ID of the user.
+     * @return {boolean} True if the user ID matches the authenticated user's ID.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the request is made by the existing owner of the resource.
+     * @param {string} userId - The ID of the user.
+     * @return {boolean} True if the user ID matches the authenticated user's ID and the resource exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Rules for user profiles.
+     * @path /users/{userId}
+     * @allow (create) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can create their own profile.
+     * @allow (get) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can read their own profile.
+     * @allow (update) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can update their own profile.
+     * @allow (delete) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can delete their own profile.
+     * @deny (create) - User "attackerId" cannot create a profile with ID "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (get) - User "attackerId" cannot read the profile of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (update) - User "attackerId" cannot update the profile of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (delete) - User "attackerId" cannot delete the profile of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @principle Enforces document ownership for writes.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
       allow get: if isOwner(userId);
-      allow list: if false; // User listing is not permitted.
-      allow create: if isOwner(userId);
-      allow update: if isExistingOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description: Controls access to daily checkout updates.
-     * @path: /checkouts/{checkoutId}
-     * @allow: Any user (get) any checkout.
-     * @allow: User 'znBqhM6pR9hypuw86hFP00dtJFF2' (create) a new checkout with matching userId.
-     * @deny: User 'randomUser' (create) a checkout with userId 'znBqhM6pR9hypuw86hFP00dtJFF2'.
-     * @principle: Allows public read access, but restricts write access to the owner.
+     * @description Rules for user checkouts.
+     * @path /checkouts/{checkoutId}
+     * @allow (create) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can create a checkout.
+     * @allow (get) - Anyone can read checkouts.
+     * @allow (update) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can update their own checkout.
+     * @allow (delete) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can delete their own checkout.
+     * @deny (create) - User "attackerId" cannot create a checkout for user "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (update) - User "attackerId" cannot update the checkout of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (delete) - User "attackerId" cannot delete the checkout of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @principle Enforces document ownership for writes.
      */
     match /checkouts/{checkoutId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.userId);
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(resource.data.userId);
     }
 
     /**
-     * @description: Controls access to logged activities.
-     * @path: /activities/{activityId}
-     * @allow: Any user (get) any activity.
-     * @allow: User 'znBqhM6pR9hypuw86hFP00dtJFF2' (create) a new activity with matching userId.
-     * @deny: User 'randomUser' (create) an activity with userId 'znBqhM6pR9hypuw86hFP00dtJFF2'.
-     * @principle: Allows public read access, but restricts write access to the owner.
+     * @description Rules for activities.
+     * @path /activities/{activityId}
+     * @allow (create) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can create an activity.
+     * @allow (get) - Anyone can read activities.
+     * @allow (update) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can update their own activity.
+     * @allow (delete) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can delete their own activity.
+     * @deny (create) - User "attackerId" cannot create an activity for user "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (update) - User "attackerId" cannot update the activity of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (delete) - User "attackerId" cannot delete the activity of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @principle Enforces document ownership for writes.
      */
     match /activities/{activityId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if true;
-      allow list: if true;
-      allow create: if request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.userId);
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(resource.data.userId);
     }
 
     /**
-     * @description: Controls access to program information.
-     * @path: /programs/{programId}
-     * @allow: Any user (get) any program.
-     * @principle: Allows public read access, but restricts write access to the owner.
+     * @description Rules for programs.
+     * @path /programs/{programId}
+     * @allow (get) - Anyone can read programs.
+     * @allow (list) - Anyone can list programs.
+     * @deny (create) - No one can create programs (owner field is missing).
+     * @deny (update) - No one can update programs (owner field is missing).
+     * @deny (delete) - No one can delete programs (owner field is missing).
+     * @principle Public read with owner-only writes.
      */
     match /programs/{programId} {
-        // CRITICAL: Cannot implement owner-only writes. The 'Program' entity is missing an 'ownerId' or 'authorId' field.
-        allow get, list: if true;
-        allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     /**
-     * @description: Controls access to partnership details.
-     * @path: /partnerships/{partnershipId}
-     * @allow: Any user (get) any partnership.
-     * @principle: Allows public read access, but restricts write access to the owner.
+     * @description Rules for partnerships.
+     * @path /partnerships/{partnershipId}
+     * @allow (get) - Anyone can read partnerships.
+     * @allow (list) - Anyone can list partnerships.
+     * @deny (create) - No one can create partnerships (owner field is missing).
+     * @deny (update) - No one can update partnerships (owner field is missing).
+     * @deny (delete) - No one can delete partnerships (owner field is missing).
+     * @principle Public read with owner-only writes.
      */
     match /partnerships/{partnershipId} {
-        // CRITICAL: Cannot implement owner-only writes. The 'Partnership' entity is missing an 'ownerId' or 'authorId' field.
-        allow get, list: if true;
-        allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow get, list: if true;
+      allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
-
+    
     /**
-     * @description: Controls access to checkins collection.
-     * @path: /checkins
-     * @allow: Any user (get) any checkins.
-     * @principle: Allows public read access, but restricts write access to the owner.
+     * @description Rules for tasks within a user's profile.
+     * @path /users/{userId}/tasks/{taskId}
+     * @allow (get) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can read their own tasks.
+     * @allow (list) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can list their own tasks.
+     * @allow (create) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can create tasks under their own profile.
+     * @allow (update) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can update tasks under their own profile.
+     * @allow (delete) - User "znBqhM6pR9hypuw86hFP00dtJFF2" can delete tasks under their own profile.
+     * @deny (create) - User "attackerId" cannot create a task for user "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (get) - User "attackerId" cannot read tasks of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (list) - User "attackerId" cannot list tasks of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (update) - User "attackerId" cannot update tasks of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @deny (delete) - User "attackerId" cannot delete tasks of "znBqhM6pR9hypuw86hFP00dtJFF2".
+     * @principle Enforces document ownership for all operations.
      */
-        match /checkins/{checkinId} {
-            function isOwner(userId) {
-                return request.auth.uid == userId;
-            }
-
-            function isExistingOwner(userId) {
-                return isOwner(userId) && resource != null;
-            }
-
-            allow get: if true;
-            allow list: if true;
-            allow create: if request.resource.data.userId == request.auth.uid;
-            allow update: if isExistingOwner(resource.data.userId);
-            allow delete: if isExistingOwner(resource.data.userId);
+    match /users/{userId}/tasks/{taskId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isExistingOwner(userId);
+        allow delete: if isExistingOwner(userId);
     }
   }
 }
