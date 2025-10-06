@@ -1,77 +1,68 @@
-/**
- * @fileoverview Firestore Security Rules for Omuto Central.
- *
- * Core Philosophy:
- * For this stage of development, these rules enforce that a user must be
- * authenticated to read or write any data. This provides a secure baseline
- * while allowing all internal application features to function.
- *
- * Future Enhancements:
- * More granular, role-based access control can be added later. For example,
- * restricting 'update' on '/programs/{programId}' to users with a 'Manager' role.
- */
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check for authentication
+    // Helper function to check if a user is signed in.
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * @description Users can manage their own profile and read other user profiles.
-     * The `list` permission is required for features like the Team Directory.
-     */
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if isSignedIn() && request.auth.uid == userId;
+    // Default-deny all reads and writes to prevent accidental access.
+    match /{document=**} {
+      allow read, write: if false;
     }
 
-    /**
-     * @description Users can manage their own tasks.
-     */
+    // /users/{userId}
+    // Users can read their own profile.
+    // Any authenticated user can list all user profiles for team views.
+    // Users can create and update their own profile.
+    match /users/{userId} {
+      allow get, update, create: if isSignedIn() && request.auth.uid == userId;
+      allow list: if isSignedIn();
+    }
+
+    // /users/{userId}/tasks/{taskId}
+    // Users can only manage their own tasks.
     match /users/{userId}/tasks/{taskId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * @description Authenticated users can read all check-ins and create their own.
-     */
+    // General collections for organizational data.
+    // Any signed-in user can read, create, update, and delete documents in these collections.
+    // This is a permissive rule for internal tools to ensure functionality.
     match /checkins/{checkinId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      // Updates and deletes are disallowed for now to maintain a clear audit trail.
-      allow update, delete: if false;
+      allow read, write: if isSignedIn();
     }
-
-    /**
-     * @description Authenticated users can read all check-outs and create their own.
-     */
     match /checkouts/{checkoutId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      // Updates and deletes are disallowed for now to maintain a clear audit trail.
-      allow update, delete: if false;
+      allow read, write: if isSignedIn();
     }
-
-    /**
-     * @description Generic rule for organization-wide data.
-     * Any authenticated user can read, create, update, or delete records in these
-     * collections. This is necessary for the management pages to function.
-     */
-    match /{collection}/{docId}
-      where collection in [
-        'activities',
-        'programs',
-        'partnerships',
-        'impact-metrics',
-        'projects',
-        'events',
-        'alerts',
-        'key-results',
-        'expenses'
-      ] {
+    match /activities/{activityId} {
+      allow read, write: if isSignedIn();
+    }
+    match /programs/{programId} {
+      allow read, write: if isSignedIn();
+    }
+    match /partnerships/{partnershipId} {
+      allow read, write: if isSignedIn();
+    }
+    match /impact-metrics/{metricId} {
+      allow read, write: if isSignedIn();
+    }
+    match /projects/{projectId} {
+      allow read, write: if isSignedIn();
+    }
+    match /events/{eventId} {
+      allow read, write: if isSignedIn();
+    }
+    match /alerts/{alertId} {
+      allow read, write: if isSignedIn();
+    }
+    match /key-results/{keyResultId} {
+      allow read, write: if isSignedIn();
+    }
+    match /expenses/{expenseId} {
       allow read, write: if isSignedIn();
     }
   }
