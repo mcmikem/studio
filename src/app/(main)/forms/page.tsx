@@ -3,9 +3,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckinForm } from '@/components/forms/checkin-form';
@@ -48,25 +45,17 @@ export default function FormsPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="check-in">
-          <Card>
-            <CardContent className="pt-6">
-              <CheckinForm />
-            </CardContent>
-          </Card>
+          <CheckinForm />
         </TabsContent>
         <TabsContent value="check-out">
-          <Card>
-            <CardContent className="pt-6">
-              <CheckoutForm />
-            </CardContent>
-          </Card>
+          <CheckoutForm />
         </TabsContent>
          <TabsContent value="activity">
-          <Card>
-            <CardContent className="pt-6">
-              <ActivityReportForm />
-            </CardContent>
-          </Card>
+            <Card>
+                <CardContent className="pt-6">
+                    <ActivityReportForm />
+                </CardContent>
+            </Card>
         </TabsContent>
       </Tabs>
     </div>
