@@ -8,6 +8,7 @@ import { collection, query, where, doc, writeBatch } from 'firebase/firestore';
 import { ClipboardList, Loader2 } from 'lucide-react';
 import type { Task } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
+import Link from 'next/link';
 
 // Sample tasks to pre-populate for the demo user
 const sampleTasks = [
@@ -78,7 +79,9 @@ export function MyPriorities() {
         ) : (
           <p className="text-muted-foreground">No pending tasks. Great job!</p>
         )}
-        <Button variant="link" className="p-0 h-auto">View all tasks</Button>
+        <Button variant="link" className="p-0 h-auto" asChild>
+            <Link href="/profile">View all tasks</Link>
+        </Button>
       </CardContent>
     </Card>
   );
