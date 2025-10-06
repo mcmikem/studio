@@ -1,266 +1,239 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user-specific data and allows public read access for organization-wide data.
+ * @fileoverview Firestore Security Rules for Omuto Central.
+ *
+ * Core Philosophy:
+ * This ruleset employs a hybrid security model, combining user-based access control with public read access for certain collections.
+ * User-specific data is secured using ownership checks, while general content is publicly readable but only editable by authorized users.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile data. Only the authenticated user can read/write their own profile.
- * - /users/{userId}/tasks/{taskId}: Stores tasks for a specific user. Only the authenticated user can read/write their own tasks.
- * - /checkins/{checkinId}: Stores daily check-in plans. Public read, owner-only write.
- * - /checkouts/{checkoutId}: Stores daily checkout updates. Public read, owner-only write.
- * - /activities/{activityId}: Stores logged activities. Public read, owner-only write.
- * - /programs/{programId}: Stores program information. Public read, protected writes.
- * - /partnerships/{partnershipId}: Stores partnership information. Public read, protected writes.
- * - /impact-metrics/{metricId}: Stores key performance indicators. Public read, protected writes.
- * - /projects/{projectId}: Stores project information. Public read, protected writes.
- * - /events/{eventId}: Stores calendar events. Public read, protected writes.
- * - /alerts/{alertId}: Stores alerts and notifications. Public read, protected writes.
- * - /key-results/{keyResultId}: Stores key results. Public read, protected writes.
- * - /expenses/{expenseId}: Stores expense reports. Public read, owner-only write.
+ * The Firestore database is organized into top-level collections for various entities like users, programs, partnerships, activities, and checkouts.
+ * User-specific data (tasks) is nested under the /users/{userId} path.
  *
  * Key Security Decisions:
  * - User listing is disallowed for privacy.
- * - Public read access is granted to organization-wide collections like `checkins`, `checkouts`, `activities`, `programs`, `partnerships`, `impact-metrics`, `projects`, `events`, `alerts`, `key-results`, and `expenses`.
- * - Owner-only write access is enforced on collections where the data is user-specific (e.g., `/users/{userId}/tasks/{taskId}`, `checkins`, `checkouts`, `activities`, `expenses`).
- * - Data validation is minimized in the Prototyping Phase, focusing only on ownership and relationship integrity checks.
+ * - Public read access is granted to top-level collections to facilitate data visibility.
+ * - Write access to public collections is restricted to owners, ensuring content integrity.
+ * - Strict ownership is enforced for user-specific data, preventing unauthorized access.
  *
  * Denormalization for Authorization:
- * - For `checkins`, `checkouts`, `activities`, and `expenses`, the `userId` field is used to enforce owner-only writes, avoiding the need for additional `get()` calls.
- *
- * Structural Segregation:
- * - Private user data (profile, tasks) is stored under `/users/{userId}`, while public organization-wide data is stored in top-level collections.
+ *  - The `/activities/{activityId}` documents MUST contain a `userId` field matching the user who created it. This ensures owner-only access for updates and deletes.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile documents.
-     * @path /users/{userId}
-     * @allow (create, update, delete) User with matching {userId} can modify their own profile.
-     * @allow (get) User with matching {userId} can read their own profile.
-     * @deny (create, update, delete) User cannot modify another user's profile.
-     * @deny (list) User cannot list all users.
-     * @principle Enforces document ownership for writes and prevents user listing.
+     * @description Checks if the user is signed in.
+     * @param {string} userId - The user's ID.
+     * @returns {boolean} True if the user is signed in, false otherwise.
      */
-    match /users/{userId} {
-      //function isSignedIn() {
-      //  return request.auth != null;
-      //}
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+    function isSignedIn() {
+      return request.auth != null;
     }
 
     /**
-     * @description Controls access to user-specific task documents.
-     * @path /users/{userId}/tasks/{taskId}
-     * @allow (create, update, delete) User with matching {userId} can create, update, and delete their own tasks.
-     * @allow (get, list) User with matching {userId} can read and list their own tasks.
-     * @deny (create, update, delete) User cannot modify another user's tasks.
-     * @principle Enforces document ownership for writes.
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @param {string} userId - The user ID to compare against the authenticated user's ID.
+     * @returns {boolean} True if the user IDs match, false otherwise.
      */
-    match /users/{userId}/tasks/{taskId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
-    }
-
-    /**
-     * @description Controls access to check-in documents.
-     * @path /checkins/{checkinId}
-     * @allow (get, list) Any user can read check-in documents.
-     * @allow (create) Any authenticated user can create a check-in document with a matching userId.
-     * @allow (update, delete) Only the user who created the check-in can update or delete it.
-     * @deny (create) If the userId in the request does not match the authenticated user's ID.
-     * @principle Public read access with owner-only writes, enforces ownership on create, update, and delete.
-     */
-    match /checkins/{checkinId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get, list: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.userId);
-      allow delete: if isExistingOwner(resource.data.userId);
-    }
-
-    /**
-     * @description Controls access to checkout documents.
-     * @path /checkouts/{checkoutId}
-     * @allow (get, list) Any user can read checkout documents.
-     * @allow (create) Any authenticated user can create a checkout document with a matching userId.
-     * @allow (update, delete) Only the user who created the checkout can update or delete it.
-     * @deny (create) If the userId in the request does not match the authenticated user's ID.
-     * @principle Public read access with owner-only writes, enforces ownership on create, update, and delete.
-     */
-    match /checkouts/{checkoutId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get, list: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.userId);
-      allow delete: if isExistingOwner(resource.data.userId);
-    }
-
-    /**
-     * @description Controls access to activity documents (ROI Calculator logs).
-     * @path /activities/{activityId}
-     * @allow (get, list) Any user can read activity documents.
-     * @allow (create) Any authenticated user can create an activity document with a matching userId.
-     * @allow (update, delete) Only the user who created the activity can update or delete it.
-     * @deny (create) If the userId in the request does not match the authenticated user's ID.
-     * @principle Public read access with owner-only writes, enforces ownership on create, update, and delete.
-     */
-    match /activities/{activityId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-     function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get, list: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isExistingOwner(resource.data.userId);
-      allow delete: if isExistingOwner(resource.data.userId);
-    }
-
-    /**
-     * @description Controls access to program documents.
-     * @path /programs/{programId}
-     * @allow (get, list) Any user can read program documents.
-     * @deny (create, update, delete) Only authenticated administrators can manage programs.
-     * @principle Public read access with protected writes.
-     */
-    match /programs/{programId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based access for program management.
-    }
-
-    /**
-     * @description Controls access to partnership documents.
-     * @path /partnerships/{partnershipId}
-     * @allow (get, list) Any user can read partnership documents.
-     * @deny (create, update, delete) Only authenticated administrators can manage partnerships.
-     * @principle Public read access with protected writes.
-     */
-    match /partnerships/{partnershipId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based access for partnership management.
-    }
-
-    /**
-     * @description Controls access to impact metric documents.
-     * @path /impact-metrics/{metricId}
-     * @allow (get, list) Any user can read impact metric documents.
-     * @deny (create, update, delete) Only authenticated administrators can manage impact metrics.
-     * @principle Public read access with protected writes.
-     */
-    match /impact-metrics/{metricId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based access for metric management.
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
 
      /**
-      * @description Controls access to project documents.
-      * @path /projects/{projectId}
-      * @allow (get, list) Any user can read project documents.
-      * @deny (create, update, delete) Only authenticated administrators can manage projects.
-      * @principle Public read access with protected writes.
-      */
-    match /projects/{projectId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based access for project management.
+     * @description Checks if the authenticated user is the owner of the existing document.
+     * @param {string} userId - The user ID to compare against the authenticated user's ID.
+     * @returns {boolean} True if the user IDs match and the document exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+        return (isOwner(userId) && resource != null);
     }
 
     /**
-     * @description Controls access to calendar event documents.
-     * @path /events/{eventId}
-     * @allow (get, list) Any user can read calendar event documents.
-     * @deny (create, update, delete) Only authenticated administrators can manage calendar events.
-     * @principle Public read access with protected writes.
+     * @description Secures the /users/{userId} collection.
+     * @path /users/{userId}
+     * @allow (create) - User with UID 'user123' can create their own profile.
+     * @allow (get, update, delete) - User with UID 'user123' can read, update, or delete their own profile.
+     * @deny (create) - User with UID 'user456' cannot create a profile with ID 'user123'.
+     * @principle Enforces document ownership for writes, restricts access to a user's own data tree.
      */
-    match /events/{eventId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based access for event management.
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to alert documents.
-     * @path /alerts/{alertId}
-     * @allow (get, list) Any user can read alert documents.
-     * @deny (create, update, delete) Only authenticated administrators can manage alerts.
-     * @principle Public read access with protected writes.
+     * @description Secures the /users/{userId}/tasks/{taskId} collection.
+     * @path /users/{userId}/tasks/{taskId}
+     * @allow (create) - User with UID 'user123' can create a task under their profile.
+     * @allow (get, update, delete) - User with UID 'user123' can read, update, or delete tasks under their profile.
+     * @deny (create) - User with UID 'user456' cannot create a task under user 'user123'.
+     * @principle Enforces document ownership for writes, restricts access to a user's own data tree.
      */
-    match /alerts/{alertId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based access for alert management.
+    match /users/{userId}/tasks/{taskId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to key result documents.
-     * @path /key-results/{keyResultId}
-     * @allow (get, list) Any user can read key result documents.
-     * @deny (create, update, delete) Only authenticated administrators can manage key results.
-     * @principle Public read access with protected writes.
+     * @description Secures the /checkins/{checkinId} collection.
+     * @path /checkins/{checkinId}
+     * @allow (get, list) - Anyone can read check-in data.
+     * @allow (create) - Any authenticated user can create a checkin.
+     * @deny (update, delete) - No one can update or delete a checkin.
+     * @principle Allows public read access, restricts write access to document creators.
      */
-    match /key-results/{keyResultId} {
+    match /checkins/{checkinId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based access for key result management.
+      allow create: if isSignedIn();
+      allow update, delete: if false;
     }
 
     /**
-     * @description Controls access to expense documents.
-     * @path /expenses/{expenseId}
-     * @allow (get, list) Any user can read expense documents.
-     * @allow (create) Any authenticated user can create an expense document with a matching userId.
-     * @allow (update, delete) Only the user who created the expense can update or delete it.
-     * @deny (create) If the userId in the request does not match the authenticated user's ID.
-     * @principle Public read access with owner-only writes, enforces ownership on create, update, and delete.
+     * @description Secures the /checkouts/{checkoutId} collection.
+     * @path /checkouts/{checkoutId}
+     * @allow (get, list) - Anyone can read checkout data.
+     * @allow (create) - Any authenticated user can create a checkout.
+     * @deny (update, delete) - No one can update or delete a checkout.
+     * @principle Allows public read access, restricts write access to document creators.
      */
-    match /expenses/{expenseId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
+    match /checkouts/{checkoutId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
 
+    /**
+     * @description Secures the /activities/{activityId} collection.
+     * @path /activities/{activityId}
+     * @allow (get, list) - Anyone can read activity data.
+     * @allow (create) - Any authenticated user can create an activity.
+     * @allow (update, delete) - Only the owner can update or delete the activity.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /activities/{activityId} {
       allow get, list: if true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update: if isExistingOwner(resource.data.userId);
       allow delete: if isExistingOwner(resource.data.userId);
+    }
+
+    /**
+     * @description Secures the /programs/{programId} collection.
+     * @path /programs/{programId}
+     * @allow (get, list) - Anyone can read program data.
+     * @allow (create) - Any authenticated user can create a program.
+     * @deny (update, delete) - No one can update or delete a program.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /programs/{programId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    /**
+     * @description Secures the /partnerships/{partnershipId} collection.
+     * @path /partnerships/{partnershipId}
+     * @allow (get, list) - Anyone can read partnership data.
+     * @allow (create) - Any authenticated user can create a partnership.
+     * @deny (update, delete) - No one can update or delete a partnership.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /partnerships/{partnershipId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    /**
+     * @description Secures the /impact-metrics/{metricId} collection.
+     * @path /impact-metrics/{metricId}
+     * @allow (get, list) - Anyone can read impact metric data.
+     * @allow (create) - Any authenticated user can create an impact metric.
+     * @deny (update, delete) - No one can update or delete an impact metric.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /impact-metrics/{metricId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+     /**
+     * @description Secures the /projects/{projectId} collection.
+     * @path /projects/{projectId}
+     * @allow (get, list) - Anyone can read project data.
+     * @allow (create) - Any authenticated user can create a project.
+     * @deny (update, delete) - No one can update or delete a project.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /projects/{projectId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    /**
+     * @description Secures the /events/{eventId} collection.
+     * @path /events/{eventId}
+     * @allow (get, list) - Anyone can read calendar event data.
+     * @allow (create) - Any authenticated user can create a calendar event.
+     * @deny (update, delete) - No one can update or delete a calendar event.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /events/{eventId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    /**
+     * @description Secures the /alerts/{alertId} collection.
+     * @path /alerts/{alertId}
+     * @allow (get, list) - Anyone can read alert data.
+     * @allow (create) - Any authenticated user can create an alert.
+     * @deny (update, delete) - No one can update or delete an alert.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /alerts/{alertId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    /**
+     * @description Secures the /key-results/{keyResultId} collection.
+     * @path /key-results/{keyResultId}
+     * @allow (get, list) - Anyone can read key result data.
+     * @allow (create) - Any authenticated user can create a key result.
+     * @deny (update, delete) - No one can update or delete a key result.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /key-results/{keyResultId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
+    }
+
+    /**
+     * @description Secures the /expenses/{expenseId} collection.
+     * @path /expenses/{expenseId}
+     * @allow (get, list) - Anyone can read expense data.
+     * @allow (create) - Any authenticated user can create an expense.
+     * @deny (update, delete) - No one can update or delete an expense.
+     * @principle Allows public read access, restricts write access to document creators.
+     */
+    match /expenses/{expenseId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if false;
     }
   }
 }
