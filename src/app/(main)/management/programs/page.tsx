@@ -70,18 +70,11 @@ const formatDateForInput = (date: string | Date | Timestamp): string => {
     let d: Date;
     if (date instanceof Timestamp) {
       d = date.toDate();
-    } else if (typeof date === 'string') {
-      const parsed = parseISO(date);
-      if (isValid(parsed)) {
-        // The date from string might be off by one day due to timezone, so we adjust.
-        const adjustedDate = new Date(parsed.valueOf() + parsed.getTimezoneOffset() * 60 * 1000);
-        d = adjustedDate;
-      } else {
-        d = new Date();
-      }
     } else {
-      d = date as Date;
+      d = new Date(date);
     }
+    // Directly format to 'yyyy-MM-dd' which is timezone-agnostic.
+    // The input[type=date] will handle the user's local timezone.
     return format(d, 'yyyy-MM-dd');
   } catch {
     return '';
