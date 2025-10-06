@@ -17,10 +17,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   nonNegotiableGoals,
   flexibleTargets,
-  teamRoles,
-  successMetrics,
 } from '@/lib/data';
-import { CheckCircle2, Clock } from 'lucide-react';
+import { CheckCircle2, Clock, Users, BarChart2 } from 'lucide-react';
 
 export default function PlanPage() {
   return (
@@ -82,64 +80,46 @@ export default function PlanPage() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Team Roles & Collaboration</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Team Member</TableHead>
-                <TableHead>Primary Focus</TableHead>
-                <TableHead>Key October Deliverables</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {teamRoles.map((role, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{role.member}</TableCell>
-                  <TableCell>{role.focus}</TableCell>
-                  <TableCell>{role.deliverables}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Success Dashboard</CardTitle>
-          <CardDescription>
-            How we measure success beyond the numbers.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Metric</TableHead>
-                <TableHead>Green Zone (&gt;80%)</TableHead>
-                <TableHead>Yellow Zone (50-80%)</TableHead>
-                <TableHead>Red Zone (&lt;50%)</TableHead>
-                <TableHead>Response</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {successMetrics.map((metric, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{metric.metric}</TableCell>
-                  <TableCell><Badge variant="outline" className="border-green-500 bg-green-500/10 text-green-500">{metric.green}</Badge></TableCell>
-                  <TableCell><Badge variant="outline" className="border-yellow-500 bg-yellow-500/10 text-yellow-500">{metric.yellow}</Badge></TableCell>
-                  <TableCell><Badge variant="destructive">{metric.red}</Badge></TableCell>
-                  <TableCell>{metric.response}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card>
+            <CardHeader>
+                <CardTitle>Team Roles & Collaboration</CardTitle>
+                <CardDescription>
+                    This section will be dynamically managed soon.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <div className="flex flex-col items-center justify-center h-full min-h-[200px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
+                    <Users className="h-12 w-12 text-muted-foreground" />
+                    <h2 className="mt-4 text-xl font-semibold">
+                    Coming Soon
+                    </h2>
+                    <p className="mt-2 max-w-md text-muted-foreground">
+                        A dedicated module for defining team roles and responsibilities is under development.
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Success Dashboard</CardTitle>
+                <CardDescription>
+                    This section will be dynamically managed soon.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex flex-col items-center justify-center h-full min-h-[200px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
+                    <BarChart2 className="h-12 w-12 text-muted-foreground" />
+                    <h2 className="mt-4 text-xl font-semibold">
+                    Coming Soon
+                    </h2>
+                    <p className="mt-2 max-w-md text-muted-foreground">
+                        An interactive dashboard for tracking success metrics against targets is on its way.
+                    </p>
+                </div>
+            </CardContent>
+        </Card>
+      </div>
 
     </div>
   );

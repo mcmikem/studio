@@ -45,36 +45,3 @@ export const flexibleTargets: PlanGoal[] = [
     { title: "Dignity Pads (5 prototype types)", description: "Develop our social enterprise.", details: "" },
     { title: "Newsletter (2 Sunday editions)", description: "Keep our community informed and engaged.", details: "" },
 ];
-
-export const teamRoles: TeamMemberRole[] = [
-    { member: "McMike Mutumba (ED)", focus: "Strategic oversight & systems", deliverables: "Template creation, partnership protection, team wellbeing" },
-    { member: "Nansikombi Dianah (Programs)", focus: "Planning & partnerships", deliverables: "Weekly plans, PTA meetings, Dignity Pads development" },
-    { member: "Kasirye Constantine (Operations)", focus: "Field execution & volunteers", deliverables: "Daily check-ins, tree planting, event logistics" },
-    { member: "Alex (Media Lead)", focus: "Communications strategy", deliverables: "Newsletter coordination, content planning" },
-    { member: "Jimmy (Media Officer)", focus: "Content production", deliverables: "Documentary, photography, video editing" },
-    { member: "Bwire Bashir (Field Coordinator)", focus: "Resource mobilization", deliverables: "Donor engagement, proposal writing, campaign management" },
-];
-
-export const successMetrics: SuccessMetric[] = [
-    {
-        metric: "Fundraising",
-        green: ">60% by Oct 15",
-        yellow: "40-60% by Oct 15",
-        red: "<40% by Oct 15",
-        response: "Emergency strategy session"
-    },
-    {
-        metric: "Team Wellbeing",
-        green: "4.0+ rating",
-        yellow: "3.0-3.9 rating",
-        red: "<3.0 for 2 weeks",
-        response: "Individual check-ins, reduce workload"
-    },
-    {
-        metric: "Goal Progress",
-        green: ">80% on track",
-        yellow: "50-80% on track",
-        red: "<50% by Oct 20",
-        response: "Reallocate resources, adjust goals"
-    }
-];
