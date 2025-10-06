@@ -11,15 +11,10 @@ import type { User as UserProfile } from '@/lib/types';
 
 
 const getStatusColor = (status: string) => {
-    switch (status) {
-        case 'Online':
-        case 'In Field':
-            return 'bg-green-500';
-        case 'In Meeting':
-            return 'bg-yellow-500';
-        default:
-            return 'bg-gray-400';
+    if (status === 'Not Checked In') {
+        return 'bg-gray-400';
     }
+    return 'bg-green-500';
 };
 
 export function TeamToday() {
@@ -51,16 +46,15 @@ export function TeamToday() {
     const isLoading = isLoadingUsers || isLoadingCheckins;
     if (isLoading || !allTeamMembers) return Array.from({ length: 5 }).map((_, i) => ({ id: `${i}`, name: 'Loading...', status: 'Loading' }));
     
-    const checkedInUserIds = new Set(checkins?.map(c => c.userId));
+    const checkedInUsersMap = new Map(checkins?.map(c => [c.userId, c.primaryMission]));
     
     return allTeamMembers.map(member => {
-        const hasCheckedIn = checkedInUserIds.has(member.id);
-        
-        if (hasCheckedIn) {
-             // In a future version, we could pull location/status from the checkin document
-             return { id: member.id, name: member.name, status: 'Online' };
-        }
-        return { id: member.id, name: member.name, status: 'Not Checked In' };
+        const mission = checkedInUsersMap.get(member.id);
+        return { 
+            id: member.id, 
+            name: member.name, 
+            status: mission || 'Not Checked In' 
+        };
     });
   }, [checkins, isLoadingCheckins, allTeamMembers, isLoadingUsers]);
   
@@ -77,16 +71,22 @@ export function TeamToday() {
       <CardContent className="space-y-3 text-sm">
         {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-2">
-                    <Skeleton className="h-3 w-3 rounded-full" />
-                    <Skeleton className="h-4 w-32" />
+                <div key={i} className="flex items-start gap-3">
+                    <Skeleton className="h-3 w-3 rounded-full mt-1" />
+                    <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-3 w-40" />
+                    </div>
                 </div>
             ))
         ) : (
           teamStatus.map((member) => (
-            <div key={member.id} className="flex items-center gap-2">
-              <span className={`flex h-3 w-3 rounded-full ${getStatusColor(member.status)}`}></span>
-              <span>{member.name} ({member.status})</span>
+            <div key={member.id} className="flex items-start gap-3">
+              <span className={`flex h-3 w-3 flex-shrink-0 rounded-full ${getStatusColor(member.status)} mt-1`}></span>
+              <div>
+                <p className="font-semibold">{member.name}</p>
+                <p className="text-muted-foreground">{member.status}</p>
+              </div>
             </div>
           ))
         )}
