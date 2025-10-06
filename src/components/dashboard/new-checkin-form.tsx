@@ -97,7 +97,7 @@ export function NewCheckinForm() {
               name="primaryMission"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select onValueChange={field.onChange} value={field.value || ''}>
                   <SelectTrigger id="primary-mission">
                     <SelectValue placeholder="Select or type your mission..." />
                   </SelectTrigger>

@@ -48,6 +48,7 @@ export function CheckinForm() {
     reset,
     setValue,
     watch,
+    register
   } = useForm<CheckinFormData>({
     resolver: zodResolver(checkinSchema),
   });
@@ -74,20 +75,19 @@ export function CheckinForm() {
   const { data: programs } = useCollection<Program>(programsQuery);
 
   const allMissions = useMemo(() => {
-    const dynamicMissions = [];
+    const missionSet = new Set<string>();
+
     if (recentCheckouts?.[0]?.tomorrowPlan) {
-      dynamicMissions.push({
-        id: 'mission-dynamic',
-        label: `[FROM YESTERDAY] ${recentCheckouts[0].tomorrowPlan}`,
-      });
+      missionSet.add(`[FROM YESTERDAY] ${recentCheckouts[0].tomorrowPlan}`);
     }
 
-    const programMissions = programs?.map(p => ({
-        id: p.id,
-        label: `[PROGRAM] ${p.title}`
-    })) || [];
+    programs?.forEach(p => {
+        missionSet.add(`[PROGRAM] ${p.title}`);
+    });
 
-    return [...dynamicMissions, ...programMissions, { id: 'mission-other', label: 'Other...' }];
+    missionSet.add('Other...');
+
+    return Array.from(missionSet).map(label => ({ id: label, label }));
   }, [recentCheckouts, programs]);
 
   useEffect(() => {

@@ -50,6 +50,11 @@ export function CheckoutForm() {
     setValue,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      parentsReached: 0,
+      volunteersRecruited: 0,
+      prototypesTested: 0,
+    }
   });
 
   const startOfDay = useMemo(() => {
