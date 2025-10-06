@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const { user } = useUser();
   const { profile, isLoading } = useUserProfile(user);
 
-  if (isLoading || !profile) {
+  if (isLoading || !user) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -23,7 +23,10 @@ export default function DashboardPage() {
   }
   
   const renderDashboardByRole = () => {
-    switch (profile.role) {
+    // Fallback for profiles that might still be loading initially
+    const userRole = profile?.role || 'Staff'; 
+
+    switch (userRole) {
       case 'Executive Director':
         return <ExecutiveDashboard profile={profile} />;
       case 'Programs & Partnerships Manager':

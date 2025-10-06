@@ -31,24 +31,20 @@ export function DefaultDashboard({ profile }: { profile: User }) {
   return (
     <>
       <header className="space-y-1">
-        <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">
-          {getGreeting()},{" "}
-          {firstName} 🚀 | Building Youth. Building Change.
+        <h1 className="font-headline text-3xl font-bold tracking-tight text-primary">
+          {getGreeting()}, {firstName}!
         </h1>
         <p className="text-sm text-muted-foreground">
-          {dateString} | Mpigi District, Uganda (EAT)
+          {dateString} | Welcome to your Mission Control.
         </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-3">
-            <QuickStatsSummary />
-        </div>
-        <div className="lg:col-span-3">
-            <ProgramsOverview />
+          <ProgramsOverview />
         </div>
         <div className="lg:col-span-2">
-            <TeamActivityFeed />
+          <TeamActivityFeed />
         </div>
         <div className="lg:col-span-1 grid grid-cols-1 gap-6">
             <DailyActions />

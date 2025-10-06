@@ -13,7 +13,7 @@ export function TeamActivityFeed() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Team Pulse</CardTitle>
+        <CardTitle size="xl">Team Pulse</CardTitle>
         <CardDescription>
           Live activity and updates from the team check-outs.
         </CardDescription>

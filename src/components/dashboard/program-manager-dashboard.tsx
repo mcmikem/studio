@@ -8,6 +8,7 @@ import { PartnershipsOverview } from "./partnerships-overview"
 import { DailyActions } from "./daily-actions"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { TeamToday } from "./team-today"
+import { Alerts } from './alerts'
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -30,12 +31,11 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
   return (
     <>
       <header className="space-y-1">
-        <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">
-          {getGreeting()},{" "}
-          {firstName} 🚀 | Program Manager View
+        <h1 className="font-headline text-3xl font-bold tracking-tight text-primary">
+          {getGreeting()}, {firstName}!
         </h1>
         <p className="text-sm text-muted-foreground">
-          {dateString} | Mpigi District, Uganda (EAT)
+          {dateString} | Here's the pulse on your programs and partnerships.
         </p>
       </header>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -56,7 +56,7 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
           <PartnershipsOverview />
         </div>
         <div className="lg:col-span-1">
-          <DashboardCalendar />
+          <Alerts />
         </div>
       </div>
     </>

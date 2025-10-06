@@ -35,12 +35,12 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table"
-import { format } from "date-fns"
 import { Badge } from "../ui/badge"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
+import { formatDistanceToNow } from "date-fns"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -115,7 +115,7 @@ function FinancialOverview() {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card className="flex flex-col justify-between">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary">
+          <CardTitle size="lg" className="flex items-center gap-2 text-primary">
             <DollarSign />
             Monthly Spending
           </CardTitle>
@@ -129,7 +129,7 @@ function FinancialOverview() {
       </Card>
       <Card className="flex flex-col justify-between">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-500">
+          <CardTitle size="lg" className="flex items-center gap-2 text-green-500">
             <Target />
             Value Generated
           </CardTitle>
@@ -143,7 +143,7 @@ function FinancialOverview() {
       </Card>
       <Card className="flex flex-col justify-between">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-500">
+          <CardTitle size="lg" className="flex items-center gap-2 text-blue-500">
             <VenetianMask />
             Remaining Budget
           </CardTitle>
@@ -165,6 +165,7 @@ function RecentExpenses() {
     if (!firestore) return null
     return query(
       collection(firestore, "expenses"),
+       where("status", "==", "Pending"),
       orderBy("createdAt", "desc"),
       limit(5)
     )
@@ -181,7 +182,7 @@ function RecentExpenses() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Expense Reports</CardTitle>
+        <CardTitle size="lg">Pending Expense Reports</CardTitle>
         <CardDescription>Awaiting review and approval.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -190,7 +191,7 @@ function RecentExpenses() {
             <TableRow>
               <TableHead>User</TableHead>
               <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
+               <TableHead>Date</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -204,7 +205,7 @@ function RecentExpenses() {
                     <Skeleton className="h-4 w-20" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-4 w-20" />
                   </TableCell>
                 </TableRow>
               ))}
@@ -213,21 +214,14 @@ function RecentExpenses() {
                 <TableRow key={expense.id}>
                   <TableCell>{expense.userName}</TableCell>
                   <TableCell>{formatCurrency(expense.amount)}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={statusColors[expense.status]}
-                    >
-                      {expense.status}
-                    </Badge>
-                  </TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{formatDistanceToNow(expense.date.toDate(), {addSuffix: true})}</TableCell>
                 </TableRow>
               ))
             ) : (
               !isLoading && (
                 <TableRow>
                   <TableCell colSpan={3} className="text-center h-24">
-                    No recent expenses.
+                    No pending expenses.
                   </TableCell>
                 </TableRow>
               )
@@ -250,18 +244,17 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
   return (
     <>
       <header className="space-y-1">
-        <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">
-          {getGreeting()},{" "}
-          {firstName} 🚀 | Media & Finance View
+        <h1 className="font-headline text-3xl font-bold tracking-tight text-primary">
+          {getGreeting()}, {firstName}!
         </h1>
         <p className="text-sm text-muted-foreground">
-          {dateString} | Mpigi District, Uganda (EAT)
+          {dateString} | Here is your Media & Finance dashboard.
         </p>
       </header>
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Financial Overview</CardTitle>
+            <CardTitle size="xl">Financial Overview</CardTitle>
             <CardDescription>
               A summary of this month's spending and value generation.
             </CardDescription>
@@ -282,7 +275,7 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
           <div className="md:col-span-3">
             <Card>
               <CardHeader>
-                <CardTitle>Media Asset Library</CardTitle>
+                <CardTitle size="lg">Media Asset Library</CardTitle>
                 <CardDescription>
                   A central place for all photos, videos, and brand assets.
                 </CardDescription>

@@ -8,6 +8,7 @@ import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
+import { PartnershipsOverview } from "./partnerships-overview"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -30,12 +31,11 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
   return (
     <>
       <header className="space-y-1">
-        <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">
-          {getGreeting()},{" "}
-          {firstName} 🚀 | Executive View
+        <h1 className="font-headline text-3xl font-bold tracking-tight text-primary">
+          {getGreeting()}, {firstName}!
         </h1>
         <p className="text-sm text-muted-foreground">
-          {dateString} | Mpigi District, Uganda (EAT)
+          {dateString} | Here is the organization's high-level overview.
         </p>
       </header>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -53,7 +53,7 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
             <TeamToday />
         </div>
         <div className="lg:col-span-2">
-          <DashboardCalendar />
+          <PartnershipsOverview />
         </div>
         <div className="lg:col-span-1">
           <Alerts />
