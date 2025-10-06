@@ -1,45 +1,21 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { NotificationsList } from '@/components/notifications/notifications-list';
 import { Bell } from 'lucide-react';
 
 export default function NotificationsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
+        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+          <Bell className="h-8 w-8" />
           Notifications
         </h1>
         <p className="text-muted-foreground">
-          All your alerts and updates in one place.
+          A complete history of all your alerts and updates.
         </p>
       </header>
-      <Card>
-        <CardHeader>
-          <CardTitle>Coming Soon</CardTitle>
-          <CardDescription>
-            The unified notification center is currently under development.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center h-full min-h-[400px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
-            <Bell className="h-16 w-16 text-muted-foreground" />
-            <h2 className="mt-6 text-xl font-semibold">
-              Your Notification Center
-            </h2>
-            <p className="mt-2 max-w-md text-muted-foreground">
-              All important notifications, mentions, and system alerts will
-              appear here, ensuring you never miss a critical update.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <NotificationsList />
     </div>
   );
 }
