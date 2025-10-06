@@ -1,5 +1,5 @@
 'use client';
-
+import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -519,40 +519,62 @@ export function CheckinForm() {
 
   return (
     <Card>
-      <nav aria-label="Progress" className="p-4">
-        <div className="flex items-center">
+      <nav aria-label="Progress">
+        <ol role="list" className="flex items-center p-6">
           {steps.map((step, stepIdx) => (
             <React.Fragment key={step.id}>
-              <div className="flex flex-col items-center">
-                 <button
-                  type="button"
-                  onClick={() => setCurrentStep(stepIdx)}
-                  className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-full',
-                    stepIdx < currentStep && 'bg-primary text-primary-foreground',
-                    stepIdx === currentStep && 'border-2 border-primary bg-primary/20',
-                    stepIdx > currentStep && 'border-2 border-border bg-card'
-                  )}
-                >
-                  {stepIdx < currentStep ? (
-                    <Check className="h-6 w-6" />
-                  ) : (
-                    <span className="font-semibold text-primary">{step.id}</span>
-                  )}
-                </button>
-                 <p className="text-xs text-center mt-2 w-20">{step.name}</p>
-              </div>
-              {stepIdx < steps.length - 1 && (
-                <div
-                  className={cn(
-                    'flex-auto border-t-2 transition-colors',
-                    stepIdx < currentStep ? 'border-primary' : 'border-border'
-                  )}
-                />
+              <li className={cn('relative', stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : '')}>
+              {stepIdx < currentStep ? (
+                <>
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="h-0.5 w-full bg-primary" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(stepIdx)}
+                    className="relative flex h-8 w-8 items-center justify-center rounded-full bg-primary hover:bg-primary/80"
+                  >
+                    <Check className="h-5 w-5 text-white" aria-hidden="true" />
+                    <span className="sr-only">{step.name}</span>
+                  </button>
+                </>
+              ) : stepIdx === currentStep ? (
+                <>
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="h-0.5 w-full bg-gray-200" />
+                  </div>
+                  <button
+                    type="button"
+                    className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-white"
+                    aria-current="step"
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
+                    <span className="sr-only">{step.name}</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="h-0.5 w-full bg-gray-200" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(stepIdx)}
+                    className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white hover:border-gray-400"
+                  >
+                    <span
+                      className="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-gray-300"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only">{step.name}</span>
+                  </button>
+                </>
               )}
+               <p className="absolute -bottom-6 w-max -translate-x-1/2 left-1/2 text-xs text-center mt-2">{step.name}</p>
+            </li>
             </React.Fragment>
           ))}
-        </div>
+        </ol>
       </nav>
 
       <form>
