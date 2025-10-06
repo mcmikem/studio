@@ -234,7 +234,7 @@ export default function ProgramsPage() {
                   <Skeleton className="h-6 w-3/4" />
                   <Skeleton className="h-4 w-1/2 mt-2" />
                 </CardHeader>
-                <CardContent className="space-y-4 pt-6">
+                <CardContent className="space-y-4 pt-0">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-5/6" />
                   <Skeleton className="h-4 w-full" />
@@ -254,20 +254,9 @@ export default function ProgramsPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <CardTitle className="text-xl pr-4">{program.title}</CardTitle>
-                     <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0">
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-lg">
-                            <DialogHeader>
-                                <DialogTitle>Edit Program</DialogTitle>
-                                <DialogDescription>Update the details for the "{program.title}" program.</DialogDescription>
-                            </DialogHeader>
-                            <ProgramForm program={program} onFormSubmit={() => {}} />
-                        </DialogContent>
-                    </Dialog>
+                     <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={() => setEditingProgram(program)}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
                   </div>
                    <Badge variant="outline" className={`${statusColors[program.status]} mt-2 w-fit`}>
                       <div className="flex items-center gap-1">
@@ -277,7 +266,7 @@ export default function ProgramsPage() {
                     </Badge>
                   <CardDescription className="pt-2">{program.description}</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-grow flex flex-col justify-between pt-6">
+                <CardContent className="flex-grow flex flex-col justify-between pt-0">
                     <div>
                         <h4 className="font-semibold text-sm mb-2">Key Objectives:</h4>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
