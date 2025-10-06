@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
 import { ProgramsOverview } from '@/components/dashboard/programs-overview';
+import { MyPriorities } from '@/components/dashboard/my-priorities';
+import { TeamToday } from '@/components/dashboard/team-today';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -53,57 +55,8 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex flex-col gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5" />
-                  My Priorities
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-sm border border-primary"></div>
-                  <span>Approve October budget - Due Today</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-sm border border-primary"></div>
-                  <span>Review Omuto Pulse script - Due Oct 7</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-5 w-5 items-center justify-center rounded-sm border border-primary"></div>
-                  <span>
-                    Call with Mr. Akera (Resource Mobilization) - Due Oct 8
-                  </span>
-                </div>
-                 <Button variant="link" className="p-0 h-auto">View all tasks</Button>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  Team Today
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-3 w-3 rounded-full bg-green-500"></span>
-                  <span>McMike (Online - HQ)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="flex h-3 w-3 rounded-full bg-green-500"></span>
-                  <span>Kasirye (In Field - Nindye SS)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="flex h-3 w-3 rounded-full bg-yellow-500"></span>
-                  <span>Dianah (In Meeting - Kampala)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="flex h-3 w-3 rounded-full bg-red-500"></span>
-                  <span>Bwire (Not Checked In)</span>
-                </div>
-              </CardContent>
-            </Card>
+            <MyPriorities />
+            <TeamToday />
           </div>
         </div>
       </div>

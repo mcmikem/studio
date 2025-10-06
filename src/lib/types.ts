@@ -38,6 +38,13 @@ export type Checkout = {
   userId: string;
 }
 
+export type Checkin = {
+    id: string;
+    userId: string;
+    name: string;
+    timestamp: Timestamp;
+}
+
 export type PlanGoal = {
   title: string;
   description: string;
@@ -120,4 +127,11 @@ export type Alert = {
     message: string;
     priority: "High" | "Medium" | "Low";
     action: string;
+}
+
+export type Task = {
+    id: string;
+    title: string;
+    completed: boolean;
+    dueDate?: string;
 }

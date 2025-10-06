@@ -237,6 +237,19 @@
       },
       "required": ["userId", "name", "primaryMission", "timestamp"]
     },
+    "Task": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Task",
+      "type": "object",
+      "description": "Represents a single task or to-do item for a user.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "dueDate": { "type": "string", "format": "date" }
+      },
+      "required": ["title", "completed"]
+    },
     "Project": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Project",
@@ -278,6 +291,12 @@
         "$ref": "#/entities/User"
       },
       "description": "Stores user profile information."
+    },
+    "/users/{userId}/tasks/{taskId}": {
+        "schema": {
+            "$ref": "#/entities/Task"
+        },
+        "description": "Stores tasks for a specific user."
     },
     "/checkins/{checkinId}": {
       "schema": {
