@@ -1,7 +1,13 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Handshake } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Handshake } from 'lucide-react';
 
 export default function ResourcesPage() {
   return (
@@ -16,16 +22,23 @@ export default function ResourcesPage() {
       </header>
       <Card>
         <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-            <CardDescription>
-                The Resource Mobilization dashboard is currently under development.
-            </CardDescription>
+          <CardTitle>Coming Soon</CardTitle>
+          <CardDescription>
+            The Resource Mobilization dashboard is currently under development.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-        <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center">
-                <Handshake className="h-16 w-16 text-muted-foreground" />
-                <p className="mt-4 text-sm text-muted-foreground">Tools for tracking donors, proposals, and funding alerts will be available here.</p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full min-h-[400px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
+            <Handshake className="h-16 w-16 text-muted-foreground" />
+            <h2 className="mt-6 text-xl font-semibold">
+              Donor & Funding Pipeline
+            </h2>
+            <p className="mt-2 max-w-md text-muted-foreground">
+              Here you will find tools for tracking donor engagement, managing
+              grant proposals, and monitoring funding pipelines to ensure Omuto's
+              financial health.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

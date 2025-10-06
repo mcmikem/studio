@@ -1,7 +1,13 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { MessageSquare } from 'lucide-react';
 
 export default function ChatPage() {
   return (
@@ -16,16 +22,22 @@ export default function ChatPage() {
       </header>
       <Card>
         <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-            <CardDescription>
-                The integrated team chat feature is currently under development.
-            </CardDescription>
+          <CardTitle>Coming Soon</CardTitle>
+          <CardDescription>
+            The integrated team chat feature is currently under development.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-        <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center">
-                <MessageSquare className="h-16 w-16 text-muted-foreground" />
-                <p className="mt-4 text-sm text-muted-foreground">A dedicated space for team chat will be available here.</p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full min-h-[400px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
+            <MessageSquare className="h-16 w-16 text-muted-foreground" />
+            <h2 className="mt-6 text-xl font-semibold">
+              Unified Team Communication
+            </h2>
+            <p className="mt-2 max-w-md text-muted-foreground">
+              A dedicated space for real-time team chat, project channels, and
+              direct messaging will be available here. Stay tuned for updates!
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

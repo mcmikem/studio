@@ -1,7 +1,13 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { User } from 'lucide-react';
 import { useUser } from '@/firebase';
 
 export default function ProfilePage() {
@@ -19,16 +25,23 @@ export default function ProfilePage() {
       </header>
       <Card>
         <CardHeader>
-            <CardTitle>Coming Soon</CardTitle>
-            <CardDescription>
-                The user profile page is currently under development.
-            </CardDescription>
+          <CardTitle>Coming Soon</CardTitle>
+          <CardDescription>
+            The user profile page is currently under development.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-        <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center">
-                <User className="h-16 w-16 text-muted-foreground" />
-                <p className="mt-4 text-sm text-muted-foreground">Your personal dashboard and settings will be available here.</p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full min-h-[400px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
+            <User className="h-16 w-16 text-muted-foreground" />
+            <h2 className="mt-6 text-xl font-semibold">
+              Your Personal Dashboard
+            </h2>
+            <p className="mt-2 max-w-md text-muted-foreground">
+              A dedicated space for your personal settings, assigned tasks, and a
+              history of your contributions and check-ins will be available
+              here.
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
