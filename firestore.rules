@@ -18,10 +18,11 @@
  * - /projects/{projectId}: High-level projects.
  * - /events/{eventId}: Organizational calendar events.
  * - /alerts/{alertId}: System-wide alerts and notifications.
+ * - /key-results/{keyResultId}: Key results from the October Operational Plan.
  *
  * Key Security Decisions:
  * - User profiles and tasks are only accessible and modifiable by the owning user.
- * - All other top-level collections are publicly readable.
+ * - All other top-level collections are readable by any authenticated user.
  * - For non-user specific collections, only authenticated users can create, update, or delete documents.
  * - No specific data validation is performed in this prototyping phase, except for ownership on create.
  *   More granular validation should be added in later iterations.
@@ -33,250 +34,62 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Manages user profile access.
-     * @path /users/{userId}
-     * @allow (read) Authenticated user can read their own profile.
-     * @allow (create) Authenticated user can create their profile if the userId matches their auth.uid.
-     * @allow (update) Authenticated user can update their own profile.
-     * @allow (delete) Authenticated user can delete their own profile.
-     * @deny (read) Authenticated user cannot read other user profiles.
-     * @deny (create) Authenticated user cannot create a profile with a userId that doesn't match their auth.uid.
-     * @deny (update) Authenticated user cannot update other user profiles.
-     * @deny (delete) Authenticated user cannot delete other user profiles.
-     * @principle Enforces user-ownership for profile data.
-     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     match /users/{userId} {
-      function isOwner(userId) {
+      function isOwner() {
         return request.auth != null && request.auth.uid == userId;
       }
-      allow get: if isOwner(userId);
-      allow list: if false; // User listing is disabled for privacy.
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow read, write: if isOwner();
     }
 
-    /**
-     * @description Manages user tasks.
-     * @path /users/{userId}/tasks/{taskId}
-     * @allow (read) Authenticated user can read their own tasks.
-     * @allow (create) Authenticated user can create tasks for themselves.
-     * @allow (update) Authenticated user can update their own tasks.
-     * @allow (delete) Authenticated user can delete their own tasks.
-     * @deny (read) Authenticated user cannot read other user's tasks.
-     * @deny (create) Authenticated user cannot create tasks for other users.
-     * @deny (update) Authenticated user cannot update other user's tasks.
-     * @deny (delete) Authenticated user cannot delete other user's tasks.
-     * @principle Enforces user-ownership for task data.
-     */
     match /users/{userId}/tasks/{taskId} {
-        function isOwner(userId) {
-            return request.auth != null && request.auth.uid == userId;
-        }
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId);
-        allow update: if isOwner(userId);
-        allow delete: if isOwner(userId);
+      function isOwner() {
+          return request.auth != null && request.auth.uid == userId;
+      }
+      allow read, write: if isOwner();
     }
 
-    /**
-     * @description Manages daily check-in plans.
-     * @path /checkins/{checkinId}
-     * @allow (read) Anyone can read check-in plans.
-     * @allow (create) Only authenticated users can create check-in plans.
-     * @allow (update) Only authenticated users can update check-in plans.
-     * @allow (delete) Only authenticated users can delete check-in plans.
-     * @deny (create) Unauthenticated users cannot create check-in plans.
-     * @deny (update) Unauthenticated users cannot update check-in plans.
-     * @deny (delete) Unauthenticated users cannot delete check-in plans.
-     * @principle Public read, authenticated-user writes.
-     */
     match /checkins/{checkinId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Manages daily checkout updates.
-     * @path /checkouts/{checkoutId}
-     * @allow (read) Anyone can read checkout updates.
-     * @allow (create) Only authenticated users can create checkout updates.
-     * @allow (update) Only authenticated users can update checkout updates.
-     * @allow (delete) Only authenticated users can delete checkout updates.
-     * @deny (create) Unauthenticated users cannot create checkout updates.
-     * @deny (update) Unauthenticated users cannot update checkout updates.
-     * @deny (delete) Unauthenticated users cannot delete checkout updates.
-     * @principle Public read, authenticated-user writes.
-     */
     match /checkouts/{checkoutId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Manages logged activities from the ROI Calculator.
-     * @path /activities/{activityId}
-     * @allow (read) Anyone can read activity logs.
-     * @allow (create) Only authenticated users can create activity logs.
-     * @allow (update) Only authenticated users can update activity logs.
-     * @allow (delete) Only authenticated users can delete activity logs.
-     * @deny (create) Unauthenticated users cannot create activity logs.
-     * @deny (update) Unauthenticated users cannot update activity logs.
-     * @deny (delete) Unauthenticated users cannot delete activity logs.
-     * @principle Public read, authenticated-user writes.
-     */
     match /activities/{activityId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Manages core programs and initiatives.
-     * @path /programs/{programId}
-     * @allow (read) Anyone can read program data.
-     * @allow (create) Only authenticated users can create program data.
-     * @allow (update) Only authenticated users can update program data.
-     * @allow (delete) Only authenticated users can delete program data.
-     * @deny (create) Unauthenticated users cannot create program data.
-     * @deny (update) Unauthenticated users cannot update program data.
-     * @deny (delete) Unauthenticated users cannot delete program data.
-     * @principle Public read, authenticated-user writes.
-     */
     match /programs/{programId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Manages partner organization information.
-     * @path /partnerships/{partnershipId}
-     * @allow (read) Anyone can read partnership information.
-     * @allow (create) Only authenticated users can create partnership information.
-     * @allow (update) Only authenticated users can update partnership information.
-     * @allow (delete) Only authenticated users can delete partnership information.
-     * @deny (create) Unauthenticated users cannot create partnership information.
-     * @deny (update) Unauthenticated users cannot update partnership information.
-     * @deny (delete) Unauthenticated users cannot delete partnership information.
-     * @principle Public read, authenticated-user writes.
-     */
     match /partnerships/{partnershipId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Manages key performance indicators (KPIs).
-     * @path /impact-metrics/{metricId}
-     * @allow (read) Anyone can read impact metrics.
-     * @allow (create) Only authenticated users can create impact metrics.
-     * @allow (update) Only authenticated users can update impact metrics.
-     * @allow (delete) Only authenticated users can delete impact metrics.
-     * @deny (create) Unauthenticated users cannot create impact metrics.
-     * @deny (update) Unauthenticated users cannot update impact metrics.
-     * @deny (delete) Unauthenticated users cannot delete impact metrics.
-     * @principle Public read, authenticated-user writes.
-     */
     match /impact-metrics/{metricId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Manages high-level projects.
-     * @path /projects/{projectId}
-     * @allow (read) Anyone can read project data.
-     * @allow (create) Only authenticated users can create project data.
-     * @allow (update) Only authenticated users can update project data.
-     * @allow (delete) Only authenticated users can delete project data.
-     * @deny (create) Unauthenticated users cannot create project data.
-     * @deny (update) Unauthenticated users cannot update project data.
-     * @deny (delete) Unauthenticated users cannot delete project data.
-     * @principle Public read, authenticated-user writes.
-     */
     match /projects/{projectId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
     }
 
-     /**
-      * @description Manages calendar events.
-      * @path /events/{eventId}
-      * @allow (read) Anyone can read event data.
-      * @allow (create) Only authenticated users can create event data.
-      * @allow (update) Only authenticated users can update event data.
-      * @allow (delete) Only authenticated users can delete event data.
-      * @deny (create) Unauthenticated users cannot create event data.
-      * @deny (update) Unauthenticated users cannot update event data.
-      * @deny (delete) Unauthenticated users cannot delete event data.
-      * @principle Public read, authenticated-user writes.
-      */
     match /events/{eventId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn() && resource != null;
-        allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
     }
 
-    /**
-     * @description Manages system-wide alerts and notifications.
-     * @path /alerts/{alertId}
-     * @allow (read) Anyone can read alert data.
-     * @allow (create) Only authenticated users can create alert data.
-     * @allow (update) Only authenticated users can update alert data.
-     * @allow (delete) Only authenticated users can delete alert data.
-     * @deny (create) Unauthenticated users cannot create alert data.
-     * @deny (update) Unauthenticated users cannot update alert data.
-     * @deny (delete) Unauthenticated users cannot delete alert data.
-     * @principle Public read, authenticated-user writes.
-     */
     match /alerts/{alertId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn() && resource != null;
-        allow delete: if isSignedIn() && resource != null;
+      allow read, write: if isSignedIn();
+    }
+
+    match /key-results/{keyResultId} {
+      allow read, write: if isSignedIn();
     }
   }
 }
