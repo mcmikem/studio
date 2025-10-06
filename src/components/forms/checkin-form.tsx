@@ -4,49 +4,23 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { NewCheckinForm } from '../dashboard/new-checkin-form';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion"
 import { AdvancedCheckinForm } from './advanced-checkin-form';
-import { Wand2 } from 'lucide-react';
-
 
 export function CheckinForm() {
-
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Daily Check-in</CardTitle>
+        <CardTitle>Daily Strategic Plan</CardTitle>
         <CardDescription>
-          Quickly log your primary mission for the day.
+          Outline your mission, time blocks, and logistical needs for the day. Use the AI assistant to help you brainstorm.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <NewCheckinForm />
+        <AdvancedCheckinForm />
       </CardContent>
-      <CardFooter>
-         <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="advanced-plan">
-                <AccordionTrigger>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Wand2 className="h-4 w-4" />
-                        Need to create a detailed plan?
-                    </div>
-                </AccordionTrigger>
-                <AccordionContent>
-                    <AdvancedCheckinForm />
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
-      </CardFooter>
     </Card>
   );
 }
