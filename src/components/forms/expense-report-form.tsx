@@ -11,7 +11,7 @@ import {
   useUser,
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -38,7 +38,7 @@ import { format } from 'date-fns';
 
 const expenseSchema = z.object({
   date: z.string().min(1, 'Date is required.'),
-  description: z.string().min(5, 'Please provide a more detailed description.'),
+  description: z.string().min(5, 'Please provide a detailed description.'),
   category: z.enum(["Transport", "Materials", "Food", "Airtime", "Other"]),
   amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
 });
@@ -65,7 +65,7 @@ export function ExpenseReportForm() {
     },
   });
 
-  const onSubmit = (data: ExpenseFormData) => {
+  const onSubmit = async (data: ExpenseFormData) => {
     if (!firestore || !user || !profile) {
       toast({
         variant: 'destructive',
@@ -77,7 +77,7 @@ export function ExpenseReportForm() {
 
     const expenseData = {
       ...data,
-      date: Timestamp.fromDate(new Date(data.date)),
+      date: new Date(data.date), // Store as native Date object
       userId: user.uid,
       userName: profile.name,
       status: 'Pending' as const,
@@ -85,13 +85,21 @@ export function ExpenseReportForm() {
     };
 
     const expensesCollection = collection(firestore, 'expenses');
-    addDocumentNonBlocking(expensesCollection, expenseData);
-
-    toast({
-      title: 'Expense Report Submitted!',
-      description: 'Your report has been sent for approval.',
-    });
-    reset();
+    try {
+      await addDocumentNonBlocking(expensesCollection, expenseData);
+      toast({
+        title: 'Expense Report Submitted!',
+        description: 'Your report has been sent for approval.',
+      });
+      reset();
+    } catch(e) {
+      console.error(e);
+      toast({
+        variant: 'destructive',
+        title: 'Submission Error',
+        description: 'Could not save your expense report. Please try again.',
+      });
+    }
   };
 
 

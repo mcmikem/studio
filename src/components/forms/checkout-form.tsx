@@ -150,6 +150,11 @@ export function CheckoutForm() {
         });
     } catch (e) {
         console.error("Failed to submit checkout", e)
+         toast({
+            variant: "destructive",
+            title: "Submission Error",
+            description: "Could not save your checkout report. Please try again.",
+        });
     }
   };
   

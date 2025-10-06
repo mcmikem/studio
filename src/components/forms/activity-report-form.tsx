@@ -173,19 +173,29 @@ export function ActivityReportForm() {
     };
 
     const activitiesCollection = collection(firestore, 'activities');
-    addDocumentNonBlocking(activitiesCollection, activityData);
+    
+    try {
+        await addDocumentNonBlocking(activitiesCollection, activityData);
+        toast({
+          title: 'Activity Logged!',
+          description: `${activityName} has been saved.`,
+        });
 
-    toast({
-      title: 'Activity Logged!',
-      description: `${activityName} has been saved.`,
-    });
-
-    // Reset some fields after logging
-    setActivityName('');
-    setSelectedMultipliers([]);
-    setSelectedGoalId(null);
-    setGoalQuantity(0);
-    setLoading(false);
+        // Reset some fields after logging
+        setActivityName('');
+        setSelectedMultipliers([]);
+        setSelectedGoalId(null);
+        setGoalQuantity(0);
+    } catch(e) {
+        console.error(e);
+        toast({
+            variant: 'destructive',
+            title: 'Save Error',
+            description: 'Could not log your activity. Please try again.',
+        });
+    } finally {
+        setLoading(false);
+    }
   };
 
   if (!isClient) {
