@@ -118,6 +118,7 @@ export type Project = {
     status: "Active" | "Moderate" | "At Risk" | "Delayed";
     completion: number;
     nextMilestone: string;
+    createdAt?: Timestamp;
 }
 
 export type ImpactMetric = {

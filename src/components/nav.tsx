@@ -83,18 +83,6 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive('/operations')}
-                  tooltip="Operations"
-                >
-                  <Link href="/operations">
-                    <Truck />
-                    <span>Operations & Field</span>
-                  </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild

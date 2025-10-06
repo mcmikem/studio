@@ -271,9 +271,14 @@
         "districts": { "type": "string" },
         "status": { "type": "string", "enum": ["Active", "Moderate", "At Risk", "Delayed"] },
         "completion": { "type": "number" },
-        "nextMilestone": { "type": "string" }
+        "nextMilestone": { "type": "string" },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server timestamp of when the project was created."
+        }
       },
-      "required": ["name", "manager", "status"]
+      "required": ["name", "manager", "status", "completion", "nextMilestone"]
     },
     "ImpactMetric": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -284,7 +289,8 @@
         "metric": { "type": "string" },
         "target": { "type": "number" },
         "current": { "type": "number" },
-        "unit": { "type": "string" }
+        "unit": { "type": "string" },
+        "valuePerUnit": { "type": "number" }
       },
       "required": ["metric", "target", "current"]
     }
@@ -337,8 +343,18 @@
         "$ref": "#/entities/Partnership"
       },
       "description": "Stores information about partner organizations."
+    },
+    "/impact-metrics/{metricId}": {
+      "schema": {
+        "$ref": "#/entities/ImpactMetric"
+      },
+      "description": "Stores key performance indicators (KPIs) for the organization."
+    },
+     "/projects/{projectId}": {
+      "schema": {
+        "$ref": "#/entities/Project"
+      },
+      "description": "Stores high-level projects and their associated metrics."
     }
   }
 }
-
-    
