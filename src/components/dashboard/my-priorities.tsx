@@ -16,7 +16,7 @@ export function MyPriorities() {
 
   // Memoize the query to prevent re-renders
   const tasksQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!firestore || !user) return null;
     return query(
       collection(firestore, 'users', user.uid, 'tasks'),
       where('completed', '==', false),
