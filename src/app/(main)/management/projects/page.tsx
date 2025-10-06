@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
@@ -195,6 +195,7 @@ function ProjectForm({
 export default function ProjectsPage() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const { toast } = useToast();
 
   const firestore = useFirestore();
   const projectsQuery = useMemoFirebase(() => {
@@ -204,10 +205,14 @@ export default function ProjectsPage() {
 
   const { data: projects, isLoading } = useCollection<Project>(projectsQuery);
 
-  const handleDelete = (projectId: string) => {
+  const handleDelete = (project: Project) => {
     if (!firestore) return;
-    const projectRef = doc(firestore, 'projects', projectId);
+    const projectRef = doc(firestore, 'projects', project.id);
     deleteDocumentNonBlocking(projectRef);
+    toast({
+        title: "Project Deleted",
+        description: `The project "${project.name}" has been removed.`,
+    });
   };
 
   return (
@@ -313,7 +318,7 @@ export default function ProjectsPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete(project.id)}>Delete</AlertDialogAction>
+                                    <AlertDialogAction onClick={() => handleDelete(project)}>Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
