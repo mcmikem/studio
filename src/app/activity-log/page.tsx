@@ -5,6 +5,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import {
   Table,
@@ -19,7 +20,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { History, User, Calendar, TrendingUp, DollarSign } from 'lucide-react';
+import { History, User, Calendar, TrendingUp, DollarSign, AreaChart } from 'lucide-react';
 import type { Activity } from '@/lib/types';
 import type { Timestamp } from 'firebase/firestore';
 
@@ -59,8 +60,9 @@ export default function ActivityLogPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Activity Log
+        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+            <AreaChart className="h-8 w-8" />
+            Activity Log
         </h1>
         <p className="text-muted-foreground">
           A complete history of all field activities and their calculated ROI.
@@ -126,10 +128,10 @@ export default function ActivityLogPage() {
                 ))
             ) : (
                  !isLoading && (
-                  <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
-                    <History className="h-12 w-12" />
-                    <span className="text-lg font-semibold mt-2">No Activities Logged</span>
-                    <p className="text-sm">Use the ROI Calculator to log an activity.</p>
+                  <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center p-8">
+                      <History className="h-16 w-16 text-muted-foreground" />
+                      <p className="mt-4 text-lg font-semibold">No Activities Logged</p>
+                      <p className="mt-1 text-sm text-muted-foreground">Use the 'Forms Hub' to log a new activity and it will appear here.</p>
                   </div>
                 )
             )}
@@ -194,7 +196,7 @@ export default function ActivityLogPage() {
                           <div className="flex flex-col items-center justify-center gap-2">
                               <History className="h-12 w-12" />
                               <span className="text-lg font-semibold">No Activities Logged</span>
-                              <p className="text-sm">Use the ROI Calculator to log an activity.</p>
+                              <p className="text-sm">Use the 'Forms Hub' to log a new activity and it will appear here.</p>
                           </div>
                       </TableCell>
                     </TableRow>

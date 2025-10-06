@@ -311,99 +311,156 @@ export default function ProjectsPage() {
                 <CardTitle>Project Details</CardTitle>
             </CardHeader>
             <CardContent>
-                <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead>Project Name</TableHead>
-                    <TableHead>Manager</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Completion</TableHead>
-                    <TableHead>Next Milestone</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {isLoading &&
-                    Array.from({ length: 3 }).map((_, i) => (
-                        <TableRow key={i}>
-                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                        <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
-                        </TableRow>
-                    ))}
+                 {/* Mobile View */}
+                <div className="space-y-4 sm:hidden">
+                    {isLoading && Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-44 w-full" />)}
                     {projects && projects.length > 0 ? (
-                    projects.map((project) => (
-                        <TableRow key={project.id}>
-                            <TableCell className="font-medium">{project.name}</TableCell>
-                            <TableCell>{project.manager}</TableCell>
-                            <TableCell>
-                            <Badge
-                                variant="outline"
-                                className={statusColors[project.status]}
-                            >
-                                {project.status}
-                            </Badge>
-                            </TableCell>
-                            <TableCell>
-                            <div className="flex items-center gap-2">
-                                <Progress value={project.completion} className="h-2 w-24" />
-                                <span className="text-xs text-muted-foreground">{project.completion}%</span>
-                            </div>
-                            </TableCell>
-                            <TableCell>{project.nextMilestone}</TableCell>
-                            <TableCell className="text-right">
-                            <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => setEditingProject(project)}>
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon">
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the project "{project.name}".
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDelete(project)}>Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </div>
-                            </TableCell>
-                        </TableRow>
-                    ))
+                        projects.map(project => (
+                            <Card key={project.id}>
+                                <CardHeader>
+                                    <CardTitle>{project.name}</CardTitle>
+                                    <CardDescription>{project.manager}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <Badge variant="outline" className={statusColors[project.status]}>{project.status}</Badge>
+                                        <span className="text-sm font-semibold">{project.completion}%</span>
+                                    </div>
+                                    <Progress value={project.completion} className="h-2" />
+                                    <div>
+                                        <p className="text-sm font-medium">Next Milestone:</p>
+                                        <p className="text-sm text-muted-foreground">{project.nextMilestone}</p>
+                                    </div>
+                                </CardContent>
+                                <CardFooter className="flex justify-end gap-2">
+                                     <Button variant="ghost" size="sm" onClick={() => setEditingProject(project)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                             <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This action cannot be undone. This will permanently delete the project "{project.name}".
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(project)}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </CardFooter>
+                            </Card>
+                        ))
                     ) : (
-                    !isLoading && (
-                        <TableRow>
-                        <TableCell
-                            colSpan={6}
-                            className="h-48 text-center text-muted-foreground"
-                        >
-                            <div className="flex flex-col items-center justify-center gap-2">
-                            <Truck className="h-12 w-12" />
-                            <span className="text-lg font-semibold">
-                                No Projects Found
-                            </span>
-                            <p className="text-sm">
-                                Add a project to get started.
-                            </p>
+                        !isLoading && (
+                            <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
+                                <Truck className="h-12 w-12" />
+                                <span className="text-lg font-semibold mt-2">No Projects Found</span>
+                                <p className="text-sm">Add a project to get started.</p>
                             </div>
-                        </TableCell>
-                        </TableRow>
-                    )
+                        )
                     )}
-                </TableBody>
-                </Table>
+                </div>
+
+                {/* Desktop View */}
+                <div className="hidden sm:block">
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead>Project Name</TableHead>
+                        <TableHead>Manager</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Completion</TableHead>
+                        <TableHead>Next Milestone</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading &&
+                        Array.from({ length: 3 }).map((_, i) => (
+                            <TableRow key={i}>
+                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                            </TableRow>
+                        ))}
+                        {projects && projects.length > 0 ? (
+                        projects.map((project) => (
+                            <TableRow key={project.id}>
+                                <TableCell className="font-medium">{project.name}</TableCell>
+                                <TableCell>{project.manager}</TableCell>
+                                <TableCell>
+                                <Badge
+                                    variant="outline"
+                                    className={statusColors[project.status]}
+                                >
+                                    {project.status}
+                                </Badge>
+                                </TableCell>
+                                <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <Progress value={project.completion} className="h-2 w-24" />
+                                    <span className="text-xs text-muted-foreground">{project.completion}%</span>
+                                </div>
+                                </TableCell>
+                                <TableCell>{project.nextMilestone}</TableCell>
+                                <TableCell className="text-right">
+                                <div className="flex justify-end gap-2">
+                                    <Button variant="ghost" size="icon" onClick={() => setEditingProject(project)}>
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    This action cannot be undone. This will permanently delete the project "{project.name}".
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(project)}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                        ) : (
+                        !isLoading && (
+                            <TableRow>
+                            <TableCell
+                                colSpan={6}
+                                className="h-48 text-center text-muted-foreground"
+                            >
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                <Truck className="h-12 w-12" />
+                                <span className="text-lg font-semibold">
+                                    No Projects Found
+                                </span>
+                                <p className="text-sm">
+                                    Add a project to get started.
+                                </p>
+                                </div>
+                            </TableCell>
+                            </TableRow>
+                        )
+                        )}
+                    </TableBody>
+                    </Table>
+                </div>
             </CardContent>
             {editingProject && (
                 <Dialog open={!!editingProject} onOpenChange={(open) => !open && setEditingProject(null)}>

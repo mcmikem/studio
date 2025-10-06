@@ -185,7 +185,7 @@ function RecentExpenses() {
                     </TableBody>
                  </Table>
                  <Button asChild className="mt-4 w-full">
-                    <Link href="/forms">Go to Forms Hub to submit an expense <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                    <Link href="/forms?tab=expense">Go to Forms Hub to submit an expense <ArrowRight className="ml-2 h-4 w-4" /></Link>
                  </Button>
             </CardContent>
         </Card>
@@ -196,8 +196,9 @@ export default function MediaFinancePage() {
   return (
     <div className="flex flex-col gap-8">
       <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Media & Finance
+        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Banknote className="h-8 w-8" />
+            Media & Finance
         </h1>
         <p className="text-muted-foreground">
           Manage communications, finances, and visibility.

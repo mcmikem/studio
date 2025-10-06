@@ -1,16 +1,18 @@
-
 'use client';
 
 import {
   Card,
   CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckinForm } from '@/components/forms/checkin-form';
 import { CheckoutForm } from '@/components/forms/checkout-form';
 import { ClipboardEdit, LogIn, LogOut, BarChart3, Receipt } from 'lucide-react';
 import { ActivityReportForm } from '@/components/forms/activity-report-form';
 import { ExpenseReportForm } from '@/components/forms/expense-report-form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function FormsPage() {
   return (
@@ -26,7 +28,7 @@ export default function FormsPage() {
       </header>
 
       <Tabs defaultValue="check-in" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
           <TabsTrigger value="check-in" className="py-2">
             <LogIn className="mr-2 h-4 w-4" />
             Daily Check-in
@@ -36,10 +38,10 @@ export default function FormsPage() {
             Daily Check-out
           </TabsTrigger>
           <TabsTrigger value="activity" className="py-2">
-             <BarChart3 className="mr-2 h-4 w-4" />
+            <BarChart3 className="mr-2 h-4 w-4" />
             Activity Report
           </TabsTrigger>
-           <TabsTrigger value="expense" className="py-2">
+          <TabsTrigger value="expense" className="py-2">
             <Receipt className="mr-2 h-4 w-4" />
             Expense Report
           </TabsTrigger>
@@ -50,14 +52,20 @@ export default function FormsPage() {
         <TabsContent value="check-out">
           <CheckoutForm />
         </TabsContent>
-         <TabsContent value="activity">
-            <Card>
-                <CardContent className="pt-6">
-                    <ActivityReportForm />
-                </CardContent>
-            </Card>
+        <TabsContent value="activity">
+          <Card>
+            <CardHeader>
+              <CardTitle>Activity Report & ROI Calculator</CardTitle>
+              <CardDescription>
+                Plan your activity to maximize impact and log the results.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ActivityReportForm />
+            </CardContent>
+          </Card>
         </TabsContent>
-         <TabsContent value="expense">
+        <TabsContent value="expense">
           <ExpenseReportForm />
         </TabsContent>
       </Tabs>

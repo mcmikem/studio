@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -133,89 +134,141 @@ export default function ExpensesPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                    <TableHeader>
-                        <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading &&
-                        Array.from({ length: 5 }).map((_, i) => (
-                            <TableRow key={i}>
-                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
-                            </TableRow>
-                        ))}
+                    {/* Mobile View */}
+                    <div className="space-y-4 sm:hidden">
+                        {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
                         {expenses && expenses.length > 0 ? (
-                        expenses.map((expense) => (
-                            <TableRow key={expense.id}>
-                            <TableCell className="font-medium">{expense.userName}</TableCell>
-                            <TableCell>{formatDateSafe(expense.date)}</TableCell>
-                            <TableCell>{expense.description}</TableCell>
-                            <TableCell>
-                                <Badge variant="outline">{expense.category}</Badge>
-                            </TableCell>
-                            <TableCell>{formatCurrency(expense.amount)}</TableCell>
-                            <TableCell>
-                                <Badge variant="outline" className={statusColors[expense.status]}>
-                                {expense.status}
-                                </Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                                {expense.status === 'Pending' && (
-                                <div className="flex justify-end gap-2">
-                                    <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-green-500 hover:text-green-600"
-                                    onClick={() => handleStatusUpdate(expense.id, 'Approved')}
-                                    >
-                                    <Check className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="text-red-500 hover:text-red-600"
-                                    onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
-                                    >
-                                    <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                                )}
-                            </TableCell>
-                            </TableRow>
-                        ))
+                            expenses.map((expense) => (
+                                <Card key={expense.id}>
+                                    <CardHeader>
+                                        <CardTitle className="text-base">{expense.description}</CardTitle>
+                                        <CardDescription>{expense.userName} - {formatDateSafe(expense.date)}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex justify-between items-center">
+                                        <div>
+                                            <p className="font-bold text-lg">{formatCurrency(expense.amount)}</p>
+                                            <Badge variant="outline" className="mt-1">{expense.category}</Badge>
+                                        </div>
+                                        <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
+                                    </CardContent>
+                                    {expense.status === 'Pending' && (
+                                        <CardFooter className="flex justify-end gap-2">
+                                            <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-green-500 border-green-500 hover:bg-green-500/10 hover:text-green-600"
+                                            onClick={() => handleStatusUpdate(expense.id, 'Approved')}
+                                            >
+                                            <Check className="mr-2 h-4 w-4" /> Approve
+                                            </Button>
+                                            <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-red-500 border-red-500 hover:bg-red-500/10 hover:text-red-600"
+                                            onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
+                                            >
+                                            <X className="mr-2 h-4 w-4" /> Reject
+                                            </Button>
+                                        </CardFooter>
+                                    )}
+                                </Card>
+                            ))
                         ) : (
-                        !isLoading && (
-                            <TableRow>
-                            <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
-                                <div className="flex flex-col items-center justify-center gap-2">
-                                <Receipt className="h-12 w-12" />
-                                <span className="text-lg font-semibold">
-                                    No Expenses Found
-                                </span>
-                                <p className="text-sm">
-                                    No expense reports have been submitted yet.
-                                </p>
+                            !isLoading && (
+                                <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
+                                    <Receipt className="h-12 w-12" />
+                                    <span className="text-lg font-semibold mt-2">No Expenses Found</span>
+                                    <p className="text-sm">No expense reports have been submitted yet.</p>
                                 </div>
-                            </TableCell>
-                            </TableRow>
-                        )
+                            )
                         )}
-                    </TableBody>
-                    </Table>
+                    </div>
+                    {/* Desktop View */}
+                    <div className="hidden sm:block">
+                        <Table>
+                        <TableHeader>
+                            <TableRow>
+                            <TableHead>User</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading &&
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i}>
+                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                                </TableRow>
+                            ))}
+                            {expenses && expenses.length > 0 ? (
+                            expenses.map((expense) => (
+                                <TableRow key={expense.id}>
+                                <TableCell className="font-medium">{expense.userName}</TableCell>
+                                <TableCell>{formatDateSafe(expense.date)}</TableCell>
+                                <TableCell>{expense.description}</TableCell>
+                                <TableCell>
+                                    <Badge variant="outline">{expense.category}</Badge>
+                                </TableCell>
+                                <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                                <TableCell>
+                                    <Badge variant="outline" className={statusColors[expense.status]}>
+                                    {expense.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    {expense.status === 'Pending' && (
+                                    <div className="flex justify-end gap-2">
+                                        <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-green-500 hover:text-green-600"
+                                        onClick={() => handleStatusUpdate(expense.id, 'Approved')}
+                                        >
+                                        <Check className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-red-500 hover:text-red-600"
+                                        onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
+                                        >
+                                        <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    )}
+                                </TableCell>
+                                </TableRow>
+                            ))
+                            ) : (
+                            !isLoading && (
+                                <TableRow>
+                                <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
+                                    <div className="flex flex-col items-center justify-center gap-2">
+                                    <Receipt className="h-12 w-12" />
+                                    <span className="text-lg font-semibold">
+                                        No Expenses Found
+                                    </span>
+                                    <p className="text-sm">
+                                        No expense reports have been submitted yet.
+                                    </p>
+                                    </div>
+                                </TableCell>
+                                </TableRow>
+                            )
+                            )}
+                        </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
         </div>
