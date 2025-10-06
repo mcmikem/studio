@@ -20,6 +20,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserTasks } from '@/components/profile/user-tasks';
+import { useSearchParams } from 'next/navigation';
 
 function RecentUserCheckouts() {
   const firestore = useFirestore();
@@ -144,6 +145,9 @@ function UserProfileCard() {
 }
 
 export default function ProfilePage() {
+  const searchParams = useSearchParams();
+  const tab = searchParams.get('tab') || 'profile';
+
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -154,7 +158,7 @@ export default function ProfilePage() {
           Your personal information, tasks, and recent activity.
         </p>
       </header>
-       <Tabs defaultValue="profile" className="w-full">
+       <Tabs defaultValue={tab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="profile">Profile & Activity</TabsTrigger>
           <TabsTrigger value="tasks">Task Management</TabsTrigger>

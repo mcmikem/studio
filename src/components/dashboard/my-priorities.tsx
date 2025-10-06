@@ -4,19 +4,13 @@ import { useMemo, useEffect, useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { collection, query, where, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, doc, writeBatch, serverTimestamp, orderBy, limit } from 'firebase/firestore';
 import { ClipboardList, Loader2 } from 'lucide-react';
 import type { Task } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
 import Link from 'next/link';
 
-// Sample tasks to pre-populate for the demo user
-const sampleTasks = [
-  { title: 'Approve October budget - Due Today', completed: false, dueDate: '2025-10-25' },
-  { title: 'Review Omuto Pulse script - Due Oct 27', completed: false, dueDate: '2025-10-27' },
-  { title: 'Call with Mr. Akera (Resource Mobilization) - Due Oct 28', completed: true, dueDate: '2025-10-28' },
-];
-
+// Sample alerts to pre-populate for the demo user
 const sampleAlerts = [
     { type: 'Urgent', message: 'RED Campaign funding proposal due tomorrow.', priority: 'High', action: '/management/programs' },
     { type: 'Reminder', message: 'Submit your weekly field report by EOD.', priority: 'Medium', action: '/forms' },
@@ -33,27 +27,22 @@ export function MyPriorities() {
     if (!user) return null;
     return query(
       collection(firestore, 'users', user.uid, 'tasks'),
-      where('completed', '==', false)
+      where('completed', '==', false),
+      orderBy('createdAt', 'desc'),
+      limit(3)
     );
   }, [firestore, user]);
 
   const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
   
-  // Effect to seed sample tasks for the current user if they don't have any
+  // Effect to seed sample alerts for the current user if they don't have any
   useEffect(() => {
-    if (user && firestore && tasks === null && !isLoading && !isSeeding) {
-        const hasSeeded = localStorage.getItem(`seeded_data_${user.uid}`);
+    if (user && firestore && !isLoading && !isSeeding) {
+        const hasSeeded = localStorage.getItem(`seeded_alerts_${user.uid}`);
         if (!hasSeeded) {
             setIsSeeding(true);
             const batch = writeBatch(firestore);
             
-            // Seed tasks
-            const tasksCollection = collection(firestore, 'users', user.uid, 'tasks');
-            sampleTasks.forEach(task => {
-                const taskRef = doc(tasksCollection);
-                batch.set(taskRef, task);
-            });
-
             // Seed alerts
             const alertsCollection = collection(firestore, 'alerts');
             sampleAlerts.forEach(alert => {
@@ -62,12 +51,12 @@ export function MyPriorities() {
             });
 
             batch.commit().then(() => {
-                localStorage.setItem(`seeded_data_${user.uid}`, 'true');
+                localStorage.setItem(`seeded_alerts_${user.uid}`, 'true');
                 setIsSeeding(false);
             }).catch(console.error);
         }
     }
-  }, [user, firestore, tasks, isLoading, isSeeding]);
+  }, [user, firestore, isLoading, isSeeding]);
 
 
   return (
@@ -96,7 +85,7 @@ export function MyPriorities() {
           <p className="text-muted-foreground">No pending tasks. Great job!</p>
         )}
         <Button variant="link" className="p-0 h-auto" asChild>
-            <Link href="/profile">View all tasks</Link>
+            <Link href="/profile?tab=tasks">View all tasks</Link>
         </Button>
       </CardContent>
     </Card>
