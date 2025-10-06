@@ -97,10 +97,9 @@ export function AdvancedCheckinForm() {
     name: "timeBlocks",
   });
 
-  const [aiSuggestions, setAiSuggestions] = useState<DailyPlannerAIOutput | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  const { watch, control, formState: { errors, isSubmitting } } = form;
+  const { watch, control, formState: { errors, isSubmitting }, reset } = form;
   const mainFocus = watch('mainFocus');
   const customTask = watch('customTask');
   
@@ -127,7 +126,8 @@ export function AdvancedCheckinForm() {
         if (!querySnapshot.empty) {
           const lastCheckout = querySnapshot.docs[0].data() as Checkout;
           if (lastCheckout.tomorrowPlan) {
-            form.setValue('mainFocus', [lastCheckout.tomorrowPlan]);
+            form.setValue('customTask', lastCheckout.tomorrowPlan);
+            form.setValue('mainFocus', ['custom']);
           }
         }
       } catch (error) {
@@ -185,10 +185,9 @@ export function AdvancedCheckinForm() {
       description: 'Your strategic plan for the day is logged.',
     });
     form.reset();
-    setAiSuggestions(null);
   };
 
-  const handleBrainstorm = async () => {
+  const handleDraftPlan = async () => {
     if (mainFocus.length === 0 || !profile) return;
     
     const tasks = mainFocus.map(focusId => {
@@ -202,14 +201,26 @@ export function AdvancedCheckinForm() {
     }
 
     setIsAiLoading(true);
-    setAiSuggestions(null);
 
     try {
-        const suggestions = await dailyPlannerAI({ task: tasks, role: profile.role });
-        setAiSuggestions(suggestions);
+        const draft = await dailyPlannerAI({ task: tasks, role: profile.role });
+        // Use reset to update the whole form at once
+        reset({
+            ...form.getValues(), // keep existing values
+            timeBlocks: draft.timeBlocks,
+            multiWinConnections: draft.multiWinConnections,
+            budget: draft.budget,
+            materials: draft.materials,
+            challenges: draft.challenges,
+        });
+         toast({
+            title: "Plan Drafted!",
+            description: "The AI has generated a first draft of your plan. Review and edit as needed.",
+        });
+
     } catch (error) {
-        console.error("AI brainstorming error:", error);
-        toast({ variant: "destructive", title: "AI Assistant Error", description: "Could not fetch suggestions." });
+        console.error("AI drafting error:", error);
+        toast({ variant: "destructive", title: "AI Assistant Error", description: "Could not draft your plan." });
     } finally {
         setIsAiLoading(false);
     }
@@ -228,9 +239,9 @@ export function AdvancedCheckinForm() {
               <h3 className="font-semibold text-lg">Section 1: Your Mission</h3>
               <div className="flex justify-between items-center">
                   <Label>Priority Selection</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={handleBrainstorm} disabled={isAiLoading || mainFocus.length === 0}>
+                  <Button type="button" variant="outline" size="sm" onClick={handleDraftPlan} disabled={isAiLoading || mainFocus.length === 0}>
                       {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                      Brainstorm with AI
+                      Draft my Day with AI
                   </Button>
               </div>
               <Controller
@@ -249,20 +260,19 @@ export function AdvancedCheckinForm() {
               />
             {errors.mainFocus && <p className="text-sm text-destructive">{`${errors.mainFocus.message}`}</p>}
             {form.watch('mainFocus')?.includes('custom') && (<Input {...form.register('customTask')} placeholder="Type your custom task" className="mt-2"/>)}
-            {isAiLoading && (<div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>AI is thinking...</span></div>)}
-            {aiSuggestions && (
-                <Card className="bg-primary/10 border-primary/50">
-                    <CardHeader><CardTitle className="text-base flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />AI Suggestions</CardTitle></CardHeader>
-                    <CardContent><ul className="list-disc list-inside space-y-2 text-sm">{aiSuggestions.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul></CardContent>
-                </Card>
-            )}
           </section>
 
           <Separator />
           
            <section className="space-y-4">
             <h3 className="font-semibold text-lg">Section 2: Time Blocking</h3>
-             {fields.map((field, index) => (
+             {isAiLoading && (
+                <div className="space-y-2">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+             )}
+             {!isAiLoading && fields.map((field, index) => (
                 <div key={field.id} className="flex items-end gap-2">
                     <div className="grid grid-cols-2 gap-2 flex-grow">
                         <div className="space-y-1">
@@ -365,7 +375,7 @@ export function AdvancedCheckinForm() {
                   <MultiSelect
                     options={teamMembers?.map(m => ({ value: m.name, label: m.name })) || []}
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    defaultValue={field.value || []}
                     placeholder="Select team members..."
                     animation={0}
                     maxCount={2}
