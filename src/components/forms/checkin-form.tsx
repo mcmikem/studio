@@ -257,20 +257,84 @@ function Step2({
           </Label>
           <div className="space-y-2">
              <div className="flex items-center space-x-2">
-                <Checkbox id="c1" {...form.register('multiWinConnections')} value="photos" />
-                <Label htmlFor="c1" className="cursor-pointer">Capture photos/video for Omuto Pulse</Label>
+                <Controller
+                    name="multiWinConnections"
+                    control={form.control}
+                    render={({ field }) => (
+                        <>
+                        <Checkbox 
+                            id="c1"
+                            checked={field.value?.includes("photos")}
+                            onCheckedChange={(checked) => {
+                                return checked
+                                ? field.onChange([...(field.value || []), "photos"])
+                                : field.onChange(field.value?.filter((v: string) => v !== "photos"))
+                            }}
+                        />
+                        <Label htmlFor="c1" className="cursor-pointer">Capture photos/video for Omuto Pulse</Label>
+                        </>
+                    )}
+                />
             </div>
             <div className="flex items-center space-x-2">
-                <Checkbox id="c2" {...form.register('multiWinConnections')} value="volunteers" />
-                <Label htmlFor="c2" className="cursor-pointer">Identify potential volunteers/partners</Label>
+                 <Controller
+                    name="multiWinConnections"
+                    control={form.control}
+                    render={({ field }) => (
+                        <>
+                        <Checkbox 
+                            id="c2"
+                            checked={field.value?.includes("volunteers")}
+                            onCheckedChange={(checked) => {
+                                return checked
+                                ? field.onChange([...(field.value || []), "volunteers"])
+                                : field.onChange(field.value?.filter((v: string) => v !== "volunteers"))
+                            }}
+                        />
+                        <Label htmlFor="c2" className="cursor-pointer">Identify potential volunteers/partners</Label>
+                        </>
+                    )}
+                />
             </div>
             <div className="flex items-center space-x-2">
-                <Checkbox id="c3" {...form.register('multiWinConnections')} value="data" />
-                <Label htmlFor="c3" className="cursor-pointer">Collect data for impact reporting</Label>
+                 <Controller
+                    name="multiWinConnections"
+                    control={form.control}
+                    render={({ field }) => (
+                        <>
+                        <Checkbox 
+                            id="c3"
+                            checked={field.value?.includes("data")}
+                            onCheckedChange={(checked) => {
+                                return checked
+                                ? field.onChange([...(field.value || []), "data"])
+                                : field.onChange(field.value?.filter((v: string) => v !== "data"))
+                            }}
+                        />
+                        <Label htmlFor="c3" className="cursor-pointer">Collect data for impact reporting</Label>
+                        </>
+                    )}
+                />
             </div>
             <div className="flex items-center space-x-2">
-                <Checkbox id="c4" {...form.register('multiWinConnections')} value="template" />
-                <Label htmlFor="c4" className="cursor-pointer">Test new process or template</Label>
+                 <Controller
+                    name="multiWinConnections"
+                    control={form.control}
+                    render={({ field }) => (
+                        <>
+                        <Checkbox 
+                            id="c4"
+                            checked={field.value?.includes("template")}
+                            onCheckedChange={(checked) => {
+                                return checked
+                                ? field.onChange([...(field.value || []), "template"])
+                                : field.onChange(field.value?.filter((v: string) => v !== "template"))
+                            }}
+                        />
+                        <Label htmlFor="c4" className="cursor-pointer">Test new process or template</Label>
+                        </>
+                    )}
+                />
             </div>
             <Input {...form.register('otherConnection')} placeholder="Other..." />
           </div>
@@ -572,49 +636,50 @@ export function CheckinForm() {
               )}
                <p className="absolute -bottom-6 w-max -translate-x-1/2 left-1/2 text-xs text-center mt-2">{step.name}</p>
             </li>
+            {stepIdx < steps.length - 1 && <div className="flex-auto border-t border-gray-200" />}
             </React.Fragment>
           ))}
         </ol>
       </nav>
 
-      <form>
-        {currentStep === 0 && <Step1 location={location} />}
-        {currentStep === 1 && (
-            <Step2
-            form={form}
-            keyResults={keyResults}
-            isLoadingKR={isLoadingKR}
-            selectedKR={selectedKR}
-            teamMembers={teamMembers}
-            />
-        )}
-        {currentStep === 2 && <Step3 form={form} keyResults={keyResults} teamMembers={teamMembers} />}
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+            {currentStep === 0 && <Step1 location={location} />}
+            {currentStep === 1 && (
+                <Step2
+                form={form}
+                keyResults={keyResults}
+                isLoadingKR={isLoadingKR}
+                selectedKR={selectedKR}
+                teamMembers={teamMembers}
+                />
+            )}
+            {currentStep === 2 && <Step3 form={form} keyResults={keyResults} teamMembers={teamMembers} />}
 
-        <CardFooter className="flex w-full justify-between gap-2 border-t pt-6">
-            <Button onClick={handlePrev} size="sm" variant="secondary" disabled={currentStep === 0}>
-                Prev
-            </Button>
-            {currentStep < steps.length - 1 && (
-            <Button onClick={handleNext} size="sm">
-                Next <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            )}
-            {currentStep === steps.length - 1 && (
-            <Button
-                size="sm"
-                onClick={form.handleSubmit(onSubmit)}
-                disabled={form.formState.isSubmitting}
-            >
-                {form.formState.isSubmitting ? (
-                <Loader2 className="animate-spin" />
-                ) : (
-                <Check className="mr-2 h-4 w-4" />
-                )}{' '}
-                Approve & Start Day
-            </Button>
-            )}
-        </CardFooter>
-      </form>
+            <CardFooter className="flex w-full justify-between gap-2 border-t pt-6">
+                <Button type="button" onClick={handlePrev} size="sm" variant="secondary" disabled={currentStep === 0}>
+                    Prev
+                </Button>
+                {currentStep < steps.length - 1 && (
+                <Button type="button" onClick={handleNext} size="sm">
+                    Next <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                )}
+                {currentStep === steps.length - 1 && (
+                <Button
+                    size="sm"
+                    type="submit"
+                    disabled={form.formState.isSubmitting}
+                >
+                    {form.formState.isSubmitting ? (
+                    <Loader2 className="animate-spin" />
+                    ) : (
+                    <Check className="mr-2 h-4 w-4" />
+                    )}{' '}
+                    Approve & Start Day
+                </Button>
+                )}
+            </CardFooter>
+        </form>
     </Card>
   );
 }
