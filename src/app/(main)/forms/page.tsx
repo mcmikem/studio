@@ -26,7 +26,7 @@ export default function FormsPage() {
       </header>
 
       <Tabs defaultValue="check-in" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="check-in">
             <LogIn className="mr-2 h-4 w-4" />
             Daily Check-in
