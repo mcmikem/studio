@@ -14,7 +14,8 @@ import {
   query,
   where,
   orderBy,
-  limit
+  limit,
+  Timestamp,
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server';
 
@@ -216,6 +217,20 @@ const getPartnershipsTool = ai.defineTool(
     }
 );
 
+const formatDateSafe = (dateValue: any) => {
+  if (!dateValue) return 'N/A';
+  if (dateValue instanceof Timestamp) {
+    return dateValue.toDate().toLocaleString();
+  }
+  if (typeof dateValue === 'string') {
+    return new Date(dateValue).toLocaleString();
+  }
+  if (dateValue.toDate && typeof dateValue.toDate === 'function') {
+     return dateValue.toDate().toLocaleString();
+  }
+  return 'Invalid Date';
+};
+
 const getRecentCheckoutsTool = ai.defineTool(
     {
         name: 'getRecentCheckouts',
@@ -234,10 +249,12 @@ const getRecentCheckoutsTool = ai.defineTool(
         try {
             const { firestore } = await initializeFirebase();
             const checkoutsCol = collection(firestore, 'checkouts');
-            let q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
-
+            
+            let q;
             if (input?.userName) {
-                q = query(q, where('name', '==', input.userName));
+                 q = query(checkoutsCol, where('name', '==', input.userName), orderBy('timestamp', 'desc'), limit(input.limit || 5));
+            } else {
+                 q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
             }
 
             const snapshot = await getDocs(q);
@@ -246,7 +263,7 @@ const getRecentCheckoutsTool = ai.defineTool(
                 return {
                     name: data.name,
                     task: data.task,
-                    timestamp: data.timestamp.toDate().toLocaleString(),
+                    timestamp: formatDateSafe(data.timestamp),
                 }
             });
         } catch(e) {
@@ -287,5 +304,6 @@ export async function streamAssistant(prompt: string) {
           content += chunk.text;
         }
     }
+    await response;
     return content;
 }
