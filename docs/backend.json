@@ -293,6 +293,21 @@
         "valuePerUnit": { "type": "number" }
       },
       "required": ["metric", "target", "current"]
+    },
+    "CalendarEvent": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "CalendarEvent",
+        "type": "object",
+        "description": "Represents a single event on the organizational calendar.",
+        "properties": {
+            "title": { "type": "string" },
+            "date": { "type": "string", "format": "date-time" },
+            "category": { "type": "string", "enum": ["Team Meetings", "Field Visits", "Campaigns/Events", "Deadlines", "Social Days"] },
+            "location": { "type": "string" },
+            "responsible": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "date", "category", "location", "responsible", "createdAt"]
     }
   },
   "auth": {
@@ -355,6 +370,12 @@
         "$ref": "#/entities/Project"
       },
       "description": "Stores high-level projects and their associated metrics."
+    },
+    "/events/{eventId}": {
+        "schema": {
+            "$ref": "#/entities/CalendarEvent"
+        },
+        "description": "Stores organizational calendar events."
     }
   }
 }

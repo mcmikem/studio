@@ -69,12 +69,14 @@ export type SuccessMetric = {
 };
 
 export type CalendarEvent = {
-    date: Date;
+    id: string;
+    date: Timestamp;
     title: string;
-    description: string;
+    description?: string;
     responsible: string;
     location: string;
     category: "Team Meetings" | "Field Visits" | "Campaigns/Events" | "Deadlines" | "Social Days";
+    createdAt?: Timestamp;
 };
 
 export type Program = {
