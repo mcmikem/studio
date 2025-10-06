@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { FileUp, Loader2, LogOut, Send, Wand } from 'lucide-react';
+import { Loader2, LogOut, Send, Wand } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -94,14 +94,14 @@ export function CheckoutForm() {
 
   const { data: recentCheckins, isLoading: isLoadingCheckin } =
     useCollection<Checkin>(recentCheckinQuery);
+  
+  const missionFromCheckin = recentCheckins?.[0]?.primaryMission;
 
   useEffect(() => {
-    if (recentCheckins && recentCheckins.length > 0) {
-      const mission =
-        recentCheckins[0].primaryMission;
-      setValue('missionAccomplished', `Progress on: ${mission}. `);
+    if (missionFromCheckin) {
+      setValue('missionAccomplished', `Progress on: ${missionFromCheckin}. `);
     }
-  }, [recentCheckins, setValue]);
+  }, [missionFromCheckin, setValue]);
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (!firestore || !user || !profile) {
@@ -299,20 +299,22 @@ export function CheckoutForm() {
             />
           </div>
 
-          <Button
-            size="lg"
-            className="w-full"
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <LogOut className="mr-2 h-5 w-5" />
-            )}
-            Check Out & Submit Report
-          </Button>
         </CardContent>
+        <CardFooter>
+            <Button
+                size="lg"
+                className="w-full"
+                type="submit"
+                disabled={isSubmitting}
+            >
+                {isSubmitting ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                <LogOut className="mr-2 h-5 w-5" />
+                )}
+                Check Out & Submit Report
+            </Button>
+        </CardFooter>
       </form>
     </Card>
   );

@@ -12,8 +12,8 @@ import {
   useMemoFirebase,
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import type { KeyResult, User } from '@/lib/types';
+import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp } from 'firebase/firestore';
+import type { KeyResult, User, Checkout } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -137,6 +137,7 @@ function Step2({
   selectedKR,
   teamMembers,
   profile,
+  missionFromYesterday,
 }: {
   form: any;
   keyResults: KeyResult[] | null;
@@ -144,6 +145,7 @@ function Step2({
   selectedKR: KeyResult | undefined;
   teamMembers: User[] | null;
   profile: User | null;
+  missionFromYesterday?: string | null;
 }) {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -212,11 +214,14 @@ function Step2({
                       Loading...
                     </SelectItem>
                   ) : (
-                    keyResults?.map((kr) => (
+                    <>
+                    {missionFromYesterday && <SelectItem value={missionFromYesterday}>{missionFromYesterday}</SelectItem>}
+                    {keyResults?.map((kr) => (
                       <SelectItem key={kr.id} value={kr.id}>
                         {kr.title}: {kr.description}
                       </SelectItem>
-                    ))
+                    ))}
+                    </>
                   )}
                   <SelectItem value="custom">Custom Task</SelectItem>
                 </SelectContent>
@@ -294,54 +299,63 @@ function Step2({
           {fields.map((field, index) => (
             <div key={field.id} className="flex items-end gap-2">
               <div className="grid grid-cols-2 gap-2 flex-grow">
-                <Controller
-                  name={`timeBlocks.${index}.startTime`}
-                  control={form.control}
-                  render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Start" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {timeOptions.map((t) => (
-                          <SelectItem key={t + '-start'} value={t}>
-                            {t}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                <Controller
-                  name={`timeBlocks.${index}.endTime`}
-                  control={form.control}
-                  render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="End" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {timeOptions.map((t) => (
-                          <SelectItem key={t + '-end'} value={t}>
-                            {t}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+                 <div className="space-y-1">
+                    <Label htmlFor={`start-time-${index}`} className="text-xs">Start</Label>
+                    <Controller
+                    name={`timeBlocks.${index}.startTime`}
+                    control={form.control}
+                    render={({ field }) => (
+                        <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        >
+                        <SelectTrigger id={`start-time-${index}`}>
+                            <SelectValue placeholder="Start" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {timeOptions.map((t) => (
+                            <SelectItem key={t + '-start'} value={t}>
+                                {t}
+                            </SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
+                    )}
+                    />
+                 </div>
+                 <div className="space-y-1">
+                    <Label htmlFor={`end-time-${index}`} className="text-xs">End</Label>
+                    <Controller
+                    name={`timeBlocks.${index}.endTime`}
+                    control={form.control}
+                    render={({ field }) => (
+                        <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        >
+                        <SelectTrigger id={`end-time-${index}`}>
+                            <SelectValue placeholder="End" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {timeOptions.map((t) => (
+                            <SelectItem key={t + '-end'} value={t}>
+                                {t}
+                            </SelectItem>
+                            ))}
+                        </SelectContent>
+                        </Select>
+                    )}
+                    />
+                 </div>
+              </div>
+              <div className="flex-grow space-y-1">
+                <Label htmlFor={`desc-${index}`} className="text-xs">Description</Label>
+                <Input
+                    {...form.register(`timeBlocks.${index}.description`)}
+                    placeholder="Activity description"
+                    id={`desc-${index}`}
                 />
               </div>
-              <Input
-                {...form.register(`timeBlocks.${index}.description`)}
-                placeholder="Activity description"
-                className="flex-grow"
-              />
               <Button
                 type="button"
                 variant="ghost"
@@ -485,60 +499,75 @@ function Step2({
             Section 4: Resource & Support Check
           </Label>
           <div className="grid grid-cols-2 gap-4">
-            <Controller
-              name="transport"
-              control={form.control}
-              render={({ field }) => (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Transport..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Available">Available</SelectItem>
-                    <SelectItem value="Needed">Needed</SelectItem>
-                    <SelectItem value="Confirmed">Confirmed</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <Input
-              {...form.register('budget')}
-              type="number"
-              placeholder="Budget: 50000"
+             <div className="space-y-2">
+                <Label>Transport</Label>
+                <Controller
+                name="transport"
+                control={form.control}
+                render={({ field }) => (
+                    <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    >
+                    <SelectTrigger>
+                        <SelectValue placeholder="Transport..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Available">Available</SelectItem>
+                        <SelectItem value="Needed">Needed</SelectItem>
+                        <SelectItem value="Confirmed">Confirmed</SelectItem>
+                    </SelectContent>
+                    </Select>
+                )}
+                />
+            </div>
+            <div className="space-y-2">
+                <Label>Budget (UGX)</Label>
+                <Input
+                {...form.register('budget')}
+                type="number"
+                placeholder="e.g., 50000"
+                />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Materials</Label>
+            <Textarea
+                {...form.register('materials')}
+                placeholder="List required items..."
             />
           </div>
-          <Textarea
-            {...form.register('materials')}
-            placeholder="Materials: List required items..."
-          />
-          <Controller
-            name="teamSupport"
-            control={form.control}
-            render={({ field }) => (
-              <MultiSelect
-                onValueChange={field.onChange}
-                defaultValue={field.value || []}
-              >
-                <MultiSelectTrigger>
-                  <MultiSelectValue placeholder="Team Support..." />
-                </MultiSelectTrigger>
-                <MultiSelectContent>
-                  {teamMembers?.map((member) => (
-                    <MultiSelectItem key={member.id} value={member.name}>
-                      {member.name}
-                    </MultiSelectItem>
-                  ))}
-                </MultiSelectContent>
-              </MultiSelect>
-            )}
-          />
-          <Textarea
-            {...form.register('challenges')}
-            placeholder="Potential Challenges..."
-          />
+          <div className="space-y-2">
+            <Label>Team Support</Label>
+             <Controller
+                name="teamSupport"
+                control={form.control}
+                render={({ field }) => (
+                <MultiSelect
+                    onValueChange={field.onChange}
+                    defaultValue={field.value || []}
+                >
+                    <MultiSelectTrigger>
+                    <MultiSelectValue placeholder="Select team members..." />
+                    </MultiSelectTrigger>
+                    <MultiSelectContent>
+                    {teamMembers?.map((member) => (
+                        <MultiSelectItem key={member.id} value={member.name}>
+                        {member.name}
+                        </MultiSelectItem>
+                    ))}
+                    </MultiSelectContent>
+                </MultiSelect>
+                )}
+            />
+          </div>
+          <div className="space-y-2">
+             <Label>Potential Challenges</Label>
+            <Textarea
+                {...form.register('challenges')}
+                placeholder="What might go wrong? How can you prepare?"
+            />
+          </div>
         </section>
       </CardContent>
     </>
@@ -548,26 +577,23 @@ function Step2({
 function Step3({
   form,
   keyResults,
-  teamMembers,
 }: {
   form: any;
   keyResults: KeyResult[] | null;
-  teamMembers: User[] | null;
 }) {
   const { getValues } = form;
   const values = getValues();
   const mainFocus = values.mainFocus;
+  const customTask = values.customTask;
 
   let mainFocusDisplay = 'N/A';
   if (mainFocus === 'custom') {
-    mainFocusDisplay = values.customTask || 'Custom Task Not Specified';
+    mainFocusDisplay = customTask || 'Custom Task Not Specified';
+  } else if (keyResults?.find((kr) => kr.id === mainFocus)) {
+    const kr = keyResults.find((kr) => kr.id === mainFocus);
+    mainFocusDisplay = kr ? `${kr.title}: ${kr.description}` : 'Selected KR not found';
   } else {
-    const kr = keyResults?.find((kr) => kr.id === mainFocus);
-    if (kr) {
-      mainFocusDisplay = `${kr.title}: ${kr.description}`;
-    } else {
-      mainFocusDisplay = 'Selected KR not found';
-    }
+    mainFocusDisplay = mainFocus;
   }
 
   const supportNeeded = [
@@ -580,7 +606,7 @@ function Step3({
   const timeBlocks =
     values.timeBlocks
       ?.map(
-        (tb: { startTime: string; endTime: string; description: string }) =>
+        (tb: { startTime: string; endTime:string, description: string }) =>
           `${tb.startTime}-${tb.endTime}: ${tb.description}`
       )
       .filter((v: string) => v.includes(':')) || [];
@@ -685,6 +711,32 @@ export function CheckinForm() {
   }, [firestore]);
   const { data: keyResults, isLoading: isLoadingKR } =
     useCollection<KeyResult>(keyResultsQuery);
+  
+  const yesterday = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return Timestamp.fromDate(d);
+  }, []);
+
+  const recentCheckoutQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(
+        collection(firestore, "checkouts"),
+        where("userId", "==", user.uid),
+        where("timestamp", ">=", yesterday),
+        orderBy("timestamp", "desc"),
+        limit(1)
+    );
+  }, [firestore, user, yesterday]);
+
+  const { data: recentCheckouts } = useCollection<Checkout>(recentCheckoutQuery);
+  const missionFromYesterday = recentCheckouts?.[0]?.tomorrowPlan;
+
+  useEffect(() => {
+    if (missionFromYesterday) {
+        form.setValue('mainFocus', missionFromYesterday);
+    }
+  }, [missionFromYesterday, form]);
 
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -703,11 +755,16 @@ export function CheckinForm() {
       toast({ variant: 'destructive', title: 'Authentication Error' });
       return;
     }
+    const { mainFocus, customTask } = data;
+    let mission: string;
 
-    let mission =
-      data.mainFocus === 'custom'
-        ? data.customTask
-        : keyResults?.find((kr) => kr.id === data.mainFocus)?.description;
+    if (mainFocus === 'custom') {
+        mission = customTask || "Custom task";
+    } else {
+        const kr = keyResults?.find((k) => k.id === mainFocus);
+        mission = kr ? `${kr.title}: ${kr.description}` : mainFocus;
+    }
+
 
     const checkinData = {
       primaryMission: mission,
@@ -733,11 +790,15 @@ export function CheckinForm() {
       const isValid = await form.trigger();
       if (!isValid) return;
     }
-    setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
+    if (currentStep < steps.length - 1) {
+        setCurrentStep(currentStep + 1);
+    }
   };
 
   const handlePrev = () => {
-    setCurrentStep((s) => Math.max(s - 1, 0));
+    if (currentStep > 0) {
+        setCurrentStep(currentStep - 1);
+    }
   };
 
   return (
@@ -796,13 +857,13 @@ export function CheckinForm() {
             selectedKR={selectedKR}
             teamMembers={teamMembers}
             profile={profile}
+            missionFromYesterday={missionFromYesterday}
           />
         )}
         {currentStep === 2 && (
           <Step3
             form={form}
             keyResults={keyResults}
-            teamMembers={teamMembers}
           />
         )}
 
@@ -816,12 +877,11 @@ export function CheckinForm() {
           >
             Prev
           </Button>
-          {currentStep < steps.length - 1 && (
+          {currentStep < steps.length - 1 ? (
             <Button type="button" onClick={handleNext} size="sm">
               Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-          )}
-          {currentStep === steps.length - 1 && (
+          ) : (
             <Button
               size="sm"
               type="submit"
