@@ -12,7 +12,7 @@ export default function ROICalculatorPage() {
           Field Activity ROI Calculator
         </h1>
         <p className="text-muted-foreground">
-          Ensure every trip pays multiple dividends.
+          A two-step process to plan for maximum impact and log your results.
         </p>
       </header>
 

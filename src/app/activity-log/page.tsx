@@ -19,6 +19,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History } from 'lucide-react';
 import type { Activity } from '@/lib/types';
+import type { Timestamp } from 'firebase/firestore';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
@@ -34,6 +35,12 @@ export default function ActivityLogPage() {
   }, [firestore]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
+  
+  const formatDate = (timestamp: Timestamp | { toDate: () => Date } | undefined) => {
+    if (!timestamp) return 'N/A';
+    const date = timestamp instanceof Date ? timestamp : (timestamp as { toDate: () => Date }).toDate();
+    return formatDistanceToNow(date, { addSuffix: true });
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -102,7 +109,7 @@ export default function ActivityLogPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {activity.loggedAt ? formatDistanceToNow(activity.loggedAt.toDate(), { addSuffix: true }) : 'N/A'}
+                      {formatDate(activity.loggedAt as Timestamp | undefined)}
                     </TableCell>
                   </TableRow>
                 ))

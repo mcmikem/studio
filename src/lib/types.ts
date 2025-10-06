@@ -106,9 +106,7 @@ export type Activity = {
     actualCost: number;
     totalValue: number;
     finalRoi: number;
-    loggedAt: {
-      toDate: () => Date;
-    };
+    loggedAt: Timestamp;
     primaryGoalType?: 'Metric' | 'Program';
     primaryGoalId?: string;
     primaryGoalQuantity?: number;
