@@ -195,8 +195,8 @@ export function ActivityReportForm() {
     const isLoading = isLoadingMetrics || isLoadingPrograms;
     if (goalType === 'Metric') {
         return (
-            <div className="grid grid-cols-3 gap-4 items-end">
-                <div className="col-span-2 space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="primary-metric">Primary Metric</Label>
                     {isLoading ? <Skeleton className="h-10 w-full" /> : (
                         <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
@@ -220,8 +220,8 @@ export function ActivityReportForm() {
     }
      if (goalType === 'Program') {
         return (
-             <div className="grid grid-cols-3 gap-4 items-end">
-                <div className="col-span-2 space-y-2">
+             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="primary-program">Program</Label>
                     {isLoading ? <Skeleton className="h-10 w-full" /> : (
                         <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>

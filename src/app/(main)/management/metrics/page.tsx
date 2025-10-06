@@ -17,6 +17,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -55,6 +56,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Target, Edit, Trash2 } from 'lucide-react';
 import type { ImpactMetric } from '@/lib/types';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { cn } from '@/lib/utils';
 
 const metricSchema = z.object({
   metric: z.string().min(3, 'Metric name is required.'),
@@ -122,7 +124,7 @@ function MetricForm({
           <p className="text-sm text-destructive">{`${errors.metric.message}`}</p>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="current">Current Value</Label>
           <Input id="current" type="number" {...register('current')} />
@@ -134,7 +136,7 @@ function MetricForm({
            {errors.target && <p className="text-sm text-destructive">{`${errors.target.message}`}</p>}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
             <Label htmlFor="unit">Unit</Label>
             <Input id="unit" {...register('unit')} placeholder="e.g., students, trees" />
@@ -181,7 +183,7 @@ export default function MetricsPage() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <CardTitle>Impact Metrics (KPIs)</CardTitle>
           <CardDescription>
@@ -207,107 +209,158 @@ export default function MetricsPage() {
         </Dialog>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[30%]">Metric</TableHead>
-              <TableHead>Current</TableHead>
-              <TableHead>Target</TableHead>
-              <TableHead>Value/Unit</TableHead>
-              <TableHead>Progress</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-5 w-32" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-40" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-8 w-20 ml-auto" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            {metrics && metrics.length > 0 ? (
-              metrics.map((metric) => {
+        {/* Mobile View */}
+        <div className="space-y-4 sm:hidden">
+          {isLoading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+          {metrics && metrics.length > 0 ? (
+            metrics.map((metric) => {
                 const progress = (metric.current / metric.target) * 100;
                 return (
-                  <TableRow key={metric.id}>
-                    <TableCell className="font-medium">{metric.metric}</TableCell>
-                    <TableCell>{metric.current.toLocaleString()} {metric.unit}</TableCell>
-                    <TableCell>{metric.target.toLocaleString()} {metric.unit}</TableCell>
-                     <TableCell>{(metric.valuePerUnit || 0).toLocaleString()} UGX</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Progress value={progress} className="h-2 flex-1" />
-                        <span className="text-xs text-muted-foreground w-12 text-right">
-                          {progress.toFixed(0)}%
+                  <Card key={metric.id}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{metric.metric}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                       <div className="flex justify-between items-baseline">
+                         <span className="text-2xl font-bold">{metric.current.toLocaleString()}</span>
+                         <span className="text-sm text-muted-foreground">/ {metric.target.toLocaleString()} {metric.unit}</span>
+                       </div>
+                       <div>
+                         <Progress value={progress} className="h-2 w-full" />
+                         <p className="text-xs text-muted-foreground mt-1 text-right">{progress.toFixed(0)}% to target</p>
+                       </div>
+                       <p className="text-sm text-muted-foreground"><strong>Value/Unit:</strong> {(metric.valuePerUnit || 0).toLocaleString()} UGX</p>
+                    </CardContent>
+                    <CardFooter className="flex justify-end gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => setEditingMetric(metric)}>
+                          <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                              <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                      This action cannot be undone. This will permanently delete the metric "{metric.metric}".
+                                  </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDelete(metric.id)}>Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                          </AlertDialogContent>
+                      </AlertDialog>
+                    </CardFooter>
+                  </Card>
+                )
+            })
+          ) : (
+            !isLoading && (
+              <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
+                <Target className="h-12 w-12" />
+                <span className="text-lg font-semibold mt-2">No Metrics Found</span>
+                <p className="text-sm">Add a metric to get started.</p>
+              </div>
+            )
+          )}
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden sm:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[30%]">Metric</TableHead>
+                <TableHead>Current</TableHead>
+                <TableHead>Target</TableHead>
+                <TableHead>Value/Unit</TableHead>
+                <TableHead>Progress</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading &&
+                Array.from({ length: 3 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                  </TableRow>
+                ))}
+              {metrics && metrics.length > 0 ? (
+                metrics.map((metric) => {
+                  const progress = (metric.current / metric.target) * 100;
+                  return (
+                    <TableRow key={metric.id}>
+                      <TableCell className="font-medium">{metric.metric}</TableCell>
+                      <TableCell>{metric.current.toLocaleString()} {metric.unit}</TableCell>
+                      <TableCell>{metric.target.toLocaleString()} {metric.unit}</TableCell>
+                      <TableCell>{(metric.valuePerUnit || 0).toLocaleString()} UGX</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Progress value={progress} className="h-2 flex-1" />
+                          <span className="text-xs text-muted-foreground w-12 text-right">
+                            {progress.toFixed(0)}%
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => setEditingMetric(metric)}>
+                              <Edit className="h-4 w-4" />
+                          </Button>
+                          <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon">
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                  </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                          This action cannot be undone. This will permanently delete the metric "{metric.metric}".
+                                      </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleDelete(metric.id)}>Delete</AlertDialogAction>
+                                  </AlertDialogFooter>
+                              </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                !isLoading && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="h-48 text-center text-muted-foreground"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Target className="h-12 w-12" />
+                        <span className="text-lg font-semibold">
+                          No Metrics Found
                         </span>
+                        <p className="text-sm">Add a metric to get started.</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
-                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => setEditingMetric(metric)}>
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the metric "{metric.metric}".
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete(metric.id)}>Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                       </div>
-                    </TableCell>
                   </TableRow>
-                );
-              })
-            ) : (
-              !isLoading && (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="h-48 text-center text-muted-foreground"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <Target className="h-12 w-12" />
-                      <span className="text-lg font-semibold">
-                        No Metrics Found
-                      </span>
-                      <p className="text-sm">Add a metric to get started.</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            )}
-          </TableBody>
-        </Table>
+                )
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
       {editingMetric && (
          <Dialog open={!!editingMetric} onOpenChange={(open) => !open && setEditingMetric(null)}>

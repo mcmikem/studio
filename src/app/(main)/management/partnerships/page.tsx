@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -51,6 +52,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { cn } from '@/lib/utils';
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
@@ -119,7 +121,7 @@ function PartnershipForm({
         <Input id="name" {...register("name")} placeholder="e.g., UNICEF" />
         {errors.name && <p className="text-sm text-destructive">{`${errors.name.message}`}</p>}
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="contactPerson">Contact Person</Label>
           <Input id="contactPerson" {...register("contactPerson")} placeholder="e.g., Jane Doe" />
@@ -190,7 +192,7 @@ export default function PartnershipsPage() {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <CardTitle>Partner Database</CardTitle>
           <CardDescription>A central list of all Omuto Foundation partners.</CardDescription>
@@ -214,106 +216,159 @@ export default function PartnershipsPage() {
         </Dialog>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Organization</TableHead>
-              <TableHead>Contact Person</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Next Step</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading &&
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-5 w-32" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-6 w-20" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-48" />
-                  </TableCell>
-                   <TableCell>
-                    <Skeleton className="h-8 w-20 ml-auto" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            {partnerships && partnerships.length > 0 ? (
+        {/* Mobile View */}
+        <div className="space-y-4 sm:hidden">
+          {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-44 w-full" />)}
+          {partnerships && partnerships.length > 0 ? (
               partnerships.map((partner) => (
-                <TableRow key={partner.id}>
-                  <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell>
-                    <a href={`mailto:${partner.contactEmail}`} className="text-primary hover:underline">
-                      {partner.contactPerson}
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={statusColors[partner.status]}>
-                      {partner.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{partner.nextStep}</TableCell>
-                   <TableCell className="text-right">
-                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => setEditingPartnership(partner)}>
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                       </div>
-                    </TableCell>
-                </TableRow>
+                <Card key={partner.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="pr-4">{partner.name}</CardTitle>
+                       <Badge variant="outline" className={cn("flex-shrink-0", statusColors[partner.status])}>
+                        {partner.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm text-muted-foreground">
+                    <p><strong>Contact:</strong> {partner.contactPerson}</p>
+                    <p><strong>Next Step:</strong> {partner.nextStep}</p>
+                    <p>
+                        <a href={`mailto:${partner.contactEmail}`} className="text-primary hover:underline">
+                        {partner.contactEmail}
+                        </a>
+                    </p>
+                  </CardContent>
+                  <CardFooter className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => setEditingPartnership(partner)}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                  </CardFooter>
+                </Card>
               ))
-            ) : (
-              !isLoading && (
-                  <TableRow>
-                      <TableCell
-                      colSpan={5}
-                      className="h-48 text-center text-muted-foreground"
-                      >
-                          <div className="flex flex-col items-center justify-center gap-2">
-                              <Users className="h-12 w-12" />
-                              <span className="text-lg font-semibold">No Partners Found</span>
-                              <p className="text-sm">Your partner database is empty. Add a partner to get started.</p>
-                          </div>
-                      </TableCell>
-                  </TableRow>
-              )
-            )}
-          </TableBody>
-        </Table>
+          ) : (
+            !isLoading && (
+              <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
+                  <Users className="h-12 w-12" />
+                  <span className="text-lg font-semibold mt-2">No Partners Found</span>
+                  <p className="text-sm">Your partner database is empty.</p>
+              </div>
+            )
+          )}
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden sm:block">
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Organization</TableHead>
+                <TableHead>Contact Person</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Next Step</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {isLoading &&
+                Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                    </TableRow>
+                ))}
+                {partnerships && partnerships.length > 0 ? (
+                partnerships.map((partner) => (
+                    <TableRow key={partner.id}>
+                    <TableCell className="font-medium">{partner.name}</TableCell>
+                    <TableCell>
+                        <a href={`mailto:${partner.contactEmail}`} className="text-primary hover:underline">
+                        {partner.contactPerson}
+                        </a>
+                    </TableCell>
+                    <TableCell>
+                        <Badge variant="outline" className={statusColors[partner.status]}>
+                        {partner.status}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>{partner.nextStep}</TableCell>
+                    <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => setEditingPartnership(partner)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                        </TableCell>
+                    </TableRow>
+                ))
+                ) : (
+                !isLoading && (
+                    <TableRow>
+                        <TableCell
+                        colSpan={5}
+                        className="h-48 text-center text-muted-foreground"
+                        >
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <Users className="h-12 w-12" />
+                                <span className="text-lg font-semibold">No Partners Found</span>
+                                <p className="text-sm">Your partner database is empty. Add a partner to get started.</p>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                )
+                )}
+            </TableBody>
+            </Table>
+        </div>
       </CardContent>
        <Dialog open={!!editingPartnership} onOpenChange={(open) => !open && setEditingPartnership(null)}>
          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
                 <DialogTitle>Edit Partnership</DialogTitle>
-                <DialogDescription>Update the details for "{editingPartnership.name}".</DialogDescription>
+                <DialogDescription>Update the details for {editingPartnership ? `"${editingPartnership.name}"` : ''}.</DialogDescription>
             </DialogHeader>
-            <PartnershipForm partnership={editingPartnership} onFormSubmit={() => setEditingPartnership(null)} />
+            {editingPartnership && <PartnershipForm partnership={editingPartnership} onFormSubmit={() => setEditingPartnership(null)} />}
         </DialogContent>
       </Dialog>
     </Card>
