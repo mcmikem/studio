@@ -46,6 +46,7 @@ import {
   MultiSelectValue,
 } from '../ui/multi-select';
 import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
+import { Stepper, Step, useStepper } from '@/components/ui/stepper';
 
 const timeOptions = [
   '08:00 AM',
@@ -204,7 +205,7 @@ function Step2({
                 </Label>
                 <Button variant="outline" size="sm" onClick={handleBrainstorm} disabled={isAiLoading || !mainFocus}>
                     {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                    Brainstorm with AI
+                    Brainstorm
                 </Button>
             </div>
             <Controller
@@ -690,21 +691,7 @@ export function CheckinForm() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const [location, setLocation] = useState<string | null>(null);
-  const [currentStep, setCurrentStep] = useState(0);
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocation(
-          `${position.coords.latitude.toFixed(
-            4
-          )}, ${position.coords.longitude.toFixed(4)}`
-        );
-      },
-      () => setLocation('Location access denied.')
-    );
-  }, []);
-
+  
   const form = useForm<CheckinFormData>({
     resolver: zodResolver(checkinSchema),
     defaultValues: {
@@ -760,8 +747,21 @@ export function CheckinForm() {
     () => keyResults?.find((kr) => kr.id === selectedFocus),
     [keyResults, selectedFocus]
   );
+  
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation(
+          `${position.coords.latitude.toFixed(
+            4
+          )}, ${position.coords.longitude.toFixed(4)}`
+        );
+      },
+      () => setLocation('Location access denied.')
+    );
+  }, []);
 
-  const onSubmit = (data: CheckinFormData) => {
+  const onSubmit = (data: CheckinFormData, stepper: ReturnType<typeof useStepper>) => {
     if (!firestore || !user || !profile) {
       toast({ variant: 'destructive', title: 'Authentication Error' });
       return;
@@ -793,109 +793,73 @@ export function CheckinForm() {
       description: 'Your strategic plan for the day is logged.',
     });
     form.reset();
-    setCurrentStep(0);
+    stepper.resetSteps();
   };
 
-  const handleNext = async () => {
-    if (currentStep === 1) {
+  const handleNext = async (stepper: ReturnType<typeof useStepper>) => {
+    if (stepper.activeStep === 1) {
       const isValid = await form.trigger();
       if (!isValid) return;
     }
-    if (currentStep < steps.length - 1) {
-        setCurrentStep(currentStep + 1);
-    }
+    stepper.nextStep();
   };
 
-  const handlePrev = () => {
-    if (currentStep > 0) {
-        setCurrentStep(currentStep - 1);
-    }
-  };
 
   return (
     <Card>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <nav aria-label="Progress">
-          <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0 p-6">
-            {steps.map((step, stepIdx) => (
-              <li key={step.name} className="md:flex-1">
-                {stepIdx < currentStep ? (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(stepIdx)}
-                    className="group flex w-full flex-col border-l-4 border-primary py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
-                  >
-                    <span className="text-sm font-medium text-primary transition-colors ">
-                      {step.id}
-                    </span>
-                    <span className="text-sm font-medium">{step.name}</span>
-                  </button>
-                ) : stepIdx === currentStep ? (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(stepIdx)}
-                    className="flex w-full flex-col border-l-4 border-primary py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
-                    aria-current="step"
-                  >
-                    <span className="text-sm font-medium text-primary">
-                      {step.id}
-                    </span>
-                    <span className="text-sm font-medium">{step.name}</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(stepIdx)}
-                    className="group flex w-full flex-col border-l-4 border-border py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
-                  >
-                    <span className="text-sm font-medium text-muted-foreground transition-colors">
-                      {step.id}
-                    </span>
-                    <span className="text-sm font-medium">{step.name}</span>
-                  </button>
-                )}
-              </li>
-            ))}
-          </ol>
-        </nav>
+      <Stepper initialStep={0} steps={steps}>
+        {steps.map((step, index) => (
+          <Step key={step.id}>
+            {index === 0 && <Step1 location={location} />}
+            {index === 1 && (
+              <Step2
+                form={form}
+                keyResults={keyResults}
+                isLoadingKR={isLoadingKR}
+                selectedKR={selectedKR}
+                teamMembers={teamMembers}
+                profile={profile}
+                missionFromYesterday={missionFromYesterday}
+              />
+            )}
+            {index === 2 && (
+              <Step3
+                form={form}
+                keyResults={keyResults}
+              />
+            )}
+          </Step>
+        ))}
+        <StepFooter form={form} onSubmit={onSubmit} handleNext={handleNext} />
+      </Stepper>
+    </Card>
+  );
+}
 
-        {currentStep === 0 && <Step1 location={location} />}
-        {currentStep === 1 && (
-          <Step2
-            form={form}
-            keyResults={keyResults}
-            isLoadingKR={isLoadingKR}
-            selectedKR={selectedKR}
-            teamMembers={teamMembers}
-            profile={profile}
-            missionFromYesterday={missionFromYesterday}
-          />
-        )}
-        {currentStep === 2 && (
-          <Step3
-            form={form}
-            keyResults={keyResults}
-          />
-        )}
 
+function StepFooter({ form, onSubmit, handleNext }: { form: any, onSubmit: any, handleNext: any }) {
+    const stepper = useStepper();
+
+    return (
         <CardFooter className="flex w-full justify-between gap-2 border-t pt-6">
           <Button
             type="button"
-            onClick={handlePrev}
+            onClick={stepper.prevStep}
             size="sm"
             variant="secondary"
-            disabled={currentStep === 0}
+            disabled={stepper.isFirstStep}
           >
             Prev
           </Button>
-          {currentStep < steps.length - 1 ? (
-            <Button type="button" onClick={handleNext} size="sm">
+          {!stepper.isLastStep ? (
+            <Button type="button" onClick={() => handleNext(stepper)} size="sm">
               Next <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
             <Button
               size="sm"
-              type="submit"
+              type="button"
+              onClick={form.handleSubmit(() => onSubmit(form.getValues(), stepper))}
               disabled={form.formState.isSubmitting}
             >
               {form.formState.isSubmitting ? (
@@ -907,7 +871,5 @@ export function CheckinForm() {
             </Button>
           )}
         </CardFooter>
-      </form>
-    </Card>
-  );
+    )
 }
