@@ -17,10 +17,10 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, PlusCircle } from 'lucide-react';
+import { Users, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -39,8 +39,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-
+import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
@@ -56,28 +66,48 @@ const partnershipSchema = z.object({
   nextStep: z.string().min(3, "Next step is required."),
 });
 
-function NewPartnershipForm({ onFormSubmit }: { onFormSubmit: () => void }) {
+type PartnershipFormData = z.infer<typeof partnershipSchema>;
+
+
+function PartnershipForm({
+  partnership,
+  onFormSubmit,
+}: {
+  partnership?: Partnership;
+  onFormSubmit: () => void;
+}) {
   const firestore = useFirestore();
   const { toast } = useToast();
-  const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm({
+  const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm<PartnershipFormData>({
     resolver: zodResolver(partnershipSchema),
-     defaultValues: {
+     defaultValues: partnership || {
       status: 'Potential',
     },
   });
 
   const onSubmit = async (data: z.infer<typeof partnershipSchema>) => {
     if (!firestore) return;
-    const partnershipsCollection = collection(firestore, 'partnerships');
-    const newPartnership = {
-      ...data,
-      createdAt: serverTimestamp(),
-    };
-    addDocumentNonBlocking(partnershipsCollection, newPartnership);
-    toast({
-      title: "Partnership Added!",
-      description: `${data.name} has been added to your partner database.`,
-    });
+
+    if (partnership) {
+        const partnershipRef = doc(firestore, 'partnerships', partnership.id);
+        updateDocumentNonBlocking(partnershipRef, data);
+        toast({
+            title: "Partnership Updated!",
+            description: `${data.name} has been successfully updated.`,
+        });
+    } else {
+        const partnershipsCollection = collection(firestore, 'partnerships');
+        const newPartnership = {
+          ...data,
+          createdAt: serverTimestamp(),
+        };
+        addDocumentNonBlocking(partnershipsCollection, newPartnership);
+        toast({
+          title: "Partnership Added!",
+          description: `${data.name} has been added to your partner database.`,
+        });
+    }
+    
     reset();
     onFormSubmit();
   };
@@ -128,7 +158,7 @@ function NewPartnershipForm({ onFormSubmit }: { onFormSubmit: () => void }) {
       </div>
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Adding...' : 'Add Partnership'}
+            {isSubmitting ? (partnership ? 'Saving...' : 'Adding...') : (partnership ? 'Save Changes' : 'Add Partnership')}
         </Button>
       </DialogFooter>
     </form>
@@ -136,13 +166,27 @@ function NewPartnershipForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 }
 
 export default function PartnershipsPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
+  const [editingPartnership, setEditingPartnership] = useState<Partnership | null>(null);
+
   const firestore = useFirestore();
   const partnershipsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'));
   }, [firestore]);
   const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
+
+  const handleDelete = (partnershipId: string) => {
+    if (!firestore) return;
+    const partnershipRef = doc(firestore, 'partnerships', partnershipId);
+    deleteDocumentNonBlocking(partnershipRef);
+    toast({
+        title: "Partnership Deleted",
+        description: "The partner has been removed from your database.",
+    });
+  };
+
+  const { toast } = useToast();
 
   return (
     <Card>
@@ -151,7 +195,7 @@ export default function PartnershipsPage() {
           <CardTitle>Partner Database</CardTitle>
           <CardDescription>A central list of all Omuto Foundation partners.</CardDescription>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -165,7 +209,7 @@ export default function PartnershipsPage() {
                 Enter the details of the new partner organization.
               </DialogDescription>
             </DialogHeader>
-            <NewPartnershipForm onFormSubmit={() => setIsDialogOpen(false)} />
+            <PartnershipForm onFormSubmit={() => setIsNewDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </CardHeader>
@@ -175,9 +219,9 @@ export default function PartnershipsPage() {
             <TableRow>
               <TableHead>Organization</TableHead>
               <TableHead>Contact Person</TableHead>
-              <TableHead>Contact Email</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Next Step</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -191,13 +235,13 @@ export default function PartnershipsPage() {
                     <Skeleton className="h-5 w-24" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="h-5 w-40" />
-                  </TableCell>
-                  <TableCell>
                     <Skeleton className="h-6 w-20" />
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-5 w-48" />
+                  </TableCell>
+                   <TableCell>
+                    <Skeleton className="h-8 w-20 ml-auto" />
                   </TableCell>
                 </TableRow>
               ))}
@@ -205,10 +249,9 @@ export default function PartnershipsPage() {
               partnerships.map((partner) => (
                 <TableRow key={partner.id}>
                   <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell>{partner.contactPerson}</TableCell>
                   <TableCell>
                     <a href={`mailto:${partner.contactEmail}`} className="text-primary hover:underline">
-                      {partner.contactEmail}
+                      {partner.contactPerson}
                     </a>
                   </TableCell>
                   <TableCell>
@@ -217,6 +260,32 @@ export default function PartnershipsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>{partner.nextStep}</TableCell>
+                   <TableCell className="text-right">
+                       <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => setEditingPartnership(partner)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                       </div>
+                    </TableCell>
                 </TableRow>
               ))
             ) : (
@@ -238,6 +307,17 @@ export default function PartnershipsPage() {
           </TableBody>
         </Table>
       </CardContent>
+       {editingPartnership && (
+         <Dialog open={!!editingPartnership} onOpenChange={(open) => !open && setEditingPartnership(null)}>
+            <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>Edit Partnership</DialogTitle>
+                    <DialogDescription>Update the details for "{editingPartnership.name}".</DialogDescription>
+                </DialogHeader>
+                <PartnershipForm partnership={editingPartnership} onFormSubmit={() => setEditingPartnership(null)} />
+            </DialogContent>
+        </Dialog>
+      )}
     </Card>
   );
 }
