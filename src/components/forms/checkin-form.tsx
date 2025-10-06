@@ -710,22 +710,15 @@ export function CheckinForm() {
   const { data: keyResults, isLoading: isLoadingKR } =
     useCollection<KeyResult>(keyResultsQuery);
   
-  const yesterday = useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return Timestamp.fromDate(d);
-  }, []);
-
   const recentCheckoutQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(
         collection(firestore, "checkouts"),
         where("userId", "==", user.uid),
-        where("timestamp", ">=", yesterday),
         orderBy("timestamp", "desc"),
         limit(1)
     );
-  }, [firestore, user, yesterday]);
+  }, [firestore, user]);
 
   const { data: recentCheckouts } = useCollection<Checkout>(recentCheckoutQuery);
   const missionFromYesterday = recentCheckouts?.[0]?.tomorrowPlan;
