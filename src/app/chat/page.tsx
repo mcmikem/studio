@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Slack, Whatsapp } from 'lucide-react';
 
 export default function ChatPage() {
   return (
@@ -22,21 +22,30 @@ export default function ChatPage() {
       </header>
       <Card>
         <CardHeader>
-          <CardTitle>Coming Soon</CardTitle>
+          <CardTitle>Integrated Chat: Feature in Planning</CardTitle>
           <CardDescription>
-            The integrated team chat feature is currently under development.
+            A built-in team chat feature is on our roadmap for a future version of Omuto Central.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center h-full min-h-[400px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
             <MessageSquare className="h-16 w-16 text-muted-foreground" />
             <h2 className="mt-6 text-xl font-semibold">
-              Unified Team Communication
+              Continuing Communication on Existing Channels
             </h2>
             <p className="mt-2 max-w-md text-muted-foreground">
-              A dedicated space for real-time team chat, project channels, and
-              direct messaging will be available here. Stay tuned for updates!
+              For now, please continue to use our existing communication tools for real-time team collaboration and announcements.
             </p>
+            <div className="mt-6 flex gap-4">
+                 <a href="#" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                    <Whatsapp className="h-5 w-5" />
+                    <span>Team WhatsApp</span>
+                </a>
+                 <a href="#" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                    <Slack className="h-5 w-5" />
+                    <span>Slack Channel</span>
+                </a>
+            </div>
           </div>
         </CardContent>
       </Card>
