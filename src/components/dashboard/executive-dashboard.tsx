@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User } from '@/lib/types';
@@ -40,15 +39,18 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
                 </p>
             </header>
              <div className="space-y-6">
-                <p>Welcome to the Executive Dashboard. This view will contain the "Ecosystem Pulse", "Strategic Overview", and "Team Effectiveness" panels.</p>
                 <ImpactOverview />
                 <ProgramsOverview />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 flex flex-col gap-6">
-                        <TeamActivityFeed />
+                         <div className="p-8 border-2 border-dashed rounded-lg text-center">
+                            Team Effectiveness Panel
+                        </div>
                     </div>
                     <div className="flex flex-col gap-6">
-                        <DailyActions />
+                         <div className="p-8 border-2 border-dashed rounded-lg text-center">
+                            Critical Decisions Panel
+                        </div>
                     </div>
                 </div>
             </div>

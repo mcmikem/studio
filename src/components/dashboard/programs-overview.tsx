@@ -5,6 +5,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription
 } from '@/components/ui/card';
 import {
   Table,
@@ -17,9 +18,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Briefcase } from 'lucide-react';
+import Link from 'next/link';
 
 const statusColors: { [key: string]: string } = {
     "On Track": "border-green-500 bg-green-500/10 text-green-500",
@@ -33,7 +35,7 @@ export function ProgramsOverview() {
   const firestore = useFirestore();
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'programs'), orderBy('title'), limit(5));
+    return query(collection(firestore, 'programs'), where('status', '!=', 'Completed'), orderBy('status'), orderBy('deadline'), limit(5));
   }, [firestore]);
 
   const { data: programs, isLoading } = useCollection<Program>(programsQuery);
@@ -42,6 +44,10 @@ export function ProgramsOverview() {
     <Card>
       <CardHeader>
           <CardTitle>Active Programs Overview</CardTitle>
+          <CardDescription>
+            A real-time health check of our key initiatives.{' '}
+            <Link href="/management/programs" className="text-primary hover:underline">Manage Programs</Link>
+          </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -83,7 +89,7 @@ export function ProgramsOverview() {
                 <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                     <div className="flex flex-col items-center justify-center gap-2">
                         <Briefcase className="h-8 w-8" />
-                        <span>No programs found.</span>
+                        <span>No active programs found.</span>
                     </div>
                 </TableCell>
               </TableRow>

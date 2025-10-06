@@ -7,6 +7,7 @@ import { ExecutiveDashboard } from '@/components/dashboard/executive-dashboard';
 import { ProgramManagerDashboard } from '@/components/dashboard/program-manager-dashboard';
 import { FieldStaffDashboard } from '@/components/dashboard/field-staff-dashboard';
 import { DefaultDashboard } from '@/components/dashboard/default-dashboard';
+import { MediaFinanceDashboard } from '@/components/dashboard/media-finance-dashboard';
 
 
 export default function DashboardPage() {
@@ -30,9 +31,8 @@ export default function DashboardPage() {
       case 'Operations & Field Manager':
       case 'Field Coordinator':
         return <FieldStaffDashboard profile={profile} />;
-      // TODO: Add Media & Finance Dashboard
-      // case 'Media & Communications Lead':
-      //   return <MediaFinanceDashboard profile={profile} />;
+      case 'Media & Communications Lead':
+         return <MediaFinanceDashboard profile={profile} />;
       default:
         return <DefaultDashboard profile={profile} />;
     }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User } from '@/lib/types';
@@ -37,14 +36,15 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
                 </p>
             </header>
              <div className="space-y-6">
-                 <p>Welcome to the Program Manager Dashboard. This view will contain "Program Health", "Team Coordination", and "Partnership Pipeline".</p>
                 <ProgramsOverview />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
                         <TeamActivityFeed />
                     </div>
                     <div>
-                        <Alerts />
+                         <div className="p-8 border-2 border-dashed rounded-lg text-center">
+                            Partnership Pipeline Panel
+                        </div>
                     </div>
                 </div>
             </div>
