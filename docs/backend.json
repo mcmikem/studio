@@ -241,8 +241,6 @@
         "userId": { "type": "string" },
         "name": { "type": "string" },
         "primaryMission": { "type": "string" },
-        "secondaryWins": { "type": "array", "items": { "type": "string" } },
-        "communityResources": { "type": "array", "items": { "type": "string" } },
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "name", "primaryMission", "timestamp"]

@@ -42,8 +42,6 @@ export type Checkin = {
     userId: string;
     name: string;
     primaryMission: string;
-    secondaryWins: string[];
-    communityResources: string[];
     timestamp: Timestamp;
 }
 
