@@ -3,9 +3,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import {
   Table,
@@ -21,18 +18,7 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History } from 'lucide-react';
-
-type Activity = {
-  id: string;
-  title: string;
-  userName: string;
-  actualCost: number;
-  totalValue: number;
-  finalRoi: number;
-  loggedAt: {
-    toDate: () => Date;
-  };
-};
+import type { Activity } from '@/lib/types';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
@@ -125,11 +111,12 @@ export default function ActivityLogPage() {
                   <TableRow>
                     <TableCell
                       colSpan={6}
-                      className="h-24 text-center text-muted-foreground"
+                      className="h-48 text-center text-muted-foreground"
                     >
                         <div className="flex flex-col items-center justify-center gap-2">
-                            <History className="h-8 w-8" />
-                            <span>No activities logged yet.</span>
+                            <History className="h-12 w-12" />
+                            <span className="text-lg font-semibold">No Activities Logged</span>
+                            <p className="text-sm">Use the ROI Calculator to log an activity.</p>
                         </div>
                     </TableCell>
                   </TableRow>

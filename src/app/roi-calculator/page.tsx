@@ -8,8 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect } from 'react';
 import { Slider } from '@/components/ui/slider';
-import { useUser } from '@/firebase';
-import { useFirestore } from '@/firebase/provider';
+import { useUser, useFirestore } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -73,7 +72,7 @@ export default function ROICalculatorPage() {
         toast({
             variant: "destructive",
             title: "Missing Information",
-            description: "Please enter an activity name before logging."
+            description: "Please provide an activity name and be logged in to save."
         });
         return;
     }
@@ -101,7 +100,9 @@ export default function ROICalculatorPage() {
         description: `${activityName} has been saved.`
     });
 
+    // Reset some fields after logging
     setActivityName('');
+    setSelectedMultipliers([]);
     setLoading(false);
   };
 
@@ -142,7 +143,7 @@ export default function ROICalculatorPage() {
               </div>
               <div className="space-y-2">
                 <Label>Materials: {formatCurrency(materialsCost)}</Label>
-                <Slider defaultValue={[10000]} min={0} max={50000} step={1000} onValueganoChange={(value) => setMaterialsCost(value[0])} />
+                <Slider defaultValue={[10000]} min={0} max={50000} step={1000} onValueChange={(value) => setMaterialsCost(value[0])} />
               </div>
             </div>
             <div className="text-right font-bold text-lg p-2 bg-muted rounded-md">
@@ -156,7 +157,7 @@ export default function ROICalculatorPage() {
             <div className="space-y-3 pt-2">
               {multipliers.map(m => (
                 <div key={m.id} className="flex items-center space-x-3">
-                  <Checkbox id={m.id} onCheckedChange={(checked) => handleMultiplierChange(m.id, !!checked)} />
+                  <Checkbox id={m.id} onCheckedChange={(checked) => handleMultiplierChange(m.id, !!checked)} checked={selectedMultipliers.includes(m.id)} />
                   <Label htmlFor={m.id} className="flex-1 cursor-pointer">{m.label} <span className="text-muted-foreground text-xs">({formatCurrency(m.value)})</span></Label>
                 </div>
               ))}

@@ -73,6 +73,18 @@ export type Partnership = {
     nextStep: string;
 }
 
+export type Activity = {
+    id: string;
+    title: string;
+    userName: string;
+    actualCost: number;
+    totalValue: number;
+    finalRoi: number;
+    loggedAt: {
+      toDate: () => Date;
+    };
+};
+
 export type Project = {
     id: string;
     name: string;
