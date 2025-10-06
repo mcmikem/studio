@@ -8,10 +8,10 @@ import {
 } from "@/components/ui/card"
 import { Skeleton } from "../ui/skeleton"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, limit } from "firebase/firestore"
+import { collection, query, orderBy, where } from "firebase/firestore"
 import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
-import Link from "next/link"
+import { useMemo } from "react"
 
 // Define which metrics to feature on the dashboard
 const FEATURED_METRICS = [
@@ -77,8 +77,6 @@ export function QuickStatsSummary() {
         }
 
         const Icon = metricIcons[metric.metric] || metricIcons.default
-        const progress =
-          metric.target > 0 ? (metric.current / metric.target) * 100 : 0
         const formatValue = (val: number) =>
           metric.unit === "UGX"
             ? new Intl.NumberFormat("en-UG", {
