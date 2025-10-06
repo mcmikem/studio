@@ -103,7 +103,9 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
   if (!isEmailApproved(email)) {
     return Promise.reject(new Error("This email address is not authorized to sign in."));
   }
-  return signInWithEmailAndPassword(authInstance, email, password).catch(error => {
+  return signInWithEmailAndPassword(authInstance, email, password)
+    .then(createUserProfile) // Ensure profile exists on every sign-in
+    .catch(error => {
       console.error("Email sign-in error:", error);
       throw error;
   });
