@@ -65,6 +65,10 @@
           },
           "description": "A list of key objectives for the program."
         },
+        "valuePerObjective": {
+          "type": "number",
+          "description": "The monetary value (in UGX) assigned to completing one objective of this program."
+        },
         "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -131,6 +135,19 @@
           "type": "string",
           "description": "The title of the activity (e.g., Tree Planting at St. Mary's)."
         },
+        "primaryGoalType": {
+          "type": "string",
+          "enum": ["Metric", "Program"],
+          "description": "The type of the primary goal (either a KPI Metric or a Program objective)."
+        },
+        "primaryGoalId": {
+          "type": "string",
+          "description": "The ID of the selected Metric or Program."
+        },
+        "primaryGoalQuantity": {
+          "type": "number",
+          "description": "The quantity achieved for the primary goal (e.g., number of students, number of objectives)."
+        },
         "estimatedCost": {
           "type": "number",
           "description": "The pre-activity estimated cost."
@@ -169,6 +186,9 @@
         "userId",
         "userName",
         "title",
+        "primaryGoalId",
+        "primaryGoalType",
+        "primaryGoalQuantity",
         "estimatedCost",
         "actualCost",
         "directValue",
@@ -241,6 +261,31 @@
         "userId": { "type": "string" },
         "name": { "type": "string" },
         "primaryMission": { "type": "string" },
+        "details": {
+          "type": "object",
+           "properties": {
+              "mainFocus": { "type": "string" },
+              "customTask": { "type": "string" },
+              "timeBlocks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "startTime": { "type": "string" },
+                    "endTime": { "type": "string" },
+                    "description": { "type": "string" }
+                  }
+                }
+              },
+              "multiWinConnections": { "type": "array", "items": { "type": "string" } },
+              "otherConnection": { "type": "string" },
+              "transport": { "type": "string" },
+              "materials": { "type": "string" },
+              "teamSupport": { "type": "array", "items": { "type": "string" } },
+              "budget": { "type": "number" },
+              "challenges": { "type": "string" }
+            }
+        },
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "name", "primaryMission", "timestamp"]
@@ -254,9 +299,10 @@
         "id": { "type": "string" },
         "title": { "type": "string" },
         "completed": { "type": "boolean" },
-        "dueDate": { "type": "string", "format": "date" }
+        "dueDate": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["title", "completed"]
+      "required": ["title", "completed", "createdAt"]
     },
     "Project": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -332,6 +378,22 @@
         }
       },
       "required": ["type", "message", "priority", "action", "createdAt"]
+    },
+    "KeyResult": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Key Result",
+      "description": "A key result from the October Operational Plan.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "description": "e.g., OCT-KR1" },
+        "description": { "type": "string" },
+        "currentProgress": { "type": "number" },
+        "target": { "type": "number" },
+        "deadline": { "type": "string", "format": "date" },
+        "priority": { "type": "string", "enum": ["High", "Medium", "Low"] }
+      },
+      "required": ["title", "description", "currentProgress", "target", "deadline", "priority"]
     }
   },
   "auth": {
@@ -406,6 +468,12 @@
             "$ref": "#/entities/Alert"
         },
         "description": "Stores system-wide alerts and notifications."
+    },
+    "/key-results/{keyResultId}": {
+      "schema": {
+        "$ref": "#/entities/KeyResult"
+      },
+      "description": "Stores the key results for the October Operational Plan."
     }
   }
 }
