@@ -8,7 +8,7 @@ import { firebaseConfig } from './config';
  * Initializes and returns a Firebase app instance for server-side use.
  * Ensures that Firebase is initialized only once.
  */
-export function initializeFirebase(): { firestore: ReturnType<typeof getFirestore> } {
+export async function initializeFirebase(): Promise<{ firestore: ReturnType<typeof getFirestore> }> {
   if (!getApps().length) {
     // This is the server, so we use the explicit config.
     initializeApp(firebaseConfig);
