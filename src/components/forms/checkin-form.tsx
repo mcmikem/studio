@@ -153,6 +153,7 @@ function Step2({
 
   const [aiSuggestions, setAiSuggestions] = useState<DailyPlannerAIOutput | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const toast = useToast();
 
   const { watch } = form;
   const mainFocus = watch('mainFocus');
@@ -163,7 +164,7 @@ function Step2({
       
       const task = mainFocus === 'custom' ? customTask : selectedKR?.description;
       if (!task) {
-          useToast().toast({ variant: "destructive", title: "Please select or define a task first." });
+          toast({ variant: "destructive", title: "Please select or define a task first." });
           return;
       }
 
@@ -175,7 +176,7 @@ function Step2({
           setAiSuggestions(suggestions);
       } catch (error) {
           console.error("AI brainstorming error:", error);
-          useToast().toast({ variant: "destructive", title: "AI Assistant Error", description: "Could not fetch suggestions." });
+          toast({ variant: "destructive", title: "AI Assistant Error", description: "Could not fetch suggestions." });
       } finally {
           setIsAiLoading(false);
       }
