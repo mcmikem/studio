@@ -167,14 +167,6 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/roi-calculator')} tooltip="ROI Calculator">
-                    <Link href="/roi-calculator">
-                        <Calculator />
-                        <span>ROI Calculator</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
