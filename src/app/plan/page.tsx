@@ -20,6 +20,7 @@ import {
 } from '@/lib/data';
 import { CheckCircle2, Clock, Users, BarChart2 } from 'lucide-react';
 import { TeamRoles } from '@/components/plan/team-roles';
+import { KeyResultsTracker } from '@/components/plan/key-results-tracker';
 
 export default function PlanPage() {
   return (
@@ -83,25 +84,7 @@ export default function PlanPage() {
 
        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <TeamRoles />
-        <Card>
-            <CardHeader>
-                <CardTitle>Success Dashboard</CardTitle>
-                <CardDescription>
-                    This section will be dynamically managed soon.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-col items-center justify-center h-full min-h-[200px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
-                    <BarChart2 className="h-12 w-12 text-muted-foreground" />
-                    <h2 className="mt-4 text-xl font-semibold">
-                    Coming Soon
-                    </h2>
-                    <p className="mt-2 max-w-md text-muted-foreground">
-                        An interactive dashboard for tracking success metrics against targets is on its way.
-                    </p>
-                </div>
-            </CardContent>
-        </Card>
+        <KeyResultsTracker />
       </div>
 
     </div>
