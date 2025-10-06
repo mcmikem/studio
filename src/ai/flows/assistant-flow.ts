@@ -17,8 +17,6 @@ import {
   limit
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 const getProgramsTool = ai.defineTool(
   {
@@ -35,35 +33,26 @@ const getProgramsTool = ai.defineTool(
     })),
   },
   async (input) => {
-    try {
-        const { firestore } = await initializeFirebase();
-        const programsCol = collection(firestore, 'programs');
-        let q = query(programsCol);
+    const { firestore } = await initializeFirebase();
+    const programsCol = collection(firestore, 'programs');
+    let q = query(programsCol);
 
-        if (input?.status) {
-            q = query(q, where('status', '==', input.status));
-        } else {
-            q = query(q, where('status', '!=', 'Completed'));
-        }
-
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                title: data.title,
-                lead: data.lead,
-                status: data.status,
-                deadline: data.deadline,
-            }
-        });
-    } catch (e) {
-        const permissionError = new FirestorePermissionError({
-            path: 'programs',
-            operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw permissionError;
+    if (input?.status) {
+        q = query(q, where('status', '==', input.status));
+    } else {
+        q = query(q, where('status', '!=', 'Completed'));
     }
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            title: data.title,
+            lead: data.lead,
+            status: data.status,
+            deadline: data.deadline,
+        }
+    });
   }
 );
 
@@ -85,38 +74,29 @@ const getKeyResultsTool = ai.defineTool(
       })),
   },
   async (input) => {
-    try {
-        const { firestore } = await initializeFirebase();
-        const krCol = collection(firestore, 'key-results');
-        let q = query(krCol);
+    const { firestore } = await initializeFirebase();
+    const krCol = collection(firestore, 'key-results');
+    let q = query(krCol);
 
-        if (input?.priority) {
-            q = query(q, where('priority', '==', input.priority));
-        }
-        if (input?.krTitle) {
-            q = query(q, where('title', '==', input.krTitle));
-        }
-
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                title: data.title,
-                description: data.description,
-                currentProgress: data.currentProgress,
-                target: data.target,
-                deadline: data.deadline,
-                priority: data.priority,
-            }
-        });
-    } catch (e) {
-        const permissionError = new FirestorePermissionError({
-            path: 'key-results',
-            operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-        throw permissionError;
+    if (input?.priority) {
+        q = query(q, where('priority', '==', input.priority));
     }
+    if (input?.krTitle) {
+        q = query(q, where('title', '==', input.krTitle));
+    }
+
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            title: data.title,
+            description: data.description,
+            currentProgress: data.currentProgress,
+            target: data.target,
+            deadline: data.deadline,
+            priority: data.priority,
+        }
+    });
   }
 );
 
@@ -137,37 +117,28 @@ const getPartnershipsTool = ai.defineTool(
         })),
     },
     async (input) => {
-        try {
-            const { firestore } = await initializeFirebase();
-            const partnersCol = collection(firestore, 'partnerships');
-            let q = query(partnersCol);
+        const { firestore } = await initializeFirebase();
+        const partnersCol = collection(firestore, 'partnerships');
+        let q = query(partnersCol);
 
-            if (input?.status) {
-                q = query(q, where('status', '==', input.status));
-            }
-            if (input?.name) {
-                q = query(q, where('name', '==', input.name));
-            }
-
-            const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    name: data.name,
-                    contactPerson: data.contactPerson,
-                    contactEmail: data.contactEmail,
-                    status: data.status,
-                    nextStep: data.nextStep,
-                }
-            });
-        } catch (e) {
-            const permissionError = new FirestorePermissionError({
-                path: 'partnerships',
-                operation: 'list',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw permissionError;
+        if (input?.status) {
+            q = query(q, where('status', '==', input.status));
         }
+        if (input?.name) {
+            q = query(q, where('name', '==', input.name));
+        }
+
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                name: data.name,
+                contactPerson: data.contactPerson,
+                contactEmail: data.contactEmail,
+                status: data.status,
+                nextStep: data.nextStep,
+            }
+        });
     }
 );
 
@@ -186,32 +157,23 @@ const getRecentCheckoutsTool = ai.defineTool(
         })),
     },
     async (input) => {
-        try {
-            const { firestore } = await initializeFirebase();
-            const checkoutsCol = collection(firestore, 'checkouts');
-            let q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
+        const { firestore } = await initializeFirebase();
+        const checkoutsCol = collection(firestore, 'checkouts');
+        let q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
 
-            if (input?.userName) {
-                q = query(q, where('name', '==', input.userName));
-            }
-
-            const snapshot = await getDocs(q);
-            return snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    name: data.name,
-                    task: data.task,
-                    timestamp: data.timestamp.toDate().toLocaleString(),
-                }
-            });
-        } catch (e) {
-            const permissionError = new FirestorePermissionError({
-                path: 'checkouts',
-                operation: 'list',
-            });
-            errorEmitter.emit('permission-error', permissionError);
-            throw permissionError;
+        if (input?.userName) {
+            q = query(q, where('name', '==', input.userName));
         }
+
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                name: data.name,
+                task: data.task,
+                timestamp: data.timestamp.toDate().toLocaleString(),
+            }
+        });
     }
 );
 
@@ -274,7 +236,14 @@ This is your knowledge base. It is the complete operational DNA of Omuto Foundat
 - **Daily Operating Rhythm**: 9 AM WhatsApp check-in, 5 PM checkout, Friday reviews, Sunday "Omuto This Week" publication.
 - **Innovation & Sustainability**: Focus on models like commission-based production for Dignity Pads and non-financial motivation for volunteers.
 - **Data-Driven Adaptation**: Use real-time data to track progress, monitor health, and mitigate risks.
+
+Here is the user's question: {{{prompt}}}
 `,
+  input: {
+    schema: z.object({
+        prompt: z.string(),
+    }),
+  },
   tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
   output: {
     format: 'text'
@@ -288,14 +257,10 @@ export const assistantFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (prompt) => {
-    const history = [
-        assistantPrompt,
-        { role: 'user', content: [{ text: prompt }] },
-    ];
-
     const llmResponse = await ai.generate({
-      prompt: 'Your goal is to answer the user prompt based on the context provided in the system message.',
-      history,
+      prompt: assistantPrompt,
+      input: { prompt },
+      history: [],
       tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
     });
     
@@ -305,14 +270,10 @@ export const assistantFlow = ai.defineFlow(
 
 
 export async function streamAssistant(prompt: string) {
-    const history = [
-        assistantPrompt,
-        { role: 'user', content: [{ text: prompt }] },
-    ];
-    
     const { stream } = ai.generateStream({
-        prompt: 'Your goal is to answer the user prompt based on the context provided in the system message.',
-        history,
+        prompt: assistantPrompt,
+        input: { prompt },
+        history: [],
         tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
     });
     
