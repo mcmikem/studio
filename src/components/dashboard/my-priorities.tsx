@@ -4,7 +4,7 @@ import { useMemo, useEffect, useState } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { collection, query, where, doc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { ClipboardList, Loader2 } from 'lucide-react';
 import type { Task } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
@@ -15,6 +15,12 @@ const sampleTasks = [
   { title: 'Approve October budget - Due Today', completed: false, dueDate: '2025-10-25' },
   { title: 'Review Omuto Pulse script - Due Oct 27', completed: false, dueDate: '2025-10-27' },
   { title: 'Call with Mr. Akera (Resource Mobilization) - Due Oct 28', completed: true, dueDate: '2025-10-28' },
+];
+
+const sampleAlerts = [
+    { type: 'Urgent', message: 'RED Campaign funding proposal due tomorrow.', priority: 'High', action: '/management/programs' },
+    { type: 'Reminder', message: 'Submit your weekly field report by EOD.', priority: 'Medium', action: '/forms' },
+    { type: 'Info', message: 'New "Projects" module is now live.', priority: 'Low', action: '/management/projects' },
 ];
 
 export function MyPriorities() {
@@ -36,17 +42,27 @@ export function MyPriorities() {
   // Effect to seed sample tasks for the current user if they don't have any
   useEffect(() => {
     if (user && firestore && tasks === null && !isLoading && !isSeeding) {
-        const hasTasks = localStorage.getItem(`tasks_seeded_${user.uid}`);
-        if (!hasTasks) {
+        const hasSeeded = localStorage.getItem(`seeded_data_${user.uid}`);
+        if (!hasSeeded) {
             setIsSeeding(true);
             const batch = writeBatch(firestore);
+            
+            // Seed tasks
             const tasksCollection = collection(firestore, 'users', user.uid, 'tasks');
             sampleTasks.forEach(task => {
                 const taskRef = doc(tasksCollection);
                 batch.set(taskRef, task);
             });
+
+            // Seed alerts
+            const alertsCollection = collection(firestore, 'alerts');
+            sampleAlerts.forEach(alert => {
+                const alertRef = doc(alertsCollection);
+                batch.set(alertRef, {...alert, createdAt: serverTimestamp()});
+            });
+
             batch.commit().then(() => {
-                localStorage.setItem(`tasks_seeded_${user.uid}`, 'true');
+                localStorage.setItem(`seeded_data_${user.uid}`, 'true');
                 setIsSeeding(false);
             }).catch(console.error);
         }

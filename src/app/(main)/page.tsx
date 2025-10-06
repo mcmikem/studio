@@ -8,6 +8,7 @@ import { ProgramsOverview } from '@/components/dashboard/programs-overview';
 import { MyPriorities } from '@/components/dashboard/my-priorities';
 import { TeamToday } from '@/components/dashboard/team-today';
 import { ImpactOverview } from '@/components/dashboard/impact-overview';
+import { Alerts } from '@/components/dashboard/alerts';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -55,6 +56,7 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-6">
             <MyPriorities />
             <TeamToday />
+            <Alerts />
           </div>
         </div>
       </div>

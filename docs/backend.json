@@ -308,6 +308,32 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["title", "date", "category", "location", "responsible", "createdAt"]
+    },
+    "Alert": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Alert",
+      "type": "object",
+      "description": "Represents an alert or notification for users.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["Urgent", "Reminder", "Info"]
+        },
+        "message": { "type": "string" },
+        "priority": {
+          "type": "string",
+          "enum": ["High", "Medium", "Low"]
+        },
+        "action": {
+          "type": "string",
+          "description": "A URL link for the alert's call to action."
+        },
+        "createdAt": {
+            "type": "string",
+            "format": "date-time"
+        }
+      },
+      "required": ["type", "message", "priority", "action", "createdAt"]
     }
   },
   "auth": {
@@ -376,6 +402,12 @@
             "$ref": "#/entities/CalendarEvent"
         },
         "description": "Stores organizational calendar events."
+    },
+    "/alerts/{alertId}": {
+        "schema": {
+            "$ref": "#/entities/Alert"
+        },
+        "description": "Stores system-wide alerts and notifications."
     }
   }
 }

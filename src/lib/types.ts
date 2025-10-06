@@ -133,10 +133,12 @@ export type ImpactMetric = {
 }
 
 export type Alert = {
+    id: string;
     type: "Urgent" | "Reminder" | "Info";
     message: string;
     priority: "High" | "Medium" | "Low";
     action: string;
+    createdAt?: Timestamp;
 }
 
 export type Task = {
