@@ -250,8 +250,11 @@ const assistantFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (prompt) => {
-    const llmResponse = await assistantPrompt.generate({
-      prompt,
+    const llmResponse = await ai.generate({
+      prompt: {
+        ...assistantPrompt,
+        input: { prompt }
+      }
     });
     return llmResponse.text();
   }
@@ -259,8 +262,11 @@ const assistantFlow = ai.defineFlow(
 
 
 export async function streamAssistant(prompt: string) {
-    const { stream } = await assistantPrompt.generateStream({
-      prompt,
+    const { stream } = await ai.generateStream({
+        prompt: {
+            ...assistantPrompt,
+            input: { prompt },
+        }
     });
     return stream;
 }
