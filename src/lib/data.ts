@@ -48,11 +48,18 @@ export const flexibleTargets: PlanGoal[] = [
 
 export const sampleUsers: Omit<User, 'id'>[] = [
     { name: 'McMike Mutumba', email: 'mcmike@omuto.org', role: 'Executive Director' },
-    { name: 'Dianah Nansikombi', email: 'programs@omuto.org', role: 'Programs & Partnerships Manager' },
+    { name: 'Nansikombi Dianah', email: 'programs@omuto.org', role: 'Programs & Partnerships Manager' },
     { name: 'Kasirye Constantine', email: 'operations@omuto.org', role: 'Operations & Field Manager' },
     { name: 'Nsereko Alex', email: 'communications@omuto.org', role: 'Media & Communications Lead' },
-    { name: 'Bashir', email: 'bashir@omuto.org', role: 'Field Coordinator' },
+    { name: 'Bwire Bashir', email: 'bashir@omuto.org', role: 'Field Coordinator' },
     { name: 'John Paul Akera', email: 'partnerships@omuto.org', role: 'Resource Mobilization Lead' },
+    { name: 'Omuto General', email: 'info@omuto.org', role: 'Administrator' },
+    { name: 'McMike Mutumba (Personal)', email: '1mark2mike@gmail.com', role: 'Executive Director' },
+    { name: 'McMike Mutumba (Gmail)', email: 'mcmike.mutumba@gmail.com', role: 'Executive Director' },
+    { name: 'Dianah Nansikombi (Personal)', email: 'nansikombidianah@gmail.com', role: 'Programs & Partnerships Manager' },
+    { name: 'Kasirye Constantine (Personal)', email: 'kasirye.connie@gmail.com', role: 'Operations & Field Manager' },
+    { name: 'Alex Nsereko (Personal)', email: 'alex@omuto.org', role: 'Media & Communications Lead' },
+    { name: 'John Paul Akera (Personal)', email: 'akerajonpaul@gmail.com', role: 'Resource Mobilization Lead' },
 ];
 
 export const samplePrograms: Omit<Program, 'id'>[] = [
@@ -66,6 +73,12 @@ export const samplePartnerships: Omit<Partnership, 'id'>[] = [
     { name: 'MHAMIA Foundation', contactPerson: 'Sarah Nakka', contactEmail: 'sarah.n@mhamia.org', status: 'Active', nextStep: 'Joint training session at Mpigi Secondary' },
     { name: 'Mpigi District Local Government', contactPerson: 'Mr. Bwekembe', contactEmail: 'cao.mpigi@lg.go.ug', status: 'Active', nextStep: 'Align on Q4 youth programs' },
     { name: 'GlobalGiving', contactPerson: 'Regional Manager', contactEmail: 'africa@globalgiving.org', status: 'Potential', nextStep: 'Submit final report for Cycle of Dignity' },
+    { name: 'Yambi Initiatives', contactPerson: 'Team Lead', contactEmail: 'info@yambi.org', status: 'Active', nextStep: 'Collaborate on MHM curriculum' },
+    { name: 'His Grace Demo Farm', contactPerson: 'Manager', contactEmail: 'contact@hisgracefarm.com', status: 'Active', nextStep: 'Schedule next tree planting day' },
+    { name: 'Miti Nurseries', contactPerson: 'Owner', contactEmail: 'sales@mitinurseries.com', status: 'Active', nextStep: 'Order 500 seedlings for GreenSchools' },
+    { name: 'Young Mothers Foundation', contactPerson: 'Director', contactEmail: 'info@ymf.org', status: 'Active', nextStep: 'Joint advocacy event planning' },
+    { name: 'Totya Platform', contactPerson: 'Coordinator', contactEmail: 'info@totya.org', status: 'Active', nextStep: 'Plan Girl Child Day activities' },
+    { name: 'Butambala District Local Government', contactPerson: 'CAO', contactEmail: 'cao.butambala@lg.go.ug', status: 'Active', nextStep: 'Review Q4 program alignment' },
 ];
 
 export const sampleProjects: Omit<Project, 'id'>[] = [
