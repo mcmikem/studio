@@ -45,15 +45,18 @@ export function KeyResultsTracker() {
   }
   
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Invalid Date';
     try {
       const date = parseISO(dateString);
       if (isValid(date)) {
+        // Adding one day to the date to correctly display it.
+        date.setDate(date.getDate() + 1);
         return format(date, 'MMM dd, yyyy');
       }
     } catch (e) {
       // Ignore invalid date strings
     }
-    return 'Invalid Date';
+    return dateString; // Return original string if parsing fails
   }
 
   return (

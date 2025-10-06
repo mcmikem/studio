@@ -27,6 +27,23 @@ const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
 };
 
+const formatDateSafe = (timestamp: Timestamp | { toDate: () => Date } | null | undefined): string => {
+  if (!timestamp) return 'a few moments ago';
+  if (typeof (timestamp as any).toDate === 'function') {
+    try {
+      const date = (timestamp as { toDate: () => Date }).toDate();
+      // Check if the date is valid
+      if (!isNaN(date.getTime())) {
+        return formatDistanceToNow(date, { addSuffix: true });
+      }
+    } catch (e) {
+      // Fall through to the default if toDate fails
+    }
+  }
+  // This can happen if the server timestamp is not yet fully resolved.
+  return 'Just now';
+};
+
 
 export default function ActivityLogPage() {
   const firestore = useFirestore();
@@ -38,17 +55,6 @@ export default function ActivityLogPage() {
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
   
-  const formatDate = (timestamp: Timestamp | { toDate: () => Date } | null | undefined) => {
-    if (!timestamp || typeof (timestamp as any).toDate !== 'function') {
-      return 'a few moments ago';
-    }
-    try {
-      const date = (timestamp as { toDate: () => Date }).toDate();
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch (e) {
-      return 'a few moments ago';
-    }
-  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -90,7 +96,7 @@ export default function ActivityLogPage() {
                       </div>
                       <div className="flex items-center text-muted-foreground">
                          <Calendar className="h-4 w-4 mr-2" />
-                         <span>{formatDate(activity.loggedAt)}</span>
+                         <span>{formatDateSafe(activity.loggedAt)}</span>
                       </div>
                       <div className="grid grid-cols-3 gap-2 text-center pt-2">
                         <div>
@@ -174,7 +180,7 @@ export default function ActivityLogPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {formatDate(activity.loggedAt)}
+                        {formatDateSafe(activity.loggedAt)}
                       </TableCell>
                     </TableRow>
                   ))

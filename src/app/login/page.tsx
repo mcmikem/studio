@@ -88,6 +88,8 @@ export default function LoginPage() {
     if (error instanceof FirebaseError) {
         switch (error.code) {
             case 'auth/invalid-credential':
+            case 'auth/wrong-password':
+            case 'auth/user-not-found':
                 title = 'Invalid Credentials';
                 description = 'Please check your email and password and try again.';
                 break;
@@ -103,9 +105,16 @@ export default function LoginPage() {
                 title = 'Sign-in Canceled';
                 description = 'The Google sign-in popup was closed before completion.';
                 break;
+            case 'auth/invalid-api-key':
+                 title = 'Configuration Error';
+                 description = 'The application is not configured correctly. Please contact support.';
+                 break;
             default:
                 break;
         }
+    } else if (error.message.includes("not authorized")) {
+        title = "Unauthorized Account";
+        description = error.message;
     }
     
     toast({
@@ -117,6 +126,7 @@ export default function LoginPage() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth) return;
     setLoading('email');
     try {
         await initiateEmailSignIn(auth, email, password);
@@ -129,6 +139,7 @@ export default function LoginPage() {
   
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!auth) return;
     setLoading('email');
     try {
         await initiateEmailSignUp(auth, email, password);
@@ -140,6 +151,7 @@ export default function LoginPage() {
   };
 
   const handleGoogleSignIn = async () => {
+    if (!auth) return;
     setLoading('google');
     try {
         await initiateGoogleSignIn(auth);

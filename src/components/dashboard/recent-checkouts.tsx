@@ -3,17 +3,31 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { RecentCheckout } from '@/lib/types';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
 import { tagColors } from '@/lib/data';
 import { MessageSquareText } from 'lucide-react';
 
+const formatDateSafe = (timestamp: Timestamp | { toDate: () => Date } | null | undefined): string => {
+  if (!timestamp) return 'Just now';
+  if (typeof (timestamp as any).toDate === 'function') {
+    try {
+      const date = (timestamp as { toDate: () => Date }).toDate();
+      if (!isNaN(date.getTime())) {
+        return formatDistanceToNow(date, { addSuffix: true });
+      }
+    } catch (e) {
+      // Fall through
+    }
+  }
+  return 'A few moments ago';
+};
+
+
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
-  const timeAgo = (checkout.timestamp && typeof checkout.timestamp.toDate === 'function') 
-    ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) 
-    : 'Just now';
+  const timeAgo = formatDateSafe(checkout.timestamp);
 
   // Extract all hashtags from the task
   const tags = checkout.task?.match(/#\w+/g) || [];

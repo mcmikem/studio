@@ -27,6 +27,21 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
+const formatDateSafe = (timestamp: Timestamp | { toDate: () => Date } | null | undefined): string => {
+    if (!timestamp) return 'Invalid Date';
+    if (typeof (timestamp as any).toDate === 'function') {
+      try {
+        const date = (timestamp as { toDate: () => Date }).toDate();
+        if (!isNaN(date.getTime())) {
+          return format(date, 'dd MMM yyyy');
+        }
+      } catch (e) {
+         // Fall through
+      }
+    }
+    return 'Invalid Date';
+  };
+
 
 function FinancialOverview() {
     const firestore = useFirestore();
@@ -152,7 +167,7 @@ function RecentExpenses() {
                         {expenses && expenses.length > 0 ? (
                             expenses.map(expense => (
                                 <TableRow key={expense.id}>
-                                    <TableCell>{format(expense.date.toDate(), 'dd MMM yyyy')}</TableCell>
+                                    <TableCell>{formatDateSafe(expense.date)}</TableCell>
                                     <TableCell>{expense.description}</TableCell>
                                     <TableCell>{formatCurrency(expense.amount)}</TableCell>
                                     <TableCell>

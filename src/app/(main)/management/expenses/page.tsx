@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import type { Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,22 @@ const statusColors: { [key: string]: string } = {
   Rejected: 'border-red-500 bg-red-500/10 text-red-500',
 };
 
+const formatDateSafe = (timestamp: Timestamp | { toDate: () => Date } | null | undefined): string => {
+  if (!timestamp) return 'Invalid Date';
+  if (typeof (timestamp as any).toDate === 'function') {
+    try {
+      const date = (timestamp as { toDate: () => Date }).toDate();
+      if (!isNaN(date.getTime())) {
+        return format(date, 'dd MMM yyyy');
+      }
+    } catch (e) {
+       // Fall through
+    }
+  }
+  return 'Invalid Date';
+};
+
+
 export default function ExpensesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -59,13 +75,6 @@ export default function ExpensesPage() {
       description: `The expense report has been marked as ${status.toLowerCase()}.`,
     });
   };
-
-  const formatDateSafe = (timestamp: any) => {
-    if (timestamp && typeof timestamp.toDate === 'function') {
-      return format(timestamp.toDate(), 'dd MMM yyyy');
-    }
-    return 'Invalid Date';
-  }
 
   return (
     <Card>

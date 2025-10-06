@@ -714,28 +714,34 @@ export function CheckinForm() {
   
   useEffect(() => {
     async function fetchLastCheckout() {
-        if (!firestore || !user) return;
-
-        const checkoutQuery = query(
-            collection(firestore, 'checkouts'),
-            where("userId", "==", user.uid),
-            orderBy("timestamp", "desc"),
-            limit(1)
-        );
-
-        try {
-            const querySnapshot = await getDocs(checkoutQuery);
-            if (!querySnapshot.empty) {
-                const lastCheckout = querySnapshot.docs[0].data() as Checkout;
-                if (lastCheckout.tomorrowPlan) {
-                    setMissionFromYesterday(lastCheckout.tomorrowPlan);
-                    form.setValue('mainFocus', lastCheckout.tomorrowPlan);
-                }
-            }
-        } catch (error) {
-            console.error("Error fetching last checkout:", error);
-            // Don't show a toast for this, as it's a background operation
+      if (!firestore || !user) return;
+  
+      // This simplified query fetches the last 5 checkouts for the user.
+      // It doesn't require a composite index.
+      const checkoutQuery = query(
+        collection(firestore, 'checkouts'),
+        where('userId', '==', user.uid),
+        orderBy('timestamp', 'desc'),
+        limit(5)
+      );
+  
+      try {
+        const querySnapshot = await getDocs(checkoutQuery);
+        if (!querySnapshot.empty) {
+          // Find the most recent checkout that has a tomorrowPlan
+          const lastCheckoutWithPlan = querySnapshot.docs
+            .map(doc => doc.data() as Checkout)
+            .find(checkout => checkout.tomorrowPlan);
+          
+          if (lastCheckoutWithPlan?.tomorrowPlan) {
+            setMissionFromYesterday(lastCheckoutWithPlan.tomorrowPlan);
+            form.setValue('mainFocus', lastCheckoutWithPlan.tomorrowPlan);
+          }
         }
+      } catch (error) {
+        console.error("Error fetching last checkout:", error);
+        // Don't show a toast for this, as it's a background operation
+      }
     }
     fetchLastCheckout();
   }, [firestore, user, form]);
