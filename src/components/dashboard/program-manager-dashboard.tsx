@@ -4,6 +4,9 @@ import type { User } from '@/lib/types';
 import { ProgramsOverview } from './programs-overview';
 import { TeamActivityFeed } from './team-activity-feed';
 import { Alerts } from './alerts';
+import { DashboardCalendar } from './dashboard-calendar';
+import { ImpactOverview } from './impact-overview';
+import { PartnershipsOverview } from './partnerships-overview';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -36,17 +39,17 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
                 </p>
             </header>
              <div className="space-y-6">
+                <ImpactOverview />
                 <ProgramsOverview />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
                         <TeamActivityFeed />
                     </div>
                     <div>
-                         <div className="p-8 border-2 border-dashed rounded-lg text-center">
-                            Partnership Pipeline Panel
-                        </div>
+                         <PartnershipsOverview />
                     </div>
                 </div>
+                 <DashboardCalendar />
             </div>
         </>
     )

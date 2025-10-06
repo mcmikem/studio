@@ -42,17 +42,14 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
                 <ImpactOverview />
                 <ProgramsOverview />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 flex flex-col gap-6">
-                         <div className="p-8 border-2 border-dashed rounded-lg text-center">
-                            Team Effectiveness Panel
-                        </div>
+                    <div className="lg:col-span-2">
+                        <TeamActivityFeed />
                     </div>
                     <div className="flex flex-col gap-6">
-                         <div className="p-8 border-2 border-dashed rounded-lg text-center">
-                            Critical Decisions Panel
-                        </div>
+                        <Alerts />
                     </div>
                 </div>
+                <DashboardCalendar />
             </div>
         </>
     )

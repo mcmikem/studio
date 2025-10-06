@@ -3,6 +3,9 @@
 
 import type { User } from '@/lib/types';
 import { DailyActions } from './daily-actions';
+import { TeamActivityFeed } from './team-activity-feed';
+import { DashboardCalendar } from './dashboard-calendar';
+import { MyPriorities } from './my-priorities';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -35,22 +38,16 @@ export function FieldStaffDashboard({ profile }: { profile: User }) {
                 </p>
             </header>
              <div className="space-y-6">
-                <p>Welcome to the Field Staff Dashboard. This view will contain "Today's Battle Plan", "Field Intelligence", and "Smart Reminders".</p>
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2 flex flex-col gap-6">
-                        {/* Placeholder for "Today's Battle Plan" */}
-                         <div className="p-8 border-2 border-dashed rounded-lg text-center">
-                            Today's Battle Plan
-                        </div>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2 flex flex-col gap-6">
+                        <TeamActivityFeed />
                     </div>
                     <div className="flex flex-col gap-6">
                         <DailyActions />
-                         {/* Placeholder for "Field Intelligence" */}
-                         <div className="p-8 border-2 border-dashed rounded-lg text-center">
-                            Field Intelligence
-                        </div>
+                        <MyPriorities />
                     </div>
                 </div>
+                 <DashboardCalendar />
             </div>
         </>
     )
