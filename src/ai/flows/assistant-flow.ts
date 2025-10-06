@@ -180,7 +180,6 @@ const getRecentCheckoutsTool = ai.defineTool(
 
 const assistantPrompt = ai.definePrompt({
   name: 'assistantPrompt',
-  input: { schema: z.object({ prompt: z.string() }) },
   system: `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
 
 You have access to live data about the organization through your tools. Use them whenever possible to provide real-time information.
