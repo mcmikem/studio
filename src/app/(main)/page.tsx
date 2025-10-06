@@ -2,12 +2,13 @@
 
 import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { useUser } from '@/firebase';
-import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
 import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClipboardList, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
+import { ProgramsOverview } from '@/components/dashboard/programs-overview';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -41,11 +42,15 @@ export default function DashboardPage() {
       </header>
 
       <div className="space-y-6">
-        <QuickStatsSummary />
+        <ProgramsOverview />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 flex flex-col gap-6">
             <DashboardCalendar />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <RecentCheckouts />
+                <NewCheckoutForm />
+            </div>
           </div>
           <div className="flex flex-col gap-6">
             <Card>
@@ -100,10 +105,6 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        <div className="grid grid-cols-1">
-            <RecentCheckouts />
         </div>
       </div>
 
