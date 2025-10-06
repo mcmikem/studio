@@ -25,6 +25,19 @@ export type RecentCheckout = {
   timestamp?: Timestamp;
 };
 
+export type Checkout = {
+  id?: string;
+  name: string;
+  role: string;
+  avatar: string;
+  task: string;
+  time?: string;
+  timestamp?: Timestamp;
+  learning?: string;
+  tomorrowPlan?: string;
+  userId: string;
+}
+
 export type PlanGoal = {
   title: string;
   description: string;

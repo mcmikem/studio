@@ -22,9 +22,12 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, useCollection } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, query, where, orderBy, limit } from 'firebase/firestore';
+import { useEffect, useMemo } from 'react';
+import type { Checkout } from '@/lib/types';
+
 
 const missions = [
   { id: 'mission-1', label: '[OCT KR-3] Deliver RED Campaign session at Greenhill PTA' },
@@ -64,6 +67,7 @@ export function CheckinForm() {
     control,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm<CheckinFormData>({
     resolver: zodResolver(checkinSchema),
     defaultValues: {
@@ -71,6 +75,36 @@ export function CheckinForm() {
       communityResources: [],
     }
   });
+
+  const recentCheckoutQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'checkouts'),
+      where('userId', '==', user.uid),
+      orderBy('timestamp', 'desc'),
+      limit(1)
+    );
+  }, [firestore, user]);
+
+  const { data: recentCheckouts } = useCollection<Checkout>(recentCheckoutQuery);
+
+  const allMissions = useMemo(() => {
+    const dynamicMissions = [];
+    if (recentCheckouts?.[0]?.tomorrowPlan) {
+      dynamicMissions.push({
+        id: 'mission-dynamic',
+        label: `[FROM YESTERDAY] ${recentCheckouts[0].tomorrowPlan}`,
+      });
+    }
+    return [...dynamicMissions, ...missions];
+  }, [recentCheckouts]);
+
+  useEffect(() => {
+    if (recentCheckouts?.[0]?.tomorrowPlan) {
+      setValue('primaryMission', `[FROM YESTERDAY] ${recentCheckouts[0].tomorrowPlan}`);
+    }
+  }, [recentCheckouts, setValue]);
+
 
   const onSubmit = (data: CheckinFormData) => {
     if (!firestore || !user) {
@@ -118,12 +152,12 @@ export function CheckinForm() {
               name="primaryMission"
               control={control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger id="primary-mission">
                     <SelectValue placeholder="Select a mission from the operational plan..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {missions.map(mission => (
+                    {allMissions.map(mission => (
                         <SelectItem key={mission.id} value={mission.label}>{mission.label}</SelectItem>
                     ))}
                   </SelectContent>

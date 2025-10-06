@@ -15,7 +15,7 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = checkout.timestamp ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) : 'Just now';
 
   // Extract all hashtags from the task
-  const tags = checkout.task.match(/#\w+/g) || [];
+  const tags = checkout.task?.match(/#\w+/g) || [];
   const primaryTag = tags[0] || '#Update';
   const colorClass = tagColors[primaryTag as keyof typeof tagColors] || tagColors['#Update'];
 
