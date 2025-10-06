@@ -394,6 +394,24 @@
         "priority": { "type": "string", "enum": ["High", "Medium", "Low"] }
       },
       "required": ["title", "description", "currentProgress", "target", "deadline", "priority"]
+    },
+    "Expense": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Expense",
+      "description": "Represents a single expense report.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"], "default": "Pending"},
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "date", "description", "category", "amount", "status", "createdAt"]
     }
   },
   "auth": {
@@ -474,7 +492,12 @@
         "$ref": "#/entities/KeyResult"
       },
       "description": "Stores the key results for the October Operational Plan."
+    },
+    "/expenses/{expenseId}": {
+      "schema": {
+        "$ref": "#/entities/Expense"
+      },
+      "description": "Stores expense reports submitted by users."
     }
   }
 }
-    

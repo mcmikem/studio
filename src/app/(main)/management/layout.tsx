@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Briefcase, Handshake, Target, Truck } from 'lucide-react';
+import { Briefcase, Handshake, Target, Truck, Receipt } from 'lucide-react';
 
 export default function ManagementLayout({
   children,
@@ -17,18 +17,19 @@ export default function ManagementLayout({
     { name: 'Projects', href: '/management/projects', icon: Truck },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
+    { name: 'Expenses', href: '/management/expenses', icon: Receipt },
   ];
 
   return (
     <div className="flex flex-col gap-6">
        <div className="border-b border-border">
-        <div className="-mb-px flex items-center gap-4 px-4 sm:px-6">
+        <div className="-mb-px flex items-center gap-4 px-4 sm:px-6 overflow-x-auto">
           {tabs.map((tab) => (
             <Link
               key={tab.name}
               href={tab.href}
               className={cn(
-                'flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors',
+                'flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors whitespace-nowrap',
                 pathname === tab.href
                   ? 'border-primary text-primary'
                   : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
