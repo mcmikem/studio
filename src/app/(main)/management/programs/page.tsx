@@ -10,7 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, Clock, Briefcase, PlusCircle, Edit } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, doc, Timestamp } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { format } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 
 const statusIcons: { [key: string]: React.ReactNode } = {
@@ -62,6 +62,31 @@ const programSchema = z.object({
 
 type ProgramFormData = z.infer<typeof programSchema>;
 
+const formatDateForInput = (date: string | Date | Timestamp): string => {
+  if (!date) return '';
+  try {
+    let d: Date;
+    if (date instanceof Timestamp) {
+      d = date.toDate();
+    } else if (typeof date === 'string') {
+      const parsed = parseISO(date);
+      if (isValid(parsed)) {
+        // The date from string might be off by one day due to timezone, so we adjust.
+        const adjustedDate = new Date(parsed.valueOf() + parsed.getTimezoneOffset() * 60 * 1000);
+        d = adjustedDate;
+      } else {
+        d = new Date();
+      }
+    } else {
+      d = date as Date;
+    }
+    return format(d, 'yyyy-MM-dd');
+  } catch {
+    return '';
+  }
+};
+
+
 function ProgramForm({
   program,
   onFormSubmit,
@@ -83,7 +108,7 @@ function ProgramForm({
       ...program,
       objectives: program.objectives.join('\n'),
       valuePerObjective: program.valuePerObjective || 0,
-      deadline: program.deadline ? format(new Date(program.deadline), 'yyyy-MM-dd') : '',
+      deadline: formatDateForInput(program.deadline),
     } : {
       status: 'On Track',
       valuePerObjective: 0,
@@ -280,7 +305,7 @@ export default function ProgramsPage() {
                     <div className="mt-4 pt-4 border-t">
                         <div className="text-xs text-muted-foreground">
                             <p><strong>Lead:</strong> {program.lead}</p>
-                            <p><strong>Deadline:</strong> {program.deadline}</p>
+                            <p><strong>Deadline:</strong> {format(new Date(program.deadline), "dd MMM, yyyy")}</p>
                             {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
                         </div>
                     </div>

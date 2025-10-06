@@ -49,9 +49,9 @@ export function KeyResultsTracker() {
     try {
       const date = parseISO(dateString);
       if (isValid(date)) {
-        // Adding one day to the date to correctly display it.
-        date.setDate(date.getDate() + 1);
-        return format(date, 'MMM dd, yyyy');
+        // The date from the string might be off by one day due to timezone.
+        // A safer way is to use UTC to avoid timezone shifts.
+        return format(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()), 'MMM dd, yyyy');
       }
     } catch (e) {
       // Ignore invalid date strings

@@ -23,7 +23,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Check, X, Receipt } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', {
@@ -42,28 +42,25 @@ const statusColors: { [key: string]: string } = {
 const formatDateSafe = (dateValue: Timestamp | { toDate: () => Date } | string | null | undefined): string => {
   if (!dateValue) return 'Invalid Date';
 
-  // Handle Firestore Timestamp
-  if (typeof (dateValue as any).toDate === 'function') {
-    try {
-      const date = (dateValue as { toDate: () => Date }).toDate();
-      if (!isNaN(date.getTime())) {
-        return format(date, 'dd MMM yyyy');
+  try {
+    let date: Date;
+    if (typeof (dateValue as any).toDate === 'function') {
+      date = (dateValue as { toDate: () => Date }).toDate();
+    } else if (typeof dateValue === 'string') {
+      date = parseISO(dateValue);
+       if (isValid(date)) {
+        const adjustedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
+        date = adjustedDate;
       }
-    } catch (e) {
-      // Fall through if toDate fails
+    } else {
+      date = dateValue as Date;
     }
-  }
 
-  // Handle ISO string or other date string formats
-  if (typeof dateValue === 'string') {
-    try {
-      const date = new Date(dateValue);
-      if (!isNaN(date.getTime())) {
-        return format(date, 'dd MMM yyyy');
-      }
-    } catch (e) {
-      // Fall through if string parsing fails
+    if (isValid(date)) {
+      return format(date, 'dd MMM yyyy');
     }
+  } catch (e) {
+    // Fall through if any parsing fails
   }
 
   return 'Invalid Date';

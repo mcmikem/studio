@@ -253,7 +253,7 @@ export default function ProjectsPage() {
                         <CardHeader>
                             <div className="flex justify-between items-start">
                                 <CardTitle className="pr-4">{project.name}</CardTitle>
-                                 <Badge variant="outline" className={cn("flex-shrink-0", statusColors[project.status])}>
+                                 <Badge variant="outline" className={statusColors[project.status]}>
                                     {project.status}
                                 </Badge>
                             </div>
