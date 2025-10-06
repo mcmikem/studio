@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -11,7 +12,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/firebase';
-import { useEffect, useState } from 'react';
 import { User, Mail, Briefcase, History } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
@@ -21,6 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserTasks } from '@/components/profile/user-tasks';
 import { useSearchParams } from 'next/navigation';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 function RecentUserCheckouts() {
   const firestore = useFirestore();
@@ -86,20 +87,11 @@ function RecentUserCheckouts() {
 
 function UserProfileCard() {
   const { user } = useUser();
-  const [userRole, setUserRole] = useState('Staff');
-
-  useEffect(() => {
-    if (user) {
-      user.getIdTokenResult().then((idTokenResult) => {
-        const role = (idTokenResult.claims.role as string) || 'Staff';
-        setUserRole(role);
-      });
-    }
-  }, [user]);
+  const { profile, isLoading } = useUserProfile(user);
 
   const getInitials = (email: string | null | undefined) => {
     if (!email) return 'U';
-    const name = user?.displayName;
+    const name = user?.displayName || profile?.name;
     if (name) {
       const parts = name.split(' ');
       if (parts.length > 1) {
@@ -110,6 +102,38 @@ function UserProfileCard() {
     return email.substring(0, 2).toUpperCase();
   };
 
+  if (isLoading) {
+    return (
+        <Card>
+            <CardContent className="pt-6">
+                <div className="flex flex-col items-center text-center">
+                    <Skeleton className="h-24 w-24 rounded-full mb-4" />
+                    <Skeleton className="h-8 w-40 mb-2" />
+                    <Skeleton className="h-5 w-48" />
+                    <Skeleton className="h-6 w-20 mt-4" />
+                </div>
+                 <div className="mt-6 space-y-4 text-sm">
+                    <div className="flex items-center">
+                        <User className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <Skeleton className="h-5 w-32" />
+                    </div>
+                        <div className="flex items-center">
+                        <Mail className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <Skeleton className="h-5 w-40" />
+                    </div>
+                        <div className="flex items-center">
+                        <Briefcase className="h-4 w-4 mr-3 text-muted-foreground" />
+                        <Skeleton className="h-5 w-24" />
+                    </div>
+                </div>
+            </CardContent>
+             <CardFooter>
+                <Skeleton className="h-4 w-36" />
+            </CardFooter>
+        </Card>
+    )
+  }
+
   return (
      <Card>
         <CardContent className="pt-6">
@@ -118,22 +142,22 @@ function UserProfileCard() {
                     {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
                     <AvatarFallback className="text-3xl">{getInitials(user?.email)}</AvatarFallback>
                 </Avatar>
-                <h2 className="text-2xl font-semibold">{user?.displayName || 'User'}</h2>
-                <p className="text-muted-foreground">{user?.email}</p>
-                <Badge className="mt-4">{userRole}</Badge>
+                <h2 className="text-2xl font-semibold">{profile?.name || 'User'}</h2>
+                <p className="text-muted-foreground">{profile?.email}</p>
+                <Badge className="mt-4">{profile?.role}</Badge>
             </div>
             <div className="mt-6 space-y-4 text-sm">
                 <div className="flex items-center">
                     <User className="h-4 w-4 mr-3 text-muted-foreground" />
-                    <span>{user?.displayName || 'Not specified'}</span>
+                    <span>{profile?.name || 'Not specified'}</span>
                 </div>
                     <div className="flex items-center">
                     <Mail className="h-4 w-4 mr-3 text-muted-foreground" />
-                    <span>{user?.email}</span>
+                    <span>{profile?.email}</span>
                 </div>
                     <div className="flex items-center">
                     <Briefcase className="h-4 w-4 mr-3 text-muted-foreground" />
-                    <span>{userRole}</span>
+                    <span>{profile?.role}</span>
                 </div>
             </div>
         </CardContent>

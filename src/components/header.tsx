@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -15,20 +16,12 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { Badge } from './ui/badge';
-import { useEffect, useState } from 'react';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import Link from 'next/link';
 
 export function AppHeader() {
     const { user } = useUser();
-    const [userRole, setUserRole] = useState('Staff');
-
-    useEffect(() => {
-        if (user) {
-            user.getIdTokenResult().then(idTokenResult => {
-                const role = (idTokenResult.claims.role as string) || 'Staff';
-                setUserRole(role);
-            });
-        }
-    }, [user]);
+    const { profile } = useUserProfile(user);
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
@@ -37,15 +30,19 @@ export function AppHeader() {
         <p className="hidden md:block text-sm text-muted-foreground font-medium">Empowering Youth. Building Sustainable Communities.</p>
       </div>
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon">
-          <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/notifications">
+            <Bell className="h-5 w-5" />
+            <span className="sr-only">Notifications</span>
+          </Link>
         </Button>
-        <Button variant="ghost" size="icon">
-          <PlusCircle className="h-5 w-5" />
-          <span className="sr-only">Quick Add</span>
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/forms">
+            <PlusCircle className="h-5 w-5" />
+            <span className="sr-only">Quick Add</span>
+          </Link>
         </Button>
-        <UserMenu user={user} role={userRole} />
+        <UserMenu user={user} role={profile?.role || 'Staff'} />
       </div>
     </header>
   );
@@ -106,11 +103,13 @@ function UserMenu({ user, role }: { user: any, role: string }) {
             <Badge>{role}</Badge>
           </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+        <DropdownMenuItem asChild>
+          <Link href="/profile">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem disabled>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
@@ -123,5 +122,3 @@ function UserMenu({ user, role }: { user: any, role: string }) {
     </DropdownMenu>
   );
 }
-
-    
