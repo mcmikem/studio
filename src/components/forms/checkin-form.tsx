@@ -83,10 +83,16 @@ export function CheckinForm() {
   const form = useForm<CheckinFormData>({
     resolver: zodResolver(checkinSchema),
     defaultValues: {
+      mainFocus: '',
+      customTask: '',
       multiWinConnections: [],
       budget: 0,
       timeBlocks: [],
       teamSupport: [],
+      transport: '',
+      materials: '',
+      otherConnection: '',
+      challenges: '',
     },
   });
 
@@ -162,10 +168,24 @@ export function CheckinForm() {
         const kr = keyResults?.find((k) => k.id === mainFocus);
         mission = kr ? `${kr.title}: ${kr.description}` : mainFocus;
     }
+    
+    // Ensure undefined values are replaced with null or empty strings/arrays
+    const sanitizedDetails = {
+        mainFocus: data.mainFocus || '',
+        customTask: data.customTask || '',
+        timeBlocks: data.timeBlocks || [],
+        multiWinConnections: data.multiWinConnections || [],
+        otherConnection: data.otherConnection || '',
+        transport: data.transport || '',
+        materials: data.materials || '',
+        teamSupport: data.teamSupport || [],
+        budget: data.budget || 0,
+        challenges: data.challenges || '',
+    };
 
     const checkinData = {
       primaryMission: mission,
-      details: data,
+      details: sanitizedDetails,
       userId: user.uid,
       name: profile.name,
       timestamp: serverTimestamp(),
