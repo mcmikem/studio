@@ -1,23 +1,20 @@
 'use client';
 
-import React, { useMemo, type ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { FirebaseProvider } from '@/firebase/provider';
-import { initializeFirebase } from '@/firebase';
+import { firebaseApp, auth, firestore } from '@/firebase';
 
 interface FirebaseClientProviderProps {
   children: ReactNode;
 }
 
-// Initialize Firebase on the client side, once.
-const firebaseServices = initializeFirebase();
-
+// This provider now simply passes the globally stable firebase services down.
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-
   return (
     <FirebaseProvider
-      firebaseApp={firebaseServices.firebaseApp}
-      auth={firebaseServices.auth}
-      firestore={firebaseServices.firestore}
+      firebaseApp={firebaseApp}
+      auth={auth}
+      firestore={firestore}
     >
       {children}
     </FirebaseProvider>

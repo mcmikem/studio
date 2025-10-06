@@ -1,6 +1,6 @@
 'use client';
     
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -10,65 +10,38 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { useFirestore } from '..';
+import { useFirestore } from '@/firebase/provider'; // Use provider hook
 
-
-/** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
 
-/**
- * Interface for the return value of the useDoc hook.
- * @template T Type of the document data.
- */
 export interface UseDocResult<T> {
-  data: WithId<T> | null; // Document data with ID, or null.
-  isLoading: boolean;       // True if loading.
-  error: FirestoreError | Error | null; // Error object, or null.
+  data: WithId<T> | null;
+  isLoading: boolean;
+  error: FirestoreError | Error | null;
 }
 
-/**
- * React hook to subscribe to a single Firestore document in real-time.
- * Handles nullable references.
- *
- * @template T Optional type for document data. Defaults to any.
- * @param {DocumentReference<DocumentData> | null | undefined} docRef -
- * The Firestore DocumentReference. Waits if null/undefined. The docRef SHOULD be memoized with useMemo.
- * @returns {UseDocResult<T>} Object with data, isLoading, error.
- */
 export function useDoc<T = any>(
   docRef: DocumentReference<DocumentData> | null | undefined,
 ): UseDocResult<T> {
-  type StateDataType = WithId<T> | null;
-
-  const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [data, setData] = useState<WithId<T> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
-  const firestore = useFirestore();
-
-  const docRefRef = useRef(docRef);
-
-  useEffect(() => {
-    // Simple path comparison to see if the reference has changed.
-    if (docRefRef.current?.path !== docRef?.path) {
-      docRefRef.current = docRef;
-    }
-  }, [docRef]);
+  
+  // No need for firestore from context as it's globally stable
+  useFirestore();
 
   useEffect(() => {
-    const currentDocRef = docRefRef.current;
-
-    if (!currentDocRef) {
-      setData(null);
+    if (!docRef) {
       setIsLoading(false);
+      setData(null);
       setError(null);
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     const unsubscribe = onSnapshot(
-      currentDocRef,
+      docRef,
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
@@ -82,19 +55,20 @@ export function useDoc<T = any>(
         console.error("useDoc error:", err);
         const contextualError = new FirestorePermissionError({
           operation: 'get',
-          path: currentDocRef.path,
+          path: docRef.path,
         });
 
         setError(contextualError);
         setData(null);
         setIsLoading(false);
-
         errorEmitter.emit('permission-error', contextualError);
       }
     );
 
     return () => unsubscribe();
-  }, [firestore, docRefRef.current]);
+    // The dependency array now correctly depends on the docRef object itself.
+    // useMemoFirebase is still critical to stabilize the docRef from the calling component.
+  }, [docRef]);
 
   return { data, isLoading, error };
 }

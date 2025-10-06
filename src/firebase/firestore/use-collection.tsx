@@ -1,84 +1,50 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Query,
   onSnapshot,
   DocumentData,
   FirestoreError,
   QuerySnapshot,
-  collection,
-  query,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { useFirestore } from '..';
+import { useFirestore } from '@/firebase/provider'; // Use provider hook
 
-/** Utility type to add an 'id' field to a given type T. */
 export type WithId<T> = T & { id: string };
 
-/**
- * Interface for the return value of the useCollection hook.
- * @template T Type of the document data.
- */
 export interface UseCollectionResult<T> {
-  data: WithId<T>[] | null; // Document data with ID, or null.
-  isLoading: boolean;       // True if loading.
-  error: FirestoreError | Error | null; // Error object, or null.
+  data: WithId<T>[] | null;
+  isLoading: boolean;
+  error: FirestoreError | Error | null;
 }
 
-/**
- * React hook to subscribe to a Firestore collection or query in real-time.
- * Handles nullable references/queries.
- *
- * @template T Optional type for document data. Defaults to any.
- * @param {Query<DocumentData> | null | undefined} targetQuery -
- * The Firestore Query. Waits if null/undefined. The query object SHOULD be memoized with useMemo.
- * @returns {UseCollectionResult<T>} Object with data, isLoading, error.
- */
 export function useCollection<T = any>(
   targetQuery: Query<DocumentData> | null | undefined,
 ): UseCollectionResult<T> {
-  type ResultItemType = WithId<T>;
-  type StateDataType = ResultItemType[] | null;
-
-  const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [data, setData] = useState<WithId<T>[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
-  const firestore = useFirestore(); // Get firestore instance from context
-
-  const queryRef = useRef(targetQuery);
-
-  useEffect(() => {
-    // Check if the query has actually changed.
-    // This is a simple string comparison of the query's internal representation.
-    // NOTE: This might not catch all changes if the query object is mutated,
-    // which is why memoizing the query with useMemo is still the best practice.
-    const queryChanged =
-      queryRef.current?.toString() !== targetQuery?.toString();
-
-    if (queryChanged) {
-      queryRef.current = targetQuery;
-    }
-  }, [targetQuery]);
-
+  
+  // No need for firestore from context as it's globally stable,
+  // but it's good practice to ensure provider is there.
+  useFirestore(); 
 
   useEffect(() => {
-    const currentQuery = queryRef.current;
-    if (!currentQuery) {
-      setData(null);
+    if (!targetQuery) {
       setIsLoading(false);
+      setData(null);
       setError(null);
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     const unsubscribe = onSnapshot(
-      currentQuery,
+      targetQuery,
       (snapshot: QuerySnapshot<DocumentData>) => {
-        const results: ResultItemType[] = snapshot.docs.map(doc => ({
+        const results: WithId<T>[] = snapshot.docs.map(doc => ({
           ...(doc.data() as T),
           id: doc.id
         }));
@@ -88,7 +54,7 @@ export function useCollection<T = any>(
       },
       (err: FirestoreError) => {
         console.error("useCollection error:", err);
-        const path = (currentQuery as any)._query?.path?.canonicalString() || 'unknown path';
+        const path = (targetQuery as any)._query?.path?.canonicalString() || 'unknown path';
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path: path,
@@ -102,7 +68,9 @@ export function useCollection<T = any>(
     );
 
     return () => unsubscribe();
-  }, [firestore, queryRef.current]);
+    // The dependency array now correctly depends on the query object itself.
+    // useMemoFirebase is still critical to stabilize the query object from the calling component.
+  }, [targetQuery]);
 
   return { data, isLoading, error };
 }
