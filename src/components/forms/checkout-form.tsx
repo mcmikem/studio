@@ -17,10 +17,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp } from 'firebase/firestore';
-import { useFirestore } from '@/firebase/provider';
+import { collection, serverTimestamp, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { useEffect, useMemo } from 'react';
+import type { Checkin } from '@/lib/types';
+
 
 const checkoutSchema = z.object({
   missionAccomplished: z
@@ -45,13 +47,37 @@ export function CheckoutForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: {
-      missionAccomplished:
-        "Delivered RED Campaign session at Greenhill PTA meeting. The session was well-received.",
-    },
   });
+
+  const startOfDay = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return Timestamp.fromDate(now);
+  }, []);
+
+  const recentCheckinQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'checkins'),
+      where('userId', '==', user.uid),
+      where('timestamp', '>=', startOfDay),
+      orderBy('timestamp', 'desc'),
+      limit(1)
+    );
+  }, [firestore, user, startOfDay]);
+
+  const { data: recentCheckins, isLoading: isLoadingCheckin } = useCollection<Checkin>(recentCheckinQuery);
+
+  useEffect(() => {
+    if (recentCheckins && recentCheckins.length > 0) {
+      const mission = recentCheckins[0].primaryMission.replace('[FROM YESTERDAY] ', '').replace('[PROGRAM] ', '');
+      setValue('missionAccomplished', `Progress on: ${mission}. `);
+    }
+  }, [recentCheckins, setValue]);
+
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (!firestore || !user) {
@@ -89,7 +115,14 @@ export function CheckoutForm() {
       title: 'Check-out Submitted!',
       description: 'Your impact report has been saved.',
     });
-    reset();
+    reset({
+        missionAccomplished: '',
+        learning: '',
+        tomorrowPlan: '',
+        parentsReached: 0,
+        volunteersRecruited: 0,
+        prototypesTested: 0,
+    });
   };
 
   return (
@@ -111,7 +144,7 @@ export function CheckoutForm() {
             </Label>
             <Textarea
               id="mission-accomplished"
-              placeholder="What did you achieve? (This will be pre-filled with your morning's mission)"
+              placeholder={isLoadingCheckin ? "Loading today's mission..." : "What did you achieve?"}
               className="min-h-[100px]"
               {...register('missionAccomplished')}
             />
