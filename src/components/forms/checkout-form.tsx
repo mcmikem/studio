@@ -95,13 +95,14 @@ export function CheckoutForm() {
   const { data: recentCheckins, isLoading: isLoadingCheckin } =
     useCollection<Checkin>(recentCheckinQuery);
   
-  const missionFromCheckin = recentCheckins?.[0]?.primaryMission;
-
   useEffect(() => {
-    if (missionFromCheckin) {
-      setValue('missionAccomplished', `Progress on: ${missionFromCheckin}. `);
+    if (recentCheckins && recentCheckins.length > 0) {
+      const missionFromCheckin = recentCheckins[0]?.primaryMission;
+      if (missionFromCheckin) {
+        setValue('missionAccomplished', `Progress on: ${missionFromCheckin}. `);
+      }
     }
-  }, [missionFromCheckin, setValue]);
+  }, [recentCheckins, setValue]);
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (!firestore || !user || !profile) {
@@ -140,7 +141,7 @@ export function CheckoutForm() {
 
     const checkoutsCollection = collection(firestore, 'checkouts');
     try {
-        const docRef = await addDoc(checkoutsCollection, checkoutData);
+        const docRef = await addDocumentNonBlocking(checkoutsCollection, checkoutData);
         if (docRef?.id) {
           setSubmittedCheckoutId(docRef.id);
         }
