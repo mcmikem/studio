@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import type { ImpactMetric, Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', {
@@ -44,6 +45,7 @@ const multipliers = [
 
 export function ActivityReportForm() {
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
   const firestore = useFirestore();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -142,7 +144,7 @@ export function ActivityReportForm() {
   };
 
   const handleLogActivity = async () => {
-    if (!activityName.trim() || !user || !firestore || !selectedGoalId) {
+    if (!activityName.trim() || !user || !firestore || !selectedGoalId || !profile) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
@@ -155,7 +157,7 @@ export function ActivityReportForm() {
     const activityData = {
       title: activityName,
       userId: user.uid,
-      userName: user.displayName || user.email,
+      userName: profile.name,
       estimatedCost: preActivityCost,
       actualCost: actualCost,
       directValue: directValue,

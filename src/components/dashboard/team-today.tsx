@@ -18,7 +18,7 @@ const getStatusColor = (status: string) => {
         case 'In Meeting':
             return 'bg-yellow-500';
         default:
-            return 'bg-red-500';
+            return 'bg-gray-400';
     }
 };
 

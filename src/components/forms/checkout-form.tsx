@@ -22,6 +22,7 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { useEffect, useMemo } from 'react';
 import type { Checkin } from '@/lib/types';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 
 const checkoutSchema = z.object({
@@ -41,6 +42,7 @@ export function CheckoutForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
 
   const {
     register,
@@ -85,7 +87,7 @@ export function CheckoutForm() {
 
 
   const onSubmit = async (data: CheckoutFormData) => {
-    if (!firestore || !user) {
+    if (!firestore || !user || !profile) {
         toast({
             variant: "destructive",
             title: "Authentication Error",
@@ -103,8 +105,8 @@ export function CheckoutForm() {
     const fullTask = `${data.missionAccomplished} #Update ${impactNumbers ? `| ${impactNumbers}` : ''}`;
 
     const checkoutData = {
-      name: user.displayName || user.email,
-      role: 'User', 
+      name: profile.name,
+      role: profile.role, 
       avatar: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
       task: fullTask,
       learning: data.learning,

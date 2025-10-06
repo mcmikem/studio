@@ -2,6 +2,7 @@
 
 import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { useUser } from '@/firebase';
+import { useUserProfile } from '@/hooks/use-user-profile';
 import { ProgramsOverview } from '@/components/dashboard/programs-overview';
 import { ImpactOverview } from '@/components/dashboard/impact-overview';
 import { Alerts } from '@/components/dashboard/alerts';
@@ -10,6 +11,7 @@ import { TeamActivityFeed } from '@/components/dashboard/team-activity-feed';
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -25,13 +27,15 @@ export default function DashboardPage() {
     month: 'long',
     day: 'numeric',
   });
+  
+  const firstName = profile?.name?.split(' ')[0] || 'User';
 
   return (
     <div className="flex flex-col gap-6">
       <header className="space-y-1">
         <h1 className="font-headline text-2xl font-bold tracking-tight text-primary">
           {getGreeting()},{' '}
-          {user?.displayName?.split(' ')[0] || user?.email || 'User'} 🚀 |
+          {firstName} 🚀 |
           Building Youth. Building Change.
         </h1>
         <p className="text-sm text-muted-foreground">

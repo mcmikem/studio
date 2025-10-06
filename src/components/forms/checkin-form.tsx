@@ -27,6 +27,7 @@ import { collection, serverTimestamp, query, where, orderBy, limit } from 'fireb
 import { useEffect, useMemo } from 'react';
 import type { Checkout, Program } from '@/lib/types';
 import { Textarea } from '../ui/textarea';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 
 const checkinSchema = z.object({
@@ -40,6 +41,7 @@ export function CheckinForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
 
   const {
     handleSubmit,
@@ -98,7 +100,7 @@ export function CheckinForm() {
 
 
   const onSubmit = (data: CheckinFormData) => {
-    if (!firestore || !user) {
+    if (!firestore || !user || !profile) {
         toast({
             variant: "destructive",
             title: "Authentication Error",
@@ -115,7 +117,7 @@ export function CheckinForm() {
     const checkinData = {
         primaryMission: mission,
         userId: user.uid,
-        name: user.displayName || user.email,
+        name: profile.name,
         timestamp: serverTimestamp(),
     };
 

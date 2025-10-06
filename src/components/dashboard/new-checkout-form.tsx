@@ -8,9 +8,11 @@ import { collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 export function NewCheckoutForm() {
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
   const firestore = useFirestore();
   const [task, setTask] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,13 +20,13 @@ export function NewCheckoutForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!task.trim() || !user || !firestore) return;
+    if (!task.trim() || !user || !firestore || !profile) return;
 
     setLoading(true);
 
     const checkoutData = {
-      name: user.displayName || user.email,
-      role: 'User', // This will be updated based on custom claims or user profile in the future
+      name: profile.name,
+      role: profile.role, 
       avatar: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
       task: task,
       timestamp: serverTimestamp(),

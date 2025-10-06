@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2, LogIn } from 'lucide-react';
 import { Label } from '../ui/label';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 const checkinSchema = z.object({
   primaryMission: z.string().min(1, 'Please select a primary mission.'),
@@ -30,6 +31,7 @@ export function NewCheckinForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
 
   const {
     handleSubmit,
@@ -63,7 +65,7 @@ export function NewCheckinForm() {
 
 
   const onSubmit = (data: CheckinFormData) => {
-    if (!firestore || !user) {
+    if (!firestore || !user || !profile) {
         toast({
             variant: "destructive",
             title: "Authentication Error",
@@ -75,7 +77,7 @@ export function NewCheckinForm() {
     const checkinData = {
         ...data,
         userId: user.uid,
-        name: user.displayName || user.email,
+        name: profile.name,
         timestamp: serverTimestamp(),
     };
 

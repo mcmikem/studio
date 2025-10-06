@@ -42,13 +42,13 @@ export function AppHeader() {
             <span className="sr-only">Quick Add</span>
           </Link>
         </Button>
-        <UserMenu user={user} role={profile?.role || 'Staff'} />
+        <UserMenu user={user} profile={profile} />
       </div>
     </header>
   );
 }
 
-function UserMenu({ user, role }: { user: any, role: string }) {
+function UserMenu({ user, profile }: { user: any, profile: any }) {
   const auth = useAuth();
 
   const handleLogout = () => {
@@ -57,9 +57,7 @@ function UserMenu({ user, role }: { user: any, role: string }) {
     }
   };
   
-  const getInitials = (email: string | null | undefined) => {
-    if (!email) return 'U';
-    const name = user?.displayName;
+  const getInitials = (name?: string, email?: string) => {
     if (name) {
         const parts = name.split(' ');
         if (parts.length > 1) {
@@ -67,7 +65,10 @@ function UserMenu({ user, role }: { user: any, role: string }) {
         }
         return name.substring(0, 2).toUpperCase();
     }
-    return email.substring(0, 2).toUpperCase();
+    if (email) {
+      return email.substring(0, 2).toUpperCase();
+    }
+    return 'U';
   };
 
   return (
@@ -79,7 +80,7 @@ function UserMenu({ user, role }: { user: any, role: string }) {
         >
           <Avatar className="h-9 w-9" data-ai-hint="user avatar">
             {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
-            <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
+            <AvatarFallback>{getInitials(profile?.name, user?.email)}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -88,10 +89,10 @@ function UserMenu({ user, role }: { user: any, role: string }) {
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10" data-ai-hint="user avatar">
               {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
-              <AvatarFallback>{getInitials(user?.email)}</AvatarFallback>
+              <AvatarFallback>{getInitials(profile?.name, user?.email)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">{user?.displayName || 'User'}</p>
+              <p className="text-sm font-medium leading-none">{profile?.name || 'User'}</p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user?.email}
               </p>
@@ -100,7 +101,7 @@ function UserMenu({ user, role }: { user: any, role: string }) {
         </DropdownMenuLabel>
          <DropdownMenuSeparator />
           <div className="px-2 py-1.5">
-            <Badge>{role}</Badge>
+            <Badge>{profile?.role || 'Staff'}</Badge>
           </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
