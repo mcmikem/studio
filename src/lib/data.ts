@@ -1,4 +1,4 @@
-import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric } from './types';
+import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert } from './types';
 
 export const tagColors: { [key: string]: string } = {
     '#FieldVisit': 'border-blue-500 bg-blue-500/10 text-blue-500',
@@ -48,40 +48,28 @@ export const flexibleTargets: PlanGoal[] = [
 
 export const sampleUsers: Omit<User, 'id'>[] = [
     { name: 'McMike Mutumba', email: 'mcmike@omuto.org', role: 'Executive Director' },
-    { name: 'Nansikombi Dianah', email: 'programs@omuto.org', role: 'Programs & Partnerships Manager' },
+    { name: 'Dianah Nansikombi', email: 'programs@omuto.org', role: 'Programs & Partnerships Manager' },
     { name: 'Kasirye Constantine', email: 'operations@omuto.org', role: 'Operations & Field Manager' },
     { name: 'Nsereko Alex', email: 'communications@omuto.org', role: 'Media & Communications Lead' },
     { name: 'Bwire Bashir', email: 'bashir@omuto.org', role: 'Field Coordinator' },
     { name: 'John Paul Akera', email: 'partnerships@omuto.org', role: 'Resource Mobilization Lead' },
     { name: 'Omuto General', email: 'info@omuto.org', role: 'Administrator' },
-    { name: 'McMike Mutumba (Personal)', email: '1mark2mike@gmail.com', role: 'Executive Director' },
-    { name: 'McMike Mutumba (Gmail)', email: 'mcmike.mutumba@gmail.com', role: 'Executive Director' },
-    { name: 'Dianah Nansikombi (Personal)', email: 'nansikombidianah@gmail.com', role: 'Programs & Partnerships Manager' },
-    { name: 'Kasirye Constantine (Personal)', email: 'kasirye.connie@gmail.com', role: 'Operations & Field Manager' },
-    { name: 'Alex Nsereko (Personal)', email: 'alex@omuto.org', role: 'Media & Communications Lead' },
-    { name: 'John Paul Akera (Personal)', email: 'akerajonpaul@gmail.com', role: 'Resource Mobilization Lead' },
 ];
 
-export const samplePrograms: Omit<Program, 'id'>[] = [
+export const samplePrograms: Omit<Program, 'id' | 'createdAt'>[] = [
     { title: 'RED Campaign', description: 'Menstrual Health Management education and support.', lead: 'Dianah Nansikombi', status: 'On Track', deadline: '2025-12-31', objectives: ['Deliver sessions to 200 parents and 50 teachers', 'Reach 600 girls with MHM kits'], valuePerObjective: 50000 },
     { title: 'GreenSchools Campaign', description: 'Environmental conservation through school-based activities.', lead: 'Kasirye Constantine', status: 'At Risk', deadline: '2025-11-30', objectives: ['Plant 700 trees', 'Establish 10 student Green Teams'], valuePerObjective: 20000 },
     { title: 'YoSkills Entrepreneurship', description: 'Vocational and business training for youth.', lead: 'Dianah Nansikombi', status: 'On Track', deadline: '2026-01-31', objectives: ['Train 50 youth in soap-making', 'Launch 5 new youth-led enterprises'], valuePerObjective: 75000 },
 ];
 
-export const samplePartnerships: Omit<Partnership, 'id'>[] = [
+export const samplePartnerships: Omit<Partnership, 'id' | 'createdAt'>[] = [
     { name: 'Spouts of Water', contactPerson: 'Daniel Yin', contactEmail: 'daniel@spouts.org', status: 'Active', nextStep: 'Co-design PureWater Initiative Phase 2' },
     { name: 'MHAMIA Foundation', contactPerson: 'Sarah Nakka', contactEmail: 'sarah.n@mhamia.org', status: 'Active', nextStep: 'Joint training session at Mpigi Secondary' },
     { name: 'Mpigi District Local Government', contactPerson: 'Mr. Bwekembe', contactEmail: 'cao.mpigi@lg.go.ug', status: 'Active', nextStep: 'Align on Q4 youth programs' },
     { name: 'GlobalGiving', contactPerson: 'Regional Manager', contactEmail: 'africa@globalgiving.org', status: 'Potential', nextStep: 'Submit final report for Cycle of Dignity' },
-    { name: 'Yambi Initiatives', contactPerson: 'Team Lead', contactEmail: 'info@yambi.org', status: 'Active', nextStep: 'Collaborate on MHM curriculum' },
-    { name: 'His Grace Demo Farm', contactPerson: 'Manager', contactEmail: 'contact@hisgracefarm.com', status: 'Active', nextStep: 'Schedule next tree planting day' },
-    { name: 'Miti Nurseries', contactPerson: 'Owner', contactEmail: 'sales@mitinurseries.com', status: 'Active', nextStep: 'Order 500 seedlings for GreenSchools' },
-    { name: 'Young Mothers Foundation', contactPerson: 'Director', contactEmail: 'info@ymf.org', status: 'Active', nextStep: 'Joint advocacy event planning' },
-    { name: 'Totya Platform', contactPerson: 'Coordinator', contactEmail: 'info@totya.org', status: 'Active', nextStep: 'Plan Girl Child Day activities' },
-    { name: 'Butambala District Local Government', contactPerson: 'CAO', contactEmail: 'cao.butambala@lg.go.ug', status: 'Active', nextStep: 'Review Q4 program alignment' },
 ];
 
-export const sampleProjects: Omit<Project, 'id'>[] = [
+export const sampleProjects: Omit<Project, 'id' | 'createdAt'>[] = [
     { name: 'RED Campaign School Tour (Mpigi)', manager: 'Dianah Nansikombi', districts: 'Mpigi', status: 'Active', completion: 65, nextMilestone: 'Sign MoU with Nindye SS' },
     { name: 'GreenSchools Butambala Launch', manager: 'Bwire Bashir', districts: 'Butambala', status: 'Active', completion: 20, nextMilestone: 'Recruit 5 volunteer facilitators' },
 ];
@@ -91,6 +79,17 @@ export const sampleImpactMetrics: Omit<ImpactMetric, 'id'>[] = [
     { metric: 'Trees Planted (GreenSchools)', target: 700, current: 510, unit: 'trees', valuePerUnit: 5000 },
     { metric: 'Cycle of Dignity Fundraising', target: 2000000, current: 800000, unit: 'UGX', valuePerUnit: 1 },
 ];
+
+export const sampleAlerts: Omit<Alert, 'id' | 'createdAt'>[] = [
+    { type: 'Urgent', message: 'Final report for GlobalGiving grant is due in 3 days.', priority: 'High', action: '/reports' },
+    { type: 'Reminder', message: 'Team meeting tomorrow at 10 AM to discuss Girl Child Day.', priority: 'Medium', action: '/plan' },
+];
+
+export const sampleCalendarEvents: Omit<CalendarEvent, 'id' | 'createdAt'>[] = [
+    { title: 'Girl Child Day Event', date: new Date('2025-10-11T09:00:00'), category: 'Campaigns/Events', location: 'Mpigi Town Square', responsible: 'Whole Team' },
+    { title: 'Finalize RED Campaign Documentary', date: new Date('2025-10-26T17:00:00'), category: 'Deadlines', location: 'Office', responsible: 'Alex Nsereko' },
+];
+
 
 export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
     {

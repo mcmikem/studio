@@ -10,7 +10,7 @@ import {
 import { getFirestore, doc, setDoc, writeBatch, collection, getDocs, query, limit } from 'firebase/firestore';
 import { errorEmitter } from './error-emitter';
 import { FirestorePermissionError } from './errors';
-import { sampleUsers, samplePrograms, samplePartnerships, sampleKeyResults, sampleProjects, sampleImpactMetrics } from '@/lib/data';
+import { sampleUsers, samplePrograms, samplePartnerships, sampleKeyResults, sampleProjects, sampleImpactMetrics, sampleAlerts, sampleCalendarEvents } from '@/lib/data';
 
 
 // This maps specific emails to roles and names within the Omuto organization.
@@ -27,7 +27,7 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
     // Operations & Field
     'operations@omuto.org': { name: 'Kasirye Constantine', role: 'Operations & Field Manager' },
     'kasirye.connie@gmail.com': { name: 'Kasirye Constantine', role: 'Operations & Field Manager' },
-    'bashir@omuto.org': { name: 'Bashir', role: 'Field Coordinator' },
+    'bashir@omuto.org': { name: 'Bwire Bashir', role: 'Field Coordinator' },
     
     // Media, Comms & Finance
     'communications@omuto.org': { name: 'Nsereko Alex', role: 'Media & Communications Lead' },
@@ -57,6 +57,8 @@ async function seedInitialData(db: ReturnType<typeof getFirestore>) {
         { name: 'key-results', data: sampleKeyResults },
         { name: 'projects', data: sampleProjects },
         { name: 'impact-metrics', data: sampleImpactMetrics },
+        { name: 'alerts', data: sampleAlerts },
+        { name: 'events', data: sampleCalendarEvents },
     ];
     
     const usersCollection = collection(db, 'users');
@@ -70,15 +72,25 @@ async function seedInitialData(db: ReturnType<typeof getFirestore>) {
     console.log("Seeding initial data...");
     const batch = writeBatch(db);
 
-    collectionsToSeed.forEach(coll => {
+    for (const coll of collectionsToSeed) {
         const collectionRef = collection(db, coll.name);
-        coll.data.forEach((item: any) => {
-            // For the users collection, we use a specific ID if available (email)
-            // For other collections, we let Firestore generate the ID.
-            const docRef = coll.name === 'users' ? doc(collectionRef, item.email) : doc(collectionRef);
-            batch.set(docRef, item);
-        });
-    });
+        for (const item of coll.data) {
+            // For users, we use a specific ID. Let Firestore generate IDs for others.
+            let docRef;
+            if (coll.name === 'users') {
+                 // Find the user details from approvedUsers to get the correct ID
+                const userDetail = Object.values(approvedUsers).find(u => u.name === (item as any).name);
+                const userEmail = Object.keys(approvedUsers).find(key => approvedUsers[key] === userDetail);
+                if(userEmail) {
+                    docRef = doc(collectionRef); // Let firestore create id
+                    batch.set(docRef, { ...item, id: docRef.id }); 
+                }
+            } else {
+                docRef = doc(collectionRef);
+                batch.set(docRef, item);
+            }
+        }
+    }
 
     await batch.commit();
     console.log("Initial data seeded successfully.");
@@ -90,40 +102,44 @@ async function createUserProfile(userCredential: UserCredential) {
     if (!user || !user.email) return userCredential;
 
     if (!isEmailApproved(user.email)) {
-        // This is a failsafe. This user should not have been created.
         await user.delete();
         throw new Error('This email address is not authorized to use this application.');
     }
 
     const db = getFirestore(user.auth.app);
     
-    // Seed data on first user creation if needed
     if (userCredential.additionalUserInfo?.isNewUser) {
         await seedInitialData(db);
     }
     
-    const userRef = doc(db, 'users', user.uid);
-    const userData = approvedUsers[user.email.toLowerCase()];
+    const usersSnapshot = await getDocs(query(collection(db, 'users'), where('email', '==', user.email)));
 
-    const userProfile = {
-        id: user.uid,
-        name: userData.name,
-        email: user.email,
-        role: userData.role,
-    };
-
-    // Use a non-blocking write to create the user profile document
-    setDoc(userRef, userProfile, { merge: true }).catch((error) => {
-        console.error("Error creating user profile:", error);
-        errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-                path: userRef.path,
-                operation: 'create',
-                requestResourceData: userProfile,
-            })
-        );
-    });
+    let userId;
+    if (!usersSnapshot.empty) {
+        userId = usersSnapshot.docs[0].id;
+    } else {
+        const newUserRef = doc(collection(db, 'users'));
+        userId = newUserRef.id;
+        const userData = approvedUsers[user.email.toLowerCase()];
+        const userProfile = {
+            id: userId,
+            name: userData.name,
+            email: user.email,
+            role: userData.role,
+        };
+        // Use a non-blocking write to create the user profile document
+        setDoc(newUserRef, userProfile).catch((error) => {
+            console.error("Error creating user profile:", error);
+            errorEmitter.emit(
+                'permission-error',
+                new FirestorePermissionError({
+                    path: newUserRef.path,
+                    operation: 'create',
+                    requestResourceData: userProfile,
+                })
+            );
+        });
+    }
 
     return userCredential;
 }
@@ -148,7 +164,7 @@ export function initiateEmailSignIn(authInstance: Auth, email: string, password:
     return Promise.reject(new Error("This email address is not authorized to sign in."));
   }
   return signInWithEmailAndPassword(authInstance, email, password)
-    .then(createUserProfile) // Ensure profile exists on every sign-in
+    .then(createUserProfile) 
     .catch(error => {
       console.error("Email sign-in error:", error);
       throw error;
@@ -161,11 +177,9 @@ export function initiateGoogleSignIn(authInstance: Auth) {
     return signInWithPopup(authInstance, provider)
       .then(userCredential => {
           if (!isEmailApproved(userCredential.user.email)) {
-              // Important: Sign the user out immediately and throw an error.
               authInstance.signOut();
               throw new Error("This Google account is not authorized to use this application.");
           }
-          // If approved, proceed to create their profile.
           return createUserProfile(userCredential);
       })
       .catch(error => {

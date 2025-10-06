@@ -42,6 +42,11 @@ export type Checkin = {
     userId: string;
     name: string;
     primaryMission: string;
+    details?: {
+      mainFocus: string[];
+      customTask?: string;
+      workLocation?: string;
+    }
     timestamp: Timestamp;
 }
 
@@ -68,7 +73,7 @@ export type SuccessMetric = {
 
 export type CalendarEvent = {
     id: string;
-    date: Timestamp;
+    date: Timestamp | Date;
     title: string;
     description?: string;
     responsible: string;
@@ -178,5 +183,3 @@ export type Expense = {
     status: "Pending" | "Approved" | "Rejected";
     createdAt?: Timestamp;
 };
-
-    

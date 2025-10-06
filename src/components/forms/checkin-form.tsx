@@ -9,7 +9,6 @@ import {
   useFirestore,
   useUser,
   useCollection,
-  useMemoFirebase,
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
@@ -33,15 +32,15 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2, Wand2, Sparkles, LogIn } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { Badge } from '../ui/badge';
 import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
+import { MultiSelect } from '../ui/multi-select';
 
 const checkinSchema = z.object({
-  mainFocus: z.string().min(1, 'Please select a main focus.'),
+  mainFocus: z.array(z.string()).min(1, 'Please select at least one main focus.'),
   customTask: z.string().optional(),
+  workLocation: z.string().min(1, "Please select your work location."),
   timeBlocks: z.array(
     z.object({
       startTime: z.string().min(1, 'Required'),
@@ -51,8 +50,6 @@ const checkinSchema = z.object({
   ).optional(),
   multiWinConnections: z.array(z.string()).optional(),
   otherConnection: z.string().optional(),
-  transport: z.string().optional(),
-  materials: z.string().optional(),
   teamSupport: z.array(z.string()).optional(),
   budget: z.coerce.number().optional(),
   challenges: z.string().optional(),
@@ -65,19 +62,17 @@ export function CheckinForm() {
   const firestore = useFirestore();
   const { user } = useUser();
   const { profile } = useUserProfile(user);
-  const [missionFromYesterday, setMissionFromYesterday] = useState<string | null>(null);
   
   const form = useForm<CheckinFormData>({
     resolver: zodResolver(checkinSchema),
     defaultValues: {
-      mainFocus: '',
+      mainFocus: [],
       customTask: '',
+      workLocation: 'Office',
       multiWinConnections: [],
       budget: 0,
       timeBlocks: [],
       teamSupport: [],
-      transport: '',
-      materials: '',
       otherConnection: '',
       challenges: '',
     },
@@ -86,17 +81,17 @@ export function CheckinForm() {
   const [aiSuggestions, setAiSuggestions] = useState<DailyPlannerAIOutput | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  const { watch, formState: { errors, isSubmitting } } = form;
+  const { watch, control, formState: { errors, isSubmitting } } = form;
   const mainFocus = watch('mainFocus');
   const customTask = watch('customTask');
   
-  const keyResultsQuery = useMemoFirebase(() => {
+  const keyResultsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
 
   const { data: keyResults, isLoading: isLoadingKR } = useCollection<KeyResult>(keyResultsQuery);
-  
+
   useEffect(() => {
     async function fetchLastCheckout() {
       if (!firestore || !user) return;
@@ -113,8 +108,7 @@ export function CheckinForm() {
         if (!querySnapshot.empty) {
           const lastCheckout = querySnapshot.docs[0].data() as Checkout;
           if (lastCheckout.tomorrowPlan) {
-            setMissionFromYesterday(lastCheckout.tomorrowPlan);
-            form.setValue('mainFocus', lastCheckout.tomorrowPlan);
+            form.setValue('mainFocus', [lastCheckout.tomorrowPlan]);
           }
         }
       } catch (error) {
@@ -124,41 +118,31 @@ export function CheckinForm() {
     fetchLastCheckout();
   }, [firestore, user, form]);
 
-  const usersQuery = useMemoFirebase(() => {
+  const usersQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'users'), orderBy('name'));
   }, [firestore]);
   const { data: teamMembers } = useCollection<User>(usersQuery);
-
-  const selectedFocus = form.watch('mainFocus');
-  const selectedKR = useMemo(
-    () => keyResults?.find((kr) => kr.id === selectedFocus),
-    [keyResults, selectedFocus]
-  );
 
   const onSubmit = (data: CheckinFormData) => {
     if (!firestore || !user || !profile) {
       toast({ variant: 'destructive', title: 'Authentication Error' });
       return;
     }
-    const { mainFocus, customTask } = data;
-    let mission: string;
-
-    if (mainFocus === 'custom') {
-        mission = customTask || "Custom task";
-    } else {
-        const kr = keyResults?.find((k) => k.id === mainFocus);
-        mission = kr ? `${kr.title}: ${kr.description}` : mainFocus;
-    }
     
+    let mission = data.mainFocus.map(focusId => {
+      if (focusId === 'custom') return data.customTask;
+      const kr = keyResults?.find(k => k.id === focusId);
+      return kr ? `${kr.title}: ${kr.description}` : focusId;
+    }).filter(Boolean).join('; ');
+
     const sanitizedDetails = {
-      mainFocus: data.mainFocus || '',
+      mainFocus: data.mainFocus || [],
       customTask: data.customTask || '',
+      workLocation: data.workLocation || 'Not specified',
       timeBlocks: data.timeBlocks || [],
       multiWinConnections: data.multiWinConnections || [],
       otherConnection: data.otherConnection || '',
-      transport: data.transport || '',
-      materials: data.materials || '',
       teamSupport: data.teamSupport || [],
       budget: data.budget || 0,
       challenges: data.challenges || '',
@@ -180,13 +164,18 @@ export function CheckinForm() {
       description: 'Your strategic plan for the day is logged.',
     });
     form.reset();
+    setAiSuggestions(null);
   };
 
   const handleBrainstorm = async () => {
-    if (!mainFocus || !profile) return;
+    if (mainFocus.length === 0 || !profile) return;
     
-    const task = mainFocus === 'custom' ? customTask : selectedKR?.description;
-    if (!task) {
+    const tasks = mainFocus.map(focusId => {
+      if (focusId === 'custom') return customTask;
+      return keyResults?.find(kr => kr.id === focusId)?.description;
+    }).filter(Boolean).join(', ');
+
+    if (!tasks) {
         toast({ variant: "destructive", title: "Please select or define a task first." });
         return;
     }
@@ -195,7 +184,7 @@ export function CheckinForm() {
     setAiSuggestions(null);
 
     try {
-        const suggestions = await dailyPlannerAI({ task, role: profile.role });
+        const suggestions = await dailyPlannerAI({ task: tasks, role: profile.role });
         setAiSuggestions(suggestions);
     } catch (error) {
         console.error("AI brainstorming error:", error);
@@ -205,6 +194,12 @@ export function CheckinForm() {
     }
   };
 
+  const krOptions = useMemo(() => {
+    if (!keyResults) return [];
+    return keyResults.map(kr => ({ value: kr.id, label: `${kr.title}: ${kr.description}`}));
+  }, [keyResults]);
+
+
   return (
     <Card>
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -213,44 +208,31 @@ export function CheckinForm() {
           <CardDescription>Strategize your day for maximum impact.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Section 1: Priority Selection */}
+          
           <section className="space-y-4">
               <div className="flex justify-between items-center">
-                  <Label className="font-semibold text-base">Section 1: Priority Selection</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={handleBrainstorm} disabled={isAiLoading || !mainFocus}>
+                  <Label className="font-semibold text-base">Priority Selection</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={handleBrainstorm} disabled={isAiLoading || mainFocus.length === 0}>
                       {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
                       Brainstorm with AI
                   </Button>
               </div>
               <Controller
                 name="mainFocus"
-                control={form.control}
+                control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value || ''}>
-                    <SelectTrigger><SelectValue placeholder="Select your main focus..." /></SelectTrigger>
-                    <SelectContent>
-                      {isLoadingKR ? <SelectItem value="loading" disabled>Loading...</SelectItem> : (
-                        <>
-                          {missionFromYesterday && <SelectItem value={missionFromYesterday}>{missionFromYesterday}</SelectItem>}
-                          {keyResults?.map((kr) => (<SelectItem key={kr.id} value={kr.id}>{kr.title}: {kr.description}</SelectItem>))}
-                        </>
-                      )}
-                      <SelectItem value="custom">Custom Task</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <MultiSelect
+                    options={[...krOptions, { value: 'custom', label: 'Custom Task' }]}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    placeholder="Select your main focus areas..."
+                    animation={0}
+                    maxCount={3}
+                  />
                 )}
               />
             {errors.mainFocus && <p className="text-sm text-destructive">{`${errors.mainFocus.message}`}</p>}
-            {form.watch('mainFocus') === 'custom' && (<Input {...form.register('customTask')} placeholder="Type your custom task" className="mt-2"/>)}
-            {selectedKR && (
-              <Card className="mt-2 bg-muted/50 p-4 text-sm">
-                <CardHeader className="p-0 mb-2"><CardTitle className="text-base">{selectedKR.title}: {selectedKR.description}</CardTitle></CardHeader>
-                <CardContent className="p-0 space-y-1">
-                  <p><strong>Current Progress:</strong> {selectedKR.currentProgress} of {selectedKR.target} completed</p>
-                  <p><strong>Priority:</strong> <Badge variant={selectedKR.priority === 'High' ? 'destructive' : 'secondary'}>{selectedKR.priority}</Badge></p>
-                </CardContent>
-              </Card>
-            )}
+            {form.watch('mainFocus')?.includes('custom') && (<Input {...form.register('customTask')} placeholder="Type your custom task" className="mt-2"/>)}
             {isAiLoading && (<div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /><span>AI is thinking...</span></div>)}
             {aiSuggestions && (
                 <Card className="bg-primary/10 border-primary/50">
@@ -260,68 +242,49 @@ export function CheckinForm() {
             )}
           </section>
 
-          {/* Section 2: Time-Blocked Planning is removed for now to simplify */}
-
-          {/* Section 3: Multi-Win Connection */}
           <section className="space-y-4">
-            <Label className="font-semibold text-base">Section 2: Multi-Win Connection</Label>
-            <div className="space-y-2">
-              {[
-                { id: 'photos', label: 'Capture photos/video for Omuto Pulse' },
-                { id: 'volunteers', label: 'Identify potential volunteers/partners' },
-                { id: 'data', label: 'Collect data for impact reporting' },
-                { id: 'template', label: 'Test new process or template' }
-              ].map(item => (
-                <div key={item.id} className="flex items-center space-x-2">
-                  <Controller name="multiWinConnections" control={form.control} render={({ field }) => (<Checkbox id={item.id} checked={field.value?.includes(item.id)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item.id]) : field.onChange(field.value?.filter((v: string) => v !== item.id))}}/>)} />
-                  <Label htmlFor={item.id} className="cursor-pointer">{item.label}</Label>
-                </div>
-              ))}
-              <Input {...form.register('otherConnection')} placeholder="Other..." />
-            </div>
-          </section>
-
-          {/* Section 4: Resource & Support Check */}
-          <section className="space-y-4">
-            <Label className="font-semibold text-base">Section 3: Resource & Support Check</Label>
-            <div className="grid grid-cols-2 gap-4">
-               <div className="space-y-2">
-                  <Label>Transport</Label>
-                  <Controller name="transport" control={form.control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue placeholder="Transport..." /></SelectTrigger><SelectContent><SelectItem value="Available">Available</SelectItem><SelectItem value="Needed">Needed</SelectItem><SelectItem value="Confirmed">Confirmed</SelectItem></SelectContent></Select>)}/>
+            <Label className="font-semibold text-base">Logistics</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Work Location</Label>
+                <Controller
+                  name="workLocation"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger><SelectValue placeholder="Select location..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Office">Office</SelectItem>
+                        <SelectItem value="Field">Field</SelectItem>
+                        <SelectItem value="Home">Home</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                 {errors.workLocation && <p className="text-sm text-destructive">{`${errors.workLocation.message}`}</p>}
               </div>
               <div className="space-y-2">
-                  <Label>Budget (UGX)</Label>
-                  <Input {...form.register('budget')} type="number" placeholder="e.g., 50000" />
+                <Label>Budget Required (UGX)</Label>
+                <Input {...form.register('budget')} type="number" placeholder="e.g., 50000" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Materials</Label>
-              <Textarea {...form.register('materials')} placeholder="List required items..." />
-            </div>
-            <div className="space-y-2">
-              <Label>Team Support</Label>
+              <Label>Support Needed From</Label>
                <Controller
                 name="teamSupport"
-                control={form.control}
+                control={control}
                 render={({ field }) => (
-                  <Select onValueChange={(value) => field.onChange([value])} value={field.value?.[0]}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a team member..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teamMembers?.map((member) => (
-                        <SelectItem key={member.id} value={member.name}>
-                          {member.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <MultiSelect
+                    options={teamMembers?.map(m => ({ value: m.name, label: m.name })) || []}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    placeholder="Select team members..."
+                    animation={0}
+                    maxCount={2}
+                  />
                 )}
               />
-            </div>
-            <div className="space-y-2">
-               <Label>Potential Challenges</Label>
-              <Textarea {...form.register('challenges')} placeholder="What might go wrong? How can you prepare?" />
             </div>
           </section>
         </CardContent>

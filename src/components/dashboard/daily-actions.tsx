@@ -8,12 +8,8 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { LogOut } from 'lucide-react';
+import { LogIn, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { NewCheckinForm } from './new-checkin-form';
-import { NewCheckoutForm } from './new-checkout-form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
 
 export function DailyActions() {
   return (
@@ -21,22 +17,32 @@ export function DailyActions() {
       <CardHeader>
         <CardTitle>Daily Hub</CardTitle>
         <CardDescription>
-          Your one-stop-shop for daily planning and reporting.
+          Start your day with a plan and end it with a report.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="check-in">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="check-in">Check In</TabsTrigger>
-            <TabsTrigger value="check-out">Check Out</TabsTrigger>
-          </TabsList>
-          <TabsContent value="check-in" className="pt-4">
-             <NewCheckinForm />
-          </TabsContent>
-          <TabsContent value="check-out" className="pt-4">
-            <NewCheckoutForm />
-          </TabsContent>
-        </Tabs>
+      <CardContent className="grid grid-cols-1 gap-4">
+        <Button asChild size="lg" className="h-16">
+          <Link href="/forms">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2">
+                <LogIn className="h-5 w-5" />
+                <span className="text-lg font-semibold">Daily Check-in</span>
+              </div>
+              <p className="text-xs font-normal">Plan your day's mission</p>
+            </div>
+          </Link>
+        </Button>
+        <Button asChild size="lg" variant="secondary" className="h-16">
+          <Link href="/forms?tab=check-out">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2">
+                <LogOut className="h-5 w-5" />
+                <span className="text-lg font-semibold">Daily Check-out</span>
+              </div>
+              <p className="text-xs font-normal">Report your impact</p>
+            </div>
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );
