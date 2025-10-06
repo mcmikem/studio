@@ -13,7 +13,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect } from 'react';
-import { Slider } from '@/components/ui/slider';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
@@ -79,6 +78,11 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
     () => transportCost + staffTimeCost + materialsCost,
     [transportCost, staffTimeCost, materialsCost]
   );
+  
+  useEffect(() => {
+    setActualCost(preActivityCost);
+  }, [preActivityCost]);
+
 
   const indirectValue = useMemo(() => {
     return multipliers.reduce(
@@ -210,33 +214,33 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
             <h3 className="font-semibold text-lg">Estimated Costs</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Transport: {formatCurrency(transportCost)}</Label>
-                <Slider
-                  defaultValue={[15000]}
-                  min={0}
-                  max={50000}
-                  step={1000}
-                  onValueChange={(value) => setTransportCost(value[0])}
+                <Label htmlFor="transportCost">Transport Cost</Label>
+                <Input
+                  id="transportCost"
+                  type="number"
+                  step="1000"
+                  value={transportCost}
+                  onChange={(e) => setTransportCost(Number(e.target.value))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Staff Time: {formatCurrency(staffTimeCost)}</Label>
-                <Slider
-                  defaultValue={[20000]}
-                  min={0}
-                  max={100000}
-                  step={1000}
-                  onValueChange={(value) => setStaffTimeCost(value[0])}
+                <Label htmlFor="staffTimeCost">Staff Time Cost</Label>
+                <Input
+                  id="staffTimeCost"
+                  type="number"
+                  step="1000"
+                  value={staffTimeCost}
+                  onChange={(e) => setStaffTimeCost(Number(e.target.value))}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Materials: {formatCurrency(materialsCost)}</Label>
-                <Slider
-                  defaultValue={[10000]}
-                  min={0}
-                  max={50000}
-                  step={1000}
-                  onValueeChange={(value) => setMaterialsCost(value[0])}
+                <Label htmlFor="materialsCost">Materials Cost</Label>
+                <Input
+                  id="materialsCost"
+                  type="number"
+                  step="1000"
+                  value={materialsCost}
+                  onChange={(e) => setMaterialsCost(Number(e.target.value))}
                 />
               </div>
             </div>
@@ -368,3 +372,5 @@ export function ActivityReportForm({ isPage = false }: { isPage?: boolean }) {
 
   return CalculatorForm;
 }
+
+    
