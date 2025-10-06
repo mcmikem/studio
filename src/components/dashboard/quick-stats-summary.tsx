@@ -1,61 +1,112 @@
-'use client';
+"use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { School, Users, Briefcase, HandCoins, Image as ImageIcon } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Skeleton } from "../ui/skeleton"
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy, limit } from "firebase/firestore"
+import type { ImpactMetric } from "@/lib/types"
+import { Target, Users, HandCoins, Trees } from "lucide-react"
+import Link from "next/link"
 
-const quickStats = [
-    { title: 'Youth Reached', value: 247, target: 500, icon: Users },
-    { title: 'Schools Visited', value: 4, target: 8, icon: School },
-    { title: 'Trees Planted', value: 612, target: 700, icon: Briefcase }, // Using Briefcase as a placeholder
-    { title: 'Cycle of Dignity', value: 1350000, target: 2000000, icon: HandCoins, isCurrency: true },
-    { title: 'Pulse Stories', value: 3, icon: ImageIcon },
-    { title: 'Soap Units Sold', value: 45, icon: Briefcase }, // Placeholder icon
-];
+// Define which metrics to feature on the dashboard
+const FEATURED_METRICS = [
+  "Cycle of Dignity Fundraising",
+  "Girls Supported (RED)",
+  "Youth Reached",
+  "Trees Planted (GreenSchools)",
+]
+
+const metricIcons: { [key: string]: React.ElementType } = {
+  "Cycle of Dignity Fundraising": HandCoins,
+  "Girls Supported (RED)": Users,
+  "Youth Reached": Users,
+  "Trees Planted (GreenSchools)": Trees,
+  default: Target,
+}
 
 export function QuickStatsSummary() {
-  return (
-    <div>
-      <h2 className="text-lg font-semibold mb-2 ml-1">🌍 Our Impact This Week</h2>
-       <Carousel
-        opts={{
-          align: "start",
-          dragFree: true,
-        }}
-        className="w-full"
-      >
-        <CarouselContent>
-          {quickStats.map((stat, index) => {
-            const Icon = stat.icon;
-            const progress = stat.target ? (stat.value / stat.target) * 100 : 0;
-            const displayValue = stat.isCurrency ? new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(stat.value) : stat.value;
-            const displayTarget = stat.target ? (stat.isCurrency ? new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(stat.target) : stat.target) : null;
+  const firestore = useFirestore()
+  const metricsQuery = useMemoFirebase(() => {
+    if (!firestore) return null
+    // Fetch only the featured metrics
+    return query(
+      collection(firestore, "impact-metrics"),
+      where("metric", "in", FEATURED_METRICS),
+      orderBy("metric")
+    )
+  }, [firestore])
 
-            return (
-              <CarouselItem key={index} className="basis-2/3 sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/6">
-                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{displayValue}</div>
-                        {stat.target && (
-                            <>
-                                <p className="text-xs text-muted-foreground">
-                                    {`of ${displayTarget}`}
-                                </p>
-                                <Progress value={progress} className="mt-2 h-2" />
-                            </>
-                        )}
-                    </CardContent>
-                </Card>
-              </CarouselItem>
-            );
-          })}
-        </CarouselContent>
-      </Carousel>
+  const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery)
+
+  // Ensure consistent order
+  const displayMetrics = useMemo(() => {
+    if (!metrics) return []
+    return FEATURED_METRICS.map(
+      (fm) =>
+        metrics.find((m) => m.metric === fm) || {
+          id: fm,
+          metric: fm,
+          current: 0,
+          target: 0,
+          isPlaceholder: true,
+        }
+    )
+  }, [metrics])
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {(isLoading ? Array(4).fill(0) : displayMetrics).map((metric, i) => {
+        if (isLoading || !metric) {
+          return (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-5 w-2/3" />
+                <Skeleton className="h-6 w-6" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-1/2" />
+                <Skeleton className="h-4 w-1/3 mt-1" />
+              </CardContent>
+            </Card>
+          )
+        }
+
+        const Icon = metricIcons[metric.metric] || metricIcons.default
+        const progress =
+          metric.target > 0 ? (metric.current / metric.target) * 100 : 0
+        const formatValue = (val: number) =>
+          metric.unit === "UGX"
+            ? new Intl.NumberFormat("en-UG", {
+                style: "currency",
+                currency: "UGX",
+                minimumFractionDigits: 0,
+              }).format(val)
+            : `${val.toLocaleString()} ${metric.unit || ""}`.trim()
+
+        return (
+          <Card key={metric.id}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {metric.metric}
+              </CardTitle>
+              <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {formatValue(metric.current)}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Target: {formatValue(metric.target)}
+              </p>
+            </CardContent>
+          </Card>
+        )
+      })}
     </div>
-  );
+  )
 }

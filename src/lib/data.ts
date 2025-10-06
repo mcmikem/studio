@@ -50,10 +50,14 @@ export const sampleUsers: Omit<User, 'id'>[] = [
     { name: 'McMike Mutumba', email: 'mcmike@omuto.org', role: 'Executive Director' },
     { name: 'McMike Mutumba', email: '1mark2mike@gmail.com', role: 'Executive Director' },
     { name: 'Dianah Nansikombi', email: 'programs@omuto.org', role: 'Programs & Partnerships Manager' },
+    { name: 'Dianah Nansikombi', email: 'nansikombidianah@gmail.com', role: 'Programs & Partnerships Manager' },
     { name: 'Kasirye Constantine', email: 'operations@omuto.org', role: 'Operations & Field Manager' },
+    { name: 'Kasirye Constantine', email: 'kasirye.connie@gmail.com', role: 'Operations & Field Manager' },
     { name: 'Nsereko Alex', email: 'communications@omuto.org', role: 'Media & Communications Lead' },
+    { name: 'Nsereko Alex', email: 'alex@omuto.org', role: 'Media & Communications Lead' },
     { name: 'Bwire Bashir', email: 'bashir@omuto.org', role: 'Field Coordinator' },
     { name: 'John Paul Akera', email: 'partnerships@omuto.org', role: 'Resource Mobilization Lead' },
+    { name: 'John Paul Akera', email: 'akerajonpaul@gmail.com', role: 'Resource Mobilization Lead' },
     { name: 'Omuto General', email: 'info@omuto.org', role: 'Administrator' },
 ];
 
@@ -77,8 +81,9 @@ export const sampleProjects: Omit<Project, 'id' | 'createdAt'>[] = [
 
 export const sampleImpactMetrics: Omit<ImpactMetric, 'id'>[] = [
     { metric: 'Girls Supported (RED)', target: 600, current: 520, unit: 'girls', valuePerUnit: 25000 },
-    { metric: 'Trees Planted (GreenSchools)', target: 700, current: 510, unit: 'trees', valuePerUnit: 5000 },
+    { metric: 'Trees Planted (GreenSchools)', target: 700, current: 190, unit: 'trees', valuePerUnit: 5000 },
     { metric: 'Cycle of Dignity Fundraising', target: 2000000, current: 800000, unit: 'UGX', valuePerUnit: 1 },
+    { metric: 'Youth Reached', target: 1000, current: 247, unit: 'youth', valuePerUnit: 10000 },
 ];
 
 export const sampleAlerts: Omit<Alert, 'id' | 'createdAt'>[] = [
