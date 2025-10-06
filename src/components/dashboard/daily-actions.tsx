@@ -7,10 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NewCheckoutForm } from './new-checkout-form';
-import { NewCheckinForm } from './new-checkin-form';
-import { LogIn, LogOut } from 'lucide-react';
+import { Button } from '../ui/button';
+import { LogIn, LogOut, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 export function DailyActions() {
   return (
@@ -18,29 +17,25 @@ export function DailyActions() {
       <CardHeader>
         <CardTitle>Daily Actions</CardTitle>
         <CardDescription>
-          Start and end your day with impact.
+          Start your day with a strategic plan and end it with a clear report.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="check-in">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="check-in">
-                <LogIn className="mr-2 h-4 w-4" />
-                Check In
-            </TabsTrigger>
-            <TabsTrigger value="check-out">
-                <LogOut className="mr-2 h-4 w-4" />
-                Check Out
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="check-in" className="pt-4">
-            <NewCheckinForm />
-          </TabsContent>
-          <TabsContent value="check-out" className="pt-4">
-            <NewCheckoutForm />
-          </TabsContent>
-        </Tabs>
+      <CardContent className="grid grid-cols-2 gap-4">
+        <Button asChild size="lg" className="h-20 flex-col gap-2">
+            <Link href="/forms">
+                <LogIn className="h-6 w-6" />
+                <span>Daily Check-in</span>
+            </Link>
+        </Button>
+        <Button asChild size="lg" className="h-20 flex-col gap-2" variant="secondary">
+             <Link href="/forms">
+                <LogOut className="h-6 w-6" />
+                <span>Daily Check-out</span>
+            </Link>
+        </Button>
       </CardContent>
     </Card>
   );
 }
+
+    

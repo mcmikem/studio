@@ -156,5 +156,16 @@ export type User = {
     role: string;
 }
 
+export type KeyResult = {
+  id: string;
+  title: string;
+  description: string;
+  currentProgress: number;
+  target: number;
+  deadline: string;
+  priority: 'High' | 'Medium' | 'Low';
+};
     
+    
+
     

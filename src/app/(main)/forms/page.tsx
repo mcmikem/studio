@@ -48,7 +48,11 @@ export default function FormsPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="check-in">
-          <CheckinForm />
+            <Card>
+                <CardContent className="p-0">
+                    <CheckinForm />
+                </CardContent>
+            </Card>
         </TabsContent>
         <TabsContent value="check-out">
           <CheckoutForm />
@@ -64,3 +68,5 @@ export default function FormsPage() {
     </div>
   );
 }
+
+    
