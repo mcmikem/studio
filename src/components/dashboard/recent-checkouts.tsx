@@ -9,6 +9,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
 import { tagColors } from '@/lib/data';
+import { MessageSquareText } from 'lucide-react';
 
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = checkout.timestamp ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) : 'Just now';
@@ -72,7 +73,12 @@ export function RecentCheckouts() {
         {checkouts && checkouts.length > 0 ? (
           checkouts.map((checkout) => <CheckoutItem key={checkout.id} checkout={checkout} />)
         ) : (
-          !isLoading && <p className="text-sm text-muted-foreground text-center py-4">No activity yet today. Post an update to get started!</p>
+          !isLoading && (
+            <div className="flex flex-col items-center justify-center h-24 text-center text-muted-foreground">
+                <MessageSquareText className="h-8 w-8" />
+                <p className="mt-2 text-sm">No activity yet today. Post an update to get started!</p>
+            </div>
+          )
         )}
       </CardContent>
     </Card>
