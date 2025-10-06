@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -130,6 +131,18 @@ function Step2({ form, keyResults, isLoadingKR, selectedKR }: { form: any, keyRe
 }
 
 function Step3({ form, keyResults, onSubmit }: { form: any, keyResults: KeyResult[] | null, onSubmit: () => void }) {
+    const { formState, getValues } = form;
+    const values = getValues();
+    const mainFocusValue = values.mainFocus;
+    let mainFocusDisplay = 'N/A';
+    if (mainFocusValue === 'custom') {
+        mainFocusDisplay = values.customTask || 'Custom Task Not Specified';
+    } else {
+        mainFocusDisplay = keyResults?.find(kr => kr.id === mainFocusValue)?.description || 'Selected KR not found';
+    }
+
+    const supportNeeded = [values.transport, values.materials].filter(Boolean).join(', ');
+
     return (
         <>
             <CardHeader>
@@ -137,18 +150,38 @@ function Step3({ form, keyResults, onSubmit }: { form: any, keyResults: KeyResul
                 <CardDescription>Review your plan before starting your day.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p><strong>Main Focus:</strong> {form.getValues('mainFocus') === 'custom' ? form.getValues('customTask') : keyResults?.find(kr => kr.id === form.getValues('mainFocus'))?.description}</p>
+                <p><strong>Main Focus:</strong> {mainFocusDisplay}</p>
                 <p><strong>Time Allocation:</strong> 8 hours</p>
-                <p><strong>Multi-Win Goals:</strong> {form.getValues('multiWinConnections')?.join(', ')}</p>
-                <p><strong>Support Needed:</strong> {form.getValues('transport')}, {form.getValues('materials')}</p>
-                <p><strong>Risk Mitigation:</strong> {form.getValues('challenges')}</p>
-                <Button className="w-full" onClick={onSubmit} disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Check />} Approve & Start Day
+                <p><strong>Multi-Win Goals:</strong> {values.multiWinConnections?.join(', ')}</p>
+                <p><strong>Support Needed:</strong> {supportNeeded || "None specified"}</p>
+                <p><strong>Risk Mitigation:</strong> {values.challenges || "None specified"}</p>
+                <Button className="w-full" onClick={onSubmit} disabled={formState.isSubmitting}>
+                    {formState.isSubmitting ? <Loader2 className="animate-spin" /> : <Check />} Approve & Start Day
                 </Button>
             </CardContent>
         </>
     )
 }
+
+const CustomFooter = () => {
+  const { activeStep, isLastStep, isFirstStep, nextStep, prevStep, steps } = useStepper();
+
+  if (isLastStep) {
+    return null;
+  }
+
+  return (
+    <CardFooter className="flex w-full justify-end gap-2 pt-4">
+      <Button disabled={isFirstStep} onClick={prevStep} size="sm" variant="secondary">
+        Prev
+      </Button>
+      <Button onClick={nextStep} size="sm">
+        Next
+      </Button>
+    </CardFooter>
+  );
+};
+
 
 export function CheckinForm() {
   const { toast } = useToast();
@@ -224,27 +257,3 @@ export function CheckinForm() {
   );
 }
 
-const CustomFooter = () => {
-  const {
-    activeStep,
-    isLastStep,
-    isFirstStep,
-    nextStep,
-    prevStep,
-  } = useStepper();
-
-  return (
-    <CardFooter className="flex w-full justify-end gap-2 pt-4">
-      {activeStep !== 0 && (
-        <Button onClick={prevStep} size="sm" variant="secondary">
-          Prev
-        </Button>
-      )}
-      {!isLastStep && (
-        <Button onClick={nextStep} size="sm">
-            Next
-        </Button>
-      )}
-    </CardFooter>
-  );
-};
