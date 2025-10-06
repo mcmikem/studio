@@ -38,6 +38,7 @@ import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-f
 import { MultiSelect } from '../ui/multi-select';
 import { Separator } from '../ui/separator';
 import { Checkbox } from '../ui/checkbox';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const timeBlockSchema = z.object({
   startTime: z.string().min(1, 'Required'),
