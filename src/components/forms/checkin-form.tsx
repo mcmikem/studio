@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -38,6 +39,7 @@ import { Loader2, Check } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
+import { cn } from '@/lib/utils';
 
 const checkinSchema = z.object({
   mainFocus: z.string().min(1, 'Please select a main focus.'),
@@ -335,7 +337,6 @@ export function CheckinForm() {
     resolver: zodResolver(checkinSchema),
     defaultValues: {
       multiWinConnections: [],
-      teamSupport: [],
       budget: 0,
     },
   });
