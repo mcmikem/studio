@@ -68,7 +68,7 @@ export function MyPriorities() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        {isLoading || isSeeding ? (
+        {isLoading ? (
           <>
             <Skeleton className="h-5 w-3/4" />
             <Skeleton className="h-5 w-4/5" />
