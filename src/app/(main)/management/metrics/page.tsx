@@ -6,7 +6,7 @@ import {
   collection,
   query,
   orderBy,
-  serverTimestamp,
+  doc,
 } from 'firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
@@ -26,6 +26,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,9 +52,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Target } from 'lucide-react';
+import { PlusCircle, Target, Edit, Trash2 } from 'lucide-react';
 import type { ImpactMetric } from '@/lib/types';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 const metricSchema = z.object({
   metric: z.string().min(3, 'Metric name is required.'),
@@ -53,7 +64,16 @@ const metricSchema = z.object({
   valuePerUnit: z.coerce.number().min(0, 'Value per unit cannot be negative.').optional(),
 });
 
-function NewMetricForm({ onFormSubmit }: { onFormSubmit: () => void }) {
+type MetricFormData = z.infer<typeof metricSchema>;
+
+
+function MetricForm({ 
+    metric,
+    onFormSubmit 
+}: { 
+    metric?: ImpactMetric;
+    onFormSubmit: () => void 
+}) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const {
@@ -62,9 +82,9 @@ function NewMetricForm({ onFormSubmit }: { onFormSubmit: () => void }) {
     control,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm({
+  } = useForm<MetricFormData>({
     resolver: zodResolver(metricSchema),
-    defaultValues: {
+    defaultValues: metric || {
         current: 0,
         target: 100,
         valuePerUnit: 0,
@@ -73,12 +93,23 @@ function NewMetricForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 
   const onSubmit = async (data: z.infer<typeof metricSchema>) => {
     if (!firestore) return;
-    const metricsCollection = collection(firestore, 'impact-metrics');
-    addDocumentNonBlocking(metricsCollection, data);
-    toast({
-      title: 'Metric Added!',
-      description: `${data.metric} has been added to your dashboard.`,
-    });
+
+    if (metric) {
+        const metricRef = doc(firestore, 'impact-metrics', metric.id);
+        updateDocumentNonBlocking(metricRef, data);
+        toast({
+            title: 'Metric Updated!',
+            description: `${data.metric} has been successfully updated.`,
+        });
+    } else {
+        const metricsCollection = collection(firestore, 'impact-metrics');
+        addDocumentNonBlocking(metricsCollection, data);
+        toast({
+          title: 'Metric Added!',
+          description: `${data.metric} has been added to your dashboard.`,
+        });
+    }
+    
     reset();
     onFormSubmit();
   };
@@ -118,7 +149,7 @@ function NewMetricForm({ onFormSubmit }: { onFormSubmit: () => void }) {
       </div>
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Adding...' : 'Add Metric'}
+          {isSubmitting ? (metric ? 'Saving...' : 'Adding...') : (metric ? 'Save Changes' : 'Add Metric')}
         </Button>
       </DialogFooter>
     </form>
@@ -126,7 +157,9 @@ function NewMetricForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 }
 
 export default function MetricsPage() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
+  const [editingMetric, setEditingMetric] = useState<ImpactMetric | null>(null);
+
   const firestore = useFirestore();
   const metricsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -134,6 +167,18 @@ export default function MetricsPage() {
   }, [firestore]);
 
   const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery);
+
+  const handleDelete = (metricId: string) => {
+    if (!firestore) return;
+    const metricRef = doc(firestore, 'impact-metrics', metricId);
+    deleteDocumentNonBlocking(metricRef);
+    toast({
+        title: "Metric Deleted",
+        description: "The metric has been removed from your dashboard.",
+    });
+  };
+
+  const { toast } = useToast();
 
   return (
     <Card>
@@ -144,7 +189,7 @@ export default function MetricsPage() {
             Manage the Key Performance Indicators for the organization.
           </CardDescription>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -158,7 +203,7 @@ export default function MetricsPage() {
                 Define a new KPI to track on the main dashboard.
               </DialogDescription>
             </DialogHeader>
-            <NewMetricForm onFormSubmit={() => setIsDialogOpen(false)} />
+            <MetricForm onFormSubmit={() => setIsNewDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </CardHeader>
@@ -171,6 +216,7 @@ export default function MetricsPage() {
               <TableHead>Target</TableHead>
               <TableHead>Value/Unit</TableHead>
               <TableHead>Progress</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -192,6 +238,9 @@ export default function MetricsPage() {
                   <TableCell>
                     <Skeleton className="h-5 w-40" />
                   </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-20 ml-auto" />
+                  </TableCell>
                 </TableRow>
               ))}
             {metrics && metrics.length > 0 ? (
@@ -211,6 +260,32 @@ export default function MetricsPage() {
                         </span>
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                       <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => setEditingMetric(metric)}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete the metric "{metric.metric}".
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(metric.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                       </div>
+                    </TableCell>
                   </TableRow>
                 );
               })
@@ -218,7 +293,7 @@ export default function MetricsPage() {
               !isLoading && (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={6}
                     className="h-48 text-center text-muted-foreground"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
@@ -235,6 +310,17 @@ export default function MetricsPage() {
           </TableBody>
         </Table>
       </CardContent>
+      {editingMetric && (
+         <Dialog open={!!editingMetric} onOpenChange={(open) => !open && setEditingMetric(null)}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Edit Impact Metric</DialogTitle>
+                    <DialogDescription>Update the details for "{editingMetric.metric}".</DialogDescription>
+                </DialogHeader>
+                <MetricForm metric={editingMetric} onFormSubmit={() => setEditingMetric(null)} />
+            </DialogContent>
+        </Dialog>
+      )}
     </Card>
   );
 }
