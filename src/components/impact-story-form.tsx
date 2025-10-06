@@ -185,7 +185,7 @@ export function ImpactStoryGenerator() {
           {dataToDisplay && (
              <Card className="bg-muted/50 p-4">
                  <CardTitle className="text-lg">{isCheckout ? `Update from ${dataToDisplay.name}` : (dataToDisplay as Activity).title}</CardTitle>
-                 <CardDescription>Logged by {dataToDisplay.userName || dataToDisplay.name}</CardDescription>
+                 <CardDescription>Logged by {isCheckout ? dataToDisplay.name : (dataToDisplay as Activity).userName}</CardDescription>
                  <CardContent className="text-sm pt-4 space-y-1">
                     {isCheckout ? (
                        <>
