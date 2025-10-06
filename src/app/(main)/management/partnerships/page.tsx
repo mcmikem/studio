@@ -307,17 +307,15 @@ export default function PartnershipsPage() {
           </TableBody>
         </Table>
       </CardContent>
-       {editingPartnership && (
-         <Dialog open={!!editingPartnership} onOpenChange={(open) => !open && setEditingPartnership(null)}>
-            <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Edit Partnership</DialogTitle>
-                    <DialogDescription>Update the details for "{editingPartnership.name}".</DialogDescription>
-                </DialogHeader>
-                <PartnershipForm partnership={editingPartnership} onFormSubmit={() => setEditingPartnership(null)} />
-            </DialogContent>
-        </Dialog>
-      )}
+       <Dialog open={!!editingPartnership} onOpenChange={(open) => !open && setEditingPartnership(null)}>
+         <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+                <DialogTitle>Edit Partnership</DialogTitle>
+                <DialogDescription>Update the details for "{editingPartnership.name}".</DialogDescription>
+            </DialogHeader>
+            <PartnershipForm partnership={editingPartnership} onFormSubmit={() => setEditingPartnership(null)} />
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

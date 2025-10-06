@@ -32,7 +32,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
 const statusIcons: { [key: string]: React.ReactNode } = {
@@ -78,14 +78,13 @@ function ProgramForm({
     reset,
   } = useForm<ProgramFormData>({
     resolver: zodResolver(programSchema),
-    defaultValues: {
-      title: program?.title || '',
-      description: program?.description || '',
-      lead: program?.lead || '',
-      status: program?.status || 'On Track',
-      deadline: program?.deadline || '',
-      objectives: program?.objectives.join('\n') || '',
-      valuePerObjective: program?.valuePerObjective || 0,
+    defaultValues: program ? {
+      ...program,
+      objectives: program.objectives.join('\n'),
+      valuePerObjective: program.valuePerObjective || 0,
+    } : {
+      status: 'On Track',
+      valuePerObjective: 0,
     },
   });
 
@@ -100,7 +99,7 @@ function ProgramForm({
     if (program) {
       // Update existing program
       const programRef = doc(firestore, 'programs', program.id);
-      await updateDoc(programRef, programData);
+      updateDocumentNonBlocking(programRef, programData);
       toast({
         title: 'Program Updated!',
         description: `${data.title} has been successfully updated.`,
