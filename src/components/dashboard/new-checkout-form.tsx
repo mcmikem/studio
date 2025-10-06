@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
@@ -46,30 +45,22 @@ export function NewCheckoutForm() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Report Your Impact</CardTitle>
-        <CardDescription>What did you achieve today?</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="task-update" className="sr-only">What did you achieve?</Label>
-            <Textarea
-              id="task-update"
-              placeholder="e.g., Finalized RED Campaign proposal and met with 2 new potential partners. #Fundraising #Partnerships"
-              value={task}
-              onChange={(e) => setTask(e.target.value)}
-              required
-              className="min-h-[80px]"
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading || !task.trim()}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            🏁 Check Out & Submit Report
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+        <Label htmlFor="task-update" className="sr-only">What did you achieve?</Label>
+        <Textarea
+            id="task-update"
+            placeholder="e.g., Finalized RED Campaign proposal and met with 2 new potential partners. #Fundraising #Partnerships"
+            value={task}
+            onChange={(e) => setTask(e.target.value)}
+            required
+            className="min-h-[80px]"
+        />
+        </div>
+        <Button type="submit" className="w-full" disabled={loading || !task.trim()}>
+        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        🏁 Check Out & Post Update
+        </Button>
+    </form>
   );
 }

@@ -2,13 +2,11 @@
 
 import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { useUser } from '@/firebase';
-import { RecentCheckouts } from '@/components/dashboard/recent-checkouts';
-import { NewCheckoutForm } from '@/components/dashboard/new-checkout-form';
 import { ProgramsOverview } from '@/components/dashboard/programs-overview';
-import { MyPriorities } from '@/components/dashboard/my-priorities';
-import { TeamToday } from '@/components/dashboard/team-today';
 import { ImpactOverview } from '@/components/dashboard/impact-overview';
 import { Alerts } from '@/components/dashboard/alerts';
+import { DailyActions } from '@/components/dashboard/daily-actions';
+import { TeamActivityFeed } from '@/components/dashboard/team-activity-feed';
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -45,20 +43,24 @@ export default function DashboardPage() {
         <ImpactOverview />
         <ProgramsOverview />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 flex flex-col gap-6">
-            <DashboardCalendar />
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <RecentCheckouts />
-                <NewCheckoutForm />
-            </div>
+            <TeamActivityFeed />
           </div>
           <div className="flex flex-col gap-6">
-            <MyPriorities />
-            <TeamToday />
-            <Alerts />
+             <DailyActions />
           </div>
         </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+           <div className="lg:col-span-2">
+             <DashboardCalendar />
+           </div>
+           <div>
+             <Alerts />
+           </div>
+        </div>
+
       </div>
 
       <footer className="text-center text-xs text-muted-foreground mt-4">

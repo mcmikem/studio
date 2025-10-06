@@ -26,10 +26,12 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, where, orderBy, limit } from 'firebase/firestore';
 import { useEffect, useMemo } from 'react';
 import type { Checkout, Program } from '@/lib/types';
+import { Textarea } from '../ui/textarea';
 
 
 const checkinSchema = z.object({
   primaryMission: z.string().min(1, 'You must select a primary mission.'),
+  missionDetails: z.string().optional(),
 });
 
 type CheckinFormData = z.infer<typeof checkinSchema>;
@@ -45,9 +47,12 @@ export function CheckinForm() {
     formState: { errors, isSubmitting },
     reset,
     setValue,
+    watch,
   } = useForm<CheckinFormData>({
     resolver: zodResolver(checkinSchema),
   });
+
+  const selectedMission = watch('primaryMission');
 
   const recentCheckoutQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -101,9 +106,14 @@ export function CheckinForm() {
         });
         return;
     }
+    
+    let mission = data.primaryMission;
+    if (mission === "Other..." && data.missionDetails) {
+        mission = data.missionDetails;
+    }
 
     const checkinData = {
-        ...data,
+        primaryMission: mission,
         userId: user.uid,
         name: user.displayName || user.email,
         timestamp: serverTimestamp(),
@@ -154,6 +164,16 @@ export function CheckinForm() {
               <p className="text-sm text-destructive">
                 {errors.primaryMission.message}
               </p>
+            )}
+             {selectedMission === 'Other...' && (
+              <div className="space-y-2">
+                <Label htmlFor="mission-details">Please specify your mission</Label>
+                <Textarea
+                  id="mission-details"
+                  placeholder="e.g., Follow up with potential partners for the RED Campaign."
+                  {...register('missionDetails')}
+                />
+              </div>
             )}
           </div>
           

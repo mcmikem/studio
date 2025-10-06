@@ -1,7 +1,6 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { RecentCheckout } from '@/lib/types';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
@@ -49,12 +48,7 @@ export function RecentCheckouts() {
   const { data: checkouts, isLoading } = useCollection<RecentCheckout>(checkoutsQuery);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Team Activity Feed</CardTitle>
-        <CardDescription>Real-time updates from departments.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+      <div className="space-y-4">
         {isLoading && (
             Array.from({ length: 5 }).map((_, i) => (
                  <div key={i} className="flex items-center space-x-4">
@@ -80,7 +74,6 @@ export function RecentCheckouts() {
             </div>
           )
         )}
-      </CardContent>
-    </Card>
+      </div>
   );
 }
