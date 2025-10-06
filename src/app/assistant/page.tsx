@@ -53,22 +53,23 @@ export default function AssistantPage() {
     reset();
 
     try {
-      // Start with an empty assistant message
+      // Add a placeholder for the assistant's response
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
-      const responseStream = await streamAssistant(prompt);
+      const stream = await streamAssistant(prompt);
       
-      // The streamAssistant function in the current implementation returns the full string.
-      // A true streaming implementation would return a stream object to iterate over.
-      // Given the current implementation, we just set the content once.
-      setMessages(prev => {
-        const updatedMessages = [...prev];
-        const lastMessageIndex = updatedMessages.length - 1;
-        if (updatedMessages[lastMessageIndex].role === 'assistant') {
-          updatedMessages[lastMessageIndex].content = responseStream;
+      for await (const chunk of stream) {
+        if (chunk.text) {
+          setMessages(prev => {
+            const updatedMessages = [...prev];
+            const lastMessage = updatedMessages[updatedMessages.length - 1];
+            if (lastMessage.role === 'assistant') {
+              lastMessage.content += chunk.text;
+            }
+            return updatedMessages;
+          });
         }
-        return updatedMessages;
-      });
+      }
 
     } catch (e) {
       console.error(e);
@@ -154,8 +155,8 @@ export default function AssistantPage() {
                   )}
                 </div>
               ))}
-              {isLoading && messages[messages.length -1]?.role === 'user' && (
-                <div className="flex items-start gap-3">
+              {isLoading && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
+                 <div className="flex items-start gap-3">
                     <Avatar className="h-9 w-9 border">
                       <AvatarFallback>
                         <Bot />

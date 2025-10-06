@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -63,7 +64,7 @@ This is your knowledge base. It is the complete operational DNA of Omuto Foundat
 - **KR2 (GreenSchools)**: Plant remaining 510 trees (of 700) by Oct 25.
 - **KR3 (RED Campaign)**: Deliver sessions to 200 parents & 50 teachers by Oct 31.
 - **KR4 (Partnerships)**: Secure 6 new partnership commitments by Oct 31.
-- **KR5 (Football Gala)**: Complete framework (venue, budget, etc.) by Oct 28.
+- "KR5 (Football Gala)": Complete framework (venue, budget, etc.) by Oct 28.
 - **KR6 (YAP Chapters)**: Standardize SOPs for volunteers by Oct 25.
 - **KR7 (Data)**: Implement field mapping and digital tracking system by Oct 31.
 - **KR8 (Dignity Pads)**: Create 10 sample units of 5 prototype types by Oct 21.
@@ -219,17 +220,22 @@ const getPartnershipsTool = ai.defineTool(
 
 const formatDateSafe = (dateValue: any) => {
   if (!dateValue) return 'N/A';
-  if (dateValue instanceof Timestamp) {
-    return dateValue.toDate().toLocaleString();
-  }
-  if (typeof dateValue === 'string') {
-    return new Date(dateValue).toLocaleString();
-  }
-  if (dateValue.toDate && typeof dateValue.toDate === 'function') {
-     return dateValue.toDate().toLocaleString();
+  try {
+    if (dateValue instanceof Timestamp) {
+        return dateValue.toDate().toLocaleString();
+    }
+    if (typeof dateValue === 'string') {
+        return new Date(dateValue).toLocaleString();
+    }
+    if (dateValue.toDate && typeof dateValue.toDate === 'function') {
+        return dateValue.toDate().toLocaleString();
+    }
+  } catch (e) {
+    // fall through
   }
   return 'Invalid Date';
 };
+
 
 const getRecentCheckoutsTool = ai.defineTool(
     {
@@ -292,18 +298,10 @@ export const assistantFlow = ai.defineFlow(
 
 
 export async function streamAssistant(prompt: string) {
-    const { stream, response } = ai.generateStream({
+    const { stream } = ai.generateStream({
         prompt: prompt,
         system: KNOWLEDGE_BASE,
         tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
     });
-    
-    let content = '';
-    for await (const chunk of stream) {
-        if (chunk.text) {
-          content += chunk.text;
-        }
-    }
-    await response;
-    return content;
+    return stream;
 }
