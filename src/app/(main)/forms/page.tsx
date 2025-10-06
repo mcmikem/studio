@@ -26,20 +26,20 @@ export default function FormsPage() {
       </header>
 
       <Tabs defaultValue="check-in" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
-          <TabsTrigger value="check-in">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+          <TabsTrigger value="check-in" className="py-2">
             <LogIn className="mr-2 h-4 w-4" />
             Daily Check-in
           </TabsTrigger>
-          <TabsTrigger value="check-out">
+          <TabsTrigger value="check-out" className="py-2">
             <LogOut className="mr-2 h-4 w-4" />
             Daily Check-out
           </TabsTrigger>
-          <TabsTrigger value="activity">
+          <TabsTrigger value="activity" className="py-2">
              <BarChart3 className="mr-2 h-4 w-4" />
             Activity Report
           </TabsTrigger>
-           <TabsTrigger value="expense">
+           <TabsTrigger value="expense" className="py-2">
             <Receipt className="mr-2 h-4 w-4" />
             Expense Report
           </TabsTrigger>
