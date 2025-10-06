@@ -1,4 +1,4 @@
-import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult } from './types';
+import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric } from './types';
 
 export const tagColors: { [key: string]: string } = {
     '#FieldVisit': 'border-blue-500 bg-blue-500/10 text-blue-500',
@@ -46,29 +46,102 @@ export const flexibleTargets: PlanGoal[] = [
     { title: "Newsletter (2 Sunday editions)", description: "Keep our community informed and engaged.", details: "" },
 ];
 
+export const sampleUsers: Omit<User, 'id'>[] = [
+    { name: 'McMike Mutumba', email: 'mcmike@omuto.org', role: 'Executive Director' },
+    { name: 'Dianah Nansikombi', email: 'programs@omuto.org', role: 'Programs & Partnerships Manager' },
+    { name: 'Kasirye Constantine', email: 'operations@omuto.org', role: 'Operations & Field Manager' },
+    { name: 'Nsereko Alex', email: 'communications@omuto.org', role: 'Media & Communications Lead' },
+    { name: 'Bashir', email: 'bashir@omuto.org', role: 'Field Coordinator' },
+    { name: 'John Paul Akera', email: 'partnerships@omuto.org', role: 'Resource Mobilization Lead' },
+];
+
+export const samplePrograms: Omit<Program, 'id'>[] = [
+    { title: 'RED Campaign', description: 'Menstrual Health Management education and support.', lead: 'Dianah Nansikombi', status: 'On Track', deadline: '2025-12-31', objectives: ['Deliver sessions to 200 parents and 50 teachers', 'Reach 600 girls with MHM kits'], valuePerObjective: 50000 },
+    { title: 'GreenSchools Campaign', description: 'Environmental conservation through school-based activities.', lead: 'Kasirye Constantine', status: 'At Risk', deadline: '2025-11-30', objectives: ['Plant 700 trees', 'Establish 10 student Green Teams'], valuePerObjective: 20000 },
+    { title: 'YoSkills Entrepreneurship', description: 'Vocational and business training for youth.', lead: 'Dianah Nansikombi', status: 'On Track', deadline: '2026-01-31', objectives: ['Train 50 youth in soap-making', 'Launch 5 new youth-led enterprises'], valuePerObjective: 75000 },
+];
+
+export const samplePartnerships: Omit<Partnership, 'id'>[] = [
+    { name: 'Spouts of Water', contactPerson: 'Daniel Yin', contactEmail: 'daniel@spouts.org', status: 'Active', nextStep: 'Co-design PureWater Initiative Phase 2' },
+    { name: 'MHAMIA Foundation', contactPerson: 'Sarah Nakka', contactEmail: 'sarah.n@mhamia.org', status: 'Active', nextStep: 'Joint training session at Mpigi Secondary' },
+    { name: 'Mpigi District Local Government', contactPerson: 'Mr. Bwekembe', contactEmail: 'cao.mpigi@lg.go.ug', status: 'Active', nextStep: 'Align on Q4 youth programs' },
+    { name: 'GlobalGiving', contactPerson: 'Regional Manager', contactEmail: 'africa@globalgiving.org', status: 'Potential', nextStep: 'Submit final report for Cycle of Dignity' },
+];
+
+export const sampleProjects: Omit<Project, 'id'>[] = [
+    { name: 'RED Campaign School Tour (Mpigi)', manager: 'Dianah Nansikombi', districts: 'Mpigi', status: 'Active', completion: 65, nextMilestone: 'Sign MoU with Nindye SS' },
+    { name: 'GreenSchools Butambala Launch', manager: 'Bwire Bashir', districts: 'Butambala', status: 'Active', completion: 20, nextMilestone: 'Recruit 5 volunteer facilitators' },
+];
+
+export const sampleImpactMetrics: Omit<ImpactMetric, 'id'>[] = [
+    { metric: 'Girls Supported (RED)', target: 600, current: 520, unit: 'girls', valuePerUnit: 25000 },
+    { metric: 'Trees Planted (GreenSchools)', target: 700, current: 510, unit: 'trees', valuePerUnit: 5000 },
+    { metric: 'Cycle of Dignity Fundraising', target: 2000000, current: 800000, unit: 'UGX', valuePerUnit: 1 },
+];
+
 export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
     {
         title: 'OCT-KR1',
-        description: 'Successfully execute Girl Child Day event.',
-        currentProgress: 50,
-        target: 100,
-        deadline: '2025-10-11',
-        priority: 'High',
-    },
-    {
-        title: 'OCT-KR2',
-        description: 'Secure 1.5M UGX in new funding.',
-        currentProgress: 750000,
-        target: 1500000,
+        description: 'Increase Cycle of Dignity funding',
+        currentProgress: 800000,
+        target: 2000000,
         deadline: '2025-10-31',
         priority: 'High',
     },
     {
+        title: 'OCT-KR2',
+        description: 'Plant remaining 510 trees',
+        currentProgress: 0,
+        target: 510,
+        deadline: '2025-10-25',
+        priority: 'High',
+    },
+     {
         title: 'OCT-KR3',
-        description: 'Complete RED Campaign documentary.',
-        currentProgress: 80,
-        target: 100,
-        deadline: '2025-10-26',
+        description: 'Deliver RED Campaign sessions to parents/teachers',
+        currentProgress: 0,
+        target: 250,
+        deadline: '2025-10-31',
+        priority: 'High',
+    },
+    {
+        title: 'OCT-KR4',
+        description: 'Secure new partnership commitments',
+        currentProgress: 0,
+        target: 6,
+        deadline: '2025-10-31',
         priority: 'Medium',
+    },
+    {
+        title: 'OCT-KR5',
+        description: 'Finalize Football Gala framework',
+        currentProgress: 25,
+        target: 100,
+        deadline: '2025-10-28',
+        priority: 'Medium',
+    },
+    {
+        title: 'OCT-KR6',
+        description: 'Standardize YAP Chapter SOPs',
+        currentProgress: 10,
+        target: 100,
+        deadline: '2025-10-25',
+        priority: 'Low',
+    },
+     {
+        title: 'OCT-KR7',
+        description: 'Implement digital field tracking system',
+        currentProgress: 50,
+        target: 100,
+        deadline: '2025-10-31',
+        priority: 'Medium',
+    },
+    {
+        title: 'OCT-KR8',
+        description: 'Develop 10 Dignity Pad prototypes',
+        currentProgress: 0,
+        target: 10,
+        deadline: '2025-10-21',
+        priority: 'High',
     },
 ];
