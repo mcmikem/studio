@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useState, useMemo } from 'react';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 import {
   collection,
   query,
@@ -89,7 +89,7 @@ export function UserTasks() {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const tasksQuery = useMemoFirebase(() => {
+  const tasksQuery = useMemo(() => {
     if (!user || !firestore) return null;
     return query(
       collection(firestore, 'users', user.uid, 'tasks'),

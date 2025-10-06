@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
@@ -14,8 +14,8 @@ export function MyPriorities() {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  // Memoize the query to prevent re-renders
-  const tasksQuery = useMemoFirebase(() => {
+  // No longer need useMemoFirebase because the firestore instance is stable
+  const tasksQuery = useMemo(() => {
     if (!firestore || !user) return null;
     return query(
       collection(firestore, 'users', user.uid, 'tasks'),
