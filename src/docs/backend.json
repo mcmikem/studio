@@ -261,6 +261,31 @@
         "userId": { "type": "string" },
         "name": { "type": "string" },
         "primaryMission": { "type": "string" },
+        "details": {
+          "type": "object",
+           "properties": {
+              "mainFocus": { "type": "string" },
+              "customTask": { "type": "string" },
+              "timeBlocks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "startTime": { "type": "string" },
+                    "endTime": { "type": "string" },
+                    "description": { "type": "string" }
+                  }
+                }
+              },
+              "multiWinConnections": { "type": "array", "items": { "type": "string" } },
+              "otherConnection": { "type": "string" },
+              "transport": { "type": "string" },
+              "materials": { "type": "string" },
+              "teamSupport": { "type": "array", "items": { "type": "string" } },
+              "budget": { "type": "number" },
+              "challenges": { "type": "string" }
+            }
+        },
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "name", "primaryMission", "timestamp"]

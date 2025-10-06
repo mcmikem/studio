@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -35,7 +34,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Check, PlusCircle, X } from 'lucide-react';
+import { Loader2, Check, PlusCircle, X, ArrowRight } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
@@ -48,10 +47,21 @@ import {
   MultiSelectValue,
 } from '../ui/multi-select';
 
+const timeOptions = [
+    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
+    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
+    '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
+    '05:00 PM',
+];
+
 const checkinSchema = z.object({
   mainFocus: z.string().min(1, 'Please select a main focus.'),
   customTask: z.string().optional(),
-  timeBlocks: z.array(z.object({ value: z.string() })).optional(),
+  timeBlocks: z.array(z.object({ 
+    startTime: z.string().min(1, "Required"),
+    endTime: z.string().min(1, "Required"),
+    description: z.string().min(3, "Required") 
+  })).optional(),
   multiWinConnections: z.array(z.string()).optional(),
   otherConnection: z.string().optional(),
   transport: z.string().optional(),
@@ -64,9 +74,9 @@ const checkinSchema = z.object({
 type CheckinFormData = z.infer<typeof checkinSchema>;
 
 const steps = [
-  { id: '01', name: 'Check In' },
-  { id: '02', name: 'Plan Day' },
-  { id: '03', name: 'Review & Submit' },
+  { id: '01', name: 'Check In', description: 'Confirm your status.' },
+  { id: '02', name: 'Plan Day', description: "Strategize today's activities." },
+  { id: '03', name: 'Review & Submit', description: 'Finalize your plan.' },
 ];
 
 function Step1({ location }: { location: string | null }) {
@@ -121,7 +131,7 @@ function Step2({
         <CardDescription>Let&apos;s plan your day strategically.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <section className="space-y-4">
+        <section className="space-y-4 rounded-lg border p-4">
           <Label className="font-semibold text-base">
             Section 1: Priority Selection
           </Label>
@@ -187,67 +197,86 @@ function Step2({
           )}
         </section>
 
-        <Separator />
-
-        <section className="space-y-2">
+        <section className="space-y-4  rounded-lg border p-4">
           <Label className="font-semibold text-base">
             Section 2: Time-Blocked Planning
           </Label>
           {fields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2">
-              <Input
-                {...form.register(`timeBlocks.${index}.value`)}
-                placeholder="e.g., 8:00-10:00 AM: Activity description"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => remove(index)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+             <div key={field.id} className="flex items-end gap-2">
+                <div className="grid grid-cols-2 gap-2 flex-grow">
+                     <Controller
+                        name={`timeBlocks.${index}.startTime`}
+                        control={form.control}
+                        render={({ field }) => (
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger><SelectValue placeholder="Start" /></SelectTrigger>
+                                <SelectContent>{timeOptions.map(t => <SelectItem key={t+"-start"} value={t}>{t}</SelectItem>)}</SelectContent>
+                            </Select>
+                        )}
+                    />
+                    <Controller
+                        name={`timeBlocks.${index}.endTime`}
+                        control={form.control}
+                        render={({ field }) => (
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger><SelectValue placeholder="End" /></SelectTrigger>
+                                <SelectContent>{timeOptions.map(t => <SelectItem key={t+"-end"} value={t}>{t}</SelectItem>)}</SelectContent>
+                            </Select>
+                        )}
+                    />
+                </div>
+                <Input
+                    {...form.register(`timeBlocks.${index}.description`)}
+                    placeholder="Activity description"
+                    className="flex-grow"
+                />
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => remove(index)}
+                >
+                    <X className="h-4 w-4" />
+                </Button>
             </div>
           ))}
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => append({ value: '' })}
+            onClick={() => append({ startTime: '', endTime: '', description: '' })}
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Time Block
           </Button>
         </section>
 
-        <Separator />
-
-        <section className="space-y-2">
+        <section className="space-y-4  rounded-lg border p-4">
           <Label className="font-semibold text-base">
             Section 3: Multi-Win Connection
           </Label>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="c1" {...form.register('multiWinConnections')} value="photos" />
-            <Label htmlFor="c1">Capture photos/video for Omuto Pulse</Label>
+          <div className="space-y-2">
+             <div className="flex items-center space-x-2">
+                <Checkbox id="c1" {...form.register('multiWinConnections')} value="photos" />
+                <Label htmlFor="c1" className="cursor-pointer">Capture photos/video for Omuto Pulse</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+                <Checkbox id="c2" {...form.register('multiWinConnections')} value="volunteers" />
+                <Label htmlFor="c2" className="cursor-pointer">Identify potential volunteers/partners</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+                <Checkbox id="c3" {...form.register('multiWinConnections')} value="data" />
+                <Label htmlFor="c3" className="cursor-pointer">Collect data for impact reporting</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+                <Checkbox id="c4" {...form.register('multiWinConnections')} value="template" />
+                <Label htmlFor="c4" className="cursor-pointer">Test new process or template</Label>
+            </div>
+            <Input {...form.register('otherConnection')} placeholder="Other..." />
           </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="c2" {...form.register('multiWinConnections')} value="volunteers" />
-            <Label htmlFor="c2">Identify potential volunteers/partners</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="c3" {...form.register('multiWinConnections')} value="data" />
-            <Label htmlFor="c3">Collect data for impact reporting</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox id="c4" {...form.register('multiWinConnections')} value="template" />
-            <Label htmlFor="c4">Test new process or template</Label>
-          </div>
-          <Input {...form.register('otherConnection')} placeholder="Other..." />
         </section>
 
-        <Separator />
-
-        <section className="space-y-4">
+        <section className="space-y-4 rounded-lg border p-4">
           <Label className="font-semibold text-base">
             Section 4: Resource & Support Check
           </Label>
@@ -288,7 +317,7 @@ function Step2({
                 </MultiSelectTrigger>
                 <MultiSelectContent>
                   {teamMembers?.map((member) => (
-                    <MultiSelectItem key={member.id} value={member.id}>
+                    <MultiSelectItem key={member.id} value={member.name}>
                       {member.name}
                     </MultiSelectItem>
                   ))}
@@ -323,9 +352,12 @@ function Step3({
   if (mainFocus === 'custom') {
     mainFocusDisplay = values.customTask || 'Custom Task Not Specified';
   } else {
-    mainFocusDisplay =
-      keyResults?.find((kr) => kr.id === mainFocus)?.description ||
-      'Selected KR not found';
+    const kr = keyResults?.find((kr) => kr.id === mainFocus);
+    if (kr) {
+        mainFocusDisplay = `${kr.title}: ${kr.description}`;
+    } else {
+        mainFocusDisplay = 'Selected KR not found';
+    }
   }
 
   const supportNeeded = [
@@ -335,12 +367,9 @@ function Step3({
     .filter(Boolean)
     .join(', ');
 
-  const timeBlocks = values.timeBlocks?.map((tb: {value: string}) => tb.value).filter(Boolean) || [];
-
-  const teamSupportNames = values.teamSupport
-    ?.map((id: string) => teamMembers?.find((m) => m.id === id)?.name)
-    .filter(Boolean)
-    .join(', ');
+  const timeBlocks = values.timeBlocks?.map((tb: {startTime: string, endTime: string, description: string}) => `${tb.startTime}-${tb.endTime}: ${tb.description}`).filter((v: string) => v.includes(':')) || [];
+  
+  const teamSupportNames = values.teamSupport?.join(', ');
 
   return (
     <>
@@ -420,10 +449,10 @@ export function CheckinForm() {
       multiWinConnections: [],
       budget: 0,
       timeBlocks: [
-        { value: '' },
-        { value: '' },
-        { value: '' },
-        { value: '' },
+        { startTime: '08:00 AM', endTime: '10:00 AM', description: '' },
+        { startTime: '10:00 AM', endTime: '12:00 PM', description: '' },
+        { startTime: '01:00 PM', endTime: '03:00 PM', description: '' },
+        { startTime: '03:00 PM', endTime: '05:00 PM', description: '' },
       ],
     },
   });
@@ -490,115 +519,80 @@ export function CheckinForm() {
 
   return (
     <Card>
-      <nav aria-label="Progress">
-        <ol role="list" className="flex items-center p-6">
+      <nav aria-label="Progress" className="p-4">
+        <div className="flex items-center">
           {steps.map((step, stepIdx) => (
-            <li
-              key={step.name}
-              className={cn(
-                'relative',
-                stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : ''
+            <React.Fragment key={step.id}>
+              <div className="flex flex-col items-center">
+                 <button
+                  type="button"
+                  onClick={() => setCurrentStep(stepIdx)}
+                  className={cn(
+                    'flex h-10 w-10 items-center justify-center rounded-full',
+                    stepIdx < currentStep && 'bg-primary text-primary-foreground',
+                    stepIdx === currentStep && 'border-2 border-primary bg-primary/20',
+                    stepIdx > currentStep && 'border-2 border-border bg-card'
+                  )}
+                >
+                  {stepIdx < currentStep ? (
+                    <Check className="h-6 w-6" />
+                  ) : (
+                    <span className="font-semibold text-primary">{step.id}</span>
+                  )}
+                </button>
+                 <p className="text-xs text-center mt-2 w-20">{step.name}</p>
+              </div>
+              {stepIdx < steps.length - 1 && (
+                <div
+                  className={cn(
+                    'flex-auto border-t-2 transition-colors',
+                    stepIdx < currentStep ? 'border-primary' : 'border-border'
+                  )}
+                />
               )}
-            >
-              {stepIdx < currentStep ? (
-                <>
-                  <div
-                    className="absolute inset-0 flex items-center"
-                    aria-hidden="true"
-                  >
-                    <div className="h-0.5 w-full bg-primary" />
-                  </div>
-                  <button
-                    onClick={() => setCurrentStep(stepIdx)}
-                    className="relative flex h-8 w-8 items-center justify-center rounded-full bg-primary hover:bg-primary/90"
-                  >
-                    <Check className="h-5 w-5 text-white" aria-hidden="true" />
-                    <span className="sr-only">{step.name}</span>
-                  </button>
-                </>
-              ) : stepIdx === currentStep ? (
-                <>
-                  <div
-                    className="absolute inset-0 flex items-center"
-                    aria-hidden="true"
-                  >
-                    <div className="h-0.5 w-full bg-gray-200" />
-                  </div>
-                  <button
-                    onClick={() => setCurrentStep(stepIdx)}
-                    className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-white"
-                    aria-current="step"
-                  >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full bg-primary"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{step.name}</span>
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div
-                    className="absolute inset-0 flex items-center"
-                    aria-hidden="true"
-                  >
-                    <div className="h-0.5 w-full bg-gray-200" />
-                  </div>
-                  <button
-                    onClick={() => setCurrentStep(stepIdx)}
-                    className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white hover:border-gray-400"
-                  >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-gray-300"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{step.name}</span>
-                  </button>
-                </>
-              )}
-            </li>
+            </React.Fragment>
           ))}
-        </ol>
+        </div>
       </nav>
 
-      {currentStep === 0 && <Step1 location={location} />}
-      {currentStep === 1 && (
-        <Step2
-          form={form}
-          keyResults={keyResults}
-          isLoadingKR={isLoadingKR}
-          selectedKR={selectedKR}
-          teamMembers={teamMembers}
-        />
-      )}
-      {currentStep === 2 && <Step3 form={form} keyResults={keyResults} teamMembers={teamMembers} />}
+      <form>
+        {currentStep === 0 && <Step1 location={location} />}
+        {currentStep === 1 && (
+            <Step2
+            form={form}
+            keyResults={keyResults}
+            isLoadingKR={isLoadingKR}
+            selectedKR={selectedKR}
+            teamMembers={teamMembers}
+            />
+        )}
+        {currentStep === 2 && <Step3 form={form} keyResults={keyResults} teamMembers={teamMembers} />}
 
-      <CardFooter className="flex w-full justify-end gap-2 border-t pt-6">
-        {currentStep > 0 && (
-          <Button onClick={handlePrev} size="sm" variant="secondary">
-            Prev
-          </Button>
-        )}
-        {currentStep < steps.length - 1 && (
-          <Button onClick={handleNext} size="sm">
-            Next
-          </Button>
-        )}
-        {currentStep === steps.length - 1 && (
-          <Button
-            size="sm"
-            onClick={form.handleSubmit(onSubmit)}
-            disabled={form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting ? (
-              <Loader2 className="animate-spin" />
-            ) : (
-              <Check />
-            )}{' '}
-            Approve & Start Day
-          </Button>
-        )}
-      </CardFooter>
+        <CardFooter className="flex w-full justify-between gap-2 border-t pt-6">
+            <Button onClick={handlePrev} size="sm" variant="secondary" disabled={currentStep === 0}>
+                Prev
+            </Button>
+            {currentStep < steps.length - 1 && (
+            <Button onClick={handleNext} size="sm">
+                Next <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            )}
+            {currentStep === steps.length - 1 && (
+            <Button
+                size="sm"
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={form.formState.isSubmitting}
+            >
+                {form.formState.isSubmitting ? (
+                <Loader2 className="animate-spin" />
+                ) : (
+                <Check className="mr-2 h-4 w-4" />
+                )}{' '}
+                Approve & Start Day
+            </Button>
+            )}
+        </CardFooter>
+      </form>
     </Card>
   );
 }
