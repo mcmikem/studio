@@ -16,7 +16,6 @@ import {
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server';
 
-
 const getProgramsTool = ai.defineTool(
   {
     name: 'getActivePrograms',
@@ -32,7 +31,6 @@ const getProgramsTool = ai.defineTool(
     })),
   },
   async (input) => {
-    // Initialize Firebase within the tool, as server actions can be cold-started.
     const { firestore } = await initializeFirebase();
     const programsCol = collection(firestore, 'programs');
     let q = query(programsCol);
@@ -40,7 +38,6 @@ const getProgramsTool = ai.defineTool(
     if (input?.status) {
         q = query(q, where('status', '==', input.status));
     } else {
-        // Default to fetching all non-completed programs if no status is provided
         q = query(q, where('status', '!=', 'Completed'));
     }
 
@@ -55,6 +52,92 @@ const getProgramsTool = ai.defineTool(
         }
     });
   }
+);
+
+const getKeyResultsTool = ai.defineTool(
+  {
+      name: 'getOctoberKeyResults',
+      description: "Get details about the Key Results (KRs) for Omuto's October Operational Plan.",
+      inputSchema: z.object({
+          priority: z.enum(['High', 'Medium', 'Low']).optional().describe('Filter KRs by priority level.'),
+          krTitle: z.string().optional().describe('Get a specific KR by its title, e.g., "OCT-KR1".')
+      }),
+      outputSchema: z.array(z.object({
+          title: z.string(),
+          description: z.string(),
+          currentProgress: z.number(),
+          target: z.number(),
+          deadline: z.string(),
+          priority: z.string(),
+      })),
+  },
+  async (input) => {
+      const { firestore } = await initializeFirebase();
+      const krCol = collection(firestore, 'key-results');
+      let q = query(krCol);
+
+      if (input?.priority) {
+          q = query(q, where('priority', '==', input.priority));
+      }
+      if (input?.krTitle) {
+          q = query(q, where('title', '==', input.krTitle));
+      }
+
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+              title: data.title,
+              description: data.description,
+              currentProgress: data.currentProgress,
+              target: data.target,
+              deadline: data.deadline,
+              priority: data.priority,
+          }
+      });
+  }
+);
+
+const getPartnershipsTool = ai.defineTool(
+    {
+        name: 'getPartnerships',
+        description: "Get information about Omuto's partner organizations.",
+        inputSchema: z.object({
+            status: z.enum(['Active', 'Potential', 'Inactive']).optional().describe('Filter partners by their status.'),
+            name: z.string().optional().describe('Find a specific partner by name.'),
+        }),
+        outputSchema: z.array(z.object({
+            name: z.string(),
+            contactPerson: z.string(),
+            contactEmail: z.string(),
+            status: z.string(),
+            nextStep: z.string(),
+        })),
+    },
+    async (input) => {
+        const { firestore } = await initializeFirebase();
+        const partnersCol = collection(firestore, 'partnerships');
+        let q = query(partnersCol);
+
+        if (input?.status) {
+            q = query(q, where('status', '==', input.status));
+        }
+        if (input?.name) {
+            q = query(q, where('name', '==', input.name));
+        }
+
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                name: data.name,
+                contactPerson: data.contactPerson,
+                contactEmail: data.contactEmail,
+                status: data.status,
+                nextStep: data.nextStep,
+            }
+        });
+    }
 );
 
 
@@ -72,8 +155,8 @@ Your role is to provide accurate, helpful, and concise information to team membe
 - **Data-Driven Adaptation:** Your analysis should help the team track progress against the October Plan, monitor ecosystem health, and mitigate risks proactively.
 
 ## Your Capabilities
-You have access to live data about the organization's programs, finances, and impact through the tools you are given. Use these tools to answer questions whenever possible. Be friendly, professional, and always frame your answers within the context of Omuto's mission and operational philosophy.`,
-  tools: [getProgramsTool],
+You have access to live data about the organization's programs, finances, key results, and partnerships through the tools you are given. Use these tools to answer questions whenever possible. Be friendly, professional, and always frame your answers within the context of Omuto's mission and operational philosophy. For example, when asked to brainstorm, suggest ideas that align with the "Multiple Wins Framework".`,
+  tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool],
   output: {
     format: 'text'
   }
