@@ -40,7 +40,7 @@ const formatCurrency = (value: number) => {
 function FinancialOverview() {
     const firestore = useFirestore();
 
-    const startOfMonth = useMemoFirebase(() => {
+    const startOfMonth = useMemo(() => {
         const now = new Date();
         return Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth(), 1));
     }, []);

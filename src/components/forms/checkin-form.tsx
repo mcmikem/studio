@@ -716,7 +716,7 @@ export function CheckinForm() {
   const { data: keyResults, isLoading: isLoadingKR } =
     useCollection<KeyResult>(keyResultsQuery);
   
-  const yesterday = useMemoFirebase(() => {
+  const yesterday = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() - 1);
     return Timestamp.fromDate(d);

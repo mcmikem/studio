@@ -75,7 +75,7 @@ export function CheckoutForm() {
     },
   });
 
-  const startOfDay = useMemoFirebase(() => {
+  const startOfDay = useMemo(() => {
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     return Timestamp.fromDate(now);
