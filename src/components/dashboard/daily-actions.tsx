@@ -8,34 +8,36 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { LogIn, LogOut, ArrowRight } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { NewCheckinForm } from './new-checkin-form';
+import { NewCheckoutForm } from './new-checkout-form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 
 export function DailyActions() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Daily Actions</CardTitle>
+        <CardTitle>Daily Hub</CardTitle>
         <CardDescription>
-          Start your day with a strategic plan and end it with a clear report.
+          Your one-stop-shop for daily planning and reporting.
         </CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4">
-        <Button asChild size="lg" className="h-20 flex-col gap-2">
-            <Link href="/forms">
-                <LogIn className="h-6 w-6" />
-                <span>Daily Check-in</span>
-            </Link>
-        </Button>
-        <Button asChild size="lg" className="h-20 flex-col gap-2" variant="secondary">
-             <Link href="/forms">
-                <LogOut className="h-6 w-6" />
-                <span>Daily Check-out</span>
-            </Link>
-        </Button>
+      <CardContent>
+        <Tabs defaultValue="check-in">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="check-in">Check In</TabsTrigger>
+            <TabsTrigger value="check-out">Check Out</TabsTrigger>
+          </TabsList>
+          <TabsContent value="check-in" className="pt-4">
+             <NewCheckinForm />
+          </TabsContent>
+          <TabsContent value="check-out" className="pt-4">
+            <NewCheckoutForm />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
 }
-
-    

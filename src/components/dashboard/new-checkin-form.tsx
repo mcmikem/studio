@@ -113,7 +113,7 @@ export function NewCheckinForm() {
                 </Select>
               )}
             />
-            {errors.primaryMission && <p className="text-sm text-destructive">{errors.primaryMission.message}</p>}
+            {errors.primaryMission && <p className="text-sm text-destructive">{`${errors.primaryMission.message}`}</p>}
         </div>
         <Button className="w-full" type="submit" disabled={isSubmitting}>
              {isSubmitting ? (
