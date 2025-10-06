@@ -1,6 +1,7 @@
 import { ImpactStoryGenerator } from "@/components/impact-story-form";
+import { Suspense } from 'react';
 
-export default function ImpactStoryPage() {
+function ImpactStoryContent() {
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -14,4 +15,13 @@ export default function ImpactStoryPage() {
       <ImpactStoryGenerator />
     </div>
   );
+}
+
+
+export default function ImpactStoryPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ImpactStoryContent />
+    </Suspense>
+  )
 }

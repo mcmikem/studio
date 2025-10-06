@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -11,19 +12,32 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { FileUp, Loader2, LogOut } from 'lucide-react';
+import { FileUp, Loader2, LogOut, Send, Wand } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import {
+  useUser,
+  useFirestore,
+  useCollection,
+  useMemoFirebase,
+} from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { useEffect, useMemo } from 'react';
+import {
+  collection,
+  serverTimestamp,
+  query,
+  where,
+  orderBy,
+  limit,
+  Timestamp,
+} from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
 import type { Checkin } from '@/lib/types';
 import { useUserProfile } from '@/hooks/use-user-profile';
-
+import Link from 'next/link';
 
 const checkoutSchema = z.object({
   missionAccomplished: z
@@ -44,6 +58,7 @@ export function CheckoutForm() {
   const firestore = useFirestore();
   const { user } = useUser();
   const { profile } = useUserProfile(user);
+  const [submittedCheckoutId, setSubmittedCheckoutId] = useState<string | null>(null);
 
   const {
     register,
@@ -57,7 +72,7 @@ export function CheckoutForm() {
       parentsReached: 0,
       volunteersRecruited: 0,
       prototypesTested: 0,
-    }
+    },
   });
 
   const startOfDay = useMemo(() => {
@@ -77,37 +92,44 @@ export function CheckoutForm() {
     );
   }, [firestore, user, startOfDay]);
 
-  const { data: recentCheckins, isLoading: isLoadingCheckin } = useCollection<Checkin>(recentCheckinQuery);
+  const { data: recentCheckins, isLoading: isLoadingCheckin } =
+    useCollection<Checkin>(recentCheckinQuery);
 
   useEffect(() => {
     if (recentCheckins && recentCheckins.length > 0) {
-      const mission = recentCheckins[0].primaryMission.replace('[FROM YESTERDAY] ', '').replace('[PROGRAM] ', '');
+      const mission =
+        recentCheckins[0].primaryMission;
       setValue('missionAccomplished', `Progress on: ${mission}. `);
     }
   }, [recentCheckins, setValue]);
 
-
   const onSubmit = async (data: CheckoutFormData) => {
     if (!firestore || !user || !profile) {
-        toast({
-            variant: "destructive",
-            title: "Authentication Error",
-            description: "You must be logged in to submit a report.",
-        });
-        return;
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Error',
+        description: 'You must be logged in to submit a report.',
+      });
+      return;
     }
 
     const impactNumbers = [
       data.parentsReached && `Parents Reached: ${data.parentsReached}`,
-      data.volunteersRecruited && `Volunteers Recruited: ${data.volunteersRecruited}`,
-      data.prototypesTested && `Prototypes Tested: ${data.prototypesTested}`,
-    ].filter(Boolean).join(' | ');
-    
-    const fullTask = `${data.missionAccomplished} #Update ${impactNumbers ? `| ${impactNumbers}` : ''}`;
+      data.volunteersRecruited &&
+        `Volunteers Recruited: ${data.volunteersRecruited}`,
+      data.prototypesTested &&
+        `Prototypes Tested: ${data.prototypesTested}`,
+    ]
+      .filter(Boolean)
+      .join(' | ');
+
+    const fullTask = `${data.missionAccomplished} #Update ${
+      impactNumbers ? `| ${impactNumbers}` : ''
+    }`;
 
     const checkoutData = {
       name: profile.name,
-      role: profile.role, 
+      role: profile.role,
       avatar: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
       task: fullTask,
       learning: data.learning,
@@ -117,21 +139,55 @@ export function CheckoutForm() {
     };
 
     const checkoutsCollection = collection(firestore, 'checkouts');
-    addDocumentNonBlocking(checkoutsCollection, checkoutData);
-
-    toast({
-      title: 'Check-out Submitted!',
-      description: 'Your impact report has been saved.',
-    });
-    reset({
-        missionAccomplished: '',
-        learning: '',
-        tomorrowPlan: '',
-        parentsReached: 0,
-        volunteersRecruited: 0,
-        prototypesTested: 0,
-    });
+    try {
+        const docRef = await addDocumentNonBlocking(checkoutsCollection, checkoutData);
+        if (docRef) {
+            setSubmittedCheckoutId(docRef.id);
+        }
+        toast({
+        title: 'Check-out Submitted!',
+        description: 'Your impact report has been saved.',
+        });
+    } catch (e) {
+        // Error is handled by non-blocking-updates
+    }
   };
+  
+  if (submittedCheckoutId) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Report Submitted Successfully!</CardTitle>
+                <CardDescription>What would you like to do next?</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button variant="outline" onClick={() => {
+                    reset({
+                        missionAccomplished: '',
+                        learning: '',
+                        tomorrowPlan: '',
+                        parentsReached: 0,
+                        volunteersRecruited: 0,
+                        prototypesTested: 0,
+                    });
+                    setSubmittedCheckoutId(null);
+                }}>
+                    <Send className="mr-2 h-4 w-4" />
+                    Submit another report
+                </Button>
+                 <Button asChild>
+                    <Link href={`/impact-story?activityId=${submittedCheckoutId}`}>
+                        <Wand className="mr-2 h-4 w-4" />
+                        Generate Impact Story
+                    </Link>
+                </Button>
+            </CardContent>
+             <CardFooter>
+                <p className="text-xs text-muted-foreground">You can generate a compelling story for social media based on the report you just submitted.</p>
+            </CardFooter>
+        </Card>
+    )
+  }
 
   return (
     <Card>
@@ -152,7 +208,11 @@ export function CheckoutForm() {
             </Label>
             <Textarea
               id="mission-accomplished"
-              placeholder={isLoadingCheckin ? "Loading today's mission..." : "What did you achieve?"}
+              placeholder={
+                isLoadingCheckin
+                  ? "Loading today's mission..."
+                  : 'What did you achieve?'
+              }
               className="min-h-[100px]"
               {...register('missionAccomplished')}
             />
@@ -198,15 +258,15 @@ export function CheckoutForm() {
             <Label className="text-base font-semibold">
               Section 2: Evidence & Documentation
             </Label>
-             <div className="space-y-2">
-                <Label htmlFor="photo">Attach Photo</Label>
-                <Input
-                  id="photo"
-                  type="file"
-                  accept="image/*"
-                  {...register('photo')}
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="photo">Attach Photo</Label>
+              <Input
+                id="photo"
+                type="file"
+                accept="image/*"
+                {...register('photo')}
+              />
+            </div>
             <p className="text-xs text-muted-foreground text-center">
               Photos will be automatically tagged with activity and location.
             </p>
@@ -239,7 +299,12 @@ export function CheckoutForm() {
             />
           </div>
 
-          <Button size="lg" className="w-full" type="submit" disabled={isSubmitting}>
+          <Button
+            size="lg"
+            className="w-full"
+            type="submit"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? (
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             ) : (

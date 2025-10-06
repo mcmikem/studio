@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,16 +24,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Copy, Sparkles, Wand } from "lucide-react";
-import Image from "next/image";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import type { Activity } from "@/lib/types";
 import { Skeleton } from "./ui/skeleton";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from 'next/navigation';
 
 
 const fileToDataUri = (file: File): Promise<string> => {
@@ -49,10 +47,17 @@ export function ImpactStoryGenerator() {
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [generatedStory, setGeneratedStory] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { toast } = useToast();
   const firestore = useFirestore();
-  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const activityIdFromUrl = searchParams.get('activityId');
+
+  useEffect(() => {
+    if (activityIdFromUrl) {
+      setSelectedActivityId(activityIdFromUrl);
+    }
+  }, [activityIdFromUrl]);
 
 
   const activitiesQuery = useMemoFirebase(() => {

@@ -102,6 +102,7 @@ export type Partnership = {
 export type Activity = {
     id: string;
     title: string;
+    userId: string;
     userName: string;
     actualCost: number;
     totalValue: number;
