@@ -48,10 +48,18 @@ export default function FormsPage() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="check-in">
-            <CheckinForm />
+          <Card>
+            <CardContent className="pt-6">
+              <CheckinForm />
+            </CardContent>
+          </Card>
         </TabsContent>
         <TabsContent value="check-out">
-          <CheckoutForm />
+          <Card>
+            <CardContent className="pt-6">
+              <CheckoutForm />
+            </CardContent>
+          </Card>
         </TabsContent>
          <TabsContent value="activity">
           <Card>
