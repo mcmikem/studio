@@ -22,7 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-  DialogClose
 } from "@/components/ui/dialog"
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -106,7 +105,7 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="deadline">Deadline</Label>
-          <Input id="deadline" {...register("deadline")} placeholder="e.g., Oct 31, 2025" />
+          <Input id="deadline" type="date" {...register("deadline")} />
           {errors.deadline && <p className="text-sm text-destructive">{`${errors.deadline.message}`}</p>}
         </div>
       </div>
@@ -132,12 +131,14 @@ function NewProgramForm({ onFormSubmit }: { onFormSubmit: () => void }) {
           {errors.status && <p className="text-sm text-destructive">{`${errors.status.message}`}</p>}
         </div>
       <div className="space-y-2">
-        <Label htmlFor="objectives">Key Objectives</Label>
+        <Label htmlFor="objectives">Key Objectives (one per line)</Label>
         <Textarea id="objectives" {...register("objectives")} placeholder="List each objective on a new line." />
         {errors.objectives && <p className="text-sm text-destructive">{`${errors.objectives.message}`}</p>}
       </div>
       <DialogFooter>
-        <Button type="submit" disabled={isSubmitting}>Add Program</Button>
+        <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Adding...' : 'Add Program'}
+        </Button>
       </DialogFooter>
     </form>
   );

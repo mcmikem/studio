@@ -127,7 +127,9 @@ function NewPartnershipForm({ onFormSubmit }: { onFormSubmit: () => void }) {
         {errors.nextStep && <p className="text-sm text-destructive">{`${errors.nextStep.message}`}</p>}
       </div>
       <DialogFooter>
-        <Button type="submit" disabled={isSubmitting}>Add Partnership</Button>
+        <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Adding...' : 'Add Partnership'}
+        </Button>
       </DialogFooter>
     </form>
   );
