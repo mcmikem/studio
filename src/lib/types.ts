@@ -166,5 +166,17 @@ export type KeyResult = {
   deadline: string;
   priority: 'High' | 'Medium' | 'Low';
 };
-    
+
+export type Expense = {
+    id: string;
+    userId: string;
+    userName: string;
+    date: Timestamp;
+    description: string;
+    category: "Transport" | "Materials" | "Food" | "Airtime" | "Other";
+    amount: number;
+    status: "Pending" | "Approved" | "Rejected";
+    createdAt?: Timestamp;
+};
+
     

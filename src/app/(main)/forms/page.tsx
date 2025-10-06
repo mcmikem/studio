@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -7,8 +8,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckinForm } from '@/components/forms/checkin-form';
 import { CheckoutForm } from '@/components/forms/checkout-form';
-import { ClipboardEdit, LogIn, LogOut, BarChart3 } from 'lucide-react';
+import { ClipboardEdit, LogIn, LogOut, BarChart3, Receipt } from 'lucide-react';
 import { ActivityReportForm } from '@/components/forms/activity-report-form';
+import { ExpenseReportForm } from '@/components/forms/expense-report-form';
 
 export default function FormsPage() {
   return (
@@ -24,7 +26,7 @@ export default function FormsPage() {
       </header>
 
       <Tabs defaultValue="check-in" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-4">
           <TabsTrigger value="check-in">
             <LogIn className="mr-2 h-4 w-4" />
             Daily Check-in
@@ -37,10 +39,8 @@ export default function FormsPage() {
              <BarChart3 className="mr-2 h-4 w-4" />
             Activity Report
           </TabsTrigger>
-          <TabsTrigger value="volunteer" disabled>
-            New Volunteer
-          </TabsTrigger>
-          <TabsTrigger value="expense" disabled>
+           <TabsTrigger value="expense">
+            <Receipt className="mr-2 h-4 w-4" />
             Expense Report
           </TabsTrigger>
         </TabsList>
@@ -57,7 +57,12 @@ export default function FormsPage() {
                 </CardContent>
             </Card>
         </TabsContent>
+         <TabsContent value="expense">
+          <ExpenseReportForm />
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
+
+    

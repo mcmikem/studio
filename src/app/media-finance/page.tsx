@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -8,11 +9,16 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, Timestamp } from 'firebase/firestore';
-import type { Activity } from '@/lib/types';
+import { collection, query, where, Timestamp, orderBy, limit } from 'firebase/firestore';
+import type { Activity, Expense } from '@/lib/types';
 import { Banknote, FileUp, FolderKanban, Loader2, DollarSign, Target, VenetianMask, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useMemo } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', {
@@ -104,6 +110,74 @@ function FinancialOverview() {
     )
 }
 
+function RecentExpenses() {
+    const firestore = useFirestore();
+    const expensesQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(5));
+    }, [firestore]);
+
+    const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery);
+
+    const statusColors: { [key: string]: string } = {
+        Pending: "border-yellow-500 bg-yellow-500/10 text-yellow-500",
+        Approved: "border-green-500 bg-green-500/10 text-green-500",
+        Rejected: "border-red-500 bg-red-500/10 text-red-500",
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Expense Reporting</CardTitle>
+                <CardDescription>Submit and track expense reports for reimbursement.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading && Array.from({length: 3}).map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                            </TableRow>
+                        ))}
+                        {expenses && expenses.length > 0 ? (
+                            expenses.map(expense => (
+                                <TableRow key={expense.id}>
+                                    <TableCell>{format(expense.date.toDate(), 'dd MMM yyyy')}</TableCell>
+                                    <TableCell>{expense.description}</TableCell>
+                                    <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            !isLoading && (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="text-center h-24">No recent expenses.</TableCell>
+                                </TableRow>
+                            )
+                        )}
+                    </TableBody>
+                 </Table>
+                 <Button asChild className="mt-4 w-full">
+                    <Link href="/forms">Go to Forms Hub to submit an expense <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                 </Button>
+            </CardContent>
+        </Card>
+    )
+}
+
 export default function MediaFinancePage() {
   return (
     <div className="flex flex-col gap-8">
@@ -127,20 +201,7 @@ export default function MediaFinancePage() {
       </Card>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card>
-            <CardHeader>
-                <CardTitle>Expense Reporting</CardTitle>
-                <CardDescription>Submit and track expense reports for reimbursement.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full">
-                     <p className="text-muted-foreground mb-4">The new Expense Report form is now available in the Forms Hub.</p>
-                     <Button asChild>
-                        <Link href="/forms">Go to Forms Hub <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                     </Button>
-                </div>
-            </CardContent>
-        </Card>
+        <RecentExpenses />
          <Card>
             <CardHeader>
                 <CardTitle>Media Asset Library</CardTitle>
@@ -158,3 +219,5 @@ export default function MediaFinancePage() {
     </div>
   );
 }
+
+    
