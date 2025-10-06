@@ -38,7 +38,7 @@ const emailToRoleMap: Record<string, string> = {
 
 async function createUserProfile(userCredential: UserCredential) {
     const user = userCredential.user;
-    if (!user || !user.email) return;
+    if (!user || !user.email) return userCredential;
 
     const db = getFirestore(user.auth.app);
     const userRef = doc(db, 'users', user.uid);
@@ -63,35 +63,36 @@ async function createUserProfile(userCredential: UserCredential) {
             })
         );
     });
+
+    return userCredential;
 }
 
 
 /** Initiate email/password sign-up and create user profile. */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string): void {
-  createUserWithEmailAndPassword(authInstance, email, password)
+export function initiateEmailSignUp(authInstance: Auth, email: string, password: string) {
+  return createUserWithEmailAndPassword(authInstance, email, password)
     .then(createUserProfile)
     .catch(error => {
-      // Handle sign-up errors (e.g., email already in use)
       console.error("Email sign-up error:", error);
-      // Optionally emit a global error or show a toast
+      throw error;
     });
 }
 
 /** Initiate email/password sign-in (non-blocking). */
-export function initiateEmailSignIn(authInstance: Auth, email: string, password: string): void {
-  signInWithEmailAndPassword(authInstance, email, password).catch(error => {
-      // Handle sign-in errors (e.g., wrong password)
+export function initiateEmailSignIn(authInstance: Auth, email: string, password: string) {
+  return signInWithEmailAndPassword(authInstance, email, password).catch(error => {
       console.error("Email sign-in error:", error);
+      throw error;
   });
 }
 
 /** Initiate Google sign-in and create user profile. */
-export function initiateGoogleSignIn(authInstance: Auth): void {
+export function initiateGoogleSignIn(authInstance: Auth) {
     const provider = new GoogleAuthProvider();
-    signInWithPopup(authInstance, provider)
+    return signInWithPopup(authInstance, provider)
       .then(createUserProfile)
       .catch(error => {
-        // Handle Google sign-in errors
         console.error("Google sign-in error:", error);
+        throw error;
       });
 }

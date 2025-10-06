@@ -22,10 +22,12 @@ export function AppHeader() {
     const [userRole, setUserRole] = useState('Staff');
 
     useEffect(() => {
-        user?.getIdTokenResult().then(idTokenResult => {
-            const role = (idTokenResult.claims.role as string) || 'Staff';
-            setUserRole(role);
-        });
+        if (user) {
+            user.getIdTokenResult().then(idTokenResult => {
+                const role = (idTokenResult.claims.role as string) || 'Staff';
+                setUserRole(role);
+            });
+        }
     }, [user]);
 
   return (
@@ -53,7 +55,9 @@ function UserMenu({ user, role }: { user: any, role: string }) {
   const auth = useAuth();
 
   const handleLogout = () => {
-    signOut(auth);
+    if(auth) {
+      signOut(auth);
+    }
   };
   
   const getInitials = (email: string | null | undefined) => {

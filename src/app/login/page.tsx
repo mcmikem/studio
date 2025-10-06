@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { HeartHandshake, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { FirebaseError } from 'firebase/app';
 
 const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -40,24 +41,71 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<'google' | 'email' | null>(null);
 
+  const handleAuthError = (error: FirebaseError) => {
+    let title = 'An error occurred';
+    let description = error.message;
+
+    switch (error.code) {
+        case 'auth/invalid-credential':
+            title = 'Invalid Credentials';
+            description = 'Please check your email and password and try again.';
+            break;
+        case 'auth/email-already-in-use':
+            title = 'Email Already in Use';
+            description = 'This email address is already registered. Please sign in or use a different email.';
+            break;
+        case 'auth/weak-password':
+            title = 'Weak Password';
+            description = 'The password must be at least 6 characters long.';
+            break;
+        case 'auth/popup-closed-by-user':
+            title = 'Sign-in Canceled';
+            description = 'The Google sign-in popup was closed before completion.';
+            break;
+        default:
+            break;
+    }
+    
+    toast({
+        variant: 'destructive',
+        title: title,
+        description: description,
+    });
+  }
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading('email');
-    initiateEmailSignIn(auth, email, password);
-    // Errors will be caught by onAuthStateChanged or by a global error handler if configured
-    // We can optimistically set loading to false or wait for auth state change
-    // For now, let's let the auth provider handle the loading state after initiation
+    try {
+        await initiateEmailSignIn(auth, email, password);
+    } catch (error: any) {
+        handleAuthError(error);
+    } finally {
+        setLoading(null);
+    }
   };
   
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading('email');
-    initiateEmailSignUp(auth, email, password);
+    try {
+        await initiateEmailSignUp(auth, email, password);
+    } catch (error: any) {
+        handleAuthError(error);
+    } finally {
+        setLoading(null);
+    }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setLoading('google');
-    initiateGoogleSignIn(auth);
+    try {
+        await initiateGoogleSignIn(auth);
+    } catch (error: any) {
+        handleAuthError(error);
+    } finally {
+        setLoading(null);
+    }
   }
 
 
