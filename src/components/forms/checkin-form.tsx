@@ -34,7 +34,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, Check, PlusCircle, X, ArrowRight } from 'lucide-react';
+import { Loader2, Check, PlusCircle, X, ArrowRight, Wand2, Sparkles } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
@@ -46,22 +46,42 @@ import {
   MultiSelectTrigger,
   MultiSelectValue,
 } from '../ui/multi-select';
+import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
 
 const timeOptions = [
-    '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
-    '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
-    '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
-    '05:00 PM',
+  '08:00 AM',
+  '08:30 AM',
+  '09:00 AM',
+  '09:30 AM',
+  '10:00 AM',
+  '10:30 AM',
+  '11:00 AM',
+  '11:30 AM',
+  '12:00 PM',
+  '12:30 PM',
+  '01:00 PM',
+  '01:30 PM',
+  '02:00 PM',
+  '02:30 PM',
+  '03:00 PM',
+  '03:30 PM',
+  '04:00 PM',
+  '04:30 PM',
+  '05:00 PM',
 ];
 
 const checkinSchema = z.object({
   mainFocus: z.string().min(1, 'Please select a main focus.'),
   customTask: z.string().optional(),
-  timeBlocks: z.array(z.object({ 
-    startTime: z.string().min(1, "Required"),
-    endTime: z.string().min(1, "Required"),
-    description: z.string().min(3, "Required") 
-  })).optional(),
+  timeBlocks: z
+    .array(
+      z.object({
+        startTime: z.string().min(1, 'Required'),
+        endTime: z.string().min(1, 'Required'),
+        description: z.string().min(3, 'Required'),
+      })
+    )
+    .optional(),
   multiWinConnections: z.array(z.string()).optional(),
   otherConnection: z.string().optional(),
   transport: z.string().optional(),
@@ -91,7 +111,9 @@ function Step1({ location }: { location: string | null }) {
       <CardContent className="space-y-4">
         <div className="flex justify-between items-center p-3 border rounded-lg">
           <span className="text-muted-foreground">Time:</span>
-          <span className="font-semibold">{new Date().toLocaleTimeString()}</span>
+          <span className="font-semibold">
+            {new Date().toLocaleTimeString()}
+          </span>
         </div>
         <div className="flex justify-between items-center p-3 border rounded-lg">
           <span className="text-muted-foreground">Location:</span>
@@ -99,7 +121,9 @@ function Step1({ location }: { location: string | null }) {
         </div>
         <div className="flex justify-between items-center p-3 border rounded-lg">
           <span className="text-muted-foreground">Date:</span>
-          <span className="font-semibold">{new Date().toLocaleDateString()}</span>
+          <span className="font-semibold">
+            {new Date().toLocaleDateString()}
+          </span>
         </div>
       </CardContent>
     </>
@@ -112,17 +136,50 @@ function Step2({
   isLoadingKR,
   selectedKR,
   teamMembers,
+  profile,
 }: {
   form: any;
   keyResults: KeyResult[] | null;
   isLoadingKR: boolean;
   selectedKR: KeyResult | undefined;
   teamMembers: User[] | null;
+  profile: User | null;
 }) {
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: 'timeBlocks',
   });
+
+  const [aiSuggestions, setAiSuggestions] = useState<DailyPlannerAIOutput | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const { watch } = form;
+  const mainFocus = watch('mainFocus');
+  const customTask = watch('customTask');
+  
+  const handleBrainstorm = async () => {
+      if (!mainFocus || !profile) return;
+      
+      const task = mainFocus === 'custom' ? customTask : selectedKR?.description;
+      if (!task) {
+          useToast().toast({ variant: "destructive", title: "Please select or define a task first." });
+          return;
+      }
+
+      setIsAiLoading(true);
+      setAiSuggestions(null);
+
+      try {
+          const suggestions = await dailyPlannerAI({ task, role: profile.role });
+          setAiSuggestions(suggestions);
+      } catch (error) {
+          console.error("AI brainstorming error:", error);
+          useToast().toast({ variant: "destructive", title: "AI Assistant Error", description: "Could not fetch suggestions." });
+      } finally {
+          setIsAiLoading(false);
+      }
+  };
+
 
   return (
     <>
@@ -132,9 +189,15 @@ function Step2({
       </CardHeader>
       <CardContent className="space-y-6">
         <section className="space-y-4 rounded-lg border p-4">
-          <Label className="font-semibold text-base">
-            Section 1: Priority Selection
-          </Label>
+            <div className="flex justify-between items-center">
+                <Label className="font-semibold text-base">
+                    Section 1: Priority Selection
+                </Label>
+                <Button variant="outline" size="sm" onClick={handleBrainstorm} disabled={isAiLoading || !mainFocus}>
+                    {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                    Brainstorm with AI
+                </Button>
+            </div>
           <Controller
             name="mainFocus"
             control={form.control}
@@ -179,14 +242,17 @@ function Step2({
               </CardHeader>
               <CardContent className="p-0 space-y-1">
                 <p>
-                  <strong>Current Progress:</strong> {selectedKR.currentProgress} of{' '}
-                  {selectedKR.target} completed
+                  <strong>Current Progress:</strong>{' '}
+                  {selectedKR.currentProgress} of {selectedKR.target}{' '}
+                  completed
                 </p>
                 <p>
                   <strong>Priority:</strong>{' '}
                   <Badge
                     variant={
-                      selectedKR.priority === 'High' ? 'destructive' : 'secondary'
+                      selectedKR.priority === 'High'
+                        ? 'destructive'
+                        : 'secondary'
                     }
                   >
                     {selectedKR.priority}
@@ -195,6 +261,30 @@ function Step2({
               </CardContent>
             </Card>
           )}
+
+          {isAiLoading && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>AI is thinking...</span>
+              </div>
+          )}
+
+          {aiSuggestions && (
+              <Card className="bg-primary/10 border-primary/50">
+                  <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                          <Sparkles className="h-5 w-5 text-primary" />
+                          AI Suggestions
+                      </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <ul className="list-disc list-inside space-y-2 text-sm">
+                          {aiSuggestions.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+                      </ul>
+                  </CardContent>
+              </Card>
+          )}
+
         </section>
 
         <section className="space-y-4  rounded-lg border p-4">
@@ -202,49 +292,73 @@ function Step2({
             Section 2: Time-Blocked Planning
           </Label>
           {fields.map((field, index) => (
-             <div key={field.id} className="flex items-end gap-2">
-                <div className="grid grid-cols-2 gap-2 flex-grow">
-                     <Controller
-                        name={`timeBlocks.${index}.startTime`}
-                        control={form.control}
-                        render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger><SelectValue placeholder="Start" /></SelectTrigger>
-                                <SelectContent>{timeOptions.map(t => <SelectItem key={t+"-start"} value={t}>{t}</SelectItem>)}</SelectContent>
-                            </Select>
-                        )}
-                    />
-                    <Controller
-                        name={`timeBlocks.${index}.endTime`}
-                        control={form.control}
-                        render={({ field }) => (
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger><SelectValue placeholder="End" /></SelectTrigger>
-                                <SelectContent>{timeOptions.map(t => <SelectItem key={t+"-end"} value={t}>{t}</SelectItem>)}</SelectContent>
-                            </Select>
-                        )}
-                    />
-                </div>
-                <Input
-                    {...form.register(`timeBlocks.${index}.description`)}
-                    placeholder="Activity description"
-                    className="flex-grow"
+            <div key={field.id} className="flex items-end gap-2">
+              <div className="grid grid-cols-2 gap-2 flex-grow">
+                <Controller
+                  name={`timeBlocks.${index}.startTime`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Start" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((t) => (
+                          <SelectItem key={t + '-start'} value={t}>
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 />
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(index)}
-                >
-                    <X className="h-4 w-4" />
-                </Button>
+                <Controller
+                  name={`timeBlocks.${index}.endTime`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="End" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((t) => (
+                          <SelectItem key={t + '-end'} value={t}>
+                            {t}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <Input
+                {...form.register(`timeBlocks.${index}.description`)}
+                placeholder="Activity description"
+                className="flex-grow"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => remove(index)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           ))}
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => append({ startTime: '', endTime: '', description: '' })}
+            onClick={() =>
+              append({ startTime: '', endTime: '', description: '' })
+            }
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Time Block
@@ -256,87 +370,113 @@ function Step2({
             Section 3: Multi-Win Connection
           </Label>
           <div className="space-y-2">
-             <div className="flex items-center space-x-2">
-                <Controller
-                    name="multiWinConnections"
-                    control={form.control}
-                    render={({ field }) => (
-                        <>
-                        <Checkbox 
-                            id="c1"
-                            checked={field.value?.includes("photos")}
-                            onCheckedChange={(checked) => {
-                                return checked
-                                ? field.onChange([...(field.value || []), "photos"])
-                                : field.onChange(field.value?.filter((v: string) => v !== "photos"))
-                            }}
-                        />
-                        <Label htmlFor="c1" className="cursor-pointer">Capture photos/video for Omuto Pulse</Label>
-                        </>
-                    )}
-                />
+            <div className="flex items-center space-x-2">
+              <Controller
+                name="multiWinConnections"
+                control={form.control}
+                render={({ field }) => (
+                  <>
+                    <Checkbox
+                      id="c1"
+                      checked={field.value?.includes('photos')}
+                      onCheckedChange={(checked) => {
+                        return checked
+                          ? field.onChange([...(field.value || []), 'photos'])
+                          : field.onChange(
+                              field.value?.filter((v: string) => v !== 'photos')
+                            );
+                      }}
+                    />
+                    <Label htmlFor="c1" className="cursor-pointer">
+                      Capture photos/video for Omuto Pulse
+                    </Label>
+                  </>
+                )}
+              />
             </div>
             <div className="flex items-center space-x-2">
-                 <Controller
-                    name="multiWinConnections"
-                    control={form.control}
-                    render={({ field }) => (
-                        <>
-                        <Checkbox 
-                            id="c2"
-                            checked={field.value?.includes("volunteers")}
-                            onCheckedChange={(checked) => {
-                                return checked
-                                ? field.onChange([...(field.value || []), "volunteers"])
-                                : field.onChange(field.value?.filter((v: string) => v !== "volunteers"))
-                            }}
-                        />
-                        <Label htmlFor="c2" className="cursor-pointer">Identify potential volunteers/partners</Label>
-                        </>
-                    )}
-                />
+              <Controller
+                name="multiWinConnections"
+                control={form.control}
+                render={({ field }) => (
+                  <>
+                    <Checkbox
+                      id="c2"
+                      checked={field.value?.includes('volunteers')}
+                      onCheckedChange={(checked) => {
+                        return checked
+                          ? field.onChange([
+                              ...(field.value || []),
+                              'volunteers',
+                            ])
+                          : field.onChange(
+                              field.value?.filter(
+                                (v: string) => v !== 'volunteers'
+                              )
+                            );
+                      }}
+                    />
+                    <Label htmlFor="c2" className="cursor-pointer">
+                      Identify potential volunteers/partners
+                    </Label>
+                  </>
+                )}
+              />
             </div>
             <div className="flex items-center space-x-2">
-                 <Controller
-                    name="multiWinConnections"
-                    control={form.control}
-                    render={({ field }) => (
-                        <>
-                        <Checkbox 
-                            id="c3"
-                            checked={field.value?.includes("data")}
-                            onCheckedChange={(checked) => {
-                                return checked
-                                ? field.onChange([...(field.value || []), "data"])
-                                : field.onChange(field.value?.filter((v: string) => v !== "data"))
-                            }}
-                        />
-                        <Label htmlFor="c3" className="cursor-pointer">Collect data for impact reporting</Label>
-                        </>
-                    )}
-                />
+              <Controller
+                name="multiWinConnections"
+                control={form.control}
+                render={({ field }) => (
+                  <>
+                    <Checkbox
+                      id="c3"
+                      checked={field.value?.includes('data')}
+                      onCheckedChange={(checked) => {
+                        return checked
+                          ? field.onChange([...(field.value || []), 'data'])
+                          : field.onChange(
+                              field.value?.filter((v: string) => v !== 'data')
+                            );
+                      }}
+                    />
+                    <Label htmlFor="c3" className="cursor-pointer">
+                      Collect data for impact reporting
+                    </Label>
+                  </>
+                )}
+              />
             </div>
             <div className="flex items-center space-x-2">
-                 <Controller
-                    name="multiWinConnections"
-                    control={form.control}
-                    render={({ field }) => (
-                        <>
-                        <Checkbox 
-                            id="c4"
-                            checked={field.value?.includes("template")}
-                            onCheckedChange={(checked) => {
-                                return checked
-                                ? field.onChange([...(field.value || []), "template"])
-                                : field.onChange(field.value?.filter((v: string) => v !== "template"))
-                            }}
-                        />
-                        <Label htmlFor="c4" className="cursor-pointer">Test new process or template</Label>
-                        </>
-                    )}
-                />
+              <Controller
+                name="multiWinConnections"
+                control={form.control}
+                render={({ field }) => (
+                  <>
+                    <Checkbox
+                      id="c4"
+                      checked={field.value?.includes('template')}
+                      onCheckedChange={(checked) => {
+                        return checked
+                          ? field.onChange([...(field.value || []), 'template'])
+                          : field.onChange(
+                              field.value?.filter(
+                                (v: string) => v !== 'template'
+                              )
+                            );
+                      }}
+                    />
+                    <Label htmlFor="c4" className="cursor-pointer">
+                      Test new process or template
+                    </Label>
+                  </>
+                )}
+              />
             </div>
-            <Input {...form.register('otherConnection')} placeholder="Other..." />
+            <Input
+              {...form.register('otherConnection')}
+              placeholder="Other..."
+            />
           </div>
         </section>
 
@@ -349,7 +489,10 @@ function Step2({
               name="transport"
               control={form.control}
               render={({ field }) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Transport..." />
                   </SelectTrigger>
@@ -375,7 +518,10 @@ function Step2({
             name="teamSupport"
             control={form.control}
             render={({ field }) => (
-              <MultiSelect onValueChange={field.onChange} defaultValue={field.value || []}>
+              <MultiSelect
+                onValueChange={field.onChange}
+                defaultValue={field.value || []}
+              >
                 <MultiSelectTrigger>
                   <MultiSelectValue placeholder="Team Support..." />
                 </MultiSelectTrigger>
@@ -418,9 +564,9 @@ function Step3({
   } else {
     const kr = keyResults?.find((kr) => kr.id === mainFocus);
     if (kr) {
-        mainFocusDisplay = `${kr.title}: ${kr.description}`;
+      mainFocusDisplay = `${kr.title}: ${kr.description}`;
     } else {
-        mainFocusDisplay = 'Selected KR not found';
+      mainFocusDisplay = 'Selected KR not found';
     }
   }
 
@@ -431,8 +577,14 @@ function Step3({
     .filter(Boolean)
     .join(', ');
 
-  const timeBlocks = values.timeBlocks?.map((tb: {startTime: string, endTime: string, description: string}) => `${tb.startTime}-${tb.endTime}: ${tb.description}`).filter((v: string) => v.includes(':')) || [];
-  
+  const timeBlocks =
+    values.timeBlocks
+      ?.map(
+        (tb: { startTime: string; endTime: string; description: string }) =>
+          `${tb.startTime}-${tb.endTime}: ${tb.description}`
+      )
+      .filter((v: string) => v.includes(':')) || [];
+
   const teamSupportNames = values.teamSupport?.join(', ');
 
   return (
@@ -466,13 +618,19 @@ function Step3({
             {values.multiWinConnections?.join(', ') || 'None'}
           </p>
           {values.otherConnection && (
-            <p className="text-muted-foreground">Other: {values.otherConnection}</p>
+            <p className="text-muted-foreground">
+              Other: {values.otherConnection}
+            </p>
           )}
         </div>
         <div className="p-4 border rounded-lg space-y-2">
           <h4 className="font-semibold">Support Needed:</h4>
-          <p className="text-muted-foreground">{supportNeeded || 'None specified'}</p>
-          {teamSupportNames && <p className="text-muted-foreground">Team: {teamSupportNames}</p>}
+          <p className="text-muted-foreground">
+            {supportNeeded || 'None specified'}
+          </p>
+          {teamSupportNames && (
+            <p className="text-muted-foreground">Team: {teamSupportNames}</p>
+          )}
           {values.budget > 0 && (
             <p className="text-muted-foreground">
               Budget: {values.budget.toLocaleString()} UGX
@@ -481,7 +639,9 @@ function Step3({
         </div>
         <div className="p-4 border rounded-lg space-y-2">
           <h4 className="font-semibold">Risk Mitigation:</h4>
-          <p className="text-muted-foreground">{values.challenges || 'None specified'}</p>
+          <p className="text-muted-foreground">
+            {values.challenges || 'None specified'}
+          </p>
         </div>
       </CardContent>
     </>
@@ -500,7 +660,9 @@ export function CheckinForm() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setLocation(
-          `${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`
+          `${position.coords.latitude.toFixed(
+            4
+          )}, ${position.coords.longitude.toFixed(4)}`
         );
       },
       () => setLocation('Location access denied.')
@@ -512,12 +674,7 @@ export function CheckinForm() {
     defaultValues: {
       multiWinConnections: [],
       budget: 0,
-      timeBlocks: [
-        { startTime: '08:00 AM', endTime: '10:00 AM', description: '' },
-        { startTime: '10:00 AM', endTime: '12:00 PM', description: '' },
-        { startTime: '01:00 PM', endTime: '03:00 PM', description: '' },
-        { startTime: '03:00 PM', endTime: '05:00 PM', description: '' },
-      ],
+      timeBlocks: [],
       teamSupport: [],
     },
   });
@@ -526,7 +683,8 @@ export function CheckinForm() {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
-  const { data: keyResults, isLoading: isLoadingKR } = useCollection<KeyResult>(keyResultsQuery);
+  const { data: keyResults, isLoading: isLoadingKR } =
+    useCollection<KeyResult>(keyResultsQuery);
 
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -585,102 +743,100 @@ export function CheckinForm() {
   return (
     <Card>
       <nav aria-label="Progress">
-        <ol role="list" className="flex items-center p-6">
+        <ol role="list" className="space-y-4 md:flex md:space-x-8 md:space-y-0 p-6">
           {steps.map((step, stepIdx) => (
-            <React.Fragment key={step.id}>
-              <li className={cn('relative', stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : '')}>
+            <li key={step.name} className="md:flex-1">
               {stepIdx < currentStep ? (
-                <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-primary" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(stepIdx)}
-                    className="relative flex h-8 w-8 items-center justify-center rounded-full bg-primary hover:bg-primary/80"
-                  >
-                    <Check className="h-5 w-5 text-white" aria-hidden="true" />
-                    <span className="sr-only">{step.name}</span>
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(stepIdx)}
+                  className="group flex w-full flex-col border-l-4 border-primary py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+                >
+                  <span className="text-sm font-medium text-primary transition-colors ">
+                    {step.id}
+                  </span>
+                  <span className="text-sm font-medium">{step.name}</span>
+                </button>
               ) : stepIdx === currentStep ? (
-                <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-gray-200" />
-                  </div>
-                  <button
-                    type="button"
-                    className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-primary bg-white"
-                    aria-current="step"
-                  >
-                    <span className="h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
-                    <span className="sr-only">{step.name}</span>
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(stepIdx)}
+                  className="flex w-full flex-col border-l-4 border-primary py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+                  aria-current="step"
+                >
+                  <span className="text-sm font-medium text-primary">
+                    {step.id}
+                  </span>
+                  <span className="text-sm font-medium">{step.name}</span>
+                </button>
               ) : (
-                <>
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="h-0.5 w-full bg-gray-200" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(stepIdx)}
-                    className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-300 bg-white hover:border-gray-400"
-                  >
-                    <span
-                      className="h-2.5 w-2.5 rounded-full bg-transparent group-hover:bg-gray-300"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{step.name}</span>
-                  </button>
-                </>
+                 <button
+                  type="button"
+                  onClick={() => setCurrentStep(stepIdx)}
+                  className="group flex w-full flex-col border-l-4 border-border py-2 pl-4 transition-colors md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+                >
+                  <span className="text-sm font-medium text-muted-foreground transition-colors">
+                    {step.id}
+                  </span>
+                  <span className="text-sm font-medium">{step.name}</span>
+                </button>
               )}
-               <p className="absolute -bottom-6 w-max -translate-x-1/2 left-1/2 text-xs text-center mt-2">{step.name}</p>
             </li>
-            {stepIdx < steps.length - 1 && <div className="flex-auto border-t border-gray-200" />}
-            </React.Fragment>
           ))}
         </ol>
       </nav>
 
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-            {currentStep === 0 && <Step1 location={location} />}
-            {currentStep === 1 && (
-                <Step2
-                form={form}
-                keyResults={keyResults}
-                isLoadingKR={isLoadingKR}
-                selectedKR={selectedKR}
-                teamMembers={teamMembers}
-                />
-            )}
-            {currentStep === 2 && <Step3 form={form} keyResults={keyResults} teamMembers={teamMembers} />}
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        {currentStep === 0 && <Step1 location={location} />}
+        {currentStep === 1 && (
+          <Step2
+            form={form}
+            keyResults={keyResults}
+            isLoadingKR={isLoadingKR}
+            selectedKR={selectedKR}
+            teamMembers={teamMembers}
+            profile={profile}
+          />
+        )}
+        {currentStep === 2 && (
+          <Step3
+            form={form}
+            keyResults={keyResults}
+            teamMembers={teamMembers}
+          />
+        )}
 
-            <CardFooter className="flex w-full justify-between gap-2 border-t pt-6">
-                <Button type="button" onClick={handlePrev} size="sm" variant="secondary" disabled={currentStep === 0}>
-                    Prev
-                </Button>
-                {currentStep < steps.length - 1 && (
-                <Button type="button" onClick={handleNext} size="sm">
-                    Next <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                )}
-                {currentStep === steps.length - 1 && (
-                <Button
-                    size="sm"
-                    type="submit"
-                    disabled={form.formState.isSubmitting}
-                >
-                    {form.formState.isSubmitting ? (
-                    <Loader2 className="animate-spin" />
-                    ) : (
-                    <Check className="mr-2 h-4 w-4" />
-                    )}{' '}
-                    Approve & Start Day
-                </Button>
-                )}
-            </CardFooter>
-        </form>
+        <CardFooter className="flex w-full justify-between gap-2 border-t pt-6">
+          <Button
+            type="button"
+            onClick={handlePrev}
+            size="sm"
+            variant="secondary"
+            disabled={currentStep === 0}
+          >
+            Prev
+          </Button>
+          {currentStep < steps.length - 1 && (
+            <Button type="button" onClick={handleNext} size="sm">
+              Next <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          )}
+          {currentStep === steps.length - 1 && (
+            <Button
+              size="sm"
+              type="submit"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <Check className="mr-2 h-4 w-4" />
+              )}{' '}
+              Approve & Start Day
+            </Button>
+          )}
+        </CardFooter>
+      </form>
     </Card>
   );
 }
