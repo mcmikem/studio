@@ -56,13 +56,12 @@ const formatDateSafe = (dateValue: Timestamp | { toDate: () => Date } | string |
     if (typeof (dateValue as any).toDate === 'function') {
       date = (dateValue as { toDate: () => Date }).toDate();
     } else if (typeof dateValue === 'string') {
+      // Handles ISO strings like '2024-10-20T00:00:00.000Z'
       date = parseISO(dateValue);
-       if (isValid(date)) {
-        const adjustedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
-        date = adjustedDate;
-      }
+    } else if (dateValue instanceof Date) {
+      date = dateValue;
     } else {
-      date = dateValue as Date;
+        return 'Invalid Date';
     }
 
     if (isValid(date)) {
@@ -124,16 +123,20 @@ export default function ExpensesPage() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="flex flex-col gap-6">
+      <header>
+        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+          <Receipt className="h-8 w-8" />
+          Expense Management
+        </h1>
+        <p className="text-muted-foreground">
+          Review, approve, or reject expense reports submitted by the team.
+        </p>
+      </header>
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
             <Card>
-                <CardHeader>
-                    <CardTitle>Expense Management</CardTitle>
-                    <CardDescription>
-                    Review, approve, or reject expense reports submitted by the team.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                     {/* Mobile View */}
                     <div className="space-y-4 sm:hidden">
                         {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
@@ -302,6 +305,7 @@ export default function ExpensesPage() {
                 </CardContent>
             </Card>
         </div>
+    </div>
     </div>
   );
 }

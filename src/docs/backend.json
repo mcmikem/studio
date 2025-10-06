@@ -264,7 +264,7 @@
         "details": {
           "type": "object",
            "properties": {
-              "mainFocus": { "type": "string" },
+              "mainFocus": { "type": "array", "items": { "type": "string" }},
               "customTask": { "type": "string" },
               "timeBlocks": {
                 "type": "array",
@@ -274,7 +274,8 @@
                     "startTime": { "type": "string" },
                     "endTime": { "type": "string" },
                     "description": { "type": "string" }
-                  }
+                  },
+                  "required": ["startTime", "endTime", "description"]
                 }
               },
               "multiWinConnections": { "type": "array", "items": { "type": "string" } },
