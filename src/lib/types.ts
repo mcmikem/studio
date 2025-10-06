@@ -144,6 +144,7 @@ export type Task = {
     title: string;
     completed: boolean;
     dueDate?: string;
+    createdAt?: Timestamp;
 }
 
 export type User = {
