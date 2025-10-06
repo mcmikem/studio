@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { MessageSquare, Slack, Whatsapp } from 'lucide-react';
+import { MessageSquare, Slack, MessageCircle } from 'lucide-react';
 
 export default function ChatPage() {
   return (
@@ -38,7 +38,7 @@ export default function ChatPage() {
             </p>
             <div className="mt-6 flex gap-4">
                  <a href="#" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                    <Whatsapp className="h-5 w-5" />
+                    <MessageCircle className="h-5 w-5" />
                     <span>Team WhatsApp</span>
                 </a>
                  <a href="#" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
