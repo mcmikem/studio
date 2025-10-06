@@ -1,103 +1,136 @@
 /**
  * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for user-specific data and provides public read access to some collections.
+ * @version 2
+ *
+ * @description This ruleset enforces a strict user-ownership model for user-specific data
+ * and allows public read access for certain top-level collections while restricting writes to authorized users.
  *
  * Data Structure:
- * - /users/{userId}: Stores individual user profiles. Access is restricted to the owning user.
- * - /users/{userId}/tasks/{taskId}: Subcollection for user-specific tasks. Access is restricted to the owning user.
- * - /checkouts/{checkoutId}: Stores daily checkout updates.
- * - /activities/{activityId}: Stores logged activities.
- * - /programs/{programId}: Stores core programs and initiatives. Public read access, owner-only writes.
- * - /partnerships/{partnershipId}: Stores partner organization information. Public read access, owner-only writes.
+ * - /users/{userId}: Stores individual user profiles. Only the authenticated user can read/write their own profile.
+ * - /users/{userId}/tasks/{taskId}: Stores tasks for each user. Only the authenticated user can read/write their own tasks.
+ * - /checkouts/{checkoutId}: Stores daily checkouts.  Anyone can read checkouts. Only the user who owns the record can create, update, or delete it.
+ * - /activities/{activityId}: Stores logged activities. Anyone can read logged activities. Only the user who owns the record can create, update, or delete it.
+ * - /programs/{programId}: Stores core programs and initiatives. Anyone can read programs. Only the user who owns the record can create, update, or delete it.
+ * - /partnerships/{partnershipId}: Stores partnership information. Anyone can read partnerships. Only the user who owns the record can create, update, or delete it.
  *
  * Key Security Decisions:
- * - Users can only access their own profile data under /users/{userId}.
- * - Listing of users is disallowed.
- * - Public read access is granted for /programs and /partnerships, but writes are restricted to the owner. The owner must be specified within the document when it is created.
- *
- * Denormalization for Authorization:
- * - For public read collections with owner-only writes (e.g., /programs, /partnerships), the documents must include an `ownerId` or `authorId` field that matches the user's UID. This is enforced on create and update.
+ * - User listing is explicitly denied.
+ * - All write operations require user authentication.
+ * - Public read access is granted to /checkouts, /activities, /programs, and /partnerships, assuming they are intended to be publicly viewable.
+ * - Ownership is enforced via the userId field in relevant documents.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to read and write their own user profile.
+     * @description Enforces ownership for user profiles.
      * @path /users/{userId}
-     * @allow (get, create, update, delete) if request.auth.uid == userId
-     * @deny (get, create, update, delete) if request.auth.uid != userId
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User with ID 'user123' can create their profile if authenticated as 'user123'.
+     * @allow (get) User with ID 'user123' can read their profile if authenticated as 'user123'.
+     * @allow (update) User with ID 'user123' can update their profile if authenticated as 'user123'.
+     * @allow (delete) User with ID 'user123' can delete their profile if authenticated as 'user123'.
+     * @deny (create) User with ID 'user123' cannot create a profile if authenticated as 'user456'.
+     * @deny (get) User with ID 'user123' cannot read the profile if unauthenticated.
+     * @principle Enforces document ownership for writes and requires authentication for reads.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false;
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Allows a user to manage their own tasks.
+     * @description Enforces ownership for tasks within a user's profile.
      * @path /users/{userId}/tasks/{taskId}
-     * @allow (get, create, update, delete) if request.auth.uid == userId
-     * @deny (get, create, update, delete) if request.auth.uid != userId
-     * @principle Enforces document ownership for all operations.
+     * @allow (create) User with ID 'user123' can create a task under their profile if authenticated as 'user123'.
+     * @allow (get) User with ID 'user123' can read a task under their profile if authenticated as 'user123'.
+     * @allow (update) User with ID 'user123' can update a task under their profile if authenticated as 'user123'.
+     * @allow (delete) User with ID 'user123' can delete a task under their profile if authenticated as 'user123'.
+     * @deny (create) User with ID 'user123' cannot create a task under another user's profile.
+     * @deny (get) User with ID 'user123' cannot read a task under another user's profile.
+     * @principle Restricts access to a user's own data tree and validates relational integrity.
      */
     match /users/{userId}/tasks/{taskId} {
       allow get: if isOwner(userId);
-      allow list: if false;
+      allow list: if isOwner(userId);
       allow create: if isOwner(userId);
       allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
-    /**
-     * @description Allows anyone to read checkouts, but only the owner can create, update, or delete their own checkout.
+        /**
+     * @description Allows public read access to checkouts, while restricting write access to the owner.
      * @path /checkouts/{checkoutId}
+     * @allow (get) Any user can read a checkout.
+     * @allow (list) Any user can list checkouts.
+     * @allow (create) User with ID 'user123' can create a checkout if authenticated as 'user123'.
+     * @allow (update) User with ID 'user123' can update their checkout if authenticated as 'user123'.
+     * @allow (delete) User with ID 'user123' can delete their checkout if authenticated as 'user123'.
+     * @deny (create) User with ID 'user123' cannot create a checkout with userId 'user456'.
+     * @deny (update) User with ID 'user123' cannot update a checkout they don't own.
+     * @principle Public read access with owner-only writes, validates userId on create.
      */
     match /checkouts/{checkoutId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
-      allow update: if isSignedIn() && request.auth.uid == request.resource.data.userId && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == request.resource.data.userId && request.auth.uid == resource.data.userId;
+        allow get: if true;
+        allow list: if true;
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow update: if isSignedIn() && isExistingOwnerOfCheckout(request.resource.data.userId);
+        allow delete: if isSignedIn() && isExistingOwnerOfCheckout(request.resource.data.userId);
     }
 
-    /**
-     * @description Allows anyone to read activities, but only the owner can create, update, or delete their own activity.
+        /**
+     * @description Allows public read access to activities, while restricting write access to the owner.
      * @path /activities/{activityId}
+     * @allow (get) Any user can read an activity.
+     * @allow (list) Any user can list activities.
+     * @allow (create) User with ID 'user123' can create an activity if authenticated as 'user123'.
+     * @allow (update) User with ID 'user123' can update their activity if authenticated as 'user123'.
+     * @allow (delete) User with ID 'user123' can delete their activity if authenticated as 'user123'.
+     * @deny (create) User with ID 'user123' cannot create an activity with userId 'user456'.
+     * @deny (update) User with ID 'user123' cannot update an activity they don't own.
+     * @principle Public read access with owner-only writes, validates userId on create.
      */
     match /activities/{activityId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.userId;
-      allow update: if isSignedIn() && request.auth.uid == request.resource.data.userId && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == request.resource.data.userId && request.auth.uid == resource.data.userId;
+        allow get: if true;
+        allow list: if true;
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow update: if isSignedIn() && isExistingOwnerOfActivity(request.resource.data.userId);
+        allow delete: if isSignedIn() && isExistingOwnerOfActivity(request.resource.data.userId);
     }
 
-     /**
-      * @description Allows anyone to read programs, but only the owner can create, update, or delete programs.
-      * @path /programs/{programId}
-      */
+        /**
+     * @description Allows public read access to programs, while restricting write access to the owner.
+     * @path /programs/{programId}
+     * @allow (get) Any user can read a program.
+     * @allow (list) Any user can list programs.
+     * // CRITICAL: Cannot implement owner-only writes. The 'Program' entity is missing an 'ownerId' or 'authorId' field.
+     * @deny (create) User with ID 'user123' cannot create a program.
+     * @deny (update) User with ID 'user123' cannot update a program they don't own.
+     * @principle Public read access, but owner-only writes cannot be implemented without an owner field.
+     */
     match /programs/{programId} {
         allow get: if true;
         allow list: if true;
-        allow create: if isSignedIn() && request.auth.uid == request.resource.data.ownerId;
-        allow update: if isSignedIn() && request.auth.uid == request.resource.data.ownerId && request.auth.uid == resource.data.ownerId;
-        allow delete: if isSignedIn() && request.auth.uid == request.resource.data.ownerId && request.auth.uid == resource.data.ownerId;
+        allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     /**
-     * @description Allows anyone to read partnerships, but only the owner can create, update, or delete partnerships.
+     * @description Allows public read access to partnerships, while restricting write access to the owner.
      * @path /partnerships/{partnershipId}
+     * @allow (get) Any user can read a partnership.
+     * @allow (list) Any user can list partnerships.
+     * // CRITICAL: Cannot implement owner-only writes. The 'Partnership' entity is missing an 'ownerId' or 'authorId' field.
+     * @deny (create) User with ID 'user123' cannot create a partnership.
+     * @deny (update) User with ID 'user123' cannot update a partnership they don't own.
+     * @principle Public read access, but owner-only writes cannot be implemented without an owner field.
      */
     match /partnerships/{partnershipId} {
         allow get: if true;
         allow list: if true;
-        allow create: if isSignedIn() && request.auth.uid == request.resource.data.ownerId;
-        allow update: if isSignedIn() && request.auth.uid == request.resource.data.ownerId && request.auth.uid == resource.data.ownerId;
-        allow delete: if isSignedIn() && request.auth.uid == request.resource.data.ownerId && request.auth.uid == resource.data.ownerId;
+        allow create, update, delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
     }
 
     function isSignedIn() {
@@ -109,7 +142,15 @@ service cloud.firestore {
     }
 
     function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
+      return isSignedIn() && isOwner(userId) && resource != null;
+    }
+
+    function isExistingOwnerOfCheckout(userId) {
+        return isOwner(userId) && resource != null && resource.data.userId == request.auth.uid;
+    }
+
+    function isExistingOwnerOfActivity(userId) {
+        return isOwner(userId) && resource != null && resource.data.userId == request.auth.uid;
     }
   }
 }
