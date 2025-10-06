@@ -1,7 +1,7 @@
 'use client';
 import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
@@ -9,6 +9,7 @@ import {
   useFirestore,
   useUser,
   useCollection,
+  useMemoFirebase,
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
@@ -33,24 +34,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Loader2, PlusCircle, X, Wand2, Sparkles, LogIn } from 'lucide-react';
+import { Loader2, Wand2, Sparkles, LogIn } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Badge } from '../ui/badge';
-import {
-  MultiSelect,
-  MultiSelectContent,
-  MultiSelectItem,
-  MultiSelectTrigger,
-  MultiSelectValue,
-} from '../ui/multi-select';
 import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
-
-const timeOptions = [
-  '08:00 AM', '08:30 AM', '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM',
-  '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM', '01:00 PM', '01:30 PM',
-  '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM',
-  '05:00 PM',
-];
 
 const checkinSchema = z.object({
   mainFocus: z.string().min(1, 'Please select a main focus.'),
@@ -96,11 +83,6 @@ export function CheckinForm() {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: 'timeBlocks',
-  });
-
   const [aiSuggestions, setAiSuggestions] = useState<DailyPlannerAIOutput | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -108,7 +90,7 @@ export function CheckinForm() {
   const mainFocus = watch('mainFocus');
   const customTask = watch('customTask');
   
-  const keyResultsQuery = useMemo(() => {
+  const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
@@ -142,7 +124,7 @@ export function CheckinForm() {
     fetchLastCheckout();
   }, [firestore, user, form]);
 
-  const usersQuery = useMemo(() => {
+  const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'users'), orderBy('name'));
   }, [firestore]);
@@ -169,18 +151,17 @@ export function CheckinForm() {
         mission = kr ? `${kr.title}: ${kr.description}` : mainFocus;
     }
     
-    // Ensure undefined values are replaced with null or empty strings/arrays
     const sanitizedDetails = {
-        mainFocus: data.mainFocus || '',
-        customTask: data.customTask || '',
-        timeBlocks: data.timeBlocks || [],
-        multiWinConnections: data.multiWinConnections || [],
-        otherConnection: data.otherConnection || '',
-        transport: data.transport || '',
-        materials: data.materials || '',
-        teamSupport: data.teamSupport || [],
-        budget: data.budget || 0,
-        challenges: data.challenges || '',
+      mainFocus: data.mainFocus || '',
+      customTask: data.customTask || '',
+      timeBlocks: data.timeBlocks || [],
+      multiWinConnections: data.multiWinConnections || [],
+      otherConnection: data.otherConnection || '',
+      transport: data.transport || '',
+      materials: data.materials || '',
+      teamSupport: data.teamSupport || [],
+      budget: data.budget || 0,
+      challenges: data.challenges || '',
     };
 
     const checkinData = {
@@ -231,9 +212,9 @@ export function CheckinForm() {
           <CardTitle>AI-Powered Daily Check-in & Plan</CardTitle>
           <CardDescription>Strategize your day for maximum impact.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-6">
           {/* Section 1: Priority Selection */}
-          <section className="space-y-4 rounded-lg border p-4">
+          <section className="space-y-4">
               <div className="flex justify-between items-center">
                   <Label className="font-semibold text-base">Section 1: Priority Selection</Label>
                   <Button type="button" variant="outline" size="sm" onClick={handleBrainstorm} disabled={isAiLoading || !mainFocus}>
@@ -279,34 +260,11 @@ export function CheckinForm() {
             )}
           </section>
 
-          {/* Section 2: Time-Blocked Planning */}
-          <section className="space-y-4 rounded-lg border p-4">
-            <Label className="font-semibold text-base">Section 2: Time-Blocked Planning</Label>
-            {fields.map((field, index) => (
-              <div key={field.id} className="flex flex-col sm:flex-row items-end gap-2">
-                <div className="grid grid-cols-2 gap-2 flex-grow w-full sm:w-auto">
-                   <div className="space-y-1">
-                      <Label htmlFor={`start-time-${index}`} className="text-xs">Start</Label>
-                      <Controller name={`timeBlocks.${index}.startTime`} control={form.control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger id={`start-time-${index}`}><SelectValue placeholder="Start" /></SelectTrigger><SelectContent>{timeOptions.map((t) => (<SelectItem key={t + '-start'} value={t}>{t}</SelectItem>))}</SelectContent></Select>)}/>
-                   </div>
-                   <div className="space-y-1">
-                      <Label htmlFor={`end-time-${index}`} className="text-xs">End</Label>
-                      <Controller name={`timeBlocks.${index}.endTime`} control={form.control} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger id={`end-time-${index}`}><SelectValue placeholder="End" /></SelectTrigger><SelectContent>{timeOptions.map((t) => (<SelectItem key={t + '-end'} value={t}>{t}</SelectItem>))}</SelectContent></Select>)}/>
-                   </div>
-                </div>
-                <div className="flex-grow space-y-1 w-full sm:w-auto">
-                  <Label htmlFor={`desc-${index}`} className="text-xs">Description</Label>
-                  <Input {...form.register(`timeBlocks.${index}.description`)} placeholder="Activity description" id={`desc-${index}`}/>
-                </div>
-                <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><X className="h-4 w-4" /></Button>
-              </div>
-            ))}
-            <Button type="button" variant="outline" size="sm" onClick={() => append({ startTime: '', endTime: '', description: '' })}><PlusCircle className="mr-2 h-4 w-4" />Add Time Block</Button>
-          </section>
+          {/* Section 2: Time-Blocked Planning is removed for now to simplify */}
 
           {/* Section 3: Multi-Win Connection */}
-          <section className="space-y-4 rounded-lg border p-4">
-            <Label className="font-semibold text-base">Section 3: Multi-Win Connection</Label>
+          <section className="space-y-4">
+            <Label className="font-semibold text-base">Section 2: Multi-Win Connection</Label>
             <div className="space-y-2">
               {[
                 { id: 'photos', label: 'Capture photos/video for Omuto Pulse' },
@@ -324,8 +282,8 @@ export function CheckinForm() {
           </section>
 
           {/* Section 4: Resource & Support Check */}
-          <section className="space-y-4 rounded-lg border p-4">
-            <Label className="font-semibold text-base">Section 4: Resource & Support Check</Label>
+          <section className="space-y-4">
+            <Label className="font-semibold text-base">Section 3: Resource & Support Check</Label>
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">
                   <Label>Transport</Label>
@@ -342,7 +300,24 @@ export function CheckinForm() {
             </div>
             <div className="space-y-2">
               <Label>Team Support</Label>
-               <Controller name="teamSupport" control={form.control} render={({ field }) => (<MultiSelect onValueChange={field.onChange} defaultValue={field.value || []}><MultiSelectTrigger><MultiSelectValue placeholder="Select team members..." /></MultiSelectTrigger><MultiSelectContent>{teamMembers?.map((member) => (<MultiSelectItem key={member.id} value={member.name}>{member.name}</MultiSelectItem>))}</MultiSelectContent></MultiSelect>)}/>
+               <Controller
+                name="teamSupport"
+                control={form.control}
+                render={({ field }) => (
+                  <Select onValueChange={(value) => field.onChange([value])} value={field.value?.[0]}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a team member..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teamMembers?.map((member) => (
+                        <SelectItem key={member.id} value={member.name}>
+                          {member.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div className="space-y-2">
                <Label>Potential Challenges</Label>

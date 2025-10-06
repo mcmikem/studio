@@ -132,8 +132,8 @@ export function CheckoutForm() {
       role: profile.role,
       avatar: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
       task: fullTask,
-      learning: data.learning,
-      tomorrowPlan: data.tomorrowPlan,
+      learning: data.learning || "",
+      tomorrowPlan: data.tomorrowPlan || "",
       timestamp: serverTimestamp(),
       userId: user.uid,
     };
@@ -218,7 +218,7 @@ export function CheckoutForm() {
             />
             {errors.missionAccomplished && (
               <p className="text-sm text-destructive">
-                {`${'errors.missionAccomplished.message'}`}
+                {`${errors.missionAccomplished.message}`}
               </p>
             )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
