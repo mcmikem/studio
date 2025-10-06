@@ -17,6 +17,8 @@ import {
   limit
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const getProgramsTool = ai.defineTool(
   {
@@ -33,26 +35,35 @@ const getProgramsTool = ai.defineTool(
     })),
   },
   async (input) => {
-    const { firestore } = await initializeFirebase();
-    const programsCol = collection(firestore, 'programs');
-    let q = query(programsCol);
+    try {
+        const { firestore } = await initializeFirebase();
+        const programsCol = collection(firestore, 'programs');
+        let q = query(programsCol);
 
-    if (input?.status) {
-        q = query(q, where('status', '==', input.status));
-    } else {
-        q = query(q, where('status', '!=', 'Completed'));
-    }
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            title: data.title,
-            lead: data.lead,
-            status: data.status,
-            deadline: data.deadline,
+        if (input?.status) {
+            q = query(q, where('status', '==', input.status));
+        } else {
+            q = query(q, where('status', '!=', 'Completed'));
         }
-    });
+
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                title: data.title,
+                lead: data.lead,
+                status: data.status,
+                deadline: data.deadline,
+            }
+        });
+    } catch (e) {
+        const permissionError = new FirestorePermissionError({
+            path: 'programs',
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
+    }
   }
 );
 
@@ -74,29 +85,38 @@ const getKeyResultsTool = ai.defineTool(
       })),
   },
   async (input) => {
-      const { firestore } = await initializeFirebase();
-      const krCol = collection(firestore, 'key-results');
-      let q = query(krCol);
+    try {
+        const { firestore } = await initializeFirebase();
+        const krCol = collection(firestore, 'key-results');
+        let q = query(krCol);
 
-      if (input?.priority) {
-          q = query(q, where('priority', '==', input.priority));
-      }
-      if (input?.krTitle) {
-          q = query(q, where('title', '==', input.krTitle));
-      }
+        if (input?.priority) {
+            q = query(q, where('priority', '==', input.priority));
+        }
+        if (input?.krTitle) {
+            q = query(q, where('title', '==', input.krTitle));
+        }
 
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-              title: data.title,
-              description: data.description,
-              currentProgress: data.currentProgress,
-              target: data.target,
-              deadline: data.deadline,
-              priority: data.priority,
-          }
-      });
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                title: data.title,
+                description: data.description,
+                currentProgress: data.currentProgress,
+                target: data.target,
+                deadline: data.deadline,
+                priority: data.priority,
+            }
+        });
+    } catch (e) {
+        const permissionError = new FirestorePermissionError({
+            path: 'key-results',
+            operation: 'list',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+        throw permissionError;
+    }
   }
 );
 
@@ -117,28 +137,37 @@ const getPartnershipsTool = ai.defineTool(
         })),
     },
     async (input) => {
-        const { firestore } = await initializeFirebase();
-        const partnersCol = collection(firestore, 'partnerships');
-        let q = query(partnersCol);
+        try {
+            const { firestore } = await initializeFirebase();
+            const partnersCol = collection(firestore, 'partnerships');
+            let q = query(partnersCol);
 
-        if (input?.status) {
-            q = query(q, where('status', '==', input.status));
-        }
-        if (input?.name) {
-            q = query(q, where('name', '==', input.name));
-        }
-
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                name: data.name,
-                contactPerson: data.contactPerson,
-                contactEmail: data.contactEmail,
-                status: data.status,
-                nextStep: data.nextStep,
+            if (input?.status) {
+                q = query(q, where('status', '==', input.status));
             }
-        });
+            if (input?.name) {
+                q = query(q, where('name', '==', input.name));
+            }
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    name: data.name,
+                    contactPerson: data.contactPerson,
+                    contactEmail: data.contactEmail,
+                    status: data.status,
+                    nextStep: data.nextStep,
+                }
+            });
+        } catch (e) {
+            const permissionError = new FirestorePermissionError({
+                path: 'partnerships',
+                operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw permissionError;
+        }
     }
 );
 
@@ -157,23 +186,32 @@ const getRecentCheckoutsTool = ai.defineTool(
         })),
     },
     async (input) => {
-        const { firestore } = await initializeFirebase();
-        const checkoutsCol = collection(firestore, 'checkouts');
-        let q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
+        try {
+            const { firestore } = await initializeFirebase();
+            const checkoutsCol = collection(firestore, 'checkouts');
+            let q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
 
-        if (input?.userName) {
-            q = query(q, where('name', '==', input.userName));
-        }
-
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                name: data.name,
-                task: data.task,
-                timestamp: data.timestamp.toDate().toLocaleString(),
+            if (input?.userName) {
+                q = query(q, where('name', '==', input.userName));
             }
-        });
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    name: data.name,
+                    task: data.task,
+                    timestamp: data.timestamp.toDate().toLocaleString(),
+                }
+            });
+        } catch (e) {
+            const permissionError = new FirestorePermissionError({
+                path: 'checkouts',
+                operation: 'list',
+            });
+            errorEmitter.emit('permission-error', permissionError);
+            throw permissionError;
+        }
     }
 );
 
