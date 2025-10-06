@@ -82,6 +82,7 @@ export type Program = {
     status: "On Track" | "At Risk" | "Delayed" | "Completed";
     deadline: string;
     objectives: string[];
+    createdAt?: Timestamp;
 }
 
 export type Partnership = {
@@ -91,6 +92,7 @@ export type Partnership = {
     contactEmail: string;
     status: "Active" | "Potential" | "Inactive";
     nextStep: string;
+    createdAt?: Timestamp;
 }
 
 export type Activity = {

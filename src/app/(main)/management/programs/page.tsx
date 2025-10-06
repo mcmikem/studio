@@ -150,7 +150,7 @@ export default function ProgramsPage() {
   const firestore = useFirestore();
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'programs'), orderBy('title'));
+    return query(collection(firestore, 'programs'), orderBy('createdAt', 'desc'));
   }, [firestore]);
   const { data: programs, isLoading } = useCollection<Program>(programsQuery);
 

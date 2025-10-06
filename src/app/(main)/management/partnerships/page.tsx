@@ -140,7 +140,7 @@ export default function PartnershipsPage() {
   const firestore = useFirestore();
   const partnershipsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'partnerships'), orderBy('name'));
+    return query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'));
   }, [firestore]);
   const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
 

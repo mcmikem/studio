@@ -22,19 +22,12 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useCollection } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, where, orderBy, limit } from 'firebase/firestore';
 import { useEffect, useMemo } from 'react';
-import type { Checkout } from '@/lib/types';
+import type { Checkout, Program } from '@/lib/types';
 
-
-const missions = [
-  { id: 'mission-1', label: '[OCT KR-3] Deliver RED Campaign session at Greenhill PTA' },
-  { id: 'mission-2', label: '[OCT KR-2] Plant 50 trees with Kibibi SS Green Team' },
-  { id: 'mission-3', label: '[WEEKLY] Finalize Dignity Pads branding with YoSkills grads' },
-  { id: 'mission-other', label: 'Other...' },
-];
 
 const secondaryWins = [
     { id: 'win-1', label: 'Identify 2 parent champions for the RED campaign' },
@@ -76,7 +69,7 @@ export function CheckinForm() {
     }
   });
 
-  const recentCheckoutQuery = useMemo(() => {
+  const recentCheckoutQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return query(
       collection(firestore, 'checkouts'),
@@ -88,6 +81,13 @@ export function CheckinForm() {
 
   const { data: recentCheckouts } = useCollection<Checkout>(recentCheckoutQuery);
 
+  const programsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'programs'), orderBy('title'));
+  }, [firestore]);
+
+  const { data: programs } = useCollection<Program>(programsQuery);
+
   const allMissions = useMemo(() => {
     const dynamicMissions = [];
     if (recentCheckouts?.[0]?.tomorrowPlan) {
@@ -96,8 +96,14 @@ export function CheckinForm() {
         label: `[FROM YESTERDAY] ${recentCheckouts[0].tomorrowPlan}`,
       });
     }
-    return [...dynamicMissions, ...missions];
-  }, [recentCheckouts]);
+
+    const programMissions = programs?.map(p => ({
+        id: p.id,
+        label: `[PROGRAM] ${p.title}`
+    })) || [];
+
+    return [...dynamicMissions, ...programMissions, { id: 'mission-other', label: 'Other...' }];
+  }, [recentCheckouts, programs]);
 
   useEffect(() => {
     if (recentCheckouts?.[0]?.tomorrowPlan) {
