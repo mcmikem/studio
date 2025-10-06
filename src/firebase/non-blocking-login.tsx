@@ -51,7 +51,7 @@ async function seedInitialData(db: ReturnType<typeof getFirestore>) {
     console.log("Checking if initial data seeding is needed...");
 
     const collectionsToSeed = [
-        { name: 'users', data: sampleUsers },
+        { name: 'users', data: sampleUsers, idField: 'email' },
         { name: 'programs', data: samplePrograms },
         { name: 'partnerships', data: samplePartnerships },
         { name: 'key-results', data: sampleKeyResults },
@@ -75,16 +75,12 @@ async function seedInitialData(db: ReturnType<typeof getFirestore>) {
     for (const coll of collectionsToSeed) {
         const collectionRef = collection(db, coll.name);
         for (const item of coll.data) {
-            // For users, we use a specific ID. Let Firestore generate IDs for others.
             let docRef;
-            if (coll.name === 'users') {
-                 // Find the user details from approvedUsers to get the correct ID
-                const userDetail = Object.values(approvedUsers).find(u => u.name === (item as any).name);
-                const userEmail = Object.keys(approvedUsers).find(key => approvedUsers[key] === userDetail);
-                if(userEmail) {
-                    docRef = doc(collectionRef); // Let firestore create id
-                    batch.set(docRef, { ...item, id: docRef.id }); 
-                }
+            if (coll.name === 'users' && 'email' in item) {
+                 // We need to find the user ID from the auth system, which we don't have here.
+                 // So we will just let firestore create the ID and add it to the doc.
+                docRef = doc(collectionRef); 
+                batch.set(docRef, { ...item, id: docRef.id }); 
             } else {
                 docRef = doc(collectionRef);
                 batch.set(docRef, item);
@@ -108,38 +104,34 @@ async function createUserProfile(userCredential: UserCredential) {
 
     const db = getFirestore(user.auth.app);
     
+    // Seed data only for a new user, and only one specific user to avoid multiple triggers
     if (userCredential.additionalUserInfo?.isNewUser) {
         await seedInitialData(db);
     }
     
-    const usersSnapshot = await getDocs(query(collection(db, 'users'), where('email', '==', user.email)));
+    // Check if user profile already exists.
+    const userRef = doc(db, 'users', user.uid);
+    
+    // Non-blocking write to create or update the user profile document
+    const userData = approvedUsers[user.email.toLowerCase()];
+    const userProfile = {
+        id: user.uid,
+        name: userData.name,
+        email: user.email,
+        role: userData.role,
+    };
 
-    let userId;
-    if (!usersSnapshot.empty) {
-        userId = usersSnapshot.docs[0].id;
-    } else {
-        const newUserRef = doc(collection(db, 'users'));
-        userId = newUserRef.id;
-        const userData = approvedUsers[user.email.toLowerCase()];
-        const userProfile = {
-            id: userId,
-            name: userData.name,
-            email: user.email,
-            role: userData.role,
-        };
-        // Use a non-blocking write to create the user profile document
-        setDoc(newUserRef, userProfile).catch((error) => {
-            console.error("Error creating user profile:", error);
-            errorEmitter.emit(
-                'permission-error',
-                new FirestorePermissionError({
-                    path: newUserRef.path,
-                    operation: 'create',
-                    requestResourceData: userProfile,
-                })
-            );
-        });
-    }
+    setDoc(userRef, userProfile, { merge: true }).catch((error) => {
+        console.error("Error creating/updating user profile:", error);
+        errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+                path: userRef.path,
+                operation: 'write',
+                requestResourceData: userProfile,
+            })
+        );
+    });
 
     return userCredential;
 }
@@ -177,6 +169,7 @@ export function initiateGoogleSignIn(authInstance: Auth) {
     return signInWithPopup(authInstance, provider)
       .then(userCredential => {
           if (!isEmailApproved(userCredential.user.email)) {
+              // Immediately sign out the user if not authorized
               authInstance.signOut();
               throw new Error("This Google account is not authorized to use this application.");
           }
@@ -184,6 +177,10 @@ export function initiateGoogleSignIn(authInstance: Auth) {
       })
       .catch(error => {
         console.error("Google sign-in error:", error);
+        // Ensure we don't leave a partially logged-in state
+        if (error.code !== 'auth/popup-closed-by-user') {
+            authInstance.signOut();
+        }
         throw error;
       });
 }

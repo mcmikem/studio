@@ -6,6 +6,7 @@ import { TeamActivityFeed } from './team-activity-feed';
 import { DashboardCalendar } from './dashboard-calendar';
 import { ImpactOverview } from './impact-overview';
 import { PartnershipsOverview } from './partnerships-overview';
+import { DailyActions } from './daily-actions';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -47,10 +48,13 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
                 <div className="lg:col-span-2">
                     <TeamActivityFeed />
                 </div>
+                 <div className="lg:col-span-1">
+                    <DailyActions />
+                </div>
                 <div className="lg:col-span-1">
                     <PartnershipsOverview />
                 </div>
-                 <div className="lg:col-span-1">
+                 <div className="lg:col-span-2">
                     <DashboardCalendar />
                 </div>
             </div>

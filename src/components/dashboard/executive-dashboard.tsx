@@ -6,6 +6,7 @@ import { DashboardCalendar } from './dashboard-calendar';
 import { Alerts } from './alerts';
 import { QuickStatsSummary } from './quick-stats-summary';
 import { ProgramsOverview } from './programs-overview';
+import { DailyActions } from './daily-actions';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -37,21 +38,24 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
                     {dateString} | Mpigi District, Uganda (EAT)
                 </p>
             </header>
-             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                <div className="xl:col-span-3">
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-3">
                     <QuickStatsSummary />
                 </div>
-                 <div className="xl:col-span-3">
+                 <div className="lg:col-span-3">
                     <ProgramsOverview />
                 </div>
-                <div className="lg:col-span-2 xl:col-span-2">
+                <div className="lg:col-span-2">
                     <TeamActivityFeed />
                 </div>
-                <div className="lg:col-span-1 xl:col-span-1">
-                    <Alerts />
+                <div className="lg:col-span-1">
+                    <DailyActions />
                 </div>
-                <div className="xl:col-span-3">
+                <div className="lg:col-span-2">
                     <DashboardCalendar />
+                </div>
+                <div className="lg:col-span-1">
+                    <Alerts />
                 </div>
             </div>
         </>

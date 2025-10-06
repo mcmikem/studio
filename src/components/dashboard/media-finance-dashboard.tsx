@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import Link from 'next/link';
+import { DailyActions } from './daily-actions';
 
 const getGreeting = () => {
     const hour = new Date().getHours();
@@ -210,21 +211,28 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
                     </CardContent>
                 </Card>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <RecentExpenses />
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Media Asset Library</CardTitle>
-                            <CardDescription>A central place for all photos, videos, and brand assets.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full">
-                                <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
-                                <h3 className="font-semibold text-lg">Under Development</h3>
-                                <p className="text-muted-foreground text-sm">A searchable library for all media content is coming soon.</p>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-1">
+                        <DailyActions />
+                    </div>
+                    <div className="md:col-span-2">
+                        <RecentExpenses />
+                    </div>
+                    <div className="md:col-span-3">
+                         <Card>
+                            <CardHeader>
+                                <CardTitle>Media Asset Library</CardTitle>
+                                <CardDescription>A central place for all photos, videos, and brand assets.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full min-h-48">
+                                    <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
+                                    <h3 className="font-semibold text-lg">Under Development</h3>
+                                    <p className="text-muted-foreground text-sm">A searchable library for all media content is coming soon.</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </>
