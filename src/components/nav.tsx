@@ -96,6 +96,18 @@ export function AppSidebar() {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/assistant')}
+                  tooltip="AI Assistant"
+                >
+                  <Link href="/assistant">
+                    <Sparkles />
+                    <span>AI Assistant</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
         </SidebarMenu>
         
         <SidebarGroup>
@@ -182,7 +194,7 @@ export function AppSidebar() {
             <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator">
                     <Link href="/impact-story">
-                        <Sparkles />
+                        <Wand />
                         <span>Story Generator</span>
                     </Link>
                 </SidebarMenuButton>

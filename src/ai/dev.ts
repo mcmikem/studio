@@ -17,3 +17,4 @@ genkit({
 
 export * from './flows/daily-planner-flow';
 export * from './flows/impact-story-generator';
+export * from './flows/assistant-flow';
