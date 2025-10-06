@@ -33,7 +33,7 @@ export function QuickStatsSummary() {
             const displayTarget = stat.target ? (stat.isCurrency ? new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(stat.target) : stat.target) : null;
 
             return (
-              <CarouselItem key={index} className="basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/6">
+              <CarouselItem key={index} className="basis-2/3 sm:basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/6">
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
