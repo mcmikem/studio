@@ -197,7 +197,15 @@
         },
         "task": {
           "type": "string",
-          "description": "The checkout message or task update."
+          "description": "The primary checkout message or task update summary."
+        },
+        "learning": {
+            "type": "string",
+            "description": "Key learnings or what to do differently next time."
+        },
+        "tomorrowPlan": {
+            "type": "string",
+            "description": "The user's stated priority for the next day."
         },
         "timestamp": {
           "type": "string",
@@ -212,6 +220,22 @@
         "task",
         "timestamp"
       ]
+    },
+    "Checkin": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Checkin",
+      "type": "object",
+      "description": "Represents a user's start-of-day check-in and plan.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "primaryMission": { "type": "string" },
+        "secondaryWins": { "type": "array", "items": { "type": "string" } },
+        "communityResources": { "type": "array", "items": { "type": "string" } },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "primaryMission", "timestamp"]
     },
     "Project": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -254,6 +278,12 @@
         "$ref": "#/entities/User"
       },
       "description": "Stores user profile information."
+    },
+    "/checkins/{checkinId}": {
+      "schema": {
+        "$ref": "#/entities/Checkin"
+      },
+      "description": "Stores daily check-in plans from team members."
     },
     "/checkouts/{checkoutId}": {
       "schema": {
