@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Bot, User, Loader2 } from 'lucide-react';
-import { assistantFlow } from '@/ai/flows/assistant-flow';
+import { streamAssistant } from '@/ai/flows/assistant-flow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -47,28 +47,40 @@ export default function AssistantPage() {
 
   const onSubmit = async ({ prompt }: { prompt: string }) => {
     setIsLoading(true);
-    setMessages((prev) => [...prev, { role: 'user', content: prompt }]);
+    const newMessages: Message[] = [...messages, { role: 'user', content: prompt }];
+    setMessages(newMessages);
     reset();
 
-    const assistantMessage: Message = { role: 'assistant', content: '' };
-    setMessages((prev) => [...prev, assistantMessage]);
-
     try {
-      const response = await assistantFlow(prompt);
-      setMessages((prev) =>
-        prev.map((msg, i) =>
-          i === prev.length - 1 ? { ...msg, content: response } : msg
-        )
-      );
+      // Start with an empty assistant message
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+
+      const responseStream = await streamAssistant(prompt);
+      
+      // The streamAssistant function in the current implementation returns the full string.
+      // A true streaming implementation would return a stream object to iterate over.
+      // Given the current implementation, we just set the content once.
+      setMessages(prev => {
+        const updatedMessages = [...prev];
+        const lastMessageIndex = updatedMessages.length - 1;
+        if (updatedMessages[lastMessageIndex].role === 'assistant') {
+          updatedMessages[lastMessageIndex].content = responseStream;
+        }
+        return updatedMessages;
+      });
+
     } catch (e) {
       console.error(e);
-      setMessages((prev) =>
-        prev.map((msg, i) =>
-          i === prev.length - 1
-            ? { ...msg, content: 'Sorry, I had trouble connecting to the AI.' }
-            : msg
-        )
-      );
+       setMessages(prev => {
+         const updatedMessages = [...prev];
+         const lastMessageIndex = updatedMessages.length - 1;
+         if (updatedMessages[lastMessageIndex].role === 'assistant') {
+            updatedMessages[lastMessageIndex].content = 'Sorry, I had trouble connecting to the AI.';
+         } else {
+            updatedMessages.push({ role: 'assistant', content: 'Sorry, I had trouble connecting to the AI.' });
+         }
+         return updatedMessages;
+       });
     } finally {
       setIsLoading(false);
     }
@@ -141,7 +153,7 @@ export default function AssistantPage() {
                   )}
                 </div>
               ))}
-              {isLoading && messages[messages.length -1].role === 'assistant' && (
+              {isLoading && messages[messages.length -1]?.role === 'user' && (
                 <div className="flex items-start gap-3">
                     <Avatar className="h-9 w-9 border">
                       <AvatarFallback>
@@ -153,7 +165,7 @@ export default function AssistantPage() {
                     </div>
                 </div>
               )}
-              {messages.length === 0 && (
+              {messages.length === 0 && !isLoading && (
                 <div className="text-center text-muted-foreground pt-16 flex flex-col items-center">
                     <Bot className="h-12 w-12 mb-4" />
                     <p className="font-semibold">How can I help you today?</p>

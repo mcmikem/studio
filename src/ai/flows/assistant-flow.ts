@@ -247,7 +247,7 @@ Here is the user's question:
   }
 });
 
-const assistantFlow = ai.defineFlow(
+export const assistantFlow = ai.defineFlow(
   {
     name: 'assistantFlow',
     inputSchema: z.string(),
@@ -264,7 +264,7 @@ const assistantFlow = ai.defineFlow(
 
 
 export async function streamAssistant(prompt: string) {
-    const { stream } = await ai.generateStream({
+    const { stream } = ai.generateStream({
         prompt: assistantPrompt,
         input: { prompt },
     });
