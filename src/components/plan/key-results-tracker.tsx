@@ -14,7 +14,7 @@ import type { KeyResult } from '@/lib/types';
 import { Target, Flag } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 
 const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -43,6 +43,18 @@ export function KeyResultsTracker() {
     if (kr.target >= 1000) return `${(kr.currentProgress / 1000000).toFixed(1)}M`;
      return kr.currentProgress.toLocaleString();
   }
+  
+  const formatDate = (dateString: string) => {
+    try {
+      const date = parseISO(dateString);
+      if (isValid(date)) {
+        return format(date, 'MMM dd, yyyy');
+      }
+    } catch (e) {
+      // Ignore invalid date strings
+    }
+    return 'Invalid Date';
+  }
 
   return (
     <Card>
@@ -63,7 +75,7 @@ export function KeyResultsTracker() {
           ))}
         {keyResults && keyResults.length > 0 ? (
           keyResults.map((kr) => {
-             const progressPercentage = (kr.currentProgress / kr.target) * 100;
+             const progressPercentage = kr.target > 0 ? (kr.currentProgress / kr.target) * 100 : 0;
             return (
                 <div key={kr.id} className="space-y-2">
                     <div className="flex justify-between items-start">
@@ -71,7 +83,7 @@ export function KeyResultsTracker() {
                             <p className="font-semibold">{kr.title}: {kr.description}</p>
                             <p className="text-xs text-muted-foreground">
                                 <Flag className="inline h-3 w-3 mr-1" />
-                                Deadline: {format(parseISO(kr.deadline), 'MMM dd, yyyy')}
+                                Deadline: {formatDate(kr.deadline)}
                             </p>
                         </div>
                         <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>

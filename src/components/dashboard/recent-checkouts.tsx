@@ -11,7 +11,9 @@ import { tagColors } from '@/lib/data';
 import { MessageSquareText } from 'lucide-react';
 
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
-  const timeAgo = checkout.timestamp ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) : 'Just now';
+  const timeAgo = (checkout.timestamp && typeof checkout.timestamp.toDate === 'function') 
+    ? formatDistanceToNow(checkout.timestamp.toDate(), { addSuffix: true }) 
+    : 'Just now';
 
   // Extract all hashtags from the task
   const tags = checkout.task?.match(/#\w+/g) || [];

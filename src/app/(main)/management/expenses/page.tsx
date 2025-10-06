@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -61,6 +60,13 @@ export default function ExpensesPage() {
     });
   };
 
+  const formatDateSafe = (timestamp: any) => {
+    if (timestamp && typeof timestamp.toDate === 'function') {
+      return format(timestamp.toDate(), 'dd MMM yyyy');
+    }
+    return 'Invalid Date';
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -99,7 +105,7 @@ export default function ExpensesPage() {
               expenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell className="font-medium">{expense.userName}</TableCell>
-                  <TableCell>{format(expense.date.toDate(), 'dd MMM yyyy')}</TableCell>
+                  <TableCell>{formatDateSafe(expense.date)}</TableCell>
                   <TableCell>{expense.description}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{expense.category}</Badge>
