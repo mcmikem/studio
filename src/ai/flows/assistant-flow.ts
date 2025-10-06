@@ -18,169 +18,7 @@ import {
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server';
 
-const getProgramsTool = ai.defineTool(
-  {
-    name: 'getActivePrograms',
-    description: 'Get a list of currently active Omuto Foundation programs from the database.',
-    inputSchema: z.object({
-      status: z.enum(['On Track', 'At Risk', 'Delayed', 'Completed']).optional().describe('Filter programs by status.'),
-    }),
-    outputSchema: z.array(z.object({
-        title: z.string(),
-        lead: z.string(),
-        status: z.string(),
-        deadline: z.string(),
-    })),
-  },
-  async (input) => {
-    const { firestore } = await initializeFirebase();
-    const programsCol = collection(firestore, 'programs');
-    let q = query(programsCol);
-
-    if (input?.status) {
-        q = query(q, where('status', '==', input.status));
-    } else {
-        q = query(q, where('status', '!=', 'Completed'));
-    }
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            title: data.title,
-            lead: data.lead,
-            status: data.status,
-            deadline: data.deadline,
-        }
-    });
-  }
-);
-
-const getKeyResultsTool = ai.defineTool(
-  {
-      name: 'getOctoberKeyResults',
-      description: "Get details about the Key Results (KRs) for Omuto's October Operational Plan.",
-      inputSchema: z.object({
-          priority: z.enum(['High', 'Medium', 'Low']).optional().describe('Filter KRs by priority level.'),
-          krTitle: z.string().optional().describe('Get a specific KR by its title, e.g., "OCT-KR1".')
-      }),
-      outputSchema: z.array(z.object({
-          title: z.string(),
-          description: z.string(),
-          currentProgress: z.number(),
-          target: z.number(),
-          deadline: z.string(),
-          priority: z.string(),
-      })),
-  },
-  async (input) => {
-    const { firestore } = await initializeFirebase();
-    const krCol = collection(firestore, 'key-results');
-    let q = query(krCol);
-
-    if (input?.priority) {
-        q = query(q, where('priority', '==', input.priority));
-    }
-    if (input?.krTitle) {
-        q = query(q, where('title', '==', input.krTitle));
-    }
-
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            title: data.title,
-            description: data.description,
-            currentProgress: data.currentProgress,
-            target: data.target,
-            deadline: data.deadline,
-            priority: data.priority,
-        }
-    });
-  }
-);
-
-const getPartnershipsTool = ai.defineTool(
-    {
-        name: 'getPartnerships',
-        description: "Get information about Omuto's partner organizations.",
-        inputSchema: z.object({
-            status: z.enum(['Active', 'Potential', 'Inactive']).optional().describe('Filter partners by their status.'),
-            name: z.string().optional().describe('Find a specific partner by name.'),
-        }),
-        outputSchema: z.array(z.object({
-            name: z.string(),
-            contactPerson: z.string(),
-            contactEmail: z.string(),
-            status: z.string(),
-            nextStep: z.string(),
-        })),
-    },
-    async (input) => {
-        const { firestore } = await initializeFirebase();
-        const partnersCol = collection(firestore, 'partnerships');
-        let q = query(partnersCol);
-
-        if (input?.status) {
-            q = query(q, where('status', '==', input.status));
-        }
-        if (input?.name) {
-            q = query(q, where('name', '==', input.name));
-        }
-
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                name: data.name,
-                contactPerson: data.contactPerson,
-                contactEmail: data.contactEmail,
-                status: data.status,
-                nextStep: data.nextStep,
-            }
-        });
-    }
-);
-
-const getRecentCheckoutsTool = ai.defineTool(
-    {
-        name: 'getRecentCheckouts',
-        description: "Get the most recent daily checkout updates from team members.",
-        inputSchema: z.object({
-            userName: z.string().optional().describe("Filter checkouts by a specific team member's name."),
-            limit: z.number().optional().default(5).describe('The number of recent checkouts to retrieve.'),
-        }),
-        outputSchema: z.array(z.object({
-            name: z.string(),
-            task: z.string(),
-            timestamp: z.string(),
-        })),
-    },
-    async (input) => {
-        const { firestore } = await initializeFirebase();
-        const checkoutsCol = collection(firestore, 'checkouts');
-        let q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
-
-        if (input?.userName) {
-            q = query(q, where('name', '==', input.userName));
-        }
-
-        const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                name: data.name,
-                task: data.task,
-                timestamp: data.timestamp.toDate().toLocaleString(),
-            }
-        });
-    }
-);
-
-
-const assistantPrompt = ai.definePrompt({
-  name: 'assistantPrompt',
-  system: `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
+const KNOWLEDGE_BASE = `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
 
 You have access to live data about the organization through your tools. Use them whenever possible to provide real-time information.
 
@@ -236,19 +74,187 @@ This is your knowledge base. It is the complete operational DNA of Omuto Foundat
 - **Daily Operating Rhythm**: 9 AM WhatsApp check-in, 5 PM checkout, Friday reviews, Sunday "Omuto This Week" publication.
 - **Innovation & Sustainability**: Focus on models like commission-based production for Dignity Pads and non-financial motivation for volunteers.
 - **Data-Driven Adaptation**: Use real-time data to track progress, monitor health, and mitigate risks.
+`;
 
-Here is the user's question: {{{prompt}}}
-`,
-  input: {
-    schema: z.object({
-        prompt: z.string(),
+
+const getProgramsTool = ai.defineTool(
+  {
+    name: 'getActivePrograms',
+    description: 'Get a list of currently active Omuto Foundation programs from the database.',
+    inputSchema: z.object({
+      status: z.enum(['On Track', 'At Risk', 'Delayed', 'Completed']).optional().describe('Filter programs by status.'),
     }),
+    outputSchema: z.array(z.object({
+        title: z.string(),
+        lead: z.string(),
+        status: z.string(),
+        deadline: z.string(),
+    })),
   },
-  tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
-  output: {
-    format: 'text'
+  async (input) => {
+    try {
+        const { firestore } = await initializeFirebase();
+        const programsCol = collection(firestore, 'programs');
+        let q = query(programsCol);
+
+        if (input?.status) {
+            q = query(q, where('status', '==', input.status));
+        } else {
+            q = query(q, where('status', '!=', 'Completed'));
+        }
+
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                title: data.title,
+                lead: data.lead,
+                status: data.status,
+                deadline: data.deadline,
+            }
+        });
+    } catch(e) {
+        console.error("Error fetching active programs:", e);
+        throw e;
+    }
   }
-});
+);
+
+const getKeyResultsTool = ai.defineTool(
+  {
+      name: 'getOctoberKeyResults',
+      description: "Get details about the Key Results (KRs) for Omuto's October Operational Plan.",
+      inputSchema: z.object({
+          priority: z.enum(['High', 'Medium', 'Low']).optional().describe('Filter KRs by priority level.'),
+          krTitle: z.string().optional().describe('Get a specific KR by its title, e.g., "OCT-KR1".')
+      }),
+      outputSchema: z.array(z.object({
+          title: z.string(),
+          description: z.string(),
+          currentProgress: z.number(),
+          target: z.number(),
+          deadline: z.string(),
+          priority: z.string(),
+      })),
+  },
+  async (input) => {
+    try {
+        const { firestore } = await initializeFirebase();
+        const krCol = collection(firestore, 'key-results');
+        let q = query(krCol);
+
+        if (input?.priority) {
+            q = query(q, where('priority', '==', input.priority));
+        }
+        if (input?.krTitle) {
+            q = query(q, where('title', '==', input.krTitle));
+        }
+
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                title: data.title,
+                description: data.description,
+                currentProgress: data.currentProgress,
+                target: data.target,
+                deadline: data.deadline,
+                priority: data.priority,
+            }
+        });
+    } catch(e) {
+        console.error("Error fetching key results:", e);
+        throw e;
+    }
+  }
+);
+
+const getPartnershipsTool = ai.defineTool(
+    {
+        name: 'getPartnerships',
+        description: "Get information about Omuto's partner organizations.",
+        inputSchema: z.object({
+            status: z.enum(['Active', 'Potential', 'Inactive']).optional().describe('Filter partners by their status.'),
+            name: z.string().optional().describe('Find a specific partner by name.'),
+        }),
+        outputSchema: z.array(z.object({
+            name: z.string(),
+            contactPerson: z.string(),
+            contactEmail: z.string(),
+            status: z.string(),
+            nextStep: z.string(),
+        })),
+    },
+    async (input) => {
+        try {
+            const { firestore } = await initializeFirebase();
+            const partnersCol = collection(firestore, 'partnerships');
+            let q = query(partnersCol);
+
+            if (input?.status) {
+                q = query(q, where('status', '==', input.status));
+            }
+            if (input?.name) {
+                q = query(q, where('name', '==', input.name));
+            }
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    name: data.name,
+                    contactPerson: data.contactPerson,
+                    contactEmail: data.contactEmail,
+                    status: data.status,
+                    nextStep: data.nextStep,
+                }
+            });
+        } catch(e) {
+            console.error("Error fetching partnerships:", e);
+            throw e;
+        }
+    }
+);
+
+const getRecentCheckoutsTool = ai.defineTool(
+    {
+        name: 'getRecentCheckouts',
+        description: "Get the most recent daily checkout updates from team members.",
+        inputSchema: z.object({
+            userName: z.string().optional().describe("Filter checkouts by a specific team member's name."),
+            limit: z.number().optional().default(5).describe('The number of recent checkouts to retrieve.'),
+        }),
+        outputSchema: z.array(z.object({
+            name: z.string(),
+            task: z.string(),
+            timestamp: z.string(),
+        })),
+    },
+    async (input) => {
+        try {
+            const { firestore } = await initializeFirebase();
+            const checkoutsCol = collection(firestore, 'checkouts');
+            let q = query(checkoutsCol, orderBy('timestamp', 'desc'), limit(input.limit || 5));
+
+            if (input?.userName) {
+                q = query(q, where('name', '==', input.userName));
+            }
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    name: data.name,
+                    task: data.task,
+                    timestamp: data.timestamp.toDate().toLocaleString(),
+                }
+            });
+        } catch(e) {
+            console.error("Error fetching recent checkouts:", e);
+            throw e;
+        }
+    }
+);
 
 export const assistantFlow = ai.defineFlow(
   {
@@ -258,9 +264,8 @@ export const assistantFlow = ai.defineFlow(
   },
   async (prompt) => {
     const llmResponse = await ai.generate({
-      prompt: assistantPrompt,
-      input: { prompt },
-      history: [],
+      prompt: prompt,
+      system: KNOWLEDGE_BASE,
       tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
     });
     
@@ -271,15 +276,16 @@ export const assistantFlow = ai.defineFlow(
 
 export async function streamAssistant(prompt: string) {
     const { stream } = ai.generateStream({
-        prompt: assistantPrompt,
-        input: { prompt },
-        history: [],
+        prompt: prompt,
+        system: KNOWLEDGE_BASE,
         tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
     });
     
     let content = '';
     for await (const chunk of stream) {
-        content += chunk.text;
+        if (chunk.text) {
+          content += chunk.text;
+        }
     }
     return content;
 }
