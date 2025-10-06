@@ -1,123 +1,83 @@
+/**
+ * @file Firestore Security Rules
+ * @description This ruleset provides demo access to the entire Omuto Central application without security limitations.
+ *
+ * Core Philosophy:
+ * This ruleset grants full read and write access to all authenticated users for demonstration purposes.  It is NOT intended for production use.
+ *
+ * Data Structure:
+ * The Firestore database contains top-level collections for users, checkouts, activities, programs, and partnerships.
+ *
+ * Key Security Decisions:
+ * All authenticated users can read and write all data.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile information.
+     * @description Allows any authenticated user to read and write user profile information.
      * @path /users/{userId}
-     * @allow (get, list): Any user can read any user document.
-     * @allow (create): A user can create their own document if the userId matches their auth UID.
-     * @allow (update, delete): A user can update or delete their own document if the userId matches their auth UID and the document exists.
-     * @deny (create): A user cannot create a document with a userId that does not match their auth UID.
-     * @deny (update, delete): A user cannot update or delete a document with a userId that does not match their auth UID or if the document does not exist.
-     * @principle Enforces document ownership for writes.
+     * @allow (get, list, create, update, delete) - Any signed-in user can perform any operation.
+     * @deny (none) - No requests are denied.
+     * @principle Grants full access for demo purposes.
      */
     match /users/{userId} {
-      // Helper function to check if the user is signed in.
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Helper function to check if the requesting user is the owner of the document.
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      allow get, list: if true;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update, delete: if isSignedIn() && isOwner(userId) && existsAfter(resource);
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Controls access to checkout documents.
+     * @description Allows any authenticated user to read and write checkout updates.
      * @path /checkouts/{checkoutId}
-     * @allow (get, list): Only the owner can get or list their own checkouts.
-     * @allow (create): Only the user can create their own checkout document.
-     * @allow (update, delete): Only the owner can update or delete their own checkout document, and it must exist.
-     * @deny (create): A user cannot create a checkout for another user.
-     * @deny (update, delete): A user cannot update or delete a checkout for another user or if the document does not exist.
-     * @principle Enforces document ownership for writes, and only the owner can view their own checkouts.
+     * @allow (get, list, create, update, delete) - Any signed-in user can perform any operation.
+     * @deny (none) - No requests are denied.
+     * @principle Grants full access for demo purposes.
      */
     match /checkouts/{checkoutId} {
-      // Helper function to check if the user is signed in.
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get, list: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.userId && existsAfter(resource);
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Controls access to activity documents.
+     * @description Allows any authenticated user to read and write activity logs.
      * @path /activities/{activityId}
-     * @allow (get, list): Only the owner can get or list their own activities.
-     * @allow (create): Only the user can create their own activity document.
-     * @allow (update, delete): Only the owner can update or delete their own activity document, and it must exist.
-     * @deny (create): A user cannot create an activity for another user.
-     * @deny (update, delete): A user cannot update or delete an activity for another user or if the document does not exist.
-     * @principle Enforces document ownership for writes, and only the owner can view their own activities.
+     * @allow (get, list, create, update, delete) - Any signed-in user can perform any operation.
+     * @deny (none) - No requests are denied.
+     * @principle Grants full access for demo purposes.
      */
     match /activities/{activityId} {
-      // Helper function to check if the user is signed in.
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get, list: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isSignedIn() && request.auth.uid == resource.data.userId && existsAfter(resource);
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Controls access to program documents.
+     * @description Allows any authenticated user to read and write program data.
      * @path /programs/{programId}
-     * @allow (get, list): All users can read program documents.
-     * @deny (create, update, delete): Only authorized users can create, update, or delete program documents.  This requires role-based authentication which is not yet implemented.
-     * @principle Allows public read access but restricts write access to authorized users.
+     * @allow (get, list, create, update, delete) - Any signed-in user can perform any operation.
+     * @deny (none) - No requests are denied.
+     * @principle Grants full access for demo purposes.
      */
     match /programs/{programId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based validation for authorized users.
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
     /**
-     * @description Controls access to partnership documents.
+     * @description Allows any authenticated user to read and write partnership data.
      * @path /partnerships/{partnershipId}
-     * @allow (get, list): All users can read partnership documents.
-     * @deny (create, update, delete): Only authorized users can create, update, or delete partnership documents. This requires role-based authentication which is not yet implemented.
-     * @principle Allows public read access but restricts write access to authorized users.
+     * @allow (get, list, create, update, delete) - Any signed-in user can perform any operation.
+     * @deny (none) - No requests are denied.
+     * @principle Grants full access for demo purposes.
      */
     match /partnerships/{partnershipId} {
-      allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Add role-based validation for authorized users.
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isSignedIn();
     }
 
-    /**
-     * @description Controls access to tasks documents within a user's document.
-     * @path /users/{userId}/tasks/{taskId}
-     * @allow (get, list): Only the owner can get or list their own tasks.
-     * @allow (create): Only the user can create their own tasks document.
-     * @allow (update, delete): Only the owner can update or delete their own tasks document, and it must exist.
-     * @deny (create): A user cannot create a tasks for another user.
-     * @deny (update, delete): A user cannot update or delete a tasks for another user or if the document does not exist.
-     * @principle Enforces document ownership for writes, and only the owner can view their own tasks.
-     */
-    match /users/{userId}/tasks/{taskId} {
-      // Helper function to check if the user is signed in.
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      // Helper function to check if the requesting user is the owner of the document.
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      allow get, list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      allow update, delete: if isSignedIn() && request.auth.uid == userId && existsAfter(resource);
+    // Global helper function to check if a user is signed in.
+    function isSignedIn() {
+      return request.auth != null;
     }
   }
 }
