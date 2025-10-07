@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, doc } from 'firebase/firestore';
 import type { Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { formatDateSafe } from '@/lib/utils';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
 const formatCurrency = (value: number) => {
@@ -87,14 +88,24 @@ export default function ExpensesPage() {
   };
 
 
-  const handleStatusUpdate = (expenseId: string, status: 'Approved' | 'Rejected') => {
+  const handleStatusUpdate = async (expenseId: string, status: 'Approved' | 'Rejected') => {
     if (!firestore) return;
     const expenseRef = doc(firestore, 'expenses', expenseId);
-    updateDoc(expenseRef, { status: status });
-    toast({
-      title: `Expense ${status}`,
-      description: `The expense report has been marked as ${status.toLowerCase()}.`,
-    });
+    try {
+        await updateDocumentNonBlocking(expenseRef, { status: status });
+        toast({
+          title: `Expense ${status}`,
+          description: `The expense report has been marked as ${status.toLowerCase()}.`,
+        });
+    } catch (error) {
+        // The non-blocking wrapper will emit the detailed error,
+        // but we can still show a generic failure toast here if we want.
+         toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not update the expense status. Please try again.",
+        });
+    }
   };
 
   return (
