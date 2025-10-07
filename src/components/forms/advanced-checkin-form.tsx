@@ -29,7 +29,6 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
 import { MultiSelect } from '../ui/multi-select';
 import { Checkbox } from '../ui/checkbox';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +39,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '../ui/skeleton';
 
 
 const timeBlockSchema = z.object({
