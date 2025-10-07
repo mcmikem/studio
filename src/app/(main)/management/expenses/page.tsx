@@ -25,7 +25,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Check, X, Receipt } from 'lucide-react';
-import { format, parseISO, isValid } from 'date-fns';
 import { useMemo } from 'react';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import {
@@ -33,6 +32,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { formatDateSafe } from '@/lib/utils';
 
 
 const formatCurrency = (value: number) => {
@@ -47,22 +47,6 @@ const statusColors: { [key: string]: string } = {
   Pending: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
   Approved: 'border-green-500 bg-green-500/10 text-green-500',
   Rejected: 'border-red-500 bg-red-500/10 text-red-500',
-};
-
-const formatDateSafe = (dateValue: Timestamp): string => {
-  if (!dateValue) return 'Invalid Date';
-
-  try {
-    const date = dateValue.toDate();
-    if (isValid(date)) {
-      // Format the date as 'dd MMM yyyy' which is unambiguous.
-      return format(date, 'dd MMM yyyy');
-    }
-  } catch (e) {
-    // Fall through if any parsing fails
-  }
-
-  return 'Invalid Date';
 };
 
 
@@ -136,7 +120,7 @@ export default function ExpensesPage() {
                                 <Card key={expense.id}>
                                     <CardHeader>
                                         <CardTitle className="text-base">{expense.description}</CardTitle>
-                                        <CardDescription>{expense.userName} - {formatDateSafe(expense.date)}</CardDescription>
+                                        <CardDescription>{expense.userName} - {formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex justify-between items-center">
                                         <div>
@@ -208,7 +192,7 @@ export default function ExpensesPage() {
                             expenses.map((expense) => (
                                 <TableRow key={expense.id}>
                                 <TableCell className="font-medium">{expense.userName}</TableCell>
-                                <TableCell>{formatDateSafe(expense.date)}</TableCell>
+                                <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
                                 <TableCell>{expense.description}</TableCell>
                                 <TableCell>
                                     <Badge variant="outline">{expense.category}</Badge>
@@ -300,5 +284,3 @@ export default function ExpensesPage() {
     </div>
   );
 }
-
-    
