@@ -84,7 +84,7 @@ export function ImpactStoryGenerator() {
     return doc(firestore, 'checkouts', selectedCheckoutId);
   }, [firestore, selectedCheckoutId]);
 
-  const { data: selectedCheckout } = useDoc<Checkout>(checkoutDocRef);
+  const { data: selectedCheckout, isLoading: isLoadingCheckout } = useDoc<Checkout>(checkoutDocRef);
 
 
   const generateStory = async () => {
@@ -174,7 +174,7 @@ export function ImpactStoryGenerator() {
            <div className="space-y-2">
              <Label>Or use a Checkout Report</Label>
              <p className="text-sm text-muted-foreground">You can also generate a story from a daily checkout update. If you just submitted one, it should be pre-selected.</p>
-             {checkoutIdFromUrl && !selectedCheckout && <Skeleton className="h-10 w-full" />}
+             {isLoadingCheckout && checkoutIdFromUrl && <Skeleton className="h-10 w-full" />}
              {selectedCheckout && (
                 <div className="p-2 border rounded-md bg-muted text-sm">
                     Selected: Daily checkout from {selectedCheckout.name} on {selectedCheckout.timestamp ? new Date(selectedCheckout.timestamp.toDate()).toLocaleDateString() : '...'}
