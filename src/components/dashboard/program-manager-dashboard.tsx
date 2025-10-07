@@ -3,7 +3,6 @@
 import type { User } from "@/lib/types"
 import { ProgramsOverview } from "./programs-overview"
 import { TeamActivityFeed } from "./team-activity-feed"
-import { DashboardCalendar } from "./dashboard-calendar"
 import { PartnershipsOverview } from "./partnerships-overview"
 import { DailyActions } from "./daily-actions"
 import { QuickStatsSummary } from "./quick-stats-summary"
@@ -38,25 +37,29 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
           {dateString} | Here's the pulse on your programs and partnerships.
         </p>
       </header>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <div className="lg:col-span-3">
           <QuickStatsSummary />
         </div>
         <div className="lg:col-span-3">
           <ProgramsOverview />
         </div>
-        <div className="lg:col-span-2">
-          <TeamActivityFeed />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <TeamActivityFeed />
+            </div>
+            <div className="lg:col-span-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+              <DailyActions />
+              <TeamToday />
+            </div>
         </div>
-        <div className="lg:col-span-1 grid grid-cols-1 gap-6">
-          <DailyActions />
-          <TeamToday />
-        </div>
-        <div className="lg:col-span-2">
-          <PartnershipsOverview />
-        </div>
-        <div className="lg:col-span-1">
-          <Alerts />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <PartnershipsOverview />
+            </div>
+            <div className="lg:col-span-1">
+              <Alerts />
+            </div>
         </div>
       </div>
     </>
