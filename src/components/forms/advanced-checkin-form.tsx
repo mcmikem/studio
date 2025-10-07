@@ -14,14 +14,6 @@ import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { KeyResult, User, Checkout } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -32,13 +24,24 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Wand2, Sparkles, LogIn, Trash2, PlusCircle } from 'lucide-react';
+import { Loader2, Wand2, Sparkles, LogIn, Trash2, PlusCircle, Info } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
 import { MultiSelect } from '../ui/multi-select';
 import { Separator } from '../ui/separator';
 import { Checkbox } from '../ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 
 const timeBlockSchema = z.object({
   startTime: z.string().min(1, 'Required'),
@@ -70,6 +73,52 @@ const multiWinOptions = [
     { id: 'process', label: 'Improve a process/template' },
 ];
 
+function AiPlannerDialog({
+  onDraftPlan,
+  isAiLoading,
+  mission,
+  children
+}: {
+  onDraftPlan: (context: string) => void;
+  isAiLoading: boolean;
+  mission: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [context, setContext] = useState('');
+
+  const handleDraftClick = () => {
+    onDraftPlan(context);
+    // You might want to close the dialog only on success, handled by the parent
+  };
+  
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Draft Your Day with AI</DialogTitle>
+          <DialogDescription>
+            Provide some context about your plan for the mission: <span className="font-semibold">"{mission}"</span>. The AI will use this to create a detailed draft.
+          </DialogDescription>
+        </DialogHeader>
+        <Textarea 
+          placeholder="e.g., 'I'm going to Nindye SS to meet the headteacher and identify a good spot for planting 50 trees.'"
+          value={context}
+          onChange={(e) => setContext(e.target.value)}
+          className="min-h-[100px]"
+        />
+        <DialogFooter>
+          <Button onClick={handleDraftClick} disabled={isAiLoading || !context.trim()}>
+            {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+            Draft My Day
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function AdvancedCheckinForm() {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -99,6 +148,7 @@ export function AdvancedCheckinForm() {
   });
 
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiBestPractice, setAiBestPractice] = useState<string | null>(null);
 
   const { watch, control, formState: { errors, isSubmitting }, reset } = form;
   const mainFocus = watch('mainFocus');
@@ -188,8 +238,8 @@ export function AdvancedCheckinForm() {
     form.reset();
   };
 
-  const handleDraftPlan = async () => {
-    if (mainFocus.length === 0 || !profile) return;
+  const handleDraftPlan = async (userContext: string) => {
+    if (mainFocus.length === 0 || !profile || !userContext) return;
     
     const tasks = mainFocus.map(focusId => {
       if (focusId === 'custom') return customTask;
@@ -202,22 +252,34 @@ export function AdvancedCheckinForm() {
     }
 
     setIsAiLoading(true);
+    setAiBestPractice(null);
 
     try {
-        const draft = await dailyPlannerAI({ task: tasks, role: profile.role });
-        // Use reset to update the whole form at once
+        const draft = await dailyPlannerAI({ task: tasks, role: profile.role, userContext });
+        
         reset({
-            ...form.getValues(), // keep existing values
+            ...form.getValues(),
             timeBlocks: draft.timeBlocks,
             multiWinConnections: draft.multiWinConnections,
             budget: draft.budget,
             materials: draft.materials,
             challenges: draft.challenges,
         });
+
+        if (draft.bestPractice) {
+          setAiBestPractice(draft.bestPractice);
+        }
+
          toast({
             title: "Plan Drafted!",
             description: "The AI has generated a first draft of your plan. Review and edit as needed.",
         });
+        
+        // Find a way to close the dialog
+        const closeButton = document.querySelector('[data-radix-dialog-close]');
+        if (closeButton instanceof HTMLElement) {
+          closeButton.click();
+        }
 
     } catch (error) {
         console.error("AI drafting error:", error);
@@ -226,6 +288,14 @@ export function AdvancedCheckinForm() {
         setIsAiLoading(false);
     }
   };
+  
+  const missionText = useMemo(() => {
+    return mainFocus.map(focusId => {
+      if (focusId === 'custom') return customTask;
+      const kr = keyResults?.find(k => k.id === focusId);
+      return kr ? `${kr.title}: ${kr.description}` : focusId;
+    }).filter(Boolean).join('; ') || "Your Mission";
+  }, [mainFocus, customTask, keyResults]);
 
   const krOptions = useMemo(() => {
     if (!keyResults) return [];
@@ -240,10 +310,12 @@ export function AdvancedCheckinForm() {
               <h3 className="font-semibold text-lg">Section 1: Your Mission</h3>
               <div className="flex justify-between items-center">
                   <Label>Priority Selection</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={handleDraftPlan} disabled={isAiLoading || mainFocus.length === 0}>
-                      {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
-                      Draft my Day with AI
-                  </Button>
+                   <AiPlannerDialog onDraftPlan={handleDraftPlan} isAiLoading={isAiLoading} mission={missionText}>
+                     <Button type="button" variant="outline" size="sm" disabled={isAiLoading || mainFocus.length === 0}>
+                        {isAiLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+                        Draft my Day with AI
+                    </Button>
+                   </AiPlannerDialog>
               </div>
               <Controller
                 name="mainFocus"
@@ -262,6 +334,16 @@ export function AdvancedCheckinForm() {
             {errors.mainFocus && <p className="text-sm text-destructive">{`${errors.mainFocus.message}`}</p>}
             {form.watch('mainFocus')?.includes('custom') && (<Input {...form.register('customTask')} placeholder="Type your custom task" className="mt-2"/>)}
           </section>
+
+          {aiBestPractice && (
+             <Alert>
+                <Sparkles className="h-4 w-4" />
+                <AlertTitle>AI-Powered Tip!</AlertTitle>
+                <AlertDescription>
+                    {aiBestPractice}
+                </AlertDescription>
+            </Alert>
+          )}
 
           <Separator />
           
