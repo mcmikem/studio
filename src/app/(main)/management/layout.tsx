@@ -24,7 +24,7 @@ export default function ManagementLayout({
     <div className="flex flex-col gap-6">
        <div className="border-b border-border">
         <div className="overflow-x-auto">
-          <div className="flex items-center gap-4 px-4 sm:px-6 min-w-max">
+          <div className="flex items-center gap-4 px-4 sm:px-0 min-w-max">
             {tabs.map((tab) => (
               <Link
                 key={tab.name}

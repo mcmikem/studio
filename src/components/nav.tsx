@@ -30,6 +30,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { Separator } from './ui/separator';
 
@@ -76,6 +77,13 @@ const OmutoLogo = () => (
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   const isActive = (path: string) => pathname === path || (path !== '/' && pathname.startsWith(path));
 
@@ -91,6 +99,7 @@ export function AppSidebar() {
               asChild
               isActive={pathname === '/'}
               tooltip="Dashboard"
+              onClick={handleLinkClick}
             >
               <Link href="/">
                 <Home />
@@ -103,6 +112,7 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive('/assistant')}
                   tooltip="AI Assistant"
+                  onClick={handleLinkClick}
                 >
                   <Link href="/assistant">
                     <Sparkles />
@@ -120,6 +130,7 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive('/management')}
                   tooltip="Management"
+                  onClick={handleLinkClick}
                 >
                   <Link href="/management/programs">
                     <Briefcase />
@@ -132,6 +143,7 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive('/media-finance')}
                   tooltip="Media & Finance"
+                  onClick={handleLinkClick}
                 >
                   <Link href="/media-finance">
                     <Banknote />
@@ -144,6 +156,7 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive('/resources')}
                   tooltip="Resource Mobilization"
+                  onClick={handleLinkClick}
                 >
                   <Link href="/resources">
                     <Handshake />
@@ -162,6 +175,7 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive('/forms')}
                   tooltip="Forms Hub"
+                  onClick={handleLinkClick}
                 >
                   <Link href="/forms">
                     <ClipboardEdit />
@@ -174,6 +188,7 @@ export function AppSidebar() {
                     asChild
                     isActive={isActive('/stream')}
                     tooltip="Team Stream"
+                    onClick={handleLinkClick}
                 >
                     <Link href="/stream">
                         <Rss />
@@ -186,6 +201,7 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive('/plan')}
                   tooltip="October 2025 Plan"
+                  onClick={handleLinkClick}
                 >
                   <Link href="/plan">
                     <ClipboardList />
@@ -198,6 +214,7 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive('/activity-log')}
                   tooltip="Activity Log"
+                  onClick={handleLinkClick}
                 >
                   <Link href="/activity-log">
                     <AreaChart />
@@ -206,7 +223,7 @@ export function AppSidebar() {
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator">
+                <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator" onClick={handleLinkClick}>
                     <Link href="/impact-story">
                         <Wand />
                         <span>Story Generator</span>
@@ -218,6 +235,7 @@ export function AppSidebar() {
                   asChild
                   isActive={isActive('/reports')}
                   tooltip="Reports"
+                  onClick={handleLinkClick}
                 >
                   <Link href="/reports">
                     <FileText />
@@ -232,7 +250,7 @@ export function AppSidebar() {
             <SidebarGroupLabel>General</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/chat')} tooltip="Team Chat">
+                    <SidebarMenuButton asChild isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
                         <Link href="/chat">
                             <MessageSquare />
                             <span>Chat & Team Space</span>
@@ -240,7 +258,7 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/notifications')} tooltip="Notifications">
+                    <SidebarMenuButton asChild isActive={isActive('/notifications')} tooltip="Notifications" onClick={handleLinkClick}>
                         <Link href="/notifications">
                             <Bell />
                             <span>Notifications</span>
@@ -248,7 +266,7 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="My Profile">
+                    <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="My Profile" onClick={handleLinkClick}>
                         <Link href="/profile">
                             <User />
                             <span>My Profile</span>
