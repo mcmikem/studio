@@ -236,6 +236,7 @@ export function AdvancedCheckinForm() {
         userId: user.uid,
         userName: profile.name,
         date: Timestamp.now(),
+        type: 'Requisition' as const,
         description: `Budget request from daily check-in for mission: ${mission}`,
         category: 'Other' as const,
         amount: data.budget,

@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -239,7 +240,7 @@
         },
         "timestamp": {
           "type": "string",
-          "description": "The server timestamp of when the checkout was submitted.",
+          "description": "Server timestamp of when the checkout was submitted.",
           "format": "date-time"
         }
       },
@@ -407,12 +408,17 @@
         "userName": { "type": "string" },
         "date": { "type": "string", "format": "date" },
         "description": { "type": "string" },
+        "type": {
+            "type": "string",
+            "enum": ["Requisition", "Reimbursement"],
+            "description": "The type of expense report (pre-spending or post-spending)."
+        },
         "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
         "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"], "default": "Pending"},
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Cleared"], "default": "Pending"},
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "userName", "date", "description", "category", "amount", "status", "createdAt"]
+      "required": ["userId", "userName", "date", "description", "category", "type", "amount", "status", "createdAt"]
     },
     "Proposal": {
       "$schema": "http://json-schema.org/draft-07/schema#",

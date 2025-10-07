@@ -52,6 +52,11 @@ const statusColors: { [key: string]: string } = {
   Cleared: 'border-blue-500 bg-blue-500/10 text-blue-500',
 };
 
+const typeColors: { [key: string]: string } = {
+    Requisition: 'border-blue-500 bg-blue-500/10 text-blue-500',
+    Reimbursement: 'border-purple-500 bg-purple-500/10 text-purple-500',
+};
+
 
 export default function ExpensesPage() {
   const firestore = useFirestore();
@@ -149,7 +154,7 @@ export default function ExpensesPage() {
                 <CardContent>
                     {/* Mobile View */}
                     <div className="space-y-4 sm:hidden">
-                        {(isLoading || isLoadingAll) && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+                        {(isLoading || isLoadingAll) && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
                         {expenses && expenses.length > 0 ? (
                             expenses.map((expense) => (
                                 <Card key={expense.id}>
@@ -162,7 +167,10 @@ export default function ExpensesPage() {
                                             <p className="font-bold text-lg">{formatCurrency(expense.amount)}</p>
                                             <Badge variant="outline" className="mt-1">{expense.category}</Badge>
                                         </div>
-                                        <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
+                                        <div className='flex flex-col items-end gap-1'>
+                                            <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
+                                            <Badge variant="outline" className={typeColors[expense.type]}>{expense.type}</Badge>
+                                        </div>
                                     </CardContent>
                                     {expense.status === 'Pending' && (
                                         <CardFooter className="flex justify-end gap-2">
@@ -205,6 +213,7 @@ export default function ExpensesPage() {
                             <TableHead>Date</TableHead>
                             <TableHead>Description</TableHead>
                             <TableHead>Amount</TableHead>
+                            <TableHead>Type</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -217,6 +226,7 @@ export default function ExpensesPage() {
                                 <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                                 <TableCell><Skeleton className="h-5 w-48" /></TableCell>
                                 <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-24" /></TableCell>
                                 <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                                 <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
                                 </TableRow>
@@ -228,9 +238,14 @@ export default function ExpensesPage() {
                                 <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
                                 <TableCell>{expense.description}</TableCell>
                                 <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                                 <TableCell>
+                                    <Badge variant="outline" className={typeColors[expense.type]}>
+                                        {expense.type}
+                                    </Badge>
+                                </TableCell>
                                 <TableCell>
                                     <Badge variant="outline" className={statusColors[expense.status]}>
-                                    {expense.status}
+                                        {expense.status}
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
@@ -260,7 +275,7 @@ export default function ExpensesPage() {
                             ) : (
                             !(isLoading || isLoadingAll) && (
                                 <TableRow>
-                                <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                                <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
                                     <div className="flex flex-col items-center justify-center gap-2">
                                     <Receipt className="h-12 w-12" />
                                     <span className="text-lg font-semibold">

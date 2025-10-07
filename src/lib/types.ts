@@ -179,6 +179,7 @@ export type Expense = {
     date: Timestamp;
     description: string;
     category: "Transport" | "Materials" | "Food" | "Airtime" | "Other";
+    type: "Requisition" | "Reimbursement";
     amount: number;
     status: "Pending" | "Approved" | "Rejected" | "Cleared";
     createdAt?: Timestamp;

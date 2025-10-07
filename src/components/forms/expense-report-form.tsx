@@ -28,6 +28,7 @@ import { format } from 'date-fns';
 
 
 const expenseSchema = z.object({
+  type: z.enum(["Requisition", "Reimbursement"]),
   date: z.string().min(1, 'Date is required.'),
   description: z.string().min(5, 'Please provide a detailed description.'),
   category: z.enum(["Transport", "Materials", "Food", "Airtime", "Other"]),
@@ -51,6 +52,7 @@ export function ExpenseReportForm() {
   } = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
+      type: 'Reimbursement',
       date: format(new Date(), 'yyyy-MM-dd'),
       category: 'Transport',
     },
@@ -83,6 +85,7 @@ export function ExpenseReportForm() {
         description: 'Your report has been sent for approval.',
       });
       reset({
+        type: 'Reimbursement',
         date: format(new Date(), 'yyyy-MM-dd'),
         category: 'Transport',
         description: '',
@@ -103,6 +106,26 @@ export function ExpenseReportForm() {
   return (
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="type">Expense Type</Label>
+            <Controller
+              name="type"
+              control={control}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger id="type">
+                    <SelectValue placeholder="Select expense type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Reimbursement">Reimbursement (Claiming money spent)</SelectItem>
+                    <SelectItem value="Requisition">Requisition (Requesting money to spend)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+             {errors.type && <p className="text-sm text-destructive">{`${errors.type.message}`}</p>}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
              <div className="space-y-2">
                 <Label htmlFor="date">Date of Expense</Label>
