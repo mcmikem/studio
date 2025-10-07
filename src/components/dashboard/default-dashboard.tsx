@@ -1,13 +1,13 @@
 "use client"
 
-import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar"
-import { ProgramsOverview } from "@/components/dashboard/programs-overview"
-import { Alerts } from "@/components/dashboard/alerts"
-import { DailyActions } from "@/components/dashboard/daily-actions"
-import { TeamActivityFeed } from "@/components/dashboard/team-activity-feed"
 import type { User } from "@/lib/types"
-import { QuickStatsSummary } from "./quick-stats-summary"
+import { DashboardGrid } from "./dashboard-grid"
+import { ProgramsOverview } from "./programs-overview"
+import { TeamActivityFeed } from "./team-activity-feed"
+import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
+import { DashboardCalendar } from "./dashboard-calendar"
+import { Alerts } from "./alerts"
 import { PartnershipsOverview } from "./partnerships-overview"
 
 const getGreeting = () => {
@@ -39,25 +39,23 @@ export function DefaultDashboard({ profile }: { profile: User }) {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-3">
-          <ProgramsOverview />
-        </div>
-        <div className="lg:col-span-2">
-          <TeamActivityFeed />
-        </div>
-        <div className="lg:col-span-1 grid grid-cols-1 gap-6">
+      <DashboardGrid
+        mainContent={
+          <>
+            <ProgramsOverview />
+            <TeamActivityFeed />
+            <DashboardCalendar />
+          </>
+        }
+        sidebarContent={
+          <>
             <DailyActions />
             <TeamToday />
-        </div>
-        <div className="lg:col-span-2">
-            <DashboardCalendar />
-        </div>
-        <div className="lg:col-span-1 grid grid-cols-1 gap-6">
-             <Alerts />
-             <PartnershipsOverview />
-        </div>
-      </div>
+            <Alerts />
+            <PartnershipsOverview />
+          </>
+        }
+      />
     </>
   )
 }

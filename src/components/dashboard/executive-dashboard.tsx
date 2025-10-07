@@ -8,6 +8,7 @@ import { ProgramsOverview } from "./programs-overview"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
 import { PartnershipsOverview } from "./partnerships-overview"
+import { DashboardGrid } from "./dashboard-grid"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -37,27 +38,23 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
           {dateString} | Here is the organization's high-level overview.
         </p>
       </header>
-      <div className="grid grid-cols-1 gap-6">
-        <QuickStatsSummary />
-        <ProgramsOverview />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+       <DashboardGrid
+        headerContent={<QuickStatsSummary />}
+        mainContent={
+          <>
+            <ProgramsOverview />
             <TeamActivityFeed />
-          </div>
-          <div className="lg:col-span-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+            <PartnershipsOverview />
+          </>
+        }
+        sidebarContent={
+          <>
             <DailyActions />
             <TeamToday />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-                <PartnershipsOverview />
-            </div>
-            <div className="lg:col-span-1">
-                <Alerts />
-            </div>
-        </div>
-      </div>
+            <Alerts />
+          </>
+        }
+      />
     </>
   )
 }

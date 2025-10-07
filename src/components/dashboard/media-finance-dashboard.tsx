@@ -1,4 +1,3 @@
-
 "use client"
 
 import type { User } from "@/lib/types"
@@ -42,6 +41,7 @@ import Link from "next/link"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
 import { formatDateSafe } from "@/lib/utils"
+import { DashboardGrid } from "./dashboard-grid"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -246,29 +246,24 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
           {dateString} | Here is your Media & Finance dashboard.
         </p>
       </header>
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Financial Overview</CardTitle>
-            <CardDescription>
-              A summary of this month's spending and value generation.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FinancialOverview />
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-1 grid grid-cols-1 gap-6">
-             <DailyActions />
-             <TeamToday />
-          </div>
-          <div className="md:col-span-2">
+       <DashboardGrid
+        headerContent={
+           <Card>
+            <CardHeader>
+                <CardTitle>Financial Overview</CardTitle>
+                <CardDescription>
+                A summary of this month's spending and value generation.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <FinancialOverview />
+            </CardContent>
+            </Card>
+        }
+        mainContent={
+          <>
             <RecentExpenses />
-          </div>
-          <div className="md:col-span-3">
-            <Card>
+             <Card>
               <CardHeader>
                 <CardTitle>Media Asset Library</CardTitle>
                 <CardDescription>
@@ -285,9 +280,15 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+        sidebarContent={
+          <>
+            <DailyActions />
+            <TeamToday />
+          </>
+        }
+      />
     </>
   )
 }
