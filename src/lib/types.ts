@@ -183,3 +183,14 @@ export type Expense = {
     status: "Pending" | "Approved" | "Rejected";
     createdAt?: Timestamp;
 };
+
+export type Proposal = {
+    id: string;
+    title: string;
+    partnerName: string;
+    amountRequested: number;
+    status: "Draft" | "Submitted" | "In Review" | "Approved" | "Rejected";
+    submissionDate: string;
+    decisionDate?: string;
+    createdAt?: Timestamp;
+}
