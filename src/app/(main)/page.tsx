@@ -23,21 +23,22 @@ export default function DashboardPage() {
   }
   
   const renderDashboardByRole = () => {
-    // Fallback for profiles that might still be loading initially
+    // Safely access role only when profile is available, defaulting to 'Staff'
     const userRole = profile?.role || 'Staff'; 
 
     switch (userRole) {
       case 'Executive Director':
-        return <ExecutiveDashboard profile={profile} />;
+        return <ExecutiveDashboard profile={profile!} />;
       case 'Programs & Partnerships Manager':
-        return <ProgramManagerDashboard profile={profile} />;
+        return <ProgramManagerDashboard profile={profile!} />;
       case 'Operations & Field Manager':
       case 'Field Coordinator':
-        return <FieldStaffDashboard profile={profile} />;
+        return <FieldStaffDashboard profile={profile!} />;
       case 'Media & Communications Lead':
-         return <MediaFinanceDashboard profile={profile} />;
+         return <MediaFinanceDashboard profile={profile!} />;
       default:
-        return <DefaultDashboard profile={profile} />;
+        // Pass the profile, even if it's the default one, to DefaultDashboard
+        return <DefaultDashboard profile={profile!} />;
     }
   };
 

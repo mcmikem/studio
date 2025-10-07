@@ -42,7 +42,6 @@ export function DefaultDashboard({ profile }: { profile: User }) {
       <DashboardGrid
         mainContent={
           <>
-            <ProgramsOverview />
             <TeamActivityFeed />
             <DashboardCalendar />
           </>
