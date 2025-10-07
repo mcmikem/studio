@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -36,6 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { format, parseISO, isValid, isPast } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
 
 
 const statusIcons: { [key: string]: React.ReactNode } = {
@@ -320,11 +322,11 @@ export default function ProgramsPage() {
           </div>
         ) : (
             !isLoading && (
-              <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center">
-                  <Briefcase className="h-16 w-16 text-muted-foreground" />
-                  <p className="mt-4 text-lg font-semibold">No Programs Found</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Get started by adding the first program using the 'New Program' button.</p>
-              </div>
+              <EmptyState 
+                icon={Briefcase}
+                title="No Programs Found"
+                description="Get started by adding the first program using the 'New Program' button."
+              />
             )
         )}
          <Dialog open={!!editingProgram} onOpenChange={(open) => !open && setEditingProgram(null)}>

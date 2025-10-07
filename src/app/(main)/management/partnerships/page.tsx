@@ -54,6 +54,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
@@ -268,11 +269,11 @@ export default function PartnershipsPage() {
               ))
           ) : (
             !isLoading && (
-              <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
-                  <Users className="h-12 w-12" />
-                  <span className="text-lg font-semibold mt-2">No Partners Found</span>
-                  <p className="text-sm">Your partner database is empty.</p>
-              </div>
+              <EmptyState 
+                icon={Users}
+                title="No Partners Found"
+                description="Your partner database is empty. Add a partner to get started."
+              />
             )
           )}
         </div>
@@ -348,13 +349,14 @@ export default function PartnershipsPage() {
                     <TableRow>
                         <TableCell
                         colSpan={5}
-                        className="h-48 text-center text-muted-foreground"
+                        className="h-48"
                         >
-                            <div className="flex flex-col items-center justify-center gap-2">
-                                <Users className="h-12 w-12" />
-                                <span className="text-lg font-semibold">No Partners Found</span>
-                                <p className="text-sm">Your partner database is empty. Add a partner to get started.</p>
-                            </div>
+                            <EmptyState 
+                                icon={Users}
+                                title="No Partners Found"
+                                description="Your partner database is empty. Add a partner to get started."
+                                className="min-h-0"
+                            />
                         </TableCell>
                     </TableRow>
                 )
