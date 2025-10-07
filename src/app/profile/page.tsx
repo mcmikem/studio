@@ -16,12 +16,12 @@ import { User, Mail, Briefcase, History } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import type { RecentCheckout } from '@/lib/types';
-import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserTasks } from '@/components/profile/user-tasks';
 import { useSearchParams } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
+import { formatDateSafe } from '@/lib/utils';
 
 function RecentUserCheckouts() {
   const firestore = useFirestore();
@@ -65,11 +65,7 @@ function RecentUserCheckouts() {
             >
               <p className="text-sm text-muted-foreground">{checkout.task}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {checkout.timestamp
-                  ? formatDistanceToNow(checkout.timestamp.toDate(), {
-                      addSuffix: true,
-                    })
-                  : ''}
+                {formatDateSafe(checkout.timestamp)}
               </p>
             </div>
           ))

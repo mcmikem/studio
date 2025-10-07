@@ -18,31 +18,13 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { History, User, Calendar, TrendingUp, DollarSign, AreaChart } from 'lucide-react';
+import { History, User, Calendar, DollarSign, AreaChart } from 'lucide-react';
 import type { Activity } from '@/lib/types';
-import type { Timestamp } from 'firebase/firestore';
+import { formatDateSafe } from '@/lib/utils';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
-};
-
-const formatDateSafe = (timestamp: Timestamp | { toDate: () => Date } | null | undefined): string => {
-  if (!timestamp) return 'a few moments ago';
-  if (typeof (timestamp as any).toDate === 'function') {
-    try {
-      const date = (timestamp as { toDate: () => Date }).toDate();
-      // Check if the date is valid
-      if (!isNaN(date.getTime())) {
-        return formatDistanceToNow(date, { addSuffix: true });
-      }
-    } catch (e) {
-      // Fall through to the default if toDate fails
-    }
-  }
-  // This can happen if the server timestamp is not yet fully resolved.
-  return 'Just now';
 };
 
 

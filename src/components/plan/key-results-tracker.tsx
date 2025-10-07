@@ -14,8 +14,8 @@ import type { KeyResult } from '@/lib/types';
 import { Target, Flag } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
-import { format, parseISO, isValid, isPast } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { isPast, parseISO } from 'date-fns';
+import { cn, formatDateSafe } from '@/lib/utils';
 
 const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -45,18 +45,6 @@ export function KeyResultsTracker() {
      return kr.currentProgress.toLocaleString();
   }
   
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'Invalid Date';
-    try {
-      const date = parseISO(dateString);
-      if (isValid(date)) {
-        return format(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()), 'MMM dd, yyyy');
-      }
-    } catch (e) {
-      // Ignore invalid date strings
-    }
-    return dateString; // Return original string if parsing fails
-  }
 
   return (
     <Card>
@@ -88,7 +76,7 @@ export function KeyResultsTracker() {
                             <p className="font-semibold">{kr.title}: {kr.description}</p>
                             <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
                                 <Flag className="inline h-3 w-3 mr-1" />
-                                Deadline: {formatDate(kr.deadline)}
+                                Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
                             </p>
                         </div>
                         <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>

@@ -9,7 +9,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import Link from 'next/link';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDateSafe } from '@/lib/utils';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -60,7 +60,7 @@ export function NotificationsList() {
                     <div className="flex-1">
                         <p className="text-sm font-medium">{alert.message}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                           {alert.createdAt ? formatDistanceToNow(alert.createdAt.toDate(), { addSuffix: true }) : 'N/A'}
+                           {formatDateSafe(alert.createdAt)}
                         </p>
                     </div>
                      <Badge variant="outline" className={`${alertColors[alert.priority]}`}>{alert.priority}</Badge>

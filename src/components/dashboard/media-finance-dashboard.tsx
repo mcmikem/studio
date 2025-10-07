@@ -41,7 +41,7 @@ import { Button } from "../ui/button"
 import Link from "next/link"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
-import { formatDistanceToNow, isValid } from "date-fns"
+import { formatDateSafe } from "@/lib/utils"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -174,13 +174,6 @@ function RecentExpenses() {
 
   const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery)
 
-  const formatDate = (timestamp: Timestamp) => {
-    if (!timestamp) return '';
-    const date = timestamp.toDate();
-    if (!isValid(date)) return '';
-    return formatDistanceToNow(date, { addSuffix: true });
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -216,7 +209,7 @@ function RecentExpenses() {
                 <TableRow key={expense.id}>
                   <TableCell>{expense.userName}</TableCell>
                   <TableCell>{formatCurrency(expense.amount)}</TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{formatDate(expense.date)}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
                 </TableRow>
               ))
             ) : (
@@ -298,5 +291,3 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
     </>
   )
 }
-
-    
