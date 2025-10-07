@@ -17,6 +17,7 @@ import {
   ClipboardEdit,
   Target,
   Wand,
+  Rss,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -166,6 +167,18 @@ export function AppSidebar() {
                     <ClipboardEdit />
                     <span>Forms</span>
                   </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                    asChild
+                    isActive={isActive('/stream')}
+                    tooltip="Team Stream"
+                >
+                    <Link href="/stream">
+                        <Rss />
+                        <span>Team Stream</span>
+                    </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
