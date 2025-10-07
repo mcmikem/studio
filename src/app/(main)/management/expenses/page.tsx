@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/chart';
 import { formatDateSafe } from '@/lib/utils';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { createAlert } from '@/ai/flows/create-alert-flow';
 
 
 const formatCurrency = (value: number) => {
@@ -88,15 +89,24 @@ export default function ExpensesPage() {
   };
 
 
-  const handleStatusUpdate = async (expenseId: string, status: 'Approved' | 'Rejected') => {
+  const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected') => {
     if (!firestore) return;
-    const expenseRef = doc(firestore, 'expenses', expenseId);
+    const expenseRef = doc(firestore, 'expenses', expense.id);
     try {
         await updateDocumentNonBlocking(expenseRef, { status: status });
         toast({
           title: `Expense ${status}`,
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
+
+        // Create a notification for the user
+        await createAlert({
+            type: status === 'Approved' ? 'Info' : 'Urgent',
+            message: `Your expense for '${expense.description}' was ${status.toLowerCase()}.`,
+            priority: status === 'Approved' ? 'Low' : 'Medium',
+            action: `/activity-log`, // Future: Link to user's personal expense history
+        });
+
     } catch (error) {
          toast({
             variant: "destructive",
@@ -144,7 +154,7 @@ export default function ExpensesPage() {
                                             variant="outline"
                                             size="sm"
                                             className="text-primary border-primary hover:bg-primary/10 hover:text-primary"
-                                            onClick={() => handleStatusUpdate(expense.id, 'Approved')}
+                                            onClick={() => handleStatusUpdate(expense, 'Approved')}
                                             >
                                             <Check className="mr-2 h-4 w-4" /> Approve
                                             </Button>
@@ -152,7 +162,7 @@ export default function ExpensesPage() {
                                             variant="outline"
                                             size="sm"
                                             className="text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive"
-                                            onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
+                                            onClick={() => handleStatusUpdate(expense, 'Rejected')}
                                             >
                                             <X className="mr-2 h-4 w-4" /> Reject
                                             </Button>
@@ -219,7 +229,7 @@ export default function ExpensesPage() {
                                         variant="ghost"
                                         size="icon"
                                         className="text-primary hover:text-primary"
-                                        onClick={() => handleStatusUpdate(expense.id, 'Approved')}
+                                        onClick={() => handleStatusUpdate(expense, 'Approved')}
                                         >
                                         <Check className="h-4 w-4" />
                                         </Button>
@@ -227,7 +237,7 @@ export default function ExpensesPage() {
                                         variant="ghost"
                                         size="icon"
                                         className="text-destructive hover:text-destructive"
-                                        onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
+                                        onClick={() => handleStatusUpdate(expense, 'Rejected')}
                                         >
                                         <X className="h-4 w-4" />
                                         </Button>

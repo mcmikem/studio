@@ -13,15 +13,29 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, User, Settings, Bell, PlusCircle } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { Badge } from './ui/badge';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
+import { collection, query, limit } from 'firebase/firestore';
+import type { Alert } from '@/lib/types';
+
 
 export function AppHeader() {
     const { user } = useUser();
     const { profile } = useUserProfile(user);
+    const firestore = useFirestore();
+
+    // In a real app, we'd add a 'read' flag and filter by `where('read', '==', false)`.
+    // For now, we'll just check if there are any alerts at all to show the badge.
+    const unreadAlertsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        // This is a simplified logic. A real implementation would filter by user and read status.
+        return query(collection(firestore, 'alerts'), limit(1));
+    }, [firestore]);
+
+    const { data: unreadAlerts } = useCollection<Alert>(unreadAlertsQuery);
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
@@ -30,9 +44,15 @@ export function AppHeader() {
         <p className="hidden md:block text-sm text-muted-foreground font-medium">Empowering Youth. Building Sustainable Communities.</p>
       </div>
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+        <Button variant="ghost" size="icon" asChild className="relative">
           <Link href="/notifications">
             <Bell className="h-5 w-5" />
+            {unreadAlerts && unreadAlerts.length > 0 && (
+                 <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary/80"></span>
+                </span>
+            )}
             <span className="sr-only">Notifications</span>
           </Link>
         </Button>
