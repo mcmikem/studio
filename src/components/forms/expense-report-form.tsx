@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -9,8 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useFirestore,
   useUser,
+  addDocumentNonBlocking
 } from '@/firebase';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -160,5 +159,3 @@ export function ExpenseReportForm() {
       </form>
   );
 }
-
-    

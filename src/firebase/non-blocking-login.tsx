@@ -16,6 +16,7 @@ import {
   getDocs,
   query,
   limit,
+  Firestore,
 } from "firebase/firestore"
 import { errorEmitter } from "./error-emitter"
 import { FirestorePermissionError } from "./errors"
@@ -94,7 +95,7 @@ const isEmailApproved = (email: string | null): boolean => {
   return Object.keys(approvedUsers).includes(email.toLowerCase())
 }
 
-async function seedInitialData(db: ReturnType<typeof getFirestore>) {
+async function seedInitialData(db: Firestore) {
   console.log("Checking if initial data seeding is needed...")
 
   const usersCollection = collection(db, "users")
@@ -144,7 +145,10 @@ async function seedInitialData(db: ReturnType<typeof getFirestore>) {
   }
 }
 
-async function createUserProfile(userCredential: UserCredential) {
+async function createUserProfile(
+  userCredential: UserCredential,
+  db: Firestore
+) {
   const user = userCredential.user
   if (!user || !user.email) return userCredential
 
@@ -154,8 +158,6 @@ async function createUserProfile(userCredential: UserCredential) {
       "This email address is not authorized to use this application."
     )
   }
-
-  const db = getFirestore(user.auth.app)
 
   // Seed data only for the very first user to sign up
   if (userCredential.additionalUserInfo?.isNewUser) {
@@ -200,8 +202,9 @@ export function initiateEmailSignUp(
       new Error("This email address is not authorized for sign-up.")
     )
   }
+  const db = getFirestore(authInstance.app)
   return createUserWithEmailAndPassword(authInstance, email, password)
-    .then(createUserProfile)
+    .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
       console.error("Email sign-up error:", error)
       throw error
@@ -219,8 +222,9 @@ export function initiateEmailSignIn(
       new Error("This email address is not authorized to sign in.")
     )
   }
+  const db = getFirestore(authInstance.app)
   return signInWithEmailAndPassword(authInstance, email, password)
-    .then(createUserProfile)
+    .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
       console.error("Email sign-in error:", error)
       throw error
@@ -230,6 +234,7 @@ export function initiateEmailSignIn(
 /** Initiate Google sign-in and create user profile. */
 export function initiateGoogleSignIn(authInstance: Auth) {
   const provider = new GoogleAuthProvider()
+  const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
     .then((userCredential) => {
       if (!isEmailApproved(userCredential.user.email)) {
@@ -239,7 +244,7 @@ export function initiateGoogleSignIn(authInstance: Auth) {
           "This Google account is not authorized to use this application."
         )
       }
-      return createUserProfile(userCredential)
+      return createUserProfile(userCredential, db)
     })
     .catch((error) => {
       console.error("Google sign-in error:", error)
