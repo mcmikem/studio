@@ -82,7 +82,12 @@ export function ExpenseReportForm() {
         title: 'Expense Report Submitted!',
         description: 'Your report has been sent for approval.',
       });
-      reset();
+      reset({
+        date: format(new Date(), 'yyyy-MM-dd'),
+        category: 'Transport',
+        description: '',
+        amount: 0,
+      });
     } catch(e) {
       // The non-blocking function will emit the detailed error.
       // We can show a generic toast here if we want, but the console will have the details.

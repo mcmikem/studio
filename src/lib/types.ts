@@ -180,7 +180,7 @@ export type Expense = {
     description: string;
     category: "Transport" | "Materials" | "Food" | "Airtime" | "Other";
     amount: number;
-    status: "Pending" | "Approved" | "Rejected";
+    status: "Pending" | "Approved" | "Rejected" | "Cleared";
     createdAt?: Timestamp;
 };
 

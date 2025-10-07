@@ -3,6 +3,7 @@
 import type { User } from "@/lib/types"
 import {
   ArrowRight,
+  Check,
   DollarSign,
   FolderKanban,
   Target,
@@ -23,6 +24,7 @@ import {
   query,
   Timestamp,
   where,
+  doc,
 } from "firebase/firestore"
 import { useMemo } from "react"
 import type { Activity, Expense } from "@/lib/types"
@@ -35,13 +37,15 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table"
-import { Badge } from "../ui/badge"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
 import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
+import { useToast } from "@/hooks/use-toast"
+import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
+import { createAlert } from "@/ai/flows/create-alert-flow"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -160,25 +164,54 @@ function FinancialOverview() {
   )
 }
 
-function RecentExpenses() {
+function PaymentQueue() {
   const firestore = useFirestore()
+  const { toast } = useToast()
+  
   const expensesQuery = useMemoFirebase(() => {
     if (!firestore) return null
     return query(
       collection(firestore, "expenses"),
-      where("status", "==", "Pending"),
+      where("status", "==", "Approved"),
       orderBy("createdAt", "desc"),
-      limit(5)
+      limit(10)
     )
   }, [firestore])
 
   const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery)
 
+  const handleMarkAsCleared = async (expense: Expense) => {
+    if (!firestore) return;
+    const expenseRef = doc(firestore, 'expenses', expense.id);
+    try {
+        await updateDocumentNonBlocking(expenseRef, { status: 'Cleared' });
+        toast({
+          title: `Expense Cleared`,
+          description: `The expense from ${expense.userName} has been marked as cleared.`,
+        });
+
+        await createAlert({
+            type: 'Info',
+            message: `Your expense for '${expense.description}' of ${formatCurrency(expense.amount)} has been cleared.`,
+            priority: 'Low',
+            action: `/activity-log`, // This could link to a personal finance page in future
+        });
+
+    } catch (error) {
+         toast({
+            variant: "destructive",
+            title: "Update Failed",
+            description: "Could not update the expense status. Please try again.",
+        });
+    }
+  }
+
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Pending Expense Reports</CardTitle>
-        <CardDescription>Awaiting review and approval.</CardDescription>
+        <CardTitle>Payment Queue</CardTitle>
+        <CardDescription>Expenses approved by management and awaiting payment.</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -186,7 +219,8 @@ function RecentExpenses() {
             <TableRow>
               <TableHead>User</TableHead>
               <TableHead>Amount</TableHead>
-               <TableHead>Date</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -202,6 +236,9 @@ function RecentExpenses() {
                   <TableCell>
                     <Skeleton className="h-4 w-20" />
                   </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-24 ml-auto" />
+                  </TableCell>
                 </TableRow>
               ))}
             {expenses && expenses.length > 0 ? (
@@ -210,22 +247,28 @@ function RecentExpenses() {
                   <TableCell>{expense.userName}</TableCell>
                   <TableCell>{formatCurrency(expense.amount)}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
+                  <TableCell className="text-right">
+                    <Button size="sm" onClick={() => handleMarkAsCleared(expense)}>
+                        <Check className="mr-2 h-4 w-4" />
+                        Mark as Cleared
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               !isLoading && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center h-24">
-                    No pending expenses.
+                  <TableCell colSpan={4} className="text-center h-24">
+                    The payment queue is empty.
                   </TableCell>
                 </TableRow>
               )
             )}
           </TableBody>
         </Table>
-        <Button asChild className="mt-4 w-full">
+        <Button asChild className="mt-4 w-full" variant="outline">
           <Link href="/management/expenses">
-            Review All Expenses <ArrowRight className="ml-2 h-4 w-4" />
+            View All Expense Reports <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </Button>
       </CardContent>
@@ -262,7 +305,7 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
         }
         mainContent={
           <>
-            <RecentExpenses />
+            <PaymentQueue />
              <Card>
               <CardHeader>
                 <CardTitle>Media Asset Library</CardTitle>

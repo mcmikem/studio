@@ -239,7 +239,7 @@
         },
         "timestamp": {
           "type": "string",
-          "description": "The server timestamp of when the checkout was submitted.",
+          "description": "Server timestamp of when the checkout was submitted.",
           "format": "date-time"
         }
       },
@@ -409,10 +409,27 @@
         "description": { "type": "string" },
         "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
         "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"], "default": "Pending"},
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Cleared"], "default": "Pending"},
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "userName", "date", "description", "category", "amount", "status", "createdAt"]
+    },
+    "Proposal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Proposal",
+      "description": "Represents a single grant proposal or funding application.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "partnerName": { "type": "string" },
+        "amountRequested": { "type": "number" },
+        "status": { "type": "string", "enum": ["Draft", "Submitted", "In Review", "Approved", "Rejected"] },
+        "submissionDate": { "type": "string", "format": "date" },
+        "decisionDate": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "partnerName", "amountRequested", "status", "submissionDate", "createdAt"]
     }
   },
   "auth": {
@@ -499,6 +516,12 @@
         "$ref": "#/entities/Expense"
       },
       "description": "Stores expense reports submitted by users."
+    },
+    "/proposals/{proposalId}": {
+      "schema": {
+        "$ref": "#/entities/Proposal"
+      },
+      "description": "Stores grant proposals and funding applications."
     }
   }
 }
