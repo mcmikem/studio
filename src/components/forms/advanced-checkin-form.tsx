@@ -193,7 +193,7 @@ export function AdvancedCheckinForm() {
   }, [firestore]);
   const { data: teamMembers } = useCollection<User>(usersQuery);
 
-  const onSubmit = (data: CheckinFormData) => {
+  const onSubmit = async (data: CheckinFormData) => {
     if (!firestore || !user || !profile) {
       toast({ variant: 'destructive', title: 'Authentication Error' });
       return;
@@ -228,12 +228,33 @@ export function AdvancedCheckinForm() {
     };
 
     const checkinsCollection = collection(firestore, 'checkins');
-    addDocumentNonBlocking(checkinsCollection, checkinData);
+    await addDocumentNonBlocking(checkinsCollection, checkinData);
 
-    toast({
-      title: 'Daily Plan Submitted!',
-      description: 'Your strategic plan for the day is logged.',
-    });
+    // If a budget was requested, automatically create an expense report
+    if (data.budget && data.budget > 0) {
+      const expenseData = {
+        userId: user.uid,
+        userName: profile.name,
+        date: Timestamp.now(),
+        description: `Budget request from daily check-in for mission: ${mission}`,
+        category: 'Other' as const,
+        amount: data.budget,
+        status: 'Pending' as const,
+        createdAt: serverTimestamp(),
+      };
+      const expensesCollection = collection(firestore, 'expenses');
+      await addDocumentNonBlocking(expensesCollection, expenseData);
+      toast({
+        title: 'Daily Plan & Budget Request Submitted!',
+        description: 'Your plan is logged and your budget request has been sent for approval.',
+      });
+    } else {
+        toast({
+        title: 'Daily Plan Submitted!',
+        description: 'Your strategic plan for the day is logged.',
+        });
+    }
+    
     form.reset();
   };
 
