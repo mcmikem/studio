@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -49,7 +48,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Truck, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import type { Project } from '@/lib/types';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Badge } from '@/components/ui/badge';
@@ -62,6 +61,7 @@ import {
   ChartLegendContent,
 } from "@/components/ui/chart"
 import { BarChart, Bar } from "recharts"
+import { Briefcase } from 'lucide-react';
 
 
 const statusColors: { [key: string]: string } = {
@@ -358,7 +358,7 @@ export default function ProjectsPage() {
                     ) : (
                         !isLoading && (
                             <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
-                                <Truck className="h-12 w-12" />
+                                <Briefcase className="h-12 w-12" />
                                 <span className="text-lg font-semibold mt-2">No Projects Found</span>
                                 <p className="text-sm">Add a project to get started.</p>
                             </div>
@@ -447,7 +447,7 @@ export default function ProjectsPage() {
                                 className="h-48 text-center text-muted-foreground"
                             >
                                 <div className="flex flex-col items-center justify-center gap-2">
-                                <Truck className="h-12 w-12" />
+                                <Briefcase className="h-12 w-12" />
                                 <span className="text-lg font-semibold">
                                     No Projects Found
                                 </span>
