@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -15,7 +14,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import type { Checkin, Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -121,14 +120,17 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
 
 function CheckinStream() {
     const firestore = useFirestore();
-    const startOfDay = useMemo(() => {
+    const [startOfDay, setStartOfDay] = useState<Timestamp | null>(null);
+
+    useEffect(() => {
+        // This effect runs only on the client after hydration
         const now = new Date();
         now.setHours(0, 0, 0, 0);
-        return Timestamp.fromDate(now);
+        setStartOfDay(Timestamp.fromDate(now));
     }, []);
 
     const checkinsQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
+        if (!firestore || !startOfDay) return null;
         return query(
             collection(firestore, 'checkins'), 
             where('timestamp', '>=', startOfDay), 
@@ -137,6 +139,11 @@ function CheckinStream() {
     }, [firestore, startOfDay]);
 
     const { data: checkins, isLoading } = useCollection<Checkin>(checkinsQuery);
+
+    if (!startOfDay) {
+        // Render skeletons or a placeholder while waiting for client-side mount
+        return Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-60 w-full" />);
+    }
 
     return (
         <div className="space-y-6">
@@ -215,5 +222,3 @@ export default function StreamPage() {
     </div>
   );
 }
-
-    

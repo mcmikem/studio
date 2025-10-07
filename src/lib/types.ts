@@ -37,6 +37,12 @@ export type Checkout = {
   userId: string;
 }
 
+export type TimeBlock = {
+    startTime: string;
+    endTime: string;
+    description: string;
+};
+
 export type Checkin = {
     id: string;
     userId: string;
@@ -46,6 +52,14 @@ export type Checkin = {
       mainFocus: string[];
       customTask?: string;
       workLocation?: string;
+      timeBlocks?: TimeBlock[];
+      multiWinConnections?: string[];
+      otherConnection?: string;
+      teamSupport?: string[];
+      budget?: number;
+      challenges?: string;
+      materials?: string;
+      transport?: string;
     }
     timestamp: Timestamp;
 }
@@ -201,5 +215,3 @@ export type Proposal = {
     decisionDate?: string;
     createdAt?: Timestamp;
 }
-
-    

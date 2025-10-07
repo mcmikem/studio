@@ -18,6 +18,7 @@ export const formatDateSafe = (
   try {
     if (typeof dateValue === "string") {
       // Handles ISO strings like '2025-10-31' or full ISO strings
+      // parseISO is more reliable than new Date() for strings.
       date = parseISO(dateValue);
     } else if (dateValue && typeof (dateValue as any).toDate === 'function') {
       // Handles Firestore Timestamps
@@ -28,7 +29,9 @@ export const formatDateSafe = (
     }
 
     if (!isValid(date)) {
-      return "Invalid Date";
+      // Fallback for non-standard date strings that parseISO fails on but new Date might handle
+      date = new Date(dateValue as string);
+      if (!isValid(date)) return "Invalid Date";
     }
 
     if (formatType === "distance") {
@@ -41,5 +44,3 @@ export const formatDateSafe = (
     return "Invalid Date";
   }
 };
-
-    

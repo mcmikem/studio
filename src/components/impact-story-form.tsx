@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,7 +43,7 @@ const fileToDataUri = (file: File): Promise<string> => {
   });
 };
 
-export function ImpactStoryGenerator() {
+function ImpactStoryGeneratorContent() {
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [selectedCheckoutId, setSelectedCheckoutId] = useState<string | null>(null);
   const [generatedStory, setGeneratedStory] = useState<string>("");
@@ -256,4 +256,12 @@ export function ImpactStoryGenerator() {
       </Card>
     </div>
   );
+}
+
+export function ImpactStoryGenerator() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ImpactStoryGeneratorContent />
+    </Suspense>
+  )
 }

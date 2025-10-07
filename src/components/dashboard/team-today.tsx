@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import {
   Card,
@@ -30,15 +30,17 @@ const getStatusColor = (status: string) => {
 
 export function TeamToday() {
   const firestore = useFirestore()
+  const [startOfDay, setStartOfDay] = useState<Timestamp | null>(null);
 
-  const startOfDay = useMemoFirebase(() => {
-    const now = new Date()
-    now.setHours(0, 0, 0, 0)
-    return Timestamp.fromDate(now)
-  }, [])
+  useEffect(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    setStartOfDay(Timestamp.fromDate(now));
+  }, []);
+
 
   const checkinsQuery = useMemoFirebase(() => {
-    if (!firestore) return null
+    if (!firestore || !startOfDay) return null;
     return query(
       collection(firestore, "checkins"),
       where("timestamp", ">=", startOfDay)
@@ -55,8 +57,8 @@ export function TeamToday() {
   const { data: allTeamMembers, isLoading: isLoadingUsers } =
     useCollection<UserProfile>(usersQuery)
 
-  const teamStatus = useMemo(() => {
-    const isLoading = isLoadingUsers || isLoadingCheckins
+  const teamStatus = useMemoFirebase(() => {
+    const isLoading = isLoadingUsers || isLoadingCheckins;
     if (isLoading || !allTeamMembers)
       return Array.from({ length: 5 }).map((_, i) => ({
         id: `${i}`,
@@ -78,7 +80,7 @@ export function TeamToday() {
     })
   }, [checkins, isLoadingCheckins, allTeamMembers, isLoadingUsers])
 
-  const isLoading = isLoadingUsers || isLoadingCheckins
+  const isLoading = isLoadingUsers || isLoadingCheckins || !startOfDay;
 
   return (
     <Card>

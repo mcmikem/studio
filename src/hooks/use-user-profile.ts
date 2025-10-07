@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User as AuthUser } from 'firebase/auth';
@@ -8,8 +8,6 @@ import type { User as UserProfile } from '@/lib/types';
 
 export function useUserProfile(user: AuthUser | null) {
   const firestore = useFirestore();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const userDocRef = useMemoFirebase(() => {
     if (firestore && user) {
@@ -18,37 +16,20 @@ export function useUserProfile(user: AuthUser | null) {
     return null;
   }, [firestore, user]);
 
-  const { data, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
+  const { data: profile, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
+
+  // This hook now correctly returns the data and loading state from useDoc,
+  // which handles the logic of fetching the user profile.
+  // We no longer create a temporary "fake" profile, which was the source of UI flashes.
+  
+  // If there's no authenticated user, the hook isn't loading and there's no profile.
+  const isLoading = !user ? false : isDocLoading;
 
   useEffect(() => {
-    setIsLoading(true);
-    if (!user) {
-      setProfile(null);
-      setIsLoading(false);
-      return;
+    if (error) {
+        console.error("Error loading user profile:", error);
     }
-
-    if (isDocLoading) {
-      return; // Wait for the doc to load
-    }
-    
-    if (data) {
-      setProfile(data);
-    } else if (!isDocLoading && !data) {
-      // If loading is finished and there's still no data,
-      // it's likely a new user whose profile doc hasn't been created yet.
-      // We'll provide a temporary, safe-to-render profile.
-      setProfile({
-        id: user.uid,
-        name: user.displayName || 'New User',
-        email: user.email || '',
-        role: 'Staff', // Default role
-      });
-    }
-
-    setIsLoading(false);
-
-  }, [data, user, isDocLoading, error]);
+  }, [error]);
 
   return { profile, isLoading };
 }

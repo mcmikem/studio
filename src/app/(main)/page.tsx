@@ -16,7 +16,7 @@ export default function DashboardPage() {
 
   const isLoading = isAuthLoading || isProfileLoading;
 
-  if (isLoading || !profile) {
+  if (isLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -24,8 +24,18 @@ export default function DashboardPage() {
     );
   }
   
+  // By the time we reach this point, `profile` is either loaded or null (if no profile doc exists).
+  // If `profile` is null but we have a user, it's a new user. We can render a default view.
+  if (!profile && user) {
+     return <DefaultDashboard profile={{ id: user.uid, name: user.displayName || 'New User', email: user.email || '', role: 'Staff' }} />;
+  }
+
+  // If there's no profile and no user, the AuthProvider will redirect, but as a fallback:
+  if (!profile) {
+    return <DefaultDashboard profile={{ id: 'guest', name: 'Guest', email: '', role: 'Staff' }} />;
+  }
+
   const renderDashboardByRole = () => {
-    // We can now safely access role because we're sure profile is loaded.
     const userRole = profile.role; 
 
     switch (userRole) {
@@ -39,7 +49,6 @@ export default function DashboardPage() {
       case 'Media & Communications Lead':
          return <MediaFinanceDashboard profile={profile} />;
       default:
-        // Pass the profile, even if it's the default one, to DefaultDashboard
         return <DefaultDashboard profile={profile} />;
     }
   };
@@ -55,5 +64,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -22,6 +21,7 @@ import { UserTasks } from '@/components/profile/user-tasks';
 import { useSearchParams } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { formatDateSafe } from '@/lib/utils';
+import { Suspense } from 'react';
 
 function RecentUserCheckouts() {
   const firestore = useFirestore();
@@ -35,7 +35,7 @@ function RecentUserCheckouts() {
       orderBy('timestamp', 'desc'),
       limit(5)
     );
-  }, [firestore, user]);
+  }, [firestore, user?.uid]); // Depend on user.uid which is a stable string
 
   const { data: checkouts, isLoading } =
     useCollection<RecentCheckout>(checkoutsQuery);
@@ -85,17 +85,18 @@ function UserProfileCard() {
   const { user } = useUser();
   const { profile, isLoading } = useUserProfile(user);
 
-  const getInitials = (email: string | null | undefined) => {
-    if (!email) return 'U';
-    const name = user?.displayName || profile?.name;
+  const getInitials = (name?: string, email?: string) => {
     if (name) {
       const parts = name.split(' ');
-      if (parts.length > 1) {
+      if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
         return parts[0][0] + parts[parts.length - 1][0];
       }
       return name.substring(0, 2).toUpperCase();
     }
-    return email.substring(0, 2).toUpperCase();
+    if (email) {
+      return email.substring(0, 2).toUpperCase();
+    }
+    return 'U';
   };
 
   if (isLoading) {
@@ -130,13 +131,17 @@ function UserProfileCard() {
     )
   }
 
+  if (!profile) {
+    return <Card><CardContent><p className="p-6 text-center text-muted-foreground">Could not load user profile.</p></CardContent></Card>
+  }
+
   return (
      <Card>
         <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
                 <Avatar className="h-24 w-24 mb-4 border-2 border-primary">
                     {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
-                    <AvatarFallback className="text-3xl">{getInitials(user?.email)}</AvatarFallback>
+                    <AvatarFallback className="text-3xl">{getInitials(profile?.name, user?.email)}</AvatarFallback>
                 </Avatar>
                 <h2 className="text-2xl font-semibold">{profile?.name || 'User'}</h2>
                 <p className="text-muted-foreground">{profile?.email}</p>
@@ -164,39 +169,48 @@ function UserProfileCard() {
   )
 }
 
-export default function ProfilePage() {
-  const searchParams = useSearchParams();
-  const tab = searchParams.get('tab') || 'profile';
+function ProfilePageContent() {
+    const searchParams = useSearchParams();
+    const tab = searchParams.get('tab') || 'profile';
 
+    return (
+        <div className="flex flex-col gap-6">
+        <header>
+            <h1 className="font-headline text-3xl font-bold tracking-tight">
+            My Profile & Tasks
+            </h1>
+            <p className="text-muted-foreground">
+            Your personal information, tasks, and recent activity.
+            </p>
+        </header>
+        <Tabs defaultValue={tab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="profile">Profile & Activity</TabsTrigger>
+            <TabsTrigger value="tasks">Task Management</TabsTrigger>
+            </TabsList>
+            <TabsContent value="profile">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+                    <div className="lg:col-span-1">
+                        <UserProfileCard />
+                    </div>
+                    <div className="lg:col-span-2">
+                        <RecentUserCheckouts />
+                    </div>
+                </div>
+            </TabsContent>
+            <TabsContent value="tasks">
+                <UserTasks />
+            </TabsContent>
+        </Tabs>
+        </div>
+    );
+}
+
+
+export default function ProfilePage() {
   return (
-    <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
-          My Profile & Tasks
-        </h1>
-        <p className="text-muted-foreground">
-          Your personal information, tasks, and recent activity.
-        </p>
-      </header>
-       <Tabs defaultValue={tab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="profile">Profile & Activity</TabsTrigger>
-          <TabsTrigger value="tasks">Task Management</TabsTrigger>
-        </TabsList>
-        <TabsContent value="profile">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-                <div className="lg:col-span-1">
-                    <UserProfileCard />
-                </div>
-                <div className="lg:col-span-2">
-                    <RecentUserCheckouts />
-                </div>
-            </div>
-        </TabsContent>
-        <TabsContent value="tasks">
-            <UserTasks />
-        </TabsContent>
-       </Tabs>
-    </div>
+    <Suspense>
+        <ProfilePageContent />
+    </Suspense>
   );
 }
