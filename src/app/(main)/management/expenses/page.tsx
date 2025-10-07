@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -48,23 +49,13 @@ const statusColors: { [key: string]: string } = {
   Rejected: 'border-red-500 bg-red-500/10 text-red-500',
 };
 
-const formatDateSafe = (dateValue: Timestamp | { toDate: () => Date } | string | null | undefined): string => {
+const formatDateSafe = (dateValue: Timestamp): string => {
   if (!dateValue) return 'Invalid Date';
 
   try {
-    let date: Date;
-    if (typeof (dateValue as any).toDate === 'function') {
-      date = (dateValue as { toDate: () => Date }).toDate();
-    } else if (typeof dateValue === 'string') {
-      // Handles ISO strings like '2024-10-20T00:00:00.000Z'
-      date = parseISO(dateValue);
-    } else if (dateValue instanceof Date) {
-      date = dateValue;
-    } else {
-        return 'Invalid Date';
-    }
-
+    const date = dateValue.toDate();
     if (isValid(date)) {
+      // Format the date as 'dd MMM yyyy' which is unambiguous.
       return format(date, 'dd MMM yyyy');
     }
   } catch (e) {
@@ -309,3 +300,5 @@ export default function ExpensesPage() {
     </div>
   );
 }
+
+    

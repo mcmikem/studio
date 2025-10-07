@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -10,16 +11,8 @@ import {
   useUser,
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -76,7 +69,7 @@ export function ExpenseReportForm() {
 
     const expenseData = {
       ...data,
-      date: new Date(data.date), // Store as native Date object
+      date: Timestamp.fromDate(new Date(data.date)),
       userId: user.uid,
       userName: profile.name,
       status: 'Pending' as const,
@@ -85,18 +78,19 @@ export function ExpenseReportForm() {
 
     const expensesCollection = collection(firestore, 'expenses');
     try {
-      await addDoc(expensesCollection, expenseData);
+      await addDocumentNonBlocking(expensesCollection, expenseData);
       toast({
         title: 'Expense Report Submitted!',
         description: 'Your report has been sent for approval.',
       });
       reset();
     } catch(e) {
-      console.error(e);
+      // The non-blocking function will emit the detailed error.
+      // We can show a generic toast here if we want, but the console will have the details.
       toast({
         variant: 'destructive',
         title: 'Submission Error',
-        description: 'Could not save your expense report. Please try again.',
+        description: 'Could not save your expense report. Please check your permissions and try again.',
       });
     }
   };
@@ -166,3 +160,5 @@ export function ExpenseReportForm() {
       </form>
   );
 }
+
+    

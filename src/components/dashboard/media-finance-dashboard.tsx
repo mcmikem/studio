@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User } from "@/lib/types"
@@ -40,7 +41,7 @@ import { Button } from "../ui/button"
 import Link from "next/link"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
-import { formatDistanceToNow } from "date-fns"
+import { formatDistanceToNow, isValid } from "date-fns"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -165,7 +166,7 @@ function RecentExpenses() {
     if (!firestore) return null
     return query(
       collection(firestore, "expenses"),
-       where("status", "==", "Pending"),
+      where("status", "==", "Pending"),
       orderBy("createdAt", "desc"),
       limit(5)
     )
@@ -173,10 +174,11 @@ function RecentExpenses() {
 
   const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery)
 
-  const statusColors: { [key: string]: string } = {
-    Pending: "border-yellow-500 bg-yellow-500/10 text-yellow-500",
-    Approved: "border-green-500 bg-green-500/10 text-green-500",
-    Rejected: "border-red-500 bg-red-500/10 text-red-500",
+  const formatDate = (timestamp: Timestamp) => {
+    if (!timestamp) return '';
+    const date = timestamp.toDate();
+    if (!isValid(date)) return '';
+    return formatDistanceToNow(date, { addSuffix: true });
   }
 
   return (
@@ -214,7 +216,7 @@ function RecentExpenses() {
                 <TableRow key={expense.id}>
                   <TableCell>{expense.userName}</TableCell>
                   <TableCell>{formatCurrency(expense.amount)}</TableCell>
-                  <TableCell className="text-muted-foreground text-xs">{formatDistanceToNow(expense.date.toDate(), {addSuffix: true})}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">{formatDate(expense.date)}</TableCell>
                 </TableRow>
               ))
             ) : (
@@ -296,3 +298,5 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
     </>
   )
 }
+
+    
