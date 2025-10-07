@@ -18,7 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import type { Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -60,6 +60,7 @@ const typeColors: { [key: string]: string } = {
 
 export default function ExpensesPage() {
   const firestore = useFirestore();
+  const { user: currentUser } = useUser();
   const { toast } = useToast();
 
   const expensesQuery = useMemoFirebase(() => {
@@ -119,7 +120,7 @@ export default function ExpensesPage() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        // Create a notification for the user
+        // Create a notification for the user who submitted the expense
         await createAlert({
             type: status === 'Approved' ? 'Info' : 'Urgent',
             message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
@@ -174,7 +175,7 @@ export default function ExpensesPage() {
                                             <Badge variant="outline" className={typeColors[expense.type]}>{expense.type}</Badge>
                                         </div>
                                     </CardContent>
-                                    {expense.status === 'Pending' && (
+                                    {expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
                                         <CardFooter className="flex justify-end gap-2">
                                             <Button
                                             variant="outline"
@@ -251,7 +252,7 @@ export default function ExpensesPage() {
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    {expense.status === 'Pending' && (
+                                    {expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
                                     <div className="flex justify-end gap-2">
                                         <Button
                                         variant="ghost"

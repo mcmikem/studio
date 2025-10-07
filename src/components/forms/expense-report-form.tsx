@@ -25,6 +25,7 @@ import { Loader2, FilePlus2, PlusCircle, Trash2 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
+import { createAlert } from '@/ai/flows/create-alert-flow';
 
 const expenseItemSchema = z.object({
   description: z.string().min(3, 'Item description is required.'),
@@ -96,10 +97,24 @@ export function ExpenseReportForm() {
     const expensesCollection = collection(firestore, 'expenses');
     try {
       await addDocumentNonBlocking(expensesCollection, expenseData);
+      
+      // Smart Alert Routing for Approval
+      const isED = profile.role === 'Executive Director';
+      const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
+      const approverRole = isED ? "Programs & Partnerships Manager" : "Executive Director";
+      
+      await createAlert({
+          type: 'Reminder',
+          message: alertMessage,
+          priority: 'Medium',
+          action: `/management/expenses`, 
+      });
+
       toast({
         title: 'Expense Report Submitted!',
-        description: 'Your report has been sent for approval.',
+        description: `Your report has been sent to the ${approverRole} for approval.`,
       });
+
       reset({
         type: 'Reimbursement',
         date: format(new Date(), 'yyyy-MM-dd'),
