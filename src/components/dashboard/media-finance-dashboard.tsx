@@ -192,7 +192,7 @@ function PaymentQueue() {
 
         await createAlert({
             type: 'Info',
-            message: `Your expense for '${expense.description}' of ${formatCurrency(expense.amount)} has been cleared.`,
+            message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been cleared.`,
             priority: 'Low',
             action: `/activity-log`, // This could link to a personal finance page in future
         });
@@ -245,7 +245,7 @@ function PaymentQueue() {
               expenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell>{expense.userName}</TableCell>
-                  <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                  <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
                   <TableCell className="text-right">
                     <Button size="sm" onClick={() => handleMarkAsCleared(expense)}>
@@ -335,3 +335,5 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
     </>
   )
 }
+
+    

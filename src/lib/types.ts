@@ -172,15 +172,21 @@ export type KeyResult = {
   priority: 'High' | 'Medium' | 'Low';
 };
 
+export type ExpenseItem = {
+    description: string;
+    category: "Transport" | "Materials" | "Food" | "Airtime" | "Other";
+    amount: number;
+}
+
 export type Expense = {
     id: string;
     userId: string;
     userName: string;
     date: Timestamp;
-    description: string;
-    category: "Transport" | "Materials" | "Food" | "Airtime" | "Other";
+    title: string;
+    items: ExpenseItem[];
+    totalAmount: number;
     type: "Requisition" | "Reimbursement";
-    amount: number;
     status: "Pending" | "Approved" | "Rejected" | "Cleared";
     createdAt?: Timestamp;
 };
@@ -195,3 +201,5 @@ export type Proposal = {
     decisionDate?: string;
     createdAt?: Timestamp;
 }
+
+    

@@ -82,12 +82,15 @@ export default function ExpensesPage() {
   
   const chartData = useMemo(() => {
     if (!allExpenses) return [];
+    
     const categoryTotals = allExpenses.reduce((acc, expense) => {
-      if(expense.status === 'Approved' || expense.status === 'Cleared') {
-          if (!acc[expense.category]) {
-            acc[expense.category] = 0;
+      if (expense.status === 'Approved' || expense.status === 'Cleared') {
+        expense.items.forEach(item => {
+          if (!acc[item.category]) {
+            acc[item.category] = 0;
           }
-          acc[expense.category] += expense.amount;
+          acc[item.category] += item.amount;
+        });
       }
       return acc;
     }, {} as Record<string, number>);
@@ -119,7 +122,7 @@ export default function ExpensesPage() {
         // Create a notification for the user
         await createAlert({
             type: status === 'Approved' ? 'Info' : 'Urgent',
-            message: `Your expense for '${expense.description}' was ${status.toLowerCase()}.`,
+            message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
             priority: status === 'Approved' ? 'Low' : 'Medium',
             action: `/activity-log`, // Future: Link to user's personal expense history
         });
@@ -159,13 +162,12 @@ export default function ExpensesPage() {
                             expenses.map((expense) => (
                                 <Card key={expense.id}>
                                     <CardHeader>
-                                        <CardTitle className="text-base">{expense.description}</CardTitle>
+                                        <CardTitle className="text-base">{expense.title}</CardTitle>
                                         <CardDescription>{expense.userName} - {formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex justify-between items-center">
                                         <div>
-                                            <p className="font-bold text-lg">{formatCurrency(expense.amount)}</p>
-                                            <Badge variant="outline" className="mt-1">{expense.category}</Badge>
+                                            <p className="font-bold text-lg">{formatCurrency(expense.totalAmount)}</p>
                                         </div>
                                         <div className='flex flex-col items-end gap-1'>
                                             <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
@@ -211,7 +213,7 @@ export default function ExpensesPage() {
                             <TableRow>
                             <TableHead>User</TableHead>
                             <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
+                            <TableHead>Title</TableHead>
                             <TableHead>Amount</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>Status</TableHead>
@@ -236,8 +238,8 @@ export default function ExpensesPage() {
                                 <TableRow key={expense.id}>
                                 <TableCell className="font-medium">{expense.userName}</TableCell>
                                 <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
-                                <TableCell>{expense.description}</TableCell>
-                                <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                                <TableCell>{expense.title}</TableCell>
+                                <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
                                  <TableCell>
                                     <Badge variant="outline" className={typeColors[expense.type]}>
                                         {expense.type}
@@ -329,3 +331,5 @@ export default function ExpensesPage() {
     </div>
   );
 }
+
+    

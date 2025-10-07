@@ -400,20 +400,37 @@
     "Expense": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Expense",
-      "description": "Represents a single expense report.",
+      "description": "Represents a single expense report with multiple line items.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "userId": { "type": "string" },
         "userName": { "type": "string" },
         "date": { "type": "string", "format": "date" },
-        "description": { "type": "string" },
-        "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
-        "amount": { "type": "number" },
+        "title": { "type": "string", "description": "The overall title of the expense report (e.g., Mpigi Field Visit)." },
+        "type": {
+            "type": "string",
+            "enum": ["Requisition", "Reimbursement"],
+            "description": "The type of expense report (pre-spending or post-spending)."
+        },
+        "items": {
+          "type": "array",
+          "description": "A list of individual expense items.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
+              "amount": { "type": "number" }
+            },
+            "required": ["description", "category", "amount"]
+          }
+        },
+        "totalAmount": { "type": "number", "description": "The sum of all item amounts." },
         "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Cleared"], "default": "Pending"},
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "userName", "date", "description", "category", "amount", "status", "createdAt"]
+      "required": ["userId", "userName", "date", "title", "type", "items", "totalAmount", "status", "createdAt"]
     },
     "Proposal": {
       "$schema": "http://json-schema.org/draft-07/schema#",

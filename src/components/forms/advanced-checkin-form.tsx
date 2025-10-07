@@ -237,9 +237,13 @@ export function AdvancedCheckinForm() {
         userName: profile.name,
         date: Timestamp.now(),
         type: 'Requisition' as const,
-        description: `Budget request from daily check-in for mission: ${mission}`,
-        category: 'Other' as const,
-        amount: data.budget,
+        title: `Budget from Check-in: ${mission}`,
+        items: [{
+          description: "Funds requested from daily check-in",
+          category: 'Other' as const,
+          amount: data.budget,
+        }],
+        totalAmount: data.budget,
         status: 'Pending' as const,
         createdAt: serverTimestamp(),
       };
@@ -496,3 +500,5 @@ export function AdvancedCheckinForm() {
       </form>
   );
 }
+
+    
