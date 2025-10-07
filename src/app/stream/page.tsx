@@ -9,7 +9,7 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Rss, User, LogIn, LogOut, Clock, ListChecks, ArrowRight, BookOpen, Lightbulb } from 'lucide-react';
+import { Rss, User, LogIn, LogOut, Clock, ListChecks, ArrowRight, BookOpen, Lightbulb, ChevronDown } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import type { Checkin, Checkout } from '@/lib/types';
@@ -20,52 +20,61 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { tagColors } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
 
 function CheckinCard({ checkin }: { checkin: Checkin }) {
     const { details } = checkin;
     return (
         <Card>
-            <CardHeader className="flex flex-row items-start gap-4">
-                <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                     <AvatarFallback>{checkin.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                </Avatar>
-                <div>
-                    <CardTitle>{checkin.name}'s Plan</CardTitle>
-                    <CardDescription>{formatDateSafe(checkin.timestamp)}</CardDescription>
-                </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div>
-                    <h4 className="font-semibold text-sm mb-2">Primary Mission</h4>
-                    <p className="text-muted-foreground text-sm">{checkin.primaryMission}</p>
-                </div>
-                {details && (
-                    <div className="space-y-3 pt-3 border-t">
-                        {details.timeBlocks && details.timeBlocks.length > 0 && (
-                            <div>
-                                <h5 className="font-semibold text-xs text-muted-foreground uppercase flex items-center gap-2 mb-2"><Clock className="h-3 w-3" />Time Blocks</h5>
-                                <ul className="space-y-1 text-sm list-inside">
-                                    {details.timeBlocks.map((block, i) => <li key={i}>{block.startTime}-{block.endTime}: {block.description}</li>)}
-                                </ul>
-                            </div>
-                        )}
-                        {details.multiWinConnections && details.multiWinConnections.length > 0 && (
-                             <div>
-                                <h5 className="font-semibold text-xs text-muted-foreground uppercase flex items-center gap-2 mb-2"><ArrowRight className="h-3 w-3" />Multi-Win Connections</h5>
-                                <div className="flex flex-wrap gap-2">
-                                    {details.multiWinConnections.map((conn, i) => <Badge key={i} variant="outline">{conn}</Badge>)}
-                                </div>
-                            </div>
-                        )}
-                         {details.teamSupport && details.teamSupport.length > 0 && (
-                             <div>
-                                <h5 className="font-semibold text-xs text-muted-foreground uppercase flex items-center gap-2 mb-2"><User className="h-3 w-3" />Team Support</h5>
-                                <p className="text-sm">Needs support from: {details.teamSupport.join(', ')}</p>
-                            </div>
-                        )}
+            <Collapsible>
+                <CardHeader className="flex flex-row items-start gap-4">
+                    <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
+                         <AvatarFallback>{checkin.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-grow">
+                        <CardTitle>{checkin.name}'s Plan</CardTitle>
+                        <CardDescription>{formatDateSafe(checkin.timestamp)}</CardDescription>
+                        <p className="font-semibold text-sm mt-2">{checkin.primaryMission}</p>
                     </div>
-                )}
-            </CardContent>
+                     <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="ml-auto flex items-center gap-1">
+                            Details <ChevronDown className="h-4 w-4" />
+                        </Button>
+                    </CollapsibleTrigger>
+                </CardHeader>
+
+                <CollapsibleContent>
+                    <CardContent className="space-y-4 pt-0">
+                        {details && (
+                            <div className="space-y-3 pt-3 border-t">
+                                {details.timeBlocks && details.timeBlocks.length > 0 && (
+                                    <div>
+                                        <h5 className="font-semibold text-xs text-muted-foreground uppercase flex items-center gap-2 mb-2"><Clock className="h-3 w-3" />Time Blocks</h5>
+                                        <ul className="space-y-1 text-sm list-inside">
+                                            {details.timeBlocks.map((block, i) => <li key={i}>{block.startTime}-{block.endTime}: {block.description}</li>)}
+                                        </ul>
+                                    </div>
+                                )}
+                                {details.multiWinConnections && details.multiWinConnections.length > 0 && (
+                                     <div>
+                                        <h5 className="font-semibold text-xs text-muted-foreground uppercase flex items-center gap-2 mb-2"><ArrowRight className="h-3 w-3" />Multi-Win Connections</h5>
+                                        <div className="flex flex-wrap gap-2">
+                                            {details.multiWinConnections.map((conn, i) => <Badge key={i} variant="outline">{conn}</Badge>)}
+                                        </div>
+                                    </div>
+                                )}
+                                 {details.teamSupport && details.teamSupport.length > 0 && (
+                                     <div>
+                                        <h5 className="font-semibold text-xs text-muted-foreground uppercase flex items-center gap-2 mb-2"><User className="h-3 w-3" />Team Support</h5>
+                                        <p className="text-sm">Needs support from: {details.teamSupport.join(', ')}</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </CardContent>
+                </CollapsibleContent>
+            </Collapsible>
         </Card>
     );
 }
@@ -142,12 +151,12 @@ function CheckinStream() {
 
     if (!startOfDay) {
         // Render skeletons or a placeholder while waiting for client-side mount
-        return Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-60 w-full" />);
+        return Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />);
     }
 
     return (
         <div className="space-y-6">
-            {isLoading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-60 w-full" />)}
+            {isLoading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
             {checkins && checkins.length > 0 ? (
                 checkins.map(checkin => <CheckinCard key={checkin.id} checkin={checkin} />)
             ) : (

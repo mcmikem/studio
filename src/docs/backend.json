@@ -267,6 +267,7 @@
            "properties": {
               "mainFocus": { "type": "array", "items": { "type": "string" }},
               "customTask": { "type": "string" },
+              "workLocation": { "type": "string" },
               "timeBlocks": {
                 "type": "array",
                 "items": {
@@ -448,6 +449,25 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "partnerName", "amountRequested", "status", "submissionDate", "createdAt"]
+    },
+    "WeeklyWorkplan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Weekly Workplan",
+      "description": "Represents a user's strategic plan for a specific week.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "weekOf": { "type": "string", "format": "date", "description": "The start date of the week (e.g., a Monday)." },
+        "keyPriorities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "A list of the main priorities for the week."
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "weekOf", "keyPriorities", "createdAt"]
     }
   },
   "auth": {
@@ -540,8 +560,12 @@
         "$ref": "#/entities/Proposal"
       },
       "description": "Stores grant proposals and funding applications."
+    },
+    "/workplans/{workplanId}": {
+      "schema": {
+        "$ref": "#/entities/WeeklyWorkplan"
+      },
+      "description": "Stores weekly workplans for each user."
     }
   }
 }
-
-    

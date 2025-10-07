@@ -9,10 +9,11 @@ import {
   useFirestore,
   useUser,
   useCollection,
+  useMemoFirebase
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
-import type { KeyResult, User, Checkout } from '@/lib/types';
+import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs, getDoc } from 'firebase/firestore';
+import type { KeyResult, User, Checkout, WeeklyWorkplan } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -40,6 +41,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '../ui/skeleton';
+import { getWeek, startOfWeek, format as formatDate } from 'date-fns';
 
 
 const timeBlockSchema = z.object({
@@ -153,12 +155,47 @@ export function AdvancedCheckinForm() {
   const mainFocus = watch('mainFocus');
   const customTask = watch('customTask');
   
-  const keyResultsQuery = useMemo(() => {
+  const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
 
   const { data: keyResults, isLoading: isLoadingKR } = useCollection<KeyResult>(keyResultsQuery);
+
+  const [currentWorkplan, setCurrentWorkplan] = useState<WeeklyWorkplan | null>(null);
+  const [isLoadingWorkplan, setIsLoadingWorkplan] = useState(true);
+
+  useEffect(() => {
+    async function fetchCurrentWorkplan() {
+      if (!firestore || !user) return;
+      setIsLoadingWorkplan(true);
+      const today = new Date();
+      const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
+      const weekOfStr = formatDate(weekStartDate, "yyyy-MM-dd");
+
+      const workplanQuery = query(
+        collection(firestore, 'workplans'),
+        where('userId', '==', user.uid),
+        where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
+        limit(1)
+      );
+
+      try {
+        const snapshot = await getDocs(workplanQuery);
+        if (!snapshot.empty) {
+          setCurrentWorkplan({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as WeeklyWorkplan);
+        } else {
+          setCurrentWorkplan(null);
+        }
+      } catch (e) {
+        console.error("Error fetching workplan: ", e);
+      } finally {
+        setIsLoadingWorkplan(false);
+      }
+    }
+    fetchCurrentWorkplan();
+  }, [firestore, user]);
+
 
   useEffect(() => {
     async function fetchLastCheckout() {
@@ -201,6 +238,7 @@ export function AdvancedCheckinForm() {
     
     let mission = data.mainFocus.map(focusId => {
       if (focusId === 'custom') return data.customTask;
+      if (currentWorkplan?.keyPriorities.includes(focusId)) return focusId;
       const kr = keyResults?.find(k => k.id === focusId);
       return kr ? `${kr.title}: ${kr.description}` : focusId;
     }).filter(Boolean).join('; ');
@@ -322,10 +360,17 @@ export function AdvancedCheckinForm() {
     }).filter(Boolean).join('; ') || "Your Mission";
   }, [mainFocus, customTask, keyResults]);
 
-  const krOptions = useMemo(() => {
-    if (!keyResults) return [];
-    return keyResults.map(kr => ({ value: kr.id, label: `${kr.title}: ${kr.description}`}));
-  }, [keyResults]);
+  const priorityOptions = useMemo(() => {
+    const options = [];
+    if (currentWorkplan?.keyPriorities) {
+      options.push(...currentWorkplan.keyPriorities.map(p => ({ value: p, label: `(This Week) ${p}` })));
+    }
+    if (keyResults) {
+      options.push(...keyResults.map(kr => ({ value: kr.id, label: `(Org KR) ${kr.title}: ${kr.description}` })));
+    }
+    options.push({ value: 'custom', label: 'Custom Task' });
+    return options;
+  }, [keyResults, currentWorkplan]);
 
 
   return (
@@ -347,10 +392,10 @@ export function AdvancedCheckinForm() {
                 control={control}
                 render={({ field }) => (
                   <MultiSelect
-                    options={[...krOptions, { value: 'custom', label: 'Custom Task' }]}
+                    options={priorityOptions}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    placeholder="Select your main focus areas..."
+                    placeholder="Select from Weekly Plan, Org KRs, or add a custom task..."
                     animation={0}
                     maxCount={3}
                   />
@@ -500,5 +545,3 @@ export function AdvancedCheckinForm() {
       </form>
   );
 }
-
-    

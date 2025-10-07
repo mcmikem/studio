@@ -18,6 +18,7 @@ import {
   Target,
   Wand,
   Rss,
+  CalendarCheck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -123,44 +124,31 @@ export function AppSidebar() {
         </SidebarMenu>
         
         <SidebarGroup>
-          <SidebarGroupLabel>Core Modules</SidebarGroupLabel>
+          <SidebarGroupLabel>Planning</SidebarGroupLabel>
            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/workplan')}
+                  tooltip="Weekly Workplan"
+                  onClick={handleLinkClick}
+                >
+                  <Link href="/workplan">
+                    <CalendarCheck />
+                    <span>Weekly Workplan</span>
+                  </Link>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/management')}
-                  tooltip="Management"
+                  isActive={isActive('/plan')}
+                  tooltip="October 2025 Plan"
                   onClick={handleLinkClick}
                 >
-                  <Link href="/management/programs">
-                    <Briefcase />
-                    <span>Management</span>
-                  </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive('/media-finance')}
-                  tooltip="Media & Finance"
-                  onClick={handleLinkClick}
-                >
-                  <Link href="/media-finance">
-                    <Banknote />
-                    <span>Media & Finance</span>
-                  </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive('/resources')}
-                  tooltip="Resource Mobilization"
-                  onClick={handleLinkClick}
-                >
-                  <Link href="/resources">
-                    <Handshake />
-                    <span>Resource Mobilization</span>
+                  <Link href="/plan">
+                    <ClipboardList />
+                    <span>Operational Plan</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
@@ -168,7 +156,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
+          <SidebarGroupLabel>Execution</SidebarGroupLabel>
           <SidebarMenu>
              <SidebarMenuItem>
                 <SidebarMenuButton
@@ -199,19 +187,6 @@ export function AppSidebar() {
              <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/plan')}
-                  tooltip="October 2025 Plan"
-                  onClick={handleLinkClick}
-                >
-                  <Link href="/plan">
-                    <ClipboardList />
-                    <span>Operational Plan</span>
-                  </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
                   isActive={isActive('/activity-log')}
                   tooltip="Activity Log"
                   onClick={handleLinkClick}
@@ -222,24 +197,16 @@ export function AppSidebar() {
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator" onClick={handleLinkClick}>
-                    <Link href="/impact-story">
-                        <Wand />
-                        <span>Story Generator</span>
-                    </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
+             <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/reports')}
-                  tooltip="Reports"
+                  isActive={isActive('/management')}
+                  tooltip="Management"
                   onClick={handleLinkClick}
                 >
-                  <Link href="/reports">
-                    <FileText />
-                    <span>Reports</span>
+                  <Link href="/management/programs">
+                    <Briefcase />
+                    <span>Management</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
@@ -247,7 +214,7 @@ export function AppSidebar() {
         </SidebarGroup>
         
         <SidebarGroup>
-            <SidebarGroupLabel>General</SidebarGroupLabel>
+            <SidebarGroupLabel>Support</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
@@ -257,7 +224,37 @@ export function AppSidebar() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/resources')} tooltip="Resource Mobilization" onClick={handleLinkClick}>
+                        <Link href="/resources">
+                            <Handshake />
+                            <span>Resources</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/reports')} tooltip="Reports" onClick={handleLinkClick}>
+                        <Link href="/reports">
+                            <FileText />
+                            <span>Reports</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/media-finance')} tooltip="Media & Finance" onClick={handleLinkClick}>
+                        <Link href="/media-finance">
+                            <Banknote />
+                            <span>Finance</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+        </SidebarGroup>
+
+         <SidebarGroup>
+            <SidebarGroupLabel>Personal</SidebarGroupLabel>
+            <SidebarMenu>
+                 <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive('/notifications')} tooltip="Notifications" onClick={handleLinkClick}>
                         <Link href="/notifications">
                             <Bell />
@@ -270,6 +267,14 @@ export function AppSidebar() {
                         <Link href="/profile">
                             <User />
                             <span>My Profile</span>
+                        </Link>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator" onClick={handleLinkClick}>
+                        <Link href="/impact-story">
+                            <Wand />
+                            <span>Story Generator</span>
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -215,3 +215,12 @@ export type Proposal = {
     decisionDate?: string;
     createdAt?: Timestamp;
 }
+
+export type WeeklyWorkplan = {
+  id: string;
+  userId: string;
+  userName: string;
+  weekOf: Timestamp;
+  keyPriorities: string[];
+  createdAt: Timestamp;
+};
