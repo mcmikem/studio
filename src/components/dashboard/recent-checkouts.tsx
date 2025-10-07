@@ -7,8 +7,8 @@ import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore
 import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
 import { tagColors } from '@/lib/data';
-import { MessageSquareText } from 'lucide-react';
 import { formatDateSafe } from '@/lib/utils';
+import { MessageSquareText } from 'lucide-react';
 
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = formatDateSafe(checkout.timestamp);

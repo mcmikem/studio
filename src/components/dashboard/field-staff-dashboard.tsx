@@ -37,17 +37,15 @@ export function FieldStaffDashboard({ profile }: { profile: User }) {
         </p>
       </header>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 grid grid-cols-1 gap-6">
-          <DailyActions />
+        <div className="lg:col-span-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
           <MyPriorities />
+          <TeamToday />
         </div>
-        <div className="lg:col-span-2">
-            <TeamActivityFeed />
+        <div className="lg:col-span-2 grid grid-cols-1 gap-6">
+          <DailyActions />
+          <TeamActivityFeed />
         </div>
-         <div className="lg:col-span-1">
-           <TeamToday />
-        </div>
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-3">
           <DashboardCalendar />
         </div>
       </div>
