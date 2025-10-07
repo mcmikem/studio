@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -333,10 +334,10 @@ export default function ProjectsPage() {
                                     </div>
                                 </CardContent>
                                 <CardFooter className="flex justify-end gap-2">
-                                     <Button variant="ghost" size="sm" onClick={() => setEditingProject(project)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                     <Button variant="ghost" size="icon" onClick={() => setEditingProject(project)}><Edit className="h-4 w-4" /></Button>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                             <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
+                                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
                                             <AlertDialogHeader>
@@ -417,8 +418,8 @@ export default function ProjectsPage() {
                                     </Button>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon">
-                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                <Trash2 className="h-4 w-4" />
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>

@@ -98,8 +98,6 @@ export default function ExpensesPage() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
     } catch (error) {
-        // The non-blocking wrapper will emit the detailed error,
-        // but we can still show a generic failure toast here if we want.
          toast({
             variant: "destructive",
             title: "Update Failed",
@@ -145,7 +143,7 @@ export default function ExpensesPage() {
                                             <Button
                                             variant="outline"
                                             size="sm"
-                                            className="text-green-500 border-green-500 hover:bg-green-500/10 hover:text-green-600"
+                                            className="text-primary border-primary hover:bg-primary/10 hover:text-primary"
                                             onClick={() => handleStatusUpdate(expense.id, 'Approved')}
                                             >
                                             <Check className="mr-2 h-4 w-4" /> Approve
@@ -153,7 +151,7 @@ export default function ExpensesPage() {
                                             <Button
                                             variant="outline"
                                             size="sm"
-                                            className="text-red-500 border-red-500 hover:bg-red-500/10 hover:text-red-600"
+                                            className="text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive"
                                             onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
                                             >
                                             <X className="mr-2 h-4 w-4" /> Reject
@@ -220,7 +218,7 @@ export default function ExpensesPage() {
                                         <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="text-green-500 hover:text-green-600"
+                                        className="text-primary hover:text-primary"
                                         onClick={() => handleStatusUpdate(expense.id, 'Approved')}
                                         >
                                         <Check className="h-4 w-4" />
@@ -228,7 +226,7 @@ export default function ExpensesPage() {
                                         <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="text-red-500 hover:text-red-600"
+                                        className="text-destructive hover:text-destructive"
                                         onClick={() => handleStatusUpdate(expense.id, 'Rejected')}
                                         >
                                         <X className="h-4 w-4" />
