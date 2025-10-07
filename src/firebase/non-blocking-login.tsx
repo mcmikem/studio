@@ -1,3 +1,4 @@
+
 "use client"
 import {
   Auth,
@@ -98,14 +99,14 @@ const isEmailApproved = (email: string | null): boolean => {
 async function seedInitialData(db: Firestore) {
   console.log("Checking if initial data seeding is needed...")
 
-  const usersCollection = collection(db, "users")
-  const userSnapshot = await getDocs(query(usersCollection, limit(1)))
+  const programsCollection = collection(db, "programs");
+  const programsSnapshot = await getDocs(query(programsCollection, limit(1)));
 
-  if (!userSnapshot.empty) {
-    console.log("Data already exists. Skipping seed.")
-    return
+  if (!programsSnapshot.empty) {
+    console.log("Core data (programs) already exists. Skipping seed.");
+    return;
   }
-
+  
   console.log("Seeding initial data...")
   const batch = writeBatch(db)
 
@@ -255,3 +256,5 @@ export function initiateGoogleSignIn(authInstance: Auth) {
       throw error
     })
 }
+
+    
