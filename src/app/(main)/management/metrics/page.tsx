@@ -154,10 +154,102 @@ function MetricForm({
   );
 }
 
+function MetricCard({ metric }: { metric: ImpactMetric }) {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [editingMetric, setEditingMetric] = useState<ImpactMetric | null>(null);
+
+    const handleDelete = (metricId: string) => {
+        if (!firestore) return;
+        const metricRef = doc(firestore, 'impact-metrics', metricId);
+        deleteDocumentNonBlocking(metricRef);
+        toast({
+            title: "Metric Deleted",
+            description: "The metric has been removed from your dashboard.",
+        });
+    };
+
+    const progress = metric.target > 0 ? (metric.current / metric.target) * 100 : 0;
+    const remaining = 100 - progress;
+    const chartData = [
+        { name: "achieved", value: progress, fill: "hsl(var(--primary))" },
+        { name: "remaining", value: remaining > 0 ? remaining : 0, fill: "hsl(var(--muted))" },
+    ];
+    const chartConfig = {
+        achieved: { label: "Achieved", color: "hsl(var(--primary))" },
+        remaining: { label: "Remaining", color: "hsl(var(--muted))" },
+    };
+    const formatValue = (val: number) =>
+        metric.unit === "UGX"
+            ? new Intl.NumberFormat("en-UG", {
+                style: "currency", currency: "UGX", minimumFractionDigits: 0
+            }).format(val)
+            : val.toLocaleString();
+
+    return (
+        <>
+            <Card key={metric.id}>
+                <CardHeader>
+                    <CardTitle className="text-lg">{metric.metric}</CardTitle>
+                    <CardDescription>{metric.unit || 'Units'}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center gap-4">
+                    <ChartContainer config={chartConfig} className="h-40 w-full">
+                        <PieChart accessibilityLayer>
+                            <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
+                            <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} startAngle={90} endAngle={450}>
+                                {chartData.map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
+                            </Pie>
+                        </PieChart>
+                    </ChartContainer>
+                    <div className="text-center">
+                        <p className="text-2xl font-bold">{formatValue(metric.current)}</p>
+                        <p className="text-sm text-muted-foreground">Target: {formatValue(metric.target)}</p>
+                    </div>
+                </CardContent>
+                 <CardFooter className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => setEditingMetric(metric)}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the metric "{metric.metric}".
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDelete(metric.id)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </CardFooter>
+            </Card>
+             {editingMetric && (
+                <Dialog open={!!editingMetric} onOpenChange={(open) => !open && setEditingMetric(null)}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Edit Impact Metric</DialogTitle>
+                            <DialogDescription>Update the details for "{editingMetric.metric}".</DialogDescription>
+                        </DialogHeader>
+                        <MetricForm metric={editingMetric} onFormSubmit={() => setEditingMetric(null)} />
+                    </DialogContent>
+                </Dialog>
+            )}
+        </>
+    )
+}
+
 export default function MetricsPage() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
-  const [editingMetric, setEditingMetric] = useState<ImpactMetric | null>(null);
-
+  
   const firestore = useFirestore();
   const metricsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -165,18 +257,6 @@ export default function MetricsPage() {
   }, [firestore]);
 
   const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery);
-
-  const handleDelete = (metricId: string) => {
-    if (!firestore) return;
-    const metricRef = doc(firestore, 'impact-metrics', metricId);
-    deleteDocumentNonBlocking(metricRef);
-    toast({
-        title: "Metric Deleted",
-        description: "The metric has been removed from your dashboard.",
-    });
-  };
-
-  const { toast } = useToast();
 
   return (
     <Card>
@@ -211,74 +291,10 @@ export default function MetricsPage() {
                 <Card key={i}><CardContent className="pt-6"><Skeleton className="h-48 w-full" /></CardContent></Card>
             ))}
             {metrics && metrics.length > 0 ? (
-                metrics.map(metric => {
-                    const progress = metric.target > 0 ? (metric.current / metric.target) * 100 : 0;
-                    const remaining = 100 - progress;
-                    const chartData = [
-                        { name: "achieved", value: progress, fill: "hsl(var(--primary))" },
-                        { name: "remaining", value: remaining > 0 ? remaining : 0, fill: "hsl(var(--muted))" },
-                    ];
-                     const chartConfig = {
-                        achieved: { label: "Achieved", color: "hsl(var(--primary))" },
-                        remaining: { label: "Remaining", color: "hsl(var(--muted))" },
-                    };
-                    const formatValue = (val: number) =>
-                        metric.unit === "UGX"
-                            ? new Intl.NumberFormat("en-UG", {
-                                style: "currency", currency: "UGX", minimumFractionDigits: 0
-                            }).format(val)
-                            : val.toLocaleString();
-
-                    return (
-                        <Card key={metric.id}>
-                            <CardHeader>
-                                <CardTitle className="text-lg">{metric.metric}</CardTitle>
-                                <CardDescription>{metric.unit || 'Units'}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="flex flex-col items-center justify-center gap-4">
-                                <ChartContainer config={chartConfig} className="h-40 w-full">
-                                    <PieChart accessibilityLayer>
-                                        <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-                                        <Pie data={chartData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} startAngle={90} endAngle={450}>
-                                            {chartData.map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
-                                        </Pie>
-                                    </PieChart>
-                                </ChartContainer>
-                                <div className="text-center">
-                                    <p className="text-2xl font-bold">{formatValue(metric.current)}</p>
-                                    <p className="text-sm text-muted-foreground">Target: {formatValue(metric.target)}</p>
-                                </div>
-                            </CardContent>
-                             <CardFooter className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" onClick={() => setEditingMetric(metric)}>
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the metric "{metric.metric}".
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDelete(metric.id)}>Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </CardFooter>
-                        </Card>
-                    )
-                })
+                metrics.map(metric => <MetricCard key={metric.id} metric={metric} />)
             ) : (
                 !isLoading && (
-                    <div className="lg:col-span-3 h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
+                    <div className="md:col-span-2 lg:col-span-3 h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
                         <Target className="h-12 w-12" />
                         <span className="text-lg font-semibold mt-2">No Metrics Found</span>
                         <p className="text-sm">Add a metric to get started.</p>
@@ -287,17 +303,6 @@ export default function MetricsPage() {
             )}
         </div>
       </CardContent>
-      {editingMetric && (
-         <Dialog open={!!editingMetric} onOpenChange={(open) => !open && setEditingMetric(null)}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Edit Impact Metric</DialogTitle>
-                    <DialogDescription>Update the details for "{editingMetric.metric}".</DialogDescription>
-                </DialogHeader>
-                <MetricForm metric={editingMetric} onFormSubmit={() => setEditingMetric(null)} />
-            </DialogContent>
-        </Dialog>
-      )}
     </Card>
   );
 }

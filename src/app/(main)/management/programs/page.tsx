@@ -73,8 +73,6 @@ const formatDateForInput = (date: string | Date | Timestamp): string => {
     } else {
       d = new Date(date);
     }
-    // Directly format to 'yyyy-MM-dd' which is timezone-agnostic.
-    // The input[type=date] will handle the user's local timezone.
     return format(d, 'yyyy-MM-dd');
   } catch {
     return '';
@@ -222,6 +220,51 @@ export default function ProgramsPage() {
   }, [firestore]);
   const { data: programs, isLoading } = useCollection<Program>(programsQuery);
 
+  const ProgramCard = ({ program }: { program: Program }) => {
+    const deadlineDate = new Date(program.deadline);
+    const isDeadlinePast = isPast(deadlineDate) && program.status !== 'Completed';
+
+    return (
+      <Card key={program.id} className="flex flex-col">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <CardTitle className="text-xl pr-4">{program.title}</CardTitle>
+            <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={() => setEditingProgram(program)}>
+              <Edit className="h-4 w-4" />
+            </Button>
+          </div>
+          <Badge variant="outline" className={`${statusColors[program.status]} mt-2 w-fit`}>
+            <div className="flex items-center gap-1">
+              {statusIcons[program.status]}
+              {program.status}
+            </div>
+          </Badge>
+          <CardDescription className="pt-2">{program.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-grow flex flex-col justify-between pt-0">
+          <div>
+            <h4 className="font-semibold text-sm mb-2">Key Objectives:</h4>
+            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+              {program.objectives.map((obj, index) => (
+                <li key={index}>{obj}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="mt-4 pt-4 border-t">
+            <div className="text-xs text-muted-foreground">
+              <p><strong>Lead:</strong> {program.lead}</p>
+              <p className={cn("font-medium", isDeadlinePast && "text-destructive")}>
+                <strong>Deadline:</strong> {format(deadlineDate, "dd MMM, yyyy")}
+              </p>
+              {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+
   return (
     <Card>
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -271,49 +314,9 @@ export default function ProgramsPage() {
         )}
         {programs && programs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {programs.map((program) => {
-              const deadlineDate = new Date(program.deadline);
-              const isDeadlinePast = isPast(deadlineDate) && program.status !== 'Completed';
-
-              return (
-                <Card key={program.id} className="flex flex-col">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-xl pr-4">{program.title}</CardTitle>
-                       <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={() => setEditingProgram(program)}>
-                          <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                     <Badge variant="outline" className={`${statusColors[program.status]} mt-2 w-fit`}>
-                        <div className="flex items-center gap-1">
-                          {statusIcons[program.status]}
-                          {program.status}
-                        </div>
-                      </Badge>
-                    <CardDescription className="pt-2">{program.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-grow flex flex-col justify-between pt-0">
-                      <div>
-                          <h4 className="font-semibold text-sm mb-2">Key Objectives:</h4>
-                          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                              {program.objectives.map((obj, index) => (
-                                  <li key={index}>{obj}</li>
-                              ))}
-                          </ul>
-                      </div>
-                      <div className="mt-4 pt-4 border-t">
-                          <div className="text-xs text-muted-foreground">
-                              <p><strong>Lead:</strong> {program.lead}</p>
-                              <p className={cn("font-medium", isDeadlinePast && "text-destructive")}>
-                                  <strong>Deadline:</strong> {format(deadlineDate, "dd MMM, yyyy")}
-                              </p>
-                              {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
-                          </div>
-                      </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+            {programs.map((program) => (
+              <ProgramCard key={program.id} program={program} />
+            ))}
           </div>
         ) : (
             !isLoading && (
