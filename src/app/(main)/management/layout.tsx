@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Briefcase, Handshake, Target, Truck, Receipt } from 'lucide-react';
+import { Briefcase, Handshake, Target, Receipt } from 'lucide-react';
 
 export default function ManagementLayout({
   children,
@@ -14,7 +14,7 @@ export default function ManagementLayout({
 
   const tabs = [
     { name: 'Programs', href: '/management/programs', icon: Briefcase },
-    { name: 'Projects', href: '/management/projects', icon: Truck },
+    { name: 'Projects', href: '/management/projects', icon: Briefcase },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
     { name: 'Expenses', href: '/management/expenses', icon: Receipt },

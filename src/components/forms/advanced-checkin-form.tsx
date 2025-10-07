@@ -24,11 +24,10 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Wand2, Sparkles, LogIn, Trash2, PlusCircle, Info } from 'lucide-react';
+import { Loader2, Wand2, Sparkles, LogIn, Trash2, PlusCircle } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
 import { MultiSelect } from '../ui/multi-select';
-import { Separator } from '../ui/separator';
 import { Checkbox } from '../ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -344,8 +343,6 @@ export function AdvancedCheckinForm() {
                 </AlertDescription>
             </Alert>
           )}
-
-          <Separator />
           
            <section className="space-y-4">
             <h3 className="font-semibold text-lg">Section 2: Time Blocking</h3>
@@ -382,8 +379,6 @@ export function AdvancedCheckinForm() {
             </Button>
           </section>
 
-          <Separator />
-
           <section className="space-y-4">
               <h3 className="font-semibold text-lg">Section 3: Multi-Win Framework</h3>
               <p className="text-sm text-muted-foreground">How can this activity create extra value?</p>
@@ -411,8 +406,6 @@ export function AdvancedCheckinForm() {
                 />
               <Input {...form.register('otherConnection')} placeholder="Other connection opportunity..."/>
           </section>
-
-          <Separator />
 
           <section className="space-y-4">
             <h3 className="font-semibold text-lg">Section 4: Logistics & Support</h3>
