@@ -111,7 +111,7 @@ export default function ExpensesPage() {
 
 
   const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected') => {
-    if (!firestore) return;
+    if (!firestore || !currentUser) return;
     const expenseRef = doc(firestore, 'expenses', expense.id);
     try {
         await updateDocumentNonBlocking(expenseRef, { status: status });
@@ -120,12 +120,11 @@ export default function ExpensesPage() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        // Create a notification for the user who submitted the expense
         await createAlert({
             type: status === 'Approved' ? 'Info' : 'Urgent',
             message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
             priority: status === 'Approved' ? 'Low' : 'Medium',
-            action: `/activity-log`, // Future: Link to user's personal expense history
+            action: `/activity-log`, 
         });
 
     } catch (error) {
@@ -310,7 +309,7 @@ export default function ExpensesPage() {
                         <ChartContainer config={chartConfig} className="w-full h-64">
                             <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10, right: 30 }}>
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))' }} />
+                                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))' }} width={80} />
                                 <ChartTooltip
                                     cursor={false}
                                     content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)}/>}

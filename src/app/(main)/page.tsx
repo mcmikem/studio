@@ -11,10 +11,12 @@ import { MediaFinanceDashboard } from '@/components/dashboard/media-finance-dash
 
 
 export default function DashboardPage() {
-  const { user } = useUser();
-  const { profile, isLoading } = useUserProfile(user);
+  const { user, isUserLoading: isAuthLoading } = useUser();
+  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
 
-  if (isLoading || !user) {
+  const isLoading = isAuthLoading || isProfileLoading;
+
+  if (isLoading || !profile) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -23,22 +25,22 @@ export default function DashboardPage() {
   }
   
   const renderDashboardByRole = () => {
-    // Safely access role only when profile is available, defaulting to 'Staff'
-    const userRole = profile?.role || 'Staff'; 
+    // We can now safely access role because we're sure profile is loaded.
+    const userRole = profile.role; 
 
     switch (userRole) {
       case 'Executive Director':
-        return <ExecutiveDashboard profile={profile!} />;
+        return <ExecutiveDashboard profile={profile} />;
       case 'Programs & Partnerships Manager':
-        return <ProgramManagerDashboard profile={profile!} />;
+        return <ProgramManagerDashboard profile={profile} />;
       case 'Operations & Field Manager':
       case 'Field Coordinator':
-        return <FieldStaffDashboard profile={profile!} />;
+        return <FieldStaffDashboard profile={profile} />;
       case 'Media & Communications Lead':
-         return <MediaFinanceDashboard profile={profile!} />;
+         return <MediaFinanceDashboard profile={profile} />;
       default:
         // Pass the profile, even if it's the default one, to DefaultDashboard
-        return <DefaultDashboard profile={profile!} />;
+        return <DefaultDashboard profile={profile} />;
     }
   };
 
@@ -53,3 +55,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

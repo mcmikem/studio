@@ -17,11 +17,11 @@ export const formatDateSafe = (
 
   try {
     if (typeof dateValue === "string") {
-      // Handles ISO strings like '2025-10-31'
+      // Handles ISO strings like '2025-10-31' or full ISO strings
       date = parseISO(dateValue);
-    } else if ("toDate" in dateValue) {
+    } else if (dateValue && typeof (dateValue as any).toDate === 'function') {
       // Handles Firestore Timestamps
-      date = dateValue.toDate();
+      date = (dateValue as Timestamp).toDate();
     } else {
       // Handles native Date objects
       date = dateValue as Date;
@@ -41,3 +41,5 @@ export const formatDateSafe = (
     return "Invalid Date";
   }
 };
+
+    
