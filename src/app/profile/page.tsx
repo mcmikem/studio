@@ -41,7 +41,7 @@ function RecentUserCheckouts() {
       orderBy('timestamp', 'desc'),
       limit(5)
     );
-  }, [user]); 
+  }, [user, firestore]); 
 
   const { data: checkouts, isLoading } =
     useCollection<RecentCheckout>(checkoutsQuery);
