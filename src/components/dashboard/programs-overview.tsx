@@ -83,7 +83,7 @@ export function ProgramsOverview() {
           </CardDescription>
       </CardHeader>
       <CardContent>
-         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Stats Cards */}
             <div className="md:col-span-1 grid grid-cols-1 gap-4">
                 <Card>
@@ -116,7 +116,7 @@ export function ProgramsOverview() {
             </div>
             
             {/* Chart */}
-            <div className="md:col-span-3">
+            <div className="md:col-span-2">
                 <Card className="h-full">
                     <CardHeader>
                         <CardTitle>Program Health Distribution</CardTitle>

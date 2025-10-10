@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card"
 import { RecentCheckouts } from "./recent-checkouts"
 
-export function TeamActivityFeed() {
+export function TeamPulse() {
   return (
     <Card>
       <CardHeader>

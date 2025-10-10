@@ -37,19 +37,18 @@ export function QuickStatsSummary() {
     // Fetch only the featured metrics
     return query(
       collection(firestore, "impact-metrics"),
-      where("metric", "in", FEATURED_METRICS),
-      orderBy("metric")
+      where("metric", "in", FEATURED_METRICS)
     )
   }, [firestore]);
 
   const { data: metrics, isLoading } = useCollectionOnce<ImpactMetric>(metricsQuery)
 
-  // Ensure consistent order
+  // Ensure consistent order and handle missing metrics
   const displayMetrics = useMemo(() => {
-    if (!metrics) return []
+    if (isLoading) return Array(FEATURED_METRICS.length).fill(null);
     return FEATURED_METRICS.map(
       (fm) =>
-        metrics.find((m) => m.metric === fm) || {
+        metrics?.find((m) => m.metric === fm) || {
           id: fm,
           metric: fm,
           current: 0,
@@ -57,11 +56,11 @@ export function QuickStatsSummary() {
           isPlaceholder: true,
         }
     )
-  }, [metrics])
+  }, [metrics, isLoading])
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {(isLoading ? Array(4).fill(0) : displayMetrics).map((metric, i) => {
+      {displayMetrics.map((metric, i) => {
         if (isLoading || !metric) {
           return (
             <Card key={i}>
@@ -99,9 +98,11 @@ export function QuickStatsSummary() {
               <div className="text-2xl font-bold">
                 {formatValue(metric.current)}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Target: {formatValue(metric.target)}
-              </p>
+              {!metric.isPlaceholder && (
+                <p className="text-xs text-muted-foreground">
+                    Target: {formatValue(metric.target)}
+                </p>
+              )}
             </CardContent>
           </Card>
         )

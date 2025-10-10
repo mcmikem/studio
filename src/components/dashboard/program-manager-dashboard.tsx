@@ -2,13 +2,12 @@
 
 import type { User } from "@/lib/types"
 import { ProgramsOverview } from "./programs-overview"
-import { TeamActivityFeed } from "./team-activity-feed"
 import { DailyActions } from "./daily-actions"
-import { QuickStatsSummary } from "./quick-stats-summary"
 import { TeamToday } from "./team-today"
-import { Alerts } from './alerts'
+import { Alerts } from "./alerts"
 import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
+import { TeamPulse } from "./team-activity-feed"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -39,12 +38,9 @@ export function ProgramManagerDashboard({ profile }: { profile: User }) {
         </p>
       </header>
        <DashboardGrid className="lg:grid-cols-3">
-         <div className="col-span-full">
-            <QuickStatsSummary />
-        </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <ProgramsOverview />
-            <TeamActivityFeed />
+            <TeamPulse />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />

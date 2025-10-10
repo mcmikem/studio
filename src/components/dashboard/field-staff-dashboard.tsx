@@ -1,8 +1,9 @@
+
 "use client"
 
 import type { User } from "@/lib/types"
 import { DailyActions } from "./daily-actions"
-import { TeamActivityFeed } from "./team-activity-feed"
+import { TeamPulse } from "./team-activity-feed"
 import { MyPriorities } from "./my-priorities"
 import { TeamToday } from "./team-today"
 import { DashboardGrid } from "./dashboard-grid"
@@ -43,7 +44,7 @@ export function FieldStaffDashboard({ profile }: { profile: User }) {
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
           <DailyActions />
-          <TeamActivityFeed />
+          <TeamPulse />
         </div>
       </DashboardGrid>
     </>

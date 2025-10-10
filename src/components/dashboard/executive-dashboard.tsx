@@ -1,7 +1,6 @@
 "use client"
 
 import type { User } from "@/lib/types"
-import { TeamActivityFeed } from "./team-activity-feed"
 import { Alerts } from "./alerts"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
@@ -9,6 +8,7 @@ import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
+import { TeamPulse } from "./team-activity-feed"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -44,7 +44,7 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <ProgramsOverview />
-            <TeamActivityFeed />
+            <TeamPulse />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
