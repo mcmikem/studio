@@ -25,7 +25,6 @@ import {
 import { errorEmitter } from "./error-emitter"
 import { FirestorePermissionError } from "./errors"
 import {
-  sampleUsers,
   samplePrograms,
   samplePartnerships,
   sampleKeyResults,
@@ -141,7 +140,6 @@ async function seedInitialData(db: Firestore) {
 async function createUserProfile(
   userCredential: UserCredential,
   db: Firestore,
-  isNewUser: boolean = false
 ) {
   const user = userCredential.user
   if (!user || !user.email) return userCredential
@@ -158,8 +156,9 @@ async function createUserProfile(
   const userRef = doc(db, "users", user.uid)
   const docSnap = await getDoc(userRef);
   
-  // Only create profile and seed data if it's a genuinely new user profile
-  if (isNewUser || !docSnap.exists()) {
+  // Only create a user profile if one doesn't already exist.
+  if (!docSnap.exists()) {
+    console.log("User profile does not exist, creating one...");
     
     // Seed data only for the very first user to sign up
     await seedInitialData(db)
@@ -175,6 +174,7 @@ async function createUserProfile(
 
     try {
        await setDoc(userRef, userProfile);
+       console.log("User profile created successfully.");
     } catch (error) {
         console.error("Error creating user profile:", error)
         errorEmitter.emit(
@@ -186,6 +186,8 @@ async function createUserProfile(
           })
         )
     }
+  } else {
+     console.log("User profile already exists, skipping creation.");
   }
 
   return userCredential
@@ -204,7 +206,7 @@ export function initiateEmailSignUp(
   }
 
   return createUserWithEmailAndPassword(authInstance, email, password)
-    .then((cred) => createUserProfile(cred, db, true)) // Pass true for isNewUser
+    .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
       console.error("Email sign-up error:", error)
       throw error
@@ -235,9 +237,7 @@ export function initiateGoogleSignIn(authInstance: Auth) {
   const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
     .then((userCredential) => {
-      // isNewUser can be true even if the auth account exists but this is their first sign-in to this *app*
-      const isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
-      return createUserProfile(userCredential, db, isNewUser);
+      return createUserProfile(userCredential, db);
     })
     .catch((error) => {
       console.error("Google sign-in error:", error)
