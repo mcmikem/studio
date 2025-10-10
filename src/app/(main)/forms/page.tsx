@@ -7,7 +7,6 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { CheckinForm } from '@/components/forms/checkin-form';
 import { CheckoutForm } from '@/components/forms/checkout-form';
 import { ClipboardEdit, LogIn, LogOut, BarChart3, Receipt } from 'lucide-react';
 import { ActivityReportForm } from '@/components/forms/activity-report-form';
@@ -15,6 +14,7 @@ import { ExpenseReportForm } from '@/components/forms/expense-report-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { PlannerCheckinForm } from '@/components/forms/planner-checkin-form';
 
 function FormsContent() {
   const searchParams = useSearchParams();
@@ -52,7 +52,7 @@ function FormsContent() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="check-in">
-          <CheckinForm />
+          <PlannerCheckinForm />
         </TabsContent>
         <TabsContent value="check-out">
           <Card>

@@ -50,7 +50,7 @@ export type Checkin = {
     name: string;
     primaryMission: string;
     details?: {
-      mainFocus: string[];
+      mainFocus?: string[];
       customTask?: string;
       workLocation?: string;
       timeBlocks?: TimeBlock[];

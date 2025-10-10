@@ -298,7 +298,7 @@
               "budget": { "type": "number" },
               "challenges": { "type": "string" }
             },
-            "additionalProperties": false
+             "additionalProperties": false
         },
         "timestamp": { "type": "string", "format": "date-time" }
       },
