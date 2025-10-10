@@ -34,7 +34,8 @@
         "id",
         "role",
         "name",
-        "email"
+        "email",
+        "createdAt"
       ]
     },
     "Program": {
@@ -81,7 +82,7 @@
             "description": "Server timestamp of when the program was created."
         }
       },
-      "required": ["title", "description", "lead", "status", "deadline", "objectives"]
+      "required": ["title", "description", "lead", "status", "deadline", "objectives", "createdAt"]
     },
     "Partnership": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -574,5 +575,3 @@
     }
   }
 }
-
-    

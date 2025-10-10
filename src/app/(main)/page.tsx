@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser } from '@/firebase';
@@ -24,9 +25,6 @@ export default function DashboardPage() {
     );
   }
   
-  // If there is no user, AuthProvider will redirect. If there is a user but no profile,
-  // it's an error state (or a brand new user whose doc hasn't replicated).
-  // The DefaultDashboard can serve as a safe fallback.
   if (!profile) {
     const fallbackProfile = { 
       id: user?.uid || 'guest', 
@@ -66,5 +64,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

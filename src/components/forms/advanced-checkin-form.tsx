@@ -91,7 +91,7 @@ function AiPlannerDialog({
 
   const handleDraftClick = () => {
     onDraftPlan(context);
-    // You might want to close the dialog only on success, handled by the parent
+    setOpen(false);
   };
   
   return (
@@ -152,7 +152,7 @@ export function AdvancedCheckinForm() {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiBestPractice, setAiBestPractice] = useState<string | null>(null);
 
-  const { watch, control, formState: { errors, isSubmitting }, reset } = form;
+  const { watch, control, formState: { errors, isSubmitting }, reset, setValue } = form;
   const mainFocus = watch('mainFocus');
   const customTask = watch('customTask');
   
@@ -172,7 +172,6 @@ export function AdvancedCheckinForm() {
       setIsLoadingWorkplan(true);
       const today = new Date();
       const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
-      const weekOfStr = formatDate(weekStartDate, "yyyy-MM-dd");
 
       const workplanQuery = query(
         collection(firestore, 'workplans'),
@@ -214,8 +213,8 @@ export function AdvancedCheckinForm() {
         if (!querySnapshot.empty) {
           const lastCheckout = querySnapshot.docs[0].data() as Checkout;
           if (lastCheckout.tomorrowPlan) {
-            form.setValue('customTask', lastCheckout.tomorrowPlan);
-            form.setValue('mainFocus', ['custom']);
+            setValue('customTask', lastCheckout.tomorrowPlan);
+            setValue('mainFocus', ['custom']);
           }
         }
       } catch (error) {
@@ -223,7 +222,7 @@ export function AdvancedCheckinForm() {
       }
     }
     fetchLastCheckout();
-  }, [firestore, user, form]);
+  }, [firestore, user, setValue]);
 
   const usersQuery = useMemo(() => {
     if (!firestore) return null;
@@ -307,6 +306,7 @@ export function AdvancedCheckinForm() {
     
     const tasks = mainFocus.map(focusId => {
       if (focusId === 'custom') return customTask;
+      if (currentWorkplan?.keyPriorities.includes(focusId)) return focusId;
       return keyResults?.find(kr => kr.id === focusId)?.description;
     }).filter(Boolean).join(', ');
 
@@ -338,12 +338,6 @@ export function AdvancedCheckinForm() {
             title: "Plan Drafted!",
             description: "The AI has generated a first draft of your plan. Review and edit as needed.",
         });
-        
-        // Find a way to close the dialog
-        const closeButton = document.querySelector('[data-radix-dialog-close]');
-        if (closeButton instanceof HTMLElement) {
-          closeButton.click();
-        }
 
     } catch (error) {
         console.error("AI drafting error:", error);
@@ -356,10 +350,11 @@ export function AdvancedCheckinForm() {
   const missionText = useMemo(() => {
     return mainFocus.map(focusId => {
       if (focusId === 'custom') return customTask;
+      if (currentWorkplan?.keyPriorities.includes(focusId)) return focusId;
       const kr = keyResults?.find(k => k.id === focusId);
       return kr ? `${kr.title}: ${kr.description}` : focusId;
     }).filter(Boolean).join('; ') || "Your Mission";
-  }, [mainFocus, customTask, keyResults]);
+  }, [mainFocus, customTask, keyResults, currentWorkplan]);
 
   const priorityOptions = useMemo(() => {
     const options = [];
@@ -546,5 +541,3 @@ export function AdvancedCheckinForm() {
       </form>
   );
 }
-
-    
