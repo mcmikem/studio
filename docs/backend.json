@@ -23,13 +23,19 @@
           "type": "string",
           "description": "The user's email address.",
           "format": "email"
+        },
+         "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server timestamp of when the user profile was created."
         }
       },
       "required": [
         "id",
         "role",
         "name",
-        "email"
+        "email",
+        "createdAt"
       ]
     },
     "Program": {
@@ -76,7 +82,7 @@
             "description": "Server timestamp of when the program was created."
         }
       },
-      "required": ["title", "description", "lead", "status", "deadline", "objectives"]
+      "required": ["title", "description", "lead", "status", "deadline", "objectives", "createdAt"]
     },
     "Partnership": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -112,7 +118,7 @@
             "description": "Server timestamp of when the partnership was created."
         }
       },
-      "required": ["name", "contactPerson", "contactEmail", "status", "nextStep"]
+      "required": ["name", "contactPerson", "contactEmail", "status", "nextStep", "createdAt"]
     },
     "Activity": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -267,6 +273,7 @@
            "properties": {
               "mainFocus": { "type": "array", "items": { "type": "string" }},
               "customTask": { "type": "string" },
+              "workLocation": { "type": "string" },
               "timeBlocks": {
                 "type": "array",
                 "items": {
@@ -324,7 +331,7 @@
             "description": "Server timestamp of when the project was created."
         }
       },
-      "required": ["name", "manager", "status", "completion", "nextMilestone"]
+      "required": ["name", "manager", "status", "completion", "nextMilestone", "createdAt"]
     },
     "ImpactMetric": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -336,9 +343,10 @@
         "target": { "type": "number" },
         "current": { "type": "number" },
         "unit": { "type": "string" },
-        "valuePerUnit": { "type": "number" }
+        "valuePerUnit": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["metric", "target", "current"]
+      "required": ["metric", "target", "current", "createdAt"]
     },
     "CalendarEvent": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -374,12 +382,16 @@
           "type": "string",
           "description": "A URL link for the alert's call to action."
         },
+        "creatorId": {
+          "type": "string",
+          "description": "The ID of the user who triggered the alert."
+        },
         "createdAt": {
             "type": "string",
             "format": "date-time"
         }
       },
-      "required": ["type", "message", "priority", "action", "createdAt"]
+      "required": ["type", "message", "priority", "action", "creatorId", "createdAt"]
     },
     "KeyResult": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -400,25 +412,37 @@
     "Expense": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Expense",
-      "description": "Represents a single expense report.",
+      "description": "Represents a single expense report with multiple line items.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "userId": { "type": "string" },
         "userName": { "type": "string" },
         "date": { "type": "string", "format": "date" },
-        "description": { "type": "string" },
+        "title": { "type": "string", "description": "The overall title of the expense report (e.g., Mpigi Field Visit)." },
         "type": {
             "type": "string",
             "enum": ["Requisition", "Reimbursement"],
             "description": "The type of expense report (pre-spending or post-spending)."
         },
-        "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
-        "amount": { "type": "number" },
+        "items": {
+          "type": "array",
+          "description": "A list of individual expense items.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
+              "amount": { "type": "number" }
+            },
+            "required": ["description", "category", "amount"]
+          }
+        },
+        "totalAmount": { "type": "number", "description": "The sum of all item amounts." },
         "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Cleared"], "default": "Pending"},
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "userName", "date", "description", "category", "type", "amount", "status", "createdAt"]
+      "required": ["userId", "userName", "date", "title", "type", "items", "totalAmount", "status", "createdAt"]
     },
     "Proposal": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -436,6 +460,25 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "partnerName", "amountRequested", "status", "submissionDate", "createdAt"]
+    },
+    "WeeklyWorkplan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Weekly Workplan",
+      "description": "Represents a user's strategic plan for a specific week.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "weekOf": { "type": "string", "format": "date", "description": "The start date of the week (e.g., a Monday)." },
+        "keyPriorities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "A list of the main priorities for the week."
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "weekOf", "keyPriorities", "createdAt"]
     }
   },
   "auth": {
@@ -528,6 +571,12 @@
         "$ref": "#/entities/Proposal"
       },
       "description": "Stores grant proposals and funding applications."
+    },
+    "/workplans/{workplanId}": {
+      "schema": {
+        "$ref": "#/entities/WeeklyWorkplan"
+      },
+      "description": "Stores weekly workplans for each user."
     }
   }
 }

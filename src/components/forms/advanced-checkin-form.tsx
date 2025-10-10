@@ -1,8 +1,7 @@
 
-
 'use client';
 import * as React from 'react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useForm, Controller, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,9 +10,9 @@ import {
   useFirestore,
   useUser,
   useCollection,
-  useMemoFirebase
+  useMemoFirebase,
+  addDocumentNonBlocking
 } from '@/firebase';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { KeyResult, User, Checkout, WeeklyWorkplan } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -168,63 +167,62 @@ export function AdvancedCheckinForm() {
   const [currentWorkplan, setCurrentWorkplan] = useState<WeeklyWorkplan | null>(null);
   const [isLoadingWorkplan, setIsLoadingWorkplan] = useState(true);
 
-  useEffect(() => {
-    async function fetchCurrentWorkplan() {
-      if (!firestore || !user) return;
-      setIsLoadingWorkplan(true);
-      const today = new Date();
-      const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
+  const fetchLastCheckout = useCallback(async () => {
+    if (!firestore || !user) return;
 
-      const workplanQuery = query(
-        collection(firestore, 'workplans'),
-        where('userId', '==', user.uid),
-        where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
-        limit(1)
-      );
+    const checkoutQuery = query(
+      collection(firestore, 'checkouts'),
+      where('userId', '==', user.uid),
+      orderBy('timestamp', 'desc'),
+      limit(1)
+    );
 
-      try {
-        const snapshot = await getDocs(workplanQuery);
-        if (!snapshot.empty) {
-          setCurrentWorkplan({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as WeeklyWorkplan);
-        } else {
-          setCurrentWorkplan(null);
+    try {
+      const querySnapshot = await getDocs(checkoutQuery);
+      if (!querySnapshot.empty) {
+        const lastCheckout = querySnapshot.docs[0].data() as Checkout;
+        if (lastCheckout.tomorrowPlan) {
+          setValue('customTask', lastCheckout.tomorrowPlan);
+          setValue('mainFocus', ['custom']);
         }
-      } catch (e) {
-        console.error("Error fetching workplan: ", e);
-      } finally {
-        setIsLoadingWorkplan(false);
       }
+    } catch (error) {
+      console.error("Error fetching last checkout:", error);
     }
-    fetchCurrentWorkplan();
-  }, [firestore, user]);
-
-
-  useEffect(() => {
-    async function fetchLastCheckout() {
-      if (!firestore || !user) return;
-  
-      const checkoutQuery = query(
-        collection(firestore, 'checkouts'),
-        where('userId', '==', user.uid),
-        orderBy('timestamp', 'desc'),
-        limit(1)
-      );
-  
-      try {
-        const querySnapshot = await getDocs(checkoutQuery);
-        if (!querySnapshot.empty) {
-          const lastCheckout = querySnapshot.docs[0].data() as Checkout;
-          if (lastCheckout.tomorrowPlan) {
-            setValue('customTask', lastCheckout.tomorrowPlan);
-            setValue('mainFocus', ['custom']);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching last checkout:", error);
-      }
-    }
-    fetchLastCheckout();
   }, [firestore, user, setValue]);
+
+
+  const fetchCurrentWorkplan = useCallback(async () => {
+    if (!firestore || !user) return;
+    setIsLoadingWorkplan(true);
+    const today = new Date();
+    const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
+
+    const workplanQuery = query(
+      collection(firestore, 'workplans'),
+      where('userId', '==', user.uid),
+      where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
+      limit(1)
+    );
+
+    try {
+      const snapshot = await getDocs(workplanQuery);
+      if (!snapshot.empty) {
+        setCurrentWorkplan({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as WeeklyWorkplan);
+      } else {
+        setCurrentWorkplan(null);
+        await fetchLastCheckout();
+      }
+    } catch (e) {
+      console.error("Error fetching workplan: ", e);
+    } finally {
+      setIsLoadingWorkplan(false);
+    }
+  }, [firestore, user, fetchLastCheckout]);
+
+  useEffect(() => {
+    fetchCurrentWorkplan();
+  }, [fetchCurrentWorkplan]);
 
   const usersQuery = useMemo(() => {
     if (!firestore) return null;
@@ -367,7 +365,7 @@ export function AdvancedCheckinForm() {
     if (keyResults) {
       options.push(...keyResults.map(kr => ({ value: kr.id, label: `(Org KR) ${kr.title}: ${kr.description}` })));
     }
-    options.push({ value: 'custom', label: 'Custom Task' });
+    options.push({ value: 'custom', label: 'Custom Task (from last checkout or new)' });
     return options;
   }, [keyResults, currentWorkplan]);
 
