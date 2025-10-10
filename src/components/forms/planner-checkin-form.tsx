@@ -13,7 +13,7 @@ import {
   addDocumentNonBlocking,
 } from '@/firebase';
 import { collection, serverTimestamp, query, where, limit, Timestamp, getDocs, orderBy } from 'firebase/firestore';
-import type { Checkout, WeeklyWorkplan, User } from '@/lib/types';
+import type { Checkout, WeeklyWorkplan, User, KeyResult } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, LogIn, Sparkles, PlusCircle, Trash2 } from 'lucide-react';
@@ -24,7 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import Link from 'next/link';
 import { Skeleton } from '../ui/skeleton';
 import { Label } from '../ui/label';
-import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
+import { dailyPlannerAI, DailyPlannerAIInput } from '@/ai/flows/daily-planner-flow';
 import { Input } from '../ui/input';
 import { MultiSelect } from '../ui/multi-select';
 import { Separator } from '../ui/separator';
@@ -59,12 +59,16 @@ function PlannerForm({
     onSubmit,
     isSubmitting,
     isDirty,
+    keyResults,
+    weeklyPlan,
 }: {
     form: UseFormReturn<CheckinFormData>,
     profile: User | null,
     onSubmit: (data: CheckinFormData) => void,
     isSubmitting: boolean,
     isDirty: boolean,
+    keyResults: KeyResult[] | null,
+    weeklyPlan: WeeklyWorkplan | null,
 }) {
   const { register, handleSubmit, formState: { errors }, setValue, control, getValues } = form;
   
@@ -85,19 +89,25 @@ function PlannerForm({
         return;
     }
     setIsGeneratingPlan(true);
+
+    const aiInput: DailyPlannerAIInput = {
+      task: mission,
+      role: profile.role,
+      userContext: 'First draft of my plan for today.',
+      weeklyPriorities: weeklyPlan?.keyPriorities,
+      keyResults: keyResults,
+    }
+
     try {
-        const result = await dailyPlannerAI({
-            task: mission,
-            role: profile.role,
-            userContext: 'First draft of my plan for today.'
-        });
+        const result = await dailyPlannerAI(aiInput);
         
-        setValue('timeBlocks', result.timeBlocks.length > 0 ? result.timeBlocks : [{startTime: "", endTime: "", description: ""}]);
+        setValue('timeBlocks', result.timeBlocks?.length > 0 ? result.timeBlocks : [{startTime: "", endTime: "", description: ""}]);
         setValue('multiWinConnections', result.multiWinConnections);
         setValue('budget', result.budget);
         setValue('materials', result.materials);
         setValue('challenges', result.challenges);
         setPlanGenerated(true);
+        toast({ title: 'AI Plan Generated!', description: 'Review the suggestions and make any adjustments.'});
 
     } catch(e) {
         console.error(e);
@@ -171,7 +181,7 @@ function PlannerForm({
                  </div>
                  <div className="space-y-2">
                     <Label>Potential Challenges</Label>
-                    <Input {...register('challenges')} placeholder="e.g., Boda boda availability" />
+                    <Textarea {...register('challenges')} placeholder="e.g., Challenge: Boda boda availability. Mitigation: ..." />
                  </div>
 
                  <Button className="w-full" size="lg" type="submit" disabled={isSubmitting}>
@@ -195,13 +205,20 @@ export function PlannerCheckinForm() {
     resolver: zodResolver(checkinSchema),
     defaultValues: {
         primaryMission: '',
-        timeBlocks: [{startTime: "", endTime: "", description: ""}],
+        timeBlocks: [],
         multiWinConnections: [],
     }
   });
 
   const { formState: { isSubmitting, isDirty }, setValue, reset } = form;
-  const [initialMission, setInitialMission] = useState<string | null>(null);
+  const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
+
+  const keyResultsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'key-results'));
+  }, [firestore]);
+  const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
+
 
   // Effect to fetch context and set initial mission suggestion
   useEffect(() => {
@@ -221,7 +238,8 @@ export function PlannerCheckinForm() {
         const workplanSnapshot = await getDocs(workplanQuery);
         if (!workplanSnapshot.empty) {
           const plan = workplanSnapshot.docs[0].data() as WeeklyWorkplan;
-          mission = `My priorities this week are: ${plan.keyPriorities.join(', ')}. Today I will focus on...`;
+          setWeeklyPlan(plan);
+          mission = `Today I will focus on... (This week's priorities: ${plan.keyPriorities.join(', ')})`;
         } else {
             const checkoutQuery = query(
                 collection(firestore, 'checkouts'),
@@ -238,19 +256,14 @@ export function PlannerCheckinForm() {
                 }
             }
         }
-        setInitialMission(mission);
+        if (mission) {
+            setValue('primaryMission', mission);
+        }
       };
 
       fetchContext();
     }
-  }, [firestore, user, isDirty]);
-
-  // Effect to populate form only when initial mission is fetched and form is clean
-  useEffect(() => {
-    if (initialMission && !isDirty) {
-      setValue('primaryMission', initialMission);
-    }
-  }, [initialMission, isDirty, setValue]);
+  }, [firestore, user, isDirty, setValue]);
 
 
   const onSubmit = async (data: CheckinFormData) => {
@@ -283,9 +296,10 @@ export function PlannerCheckinForm() {
     reset();
   };
   
-  if (isLoadingProfile) {
+  if (isLoadingProfile || isLoadingKeyResults) {
     return (
         <div className="space-y-4">
+            <Skeleton className="h-8 w-1/2" />
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-10 w-full" />
         </div>
@@ -307,7 +321,10 @@ export function PlannerCheckinForm() {
             onSubmit={onSubmit}
             isSubmitting={isSubmitting}
             isDirty={isDirty}
+            keyResults={keyResults}
+            weeklyPlan={weeklyPlan}
         />
+        {!weeklyPlan && (
          <Alert variant="default" className="mt-6">
             <AlertTitle>No Weekly Plan?</AlertTitle>
             <AlertDescription>
@@ -317,6 +334,7 @@ export function PlannerCheckinForm() {
                 </Button>
             </AlertDescription>
         </Alert>
+        )}
       </CardContent>
     </Card>
   );
