@@ -49,17 +49,12 @@ export type Checkin = {
     name: string;
     primaryMission: string;
     details?: {
-      mainFocus?: string[];
-      customTask?: string;
-      workLocation?: string;
       timeBlocks?: TimeBlock[];
       multiWinConnections?: string[];
-      otherConnection?: string;
       teamSupport?: string[];
       budget?: number;
       challenges?: string;
       materials?: string;
-      transport?: string;
     }
     timestamp: Timestamp;
 }

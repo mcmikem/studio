@@ -275,9 +275,6 @@
         "details": {
           "type": "object",
            "properties": {
-              "mainFocus": { "type": "array", "items": { "type": "string" } },
-              "customTask": { "type": "string" },
-              "workLocation": { "type": "string" },
               "timeBlocks": {
                 "type": "array",
                 "items": {
@@ -291,14 +288,12 @@
                 }
               },
               "multiWinConnections": { "type": "array", "items": { "type": "string" } },
-              "otherConnection": { "type": "string" },
-              "transport": { "type": "string" },
-              "materials": { "type": "string" },
               "teamSupport": { "type": "array", "items": { "type": "string" } },
               "budget": { "type": "number" },
-              "challenges": { "type": "string" }
+              "challenges": { "type": "string" },
+              "materials": { "type": "string" }
             },
-             "additionalProperties": false
+             "additionalProperties": true
         },
         "timestamp": { "type": "string", "format": "date-time" }
       },
