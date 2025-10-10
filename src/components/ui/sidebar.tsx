@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import * as React from "react"
@@ -539,13 +540,15 @@ const sidebarMenuButtonVariants = cva(
 
 const SidebarMenuButton = React.forwardRef<
   HTMLAnchorElement,
-  React.ComponentProps<typeof Link> & {
+  Omit<React.ComponentProps<typeof Link>, 'href'> & {
+    href: string,
     isActive?: boolean
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(
   (
     {
+      href,
       isActive = false,
       variant = "default",
       size = "default",
@@ -560,6 +563,7 @@ const SidebarMenuButton = React.forwardRef<
     const link = (
       <Link
         ref={ref}
+        href={href}
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}

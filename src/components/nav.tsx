@@ -23,7 +23,6 @@ import {
   CalendarCheck,
   FolderKanban,
 } from 'lucide-react';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   SidebarHeader,
@@ -77,44 +76,38 @@ export function AppSidebar() {
         <SidebarGroup data-mobile={isMobile}>
           <SidebarMenu>
             <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive('/')}
-                  tooltip="Dashboard"
-                  onClick={handleLinkClick}
-                >
-                  <Link href="/">
-                    <Home />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
+              <SidebarMenuButton
+                href="/"
+                isActive={pathname === '/'}
+                tooltip="Dashboard"
+                onClick={handleLinkClick}
+              >
+                <Home />
+                <span>Dashboard</span>
+              </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
-                asChild
+                href="/stream"
                 isActive={isActive('/stream')}
                 tooltip="Team Stream"
                 onClick={handleLinkClick}
               >
-                <Link href="/stream">
-                  <Rss />
-                  <span>Team Stream</span>
-                </Link>
+                <Rss />
+                <span>Team Stream</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive('/assistant')}
-                    tooltip="AI Assistant"
-                    onClick={handleLinkClick}
-                  >
-                    <Link href="/assistant">
-                      <Sparkles />
-                      <span>AI Assistant</span>
-                    </Link>
-                  </SidebarMenuButton>
-              </SidebarMenuItem>
+              <SidebarMenuButton
+                href="/assistant"
+                isActive={isActive('/assistant')}
+                tooltip="AI Assistant"
+                onClick={handleLinkClick}
+              >
+                <Sparkles />
+                <span>AI Assistant</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
         
@@ -123,28 +116,24 @@ export function AppSidebar() {
            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  asChild
+                  href="/workplan"
                   isActive={isActive('/workplan')}
                   tooltip="Weekly Workplan"
                   onClick={handleLinkClick}
                 >
-                  <Link href="/workplan">
-                    <CalendarCheck />
-                    <span>Weekly Workplan</span>
-                  </Link>
+                  <CalendarCheck />
+                  <span>Weekly Workplan</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
                 <SidebarMenuButton
-                  asChild
+                  href="/plan"
                   isActive={isActive('/plan')}
                   tooltip="October 2025 Plan"
                   onClick={handleLinkClick}
                 >
-                  <Link href="/plan">
-                    <ClipboardList />
-                    <span>Operational Plan</span>
-                  </Link>
+                  <ClipboardList />
+                  <span>Operational Plan</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -155,41 +144,35 @@ export function AppSidebar() {
           <SidebarMenu>
              <SidebarMenuItem>
                 <SidebarMenuButton
-                  asChild
+                  href="/forms"
                   isActive={isActive('/forms')}
                   tooltip="Forms Hub"
                   onClick={handleLinkClick}
                 >
-                  <Link href="/forms">
-                    <ClipboardEdit />
-                    <span>Forms</span>
-                  </Link>
+                  <ClipboardEdit />
+                  <span>Forms</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton
-                  asChild
+                  href="/activity-log"
                   isActive={isActive('/activity-log')}
                   tooltip="Activity Log"
                   onClick={handleLinkClick}
                 >
-                  <Link href="/activity-log">
-                    <AreaChart />
-                    <span>Activity Log</span>
-                  </Link>
+                  <AreaChart />
+                  <span>Activity Log</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
                 <SidebarMenuButton
-                  asChild
+                  href="/management/programs"
                   isActive={isActive('/management')}
                   tooltip="Management"
                   onClick={handleLinkClick}
                 >
-                  <Link href="/management/programs">
-                    <Briefcase />
-                    <span>Management</span>
-                  </Link>
+                  <Briefcase />
+                  <span>Management</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -199,27 +182,21 @@ export function AppSidebar() {
             <SidebarGroupLabel data-mobile={isMobile}>Support</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
-                        <Link href="/chat">
-                            <MessageSquare />
-                            <span>Chat & Team Space</span>
-                        </Link>
+                    <SidebarMenuButton href="/chat" isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
+                        <MessageSquare />
+                        <span>Chat & Team Space</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/resources')} tooltip="Resource Mobilization" onClick={handleLinkClick}>
-                        <Link href="/resources">
-                            <Handshake />
-                            <span>Resources</span>
-                        </Link>
+                    <SidebarMenuButton href="/resources" isActive={isActive('/resources')} tooltip="Resource Mobilization" onClick={handleLinkClick}>
+                        <Handshake />
+                        <span>Resources</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/reports')} tooltip="Reports" onClick={handleLinkClick}>
-                        <Link href="/reports">
-                            <FileText />
-                            <span>Reports</span>
-                        </Link>
+                    <SidebarMenuButton href="/reports" isActive={isActive('/reports')} tooltip="Reports" onClick={handleLinkClick}>
+                        <FileText />
+                        <span>Reports</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
@@ -229,27 +206,21 @@ export function AppSidebar() {
             <SidebarGroupLabel data-mobile={isMobile}>Personal</SidebarGroupLabel>
             <SidebarMenu>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/notifications')} tooltip="Notifications" onClick={handleLinkClick}>
-                        <Link href="/notifications">
-                            <Bell />
-                            <span>Notifications</span>
-                        </Link>
+                    <SidebarMenuButton href="/notifications" isActive={isActive('/notifications')} tooltip="Notifications" onClick={handleLinkClick}>
+                        <Bell />
+                        <span>Notifications</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/profile')} tooltip="My Profile" onClick={handleLinkClick}>
-                        <Link href="/profile">
-                            <User />
-                            <span>My Profile</span>
-                        </Link>
+                    <SidebarMenuButton href="/profile" isActive={isActive('/profile')} tooltip="My Profile" onClick={handleLinkClick}>
+                        <User />
+                        <span>My Profile</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/impact-story')} tooltip="Impact Story Generator" onClick={handleLinkClick}>
-                        <Link href="/impact-story">
-                            <Wand />
-                            <span>Story Generator</span>
-                        </Link>
+                    <SidebarMenuButton href="/impact-story" isActive={isActive('/impact-story')} tooltip="Impact Story Generator" onClick={handleLinkClick}>
+                        <Wand />
+                        <span>Story Generator</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
