@@ -1,4 +1,5 @@
 
+
 "use client"
 import {
   Auth,
@@ -198,11 +199,6 @@ export function initiateEmailSignUp(
   email: string,
   password: string
 ) {
-  if (!isEmailApproved(email)) {
-    return Promise.reject(
-      new Error("This email address is not authorized for sign-up.")
-    )
-  }
   const db = getFirestore(authInstance.app)
   return createUserWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db))
@@ -218,11 +214,6 @@ export function initiateEmailSignIn(
   email: string,
   password: string
 ) {
-  if (!isEmailApproved(email)) {
-    return Promise.reject(
-      new Error("This email address is not authorized to sign in.")
-    )
-  }
   const db = getFirestore(authInstance.app)
   return signInWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db))
@@ -256,5 +247,3 @@ export function initiateGoogleSignIn(authInstance: Auth) {
       throw error
     })
 }
-
-    
