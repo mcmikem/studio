@@ -29,7 +29,7 @@ export function Alerts() {
   const alertsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'alerts'), orderBy('createdAt', 'desc'), limit(5));
-  }, []);
+  }, [firestore]);
 
   const { data: alerts, isLoading } = useCollection<AlertType>(alertsQuery);
 

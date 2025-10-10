@@ -4,7 +4,7 @@ import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
-import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { FirebaseProvider } from '@/firebase/provider';
 import { AuthProvider } from '@/components/auth-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -33,9 +33,9 @@ export default function RootLayout({
           spaceGrotesk.variable
         )}
       >
-        <FirebaseClientProvider>
+        <FirebaseProvider>
           <AuthProvider>{children}</AuthProvider>
-        </FirebaseClientProvider>
+        </FirebaseProvider>
         <Toaster />
       </body>
     </html>
