@@ -9,6 +9,7 @@ import {
   FolderKanban,
   Target,
   VenetianMask,
+  X,
 } from "lucide-react"
 import {
   Card,
@@ -85,7 +86,7 @@ function FinancialOverview() {
       collection(firestore, "activities"),
       where("loggedAt", ">=", startOfMonth)
     )
-  }, [firestore, startOfMonth])
+  }, [startOfMonth])
 
   const { data: activities, isLoading } = useCollection<Activity>(
     activitiesQuery
@@ -197,7 +198,7 @@ function PaymentQueue() {
                 type: 'Info',
                 message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been cleared.`,
                 priority: 'Low',
-                action: `/management/expenses`,
+                action: `/management/expenses?highlight=${expense.id}`,
                 creatorId: currentUser.uid,
             });
         }
