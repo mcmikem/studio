@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { WeeklyWorkplan } from '@/lib/types';
@@ -217,5 +217,3 @@ export default function WorkplanPage() {
     </div>
   );
 }
-
-    

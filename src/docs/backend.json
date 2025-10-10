@@ -275,7 +275,7 @@
         "details": {
           "type": "object",
            "properties": {
-              "mainFocus": { "type": "array", "items": { "type": "string" }},
+              "mainFocus": { "type": "array", "items": { "type": "string" } },
               "customTask": { "type": "string" },
               "workLocation": { "type": "string" },
               "timeBlocks": {
@@ -297,7 +297,8 @@
               "teamSupport": { "type": "array", "items": { "type": "string" } },
               "budget": { "type": "number" },
               "challenges": { "type": "string" }
-            }
+            },
+            "additionalProperties": false
         },
         "timestamp": { "type": "string", "format": "date-time" }
       },

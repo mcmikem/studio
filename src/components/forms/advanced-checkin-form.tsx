@@ -9,9 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useFirestore,
   useUser,
-  useCollection,
   useMemoFirebase,
-  addDocumentNonBlocking
+  addDocumentNonBlocking,
+  useCollectionOnce,
 } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { KeyResult, User, Checkout, WeeklyWorkplan } from '@/lib/types';
@@ -162,7 +162,7 @@ export function AdvancedCheckinForm() {
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
 
-  const { data: keyResults, isLoading: isLoadingKR } = useCollection<KeyResult>(keyResultsQuery);
+  const { data: keyResults, isLoading: isLoadingKR } = useCollectionOnce<KeyResult>(keyResultsQuery);
 
   const [currentWorkplan, setCurrentWorkplan] = useState<WeeklyWorkplan | null>(null);
   const [isLoadingWorkplan, setIsLoadingWorkplan] = useState(true);
@@ -228,7 +228,7 @@ export function AdvancedCheckinForm() {
     if (!firestore) return null;
     return query(collection(firestore, 'users'), orderBy('name'));
   }, [firestore]);
-  const { data: teamMembers } = useCollection<User>(usersQuery);
+  const { data: teamMembers } = useCollectionOnce<User>(usersQuery);
 
   const onSubmit = async (data: CheckinFormData) => {
     if (!firestore || !user || !profile) {
@@ -560,5 +560,3 @@ export function AdvancedCheckinForm() {
       </form>
   );
 }
-
-    
