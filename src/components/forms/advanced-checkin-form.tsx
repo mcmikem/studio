@@ -417,7 +417,7 @@ export function AdvancedCheckinForm() {
                 )}
               />
             {errors.mainFocus && <p className="text-sm text-destructive">{`${errors.mainFocus.message}`}</p>}
-            {form.watch('mainFocus')?.includes('custom') && (<Input {...form.register('customTask')} placeholder="Type your custom task" className="mt-2"/>)}
+            {form.watch('mainFocus')?.includes('custom') && (<Input {...form.register('customTask')} placeholder="If not in the list, type your custom task here..." className="mt-2"/>)}
           </section>
 
           {aiBestPractice && (
@@ -560,3 +560,5 @@ export function AdvancedCheckinForm() {
       </form>
   );
 }
+
+    
