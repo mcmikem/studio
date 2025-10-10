@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, AlertTriangle, Clock, Briefcase, PlusCircle, Edit } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollectionOnce, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc, Timestamp } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -220,7 +220,7 @@ export default function ProgramsPage() {
     if (!firestore) return null;
     return query(collection(firestore, 'programs'), orderBy('createdAt', 'desc'));
   }, [firestore]);
-  const { data: programs, isLoading } = useCollection<Program>(programsQuery);
+  const { data: programs, isLoading } = useCollectionOnce<Program>(programsQuery);
 
   const ProgramCard = ({ program }: { program: Program }) => {
     const deadlineDate = new Date(program.deadline);

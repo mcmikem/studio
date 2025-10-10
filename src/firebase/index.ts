@@ -1,3 +1,4 @@
+
 'use client';
 
 // This file serves as a barrel file for exporting all necessary Firebase

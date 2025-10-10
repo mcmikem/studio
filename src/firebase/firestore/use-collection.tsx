@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import {
   type Query,
   onSnapshot,
+  getDocs,
   type DocumentData,
   type FirestoreError,
   type QuerySnapshot,
@@ -20,7 +22,61 @@ export interface UseCollectionResult<T> {
 }
 
 /**
- * A stable hook to listen to a Firestore collection.
+ * A hook to fetch a Firestore collection once.
+ */
+export function useCollectionOnce<T = DocumentData>(
+  targetQuery: Query<DocumentData> | null | undefined,
+): UseCollectionResult<T> {
+  const [data, setData] = useState<WithId<T>[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<FirestoreError | Error | null>(null);
+
+  const memoizedQuery = useMemo(() => targetQuery, [targetQuery]);
+
+  useEffect(() => {
+    if (!memoizedQuery) {
+      setIsLoading(false);
+      setData(null);
+      setError(null);
+      return;
+    }
+
+    setIsLoading(true);
+
+    getDocs(memoizedQuery)
+      .then((snapshot: QuerySnapshot<DocumentData>) => {
+        const results: WithId<T>[] = snapshot.docs.map(doc => ({
+          ...(doc.data() as T),
+          id: doc.id,
+        }));
+        setData(results);
+        setError(null);
+        setIsLoading(false);
+      })
+      .catch((err: FirestoreError) => {
+        console.error('useCollectionOnce error:', err);
+        const path = (memoizedQuery as any)._query?.path?.canonicalString() || 'unknown path';
+        const contextualError = new FirestorePermissionError({
+          operation: 'list',
+          path: path,
+        });
+
+        setError(contextualError);
+        setData(null);
+        setIsLoading(false);
+        errorEmitter.emit('permission-error', contextualError);
+      });
+      // This is a one-time fetch, so no unsubscribe needed.
+      // The effect runs only when the query object changes.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memoizedQuery]);
+
+  return { data, isLoading, error };
+}
+
+
+/**
+ * A stable hook to listen to a Firestore collection in real-time.
  */
 export function useCollection<T = DocumentData>(
   targetQuery: Query<DocumentData> | null | undefined,

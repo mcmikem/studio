@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollectionOnce, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Briefcase, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
@@ -43,9 +43,9 @@ export function ProgramsOverview() {
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'programs'), orderBy('status'), orderBy('deadline'));
-  }, []);
+  }, [firestore]);
 
-  const { data: programs, isLoading } = useCollection<Program>(programsQuery);
+  const { data: programs, isLoading } = useCollectionOnce<Program>(programsQuery);
 
   const programStats = useMemo(() => {
     if (!programs) {

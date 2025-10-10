@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollectionOnce, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Users, Mail, Briefcase } from 'lucide-react';
@@ -29,9 +29,9 @@ export function TeamRoles() {
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'users'), orderBy('name'));
-  }, []);
+  }, [firestore]);
 
-  const { data: users, isLoading } = useCollection<User>(usersQuery);
+  const { data: users, isLoading } = useCollectionOnce<User>(usersQuery);
 
   return (
     <Card>

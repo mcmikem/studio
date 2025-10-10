@@ -18,7 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollectionOnce, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -178,7 +178,7 @@ export default function PartnershipsPage() {
     if (!firestore) return null;
     return query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'));
   }, [firestore]);
-  const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
+  const { data: partnerships, isLoading } = useCollectionOnce<Partnership>(partnershipsQuery);
 
   const handleDelete = (partnershipId: string) => {
     if (!firestore) return;

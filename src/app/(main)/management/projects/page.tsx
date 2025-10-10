@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollectionOnce, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, Controller } from 'react-hook-form';
@@ -208,7 +208,7 @@ export default function ProjectsPage() {
     return query(collection(firestore, 'projects'), orderBy('createdAt', 'desc'));
   }, [firestore]);
 
-  const { data: projects, isLoading } = useCollection<Project>(projectsQuery);
+  const { data: projects, isLoading } = useCollectionOnce<Project>(projectsQuery);
 
   const handleDelete = (project: Project) => {
     if (!firestore) return;

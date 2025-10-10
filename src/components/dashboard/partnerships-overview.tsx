@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollectionOnce, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import type { Partnership } from '@/lib/types';
 import { Handshake } from 'lucide-react';
@@ -36,9 +36,9 @@ export function PartnershipsOverview() {
   const partnershipsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'partnerships'), where('status', '==', 'Potential'), orderBy('createdAt', 'desc'), limit(5));
-  }, []);
+  }, [firestore]);
 
-  const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
+  const { data: partnerships, isLoading } = useCollectionOnce<Partnership>(partnershipsQuery);
 
   return (
     <Card>

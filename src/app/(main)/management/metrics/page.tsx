@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollectionOnce, useFirestore, useMemoFirebase } from '@/firebase';
 import {
   collection,
   query,
@@ -262,7 +262,7 @@ export default function MetricsPage() {
     return query(collection(firestore, 'impact-metrics'), orderBy('metric'));
   }, [firestore]);
 
-  const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery);
+  const { data: metrics, isLoading } = useCollectionOnce<ImpactMetric>(metricsQuery);
 
   return (
     <Card>

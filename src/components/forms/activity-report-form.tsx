@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollectionOnce, useMemoFirebase } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -50,7 +51,6 @@ export function ActivityReportForm() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [isClient, setIsClient] = useState(false);
 
   const [activityName, setActivityName] = useState('');
   const [transportCost, setTransportCost] = useState(15000);
@@ -67,13 +67,13 @@ export function ActivityReportForm() {
     if (!firestore) return null;
     return query(collection(firestore, 'impact-metrics'), orderBy('metric'));
   }, [firestore]);
-  const { data: metrics, isLoading: isLoadingMetrics } = useCollection<ImpactMetric>(metricsQuery);
+  const { data: metrics, isLoading: isLoadingMetrics } = useCollectionOnce<ImpactMetric>(metricsQuery);
 
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'programs'), orderBy('title'));
   }, [firestore]);
-  const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery);
+  const { data: programs, isLoading: isLoadingPrograms } = useCollectionOnce<Program>(programsQuery);
 
   const selectedMetric = useMemo(() => {
     if (goalType !== 'Metric') return null;
@@ -84,10 +84,6 @@ export function ActivityReportForm() {
     if (goalType !== 'Program') return null;
     return programs?.find(p => p.id === selectedGoalId) || null;
   }, [programs, selectedGoalId, goalType]);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
   
   useEffect(() => {
     setSelectedGoalId(null);
@@ -197,10 +193,6 @@ export function ActivityReportForm() {
         setLoading(false);
     }
   };
-
-  if (!isClient) {
-    return null;
-  }
   
   const renderGoalSelectors = () => {
     const isLoading = isLoadingMetrics || isLoadingPrograms;
