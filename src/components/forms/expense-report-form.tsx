@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -84,25 +85,12 @@ export function ExpenseReportForm() {
   
   // Auto-add a new line when the user starts typing in the last item's description
   React.useEffect(() => {
+    if (!watchedItems || watchedItems.length === 0) return;
     const lastItem = watchedItems[watchedItems.length - 1];
-    if (lastItem && lastItem.description && lastItem.description.length > 0) {
-      // Check if we should add a new line. We only add if the last item is not empty.
-      const isLastItemNotEmpty = lastItem.description.trim() !== '' || lastItem.amount > 0;
-      const isSecondToLastEmpty = watchedItems.length > 1 ? (watchedItems[watchedItems.length - 2].description.trim() === '' && watchedItems[watchedItems.length - 2].amount === 0) : false;
-
-      if(isLastItemNotEmpty && !isSecondToLastEmpty) {
-         const lastItemHasContent = Object.values(lastItem).some(val => val !== '' && val !== 0);
-         const shouldAdd = fields.every(field => field.description.trim() !== '' || field.amount > 0);
-         
-         // A more robust check to see if the last item is the only one being edited
-         const lastItemIndex = fields.length - 1;
-         const lastFieldValue = watchedItems[lastItemIndex];
-         if (lastFieldValue && lastFieldValue.description.length === 1 && lastFieldValue.amount === 0) {
-             append({ description: '', category: 'Transport', amount: 0 }, { shouldFocus: false });
-         }
-      }
+    if (lastItem && lastItem.description && lastItem.description.length === 1 && lastItem.amount === 0) {
+        append({ description: '', category: 'Transport', amount: 0 }, { shouldFocus: false });
     }
-  }, [watchedItems, append, fields]);
+  }, [watchedItems, append]);
 
 
   const onSubmit = async (data: ExpenseFormData) => {
@@ -145,14 +133,18 @@ export function ExpenseReportForm() {
       const docRef = await addDocumentNonBlocking(expensesCollection, expenseData);
       
       const isED = profile.role === 'Executive Director';
+      // Simplified: Assume anyone but the ED needs ED approval. The ED needs PPM approval.
+      // A real app might have a more complex role-based routing system.
       const approverRole = isED ? "Programs & Partnerships Manager" : "Executive Director";
       const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
       
+      // We are creating a non-targeted alert for simplicity. 
+      // In a real app, you'd query for the specific manager's user ID to target them.
       await createAlert({
           type: 'Reminder',
           message: alertMessage,
           priority: 'Medium',
-          action: `/management/expenses?highlight=${docRef.id}`,
+          action: `/management/expenses?highlight=${docRef.id}`, // Add highlight param
           creatorId: user.uid,
       });
 
@@ -305,3 +297,5 @@ export function ExpenseReportForm() {
       </form>
   );
 }
+
+    

@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, orderBy, doc, where } from 'firebase/firestore';
+import { collection, query, orderBy, doc, where, updateDoc } from 'firebase/firestore';
 import type { Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -147,7 +147,7 @@ function ExpensesContent() {
     }
   };
   
-  const highlightClass = "animate-in fade-in-0 zoom-in-95 duration-500 ease-out";
+  const highlightClass = "ring-2 ring-primary bg-primary/5";
 
   return (
     <div className="flex flex-col gap-6">
@@ -173,7 +173,7 @@ function ExpensesContent() {
                         {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
                         {expenses && expenses.length > 0 ? (
                             expenses.map((expense) => (
-                                <Card key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "ring-2 ring-transparent transition-all")}>
+                                <Card key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
                                     <CardHeader>
                                         <CardTitle className="text-base">{expense.title}</CardTitle>
                                         <CardDescription>{expense.userName} - {formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
@@ -248,7 +248,7 @@ function ExpensesContent() {
                             ))}
                             {expenses && expenses.length > 0 ? (
                             expenses.map((expense) => (
-                                <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "ring-2 ring-transparent transition-all")}>
+                                <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
                                 <TableCell className="font-medium">{expense.userName}</TableCell>
                                 <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
                                 <TableCell>{expense.title}</TableCell>
@@ -352,3 +352,5 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
+
+    
