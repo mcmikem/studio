@@ -65,17 +65,22 @@ export default function ExpensesPage() {
 
   const expensesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    // We only show actionable items here. Cleared and Rejected are considered "archived".
+    // Show all reports that are not rejected, providing a full audit trail.
     return query(
         collection(firestore, 'expenses'), 
-        where('status', 'in', ['Pending', 'Approved']),
+        where('status', 'in', ['Pending', 'Approved', 'Cleared']),
         orderBy('createdAt', 'desc')
     );
   }, [firestore]);
   
   const allExpensesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'));
+    // This query is for the chart, which should include all non-rejected expenses.
+    return query(
+        collection(firestore, 'expenses'), 
+        where('status', '!=', 'Rejected'),
+        orderBy('createdAt', 'desc')
+    );
   }, [firestore]);
 
   const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery);
@@ -85,14 +90,12 @@ export default function ExpensesPage() {
     if (!allExpenses) return [];
     
     const categoryTotals = allExpenses.reduce((acc, expense) => {
-      if (expense.status === 'Approved' || expense.status === 'Cleared') {
         expense.items.forEach(item => {
           if (!acc[item.category]) {
             acc[item.category] = 0;
           }
           acc[item.category] += item.amount;
         });
-      }
       return acc;
     }, {} as Record<string, number>);
 
@@ -120,12 +123,15 @@ export default function ExpensesPage() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        await createAlert({
-            type: status === 'Approved' ? 'Info' : 'Urgent',
-            message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
-            priority: status === 'Approved' ? 'Low' : 'Medium',
-            action: `/activity-log`, 
-        });
+        // Smart alerts still apply
+        if (expense.userId !== currentUser.uid) {
+            await createAlert({
+                type: status === 'Approved' ? 'Info' : 'Urgent',
+                message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
+                priority: status === 'Approved' ? 'Low' : 'Medium',
+                action: `/activity-log`, // Future: Link to a personal finance/notifications page
+            });
+        }
 
     } catch (error) {
          toast({
@@ -151,8 +157,8 @@ export default function ExpensesPage() {
         <div className="lg:col-span-2">
             <Card>
                 <CardHeader>
-                  <CardTitle>Actionable Expense Reports</CardTitle>
-                  <CardDescription>This view shows all 'Pending' and 'Approved' reports that require action.</CardDescription>
+                  <CardTitle>Expense Report History</CardTitle>
+                  <CardDescription>This view shows all 'Pending', 'Approved', and 'Cleared' reports.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {/* Mobile View */}
@@ -200,8 +206,8 @@ export default function ExpensesPage() {
                             !(isLoading || isLoadingAll) && (
                                 <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
                                     <Receipt className="h-12 w-12" />
-                                    <span className="text-lg font-semibold mt-2">No Actionable Expenses</span>
-                                    <p className="text-sm">All pending reports have been processed.</p>
+                                    <span className="text-lg font-semibold mt-2">No Expenses Found</span>
+                                    <p className="text-sm">No reports have been submitted yet.</p>
                                 </div>
                             )
                         )}
@@ -281,10 +287,10 @@ export default function ExpensesPage() {
                                     <div className="flex flex-col items-center justify-center gap-2">
                                     <Receipt className="h-12 w-12" />
                                     <span className="text-lg font-semibold">
-                                        No Actionable Expenses
+                                        No Expenses Found
                                     </span>
                                     <p className="text-sm">
-                                        All pending reports have been processed.
+                                        No reports have been submitted yet.
                                     </p>
                                     </div>
                                 </TableCell>
@@ -331,5 +337,7 @@ export default function ExpensesPage() {
     </div>
   );
 }
+
+    
 
     

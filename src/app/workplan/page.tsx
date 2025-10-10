@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -124,10 +124,13 @@ export default function WorkplanPage() {
   const weekStartDate = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEndDate = endOfWeek(currentDate, { weekStartsOn: 1 });
 
-  const fetchWorkplan = async () => {
+  const fetchWorkplan = useCallback(async () => {
     if (!user || !firestore) return;
     setIsLoading(true);
-    const start = Timestamp.fromDate(weekStartDate);
+    
+    // We use a new start date based on the *current* state of `currentDate`
+    const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+    const start = Timestamp.fromDate(startOfSelectedWeek);
 
     const q = query(
       collection(firestore, 'workplans'),
@@ -149,12 +152,11 @@ export default function WorkplanPage() {
     } finally {
         setIsLoading(false);
     }
-  };
+  }, [user, firestore, currentDate]);
 
   useEffect(() => {
     fetchWorkplan();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, firestore, currentDate]);
+  }, [fetchWorkplan]);
 
 
   const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
@@ -216,3 +218,5 @@ export default function WorkplanPage() {
     </div>
   );
 }
+
+    

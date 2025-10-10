@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -165,7 +166,7 @@ export const MultiSelect = React.forwardRef<
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center">
                   <X
                     className="h-4 mx-2 cursor-pointer text-muted-foreground"
                     onClick={(event) => {
@@ -263,3 +264,5 @@ export const MultiSelect = React.forwardRef<
 )
 
 MultiSelect.displayName = "MultiSelect"
+
+    

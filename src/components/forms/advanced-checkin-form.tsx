@@ -328,6 +328,7 @@ export function AdvancedCheckinForm() {
             budget: draft.budget,
             materials: draft.materials,
             challenges: draft.challenges,
+            transport: form.getValues().transport, // Keep existing transport value if any
         });
 
         if (draft.bestPractice) {
@@ -541,3 +542,5 @@ export function AdvancedCheckinForm() {
       </form>
   );
 }
+
+    
