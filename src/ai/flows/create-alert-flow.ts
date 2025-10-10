@@ -15,7 +15,7 @@ const AlertInputSchema = z.object({
   message: z.string(),
   priority: z.enum(['High', 'Medium', 'Low']),
   action: z.string(),
-  // We can add a userId here in the future to target alerts to specific users
+  creatorId: z.string().describe("The ID of the user creating the alert."),
 });
 
 export type AlertInput = z.infer<typeof AlertInputSchema>;
@@ -31,12 +31,21 @@ const createAlertFlow = ai.defineFlow(
     outputSchema: z.object({ id: z.string() }),
   },
   async (alertData) => {
+    // In a production app, you would add security logic here.
+    // For example, check if the creator (alertData.creatorId) has the permission
+    // to create alerts of this type or for the target users.
+    // e.g., if (userRole !== 'admin') throw new Error('Permission denied');
+
     try {
       const { firestore } = await initializeFirebase();
       const alertsCollection = collection(firestore, 'alerts');
       
       const newAlert = {
-        ...alertData,
+        type: alertData.type,
+        message: alertData.message,
+        priority: alertData.priority,
+        action: alertData.action,
+        creatorId: alertData.creatorId,
         createdAt: serverTimestamp(),
       };
 

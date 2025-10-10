@@ -17,9 +17,12 @@ import {
   orderBy,
   limit,
   Timestamp,
+  startOfWeek,
+  endOfWeek,
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server';
 import { KNOWLEDGE_BASE } from '@/lib/data';
+import { getAuth } from 'firebase-admin/auth';
 
 
 const getProgramsTool = ai.defineTool(
@@ -222,6 +225,79 @@ const getRecentCheckoutsTool = ai.defineTool(
     }
 );
 
+const getWeeklyWorkplanTool = ai.defineTool({
+    name: 'getWeeklyWorkplan',
+    description: "Get the current user's key priorities for this week from their weekly workplan.",
+    inputSchema: z.object({ userId: z.string().describe("The ID of the user asking.") }),
+    outputSchema: z.array(z.string()),
+    },
+    async ({ userId }) => {
+        try {
+            const { firestore } = await initializeFirebase();
+            const today = new Date();
+            const start = startOfWeek(today, { weekStartsOn: 1 });
+
+            const q = query(
+                collection(firestore, 'workplans'),
+                where('userId', '==', userId),
+                where('weekOf', '>=', Timestamp.fromDate(start)),
+                limit(1)
+            );
+            const snapshot = await getDocs(q);
+            if (snapshot.empty) {
+                return ["No workplan found for this week. Please create one in the 'Weekly Workplan' section."];
+            }
+            return snapshot.docs[0].data().keyPriorities || [];
+        } catch (e) {
+            console.error("Error fetching weekly workplan:", e);
+            return ["Error fetching workplan."];
+        }
+});
+
+const getExpenseReportsTool = ai.defineTool({
+    name: 'getExpenseReports',
+    description: "Get a list of expense reports, optionally filtered by status or user.",
+    inputSchema: z.object({
+        status: z.enum(['Pending', 'Approved', 'Rejected', 'Cleared']).optional().describe('Filter expenses by status.'),
+        userName: z.string().optional().describe("Filter expenses by the user's name."),
+    }),
+    outputSchema: z.array(z.object({
+        title: z.string(),
+        userName: z.string(),
+        totalAmount: z.number(),
+        status: z.string(),
+    })),
+    },
+    async (input) => {
+        try {
+            const { firestore } = await initializeFirebase();
+            const expensesCol = collection(firestore, 'expenses');
+            let q = query(expensesCol, orderBy('createdAt', 'desc'));
+
+            if (input.status) {
+                q = query(q, where('status', '==', input.status));
+            }
+            if (input.userName) {
+                q = query(q, where('userName', '==', input.userName));
+            }
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    title: data.title,
+                    userName: data.userName,
+                    totalAmount: data.totalAmount,
+                    status: data.status,
+                };
+            });
+        } catch (e) {
+            console.error("Error fetching expense reports:", e);
+            return [];
+        }
+});
+
+
 export const assistantFlow = ai.defineFlow(
   {
     name: 'assistantFlow',
@@ -229,10 +305,11 @@ export const assistantFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (prompt) => {
+    
     const llmResponse = await ai.generate({
       prompt: prompt,
       system: KNOWLEDGE_BASE,
-      tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
+      tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool, getWeeklyWorkplanTool, getExpenseReportsTool],
     });
     
     return llmResponse.text;
@@ -244,9 +321,7 @@ export async function streamAssistant(prompt: string) {
     const { stream } = ai.generateStream({
         prompt: prompt,
         system: KNOWLEDGE_BASE,
-        tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool],
+        tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool, getWeeklyWorkplanTool, getExpenseReportsTool],
     });
     return stream;
 }
-
-    

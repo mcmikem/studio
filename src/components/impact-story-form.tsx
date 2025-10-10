@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect, Suspense } from "react";
@@ -101,12 +102,13 @@ function ImpactStoryGeneratorContent() {
             photoDataUri,
         };
     } else if (selectedCheckout) {
+        const quote = selectedCheckout.learning || (selectedCheckout.tomorrowPlan ? `Tomorrow's focus: ${selectedCheckout.tomorrowPlan}` : "Reflecting on another impactful day.");
         input = {
             activityName: `Daily update from ${selectedCheckout.name}`,
             activityDescription: selectedCheckout.task,
-            activityImpact: selectedCheckout.learning || "Reflecting on the day's progress and impact.",
+            activityImpact: `A daily report from our ${selectedCheckout.role}.`,
             userName: selectedCheckout.name,
-            userQuote: selectedCheckout.tomorrowPlan ? `Tomorrow's focus: ${selectedCheckout.tomorrowPlan}` : "Planning for another impactful day.",
+            userQuote: quote,
             photoDataUri,
         };
     } else {

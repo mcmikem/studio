@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type StatCard = {
@@ -158,6 +159,7 @@ export type Alert = {
     message: string;
     priority: "High" | "Medium" | "Low";
     action: string;
+    creatorId: string;
     createdAt?: Timestamp;
 }
 

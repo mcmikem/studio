@@ -108,7 +108,8 @@ export function ExpenseReportForm() {
           type: 'Reminder',
           message: alertMessage,
           priority: 'Medium',
-          action: `/management/expenses`, 
+          action: `/management/expenses`,
+          creatorId: user.uid,
       });
 
       toast({
@@ -257,5 +258,3 @@ export function ExpenseReportForm() {
       </form>
   );
 }
-
-    

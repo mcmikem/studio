@@ -180,9 +180,10 @@ function PaymentQueue() {
   }, [firestore])
 
   const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery)
+  const { user: currentUser } = useUser();
 
   const handleMarkAsCleared = async (expense: Expense) => {
-    if (!firestore) return;
+    if (!firestore || !currentUser) return;
     const expenseRef = doc(firestore, 'expenses', expense.id);
     try {
         await updateDocumentNonBlocking(expenseRef, { status: 'Cleared' });
@@ -191,12 +192,13 @@ function PaymentQueue() {
           description: `The expense from ${expense.userName} has been marked as cleared.`,
         });
         
-        if (expense.userId) {
+        if (expense.userId !== currentUser.uid) {
             await createAlert({
                 type: 'Info',
                 message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been cleared.`,
                 priority: 'Low',
                 action: `/management/expenses`,
+                creatorId: currentUser.uid,
             });
         }
 
