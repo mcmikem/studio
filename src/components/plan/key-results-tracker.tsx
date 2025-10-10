@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -29,7 +30,7 @@ export function KeyResultsTracker() {
   const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
-  }, [firestore]);
+  }, []);
 
   const { data: keyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
 

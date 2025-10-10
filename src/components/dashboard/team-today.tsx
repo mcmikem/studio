@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -45,12 +46,12 @@ export function TeamToday() {
       collection(firestore, "checkins"),
       where("timestamp", ">=", startOfDay)
     )
-  }, [firestore, startOfDay])
+  }, [startOfDay])
 
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null
     return query(collection(firestore, "users"), orderBy("name"))
-  }, [firestore])
+  }, [])
 
   const { data: checkins, isLoading: isLoadingCheckins } =
     useCollection<Checkin>(checkinsQuery)

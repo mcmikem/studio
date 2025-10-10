@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -124,7 +125,7 @@ export function DashboardCalendar() {
   const eventsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'events'), orderBy('date', 'asc'));
-  }, [firestore]);
+  }, []);
 
   const { data: events, isLoading } = useCollection<EventType>(eventsQuery);
 

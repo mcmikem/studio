@@ -12,9 +12,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/firebase';
-import { User, Mail, Briefcase, History } from 'lucide-react';
+import { User, Mail, Briefcase, History, Loader2, Upload } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, doc, updateDoc } from 'firebase/firestore';
 import type { RecentCheckout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,7 +22,12 @@ import { UserTasks } from '@/components/profile/user-tasks';
 import { useSearchParams } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { formatDateSafe } from '@/lib/utils';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { uploadImageAndUpdateProfile } from '@/firebase/storage';
+import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 function RecentUserCheckouts() {
   const firestore = useFirestore();
@@ -36,7 +41,7 @@ function RecentUserCheckouts() {
       orderBy('timestamp', 'desc'),
       limit(5)
     );
-  }, [user?.uid]); 
+  }, [user]); 
 
   const { data: checkouts, isLoading } =
     useCollection<RecentCheckout>(checkoutsQuery);
@@ -78,6 +83,11 @@ function RecentUserCheckouts() {
           )
         )}
       </CardContent>
+       <CardFooter>
+        <Button variant="link" asChild className="p-0 h-auto">
+          <Link href="/stream?tab=check-outs">View all my activity</Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
@@ -85,6 +95,10 @@ function RecentUserCheckouts() {
 function UserProfileCard() {
   const { user } = useUser();
   const { profile, isLoading } = useUserProfile(user);
+  const { toast } = useToast();
+  const firestore = useFirestore();
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = (name?: string, email?: string) => {
     if (name) {
@@ -99,6 +113,33 @@ function UserProfileCard() {
     }
     return 'U';
   };
+  
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && user && firestore) {
+      setIsUploading(true);
+      try {
+        await uploadImageAndUpdateProfile(file, user, firestore);
+        toast({
+          title: "Profile Picture Updated!",
+          description: "Your new picture has been saved.",
+        });
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Upload Failed",
+          description: error.message || "Could not upload your picture. Please try again.",
+        });
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
 
   if (isLoading) {
     return (
@@ -140,10 +181,27 @@ function UserProfileCard() {
      <Card>
         <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
-                <Avatar className="h-24 w-24 mb-4 border-2 border-primary">
-                    {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
-                    <AvatarFallback className="text-3xl">{getInitials(profile?.name, user?.email)}</AvatarFallback>
-                </Avatar>
+                <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
+                    <Avatar className="h-24 w-24 mb-4 border-2 border-primary">
+                        {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
+                        <AvatarFallback className="text-3xl">{getInitials(profile?.name, user?.email)}</AvatarFallback>
+                    </Avatar>
+                     <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      {isUploading ? (
+                        <Loader2 className="h-8 w-8 text-white animate-spin" />
+                      ) : (
+                        <Upload className="h-8 w-8 text-white" />
+                      )}
+                    </div>
+                </div>
+                 <Input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  className="hidden" 
+                  accept="image/png, image/jpeg, image/gif"
+                />
+
                 <h2 className="text-2xl font-semibold">{profile?.name || 'User'}</h2>
                 <p className="text-muted-foreground">{profile?.email}</p>
                 <Badge className="mt-4">{profile?.role}</Badge>

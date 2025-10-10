@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -35,7 +36,7 @@ export function PartnershipsOverview() {
   const partnershipsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'partnerships'), where('status', '==', 'Potential'), orderBy('createdAt', 'desc'), limit(5));
-  }, [firestore]);
+  }, []);
 
   const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
 

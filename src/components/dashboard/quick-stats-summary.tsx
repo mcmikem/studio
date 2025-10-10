@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -39,7 +40,7 @@ export function QuickStatsSummary() {
       where("metric", "in", FEATURED_METRICS),
       orderBy("metric")
     )
-  }, [firestore])
+  }, []);
 
   const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery)
 

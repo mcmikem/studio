@@ -46,7 +46,7 @@ export function RecentCheckouts() {
   const checkoutsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10));
-  }, [firestore]);
+  }, []);
 
   const { data: checkouts, isLoading } = useCollection<RecentCheckout>(checkoutsQuery);
 

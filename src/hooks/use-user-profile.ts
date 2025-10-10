@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -10,11 +11,11 @@ export function useUserProfile(user: AuthUser | null) {
   const firestore = useFirestore();
 
   const userDocRef = useMemoFirebase(() => {
-    if (firestore && user) {
-      return doc(firestore, 'users', user.uid);
+    if (user) {
+      return doc(useFirestore(), 'users', user.uid);
     }
     return null;
-  }, [firestore, user]);
+  }, [user]);
 
   const { data: profile, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
 

@@ -61,8 +61,6 @@ export function CheckoutForm() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const [submittedCheckoutId, setSubmittedCheckoutId] = useState<string | null>(null);
-  const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1')?.imageUrl;
-
 
   const {
     register,
@@ -94,7 +92,7 @@ export function CheckoutForm() {
       orderBy('timestamp', 'desc'),
       limit(1)
     );
-  }, [firestore, user, startOfDay]);
+  }, [user, startOfDay]);
 
   const { data: recentCheckins, isLoading: isLoadingCheckin } =
     useCollection<Checkin>(recentCheckinQuery);
@@ -135,7 +133,7 @@ export function CheckoutForm() {
     const checkoutData = {
       name: profile.name,
       role: profile.role,
-      avatar: user.photoURL || userAvatar || '',
+      avatar: user.photoURL || '',
       task: fullTask,
       learning: data.learning || "",
       tomorrowPlan: data.tomorrowPlan || "",

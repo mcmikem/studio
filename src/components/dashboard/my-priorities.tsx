@@ -23,7 +23,7 @@ export function MyPriorities() {
       orderBy('createdAt', 'asc'),
       limit(3)
     );
-  }, [firestore, user]);
+  }, [user]);
 
   const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
   

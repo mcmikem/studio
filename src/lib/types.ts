@@ -176,6 +176,7 @@ export type User = {
     name: string;
     email: string;
     role: string;
+    photoURL?: string;
 }
 
 export type KeyResult = {

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -28,7 +29,7 @@ export function TeamRoles() {
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'users'), orderBy('name'));
-  }, [firestore]);
+  }, []);
 
   const { data: users, isLoading } = useCollection<User>(usersQuery);
 
