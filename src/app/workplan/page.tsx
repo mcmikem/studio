@@ -128,7 +128,6 @@ export default function WorkplanPage() {
     if (!user || !firestore) return;
     setIsLoading(true);
     
-    // We use a new start date based on the *current* state of `currentDate`
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
     const start = Timestamp.fromDate(startOfSelectedWeek);
 

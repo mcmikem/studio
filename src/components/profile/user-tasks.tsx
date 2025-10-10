@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -20,7 +21,6 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
-import { format } from 'date-fns';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useForm } from 'react-hook-form';
@@ -31,6 +31,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
+import { formatDateSafe } from '@/lib/utils';
 
 const taskSchema = z.object({
   title: z.string().min(3, 'Task title must be at least 3 characters.'),
@@ -144,7 +145,7 @@ export function UserTasks() {
                   <label htmlFor={`task-${task.id}`} className="flex-grow text-sm cursor-pointer">
                     {task.title}
                   </label>
-                  {task.dueDate && <Badge variant="outline">{format(new Date(task.dueDate), "MMM d")}</Badge>}
+                  {task.dueDate && <Badge variant="outline">{formatDateSafe(task.dueDate, "dateOnly")}</Badge>}
                 </div>
               ))
             ) : (

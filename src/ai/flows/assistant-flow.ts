@@ -17,13 +17,12 @@ import {
   orderBy,
   limit,
   Timestamp,
-  startOfWeek,
-  endOfWeek,
 } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase/server';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { getAuth } from 'firebase-admin/auth';
-import type { Task } from '@/lib/types';
+import type { Task, Expense } from '@/lib/types';
+import { startOfWeek } from 'date-fns';
 
 
 const getProgramsTool = ai.defineTool(
@@ -165,25 +164,6 @@ const getPartnershipsTool = ai.defineTool(
     }
 );
 
-const formatDateSafe = (dateValue: any) => {
-  if (!dateValue) return 'N/A';
-  try {
-    if (dateValue instanceof Timestamp) {
-        return dateValue.toDate().toLocaleString();
-    }
-    if (typeof dateValue === 'string') {
-        return new Date(dateValue).toLocaleString();
-    }
-    if (dateValue.toDate && typeof dateValue.toDate === 'function') {
-        return dateValue.toDate().toLocaleString();
-    }
-  } catch (e) {
-    // fall through
-  }
-  return 'Invalid Date';
-};
-
-
 const getRecentCheckoutsTool = ai.defineTool(
     {
         name: 'getRecentCheckouts',
@@ -195,7 +175,7 @@ const getRecentCheckoutsTool = ai.defineTool(
         outputSchema: z.array(z.object({
             name: z.string(),
             task: z.string(),
-            timestamp: z.string(),
+            timestamp: z.any().describe("The server timestamp of the checkout."),
         })),
     },
     async (input) => {
@@ -216,7 +196,7 @@ const getRecentCheckoutsTool = ai.defineTool(
                 return {
                     name: data.name,
                     task: data.task,
-                    timestamp: formatDateSafe(data.timestamp),
+                    timestamp: data.timestamp,
                 }
             });
         } catch(e) {
@@ -284,7 +264,7 @@ const getExpenseReportsTool = ai.defineTool({
 
             const snapshot = await getDocs(q);
             return snapshot.docs.map(doc => {
-                const data = doc.data();
+                const data = doc.data() as Expense;
                 return {
                     title: data.title,
                     userName: data.userName,
