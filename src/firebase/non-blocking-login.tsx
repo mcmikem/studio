@@ -113,11 +113,6 @@ async function seedInitialData(db: Firestore) {
   console.log("Seeding initial data...")
   const batch = writeBatch(db)
 
-  // Seed Users
-  // We won't seed users anymore to avoid creating dummy profiles.
-  // Profiles will be created on first sign-in.
-
-  // Seed Other Collections
   const collectionsToSeed = [
     { name: "programs", data: samplePrograms },
     { name: "partnerships", data: samplePartnerships },
@@ -140,7 +135,6 @@ async function seedInitialData(db: Firestore) {
     console.log("Initial data seeded successfully.")
   } catch (error) {
     console.error("Error seeding data: ", error)
-    // Optionally emit a global error
   }
 }
 
@@ -161,41 +155,38 @@ async function createUserProfile(
     )
   }
 
-  // Seed data only for the very first user to sign up
-  if (isNewUser) {
-    await seedInitialData(db)
-  }
-
-  // Check if user profile already exists.
   const userRef = doc(db, "users", user.uid)
-
-  const userData = approvedUsers[user.email.toLowerCase()]
-  const userProfile = {
-    id: user.uid,
-    name: userData.name,
-    email: user.email,
-    role: userData.role,
-    createdAt: serverTimestamp(),
-  }
-
-  try {
-    // Only write the document if it's a new user or if it doesn't exist for some reason
-    const docSnap = await getDoc(userRef);
-    if(isNewUser || !docSnap.exists()) {
-       await setDoc(userRef, userProfile);
+  const docSnap = await getDoc(userRef);
+  
+  // Only create profile and seed data if it's a genuinely new user profile
+  if (isNewUser || !docSnap.exists()) {
+    
+    // Seed data only for the very first user to sign up
+    await seedInitialData(db)
+    
+    const userData = approvedUsers[user.email.toLowerCase()]
+    const userProfile = {
+      id: user.uid,
+      name: userData.name,
+      email: user.email,
+      role: userData.role,
+      createdAt: serverTimestamp(),
     }
-  } catch (error) {
-      console.error("Error creating/updating user profile:", error)
-      errorEmitter.emit(
-        "permission-error",
-        new FirestorePermissionError({
-          path: userRef.path,
-          operation: "write",
-          requestResourceData: userProfile,
-        })
-      )
-  }
 
+    try {
+       await setDoc(userRef, userProfile);
+    } catch (error) {
+        console.error("Error creating user profile:", error)
+        errorEmitter.emit(
+          "permission-error",
+          new FirestorePermissionError({
+            path: userRef.path,
+            operation: "write",
+            requestResourceData: userProfile,
+          })
+        )
+    }
+  }
 
   return userCredential
 }
@@ -244,7 +235,8 @@ export function initiateGoogleSignIn(authInstance: Auth) {
   const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
     .then((userCredential) => {
-      const isNewUser = userCredential.additionalUserInfo?.isNewUser || false;
+      // isNewUser can be true even if the auth account exists but this is their first sign-in to this *app*
+      const isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
       return createUserProfile(userCredential, db, isNewUser);
     })
     .catch((error) => {

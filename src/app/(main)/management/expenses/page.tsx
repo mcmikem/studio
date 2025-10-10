@@ -69,28 +69,21 @@ export default function ExpensesPage() {
     // Show all reports that are not rejected, providing a full audit trail.
     return query(
         collection(firestore, 'expenses'), 
-        where('status', 'in', ['Pending', 'Approved', 'Cleared']),
+        where('status', '!=', 'Rejected'),
+        orderBy('status'),
         orderBy('createdAt', 'desc')
     );
   }, [firestore]);
   
-  const allExpensesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    // This query is for the chart, which should include all non-rejected expenses.
-    return query(
-        collection(firestore, 'expenses'), 
-        where('status', '!=', 'Rejected'),
-        orderBy('createdAt', 'desc')
-    );
-  }, [firestore]);
-
   const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery);
-  const { data: allExpenses, isLoading: isLoadingAll } = useCollection<Expense>(allExpensesQuery);
   
   const chartData = useMemo(() => {
-    if (!allExpenses) return [];
+    if (!expenses) return [];
     
-    const categoryTotals = allExpenses.reduce((acc, expense) => {
+    // Filter for only 'Approved' or 'Cleared' expenses for spending analysis
+    const relevantExpenses = expenses.filter(e => e.status === 'Approved' || e.status === 'Cleared');
+    
+    const categoryTotals = relevantExpenses.reduce((acc, expense) => {
         if (expense.items && Array.isArray(expense.items)) {
             expense.items.forEach(item => {
                 if (!acc[item.category]) {
@@ -106,7 +99,7 @@ export default function ExpensesPage() {
       name,
       total,
     }));
-  }, [allExpenses]);
+  }, [expenses]);
   
   const chartConfig = {
     total: {
@@ -126,13 +119,12 @@ export default function ExpensesPage() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        // Smart alerts still apply
         if (expense.userId !== currentUser.uid) {
             await createAlert({
                 type: status === 'Approved' ? 'Info' : 'Urgent',
                 message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
                 priority: status === 'Approved' ? 'Low' : 'Medium',
-                action: `/activity-log`, // Future: Link to a personal finance/notifications page
+                action: `/management/expenses`, 
             });
         }
 
@@ -166,7 +158,7 @@ export default function ExpensesPage() {
                 <CardContent>
                     {/* Mobile View */}
                     <div className="space-y-4 sm:hidden">
-                        {(isLoading || isLoadingAll) && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
+                        {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
                         {expenses && expenses.length > 0 ? (
                             expenses.map((expense) => (
                                 <Card key={expense.id}>
@@ -206,7 +198,7 @@ export default function ExpensesPage() {
                                 </Card>
                             ))
                         ) : (
-                            !(isLoading || isLoadingAll) && (
+                            !isLoading && (
                                 <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
                                     <Receipt className="h-12 w-12" />
                                     <span className="text-lg font-semibold mt-2">No Expenses Found</span>
@@ -230,7 +222,7 @@ export default function ExpensesPage() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {(isLoading || isLoadingAll) &&
+                            {isLoading &&
                             Array.from({ length: 5 }).map((_, i) => (
                                 <TableRow key={i}>
                                 <TableCell><Skeleton className="h-5 w-24" /></TableCell>
@@ -284,7 +276,7 @@ export default function ExpensesPage() {
                                 </TableRow>
                             ))
                             ) : (
-                            !(isLoading || isLoadingAll) && (
+                            !isLoading && (
                                 <TableRow>
                                 <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
                                     <div className="flex flex-col items-center justify-center gap-2">
@@ -313,8 +305,8 @@ export default function ExpensesPage() {
                     <CardDescription>Based on all 'Approved' and 'Cleared' expenses.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                     {(isLoading || isLoadingAll) && <Skeleton className="w-full h-64" />}
-                     {!(isLoading || isLoadingAll) && chartData.length > 0 && (
+                     {isLoading && <Skeleton className="w-full h-64" />}
+                     {!isLoading && chartData.length > 0 && (
                         <ChartContainer config={chartConfig} className="w-full h-64">
                             <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10, right: 30 }}>
                                 <XAxis type="number" hide />
@@ -327,7 +319,7 @@ export default function ExpensesPage() {
                             </BarChart>
                         </ChartContainer>
                     )}
-                    {!(isLoading || isLoadingAll) && chartData.length === 0 && (
+                    {!isLoading && chartData.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
                             <Receipt className="h-12 w-12" />
                             <p className="mt-4 font-semibold">No spending data to show.</p>
@@ -340,7 +332,3 @@ export default function ExpensesPage() {
     </div>
   );
 }
-
-    
-
-    

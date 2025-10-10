@@ -14,7 +14,7 @@ import {
   useMemoFirebase
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs, getDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, where, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { KeyResult, User, Checkout, WeeklyWorkplan } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Wand2, Sparkles, LogIn, Trash2, PlusCircle } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { dailyPlannerAI, DailyPlannerAIOutput } from '@/ai/flows/daily-planner-flow';
+import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
 import { MultiSelect } from '../ui/multi-select';
 import { Checkbox } from '../ui/checkbox';
 import {
@@ -43,7 +43,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '../ui/skeleton';
-import { getWeek, startOfWeek, format as formatDate } from 'date-fns';
+import { startOfWeek } from 'date-fns';
 import Link from 'next/link';
 
 
@@ -562,5 +562,3 @@ export function AdvancedCheckinForm() {
       </form>
   );
 }
-
-    

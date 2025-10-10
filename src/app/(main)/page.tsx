@@ -25,6 +25,8 @@ export default function DashboardPage() {
     );
   }
   
+  // This case handles a successfully loaded profile that is null (shouldn't happen with our logic, but safe to have)
+  // or a user that exists in auth but not in our 'users' collection.
   if (!profile) {
     const fallbackProfile = { 
       id: user?.uid || 'guest', 

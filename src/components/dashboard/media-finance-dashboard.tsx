@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User } from "@/lib/types"
@@ -16,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
 import {
   collection,
   limit,
@@ -189,13 +190,15 @@ function PaymentQueue() {
           title: `Expense Cleared`,
           description: `The expense from ${expense.userName} has been marked as cleared.`,
         });
-
-        await createAlert({
-            type: 'Info',
-            message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been cleared.`,
-            priority: 'Low',
-            action: `/activity-log`, // This could link to a personal finance page in future
-        });
+        
+        if (expense.userId) {
+            await createAlert({
+                type: 'Info',
+                message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been cleared.`,
+                priority: 'Low',
+                action: `/management/expenses`,
+            });
+        }
 
     } catch (error) {
          toast({
@@ -335,5 +338,3 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
     </>
   )
 }
-
-    
