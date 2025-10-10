@@ -8,7 +8,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, serverTimestamp } from 'firebase-admin/firestore';
 
 const AlertInputSchema = z.object({
   type: z.enum(['Urgent', 'Reminder', 'Info']),
@@ -38,18 +38,14 @@ const createAlertFlow = ai.defineFlow(
 
     try {
       const { firestore } = await initializeFirebase();
-      const alertsCollection = collection(firestore, 'alerts');
+      const alertsCollection = firestore.collection('alerts');
       
       const newAlert = {
-        type: alertData.type,
-        message: alertData.message,
-        priority: alertData.priority,
-        action: alertData.action,
-        creatorId: alertData.creatorId,
+        ...alertData,
         createdAt: serverTimestamp(),
       };
 
-      const docRef = await addDoc(alertsCollection, newAlert);
+      const docRef = await alertsCollection.add(newAlert);
       
       return { id: docRef.id };
 
@@ -60,5 +56,3 @@ const createAlertFlow = ai.defineFlow(
     }
   }
 );
-
-    

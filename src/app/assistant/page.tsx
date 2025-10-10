@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -18,9 +18,11 @@ import { Input } from '@/components/ui/input';
 import { Sparkles, Bot, User, Loader2 } from 'lucide-react';
 import { streamAssistant } from '@/ai/flows/assistant-flow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollectionOnce, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { collection, query, orderBy, where } from 'firebase/firestore';
+import type { Program, Partnership, Expense, Task, KeyResult } from '@/lib/types';
 
 const promptSchema = z.object({
   prompt: z.string().min(1, 'Please enter a prompt.'),
@@ -31,9 +33,44 @@ type Message = {
   content: string;
 };
 
+// Helper function to build a context string from fetched data
+const buildContextString = (
+  data: { name: string; data: any[] | null }[]
+): string => {
+  let context = "START OF CONTEXT\n";
+  for (const item of data) {
+    if (item.data && item.data.length > 0) {
+      context += `\n## ${item.name}:\n`;
+      context += JSON.stringify(item.data, null, 2);
+      context += "\n";
+    }
+  }
+  context += "END OF CONTEXT\n";
+  return context;
+};
+
 export default function AssistantPage() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
+  const firestore = useFirestore();
+
+  // --- Data fetching for AI context ---
+  const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs'), where('status', '!=', 'Completed')) : null, [firestore]);
+  const { data: programs } = useCollectionOnce<Program>(programsQuery);
+
+  const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships')) : null, [firestore]);
+  const { data: partnerships } = useCollectionOnce<Partnership>(partnershipsQuery);
+  
+  const expensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(10)) : null, [firestore]);
+  const { data: expenses } = useCollectionOnce<Expense>(expensesQuery);
+
+  const tasksQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'users', user.uid, 'tasks'), where('completed', '==', false)) : null, [firestore, user]);
+  const { data: tasks } = useCollectionOnce<Task>(tasksQuery);
+  
+  const keyResultsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'key-results')) : null, [firestore]);
+  const { data: keyResults } = useCollectionOnce<KeyResult>(keyResultsQuery);
+  // --- End of data fetching ---
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -52,11 +89,22 @@ export default function AssistantPage() {
     setMessages(newMessages);
     reset();
 
+    // Build the full context string to pass to the AI
+    const fullContext = buildContextString([
+      { name: "Active Programs", data: programs },
+      { name: "Partnerships", data: partnerships },
+      { name: "Recent Expenses", data: expenses },
+      { name: "My Pending Tasks", data: tasks },
+      { name: "October Key Results", data: keyResults },
+    ]);
+    
+    const promptWithContext = `${fullContext}\nUser's question: ${prompt}`;
+
     try {
       // Add a placeholder for the assistant's response
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
-      const stream = await streamAssistant(prompt);
+      const stream = await streamAssistant(promptWithContext);
       
       for await (const chunk of stream) {
         if (chunk.text) {
@@ -73,10 +121,15 @@ export default function AssistantPage() {
 
     } catch (e) {
       console.error(e);
-       setMessages(prev => [
-         ...prev,
-         { role: 'assistant', content: 'Sorry, I had trouble connecting to the AI.' }
-       ]);
+       setMessages(prev => {
+           const updatedMessages = [...prev];
+            const lastMessage = updatedMessages[updatedMessages.length - 1];
+            if (lastMessage.role === 'assistant' && lastMessage.content === '') {
+                 lastMessage.content = 'Sorry, I had trouble connecting to the AI.';
+                 return updatedMessages;
+            }
+           return [...updatedMessages, { role: 'assistant', content: 'Sorry, I had trouble connecting to the AI.' }];
+       });
     } finally {
       setIsLoading(false);
     }
@@ -165,7 +218,7 @@ export default function AssistantPage() {
                 <div className="text-center text-muted-foreground pt-16 flex flex-col items-center">
                     <Bot className="h-12 w-12 mb-4" />
                     <p className="font-semibold">How can I help you today?</p>
-                    <p className="text-sm mt-2">Try asking: "Give me a summary of our active programs" or "Help me brainstorm ideas for the RED Campaign."</p>
+                    <p className="text-sm mt-2">Try asking: "Give me a summary of our active programs" or "What are my pending tasks?"</p>
                 </div>
               )}
             </div>
@@ -183,5 +236,3 @@ export default function AssistantPage() {
     </div>
   );
 }
-
-    
