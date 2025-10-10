@@ -11,6 +11,7 @@ import {
   useUser,
   useMemoFirebase,
   addDocumentNonBlocking,
+  useCollection,
 } from '@/firebase';
 import { collection, serverTimestamp, query, where, limit, Timestamp, getDocs, orderBy } from 'firebase/firestore';
 import type { Checkout, WeeklyWorkplan, User, KeyResult } from '@/lib/types';
@@ -212,6 +213,7 @@ export function PlannerCheckinForm() {
 
   const { formState: { isSubmitting, isDirty }, setValue, reset } = form;
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
+  const [initialMission, setInitialMission] = useState<string | null>(null);
 
   const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -222,7 +224,7 @@ export function PlannerCheckinForm() {
 
   // Effect to fetch context and set initial mission suggestion
   useEffect(() => {
-    if (firestore && user && !isDirty) {
+    if (firestore && user) {
       const fetchContext = async () => {
         let mission: string | null = null;
         
@@ -257,13 +259,20 @@ export function PlannerCheckinForm() {
             }
         }
         if (mission) {
-            setValue('primaryMission', mission);
+            setInitialMission(mission);
         }
       };
 
       fetchContext();
     }
-  }, [firestore, user, isDirty, setValue]);
+  }, [firestore, user]);
+
+  useEffect(() => {
+    // Only set the initial value if the form hasn't been touched and a mission exists
+    if (initialMission && !isDirty) {
+        setValue('primaryMission', initialMission);
+    }
+  }, [initialMission, isDirty, setValue]);
 
 
   const onSubmit = async (data: CheckinFormData) => {
