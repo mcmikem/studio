@@ -13,7 +13,7 @@ import {
   useCollection,
 } from '@/firebase';
 import { collection, serverTimestamp, query, where, limit, Timestamp, getDocs, orderBy } from 'firebase/firestore';
-import type { Checkout, WeeklyWorkplan, KeyResult } from '@/lib/types';
+import type { Checkout, WeeklyWorkplan } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, LogIn, Sparkles, PlusCircle, Trash2 } from 'lucide-react';

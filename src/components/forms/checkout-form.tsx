@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -35,7 +34,7 @@ import {
   limit,
   Timestamp,
 } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { Checkin } from '@/lib/types';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
@@ -91,7 +90,7 @@ export function CheckoutForm() {
       orderBy('timestamp', 'desc'),
       limit(1)
     );
-  }, [user, startOfDay]);
+  }, [user, startOfDay, firestore]);
 
   const { data: recentCheckins, isLoading: isLoadingCheckin } =
     useCollection<Checkin>(recentCheckinQuery);
