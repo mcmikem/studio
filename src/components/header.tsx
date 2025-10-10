@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, User, Settings, Bell, PlusCircle } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useAuth, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useAuth, useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { Badge } from './ui/badge';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -25,14 +25,15 @@ import type { Alert } from '@/lib/types';
 export function AppHeader() {
     const { user } = useUser();
     const { profile } = useUserProfile(user);
+    const firestore = useFirestore();
 
     // In a real app, we'd add a 'read' flag and filter by `where('read', '==', false)`.
     // For now, we'll just check if there are any alerts at all to show the badge.
     const unreadAlertsQuery = useMemoFirebase(() => {
-        if (!user) return null;
+        if (!user || !firestore) return null;
         // This is a simplified logic. A real implementation would filter by user and read status.
-        return query(collection(useFirestore(), 'alerts'), limit(1));
-    }, [user]);
+        return query(collection(firestore, 'alerts'), limit(1));
+    }, [user, firestore]);
 
     const { data: unreadAlerts } = useCollection<Alert>(unreadAlertsQuery);
 
