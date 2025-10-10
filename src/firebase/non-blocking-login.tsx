@@ -237,12 +237,19 @@ export function initiateGoogleSignIn(authInstance: Auth) {
   const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
     .then((userCredential) => {
+      if (!isEmailApproved(userCredential.user.email)) {
+        throw new Error(
+          "This email address is not authorized to use this application."
+        );
+      }
       return createUserProfile(userCredential, db);
     })
     .catch((error) => {
       console.error("Google sign-in error:", error)
-      if (error.code !== "auth/popup-closed-by-user" && error.message.includes("not authorized")) {
-        authInstance.signOut()
+      // If the error is due to an unapproved user or popup closed, sign them out
+      // to prevent getting stuck in a bad auth state.
+      if (error.code === 'auth/popup-closed-by-user' || error.message.includes("not authorized")) {
+        authInstance.signOut();
       }
       throw error
     })
