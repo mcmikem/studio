@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -74,6 +73,7 @@ export function ExpenseReportForm() {
   });
 
   const watchedItems = useWatch({ control, name: 'items' });
+  
   const totalAmount = React.useMemo(() => {
     return watchedItems.reduce((sum, item) => sum + (item.amount || 0), 0);
   }, [watchedItems]);
@@ -81,6 +81,29 @@ export function ExpenseReportForm() {
   React.useEffect(() => {
     setValue('totalAmount', totalAmount);
   }, [totalAmount, setValue]);
+  
+  // Auto-add a new line when the user starts typing in the last item's description
+  React.useEffect(() => {
+    const lastItem = watchedItems[watchedItems.length - 1];
+    if (lastItem && lastItem.description && lastItem.description.length > 0) {
+      // Check if we should add a new line. We only add if the last item is not empty.
+      const isLastItemNotEmpty = lastItem.description.trim() !== '' || lastItem.amount > 0;
+      const isSecondToLastEmpty = watchedItems.length > 1 ? (watchedItems[watchedItems.length - 2].description.trim() === '' && watchedItems[watchedItems.length - 2].amount === 0) : false;
+
+      if(isLastItemNotEmpty && !isSecondToLastEmpty) {
+         const lastItemHasContent = Object.values(lastItem).some(val => val !== '' && val !== 0);
+         const shouldAdd = fields.every(field => field.description.trim() !== '' || field.amount > 0);
+         
+         // A more robust check to see if the last item is the only one being edited
+         const lastItemIndex = fields.length - 1;
+         const lastFieldValue = watchedItems[lastItemIndex];
+         if (lastFieldValue && lastFieldValue.description.length === 1 && lastFieldValue.amount === 0) {
+             append({ description: '', category: 'Transport', amount: 0 }, { shouldFocus: false });
+         }
+      }
+    }
+  }, [watchedItems, append, fields]);
+
 
   const onSubmit = async (data: ExpenseFormData) => {
     if (!firestore || !user || !profile) {
@@ -91,11 +114,26 @@ export function ExpenseReportForm() {
       });
       return;
     }
+    
+    // Filter out empty items before submission
+    const finalItems = data.items.filter(item => item.description.trim() !== '' && item.amount > 0);
+    
+    if (finalItems.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Empty Report',
+        description: 'Please add at least one valid expense item.',
+      });
+      return;
+    }
+
+    const finalTotal = finalItems.reduce((sum, item) => sum + item.amount, 0);
 
     const expenseData = {
       ...data,
+      items: finalItems,
       date: Timestamp.fromDate(new Date(data.date)),
-      totalAmount: totalAmount,
+      totalAmount: finalTotal,
       userId: user.uid,
       userName: profile.name,
       status: 'Pending' as const,
