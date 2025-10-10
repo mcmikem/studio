@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -133,8 +134,8 @@ export default function LoginPage() {
         
         <Card>
             <CardHeader>
-                <CardTitle>Sign In to Your Account</CardTitle>
-                <CardDescription>Enter your credentials to access Omuto Central.</CardDescription>
+                <CardTitle>Welcome to Your Mission Control</CardTitle>
+                <CardDescription>Enter your credentials to access the platform.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={!!loading}>

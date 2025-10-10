@@ -23,6 +23,7 @@ import {
 import { initializeFirebase } from '@/firebase/server';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { getAuth } from 'firebase-admin/auth';
+import type { Task } from '@/lib/types';
 
 
 const getProgramsTool = ai.defineTool(
@@ -297,6 +298,39 @@ const getExpenseReportsTool = ai.defineTool({
         }
 });
 
+const getUserTasksTool = ai.defineTool({
+    name: 'getUserTasks',
+    description: "Get the current user's personal tasks from their to-do list.",
+    inputSchema: z.object({ 
+        userId: z.string().describe("The ID of the user asking."),
+        completed: z.boolean().optional().describe("Filter tasks by completion status. Defaults to false (pending).")
+     }),
+    outputSchema: z.array(z.object({
+        title: z.string(),
+        completed: z.boolean(),
+        dueDate: z.string().optional(),
+    })),
+    },
+    async ({ userId, completed = false }) => {
+        try {
+            const { firestore } = await initializeFirebase();
+            const tasksCol = collection(firestore, 'users', userId, 'tasks');
+            const q = query(tasksCol, where('completed', '==', completed), orderBy('createdAt', 'desc'));
+
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data() as Task;
+                return {
+                    title: data.title,
+                    completed: data.completed,
+                    dueDate: data.dueDate,
+                };
+            });
+        } catch (e) {
+            console.error("Error fetching user tasks:", e);
+            return [];
+        }
+});
 
 export const assistantFlow = ai.defineFlow(
   {
@@ -309,7 +343,7 @@ export const assistantFlow = ai.defineFlow(
     const llmResponse = await ai.generate({
       prompt: prompt,
       system: KNOWLEDGE_BASE,
-      tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool, getWeeklyWorkplanTool, getExpenseReportsTool],
+      tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool, getWeeklyWorkplanTool, getExpenseReportsTool, getUserTasksTool],
     });
     
     return llmResponse.text;
@@ -321,7 +355,7 @@ export async function streamAssistant(prompt: string) {
     const { stream } = ai.generateStream({
         prompt: prompt,
         system: KNOWLEDGE_BASE,
-        tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool, getWeeklyWorkplanTool, getExpenseReportsTool],
+        tools: [getProgramsTool, getKeyResultsTool, getPartnershipsTool, getRecentCheckoutsTool, getWeeklyWorkplanTool, getExpenseReportsTool, getUserTasksTool],
     });
     return stream;
 }

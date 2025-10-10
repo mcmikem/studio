@@ -343,9 +343,10 @@
         "target": { "type": "number" },
         "current": { "type": "number" },
         "unit": { "type": "string" },
-        "valuePerUnit": { "type": "number" }
+        "valuePerUnit": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["metric", "target", "current"]
+      "required": ["metric", "target", "current", "createdAt"]
     },
     "CalendarEvent": {
         "$schema": "http://json-schema.org/draft-07/schema#",

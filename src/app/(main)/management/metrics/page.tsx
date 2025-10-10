@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -7,6 +8,7 @@ import {
   query,
   orderBy,
   doc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -101,7 +103,11 @@ function MetricForm({
         });
     } else {
         const metricsCollection = collection(firestore, 'impact-metrics');
-        addDocumentNonBlocking(metricsCollection, data);
+        const newMetric = {
+            ...data,
+            createdAt: serverTimestamp()
+        };
+        addDocumentNonBlocking(metricsCollection, newMetric);
         toast({
           title: 'Metric Added!',
           description: `${data.metric} has been added to your dashboard.`,
