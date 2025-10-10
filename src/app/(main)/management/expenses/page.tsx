@@ -26,14 +26,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Check, X, Receipt } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { formatDateSafe } from '@/lib/utils';
+import { formatDateSafe, cn } from '@/lib/utils';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { createAlert } from '@/ai/flows/create-alert-flow';
 
@@ -58,15 +59,15 @@ const typeColors: { [key: string]: string } = {
     Reimbursement: 'border-purple-500 bg-purple-500/10 text-purple-500',
 };
 
-
-export default function ExpensesPage() {
+function ExpensesContent() {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const highlightedExpenseId = searchParams.get('highlight');
 
   const expensesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    // Show all reports that are not rejected, providing a full audit trail.
     return query(
         collection(firestore, 'expenses'), 
         where('status', '!=', 'Rejected'),
@@ -80,7 +81,6 @@ export default function ExpensesPage() {
   const chartData = useMemo(() => {
     if (!expenses) return [];
     
-    // Filter for only 'Approved' or 'Cleared' expenses for spending analysis
     const relevantExpenses = expenses.filter(e => e.status === 'Approved' || e.status === 'Cleared');
     
     const categoryTotals = relevantExpenses.reduce((acc, expense) => {
@@ -108,6 +108,15 @@ export default function ExpensesPage() {
     },
   };
 
+  useEffect(() => {
+    if (highlightedExpenseId) {
+      const element = document.getElementById(`expense-${highlightedExpenseId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [highlightedExpenseId, expenses]);
+
 
   const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected') => {
     if (!firestore || !currentUser) return;
@@ -119,7 +128,6 @@ export default function ExpensesPage() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        // This creates an alert for the user who submitted the expense, if it's not the current user.
         if (expense.userId !== currentUser.uid) {
             await createAlert({
                 type: status === 'Approved' ? 'Info' : 'Urgent',
@@ -138,6 +146,8 @@ export default function ExpensesPage() {
         });
     }
   };
+  
+  const highlightClass = "animate-in fade-in-0 zoom-in-95 duration-500 ease-out";
 
   return (
     <div className="flex flex-col gap-6">
@@ -163,7 +173,7 @@ export default function ExpensesPage() {
                         {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
                         {expenses && expenses.length > 0 ? (
                             expenses.map((expense) => (
-                                <Card key={expense.id}>
+                                <Card key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "ring-2 ring-transparent transition-all")}>
                                     <CardHeader>
                                         <CardTitle className="text-base">{expense.title}</CardTitle>
                                         <CardDescription>{expense.userName} - {formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
@@ -238,7 +248,7 @@ export default function ExpensesPage() {
                             ))}
                             {expenses && expenses.length > 0 ? (
                             expenses.map((expense) => (
-                                <TableRow key={expense.id}>
+                                <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "ring-2 ring-transparent transition-all")}>
                                 <TableCell className="font-medium">{expense.userName}</TableCell>
                                 <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
                                 <TableCell>{expense.title}</TableCell>
@@ -333,4 +343,12 @@ export default function ExpensesPage() {
     </div>
     </div>
   );
+}
+
+export default function ExpensesPage() {
+    return (
+        <Suspense>
+            <ExpensesContent />
+        </Suspense>
+    )
 }

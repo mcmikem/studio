@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Briefcase, Handshake, Target, Receipt } from 'lucide-react';
+import { Briefcase, Handshake, Target, Receipt, FolderKanban } from 'lucide-react';
 
 export default function ManagementLayout({
   children,
@@ -13,7 +13,7 @@ export default function ManagementLayout({
   const pathname = usePathname();
 
   const tabs = [
-    { name: 'Programs', href: '/management/programs', icon: Briefcase },
+    { name: 'Programs', href: '/management/programs', icon: FolderKanban },
     { name: 'Projects', href: '/management/projects', icon: Briefcase },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
     { name: 'Metrics', href: '/management/metrics', icon: Target },

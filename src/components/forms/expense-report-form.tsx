@@ -39,6 +39,7 @@ const expenseSchema = z.object({
   type: z.enum(["Requisition", "Reimbursement"]),
   date: z.string().min(1, 'Date is required.'),
   items: z.array(expenseItemSchema).min(1, 'Please add at least one expense item.'),
+  totalAmount: z.number().min(1, 'Total amount must be greater than zero.'),
 });
 
 type ExpenseFormData = z.infer<typeof expenseSchema>;
@@ -53,6 +54,7 @@ export function ExpenseReportForm() {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<ExpenseFormData>({
@@ -62,6 +64,7 @@ export function ExpenseReportForm() {
       date: format(new Date(), 'yyyy-MM-dd'),
       title: '',
       items: [{ description: '', category: 'Transport', amount: 0 }],
+      totalAmount: 0,
     },
   });
 
@@ -74,6 +77,10 @@ export function ExpenseReportForm() {
   const totalAmount = React.useMemo(() => {
     return watchedItems.reduce((sum, item) => sum + (item.amount || 0), 0);
   }, [watchedItems]);
+
+  React.useEffect(() => {
+    setValue('totalAmount', totalAmount);
+  }, [totalAmount, setValue]);
 
   const onSubmit = async (data: ExpenseFormData) => {
     if (!firestore || !user || !profile) {
@@ -97,7 +104,7 @@ export function ExpenseReportForm() {
 
     const expensesCollection = collection(firestore, 'expenses');
     try {
-      await addDocumentNonBlocking(expensesCollection, expenseData);
+      const docRef = await addDocumentNonBlocking(expensesCollection, expenseData);
       
       const isED = profile.role === 'Executive Director';
       const approverRole = isED ? "Programs & Partnerships Manager" : "Executive Director";
@@ -107,7 +114,7 @@ export function ExpenseReportForm() {
           type: 'Reminder',
           message: alertMessage,
           priority: 'Medium',
-          action: `/management/expenses`,
+          action: `/management/expenses?highlight=${docRef.id}`,
           creatorId: user.uid,
       });
 
@@ -121,6 +128,7 @@ export function ExpenseReportForm() {
         date: format(new Date(), 'yyyy-MM-dd'),
         title: '',
         items: [{ description: '', category: 'Transport', amount: 0 }],
+        totalAmount: 0,
       });
     } catch(e) {
       toast({
@@ -239,6 +247,8 @@ export function ExpenseReportForm() {
                 <span>Total Amount:</span>
                 <span>{new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX' }).format(totalAmount)}</span>
             </div>
+             {errors.totalAmount && <p className="text-sm text-destructive text-right">{`${errors.totalAmount.message}`}</p>}
+
 
            <Button
                 className="w-full"
