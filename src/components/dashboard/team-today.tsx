@@ -21,7 +21,6 @@ import {
 import type { Checkin } from "@/lib/types"
 import { Skeleton } from "../ui/skeleton"
 import type { User as UserProfile } from "@/lib/types"
-import { useCollectionOnce } from "@/firebase/firestore/use-collection"
 
 const getStatusColor = (status: string) => {
   if (status === "Not Checked In") {
@@ -56,9 +55,9 @@ export function TeamToday() {
   }, [firestore])
 
   const { data: checkins, isLoading: isLoadingCheckins } =
-    useCollection<Checkin>(checkinsQuery) // Changed to useCollection for real-time updates
+    useCollection<Checkin>(checkinsQuery)
   const { data: allTeamMembers, isLoading: isLoadingUsers } =
-    useCollectionOnce<UserProfile>(usersQuery) // Users list doesn't need to be real-time
+    useCollection<UserProfile>(usersQuery)
 
   const teamStatus = useMemoFirebase(() => {
     const isLoading = isLoadingUsers || isLoadingCheckins;

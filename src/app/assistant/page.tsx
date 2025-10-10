@@ -18,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Sparkles, Bot, User, Loader2 } from 'lucide-react';
 import { streamAssistant } from '@/ai/flows/assistant-flow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser, useFirestore, useCollectionOnce, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { collection, query, orderBy, where, limit } from 'firebase/firestore';
@@ -56,19 +56,19 @@ export default function AssistantPage() {
 
   // --- Data fetching for AI context ---
   const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs'), where('status', '!=', 'Completed')) : null, [firestore]);
-  const { data: programs } = useCollectionOnce<Program>(programsQuery);
+  const { data: programs } = useCollection<Program>(programsQuery);
 
   const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships')) : null, [firestore]);
-  const { data: partnerships } = useCollectionOnce<Partnership>(partnershipsQuery);
+  const { data: partnerships } = useCollection<Partnership>(partnershipsQuery);
   
   const expensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(10)) : null, [firestore]);
-  const { data: expenses } = useCollectionOnce<Expense>(expensesQuery);
+  const { data: expenses } = useCollection<Expense>(expensesQuery);
 
   const tasksQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'users', user.uid, 'tasks'), where('completed', '==', false)) : null, [firestore, user]);
-  const { data: tasks } = useCollectionOnce<Task>(tasksQuery);
+  const { data: tasks } = useCollection<Task>(tasksQuery);
   
   const keyResultsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'key-results')) : null, [firestore]);
-  const { data: keyResults } = useCollectionOnce<KeyResult>(keyResultsQuery);
+  const { data: keyResults } = useCollection<KeyResult>(keyResultsQuery);
   // --- End of data fetching ---
 
   const [messages, setMessages] = useState<Message[]>([]);

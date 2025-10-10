@@ -21,56 +21,6 @@ export interface UseDocResult<T> {
   error: FirestoreError | Error | null;
 }
 
-/**
- * A hook to fetch a single Firestore document once.
- */
-export function useDocOnce<T = DocumentData>(
-  docRef: DocumentReference<DocumentData> | null | undefined,
-): UseDocResult<T> {
-  const [data, setData] = useState<WithId<T> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<FirestoreError | Error | null>(null);
-
-  const memoizedDocRef = useMemo(() => docRef, [docRef]);
-
-  useEffect(() => {
-    if (!memoizedDocRef) {
-      setIsLoading(false);
-      setData(null);
-      setError(null);
-      return;
-    }
-
-    setIsLoading(true);
-
-    getDoc(memoizedDocRef)
-        .then((snapshot: DocumentSnapshot<DocumentData>) => {
-            if (snapshot.exists()) {
-                setData({ ...(snapshot.data() as T), id: snapshot.id });
-            } else {
-                setData(null);
-            }
-            setError(null);
-            setIsLoading(false);
-        })
-        .catch((err: FirestoreError) => {
-            console.error('useDocOnce error:', err);
-            const contextualError = new FirestorePermissionError({
-                operation: 'get',
-                path: memoizedDocRef.path,
-            });
-
-            setError(contextualError);
-            setData(null);
-            setIsLoading(false);
-            errorEmitter.emit('permission-error', contextualError);
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memoizedDocRef]);
-
-  return { data, isLoading, error };
-}
-
 
 /**
  * A stable hook to listen to a single Firestore document in real-time.

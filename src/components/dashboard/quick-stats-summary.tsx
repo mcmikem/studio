@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Skeleton } from "../ui/skeleton"
-import { useCollectionOnce, useFirestore, useMemoFirebase } from "@/firebase"
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, where } from "firebase/firestore"
 import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
@@ -41,7 +41,7 @@ export function QuickStatsSummary() {
     )
   }, [firestore]);
 
-  const { data: metrics, isLoading } = useCollectionOnce<ImpactMetric>(metricsQuery)
+  const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery)
 
   // Ensure consistent order and handle missing metrics
   const displayMetrics = useMemo(() => {
