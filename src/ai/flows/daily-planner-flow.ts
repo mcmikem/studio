@@ -21,6 +21,8 @@ const DailyPlannerAIInputSchema = z.object({
   task: z.string().describe('The primary task or goal for the day, often a Key Result.'),
   role: z.string().describe('The role of the user, to tailor the advice (e.g., "Programs & Partnerships Manager").'),
   userContext: z.string().optional().describe("The user's own description of what they plan to do."),
+  weeklyPriorities: z.array(z.string()).optional().describe("The user's stated priorities for the entire week."),
+  keyResults: z.any().optional().describe("A JSON object of the organization's current Key Results to provide strategic context."),
 });
 export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
 
@@ -29,8 +31,8 @@ const DailyPlannerAIOutputSchema = z.object({
   multiWinConnections: z.array(z.string()).describe("A list of 2-3 relevant 'multi-win' opportunities the user should look for."),
   budget: z.number().optional().describe("A suggested budget in UGX if applicable, e.g., 50000."),
   materials: z.string().optional().describe("A brief list of materials the user might need."),
-  challenges: z.string().optional().describe("A brief description of 1-2 potential challenges the user might face."),
-  bestPractice: z.string().optional().describe("A single, highly relevant best practice or piece of advice for the user's task."),
+  challenges: z.string().optional().describe("A brief description of 1-2 potential challenges the user might face, WITH a suggested mitigation for each."),
+  bestPractice: z.string().optional().describe("A single, highly relevant best practice or piece of advice for the user's task, connecting it to the larger organizational goals."),
 });
 export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
 
@@ -43,25 +45,35 @@ const prompt = ai.definePrompt({
   name: 'dailyPlannerPrompt',
   input: {schema: DailyPlannerAIInputSchema},
   output: {schema: DailyPlannerAIOutputSchema},
-  prompt: `You are an expert productivity coach and operations manager for a youth-focused non-profit in Uganda called Omuto Foundation. Your role is to help team members create a comprehensive and strategic daily plan.
+  prompt: `You are an expert productivity coach and operations manager for a youth-focused non-profit in Uganda called Omuto Foundation. Your role is to help a team member create a comprehensive, strategic, and realistic daily plan.
 
-A team member with the role '{{{role}}}' is focusing on the following strategic task today:
+A team member with the role '{{{role}}}' is planning their day.
+
+Their primary mission for today is:
 "{{{task}}}"
 
-They have provided this specific context for their plan:
+Their stated priorities for the entire week are:
+{{#each weeklyPriorities}}
+- {{{this}}}
+{{/each}}
+
+The user has provided this additional context for their plan:
 "{{{userContext}}}"
 
-Based on ALL this information, generate a complete, actionable first draft of their daily plan. The plan should be practical, strategic, and reflect operational realities in Uganda.
+To inform your coaching, here are the organization's current strategic Key Results for the month:
+{{{json keyResults}}}
+
+Based on ALL this information, act as a coach. Generate a complete, actionable first draft of their daily plan. The plan must be practical, strategic, and reflect operational realities in Uganda. Critically, your suggestions must be reasoned and connect to the provided context.
 
 Your output MUST be a JSON object that includes:
-1.  **timeBlocks**: Create a logical schedule with 2-4 time blocks. Include realistic travel time if the context suggests field work.
-2.  **multiWinConnections**: Suggest 2-3 high-impact "multi-win" opportunities from the following list: 'Recruit a volunteer', 'Capture content (photos/video)', 'Gather a testimonial or story', 'Identify a potential new partner', 'Improve a process/template'.
-3.  **budget**: Suggest a reasonable budget in UGX if the activity implies costs (like transport or materials).
-4.  **materials**: Suggest specific materials needed.
-5.  **challenges**: Identify 1-2 potential challenges to watch out for.
-6.  **bestPractice**: Provide one single, highly relevant piece of professional advice or a best practice tip related to their specific context.
+1.  **timeBlocks**: Create a logical schedule with 2-4 time blocks. If the context suggests field work, include realistic travel time. The tasks in the blocks should directly contribute to the stated mission.
+2.  **multiWinConnections**: Suggest 2-3 high-impact "multi-win" opportunities from the following list that are most relevant to today's mission: 'Recruit a volunteer', 'Capture content (photos/video)', 'Gather a testimonial or story', 'Identify a potential new partner', 'Improve a process/template'.
+3.  **budget**: If the activity implies costs (like transport or materials), suggest a reasonable budget in UGX and briefly justify it.
+4.  **materials**: Suggest specific, practical materials needed for the mission.
+5.  **challenges**: Identify 1-2 potential challenges (e.g., "transport delays") and, most importantly, propose a concrete mitigation strategy for each (e.g., "Mitigation: Call the boda boda driver 30 minutes before departure to confirm."). This is for risk management.
+6.  **bestPractice**: Provide one single, highly relevant piece of professional advice. This tip should connect their specific daily task to a larger organizational Key Result, explaining WHY their task is important for the bigger picture.
 
-Think like a seasoned manager guiding a team member to be as effective as possible.
+Think like a seasoned manager guiding a team member to be as effective and strategic as possible. Your goal is not just to fill a form, but to teach them how to plan effectively.
 `,
 });
 
