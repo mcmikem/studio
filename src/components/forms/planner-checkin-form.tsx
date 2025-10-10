@@ -58,11 +58,13 @@ function PlannerForm({
     profile,
     onSubmit,
     isSubmitting,
+    isDirty,
 }: {
     form: UseFormReturn<CheckinFormData>,
     profile: User | null,
     onSubmit: (data: CheckinFormData) => void,
     isSubmitting: boolean,
+    isDirty: boolean,
 }) {
   const { register, handleSubmit, formState: { errors }, setValue, control, getValues } = form;
   
@@ -198,12 +200,12 @@ export function PlannerCheckinForm() {
     }
   });
 
-  const { formState: { isSubmitting }, setValue, reset } = form;
+  const { formState: { isSubmitting, isDirty }, setValue, reset } = form;
+  const [initialMission, setInitialMission] = useState<string | null>(null);
 
-  // Effect to fetch context and set initial mission
+  // Effect to fetch context and set initial mission suggestion
   useEffect(() => {
-    // Only run if we have the user and firestore, and the form hasn't been touched
-    if (firestore && user && !form.formState.isDirty) {
+    if (firestore && user && !isDirty) {
       const fetchContext = async () => {
         let mission: string | null = null;
         
@@ -236,15 +238,19 @@ export function PlannerCheckinForm() {
                 }
             }
         }
-
-        if (mission) {
-            setValue('primaryMission', mission);
-        }
+        setInitialMission(mission);
       };
 
       fetchContext();
     }
-  }, [firestore, user, setValue, form.formState.isDirty]);
+  }, [firestore, user, isDirty]);
+
+  // Effect to populate form only when initial mission is fetched and form is clean
+  useEffect(() => {
+    if (initialMission && !isDirty) {
+      setValue('primaryMission', initialMission);
+    }
+  }, [initialMission, isDirty, setValue]);
 
 
   const onSubmit = async (data: CheckinFormData) => {
@@ -276,6 +282,15 @@ export function PlannerCheckinForm() {
     });
     reset();
   };
+  
+  if (isLoadingProfile) {
+    return (
+        <div className="space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-10 w-full" />
+        </div>
+    );
+  }
 
   return (
     <Card>
@@ -286,19 +301,13 @@ export function PlannerCheckinForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoadingProfile ? (
-            <div className="space-y-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-10 w-full" />
-            </div>
-        ) : (
-            <PlannerForm
-                form={form}
-                profile={profile}
-                onSubmit={onSubmit}
-                isSubmitting={isSubmitting}
-            />
-        )}
+        <PlannerForm
+            form={form}
+            profile={profile}
+            onSubmit={onSubmit}
+            isSubmitting={isSubmitting}
+            isDirty={isDirty}
+        />
          <Alert variant="default" className="mt-6">
             <AlertTitle>No Weekly Plan?</AlertTitle>
             <AlertDescription>
