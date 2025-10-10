@@ -73,38 +73,53 @@ export function AppSidebar() {
       <SidebarHeader>
         <OmutoLogo />
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              isActive={isActive('/stream')}
-              tooltip="Team Stream"
-              onClick={handleLinkClick}
-            >
-              <Link href="/stream">
-                <Rss />
-                <span>Team Stream</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
+      <SidebarContent data-mobile={isMobile}>
+        <SidebarGroup data-mobile={isMobile}>
+          <SidebarMenu>
+            <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/assistant')}
-                  tooltip="AI Assistant"
+                  isActive={isActive('/')}
+                  tooltip="Dashboard"
                   onClick={handleLinkClick}
                 >
-                  <Link href="/assistant">
-                    <Sparkles />
-                    <span>AI Assistant</span>
+                  <Link href="/">
+                    <Home />
+                    <span>Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
-        </SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                isActive={isActive('/stream')}
+                tooltip="Team Stream"
+                onClick={handleLinkClick}
+              >
+                <Link href="/stream">
+                  <Rss />
+                  <span>Team Stream</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive('/assistant')}
+                    tooltip="AI Assistant"
+                    onClick={handleLinkClick}
+                  >
+                    <Link href="/assistant">
+                      <Sparkles />
+                      <span>AI Assistant</span>
+                    </Link>
+                  </SidebarMenuButton>
+              </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
         
-        <SidebarGroup>
-          <SidebarGroupLabel>Planning</SidebarGroupLabel>
+        <SidebarGroup data-mobile={isMobile}>
+          <SidebarGroupLabel data-mobile={isMobile}>Planning</SidebarGroupLabel>
            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -135,8 +150,8 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Execution</SidebarGroupLabel>
+        <SidebarGroup data-mobile={isMobile}>
+          <SidebarGroupLabel data-mobile={isMobile}>Execution</SidebarGroupLabel>
           <SidebarMenu>
              <SidebarMenuItem>
                 <SidebarMenuButton
@@ -180,8 +195,8 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
         
-        <SidebarGroup>
-            <SidebarGroupLabel>Support</SidebarGroupLabel>
+        <SidebarGroup data-mobile={isMobile}>
+            <SidebarGroupLabel data-mobile={isMobile}>Support</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
@@ -210,8 +225,8 @@ export function AppSidebar() {
             </SidebarMenu>
         </SidebarGroup>
 
-         <SidebarGroup>
-            <SidebarGroupLabel>Personal</SidebarGroupLabel>
+         <SidebarGroup data-mobile={isMobile}>
+            <SidebarGroupLabel data-mobile={isMobile}>Personal</SidebarGroupLabel>
             <SidebarMenu>
                  <SidebarMenuItem>
                     <SidebarMenuButton asChild isActive={isActive('/notifications')} tooltip="Notifications" onClick={handleLinkClick}>
