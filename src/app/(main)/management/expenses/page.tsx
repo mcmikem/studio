@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -90,13 +91,15 @@ export default function ExpensesPage() {
     if (!allExpenses) return [];
     
     const categoryTotals = allExpenses.reduce((acc, expense) => {
-        expense.items.forEach(item => {
-          if (!acc[item.category]) {
-            acc[item.category] = 0;
-          }
-          acc[item.category] += item.amount;
-        });
-      return acc;
+        if (expense.items && Array.isArray(expense.items)) {
+            expense.items.forEach(item => {
+                if (!acc[item.category]) {
+                    acc[item.category] = 0;
+                }
+                acc[item.category] += item.amount;
+            });
+        }
+        return acc;
     }, {} as Record<string, number>);
 
     return Object.entries(categoryTotals).map(([name, total]) => ({

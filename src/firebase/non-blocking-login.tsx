@@ -20,6 +20,7 @@ import {
   limit,
   Firestore,
   serverTimestamp,
+  getDoc,
 } from "firebase/firestore"
 import { errorEmitter } from "./error-emitter"
 import { FirestorePermissionError } from "./errors"
@@ -145,7 +146,8 @@ async function seedInitialData(db: Firestore) {
 
 async function createUserProfile(
   userCredential: UserCredential,
-  db: Firestore
+  db: Firestore,
+  isNewUser: boolean = false
 ) {
   const user = userCredential.user
   if (!user || !user.email) return userCredential
@@ -160,14 +162,13 @@ async function createUserProfile(
   }
 
   // Seed data only for the very first user to sign up
-  if (userCredential.additionalUserInfo?.isNewUser) {
+  if (isNewUser) {
     await seedInitialData(db)
   }
 
   // Check if user profile already exists.
   const userRef = doc(db, "users", user.uid)
 
-  // Non-blocking write to create or update the user profile document
   const userData = approvedUsers[user.email.toLowerCase()]
   const userProfile = {
     id: user.uid,
@@ -177,17 +178,24 @@ async function createUserProfile(
     createdAt: serverTimestamp(),
   }
 
-  setDoc(userRef, userProfile, { merge: true }).catch((error) => {
-    console.error("Error creating/updating user profile:", error)
-    errorEmitter.emit(
-      "permission-error",
-      new FirestorePermissionError({
-        path: userRef.path,
-        operation: "write",
-        requestResourceData: userProfile,
-      })
-    )
-  })
+  try {
+    // Only write the document if it's a new user or if it doesn't exist for some reason
+    const docSnap = await getDoc(userRef);
+    if(isNewUser || !docSnap.exists()) {
+       await setDoc(userRef, userProfile);
+    }
+  } catch (error) {
+      console.error("Error creating/updating user profile:", error)
+      errorEmitter.emit(
+        "permission-error",
+        new FirestorePermissionError({
+          path: userRef.path,
+          operation: "write",
+          requestResourceData: userProfile,
+        })
+      )
+  }
+
 
   return userCredential
 }
@@ -199,9 +207,13 @@ export function initiateEmailSignUp(
   password: string
 ) {
   const db = getFirestore(authInstance.app)
-  // The approval check is now handled inside createUserProfile.
+  
+  if (!isEmailApproved(email)) {
+      throw new Error("This email address is not authorized to sign up.");
+  }
+
   return createUserWithEmailAndPassword(authInstance, email, password)
-    .then((cred) => createUserProfile(cred, db))
+    .then((cred) => createUserProfile(cred, db, true)) // Pass true for isNewUser
     .catch((error) => {
       console.error("Email sign-up error:", error)
       throw error
@@ -215,7 +227,9 @@ export function initiateEmailSignIn(
   password: string
 ) {
   const db = getFirestore(authInstance.app)
-   // The approval check is now handled inside createUserProfile.
+  if (!isEmailApproved(email)) {
+      throw new Error("This email address is not authorized to use this application.");
+  }
   return signInWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
@@ -230,13 +244,11 @@ export function initiateGoogleSignIn(authInstance: Auth) {
   const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
     .then((userCredential) => {
-      // The createUserProfile function will handle the approval check and sign-out if needed.
-      return createUserProfile(userCredential, db)
+      const isNewUser = userCredential.additionalUserInfo?.isNewUser || false;
+      return createUserProfile(userCredential, db, isNewUser);
     })
     .catch((error) => {
       console.error("Google sign-in error:", error)
-      // Ensure we don't leave a partially logged-in state if the error
-      // is not from the user closing the popup.
       if (error.code !== "auth/popup-closed-by-user" && error.message.includes("not authorized")) {
         authInstance.signOut()
       }

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -242,8 +243,8 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/media-finance')} tooltip="Media & Finance" onClick={handleLinkClick}>
-                        <Link href="/media-finance">
+                    <SidebarMenuButton asChild isActive={isActive('/management/expenses')} tooltip="Finance" onClick={handleLinkClick}>
+                        <Link href="/management/expenses">
                             <Banknote />
                             <span>Finance</span>
                         </Link>

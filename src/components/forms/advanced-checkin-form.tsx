@@ -1,4 +1,5 @@
 
+
 'use client';
 import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
@@ -43,6 +44,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '../ui/skeleton';
 import { getWeek, startOfWeek, format as formatDate } from 'date-fns';
+import Link from 'next/link';
 
 
 const timeBlockSchema = z.object({
@@ -369,6 +371,24 @@ export function AdvancedCheckinForm() {
     return options;
   }, [keyResults, currentWorkplan]);
 
+
+  if (isLoadingWorkplan) {
+    return <Skeleton className="h-64 w-full" />
+  }
+
+  if (!currentWorkplan && !isLoadingWorkplan) {
+    return (
+        <Alert>
+            <AlertTitle>First, Set Your Weekly Plan!</AlertTitle>
+            <AlertDescription>
+                <p>You haven't set your key priorities for this week yet. Your daily check-in should align with your weekly goals.</p>
+                <Button asChild className="mt-4">
+                    <Link href="/workplan">Go to Weekly Workplan</Link>
+                </Button>
+            </AlertDescription>
+        </Alert>
+    )
+  }
 
   return (
       <form onSubmit={form.handleSubmit(onSubmit)}>
