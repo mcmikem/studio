@@ -2,16 +2,14 @@
 'use client';
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { useForm, useFieldArray, UseFormReturn, Control } from 'react-hook-form';
+import { useForm, useFieldArray, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import {
   useFirestore,
   useUser,
-  useMemoFirebase,
   addDocumentNonBlocking,
-  useCollection,
 } from '@/firebase';
 import { collection, serverTimestamp, query, where, limit, Timestamp, getDocs, orderBy } from 'firebase/firestore';
 import type { Checkout, WeeklyWorkplan, User, KeyResult } from '@/lib/types';
@@ -38,7 +36,6 @@ const checkinSchema = z.object({
     description: z.string().min(3),
   })).optional(),
   multiWinConnections: z.array(z.string()).optional(),
-  budget: z.coerce.number().optional(),
   materials: z.string().optional(),
   challenges: z.string().optional(),
 });
@@ -104,7 +101,6 @@ function PlannerForm({
         
         setValue('timeBlocks', result.timeBlocks?.length > 0 ? result.timeBlocks : [{startTime: "", endTime: "", description: ""}]);
         setValue('multiWinConnections', result.multiWinConnections);
-        setValue('budget', result.budget);
         setValue('materials', result.materials);
         setValue('challenges', result.challenges);
         setPlanGenerated(true);
@@ -170,18 +166,14 @@ function PlannerForm({
                     />
                  </div>
 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                        <Label>Suggested Budget (UGX)</Label>
-                        <Input type="number" {...register('budget')} placeholder="50000" />
-                     </div>
+                 <div className="grid grid-cols-1 gap-4">
                       <div className="space-y-2">
-                        <Label>Materials Needed</Label>
-                        <Input {...register('materials')} placeholder="e.g., Flipcharts, markers" />
+                        <Label>Materials & Resources Needed (AI Suggestion)</Label>
+                        <Input {...register('materials')} placeholder="e.g., Flipcharts, markers, transport for 2" />
                      </div>
                  </div>
                  <div className="space-y-2">
-                    <Label>Potential Challenges</Label>
+                    <Label>Potential Challenges & Mitigations (AI Suggestion)</Label>
                     <Textarea {...register('challenges')} placeholder="e.g., Challenge: Boda boda availability. Mitigation: ..." />
                  </div>
 
@@ -211,68 +203,82 @@ export function PlannerCheckinForm() {
     }
   });
 
-  const { formState: { isSubmitting, isDirty }, setValue, reset } = form;
+  const { formState: { isDirty }, setValue, reset } = form;
+  
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
-  const [initialMission, setInitialMission] = useState<string | null>(null);
+  const [initialMission, setInitialMission] = useState('');
+  const [isContextLoading, setIsContextLoading] = useState(true);
 
-  const keyResultsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'key-results'));
-  }, [firestore]);
-  const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
+  // Use a ref to prevent re-running the fetch logic on every render
+  const hasFetchedContext = React.useRef(false);
 
-
-  // Effect to fetch context and set initial mission suggestion
   useEffect(() => {
-    if (firestore && user) {
-      const fetchContext = async () => {
-        let mission: string | null = null;
-        
-        const today = new Date();
-        const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
-        const workplanQuery = query(
-          collection(firestore, 'workplans'),
-          where('userId', '==', user.uid),
-          where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
-          limit(1)
-        );
+    if (firestore && user && !hasFetchedContext.current) {
+        setIsContextLoading(true);
+        hasFetchedContext.current = true; // Mark as fetched
 
-        const workplanSnapshot = await getDocs(workplanQuery);
-        if (!workplanSnapshot.empty) {
-          const plan = workplanSnapshot.docs[0].data() as WeeklyWorkplan;
-          setWeeklyPlan(plan);
-          mission = `Today I will focus on... (This week's priorities: ${plan.keyPriorities.join(', ')})`;
-        } else {
-            const checkoutQuery = query(
-                collection(firestore, 'checkouts'),
+        const fetchContext = async () => {
+            let mission: string | null = null;
+            
+            const today = new Date();
+            const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
+            const workplanQuery = query(
+                collection(firestore, 'workplans'),
                 where('userId', '==', user.uid),
-                orderBy('timestamp', 'desc'),
+                where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
                 limit(1)
             );
 
-            const checkoutSnapshot = await getDocs(checkoutQuery);
-            if (!checkoutSnapshot.empty) {
-                const lastCheckout = checkoutSnapshot.docs[0].data() as Checkout;
-                if (lastCheckout.tomorrowPlan) {
-                    mission = lastCheckout.tomorrowPlan;
-                }
-            }
-        }
-        if (mission) {
-            setInitialMission(mission);
-        }
-      };
+            try {
+                const workplanSnapshot = await getDocs(workplanQuery);
+                if (!workplanSnapshot.empty) {
+                    const plan = workplanSnapshot.docs[0].data() as WeeklyWorkplan;
+                    setWeeklyPlan(plan);
+                    mission = `Today I will focus on... (This week's priorities: ${plan.keyPriorities.join(', ')})`;
+                } else {
+                    const checkoutQuery = query(
+                        collection(firestore, 'checkouts'),
+                        where('userId', '==', user.uid),
+                        orderBy('timestamp', 'desc'),
+                        limit(1)
+                    );
 
-      fetchContext();
+                    const checkoutSnapshot = await getDocs(checkoutQuery);
+                    if (!checkoutSnapshot.empty) {
+                        const lastCheckout = checkoutSnapshot.docs[0].data() as Checkout;
+                        if (lastCheckout.tomorrowPlan) {
+                            mission = lastCheckout.tomorrowPlan;
+                        }
+                    }
+                }
+                if (mission) {
+                    setInitialMission(mission);
+                }
+            } catch (error) {
+                console.error("Error fetching context:", error);
+            } finally {
+                setIsContextLoading(false);
+            }
+        };
+
+        fetchContext();
     }
   }, [firestore, user]);
 
+
   useEffect(() => {
-    // Only set the initial value if the form hasn't been touched and a mission exists
+    // Only set the mission if it has been fetched and the form hasn't been touched.
     if (initialMission && !isDirty) {
         setValue('primaryMission', initialMission);
     }
   }, [initialMission, isDirty, setValue]);
+
+
+  const keyResultsQuery = React.useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'key-results'));
+  }, [firestore]);
+  const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
 
 
   const onSubmit = async (data: CheckinFormData) => {
@@ -286,7 +292,6 @@ export function PlannerCheckinForm() {
       details: {
           timeBlocks: data.timeBlocks,
           multiWinConnections: data.multiWinConnections,
-          budget: data.budget,
           materials: data.materials,
           challenges: data.challenges,
       },
@@ -305,13 +310,20 @@ export function PlannerCheckinForm() {
     reset();
   };
   
-  if (isLoadingProfile || isLoadingKeyResults) {
+  const isLoading = isLoadingProfile || isLoadingKeyResults || isContextLoading;
+
+  if (isLoading) {
     return (
-        <div className="space-y-4">
-            <Skeleton className="h-8 w-1/2" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-10 w-full" />
-        </div>
+        <Card>
+            <CardHeader>
+                <Skeleton className="h-7 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-10 w-full" />
+            </CardContent>
+        </Card>
     );
   }
 
@@ -328,12 +340,12 @@ export function PlannerCheckinForm() {
             form={form}
             profile={profile}
             onSubmit={onSubmit}
-            isSubmitting={isSubmitting}
+            isSubmitting={form.formState.isSubmitting}
             isDirty={isDirty}
             keyResults={keyResults}
             weeklyPlan={weeklyPlan}
         />
-        {!weeklyPlan && (
+        {!weeklyPlan && !isContextLoading && (
          <Alert variant="default" className="mt-6">
             <AlertTitle>No Weekly Plan?</AlertTitle>
             <AlertDescription>

@@ -221,3 +221,15 @@ export type WeeklyWorkplan = {
   keyPriorities: string[];
   createdAt: Timestamp;
 };
+
+export type DailyPlannerAIOutput = {
+    timeBlocks: {
+        startTime: string;
+        endTime: string;
+        description: string;
+    }[];
+    multiWinConnections: string[];
+    materials?: string;
+    challenges?: string;
+    bestPractice?: string;
+};
