@@ -42,7 +42,7 @@ export function ProgramsOverview() {
   const firestore = useFirestore();
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'programs'), orderBy('status'), orderBy('deadline'));
+    return query(collection(firestore, 'programs'), orderBy('deadline'));
   }, [firestore]);
 
   const { data: programs, isLoading } = useCollection<Program>(programsQuery);
