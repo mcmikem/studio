@@ -24,15 +24,17 @@ export default function DashboardPage() {
     );
   }
   
-  // By the time we reach this point, `profile` is either loaded or null (if no profile doc exists).
-  // If `profile` is null but we have a user, it's a new user. We can render a default view.
-  if (!profile && user) {
-     return <DefaultDashboard profile={{ id: user.uid, name: user.displayName || 'New User', email: user.email || '', role: 'Staff' }} />;
-  }
-
-  // If there's no profile and no user, the AuthProvider will redirect, but as a fallback:
+  // If there is no user, AuthProvider will redirect. If there is a user but no profile,
+  // it's an error state (or a brand new user whose doc hasn't replicated).
+  // The DefaultDashboard can serve as a safe fallback.
   if (!profile) {
-    return <DefaultDashboard profile={{ id: 'guest', name: 'Guest', email: '', role: 'Staff' }} />;
+    const fallbackProfile = { 
+      id: user?.uid || 'guest', 
+      name: user?.displayName || 'New User', 
+      email: user?.email || '', 
+      role: 'Staff' 
+    };
+    return <DefaultDashboard profile={fallbackProfile} />;
   }
 
   const renderDashboardByRole = () => {
@@ -64,3 +66,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

@@ -23,6 +23,11 @@
           "type": "string",
           "description": "The user's email address.",
           "format": "email"
+        },
+         "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Server timestamp of when the user profile was created."
         }
       },
       "required": [
@@ -112,7 +117,7 @@
             "description": "Server timestamp of when the partnership was created."
         }
       },
-      "required": ["name", "contactPerson", "contactEmail", "status", "nextStep"]
+      "required": ["name", "contactPerson", "contactEmail", "status", "nextStep", "createdAt"]
     },
     "Activity": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -325,7 +330,7 @@
             "description": "Server timestamp of when the project was created."
         }
       },
-      "required": ["name", "manager", "status", "completion", "nextMilestone"]
+      "required": ["name", "manager", "status", "completion", "nextMilestone", "createdAt"]
     },
     "ImpactMetric": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -569,3 +574,5 @@
     }
   }
 }
+
+    

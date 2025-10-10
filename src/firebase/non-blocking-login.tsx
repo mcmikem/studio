@@ -19,6 +19,7 @@ import {
   query,
   limit,
   Firestore,
+  serverTimestamp,
 } from "firebase/firestore"
 import { errorEmitter } from "./error-emitter"
 import { FirestorePermissionError } from "./errors"
@@ -112,13 +113,8 @@ async function seedInitialData(db: Firestore) {
   const batch = writeBatch(db)
 
   // Seed Users
-  for (const user of sampleUsers) {
-    // In a real app, you'd get the UID after creation, but for seeding we use a placeholder
-    // and let the user profile creation logic handle the real UID.
-    // For this seed, we'll create a new doc and use its ID.
-    const userRef = doc(collection(db, "users"))
-    batch.set(userRef, { ...user, id: userRef.id })
-  }
+  // We won't seed users anymore to avoid creating dummy profiles.
+  // Profiles will be created on first sign-in.
 
   // Seed Other Collections
   const collectionsToSeed = [
@@ -155,6 +151,8 @@ async function createUserProfile(
   if (!user || !user.email) return userCredential
 
   if (!isEmailApproved(user.email)) {
+    // If user is not approved, delete their Firebase Auth account immediately
+    // and throw an error to prevent them from staying logged in.
     await user.delete()
     throw new Error(
       "This email address is not authorized to use this application."
@@ -176,6 +174,7 @@ async function createUserProfile(
     name: userData.name,
     email: user.email,
     role: userData.role,
+    createdAt: serverTimestamp(),
   }
 
   setDoc(userRef, userProfile, { merge: true }).catch((error) => {
@@ -200,6 +199,7 @@ export function initiateEmailSignUp(
   password: string
 ) {
   const db = getFirestore(authInstance.app)
+  // The approval check is now handled inside createUserProfile.
   return createUserWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
@@ -215,6 +215,7 @@ export function initiateEmailSignIn(
   password: string
 ) {
   const db = getFirestore(authInstance.app)
+   // The approval check is now handled inside createUserProfile.
   return signInWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
@@ -229,21 +230,18 @@ export function initiateGoogleSignIn(authInstance: Auth) {
   const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
     .then((userCredential) => {
-      if (!isEmailApproved(userCredential.user.email)) {
-        // Immediately sign out the user if not authorized
-        authInstance.signOut()
-        throw new Error(
-          "This Google account is not authorized to use this application."
-        )
-      }
+      // The createUserProfile function will handle the approval check and sign-out if needed.
       return createUserProfile(userCredential, db)
     })
     .catch((error) => {
       console.error("Google sign-in error:", error)
-      // Ensure we don't leave a partially logged-in state
-      if (error.code !== "auth/popup-closed-by-user") {
+      // Ensure we don't leave a partially logged-in state if the error
+      // is not from the user closing the popup.
+      if (error.code !== "auth/popup-closed-by-user" && error.message.includes("not authorized")) {
         authInstance.signOut()
       }
       throw error
     })
 }
+
+    
