@@ -11,11 +11,11 @@ export function useUserProfile(user: AuthUser | null) {
   const firestore = useFirestore();
 
   const userDocRef = useMemoFirebase(() => {
-    if (user) {
-      return doc(useFirestore(), 'users', user.uid);
+    if (user && firestore) {
+      return doc(firestore, 'users', user.uid);
     }
     return null;
-  }, [user]);
+  }, [user, firestore]);
 
   const { data: profile, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
 
