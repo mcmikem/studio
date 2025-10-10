@@ -242,14 +242,6 @@ export function AppSidebar() {
                         </Link>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton asChild isActive={isActive('/management/expenses')} tooltip="Finance" onClick={handleLinkClick}>
-                        <Link href="/management/expenses">
-                            <Banknote />
-                            <span>Finance</span>
-                        </Link>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
             </SidebarMenu>
         </SidebarGroup>
 

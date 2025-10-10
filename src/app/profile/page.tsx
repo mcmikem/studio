@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -21,21 +22,21 @@ import { UserTasks } from '@/components/profile/user-tasks';
 import { useSearchParams } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { formatDateSafe } from '@/lib/utils';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 function RecentUserCheckouts() {
   const firestore = useFirestore();
   const { user } = useUser();
 
   const checkoutsQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
+    if (!user) return null;
     return query(
       collection(firestore, 'checkouts'),
       where('userId', '==', user.uid),
       orderBy('timestamp', 'desc'),
       limit(5)
     );
-  }, [firestore, user?.uid]); // Depend on user.uid which is a stable string
+  }, [user?.uid]); 
 
   const { data: checkouts, isLoading } =
     useCollection<RecentCheckout>(checkoutsQuery);

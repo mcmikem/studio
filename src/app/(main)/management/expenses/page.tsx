@@ -119,12 +119,14 @@ export default function ExpensesPage() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
+        // This creates an alert for the user who submitted the expense, if it's not the current user.
         if (expense.userId !== currentUser.uid) {
             await createAlert({
                 type: status === 'Approved' ? 'Info' : 'Urgent',
                 message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
                 priority: status === 'Approved' ? 'Low' : 'Medium',
-                action: `/management/expenses`, 
+                action: `/management/expenses`,
+                creatorId: currentUser.uid,
             });
         }
 

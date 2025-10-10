@@ -99,10 +99,9 @@ export function ExpenseReportForm() {
     try {
       await addDocumentNonBlocking(expensesCollection, expenseData);
       
-      // Smart Alert Routing for Approval
       const isED = profile.role === 'Executive Director';
-      const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
       const approverRole = isED ? "Programs & Partnerships Manager" : "Executive Director";
+      const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
       
       await createAlert({
           type: 'Reminder',
