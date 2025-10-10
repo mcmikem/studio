@@ -117,7 +117,7 @@ export function CheckoutForm() {
 
     const impactNumbers = [
       data.parentsReached && `Parents Reached: ${data.parentsReached}`,
-      data.volunteersRecruruited &&
+      data.volunteersRecruited &&
         `Volunteers Recruited: ${data.volunteersRecruited}`,
       data.prototypesTested &&
         `Prototypes Tested: ${data.prototypesTested}`,

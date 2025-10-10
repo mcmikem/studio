@@ -1,36 +1,36 @@
 
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { useState, useEffect, useMemo } from 'react';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Users } from "lucide-react"
+} from '@/components/ui/card';
+import { Users } from 'lucide-react';
 import {
   collection,
   query,
   where,
   Timestamp,
   orderBy,
-} from "firebase/firestore"
-import type { Checkin } from "@/lib/types"
-import { Skeleton } from "../ui/skeleton"
-import type { User as UserProfile } from "@/lib/types"
+} from 'firebase/firestore';
+import type { Checkin } from '@/lib/types';
+import { Skeleton } from '../ui/skeleton';
+import type { User as UserProfile } from '@/lib/types';
 
 const getStatusColor = (status: string) => {
-  if (status === "Not Checked In") {
-    return "bg-gray-400"
+  if (status === 'Not Checked In') {
+    return 'bg-gray-400';
   }
-  return "bg-green-500"
-}
+  return 'bg-green-500';
+};
 
 export function TeamToday() {
-  const firestore = useFirestore()
+  const firestore = useFirestore();
   const [startOfDay, setStartOfDay] = useState<Timestamp | null>(null);
 
   useEffect(() => {
@@ -40,47 +40,46 @@ export function TeamToday() {
     setStartOfDay(Timestamp.fromDate(now));
   }, []);
 
-
   const checkinsQuery = useMemoFirebase(() => {
     if (!firestore || !startOfDay) return null;
     return query(
-      collection(firestore, "checkins"),
-      where("timestamp", ">=", startOfDay)
-    )
-  }, [firestore, startOfDay])
+      collection(firestore, 'checkins'),
+      where('timestamp', '>=', startOfDay)
+    );
+  }, [firestore, startOfDay]);
 
   const usersQuery = useMemoFirebase(() => {
-    if (!firestore) return null
-    return query(collection(firestore, "users"), orderBy("name"))
-  }, [firestore])
+    if (!firestore) return null;
+    return query(collection(firestore, 'users'), orderBy('name'));
+  }, [firestore]);
 
   const { data: checkins, isLoading: isLoadingCheckins } =
-    useCollection<Checkin>(checkinsQuery)
+    useCollection<Checkin>(checkinsQuery);
   const { data: allTeamMembers, isLoading: isLoadingUsers } =
-    useCollection<UserProfile>(usersQuery)
+    useCollection<UserProfile>(usersQuery);
 
-  const teamStatus = useMemoFirebase(() => {
+  const teamStatus = useMemo(() => {
     const isLoading = isLoadingUsers || isLoadingCheckins;
     if (isLoading || !allTeamMembers)
       return Array.from({ length: 5 }).map((_, i) => ({
         id: `${i}`,
-        name: "Loading...",
-        status: "Loading",
-      }))
+        name: 'Loading...',
+        status: 'Loading',
+      }));
 
     const checkedInUsersMap = new Map(
       checkins?.map((c) => [c.userId, c.primaryMission])
-    )
+    );
 
     return allTeamMembers.map((member) => {
-      const mission = checkedInUsersMap.get(member.id)
+      const mission = checkedInUsersMap.get(member.id);
       return {
         id: member.id,
         name: member.name,
-        status: mission || "Not Checked In",
-      }
-    })
-  }, [checkins, isLoadingCheckins, allTeamMembers, isLoadingUsers])
+        status: mission || 'Not Checked In',
+      };
+    });
+  }, [checkins, isLoadingCheckins, allTeamMembers, isLoadingUsers]);
 
   const isLoading = isLoadingUsers || isLoadingCheckins || !startOfDay;
 
@@ -119,5 +118,5 @@ export function TeamToday() {
             ))}
       </CardContent>
     </Card>
-  )
+  );
 }

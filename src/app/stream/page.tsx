@@ -15,7 +15,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import type { Checkin, Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,7 @@ import { tagColors } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
+import { useSearchParams } from 'next/navigation';
 
 function CheckinCard({ checkin }: { checkin: Checkin }) {
     const { details } = checkin;
@@ -200,35 +201,47 @@ function CheckoutStream() {
     );
 }
 
-export default function StreamPage() {
-  return (
-    <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Rss className="h-8 w-8" />
-          Team Stream
-        </h1>
-        <p className="text-muted-foreground">
-          A chronological feed of all team check-ins and check-outs.
-        </p>
-      </header>
+function StreamPageContent() {
+    const searchParams = useSearchParams();
+    const defaultTab = searchParams.get('tab') || 'check-ins';
 
-      <Tabs defaultValue="check-ins" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="check-ins">
-            <LogIn className="mr-2 h-4 w-4" /> Today's Check-ins
-          </TabsTrigger>
-          <TabsTrigger value="check-outs">
-            <LogOut className="mr-2 h-4 w-4" /> Checkout History
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="check-ins">
-            <CheckinStream />
-        </TabsContent>
-        <TabsContent value="check-outs">
-            <CheckoutStream />
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+    return (
+        <div className="flex flex-col gap-6">
+            <header>
+                <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+                <Rss className="h-8 w-8" />
+                Team Stream
+                </h1>
+                <p className="text-muted-foreground">
+                A chronological feed of all team check-ins and check-outs.
+                </p>
+            </header>
+
+            <Tabs defaultValue={defaultTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="check-ins">
+                    <LogIn className="mr-2 h-4 w-4" /> Today's Check-ins
+                </TabsTrigger>
+                <TabsTrigger value="check-outs">
+                    <LogOut className="mr-2 h-4 w-4" /> Checkout History
+                </TabsTrigger>
+                </TabsList>
+                <TabsContent value="check-ins">
+                    <CheckinStream />
+                </TabsContent>
+                <TabsContent value="check-outs">
+                    <CheckoutStream />
+                </TabsContent>
+            </Tabs>
+        </div>
+    );
+}
+
+
+export default function StreamPage() {
+    return (
+        <Suspense>
+            <StreamPageContent />
+        </Suspense>
+    )
 }

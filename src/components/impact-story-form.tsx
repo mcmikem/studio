@@ -28,7 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Copy, Sparkles, Wand } from "lucide-react";
-import { useCollectionOnce, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
 import { collection, query, orderBy, doc } from "firebase/firestore";
 import type { Activity, Checkout } from "@/lib/types";
 import { Skeleton } from "./ui/skeleton";
@@ -40,7 +40,7 @@ const fileToDataUri = (file: File): Promise<string> => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readDataURL(file);
   });
 };
 
@@ -73,7 +73,7 @@ function ImpactStoryGeneratorContent() {
     return query(collection(firestore, "activities"), orderBy("loggedAt", "desc"));
   }, [firestore]);
 
-  const { data: activities, isLoading: isLoadingActivities } = useCollectionOnce<Activity>(activitiesQuery);
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
   
   const selectedActivity = useMemo(() => {
     if (!selectedActivityId) return null;

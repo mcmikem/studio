@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollectionOnce, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
 import { Target, Flag } from 'lucide-react';
@@ -32,7 +32,7 @@ export function KeyResultsTracker() {
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
 
-  const { data: keyResults, isLoading } = useCollectionOnce<KeyResult>(keyResultsQuery);
+  const { data: keyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
 
   const formatTarget = (kr: KeyResult) => {
     if (kr.target === 100 && kr.currentProgress <= 100) return `${kr.target}%`;
