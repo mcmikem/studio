@@ -35,11 +35,10 @@ import {
   limit,
   Timestamp,
 } from 'firebase/firestore';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Checkin } from '@/lib/types';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const checkoutSchema = z.object({
   missionAccomplished: z
@@ -118,7 +117,7 @@ export function CheckoutForm() {
 
     const impactNumbers = [
       data.parentsReached && `Parents Reached: ${data.parentsReached}`,
-      data.volunteersRecruited &&
+      data.volunteersRecruruited &&
         `Volunteers Recruited: ${data.volunteersRecruited}`,
       data.prototypesTested &&
         `Prototypes Tested: ${data.prototypesTested}`,
