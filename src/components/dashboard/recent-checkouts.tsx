@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -9,6 +10,7 @@ import { Badge } from '../ui/badge';
 import { tagColors } from '@/lib/data';
 import { formatDateSafe } from '@/lib/utils';
 import { MessageSquareText } from 'lucide-react';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = formatDateSafe(checkout.timestamp);
@@ -17,11 +19,12 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const tags = checkout.task?.match(/#\w+/g) || [];
   const primaryTag = tags[0] || '#Update';
   const colorClass = tagColors[primaryTag as keyof typeof tagColors] || tagColors['#Update'];
+  const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1')?.imageUrl;
 
   return (
     <div className="flex items-start gap-4">
       <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
-        <AvatarImage src={checkout.avatar} alt="Avatar" />
+        <AvatarImage src={checkout.avatar || userAvatar} alt="Avatar" />
         <AvatarFallback>{checkout.role}</AvatarFallback>
       </Avatar>
       <div className="grid gap-1 flex-1">

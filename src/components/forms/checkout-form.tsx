@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -38,6 +39,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Checkin } from '@/lib/types';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const checkoutSchema = z.object({
   missionAccomplished: z
@@ -59,6 +61,8 @@ export function CheckoutForm() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const [submittedCheckoutId, setSubmittedCheckoutId] = useState<string | null>(null);
+  const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1')?.imageUrl;
+
 
   const {
     register,
@@ -131,7 +135,7 @@ export function CheckoutForm() {
     const checkoutData = {
       name: profile.name,
       role: profile.role,
-      avatar: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
+      avatar: user.photoURL || userAvatar || '',
       task: fullTask,
       learning: data.learning || "",
       tomorrowPlan: data.tomorrowPlan || "",

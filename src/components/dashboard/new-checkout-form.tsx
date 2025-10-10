@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -9,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Label } from '../ui/label';
 import { useUserProfile } from '@/hooks/use-user-profile';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export function NewCheckoutForm() {
   const { user } = useUser();
@@ -17,6 +19,8 @@ export function NewCheckoutForm() {
   const [task, setTask] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1')?.imageUrl;
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +31,7 @@ export function NewCheckoutForm() {
     const checkoutData = {
       name: profile.name,
       role: profile.role, 
-      avatar: user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`,
+      avatar: user.photoURL || userAvatar || '',
       task: task,
       timestamp: serverTimestamp(),
       userId: user.uid,
