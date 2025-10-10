@@ -273,7 +273,7 @@ export function AdvancedCheckinForm() {
       const expenseData = {
         userId: user.uid,
         userName: profile.name,
-        date: Timestamp.now(),
+        date: format(new Date(), 'yyyy-MM-dd'),
         type: 'Requisition' as const,
         title: `Budget from Check-in: ${mission}`,
         items: [{
@@ -361,8 +361,8 @@ export function AdvancedCheckinForm() {
     const options = [];
     if (currentWorkplan?.keyPriorities) {
       options.push(...currentWorkplan.keyPriorities.map(p => ({ value: p, label: `(This Week) ${p}` })));
-    }
-    if (keyResults) {
+    } else if (keyResults) {
+      // Only show KRs if no weekly plan exists
       options.push(...keyResults.map(kr => ({ value: kr.id, label: `(Org KR) ${kr.title}: ${kr.description}` })));
     }
     options.push({ value: 'custom', label: 'Custom Task (from last checkout or new)' });
@@ -370,7 +370,7 @@ export function AdvancedCheckinForm() {
   }, [keyResults, currentWorkplan]);
 
 
-  if (isLoadingWorkplan) {
+  if (isLoadingWorkplan || isLoadingKR) {
     return <Skeleton className="h-64 w-full" />
   }
 
@@ -410,7 +410,7 @@ export function AdvancedCheckinForm() {
                     options={priorityOptions}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    placeholder="Select from Weekly Plan, Org KRs, or add a custom task..."
+                    placeholder="Select from your weekly plan or add a custom task..."
                     animation={0}
                     maxCount={3}
                   />
