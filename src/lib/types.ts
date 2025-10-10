@@ -199,7 +199,7 @@ export type Expense = {
     id: string;
     userId: string;
     userName: string;
-    date: Timestamp;
+    date: string;
     title: string;
     items: ExpenseItem[];
     totalAmount: number;

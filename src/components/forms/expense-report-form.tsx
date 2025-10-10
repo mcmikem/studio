@@ -11,7 +11,7 @@ import {
   useUser,
   addDocumentNonBlocking
 } from '@/firebase';
-import { collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { collection, serverTimestamp } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -87,10 +87,10 @@ export function ExpenseReportForm() {
   React.useEffect(() => {
     if (!watchedItems || watchedItems.length === 0) return;
     const lastItem = watchedItems[watchedItems.length - 1];
-    if (lastItem && lastItem.description && lastItem.description.length === 1 && lastItem.amount === 0) {
+    if (lastItem && lastItem.description && lastItem.description.length > 0 && lastItem.amount === 0 && fields.length < 10) {
         append({ description: '', category: 'Transport', amount: 0 }, { shouldFocus: false });
     }
-  }, [watchedItems, append]);
+  }, [watchedItems, append, fields.length]);
 
 
   const onSubmit = async (data: ExpenseFormData) => {
@@ -120,7 +120,6 @@ export function ExpenseReportForm() {
     const expenseData = {
       ...data,
       items: finalItems,
-      date: Timestamp.fromDate(new Date(data.date)),
       totalAmount: finalTotal,
       userId: user.uid,
       userName: profile.name,
