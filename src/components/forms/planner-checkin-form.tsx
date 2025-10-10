@@ -59,12 +59,14 @@ export function PlannerCheckinForm() {
   const { profile } = useUserProfile(user);
 
   const [isLoadingContext, setIsLoadingContext] = useState(true);
+  const [initialMission, setInitialMission] = useState<string | null>(null);
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [planGenerated, setPlanGenerated] = useState(false);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, control, reset } = useForm<CheckinFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting, isDirty }, setValue, control, reset, getValues } = useForm<CheckinFormData>({
     resolver: zodResolver(checkinSchema),
     defaultValues: {
+        primaryMission: '',
         timeBlocks: [{startTime: "", endTime: "", description: ""}],
         multiWinConnections: [],
     }
@@ -75,52 +77,59 @@ export function PlannerCheckinForm() {
     name: 'timeBlocks',
   });
 
-  const fetchContext = useCallback(async () => {
-    if (!firestore || !user) {
+  // Effect to fetch context ONCE
+  useEffect(() => {
+    const fetchContext = async () => {
+      if (!firestore || !user) {
         setIsLoadingContext(false);
         return;
-    };
-    setIsLoadingContext(true);
-
-    const today = new Date();
-    const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
-
-    const workplanQuery = query(
-      collection(firestore, 'workplans'),
-      where('userId', '==', user.uid),
-      where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
-      limit(1)
-    );
-
-    const workplanSnapshot = await getDocs(workplanQuery);
-    if (!workplanSnapshot.empty) {
-      const plan = workplanSnapshot.docs[0].data() as WeeklyWorkplan;
-      setValue('primaryMission', `My priorities this week are: ${plan.keyPriorities.join(', ')}. Today I will focus on...`);
-      setIsLoadingContext(false);
-      return;
-    }
-
-    const checkoutQuery = query(
-      collection(firestore, 'checkouts'),
-      where('userId', '==', user.uid),
-      orderBy('timestamp', 'desc'),
-      limit(1)
-    );
-
-    const checkoutSnapshot = await getDocs(checkoutQuery);
-    if (!checkoutSnapshot.empty) {
-      const lastCheckout = checkoutSnapshot.docs[0].data() as Checkout;
-      if (lastCheckout.tomorrowPlan) {
-        setValue('primaryMission', lastCheckout.tomorrowPlan);
       }
-    }
-    setIsLoadingContext(false);
-  }, [firestore, user, setValue]);
+      setIsLoadingContext(true);
 
+      const today = new Date();
+      const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
+      const workplanQuery = query(
+        collection(firestore, 'workplans'),
+        where('userId', '==', user.uid),
+        where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
+        limit(1)
+      );
 
-  useEffect(() => {
+      const workplanSnapshot = await getDocs(workplanQuery);
+      if (!workplanSnapshot.empty) {
+        const plan = workplanSnapshot.docs[0].data() as WeeklyWorkplan;
+        setInitialMission(`My priorities this week are: ${plan.keyPriorities.join(', ')}. Today I will focus on...`);
+        setIsLoadingContext(false);
+        return;
+      }
+
+      const checkoutQuery = query(
+        collection(firestore, 'checkouts'),
+        where('userId', '==', user.uid),
+        orderBy('timestamp', 'desc'),
+        limit(1)
+      );
+
+      const checkoutSnapshot = await getDocs(checkoutQuery);
+      if (!checkoutSnapshot.empty) {
+        const lastCheckout = checkoutSnapshot.docs[0].data() as Checkout;
+        if (lastCheckout.tomorrowPlan) {
+          setInitialMission(lastCheckout.tomorrowPlan);
+        }
+      }
+      setIsLoadingContext(false);
+    };
+
     fetchContext();
-  }, [fetchContext]);
+  }, [firestore, user]);
+
+  // Effect to set the value from context ONLY if the field is not dirty
+  useEffect(() => {
+    if (initialMission && !isDirty) {
+      setValue('primaryMission', initialMission);
+    }
+  }, [initialMission, isDirty, setValue]);
+
 
   const handleGeneratePlan = async () => {
     if (!profile) return;
@@ -181,7 +190,7 @@ export function PlannerCheckinForm() {
     });
     reset();
     setPlanGenerated(false);
-    fetchContext();
+    // No need to call fetchContext again, let the component remount if needed
   };
 
   return (
@@ -212,7 +221,7 @@ export function PlannerCheckinForm() {
             <AlertTitle>AI Productivity Coach</AlertTitle>
             <AlertDescription>
                 <p className="mb-4">Once your mission is set, let our AI assistant generate a strategic first draft of your daily schedule.</p>
-                <Button type="button" onClick={handleGeneratePlan} disabled={isGeneratingPlan}>
+                <Button type="button" onClick={handleGeneratePlan} disabled={isGeneratingPlan || !getValues('primaryMission')}>
                     {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4"/>}
                     Generate AI Plan
                 </Button>
