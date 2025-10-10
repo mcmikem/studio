@@ -1,8 +1,8 @@
 
 'use client';
 import * as React from 'react';
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useState, useEffect } from 'react';
+import { useForm, useFieldArray, UseFormReturn, Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
@@ -13,7 +13,7 @@ import {
   addDocumentNonBlocking,
 } from '@/firebase';
 import { collection, serverTimestamp, query, where, limit, Timestamp, getDocs, orderBy } from 'firebase/firestore';
-import type { Checkout, WeeklyWorkplan } from '@/lib/types';
+import type { Checkout, WeeklyWorkplan, User } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, LogIn, Sparkles, PlusCircle, Trash2 } from 'lucide-react';
@@ -52,86 +52,30 @@ const multiWinOptions = [
   { value: 'Improve a process/template', label: 'Improve a process/template' },
 ];
 
-export function PlannerCheckinForm() {
-  const { toast } = useToast();
-  const firestore = useFirestore();
-  const { user } = useUser();
-  const { profile } = useUserProfile(user);
 
-  const [isLoadingContext, setIsLoadingContext] = useState(true);
-  const [initialMission, setInitialMission] = useState<string | null>(null);
-  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
-  const [planGenerated, setPlanGenerated] = useState(false);
-
-  const { register, handleSubmit, formState: { errors, isSubmitting, isDirty }, setValue, control, reset, getValues } = useForm<CheckinFormData>({
-    resolver: zodResolver(checkinSchema),
-    defaultValues: {
-        primaryMission: '',
-        timeBlocks: [{startTime: "", endTime: "", description: ""}],
-        multiWinConnections: [],
-    }
-  });
-
+function PlannerForm({
+    form,
+    profile,
+    onSubmit,
+    isSubmitting,
+}: {
+    form: UseFormReturn<CheckinFormData>,
+    profile: User | null,
+    onSubmit: (data: CheckinFormData) => void,
+    isSubmitting: boolean,
+}) {
+  const { register, handleSubmit, formState: { errors }, setValue, control, getValues } = form;
+  
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'timeBlocks',
   });
 
-  // Effect to fetch context ONCE
-  useEffect(() => {
-    const fetchContext = async () => {
-      if (!firestore || !user) {
-        setIsLoadingContext(false);
-        return;
-      }
-      setIsLoadingContext(true);
+  const { toast } = useToast();
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [planGenerated, setPlanGenerated] = useState(false);
 
-      const today = new Date();
-      const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
-      const workplanQuery = query(
-        collection(firestore, 'workplans'),
-        where('userId', '==', user.uid),
-        where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
-        limit(1)
-      );
-
-      const workplanSnapshot = await getDocs(workplanQuery);
-      if (!workplanSnapshot.empty) {
-        const plan = workplanSnapshot.docs[0].data() as WeeklyWorkplan;
-        setInitialMission(`My priorities this week are: ${plan.keyPriorities.join(', ')}. Today I will focus on...`);
-        setIsLoadingContext(false);
-        return;
-      }
-
-      const checkoutQuery = query(
-        collection(firestore, 'checkouts'),
-        where('userId', '==', user.uid),
-        orderBy('timestamp', 'desc'),
-        limit(1)
-      );
-
-      const checkoutSnapshot = await getDocs(checkoutQuery);
-      if (!checkoutSnapshot.empty) {
-        const lastCheckout = checkoutSnapshot.docs[0].data() as Checkout;
-        if (lastCheckout.tomorrowPlan) {
-          setInitialMission(lastCheckout.tomorrowPlan);
-        }
-      }
-      setIsLoadingContext(false);
-    };
-
-    fetchContext();
-  }, [firestore, user]);
-
-  // Effect to set the value from context ONLY if the field is not dirty
-  useEffect(() => {
-    if (initialMission && !isDirty) {
-      setValue('primaryMission', initialMission);
-    }
-  }, [initialMission, isDirty, setValue]);
-
-
-  const handleGeneratePlan = async () => {
+   const handleGeneratePlan = async () => {
     if (!profile) return;
     const mission = control._getWatch('primaryMission');
     if (!mission) {
@@ -146,7 +90,7 @@ export function PlannerCheckinForm() {
             userContext: 'First draft of my plan for today.'
         });
         
-        setValue('timeBlocks', result.timeBlocks);
+        setValue('timeBlocks', result.timeBlocks.length > 0 ? result.timeBlocks : [{startTime: "", endTime: "", description: ""}]);
         setValue('multiWinConnections', result.multiWinConnections);
         setValue('budget', result.budget);
         setValue('materials', result.materials);
@@ -161,58 +105,17 @@ export function PlannerCheckinForm() {
     }
   }
 
-  const onSubmit = async (data: CheckinFormData) => {
-    if (!firestore || !user || !profile) {
-      toast({ variant: 'destructive', title: 'Authentication Error' });
-      return;
-    }
 
-    const checkinData = {
-      primaryMission: data.primaryMission,
-      details: {
-          timeBlocks: data.timeBlocks,
-          multiWinConnections: data.multiWinConnections,
-          budget: data.budget,
-          materials: data.materials,
-          challenges: data.challenges,
-      },
-      userId: user.uid,
-      name: profile.name,
-      timestamp: serverTimestamp(),
-    };
-
-    const checkinsCollection = collection(firestore, 'checkins');
-    await addDocumentNonBlocking(checkinsCollection, checkinData);
-
-    toast({
-      title: 'Daily Plan Submitted!',
-      description: 'Your mission for the day is logged.',
-    });
-    reset();
-    setPlanGenerated(false);
-    // No need to call fetchContext again, let the component remount if needed
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Daily Check-in & Strategic Planner</CardTitle>
-        <CardDescription>
-          State your mission, let the AI draft your plan, then execute.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    return (
+       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className='space-y-2'>
             <Label htmlFor="primaryMission">What is your single most important mission for today?</Label>
-             {isLoadingContext ? <Skeleton className="w-full h-24" /> : (
-                <Textarea
-                    id="primaryMission"
-                    {...register('primaryMission')}
-                    placeholder="e.g., Finalize the RED Campaign report and submit to GlobalGiving."
-                    className="min-h-[100px]"
-                />
-             )}
+            <Textarea
+                id="primaryMission"
+                {...register('primaryMission')}
+                placeholder="e.g., Finalize the RED Campaign report and submit to GlobalGiving."
+                className="min-h-[100px]"
+            />
             {errors.primaryMission && <p className="text-sm text-destructive mt-2">{errors.primaryMission.message}</p>}
           </div>
 
@@ -228,7 +131,7 @@ export function PlannerCheckinForm() {
             </AlertDescription>
           </Alert>
           
-          { (planGenerated || !isGeneratingPlan) && (
+          { (planGenerated || isDirty) && !isGeneratingPlan && (
               <div className="space-y-6 pt-4">
                 <Separator />
                  <div className="space-y-2">
@@ -276,6 +179,126 @@ export function PlannerCheckinForm() {
               </div>
           )}
         </form>
+    );
+}
+
+
+export function PlannerCheckinForm() {
+  const { toast } = useToast();
+  const firestore = useFirestore();
+  const { user } = useUser();
+  const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
+  
+  const form = useForm<CheckinFormData>({
+    resolver: zodResolver(checkinSchema),
+    defaultValues: {
+        primaryMission: '',
+        timeBlocks: [{startTime: "", endTime: "", description: ""}],
+        multiWinConnections: [],
+    }
+  });
+
+  const { formState: { isSubmitting }, setValue, reset } = form;
+
+  // Effect to fetch context and set initial mission
+  useEffect(() => {
+    // Only run if we have the user and firestore, and the form hasn't been touched
+    if (firestore && user && !form.formState.isDirty) {
+      const fetchContext = async () => {
+        let mission: string | null = null;
+        
+        const today = new Date();
+        const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
+        const workplanQuery = query(
+          collection(firestore, 'workplans'),
+          where('userId', '==', user.uid),
+          where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
+          limit(1)
+        );
+
+        const workplanSnapshot = await getDocs(workplanQuery);
+        if (!workplanSnapshot.empty) {
+          const plan = workplanSnapshot.docs[0].data() as WeeklyWorkplan;
+          mission = `My priorities this week are: ${plan.keyPriorities.join(', ')}. Today I will focus on...`;
+        } else {
+            const checkoutQuery = query(
+                collection(firestore, 'checkouts'),
+                where('userId', '==', user.uid),
+                orderBy('timestamp', 'desc'),
+                limit(1)
+            );
+
+            const checkoutSnapshot = await getDocs(checkoutQuery);
+            if (!checkoutSnapshot.empty) {
+                const lastCheckout = checkoutSnapshot.docs[0].data() as Checkout;
+                if (lastCheckout.tomorrowPlan) {
+                    mission = lastCheckout.tomorrowPlan;
+                }
+            }
+        }
+
+        if (mission) {
+            setValue('primaryMission', mission);
+        }
+      };
+
+      fetchContext();
+    }
+  }, [firestore, user, setValue, form.formState.isDirty]);
+
+
+  const onSubmit = async (data: CheckinFormData) => {
+    if (!firestore || !user || !profile) {
+      toast({ variant: 'destructive', title: 'Authentication Error' });
+      return;
+    }
+
+    const checkinData = {
+      primaryMission: data.primaryMission,
+      details: {
+          timeBlocks: data.timeBlocks,
+          multiWinConnections: data.multiWinConnections,
+          budget: data.budget,
+          materials: data.materials,
+          challenges: data.challenges,
+      },
+      userId: user.uid,
+      name: profile.name,
+      timestamp: serverTimestamp(),
+    };
+
+    const checkinsCollection = collection(firestore, 'checkins');
+    await addDocumentNonBlocking(checkinsCollection, checkinData);
+
+    toast({
+      title: 'Daily Plan Submitted!',
+      description: 'Your mission for the day is logged.',
+    });
+    reset();
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Daily Check-in & Strategic Planner</CardTitle>
+        <CardDescription>
+          State your mission, let the AI draft your plan, then execute.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoadingProfile ? (
+            <div className="space-y-4">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-10 w-full" />
+            </div>
+        ) : (
+            <PlannerForm
+                form={form}
+                profile={profile}
+                onSubmit={onSubmit}
+                isSubmitting={isSubmitting}
+            />
+        )}
          <Alert variant="default" className="mt-6">
             <AlertTitle>No Weekly Plan?</AlertTitle>
             <AlertDescription>
