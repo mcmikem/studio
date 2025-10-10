@@ -4,39 +4,39 @@
 
 @layer base {
   :root {
-    --background: 0 0% 94%; /* light grey #F0F0F0 */
+    --background: 0 0% 96%; /* Lighter Grey */
     --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
-    --primary: 16 100% 60%; /* Omuto Red-Orange #FF6B35 */
+    --primary: 16 100% 55%; /* Bolder Omuto Red-Orange */
     --primary-foreground: 0 0% 100%;
-    --secondary: 215 100% 60%; /* Omuto Blue #3591FF */
+    --secondary: 210 100% 50%; /* Brighter Omuto Blue */
     --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 90%;
     --muted-foreground: 24 9.8% 30%;
-    --accent: 215 100% 60%; /* Omuto Blue #3591FF */
+    --accent: 210 100% 50%; /* Brighter Omuto Blue */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 88%;
     --input: 0 0% 88%;
-    --ring: 16 100% 60%;
-    --chart-1: 16 100% 60%;
-    --chart-2: 215 100% 60%;
+    --ring: 16 100% 55%;
+    --chart-1: 16 100% 55%;
+    --chart-2: 210 100% 50%;
     --chart-3: 33 98% 58%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 20 14.3% 4.1%;
-    --sidebar-primary: 16 100% 60%;
+    --sidebar-primary: 16 100% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 94.1%;
-    --sidebar-accent-foreground: 16 100% 60%;
+    --sidebar-accent-foreground: 16 100% 55%;
     --sidebar-border: 0 0% 88%;
-    --sidebar-ring: 215 100% 60%;
+    --sidebar-ring: 210 100% 50%;
   }
 
   .dark {

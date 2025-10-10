@@ -2,13 +2,12 @@
 
 import type { User } from "@/lib/types"
 import { DashboardGrid } from "./dashboard-grid"
-import { ProgramsOverview } from "./programs-overview"
 import { TeamActivityFeed } from "./team-activity-feed"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { Alerts } from "./alerts"
-import { PartnershipsOverview } from "./partnerships-overview"
+import { ManagementQuickLinks } from "./management-quick-links"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -39,22 +38,18 @@ export function DefaultDashboard({ profile }: { profile: User }) {
         </p>
       </header>
 
-      <DashboardGrid
-        mainContent={
-          <>
-            <TeamActivityFeed />
-            <DashboardCalendar />
-          </>
-        }
-        sidebarContent={
-          <>
-            <DailyActions />
-            <TeamToday />
-            <Alerts />
-            <PartnershipsOverview />
-          </>
-        }
-      />
+      <DashboardGrid className="lg:grid-cols-3">
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          <TeamActivityFeed />
+          <DashboardCalendar />
+        </div>
+        <div className="lg:col-span-1 flex flex-col gap-6">
+          <DailyActions />
+          <TeamToday />
+          <Alerts />
+          <ManagementQuickLinks />
+        </div>
+      </DashboardGrid>
     </>
   )
 }

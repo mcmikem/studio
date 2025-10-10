@@ -48,6 +48,7 @@ import { DashboardGrid } from "./dashboard-grid"
 import { useToast } from "@/hooks/use-toast"
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { createAlert } from "@/ai/flows/create-alert-flow"
+import { ManagementQuickLinks } from "./management-quick-links"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -295,8 +296,8 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
           {dateString} | Here is your Media & Finance dashboard.
         </p>
       </header>
-       <DashboardGrid
-        headerContent={
+       <DashboardGrid className="lg:grid-cols-3">
+        <div className="col-span-full">
            <Card>
             <CardHeader>
                 <CardTitle>Financial Overview</CardTitle>
@@ -308,9 +309,8 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
                 <FinancialOverview />
             </CardContent>
             </Card>
-        }
-        mainContent={
-          <>
+        </div>
+        <div className="lg:col-span-2 flex flex-col gap-6">
             <PaymentQueue />
              <Card>
               <CardHeader>
@@ -329,15 +329,13 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
                 </div>
               </CardContent>
             </Card>
-          </>
-        }
-        sidebarContent={
-          <>
+        </div>
+        <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
             <TeamToday />
-          </>
-        }
-      />
+            <ManagementQuickLinks />
+        </div>
+      </DashboardGrid>
     </>
   )
 }

@@ -4,10 +4,10 @@
 import { useState, useMemo } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
@@ -46,6 +46,7 @@ function NewEventForm({ onFormSubmit }: { onFormSubmit: () => void }) {
         resolver: zodResolver(eventSchema),
         defaultValues: {
             category: 'Team Meetings',
+            date: format(new Date(), 'yyyy-MM-dd')
         },
     });
 
@@ -118,47 +119,35 @@ function NewEventForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 }
 
 export function DashboardCalendar() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const firestore = useFirestore();
 
   const eventsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'events'), orderBy('date', 'asc'));
-  }, []);
+  }, [firestore]);
 
   const { data: events, isLoading } = useCollection<EventType>(eventsQuery);
 
-  const eventDates = useMemo(() => events?.map(e => e.date.toDate()) || [], [events]);
+  const selectedDayEvents = useMemo(() => {
+    return events?.filter(event => isSameDay(event.date.toDate(), currentDate)) || [];
+  }, [events, currentDate]);
 
-  const selectedDayEvents = date && !isLoading
-    ? events?.filter((event) => isSameDay(event.date.toDate(), date))
-    : [];
-
-  const modifiers = {
-    event: eventDates,
-  };
-
-  const modifiersStyles = {
-    event: {
-      border: '2px solid hsl(var(--primary))',
-      borderRadius: '50%',
-    },
-  };
 
   return (
     <Card className="flex flex-col">
        <CardHeader>
         <div className="flex items-center justify-between">
             <div>
-                 <CardTitle>📅 This Week at Omuto</CardTitle>
+                 <CardTitle>📅 Team Calendar</CardTitle>
                  <CardDescription>
                     Key events, deadlines, and activities.
                 </CardDescription>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="outline" size="sm">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     New Event
                 </Button>
@@ -173,49 +162,44 @@ export function DashboardCalendar() {
             </Dialog>
         </div>
       </CardHeader>
-      <div className="flex flex-col lg:flex-row flex-grow">
-        <div className="flex-grow p-6 pt-0">
-            <h3 className="font-headline text-lg font-semibold mb-4">
-                Events for {date ? format(date, "MMMM d") : 'the month'}:
+      <CardContent className="flex-grow flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subDays(currentDate, 1))}>
+                <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <h3 className="font-headline text-lg font-semibold text-center">
+                {format(currentDate, "eeee, MMMM d")}
             </h3>
-            <div className="space-y-3">
-                {isLoading && Array.from({length: 2}).map((_, i) => (
-                    <div key={i} className='p-3 bg-muted rounded-lg space-y-2'>
-                        <Skeleton className='h-4 w-3/4' />
-                        <Skeleton className='h-4 w-1/2' />
-                    </div>
-                ))}
-                {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
-                    selectedDayEvents.map((event) => (
-                        <div key={event.id} className="p-3 bg-muted rounded-lg">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="font-semibold">{event.title}</p>
-                                    <p className="text-sm text-muted-foreground">{event.responsible} - {event.location}</p>
-                                </div>
-                                <Badge variant="outline" className={categoryColors[event.category]}>
-                                    {event.category}
-                                </Badge>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    !isLoading && <p className="text-sm text-muted-foreground pt-2">No events scheduled for this day.</p>
-                )}
-            </div>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addDays(currentDate, 1))}>
+                <ChevronRight className="h-4 w-4" />
+            </Button>
         </div>
-       <div className="border-t lg:border-t-0 lg:border-l p-2 flex items-center justify-center">
-         <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            defaultMonth={new Date()}
-            modifiers={modifiers}
-            modifiersStyles={modifiersStyles}
-            className="rounded-md"
-            />
-      </div>
-      </div>
+        <div className="space-y-3 flex-grow">
+            {isLoading && Array.from({length: 2}).map((_, i) => (
+                <div key={i} className='p-3 bg-muted rounded-lg space-y-2'>
+                    <Skeleton className='h-4 w-3/4' />
+                    <Skeleton className='h-4 w-1/2' />
+                </div>
+            ))}
+            {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
+                selectedDayEvents.map((event) => (
+                    <div key={event.id} className="p-3 bg-muted rounded-lg">
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <p className="font-semibold">{event.title}</p>
+                                <p className="text-sm text-muted-foreground">{event.responsible} - {event.location}</p>
+                            </div>
+                            <Badge variant="outline" className={categoryColors[event.category]}>
+                                {event.category}
+                            </Badge>
+                        </div>
+                    </div>
+                ))
+            ) : (
+                !isLoading && <div className="flex items-center justify-center h-full text-sm text-muted-foreground pt-8">No events scheduled for this day.</div>
+            )}
+        </div>
+      </CardContent>
     </Card>
   );
 }

@@ -7,7 +7,7 @@ import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
-import { PartnershipsOverview } from "./partnerships-overview"
+import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 
 const getGreeting = () => {
@@ -38,23 +38,21 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
           {dateString} | Here is the organization's high-level overview.
         </p>
       </header>
-       <DashboardGrid
-        headerContent={<QuickStatsSummary />}
-        mainContent={
-          <>
+       <DashboardGrid className="lg:grid-cols-3">
+        <div className="col-span-full">
+            <QuickStatsSummary />
+        </div>
+        <div className="lg:col-span-2 flex flex-col gap-6">
             <ProgramsOverview />
             <TeamActivityFeed />
-            <PartnershipsOverview />
-          </>
-        }
-        sidebarContent={
-          <>
+        </div>
+        <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
             <TeamToday />
             <Alerts />
-          </>
-        }
-      />
+            <ManagementQuickLinks />
+        </div>
+      </DashboardGrid>
     </>
   )
 }

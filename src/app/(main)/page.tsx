@@ -49,6 +49,7 @@ export default function DashboardPage() {
       case 'Field Coordinator':
         return <FieldStaffDashboard profile={profile} />;
       case 'Media & Communications Lead':
+      case 'Resource Mobilization Lead':
          return <MediaFinanceDashboard profile={profile} />;
       default:
         return <DefaultDashboard profile={profile} />;

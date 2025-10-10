@@ -3,9 +3,9 @@
 import type { User } from "@/lib/types"
 import { DailyActions } from "./daily-actions"
 import { TeamActivityFeed } from "./team-activity-feed"
-import { DashboardCalendar } from "./dashboard-calendar"
 import { MyPriorities } from "./my-priorities"
 import { TeamToday } from "./team-today"
+import { DashboardGrid } from "./dashboard-grid"
 
 const getGreeting = () => {
   const hour = new Date().getHours()
@@ -36,19 +36,16 @@ export function FieldStaffDashboard({ profile }: { profile: User }) {
           {dateString} | Mpigi District, Uganda (EAT)
         </p>
       </header>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+      <DashboardGrid className="lg:grid-cols-3">
+        <div className="lg:col-span-1 flex flex-col gap-6">
           <MyPriorities />
           <TeamToday />
         </div>
-        <div className="lg:col-span-2 grid grid-cols-1 gap-6">
+        <div className="lg:col-span-2 flex flex-col gap-6">
           <DailyActions />
           <TeamActivityFeed />
         </div>
-        <div className="lg:col-span-3">
-          <DashboardCalendar />
-        </div>
-      </div>
+      </DashboardGrid>
     </>
   )
 }
