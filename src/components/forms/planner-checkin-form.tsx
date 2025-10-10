@@ -1,3 +1,4 @@
+
 'use client';
 import * as React from 'react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -10,7 +11,6 @@ import {
   useUser,
   useMemoFirebase,
   addDocumentNonBlocking,
-  useCollection,
 } from '@/firebase';
 import { collection, serverTimestamp, query, where, limit, Timestamp, getDocs, orderBy } from 'firebase/firestore';
 import type { Checkout, WeeklyWorkplan } from '@/lib/types';
@@ -181,6 +181,7 @@ export function PlannerCheckinForm() {
     });
     reset();
     setPlanGenerated(false);
+    fetchContext();
   };
 
   return (
