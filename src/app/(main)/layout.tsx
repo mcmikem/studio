@@ -1,7 +1,9 @@
 
 'use client';
 
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { AppHeader } from '@/components/header';
+import { AppSidebar } from '@/components/nav';
+import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 export default function MainLayout({
     children,
@@ -9,9 +11,16 @@ export default function MainLayout({
     children: React.ReactNode;
 }) {
     return (
-        <main className="p-4 lg:p-6 h-full flex flex-col">
-            <FirebaseErrorListener />
-            {children}
-        </main>
-    )
+        <SidebarProvider>
+            <Sidebar>
+                <AppSidebar />
+            </Sidebar>
+            <SidebarInset>
+                <AppHeader />
+                 <main className="p-4 lg:p-6 h-full flex flex-col">
+                    {children}
+                </main>
+            </SidebarInset>
+        </SidebarProvider>
+    );
 }

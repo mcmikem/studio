@@ -1,12 +1,11 @@
+
 'use client';
 
 import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { AppHeader } from '@/components/header';
-import { AppSidebar } from '@/components/nav';
-import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const unprotectedRoutes = ['/login'];
 
@@ -28,8 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user, isUserLoading, router, pathname, isAuthRoute]);
 
-  // If loading, and not on an auth route, show a loader
-  if (isUserLoading && !isAuthRoute) {
+  if (isUserLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -37,31 +35,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If on an auth route (like /login), render children directly
-  // This also handles the case where the user is not yet loaded but the route is public
-  if (isAuthRoute) {
-    return <>{children}</>;
-  }
-
-  // If no user and we are on a protected route, we show a loader while redirecting
+  // If no user and trying to access a protected route, show loader while redirecting.
   if (!user && !isAuthRoute) {
-     return (
+    return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
   }
 
-  // If user is logged in, and it's a protected route, render the app layout
+  // Render children (either the login page or the main app layout)
   return (
-    <SidebarProvider>
-        <Sidebar>
-            <AppSidebar />
-        </Sidebar>
-        <SidebarInset>
-            <AppHeader />
-            {children}
-        </SidebarInset>
-    </SidebarProvider>
+      <>
+        <FirebaseErrorListener />
+        {children}
+      </>
   );
 }
