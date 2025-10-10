@@ -55,6 +55,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { PieChart, Pie, Cell } from "recharts"
+import { EmptyState } from '@/components/ui/empty-state';
 
 
 const metricSchema = z.object({
@@ -300,10 +301,12 @@ export default function MetricsPage() {
                 metrics.map(metric => <MetricCard key={metric.id} metric={metric} />)
             ) : (
                 !isLoading && (
-                    <div className="md:col-span-2 lg:col-span-3 h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
-                        <Target className="h-12 w-12" />
-                        <span className="text-lg font-semibold mt-2">No Metrics Found</span>
-                        <p className="text-sm">Add a metric to get started.</p>
+                    <div className="md:col-span-2 lg:col-span-3">
+                        <EmptyState 
+                            icon={Target}
+                            title="No Metrics Found"
+                            description="Add a new metric using the button above to start tracking your impact."
+                        />
                     </div>
                 )
             )}
