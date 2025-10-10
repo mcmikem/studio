@@ -133,7 +133,7 @@ function ExpensesContent() {
                 type: status === 'Approved' ? 'Info' : 'Urgent',
                 message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
                 priority: status === 'Approved' ? 'Low' : 'Medium',
-                action: `/management/expenses`,
+                action: `/management/expenses?highlight=${expense.id}`,
                 creatorId: currentUser.uid,
             });
         }
