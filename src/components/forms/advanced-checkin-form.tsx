@@ -44,6 +44,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '../ui/skeleton';
 import { startOfWeek } from 'date-fns';
 import Link from 'next/link';
+import { format } from 'date-fns';
 
 
 const timeBlockSchema = z.object({
@@ -360,7 +361,7 @@ export function AdvancedCheckinForm() {
   const priorityOptions = useMemo(() => {
     const options = [];
     if (currentWorkplan?.keyPriorities) {
-      options.push(...currentWorkplan.keyPriorities.map(p => ({ value: p, label: `(This Week) ${p}` })));
+      options.push(...currentWorkplan.keyPriorities.map(p => ({ value: p, label: p })));
     } else if (keyResults) {
       // Only show KRs if no weekly plan exists
       options.push(...keyResults.map(kr => ({ value: kr.id, label: `(Org KR) ${kr.title}: ${kr.description}` })));
@@ -560,3 +561,5 @@ export function AdvancedCheckinForm() {
       </form>
   );
 }
+
+    
