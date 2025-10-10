@@ -39,11 +39,11 @@ export function FieldStaffDashboard({ profile }: { profile: User }) {
       </header>
       <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-1 flex flex-col gap-6">
+          <DailyActions />
           <MyPriorities />
           <TeamToday />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <DailyActions />
           <TeamPulse />
         </div>
       </DashboardGrid>

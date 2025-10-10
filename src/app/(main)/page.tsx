@@ -9,6 +9,7 @@ import { ProgramManagerDashboard } from '@/components/dashboard/program-manager-
 import { FieldStaffDashboard } from '@/components/dashboard/field-staff-dashboard';
 import { DefaultDashboard } from '@/components/dashboard/default-dashboard';
 import { MediaFinanceDashboard } from '@/components/dashboard/media-finance-dashboard';
+import { redirect } from 'next/navigation';
 
 
 export default function DashboardPage() {
@@ -25,10 +26,8 @@ export default function DashboardPage() {
     );
   }
   
-  // This case handles a successfully loaded profile that is null (shouldn't happen with our logic, but safe to have)
-  // or a user that exists in auth but not in our 'users' collection.
-  if (!profile) {
-    const fallbackProfile = { 
+  if (!isProfileLoading && !profile && user) {
+     const fallbackProfile = { 
       id: user?.uid || 'guest', 
       name: user?.displayName || 'New User', 
       email: user?.email || '', 
@@ -36,6 +35,12 @@ export default function DashboardPage() {
     };
     return <DefaultDashboard profile={fallbackProfile} />;
   }
+  
+  if (!user || !profile) {
+    // This will be caught by the AuthProvider, but as a safeguard
+    redirect('/login');
+  }
+
 
   const renderDashboardByRole = () => {
     const userRole = profile.role; 

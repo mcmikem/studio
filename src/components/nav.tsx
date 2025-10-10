@@ -78,13 +78,13 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              isActive={pathname === '/'}
-              tooltip="Dashboard"
+              isActive={isActive('/stream')}
+              tooltip="Team Stream"
               onClick={handleLinkClick}
             >
-              <Link href="/">
-                <Home />
-                <span>Dashboard</span>
+              <Link href="/stream">
+                <Rss />
+                <span>Team Stream</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -149,19 +149,6 @@ export function AppSidebar() {
                     <ClipboardEdit />
                     <span>Forms</span>
                   </Link>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                    asChild
-                    isActive={isActive('/stream')}
-                    tooltip="Team Stream"
-                    onClick={handleLinkClick}
-                >
-                    <Link href="/stream">
-                        <Rss />
-                        <span>Team Stream</span>
-                    </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
