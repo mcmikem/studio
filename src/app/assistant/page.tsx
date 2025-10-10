@@ -73,16 +73,10 @@ export default function AssistantPage() {
 
     } catch (e) {
       console.error(e);
-       setMessages(prev => {
-         const updatedMessages = [...prev];
-         const lastMessageIndex = updatedMessages.length - 1;
-         if (updatedMessages[lastMessageIndex].role === 'assistant') {
-            updatedMessages[lastMessageIndex].content = 'Sorry, I had trouble connecting to the AI.';
-         } else {
-            updatedMessages.push({ role: 'assistant', content: 'Sorry, I had trouble connecting to the AI.' });
-         }
-         return updatedMessages;
-       });
+       setMessages(prev => [
+         ...prev,
+         { role: 'assistant', content: 'Sorry, I had trouble connecting to the AI.' }
+       ]);
     } finally {
       setIsLoading(false);
     }
