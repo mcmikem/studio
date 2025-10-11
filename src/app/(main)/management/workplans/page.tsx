@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -25,8 +26,7 @@ import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2, 
 import { Label } from '@/components/ui/label';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { EmptyState } from '@/components/ui/empty-state';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const teamWorkplanSchema = z.object({
   keyPriorities: z.array(z.object({ value: z.string().min(1, 'Priority cannot be empty.') })).min(1, 'At least one priority is required.'),
@@ -70,6 +70,20 @@ function TeamWorkplanForm({
           status: 'Draft',
         },
   });
+
+  useEffect(() => {
+    reset(existingPlan
+      ? {
+          keyPriorities: existingPlan.keyPriorities.map(p => ({ value: p })),
+          message: existingPlan.message,
+          status: existingPlan.status,
+        }
+      : {
+          keyPriorities: [{ value: '' }],
+          message: '',
+          status: 'Draft',
+        });
+  }, [existingPlan, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,

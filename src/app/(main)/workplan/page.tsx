@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -153,6 +154,7 @@ export default function WorkplanPage() {
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
         where('weekOf', '==', weekStartTimestamp),
+        where('status', '==', 'Published'),
         limit(1)
       );
       const teamPlanSnapshot = await getDocs(teamPlanQuery);
@@ -254,7 +256,7 @@ export default function WorkplanPage() {
     return (
       <div className="text-center py-10">
         <p className="text-muted-foreground">
-          A team workplan has not been created by management for this week yet.
+          A team workplan has not been published by management for this week yet.
         </p>
       </div>
     );
