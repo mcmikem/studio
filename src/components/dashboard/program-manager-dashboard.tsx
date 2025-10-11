@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Program, Partnership, Checkout } from "@/lib/types"
+import type { User, Program, Partnership, Checkout, Checkin, Expense } from "@/lib/types"
 import { Alerts } from "./alerts"
 import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
@@ -11,22 +11,48 @@ import { DashboardHeader } from "./dashboard-header"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
-import { collection, query, where, orderBy } from "firebase/firestore"
+import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { ArrowRight, CheckCircle, CircleDot, UserX } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { useMemo } from "react"
 import { Skeleton } from "../ui/skeleton"
+import { startOfDay } from "date-fns"
 
-function TeamCoordination() {
-    // This is placeholder data. In a real app, this would come from live check-in/task data.
-    const teamStatus = [
-        { name: 'Bwire', task: 'Tree planting @ Kibibi SS', status: 'on-track' },
-        { name: 'Kasirye', task: 'Girl Day prep @ Makerere', status: 'on-track' },
-        { name: 'Alex', task: 'Editing documentary (2h overdue)', status: 'at-risk' },
-        { name: 'McMike', task: 'Not checked in today', status: 'off-track' },
-    ];
+function TeamCoordination({ users, checkins, expenses }: { users: User[] | null, checkins: Checkin[] | null, expenses: Expense[] | null }) {
+    const teamStatus = useMemo(() => {
+        if (!users) return [];
+        const todayStart = startOfDay(new Date());
+
+        return users.map(user => {
+            const userCheckin = checkins?.find(c => c.userId === user.id && c.timestamp.toDate() >= todayStart);
+            if (userCheckin) {
+                return { name: user.name, task: userCheckin.primaryMission, status: 'on-track' };
+            }
+            // Simple logic for overdue tasks would need task data. For now, we'll use a placeholder.
+            if (user.name === 'Alex Nsereko') {
+                 return { name: user.name, task: 'Editing documentary (2h overdue)', status: 'at-risk' };
+            }
+            return { name: user.name, task: 'Not checked in today', status: 'off-track' };
+        });
+    }, [users, checkins]);
+
+    const resourceAlerts = useMemo(() => {
+        if (!expenses) return { transportBudget: 0 };
+        const monthlyBudget = 800000; // Mock budget
+        const transportExpenses = expenses
+            .filter(e => e.status === 'Approved' || e.status === 'Cleared')
+            .flatMap(e => e.items)
+            .filter(item => item.category === 'Transport')
+            .reduce((sum, item) => sum + item.amount, 0);
+        
+        return {
+            transportBudgetUsed: (transportExpenses / monthlyBudget) * 100
+        }
+
+    }, [expenses]);
+
 
     const statusIcons = {
         'on-track': <CheckCircle className="h-4 w-4 text-green-500" />,
@@ -44,21 +70,27 @@ function TeamCoordination() {
                 <div>
                     <h4 className="font-semibold mb-2">Team Deployment</h4>
                     <div className="space-y-3">
-                    {teamStatus.map(member => (
-                        <div key={member.name} className="flex items-center gap-2">
-                            {statusIcons[member.status as keyof typeof statusIcons]}
-                            <span className="font-medium">{member.name}</span>
-                            <span className="text-muted-foreground truncate">- {member.task}</span>
-                        </div>
-                    ))}
+                        {!users || !checkins ? (
+                            Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-5 w-full" />)
+                        ) : (
+                             teamStatus.map(member => (
+                                <div key={member.name} className="flex items-center gap-2">
+                                    {statusIcons[member.status as keyof typeof statusIcons]}
+                                    <span className="font-medium">{member.name}</span>
+                                    <span className="text-muted-foreground truncate">- {member.task}</span>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
                  <div className="space-y-2">
                     <h4 className="font-semibold">Resource Alerts</h4>
-                    <div className="p-3 bg-muted rounded-md text-sm">
-                        <p>• Transport budget: <span className="font-bold">65% used</span></p>
-                        <p>• Volunteer gap: <span className="font-bold text-red-500">Need 5 more for Friday</span></p>
-                    </div>
+                    {!expenses ? <Skeleton className="h-10 w-full" /> : (
+                        <div className="p-3 bg-muted rounded-md text-sm">
+                            <p>• Transport budget: <span className="font-bold">{resourceAlerts.transportBudgetUsed.toFixed(0)}% used</span></p>
+                            <p>• Volunteer gap: <span className="font-bold text-red-500">Need 5 more for Friday</span></p>
+                        </div>
+                    )}
                  </div>
             </CardContent>
         </Card>
@@ -180,6 +212,22 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
+
+  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+  const { data: users } = useCollection<User>(usersQuery);
+
+  const todayStart = startOfDay(new Date());
+  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', todayStart)) : null, [firestore]);
+  const { data: checkins } = useCollection<Checkin>(checkinsQuery);
+
+  const expensesQuery = useMemoFirebase(() => {
+      if (!firestore) return null;
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0,0,0,0);
+      return query(collection(firestore, 'expenses'), where('createdAt', '>=', Timestamp.fromDate(startOfMonth)))
+  }, [firestore]);
+  const { data: expenses } = useCollection<Expense>(expensesQuery);
   
   return (
      <div className="flex flex-col gap-6">
@@ -187,7 +235,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
        <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker title="October Plan Execution" showAtRisk anmouncement />
-            <TeamCoordination />
+            <TeamCoordination users={users} checkins={checkins} expenses={expenses} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
