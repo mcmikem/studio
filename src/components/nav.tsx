@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -20,6 +19,7 @@ import {
   CalendarClock,
   LogIn,
   Megaphone,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -115,6 +115,17 @@ export function AppSidebar() {
         <SidebarGroup data-mobile={isMobile}>
           <SidebarGroupLabel data-mobile={isMobile}>Planning</SidebarGroupLabel>
            <SidebarMenu>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton
+                        href="/calendar"
+                        isActive={isActive('/calendar')}
+                        tooltip="Team Calendar"
+                        onClick={handleLinkClick}
+                    >
+                        <CalendarIcon />
+                        <span>Team Calendar</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton
                     href="/workplan"
