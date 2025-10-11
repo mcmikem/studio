@@ -9,13 +9,14 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { CheckoutForm } from '@/components/forms/checkout-form';
-import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn } from 'lucide-react';
+import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone } from 'lucide-react';
 import { ActivityReportForm } from '@/components/forms/activity-report-form';
 import { ExpenseReportForm } from '@/components/forms/expense-report-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { CheckinForm } from '@/components/forms/checkin-form';
+import { CreateAlertForm } from '@/components/forms/create-alert-form';
 
 function FormsContent() {
   const searchParams = useSearchParams();
@@ -34,7 +35,7 @@ function FormsContent() {
       </header>
 
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:h-10">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto md:h-10">
             <TabsTrigger value="check-in" className="py-2">
             <LogIn className="mr-2 h-4 w-4" />
             Daily Check-in
@@ -50,6 +51,10 @@ function FormsContent() {
             <TabsTrigger value="expense" className="py-2">
             <Receipt className="mr-2 h-4 w-4" />
             Expense Report
+            </TabsTrigger>
+             <TabsTrigger value="alert" className="py-2">
+            <Megaphone className="mr-2 h-4 w-4" />
+            Create Alert
             </TabsTrigger>
         </TabsList>
          <TabsContent value="check-in">
@@ -91,6 +96,19 @@ function FormsContent() {
             </CardHeader>
             <CardContent>
               <ExpenseReportForm />
+            </CardContent>
+          </Card>
+        </TabsContent>
+         <TabsContent value="alert">
+          <Card>
+             <CardHeader>
+              <CardTitle>Create New Alert</CardTitle>
+              <CardDescription>
+                Broadcast an important message or announcement to the entire team.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CreateAlertForm />
             </CardContent>
           </Card>
         </TabsContent>

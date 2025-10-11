@@ -19,6 +19,7 @@ import {
   Newspaper,
   CalendarClock,
   LogIn,
+  Megaphone,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
