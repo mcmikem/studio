@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -336,7 +335,7 @@ function PlannerCheckinFormComponent() {
                         </div>
                         <Separator/>
                         <div className="space-y-2">
-                            <Label className="font-semibold text-base">Potential Challenges &amp; Mitigations</Label>
+                            <Label className="font-semibold text-base">Potential Challenges & Mitigations</Label>
                              <Textarea {...register('challenges')} />
                         </div>
                         <Separator/>
