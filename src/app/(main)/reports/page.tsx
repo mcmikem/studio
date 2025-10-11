@@ -13,7 +13,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, getDocs } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
 import type { Activity } from '@/lib/types';
-import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingUp, VenetianMask } from 'lucide-react';
+import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -137,14 +137,18 @@ function MonthlyActivityReport() {
 }
 
 function FinancialOverview({ activities }: { activities: Activity[] | null }) {
-
+    
   const { totalSpent, totalValue, isLoading } = useMemo(() => {
     if (!activities) return { totalSpent: 0, totalValue: 0, isLoading: true };
     
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const monthlyActivities = activities.filter(act => act.loggedAt.toDate() >= startOfMonth);
+    const monthlyActivities = activities.filter(act => {
+        // Ensure loggedAt is a valid date before comparison
+        if (!act.loggedAt || typeof act.loggedAt.toDate !== 'function') return false;
+        return act.loggedAt.toDate() >= startOfMonth;
+    });
 
     const spent = monthlyActivities.reduce((sum, activity) => sum + activity.actualCost, 0);
     const value = monthlyActivities.reduce((sum, activity) => sum + activity.totalValue, 0);
@@ -201,7 +205,7 @@ function FinancialOverview({ activities }: { activities: Activity[] | null }) {
                     <Card className="flex flex-col justify-between">
                         <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-blue-500">
-                            <VenetianMask />
+                            <DollarSign />
                             Remaining Budget
                         </CardTitle>
                         </CardHeader>
