@@ -46,6 +46,7 @@ export const assistantFlow = ai.defineFlow(
   async (prompt, streamingCallback) => {
     const { stream, response } = ai.generateStream({
       prompt: prompt,
+      model: 'googleai/gemini-2.5-flash',
       system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
       tools: [exampleActionTool],
     });
