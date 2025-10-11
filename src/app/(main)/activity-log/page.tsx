@@ -45,10 +45,10 @@ export default function ActivityLogPage() {
       <header>
         <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
             <AreaChart className="h-8 w-8" />
-            Activity Log
+            Activity Log (ROI)
         </h1>
         <p className="text-muted-foreground">
-          A complete history of all field activities and their calculated ROI.
+          A financial and data-driven log of all activities reported via the ROI Calculator.
         </p>
       </header>
       <Card>

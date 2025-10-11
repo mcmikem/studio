@@ -18,6 +18,7 @@ import {
   CalendarCheck,
   Newspaper,
   CalendarClock,
+  LogIn,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -85,15 +86,26 @@ export function AppSidebar() {
                 <span>Dashboard</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton
+                href="/checkins"
+                isActive={isActive('/checkins')}
+                tooltip="Check-in Stream"
+                onClick={handleLinkClick}
+              >
+                <LogIn />
+                <span>Check-in Stream</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 href="/stream"
                 isActive={isActive('/stream')}
-                tooltip="Team Stream"
+                tooltip="Check-out Stream"
                 onClick={handleLinkClick}
               >
                 <Rss />
-                <span>Team Stream</span>
+                <span>Check-out Stream</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -156,11 +168,11 @@ export function AppSidebar() {
                 <SidebarMenuButton
                   href="/activity-log"
                   isActive={isActive('/activity-log')}
-                  tooltip="Activity Log"
+                  tooltip="Activity Log (ROI)"
                   onClick={handleLinkClick}
                 >
                   <AreaChart />
-                  <span>Activity Log</span>
+                  <span>Activity Log (ROI)</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>
