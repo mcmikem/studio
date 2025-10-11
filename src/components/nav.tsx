@@ -21,6 +21,7 @@ import {
   LogIn,
   Megaphone,
   Calendar as CalendarIcon,
+  ListChecks,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -186,6 +187,17 @@ export function AppSidebar() {
                 >
                   <AreaChart />
                   <span>Activity Log (ROI)</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+                <SidebarMenuButton
+                  href="/checklists"
+                  isActive={isActive('/checklists')}
+                  tooltip="Checklists"
+                  onClick={handleLinkClick}
+                >
+                  <ListChecks />
+                  <span>Checklists</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
              <SidebarMenuItem>

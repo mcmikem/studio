@@ -263,3 +263,13 @@ export type WeeklyWorkplan = {
   individualTasks: string[];
   createdAt: Timestamp;
 };
+
+export type Checklist = {
+  id: string;
+  title: string;
+  category: string;
+  sections: {
+    title: string;
+    items: string[];
+  }[];
+};
