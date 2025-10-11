@@ -179,7 +179,7 @@ function ImpactStoryGeneratorContent() {
              {isLoadingCheckout && checkoutIdFromUrl && <Skeleton className="h-10 w-full" />}
              {selectedCheckout && (
                 <div className="p-2 border rounded-md bg-muted text-sm">
-                    Selected: Daily checkout from {selectedCheckout.name} on {selectedCheckout.timestamp ? new Date(selectedCheckout.timestamp.toDate()).toLocaleDateString() : '...'}
+                    Selected: Daily checkout from ${selectedCheckout.name} on ${selectedCheckout.timestamp ? new Date(selectedCheckout.timestamp.toDate()).toLocaleDateString() : '...'}
                 </div>
              )}
           </div>
@@ -191,8 +191,8 @@ function ImpactStoryGeneratorContent() {
                  <CardContent className="text-sm pt-4 space-y-1">
                     {isCheckout ? (
                        <>
-                        <p><strong>Task:</strong> {(dataToDisplay as Checkout).task}</p>
-                        <p><strong>Learning:</strong> {(dataToDisplay as Checkout).learning}</p>
+                        <p><strong>Task:</strong> ${(dataToDisplay as Checkout).task}</p>
+                        <p><strong>Learning:</strong> ${(dataToDisplay as Checkout).learning}</p>
                        </>
                     ) : (
                        <>
