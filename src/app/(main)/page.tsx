@@ -34,7 +34,10 @@ export default function DashboardPage() {
     );
   }
 
-  const DashboardComponent = roleToDashboard[profile.role] || roleToDashboard['default'];
+  // For now, let's render the default dashboard to apply the new style
+  // const DashboardComponent = roleToDashboard[profile.role] || roleToDashboard['default'];
+  const DashboardComponent = DefaultDashboard;
+
 
   return <DashboardComponent profile={profile} />;
 }

@@ -7,6 +7,12 @@
       "imageHint": "community youth"
     },
     {
+      "id": "dashboard-header",
+      "description": "Leafy green background for dashboard header",
+      "imageUrl": "https://picsum.photos/seed/header/1200/400",
+      "imageHint": "nature leaves"
+    },
+    {
       "id": "user-avatar-1",
       "description": "User avatar for McMike",
       "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTk2MjQ1ODZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
