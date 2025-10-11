@@ -49,9 +49,6 @@ function CheckinFormComponent() {
                 const planData = JSON.parse(decodeURIComponent(planDataString));
                 setValue('primaryMission', planData.primaryMission);
                 setValue('details', planData.details);
-                setValue('needsBudget', planData.needsBudget);
-                setValue('budgetAmount', planData.budgetAmount);
-                setValue('budgetTitle', planData.budgetTitle);
             } catch (error) {
                 console.error("Failed to parse plan data:", error);
                 toast({
@@ -65,9 +62,6 @@ function CheckinFormComponent() {
     
     const submittedPlan = watch('details') as DailyPlannerAIOutput | null;
     const primaryMission = watch('primaryMission');
-    const needsBudget = watch('needsBudget');
-    const budgetAmount = watch('budgetAmount');
-    const budgetTitle = watch('budgetTitle');
 
     const onSubmit = async (data: any) => {
         if (!firestore || !user || !profile) {
@@ -91,39 +85,10 @@ function CheckinFormComponent() {
         try {
             await addDocumentNonBlocking(checkinsCollection, checkinData);
 
-            if (needsBudget && budgetTitle && budgetAmount > 0) {
-                 const expenseData = {
-                    userId: user.uid,
-                    userName: profile.name,
-                    date: new Date().toISOString().split('T')[0], // Today's date
-                    title: budgetTitle,
-                    type: "Requisition" as const,
-                    items: [{ description: "Funds for daily mission", category: "Other" as const, amount: budgetAmount }],
-                    totalAmount: budgetAmount,
-                    status: 'Pending' as const,
-                    createdAt: serverTimestamp(),
-                };
-                const expensesCollection = collection(firestore, 'expenses');
-                const docRef = await addDocumentNonBlocking(expensesCollection, expenseData);
-
-                 await createAlert({
-                    type: 'Reminder',
-                    message: `New budget requisition from ${profile.name} for "${budgetTitle}" needs approval.`,
-                    priority: 'Medium',
-                    action: `/management/expenses?highlight=${docRef.id}`,
-                    creatorId: user.uid,
-                });
-
-                toast({
-                    title: 'Check-in & Requisition Submitted!',
-                    description: 'Your plan is public and your budget is awaiting approval.',
-                });
-            } else {
-                 toast({
-                    title: 'Check-in Submitted!',
-                    description: 'Your plan for the day is now visible to the team.',
-                });
-            }
+            toast({
+                title: 'Check-in Submitted!',
+                description: 'Your plan for the day is now visible to the team.',
+            });
 
             router.push('/');
         } catch (error) {
@@ -194,12 +159,6 @@ function CheckinFormComponent() {
                             </ul>
                         </div>
                     </div>
-                     {needsBudget && budgetAmount > 0 && (
-                        <div className="rounded-lg border bg-amber-50 dark:bg-amber-900/20 p-4">
-                            <h4 className="font-semibold flex items-center gap-2"><DollarSign className="h-5 w-5 text-amber-600"/>Budget Requisition Attached</h4>
-                            <p className="text-sm text-muted-foreground mt-2">You are requesting **{new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX' }).format(budgetAmount)}** for "{budgetTitle}". This will be sent for approval upon check-in.</p>
-                        </div>
-                    )}
                 </CardContent>
                  <CardFooter>
                     <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">

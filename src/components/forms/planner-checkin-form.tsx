@@ -190,9 +190,6 @@ function PlannerCheckinFormComponent() {
     const planData = {
       primaryMission: data.primaryMission,
       details: details,
-      needsBudget: data.needsBudget,
-      budgetAmount: data.budgetAmount,
-      budgetTitle: data.budgetTitle,
     };
 
     params.set('plan', encodeURIComponent(JSON.stringify(planData)));
@@ -327,40 +324,6 @@ function PlannerCheckinFormComponent() {
                          <div className="space-y-2">
                             <Label className="font-semibold text-base">Best Practice Tip</Label>
                              <Textarea {...register('bestPractice')} />
-                        </div>
-
-                        <Separator />
-
-                        {/* Budget Requisition */}
-                        <div className="space-y-4 rounded-lg border bg-card p-4">
-                            <div className="flex items-center space-x-3">
-                                <Controller
-                                    name="needsBudget"
-                                    control={control}
-                                    render={({ field }) => (
-                                       <Checkbox
-                                          id="needsBudget"
-                                          checked={field.value}
-                                          onCheckedChange={field.onChange}
-                                        />
-                                    )}
-                                />
-                                <Label htmlFor="needsBudget" className="text-base font-semibold cursor-pointer">Do you need a budget for this mission?</Label>
-                            </div>
-
-                            {needsBudget && (
-                                <div className="space-y-4 pl-6 border-l-2 border-primary ml-2 pt-2">
-                                     <div className="space-y-2">
-                                        <Label htmlFor="budgetTitle">Requisition Title</Label>
-                                        <Input id="budgetTitle" placeholder="e.g., Transport for Nindye SS Visit" {...register('budgetTitle')} />
-                                        {checkinErrors.budgetTitle && <p className="text-sm text-destructive">{checkinErrors.budgetTitle.message}</p>}
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="budgetAmount">Amount Required (UGX)</Label>
-                                        <Input id="budgetAmount" type="number" placeholder="e.g., 25000" {...register('budgetAmount')} />
-                                    </div>
-                                </div>
-                            )}
                         </div>
 
                     </CardContent>

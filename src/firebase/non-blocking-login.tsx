@@ -173,6 +173,7 @@ async function createUserProfile(
       name: userData.name,
       email: user.email,
       role: userData.role,
+      photoURL: user.photoURL || '',
       createdAt: serverTimestamp(),
     }
 

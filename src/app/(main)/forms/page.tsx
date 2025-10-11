@@ -85,7 +85,7 @@ function FormsContent() {
              <CardHeader>
               <CardTitle>New Expense Report</CardTitle>
               <CardDescription>
-                Submit a new expense for reimbursement.
+                Submit a new expense for reimbursement or request funds for an activity.
               </CardDescription>
             </CardHeader>
             <CardContent>

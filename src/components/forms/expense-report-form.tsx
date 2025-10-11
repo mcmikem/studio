@@ -82,16 +82,6 @@ export function ExpenseReportForm() {
   React.useEffect(() => {
     setValue('totalAmount', totalAmount);
   }, [totalAmount, setValue]);
-  
-  // Auto-add a new line when the user starts typing in the last item's description
-  React.useEffect(() => {
-    if (!watchedItems || watchedItems.length === 0) return;
-    const lastItem = watchedItems[watchedItems.length - 1];
-    if (lastItem && lastItem.description && lastItem.description.length > 0 && lastItem.amount === 0 && fields.length < 10) {
-        append({ description: '', category: 'Transport', amount: 0 }, { shouldFocus: false });
-    }
-  }, [watchedItems, append, fields.length]);
-
 
   const onSubmit = async (data: ExpenseFormData) => {
     if (!firestore || !user || !profile) {
@@ -137,8 +127,6 @@ export function ExpenseReportForm() {
       const approverRole = isED ? "Programs & Partnerships Manager" : "Executive Director";
       const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
       
-      // We are creating a non-targeted alert for simplicity. 
-      // In a real app, you'd query for the specific manager's user ID to target them.
       await createAlert({
           type: 'Reminder',
           message: alertMessage,
@@ -159,11 +147,12 @@ export function ExpenseReportForm() {
         items: [{ description: '', category: 'Transport', amount: 0 }],
         totalAmount: 0,
       });
-    } catch(e) {
-      toast({
+    } catch(e: any) {
+       console.error(e);
+       toast({
         variant: 'destructive',
         title: 'Submission Error',
-        description: 'Could not save your expense report. Please check your permissions and try again.',
+        description: 'Could not save your expense report. Check permissions and try again.',
       });
     }
   };
@@ -296,5 +285,3 @@ export function ExpenseReportForm() {
       </form>
   );
 }
-
-    
