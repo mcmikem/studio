@@ -13,8 +13,11 @@ import { collection, query, orderBy, limit, where } from "firebase/firestore"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
 import { Progress } from "../ui/progress"
 import { Button } from "../ui/button"
-import { Camera, MapPin, Plus, Receipt, FileText, Target, Milestone, Trees, Users, HandCoins, FlaskConical, Lightbulb, UserPlus, Map } from "lucide-react"
+import { Camera, MapPin, Plus, Receipt, FileText, Target, Milestone, Trees, Users, HandCoins, FlaskConical, Lightbulb, UserPlus, Map, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { generateSmartReminders } from "@/ai/flows/smart-reminders-flow"
+import React, { useEffect, useState } from "react"
+import { Skeleton } from "../ui/skeleton"
 
 function TodaysBattlePlan() {
     const { user } = useUser();
@@ -120,18 +123,57 @@ function QuickActions() {
     )
 }
 
-function SmartReminders() {
+function SmartReminders({ profile }: { profile: User }) {
+    const [reminders, setReminders] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchReminders() {
+            if (!profile) return;
+            setIsLoading(true);
+            try {
+                const response = await generateSmartReminders({
+                    userId: profile.id,
+                    userName: profile.name,
+                    userRole: profile.role,
+                });
+                setReminders(response.reminders);
+            } catch (error) {
+                console.error("Failed to generate smart reminders:", error);
+                setReminders(["Could not load AI reminders at this time."]);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+        fetchReminders();
+    }, [profile]);
+
+
     return (
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Lightbulb className="text-yellow-400" /> Smart Reminders</CardTitle>
             </CardHeader>
             <CardContent>
-                <ul className="space-y-3 list-disc list-inside text-sm">
-                    <li><span className="font-semibold text-primary">Tip:</span> Take before/after photos of the tree planting site for the report.</li>
-                    <li><span className="font-semibold text-primary">Follow-up:</span> Check seedling survival rate from last visit to Ggangu.</li>
-                    <li><span className="font-semibold text-primary">Recruit:</span> Identify 2 promising student leaders for the Student Leaders Forum program.</li>
-                </ul>
+                {isLoading ? (
+                    <div className="space-y-3">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-5/6" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </div>
+                ) : (
+                    <ul className="space-y-3 list-disc list-inside text-sm">
+                        {reminders.map((reminder, index) => (
+                            <li key={index}>{reminder}</li>
+                        ))}
+                    </ul>
+                )}
+                 {isLoading && (
+                    <div className="flex items-center justify-center pt-4">
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                        <p className="ml-2 text-sm text-muted-foreground">AI is thinking...</p>
+                    </div>
+                )}
             </CardContent>
         </Card>
     )
@@ -155,11 +197,9 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
         <TodaysBattlePlan />
         <FieldIntelligence />
         <QuickActions />
-        <SmartReminders />
+        <SmartReminders profile={profile} />
         <TeamPulse checkouts={checkouts} />
       </DashboardGrid>
     </div>
   )
 }
-
-    
