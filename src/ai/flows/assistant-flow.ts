@@ -33,6 +33,8 @@ export async function assistant(input: AssistantInput) {
     },
   });
 
+  // Wait for the full response to be generated before completing the function.
+  // This is important for ensuring the flow is tracked correctly.
   await response;
 
   return new Response(outputStream, {
@@ -42,7 +44,6 @@ export async function assistant(input: AssistantInput) {
   });
 }
 
-// This was the missing export
 export const assistantFlow = ai.defineFlow(
   {
     name: 'assistantFlow',
@@ -50,6 +51,8 @@ export const assistantFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (input) => {
+    // This is a bit of a workaround to fit the Response object into a flow.
+    // In a real app, you might have the flow return the string and the API route handle the Response.
     return await assistant(input) as any;
   }
 );

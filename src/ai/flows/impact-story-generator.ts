@@ -52,7 +52,7 @@ const prompt = ai.definePrompt({
   Generated Impact Story:`, // Ensure this outputs a complete, well-formed narrative
 });
 
-const impactStoryGeneratorFlow = ai.defineFlow(
+export const impactStoryGeneratorFlow = ai.defineFlow(
   {
     name: 'impactStoryGeneratorFlow',
     inputSchema: ImpactStoryInputSchema,
