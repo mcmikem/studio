@@ -6,6 +6,8 @@ import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User as AuthUser } from 'firebase/auth';
 import type { User as UserProfile } from '@/lib/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export function useUserProfile(user: AuthUser | null) {
   const firestore = useFirestore();
@@ -19,18 +21,29 @@ export function useUserProfile(user: AuthUser | null) {
 
   const { data: profile, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
 
-  // This hook now correctly returns the data and loading state from useDoc,
-  // which handles the logic of fetching the user profile.
-  // We no longer create a temporary "fake" profile, which was the source of UI flashes.
-  
   // If there's no authenticated user, the hook isn't loading and there's no profile.
   const isLoading = !user ? false : isDocLoading;
 
   useEffect(() => {
-    if (error) {
-        console.error("Error loading user profile:", error);
+    // This effect specifically handles the case where useDoc returns an error.
+    // We will transform it into the specialized FirestorePermissionError if it's a permission issue.
+    if (error && userDocRef) {
+        // The useDoc hook already wraps the error in FirestorePermissionError and emits it.
+        // We log here for server-side visibility during development but the primary
+        // error handling path is through the global emitter.
+        console.error("Error loading user profile in useUserProfile:", error.message);
+        
+        // Although useDoc already emits, we ensure it's handled here as a fallback
+        // in case the error structure changes. This check is for robustness.
+        if (!(error instanceof FirestorePermissionError)) {
+             const permissionError = new FirestorePermissionError({
+                operation: 'get',
+                path: userDocRef.path,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+        }
     }
-  }, [error]);
+  }, [error, userDocRef]);
 
-  return { profile, isLoading };
+  return { profile, isLoading, error };
 }
