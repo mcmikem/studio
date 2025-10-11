@@ -50,21 +50,7 @@ import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { createAlert } from "@/ai/flows/create-alert-flow"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"
-
-const getGreeting = () => {
-  const hour = new Date().getHours()
-  if (hour < 12) return "Good morning"
-  if (hour < 18) return "Good afternoon"
-  return "Good evening"
-}
-
-const today = new Date()
-const dateString = today.toLocaleDateString("en-US", {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-})
+import { DashboardHeader } from "./dashboard-header"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-UG", {
@@ -308,19 +294,11 @@ function PaymentQueue() {
 }
 
 export function MediaFinanceDashboard({ profile }: { profile: User }) {
-  const firstName = profile?.name?.split(" ")[0] || "User"
 
   return (
-    <>
-      <header className="space-y-1">
-        <h1 className="font-headline text-3xl font-bold tracking-tight text-primary">
-          {getGreeting()}, {firstName}!
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {dateString} | Here is your Media & Finance dashboard.
-        </p>
-      </header>
-       <DashboardGrid className="lg:grid-cols-3">
+    <div className="flex flex-col gap-6">
+       <DashboardHeader profile={profile} />
+       <DashboardGrid className="lg:grid-cols-3 mt-0">
         <div className="col-span-full">
            <Card>
             <CardHeader>
@@ -360,6 +338,6 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>
-    </>
+    </div>
   )
 }

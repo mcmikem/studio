@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser } from '@/firebase';
@@ -34,10 +33,7 @@ export default function DashboardPage() {
     );
   }
 
-  // For now, let's render the default dashboard to apply the new style
-  // const DashboardComponent = roleToDashboard[profile.role] || roleToDashboard['default'];
-  const DashboardComponent = DefaultDashboard;
-
+  const DashboardComponent = roleToDashboard[profile.role] || roleToDashboard['default'];
 
   return <DashboardComponent profile={profile} />;
 }
