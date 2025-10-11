@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import { startOfWeek } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { Textarea } from '../ui/textarea';
+import { Checkbox } from '../ui/checkbox';
 
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
@@ -226,10 +227,11 @@ function PlannerCheckinFormComponent() {
                  <CardContent className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="primaryMission" className="text-lg">What is your main focus for today?</Label>
-                        <Input
+                        <Textarea
                             id="primaryMission"
-                            placeholder="e.g., Finalize RED Campaign report and meet new partners."
+                            placeholder="e.g., Finalize RED Campaign report and meet new partners. Also need to follow up with the tech team on the website updates."
                             {...registerMission('primaryMission')}
+                            className="min-h-[100px]"
                         />
                         {missionErrors.primaryMission && (
                             <p className="text-sm text-destructive">{missionErrors.primaryMission.message}</p>
@@ -272,21 +274,32 @@ function PlannerCheckinFormComponent() {
                     <CardContent className="space-y-6">
                         {/* Time Blocks */}
                         <div className="space-y-3">
-                            <Label className="font-semibold">Key Time Blocks</Label>
+                            <Label className="font-semibold text-base">Key Time Blocks</Label>
                             {timeBlockFields.map((field, index) => (
-                                <div key={field.id} className="grid grid-cols-[80px_80px_1fr_auto] gap-2 items-center">
-                                    <Input {...register(`timeBlocks.${index}.startTime`)} placeholder="Start" />
-                                    <Input {...register(`timeBlocks.${index}.endTime`)} placeholder="End" />
-                                    <Input {...register(`timeBlocks.${index}.description`)} placeholder="Description" />
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeTimeBlock(index)}><Trash2 className="h-4 w-4" /></Button>
+                                <div key={field.id} className="p-3 border rounded-lg space-y-2 relative">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label htmlFor={`timeBlocks.${index}.startTime`}>Start Time</Label>
+                                            <Input id={`timeBlocks.${index}.startTime`} {...register(`timeBlocks.${index}.startTime`)} placeholder="e.g., 09:00 AM" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label htmlFor={`timeBlocks.${index}.endTime`}>End Time</Label>
+                                            <Input id={`timeBlocks.${index}.endTime`} {...register(`timeBlocks.${index}.endTime`)} placeholder="e.g., 11:00 AM" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor={`timeBlocks.${index}.description`}>Description</Label>
+                                        <Textarea id={`timeBlocks.${index}.description`} {...register(`timeBlocks.${index}.description`)} placeholder="Description of the task or event" />
+                                    </div>
+                                     <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeTimeBlock(index)}><Trash2 className="h-4 w-4" /></Button>
                                 </div>
                             ))}
                             <Button type="button" variant="outline" size="sm" onClick={() => appendTimeBlock({startTime: '', endTime: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4" /> Add Time Block</Button>
                         </div>
-
+                        <Separator/>
                          {/* Multi-Win Connections */}
                         <div className="space-y-3">
-                            <Label className="font-semibold">Multi-Win Connections</Label>
+                            <Label className="font-semibold text-base">Multi-Win Connections</Label>
                              {connectionFields.map((field, index) => (
                                 <div key={field.id} className="flex gap-2 items-center">
                                     <Input {...register(`multiWinConnections.${index}.value`)} placeholder="e.g., Connects to KR1..." />
@@ -295,45 +308,43 @@ function PlannerCheckinFormComponent() {
                             ))}
                             <Button type="button" variant="outline" size="sm" onClick={() => appendConnection({value: ''})}><PlusCircle className="mr-2 h-4 w-4" /> Add Connection</Button>
                         </div>
-                        
+                        <Separator/>
                         <div className="space-y-2">
-                             <Label className="font-semibold">Suggested Resources / Materials</Label>
+                             <Label className="font-semibold text-base">Suggested Resources / Materials</Label>
                              <Textarea {...register('materials')} />
                         </div>
-
+                        <Separator/>
                         <div className="space-y-2">
-                            <Label className="font-semibold">Potential Challenges & Mitigations</Label>
+                            <Label className="font-semibold text-base">Potential Challenges & Mitigations</Label>
                              <Textarea {...register('challenges')} />
                         </div>
-
+                        <Separator/>
                          <div className="space-y-2">
-                            <Label className="font-semibold">Best Practice Tip</Label>
+                            <Label className="font-semibold text-base">Best Practice Tip</Label>
                              <Textarea {...register('bestPractice')} />
                         </div>
 
                         <Separator />
 
                         {/* Budget Requisition */}
-                        <div className="space-y-4 rounded-lg border p-4">
-                             <div className="flex items-center space-x-2">
+                        <div className="space-y-4 rounded-lg border bg-card p-4">
+                            <div className="flex items-center space-x-3">
                                 <Controller
                                     name="needsBudget"
                                     control={control}
                                     render={({ field }) => (
-                                        <input
-                                            type="checkbox"
-                                            id="needsBudget"
-                                            checked={field.value}
-                                            onChange={e => field.onChange(e.target.checked)}
-                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                       <Checkbox
+                                          id="needsBudget"
+                                          checked={field.value}
+                                          onCheckedChange={field.onChange}
                                         />
                                     )}
                                 />
-                                <Label htmlFor="needsBudget" className="text-base font-semibold">Do you need a budget for this mission?</Label>
+                                <Label htmlFor="needsBudget" className="text-base font-semibold cursor-pointer">Do you need a budget for this mission?</Label>
                             </div>
 
                             {needsBudget && (
-                                <div className="space-y-4 pl-6 border-l-2 border-primary ml-2">
+                                <div className="space-y-4 pl-6 border-l-2 border-primary ml-2 pt-2">
                                      <div className="space-y-2">
                                         <Label htmlFor="budgetTitle">Requisition Title</Label>
                                         <Input id="budgetTitle" placeholder="e.g., Transport for Nindye SS Visit" {...register('budgetTitle')} />
