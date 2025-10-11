@@ -1,14 +1,5 @@
 
 import type {NextConfig} from 'next';
-import withPWA from 'next-pwa';
-
-const pwaConfig = withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-});
-
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -17,11 +8,6 @@ const nextConfig: NextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
-  },
-  experimental: {
-    // This allows all cross-origin requests in development, which is necessary
-    // for the Firebase Studio environment.
-    allowedDevOrigins: ["*"],
   },
   images: {
     remotePatterns: [
@@ -43,8 +29,14 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };
 
-export default pwaConfig(nextConfig);
+export default nextConfig;
