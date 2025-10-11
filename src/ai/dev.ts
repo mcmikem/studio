@@ -5,6 +5,10 @@
  * This file is not intended to be modified.
  */
 
+// Must be the first import
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env' });
+
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 import { defineFlow, runFlow } from 'genkit/flow';
