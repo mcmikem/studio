@@ -158,6 +158,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
             <TeamCoordination />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
+            <DailyActions />
             <PartnershipPipeline partnerships={partnerships} />
             <QuickInsights />
             <ManagementQuickLinks />
