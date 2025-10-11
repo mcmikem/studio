@@ -16,14 +16,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Bot, User, Loader2 } from 'lucide-react';
-import { assistantFlow } from '@/ai/flows/assistant-flow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { collection, query, orderBy, where, limit } from 'firebase/firestore';
 import type { Program, Partnership, Expense, Task, KeyResult } from '@/lib/types';
-import { useStream } from '@genkit-ai/next/client';
+
 
 const promptSchema = z.object({
   prompt: z.string().min(1, 'Please enter a prompt.'),
@@ -73,41 +72,8 @@ export default function AssistantPage() {
   // --- End of data fetching ---
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   
-  const {
-    stream,
-    start,
-    isLoading: isAiLoading,
-    error,
-  } = useStream(assistantFlow);
-
-  useEffect(() => {
-    if (stream) {
-      setMessages(prev => {
-        const lastMessage = prev[prev.length - 1];
-        if (lastMessage.role === 'assistant') {
-          return [...prev.slice(0, -1), { role: 'assistant', content: stream }];
-        }
-        return [...prev, { role: 'assistant', content: stream }];
-      });
-    }
-  }, [stream]);
-
-  useEffect(() => {
-    if (error) {
-      console.error(error);
-       setMessages(prev => {
-           const updatedMessages = [...prev];
-            const lastMessage = updatedMessages[updatedMessages.length - 1];
-            if (lastMessage.role === 'assistant' && lastMessage.content === '') {
-                 lastMessage.content = 'Sorry, I had trouble connecting to the AI.';
-                 return updatedMessages;
-            }
-           return [...updatedMessages, { role: 'assistant', content: 'Sorry, I had trouble connecting to the AI.' }];
-       });
-    }
-  }, [error]);
-
   const {
     register,
     handleSubmit,
@@ -118,11 +84,11 @@ export default function AssistantPage() {
   });
 
   const onSubmit = async ({ prompt }: { prompt: string }) => {
-    const newMessages: Message[] = [...messages, { role: 'user', content: prompt }];
+    const newMessages: Message[] = [...messages, { role: 'user', content: prompt }, { role: 'assistant', content: '' }];
     setMessages(newMessages);
     reset();
+    setIsAiLoading(true);
 
-    // Build the full context string to pass to the AI
     const fullContext = buildContextString([
       { name: "Active Programs", data: programs },
       { name: "Partnerships", data: partnerships },
@@ -132,7 +98,40 @@ export default function AssistantPage() {
     ]);
     
     const promptWithContext = `${fullContext}\nUser's question: ${prompt}`;
-    start(promptWithContext);
+
+    try {
+        const response = await fetch('/api/flows/assistantFlow', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input: promptWithContext }),
+        });
+
+        if (!response.ok || !response.body) {
+            throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let streamingContent = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            streamingContent += decoder.decode(value, { stream: true });
+            setMessages(prev => [
+                ...prev.slice(0, -1),
+                { role: 'assistant', content: streamingContent }
+            ]);
+        }
+    } catch (error) {
+        console.error('Streaming error:', error);
+        setMessages(prev => [
+            ...prev.slice(0, -1),
+            { role: 'assistant', content: "Sorry, I'm having trouble connecting to the AI." }
+        ]);
+    } finally {
+        setIsAiLoading(false);
+    }
   };
 
   const getInitials = () => {
@@ -202,7 +201,7 @@ export default function AssistantPage() {
                   )}
                 </div>
               ))}
-              {isAiLoading && (
+              {isAiLoading && messages[messages.length-1]?.role !== 'assistant' && (
                  <div className="flex items-start gap-3">
                     <Avatar className="h-9 w-9 border">
                       <AvatarFallback>
