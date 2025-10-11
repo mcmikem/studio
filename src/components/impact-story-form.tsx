@@ -196,9 +196,9 @@ function ImpactStoryGeneratorContent() {
                        </>
                     ) : (
                        <>
-                        <p><strong>Final ROI:</strong> <span className={(dataToDisplay as Activity).finalRoi >= 0 ? 'text-green-500' : 'text-red-500'}>{(dataToDisplay as Activity).finalRoi.toFixed(0)}%</span></p>
-                        <p><strong>Actual Cost:</strong> {(dataToDisplay as Activity).actualCost.toLocaleString()} UGX</p>
-                        <p><strong>Total Value:</strong> {(dataToDisplay as Activity).totalValue.toLocaleString()} UGX</p>
+                        <p><strong>Final ROI:</strong> <span className={(dataToDisplay as Activity).finalRoi >= 0 ? 'text-green-500' : 'text-red-500'}>{`${(dataToDisplay as Activity).finalRoi.toFixed(0)}%`}</span></p>
+                        <p><strong>Actual Cost:</strong> {`${(dataToDisplay as Activity).actualCost.toLocaleString()} UGX`}</p>
+                        <p><strong>Total Value:</strong> {`${(dataToDisplay as Activity).totalValue.toLocaleString()} UGX`}</p>
                        </>
                     )}
                  </CardContent>

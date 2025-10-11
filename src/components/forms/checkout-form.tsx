@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -178,7 +177,7 @@ export function CheckoutForm() {
           />
           {errors.missionAccomplished && (
             <p className="text-sm text-destructive">
-              {`${errors.missionAccomplished.message}`}
+              {`errors.missionAccomplished.message`}
             </p>
           )}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
