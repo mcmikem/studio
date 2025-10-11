@@ -85,7 +85,7 @@ function RecentUserCheckouts() {
       </CardContent>
        <CardFooter>
         <Button variant="link" asChild className="p-0 h-auto">
-          <Link href="/stream?tab=check-outs">View all my activity</Link>
+          <Link href="/stream">View all my activity</Link>
         </Button>
       </CardFooter>
     </Card>
