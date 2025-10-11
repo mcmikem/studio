@@ -9,7 +9,6 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/forms', label: 'Forms', icon: ClipboardEdit },
   { href: '/stream', label: 'Stream', icon: Rss },
-  { href: '/assistant', label: 'AI', icon: Sparkles },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
@@ -18,7 +17,7 @@ export function MobileBottomNav() {
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border">
-      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
+      <div className="grid h-full max-w-lg grid-cols-4 mx-auto font-medium">
         {navItems.map((item) => {
           const isActive = (item.href === '/' && pathname === '/') || (item.href !== '/' && pathname.startsWith(item.href));
           return (
