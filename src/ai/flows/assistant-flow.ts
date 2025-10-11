@@ -5,7 +5,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { NextRequest, NextResponse } from 'next/server';
 
 const AssistantInputSchema = z.object({
   history: z.array(
@@ -20,9 +19,30 @@ const AssistantInputSchema = z.object({
 export type AssistantInput = z.infer<typeof AssistantInputSchema>;
 
 export async function assistant(input: AssistantInput) {
-  return assistantFlow(input);
+  const { stream, response } = await ai.generateStream({
+    prompt: input.prompt,
+    history: input.history,
+  });
+
+  const outputStream = new ReadableStream({
+    async start(controller) {
+      for await (const chunk of stream) {
+        controller.enqueue(chunk.text);
+      }
+      controller.close();
+    },
+  });
+
+  await response;
+
+  return new Response(outputStream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+    },
+  });
 }
 
+// This was the missing export
 export const assistantFlow = ai.defineFlow(
   {
     name: 'assistantFlow',
@@ -30,26 +50,6 @@ export const assistantFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (input) => {
-    const { history, prompt } = input;
-    
-    const { stream, response } = ai.generateStream({
-      prompt: prompt,
-      history: history,
-    });
-    
-    const outputStream = new ReadableStream({
-        async start(controller) {
-            for await (const chunk of stream) {
-                controller.enqueue(chunk.text);
-            }
-            controller.close();
-        }
-    });
-
-    return new NextResponse(outputStream, {
-        headers: {
-            'Content-Type': 'text/plain; charset=utf-8'
-        }
-    }) as any;
+    return await assistant(input) as any;
   }
 );
