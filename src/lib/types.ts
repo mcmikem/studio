@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type StatCard = {
@@ -273,3 +274,19 @@ export type Checklist = {
     items: string[];
   }[];
 };
+
+
+// Smart Reminders Flow Types
+import { z } from 'zod';
+
+export const SmartRemindersInputSchema = z.object({
+  userId: z.string(),
+  userName: z.string(),
+  userRole: z.string(),
+});
+export type SmartRemindersInput = z.infer<typeof SmartRemindersInputSchema>;
+
+export const SmartRemindersOutputSchema = z.object({
+  reminders: z.array(z.string()).describe('A list of 3-4 concise, actionable, and personalized reminders.'),
+});
+export type SmartRemindersOutput = z.infer<typeof SmartRemindersOutputSchema>;

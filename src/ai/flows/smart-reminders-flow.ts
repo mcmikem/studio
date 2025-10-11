@@ -6,20 +6,9 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { getUpcomingEvents, getPendingTasks } from '../tools/omuto-tools';
-
-export const SmartRemindersInputSchema = z.object({
-  userId: z.string(),
-  userName: z.string(),
-  userRole: z.string(),
-});
-export type SmartRemindersInput = z.infer<typeof SmartRemindersInputSchema>;
-
-export const SmartRemindersOutputSchema = z.object({
-  reminders: z.array(z.string()).describe('A list of 3-4 concise, actionable, and personalized reminders.'),
-});
-export type SmartRemindersOutput = z.infer<typeof SmartRemindersOutputSchema>;
+import { SmartRemindersInputSchema, SmartRemindersOutputSchema, type SmartRemindersInput, type SmartRemindersOutput } from '@/lib/types';
 
 
 const smartRemindersPrompt = ai.definePrompt(
@@ -30,35 +19,27 @@ const smartRemindersPrompt = ai.definePrompt(
     output: {
       schema: SmartRemindersOutputSchema,
     },
-    prompt: `Generate a short list of 3-4 smart, actionable reminders for {{userName}} (Role: {{userRole}}). Use the available tools to get their upcoming events and pending tasks.
-
-    Analyze the data and provide specific, helpful nudges. For example:
-    - If a task is due soon, remind them of the deadline.
-    - If an important event is coming up, suggest a preparation step.
-    - Connect tasks to organizational goals if possible.
-    - Keep the tone friendly and supportive.
-    
-    Current User ID is: {{userId}}`,
   }
 );
 
 
-export const generateSmartReminders = ai.defineFlow(
-  {
-    name: 'generateSmartRemindersFlow',
-    inputSchema: SmartRemindersInputSchema,
-    outputSchema: SmartRemindersOutputSchema,
-  },
-  async (input) => {
+export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     const llmResponse = await ai.generate({
-        prompt: {
-            prompt: smartRemindersPrompt,
-            input: {
-                userId: input.userId,
-                userName: input.userName,
-                userRole: input.userRole
+        prompt: [
+            smartRemindersPrompt,
+            {
+                role: 'user',
+                content: [{ text: `Generate a short list of 3-4 smart, actionable reminders for ${input.userName} (Role: ${input.userRole}). Use the available tools to get their upcoming events and pending tasks.
+
+Analyze the data and provide specific, helpful nudges. For example:
+- If a task is due soon, remind them of the deadline.
+- If an important event is coming up, suggest a preparation step.
+- Connect tasks to organizational goals if possible.
+- Keep the tone friendly and supportive.
+
+Current User ID is: ${input.userId}` }],
             }
-        },
+        ],
         model: 'googleai/gemini-2.5-flash',
         config: {
             temperature: 0.5, // Be more creative with suggestions
@@ -70,5 +51,4 @@ export const generateSmartReminders = ai.defineFlow(
       throw new Error('AI failed to generate reminders.');
     }
     return output;
-  }
-);
+}
