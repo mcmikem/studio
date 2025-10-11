@@ -1,4 +1,3 @@
-
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric } from "@/lib/types"
