@@ -36,16 +36,27 @@ const exampleActionTool = ai.defineTool(
 );
 
 
+const assistantStreamFlow = ai.defineFlow(
+  {
+    name: 'assistantStreamFlow',
+    inputSchema: z.string(),
+    outputSchema: z.any(), // The output is a stream, so we use `any` here.
+  },
+  async (prompt) => {
+    const { stream, response } = ai.generateStream({
+      prompt: prompt,
+      system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
+      tools: [exampleActionTool], // Keeping tool structure for future action-based tools
+    });
+
+    // The server flow returns the stream and the response promise to the client.
+    return { stream, response };
+  }
+);
+
+
 export async function assistantFlow(prompt: string) {
-  // This is now a standard async function that returns the stream object.
-  // The client component will be responsible for handling the stream.
-  
-  const { stream, response } = ai.generateStream({
-    prompt: prompt,
-    system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
-    tools: [exampleActionTool], // Keeping tool structure for future action-based tools
-  });
-  
-  // The server simply returns the stream and the response promise to the client.
-  return { stream, response };
+  // This is now a standard async function that calls the defined flow
+  // and returns the stream object. The client component is responsible for handling the stream.
+  return assistantStreamFlow(prompt);
 }
