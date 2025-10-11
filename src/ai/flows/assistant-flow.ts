@@ -36,29 +36,16 @@ const exampleActionTool = ai.defineTool(
 );
 
 
-export const assistantFlow = ai.defineFlow(
-  {
-    name: 'assistantFlow',
-    inputSchema: z.string(),
-    outputSchema: z.string(),
-    stream: true,
-  },
-  async (prompt, streamingCallback) => {
-    
-    // The system prompt now expects context (like program lists, tasks, etc.) to be included directly in the user's prompt.
-    const { stream, response } = ai.generateStream({
-      prompt: prompt,
-      system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
-      tools: [exampleActionTool], // Keeping tool structure for future action-based tools
-    });
-
-     for await (const chunk of stream) {
-      if (chunk.text) {
-        streamingCallback(chunk.text);
-      }
-    }
-
-    const result = await response;
-    return result.text;
-  }
-);
+export async function assistantFlow(prompt: string) {
+  // This is now a standard async function that returns the stream object.
+  // The client component will be responsible for handling the stream.
+  
+  const { stream, response } = ai.generateStream({
+    prompt: prompt,
+    system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
+    tools: [exampleActionTool], // Keeping tool structure for future action-based tools
+  });
+  
+  // The server simply returns the stream and the response promise to the client.
+  return { stream, response };
+}

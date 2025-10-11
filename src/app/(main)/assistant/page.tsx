@@ -101,19 +101,27 @@ export default function AssistantPage() {
     const promptWithContext = `${fullContext}\nUser's question: ${prompt}`;
 
     try {
-      // Add a placeholder for the assistant's response
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
-      await assistantFlow(promptWithContext, (chunk) => {
-         setMessages(prev => {
+      // Call the server action, which returns the stream and response objects
+      const { stream, response } = await assistantFlow(promptWithContext);
+
+      // Handle the stream on the client
+      for await (const chunk of stream) {
+        if (chunk.text) {
+          setMessages(prev => {
             const updatedMessages = [...prev];
             const lastMessage = updatedMessages[updatedMessages.length - 1];
             if (lastMessage.role === 'assistant') {
-              lastMessage.content += chunk;
+              lastMessage.content += chunk.text;
             }
             return updatedMessages;
           });
-      });
+        }
+      }
+
+      // Wait for the full response to complete
+      await response;
 
     } catch (e) {
       console.error(e);
