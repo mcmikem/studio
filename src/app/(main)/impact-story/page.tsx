@@ -1,3 +1,4 @@
+
 import { ImpactStoryGenerator } from "@/components/impact-story-form";
 import { Suspense } from 'react';
 
