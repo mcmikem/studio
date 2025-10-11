@@ -17,7 +17,6 @@ import { Send, MessageSquare, Wand } from 'lucide-react';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, orderBy, serverTimestamp, addDoc } from 'firebase/firestore';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe } from '@/lib/utils';
@@ -92,26 +91,27 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !user || !profile) return;
+    if (!newMessage.trim() || !user || !profile || !firestore) return;
 
     setIsSending(true);
     const text = newMessage;
     setNewMessage('');
     
     const messagesCollection = collection(firestore, 'messages');
+    
+    const userMessageData = {
+      text: text,
+      userId: user.uid,
+      userName: profile.name,
+      userAvatar: user.photoURL || '',
+      createdAt: serverTimestamp(),
+    };
+    
+    // Add user's message to Firestore immediately, whether it's for AI or not.
+    await addDoc(messagesCollection, userMessageData);
 
     // If message starts with @omuto, it's a query for the AI
     if (text.startsWith('@omuto')) {
-       // Add user's message to Firestore immediately
-      const userMessageData = {
-        text: text,
-        userId: user.uid,
-        userName: profile.name,
-        userAvatar: user.photoURL || '',
-        createdAt: serverTimestamp(),
-      };
-      await addDoc(messagesCollection, userMessageData);
-
       try {
         const question = text.replace('@omuto', '').trim();
         const aiHistory = messages
@@ -143,20 +143,6 @@ export default function ChatPage() {
         };
         await addDoc(messagesCollection, errorMessageData);
       }
-    } else {
-        // Regular team chat message
-        const messageData = {
-          text: text,
-          userId: user.uid,
-          userName: profile.name,
-          userAvatar: user.photoURL || '',
-          createdAt: serverTimestamp(),
-        };
-        try {
-          await addDocumentNonBlocking(messagesCollection, messageData);
-        } catch (error) {
-          console.error('Error sending message:', error);
-        }
     }
 
     setIsSending(false);
