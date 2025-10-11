@@ -23,17 +23,16 @@ export default function ManagementLayout({
   return (
     <div className="flex flex-col gap-6">
        <div className="border-b border-border">
-        <div className="overflow-x-auto">
-          <div className="flex items-center gap-4 px-4 sm:px-0 min-w-max">
+        <div className="flex items-center gap-x-4 gap-y-2 p-2 flex-wrap">
             {tabs.map((tab) => (
               <Link
                 key={tab.name}
                 href={tab.href}
                 className={cn(
-                  'flex items-center gap-2 border-b-2 px-1 py-3 text-sm font-medium transition-colors whitespace-nowrap',
+                  'flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md',
                   pathname === tab.href
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
+                    ? 'border-primary text-primary bg-primary/10'
+                    : 'border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 )}
               >
                 <tab.icon className="h-4 w-4" />
@@ -41,7 +40,6 @@ export default function ManagementLayout({
               </Link>
             ))}
           </div>
-        </div>
       </div>
       <div>{children}</div>
     </div>
