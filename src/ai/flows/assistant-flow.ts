@@ -35,20 +35,25 @@ const exampleActionTool = ai.defineTool(
   }
 );
 
-
+// This is the Genkit flow that will be exposed via the API route.
 export const assistantFlow = defineFlow(
   {
     name: 'assistantFlow',
     inputSchema: z.string(),
     outputSchema: z.string(),
+    stream: true, // This enables streaming for the flow
   },
-  async (prompt) => {
-    const response = await ai.generate({
+  async (prompt, streamingCallback) => {
+    const { stream, response } = await ai.generateStream({
       prompt: prompt,
       system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
-      tools: [exampleActionTool], // Keeping tool structure for future action-based tools
-      stream: true
+      tools: [exampleActionTool],
     });
-    return response;
+
+    for await (const chunk of stream) {
+        streamingCallback(chunk.text());
+    }
+    
+    return (await response).text();
   }
 );
