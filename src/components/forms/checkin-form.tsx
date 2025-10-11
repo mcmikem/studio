@@ -132,7 +132,7 @@ function CheckinFormComponent() {
                 <CardContent className="space-y-6">
                     <div>
                         <h3 className="font-bold text-lg">{primaryMission}</h3>
-                        <p className="text-sm text-muted-foreground">Your primary mission for today.</p>
+                        <p className="text-sm text-muted-foreground">Your main focus for today.</p>
                     </div>
 
                     <Separator />
@@ -140,7 +140,7 @@ function CheckinFormComponent() {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-4">
                              <h4 className="font-semibold text-md">Key Time Blocks</h4>
-                            <ul className="list-disc list-inside space-y-2 text-sm">
+                            <ul className="list-disc list-inside space-y-2 text-base sm:text-sm">
                                 {submittedPlan.timeBlocks.map((block, index) => (
                                     <li key={index}><strong>{block.startTime} - {block.endTime}:</strong> {block.description}</li>
                                 ))}
@@ -148,7 +148,7 @@ function CheckinFormComponent() {
                         </div>
                          <div className="space-y-4">
                              <h4 className="font-semibold text-md">Multi-Win Connections</h4>
-                            <ul className="list-disc list-inside space-y-2 text-sm">
+                            <ul className="list-disc list-inside space-y-2 text-base sm:text-sm">
                                 {submittedPlan.multiWinConnections.map((connection, index) => (
                                     <li key={index}>{connection}</li>
                                 ))}
@@ -158,12 +158,12 @@ function CheckinFormComponent() {
 
                     <div className="space-y-4">
                          <h4 className="font-semibold text-md">Challenges & Mitigations</h4>
-                        <p className="text-sm">{submittedPlan.challenges}</p>
+                        <p className="text-base sm:text-sm">{submittedPlan.challenges}</p>
                     </div>
 
                      <div className="space-y-4">
                          <h4 className="font-semibold text-md">Best Practice Tip</h4>
-                        <p className="text-sm italic text-muted-foreground">{submittedPlan.bestPractice}</p>
+                        <p className="text-base sm:text-sm italic text-muted-foreground">{submittedPlan.bestPractice}</p>
                     </div>
                 </CardContent>
                  <CardFooter>
@@ -185,3 +185,5 @@ export function CheckinForm() {
         </Suspense>
     )
 }
+
+    

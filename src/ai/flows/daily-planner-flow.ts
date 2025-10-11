@@ -14,7 +14,7 @@ import { KNOWLEDGE_BASE } from '@/lib/data';
 // Zod schema for the input to the daily planner flow
 const DailyPlannerAIInputSchema = z.object({
   userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
-  primaryMission: z.string().describe("The user's stated primary mission for the day."),
+  primaryMission: z.string().describe("The user's stated main focus for the day."),
   weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week."),
   keyResults: z.array(z.any()).describe("A list of the organization's current Key Results (OKRs)."),
 });
@@ -42,9 +42,8 @@ const plannerPrompt = ai.definePrompt(
     input: { schema: DailyPlannerAIInputSchema },
     output: { schema: DailyPlannerAIOutputSchema },
     system: KNOWLEDGE_BASE, // Embed the entire organizational DNA
-    prompt: `You are an expert productivity coach for a youth-led NGO in Uganda. A staff member with the role of '{{userRole}}' needs a strategic daily plan.
+    prompt: `You are an expert productivity coach for a youth-led NGO in Uganda. A staff member with the role of '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
 
-    Their primary mission for today is: "{{primaryMission}}".
     Their priorities for this week are: {{#each weeklyPriorities}}- {{this}} {{/each}}.
 
     CURRENT ORGANIZATIONAL KEY RESULTS:
@@ -52,9 +51,9 @@ const plannerPrompt = ai.definePrompt(
     - {{this.title}}: {{this.description}} (Priority: {{this.priority}}, Deadline: {{this.deadline}})
     {{/each}}
 
-    Your task is to generate a structured, strategic daily plan. You are a coach, not just a scheduler.
+    Your task is to generate a structured, strategic daily plan and ask clarifying questions to help the user think deeper. You are a coach, not just a scheduler.
 
-    1.  **Time Blocks:** Create a logical, actionable schedule. Be specific.
+    1.  **Time Blocks:** Create a logical, actionable schedule. Be specific. For key actions, ask a clarifying question. For example, for a partner meeting, ask "Have you prepared the one-page summary document for this meeting?".
     2.  **Multi-Win Connections:** Explicitly connect the daily mission to AT LEAST TWO specific weekly priorities or organizational Key Results. This is critical for strategic alignment.
     3.  **Materials:** List specific, tangible items needed (e.g., "Updated partners spreadsheet," "Camera with charged battery"). Do NOT suggest monetary budget figures.
     4.  **Challenges & Mitigations:** Identify at least one potential challenge and provide a concrete, actionable mitigation strategy. This is risk management. Example: "Challenge: Partner may be unavailable. Mitigation: Send a confirmation WhatsApp message one hour before the meeting."
@@ -79,3 +78,5 @@ export const dailyPlannerAI = ai.defineFlow(
     return output;
   }
 );
+
+    

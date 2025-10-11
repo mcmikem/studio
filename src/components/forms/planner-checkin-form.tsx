@@ -55,10 +55,10 @@ function PlannerForm({
     <form onSubmit={handleSubmit(onPlanGenerate)}>
       <CardContent className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="primaryMission" className="text-lg">What is your primary mission for today?</Label>
+          <Label htmlFor="primaryMission" className="text-lg">What is your main focus for today?</Label>
           <Input
             id="primaryMission"
-            placeholder="e.g., Finalize the RED Campaign report for GlobalGiving"
+            placeholder="e.g., Finalize the RED Campaign report and meet with new partners."
             {...register('primaryMission')}
           />
           {errors.primaryMission && (
@@ -70,7 +70,7 @@ function PlannerForm({
           <Sparkles className="h-4 w-4" />
           <AlertTitle>How the AI Coach Works</AlertTitle>
           <AlertDescription>
-            The AI will use your mission, your role as {profile.role}, your weekly priorities, and the live organizational Key Results to generate a strategic daily plan for you to review.
+            The AI will use your focus, your role as {profile.role}, your weekly priorities, and the live organizational Key Results to help you brainstorm a strategic daily plan.
           </AlertDescription>
         </Alert>
 
@@ -92,7 +92,7 @@ function PlannerForm({
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
-          Generate My Daily Plan
+          Brainstorm My Daily Plan
         </Button>
       </CardFooter>
     </form>
@@ -281,3 +281,5 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
+
+    
