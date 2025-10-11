@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 import withPWA from 'next-pwa';
 
@@ -16,6 +17,11 @@ const nextConfig: NextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  experimental: {
+    // This allows all cross-origin requests in development, which is necessary
+    // for the Firebase Studio environment.
+    allowedDevOrigins: ["*"],
   },
   images: {
     remotePatterns: [
