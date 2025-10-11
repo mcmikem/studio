@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sparkles, Bot, User, Loader2 } from 'lucide-react';
-import { streamAssistant } from '@/ai/flows/assistant-flow';
+import { assistantFlow } from '@/ai/flows/assistant-flow';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -104,22 +104,16 @@ export default function AssistantPage() {
       // Add a placeholder for the assistant's response
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
-      const { stream, response } = streamAssistant(promptWithContext);
-      
-      for await (const chunk of stream) {
-        if (chunk.text) {
-          setMessages(prev => {
+      await assistantFlow(promptWithContext, (chunk) => {
+         setMessages(prev => {
             const updatedMessages = [...prev];
             const lastMessage = updatedMessages[updatedMessages.length - 1];
             if (lastMessage.role === 'assistant') {
-              lastMessage.content += chunk.text;
+              lastMessage.content += chunk;
             }
             return updatedMessages;
           });
-        }
-      }
-      
-      await response;
+      });
 
     } catch (e) {
       console.error(e);
@@ -238,4 +232,3 @@ export default function AssistantPage() {
     </div>
   );
 }
-    
