@@ -149,23 +149,23 @@ function ProgramForm({
        <div className="space-y-2">
         <Label htmlFor="title">Program Title</Label>
         <Input id="title" {...register("title")} placeholder="e.g., RED Campaign" />
-        {errors.title && <p className="text-sm text-destructive">{`${errors.title.message}`}</p>}
+        {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea id="description" {...register("description")} placeholder="A brief description of the program." />
-        {errors.description && <p className="text-sm text-destructive">{`${errors.description.message}`}</p>}
+        {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="lead">Program Lead</Label>
           <Input id="lead" {...register("lead")} placeholder="e.g., Nansikombi Dianah" />
-          {errors.lead && <p className="text-sm text-destructive">{`${errors.lead.message}`}</p>}
+          {errors.lead && <p className="text-sm text-destructive">{errors.lead.message}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="deadline">Deadline</Label>
           <Input id="deadline" type="date" {...register("deadline")} />
-          {errors.deadline && <p className="text-sm text-destructive">{`${errors.deadline.message}`}</p>}
+          {errors.deadline && <p className="text-sm text-destructive">{errors.deadline.message}</p>}
         </div>
       </div>
        <div className="grid grid-cols-2 gap-4">
@@ -188,18 +188,18 @@ function ProgramForm({
               </Select>
             )}
           />
-          {errors.status && <p className="text-sm text-destructive">{`${errors.status.message}`}</p>}
+          {errors.status && <p className="text-sm text-destructive">{errors.status.message}</p>}
         </div>
          <div className="space-y-2">
             <Label htmlFor="valuePerObjective">Value per Objective (UGX)</Label>
             <Input id="valuePerObjective" type="number" {...register("valuePerObjective")} placeholder="e.g., 50000" />
-            {errors.valuePerObjective && <p className="text-sm text-destructive">{`${errors.valuePerObjective.message}`}</p>}
+            {errors.valuePerObjective && <p className="text-sm text-destructive">{errors.valuePerObjective.message}</p>}
         </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="objectives">Key Objectives (one per line)</Label>
         <Textarea id="objectives" {...register("objectives")} placeholder="List each objective on a new line." />
-        {errors.objectives && <p className="text-sm text-destructive">{`${errors.objectives.message}`}</p>}
+        {errors.objectives && <p className="text-sm text-destructive">{errors.objectives.message}</p>}
       </div>
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
