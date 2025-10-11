@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -9,13 +10,14 @@ import {
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, where } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
-import { Target, Flag } from 'lucide-react';
+import { Target, Flag, AlertTriangle } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
 import { isPast, parseISO } from 'date-fns';
 import { cn, formatDateSafe } from '@/lib/utils';
+import { useMemo } from 'react';
 
 const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -23,8 +25,14 @@ const priorityColors: { [key: string]: string } = {
     Low: "border-blue-500 bg-blue-500/10 text-blue-500",
 };
 
+interface KeyResultsTrackerProps {
+    title?: string;
+    description?: string;
+    showAtRisk?: boolean;
+}
 
-export function KeyResultsTracker() {
+
+export function KeyResultsTracker({ title, description, showAtRisk }: KeyResultsTrackerProps) {
   const firestore = useFirestore();
   const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -32,6 +40,15 @@ export function KeyResultsTracker() {
   }, [firestore]);
 
   const { data: keyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
+
+  const atRiskKr = useMemo(() => {
+    if (!keyResults) return null;
+    // Find the KR with the lowest progress that isn't complete yet
+    return keyResults
+        .filter(kr => kr.currentProgress / kr.target < 1)
+        .sort((a,b) => (a.currentProgress / a.target) - (b.currentProgress / b.target))[0];
+  }, [keyResults]);
+
 
   const formatTarget = (kr: KeyResult) => {
     if (kr.target === 100 && kr.currentProgress <= 100) return `${kr.target}%`;
@@ -49,12 +66,21 @@ export function KeyResultsTracker() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Success Dashboard: Key Results</CardTitle>
+        <CardTitle>{title || "Success Dashboard: Key Results"}</CardTitle>
         <CardDescription>
-          Live progress against the October Operational Plan's Key Results.
+          {description || "Live progress against the October Operational Plan's Key Results."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+         {showAtRisk && atRiskKr && (
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <AlertTriangle className="h-5 w-5 text-red-500 mt-1 flex-shrink-0" />
+                <div>
+                    <p className="font-semibold text-red-600">AT RISK: {atRiskKr.title}</p>
+                    <p className="text-sm text-muted-foreground">{atRiskKr.description} is behind schedule. Consider reallocating resources.</p>
+                </div>
+            </div>
+        )}
         {isLoading &&
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="space-y-2">
