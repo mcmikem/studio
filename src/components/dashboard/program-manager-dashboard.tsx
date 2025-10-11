@@ -16,6 +16,8 @@ import { ArrowRight, CheckCircle, CircleDot, UserX } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { Button } from "../ui/button"
 import Link from "next/link"
+import { useMemo } from "react"
+import { Skeleton } from "../ui/skeleton"
 
 function TeamCoordination() {
     // This is placeholder data. In a real app, this would come from live check-in/task data.
@@ -63,12 +65,24 @@ function TeamCoordination() {
     )
 }
 
-function PartnershipPipeline({ partnerships }: { partnerships: Partnership[] | null }) {
-    // This is a simplified categorization. A real app might have this as a field.
-    const hot = partnerships?.filter(p => p.status === 'Potential').slice(0, 1) || [];
-    const warm = partnerships?.filter(p => p.status === 'Active').slice(0, 2) || [];
-    const cold = (partnerships?.length || 0) - hot.length - warm.length;
+function PartnershipPipeline({ partnerships, isLoading }: { partnerships: Partnership[] | null, isLoading: boolean }) {
+    
+    const { hotCount, warmCount, coldCount, urgentItem, upcomingItem } = useMemo(() => {
+        if (!partnerships) {
+            return { hotCount: 0, warmCount: 0, coldCount: 0, urgentItem: null, upcomingItem: null };
+        }
 
+        const hot = partnerships.filter(p => p.status === 'Potential').length;
+        const warm = partnerships.filter(p => p.status === 'Active').length;
+        const cold = partnerships.filter(p => p.status === 'Inactive').length;
+
+        // Simple logic for urgent/upcoming. A real app might use dates or keywords.
+        const urgent = partnerships.find(p => p.nextStep.toLowerCase().includes('mou'))
+        const upcoming = partnerships.find(p => p.nextStep.toLowerCase().includes('meeting') || p.nextStep.toLowerCase().includes('call'))
+
+        return { hotCount: hot, warmCount: warm, coldCount: cold, urgentItem: urgent, upcomingItem: upcoming };
+
+    }, [partnerships]);
 
     return (
         <Card>
@@ -77,29 +91,47 @@ function PartnershipPipeline({ partnerships }: { partnerships: Partnership[] | n
                 <CardDescription>A snapshot of your current partner engagement.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex justify-around text-center">
-                    <div>
-                        <p className="text-2xl font-bold">{hot.length}</p>
-                        <p className="text-sm text-muted-foreground">Hot</p>
+                {isLoading ? <Skeleton className="h-12 w-full" /> : (
+                    <div className="flex justify-around text-center">
+                        <div>
+                            <p className="text-2xl font-bold">{hotCount}</p>
+                            <p className="text-sm text-muted-foreground">Hot</p>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold">{warmCount}</p>
+                            <p className="text-sm text-muted-foreground">Warm</p>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold">{coldCount}</p>
+                            <p className="text-sm text-muted-foreground">Cold</p>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold">{warm.length}</p>
-                        <p className="text-sm text-muted-foreground">Warm</p>
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{cold > 0 ? cold : 0}</p>
-                        <p className="text-sm text-muted-foreground">Cold</p>
-                    </div>
-                </div>
+                )}
                 <div className="space-y-2">
-                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
-                        <p className="text-xs font-semibold text-red-600">URGENT</p>
-                        <p className="text-sm font-medium">Yambi Initiatives - waiting on MoU</p>
-                    </div>
-                    <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md">
-                        <p className="text-xs font-semibold text-blue-600">UPCOMING</p>
-                        <p className="text-sm font-medium">Spouts of Water meeting tomorrow 10 AM</p>
-                    </div>
+                    {isLoading ? (
+                        <>
+                            <Skeleton className="h-16 w-full" />
+                            <Skeleton className="h-16 w-full" />
+                        </>
+                    ) : (
+                        <>
+                        {urgentItem && (
+                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
+                                <p className="text-xs font-semibold text-red-600">URGENT</p>
+                                <p className="text-sm font-medium">{urgentItem.name} - {urgentItem.nextStep}</p>
+                            </div>
+                        )}
+                        {upcomingItem && (
+                             <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md">
+                                <p className="text-xs font-semibold text-blue-600">UPCOMING</p>
+                                <p className="text-sm font-medium">{upcomingItem.name} - {upcomingItem.nextStep}</p>
+                            </div>
+                        )}
+                        {!urgentItem && !upcomingItem && (
+                            <div className="p-3 text-center text-sm text-muted-foreground">No urgent action items in the pipeline.</div>
+                        )}
+                        </>
+                    )}
                 </div>
                  <Button asChild className="w-full" variant="outline">
                     <Link href="/management/partnerships">
@@ -147,7 +179,7 @@ interface DashboardProps {
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const { data: partnerships } = useCollection<Partnership>(partnershipsQuery);
+  const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
   
   return (
      <div className="flex flex-col gap-6">
@@ -159,7 +191,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
-            <PartnershipPipeline partnerships={partnerships} />
+            <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
             <QuickInsights />
             <ManagementQuickLinks />
         </div>
@@ -167,3 +199,5 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
     </div>
   )
 }
+
+    
