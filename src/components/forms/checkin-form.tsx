@@ -15,14 +15,13 @@ import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, serverTimestamp, doc } from 'firebase/firestore';
+import { collection, serverTimestamp } from 'firebase/firestore';
 import { Suspense, useEffect } from 'react';
 import Link from 'next/link';
-import { Loader2, ArrowRight, DollarSign } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
 import type { DailyPlannerAIOutput } from '@/lib/types';
 import { Separator } from '../ui/separator';
 import { useSearchParams } from 'next/navigation';
-import { createAlert } from '@/ai/flows/create-alert-flow';
 
 const checkinSchema = z.object({
   primaryMission: z.string(),
@@ -63,7 +62,7 @@ function CheckinFormComponent() {
     const submittedPlan = watch('details') as DailyPlannerAIOutput | null;
     const primaryMission = watch('primaryMission');
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = (data: any) => {
         if (!firestore || !user || !profile) {
             toast({
                 variant: 'destructive',
@@ -82,23 +81,18 @@ function CheckinFormComponent() {
         };
 
         const checkinsCollection = collection(firestore, 'checkins');
-        try {
-            await addDocumentNonBlocking(checkinsCollection, checkinData);
-
+        
+        addDocumentNonBlocking(checkinsCollection, checkinData)
+          .then(() => {
             toast({
                 title: 'Check-in Submitted!',
                 description: 'Your plan for the day is now visible to the team.',
             });
-
             router.push('/');
-        } catch (error) {
+          })
+          .catch((error) => {
             console.error("Failed to submit check-in:", error);
-            toast({
-                variant: 'destructive',
-                title: 'Submission Error',
-                description: 'Could not save your check-in. Please try again.',
-            });
-        }
+          });
     };
 
 

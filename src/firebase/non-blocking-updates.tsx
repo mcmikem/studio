@@ -25,7 +25,7 @@ export function setDocumentNonBlocking(docRef: DocumentReference, data: any, opt
       requestResourceData: data,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Re-throw the error so the caller can handle it if needed
+    // Let the original error propagate for local handling if needed
     throw error;
   });
 }
@@ -44,7 +44,7 @@ export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
       requestResourceData: data,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Re-throw the error so the caller can handle it if needed
+    // Let the original error propagate
     throw error;
   });
 }
@@ -63,7 +63,7 @@ export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) 
       requestResourceData: data,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Re-throw the error so the caller can handle it if needed
+    // Let the original error propagate
     throw error;
   });
 }
@@ -81,7 +81,7 @@ export function deleteDocumentNonBlocking(docRef: DocumentReference) {
       operation: 'delete',
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Re-throw the error so the caller can handle it if needed
+    // Let the original error propagate
     throw error;
   });
 }

@@ -83,7 +83,7 @@ export function ExpenseReportForm() {
     setValue('totalAmount', totalAmount);
   }, [totalAmount, setValue]);
 
-  const onSubmit = async (data: ExpenseFormData) => {
+  const onSubmit = (data: ExpenseFormData) => {
     if (!firestore || !user || !profile) {
       toast({
         variant: 'destructive',
@@ -118,43 +118,44 @@ export function ExpenseReportForm() {
     };
 
     const expensesCollection = collection(firestore, 'expenses');
-    try {
-      const docRef = await addDocumentNonBlocking(expensesCollection, expenseData);
-      
-      const isED = profile.role === 'Executive Director';
-      // Simplified: Assume anyone but the ED needs ED approval. The ED needs PPM approval.
-      // A real app might have a more complex role-based routing system.
-      const approverRole = isED ? "Programs & Partnerships Manager" : "Executive Director";
-      const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
-      
-      await createAlert({
-          type: 'Reminder',
-          message: alertMessage,
-          priority: 'Medium',
-          action: `/management/expenses?highlight=${docRef.id}`, // Add highlight param
-          creatorId: user.uid,
-      });
 
-      toast({
-        title: 'Expense Report Submitted!',
-        description: `Your report has been sent to the ${approverRole} for approval.`,
-      });
+    addDocumentNonBlocking(expensesCollection, expenseData)
+        .then(docRef => {
+            const isED = profile.role === 'Executive Director';
+            const approverRole = isED ? "Programs & Partnerships Manager" : "Executive Director";
+            const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
+            
+            // This is a fire-and-forget call to the AI flow
+            createAlert({
+                type: 'Reminder',
+                message: alertMessage,
+                priority: 'Medium',
+                action: `/management/expenses?highlight=${docRef.id}`,
+                creatorId: user.uid,
+            });
 
-      reset({
-        type: 'Reimbursement',
-        date: format(new Date(), 'yyyy-MM-dd'),
-        title: '',
-        items: [{ description: '', category: 'Transport', amount: 0 }],
-        totalAmount: 0,
-      });
-    } catch(e: any) {
-       console.error(e);
-       toast({
-        variant: 'destructive',
-        title: 'Submission Error',
-        description: 'Could not save your expense report. Check permissions and try again.',
-      });
-    }
+            toast({
+                title: 'Expense Report Submitted!',
+                description: `Your report has been sent to the ${approverRole} for approval.`,
+            });
+
+            reset({
+                type: 'Reimbursement',
+                date: format(new Date(), 'yyyy-MM-dd'),
+                title: '',
+                items: [{ description: '', category: 'Transport', amount: 0 }],
+                totalAmount: 0,
+            });
+        })
+        .catch(e => {
+            console.error(e);
+            // The global error emitter will catch permission errors, but this is a fallback.
+            toast({
+                variant: 'destructive',
+                title: 'Submission Error',
+                description: 'Could not save your expense report. Check permissions and try again.',
+            });
+        });
   };
 
 

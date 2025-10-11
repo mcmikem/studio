@@ -22,8 +22,8 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useUser,
   useFirestore,
+  addDocumentNonBlocking,
 } from '@/firebase';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import {
   collection,
   serverTimestamp,
@@ -67,7 +67,7 @@ export function CheckoutForm() {
     },
   });
 
-  const onSubmit = async (data: CheckoutFormData) => {
+  const onSubmit = (data: CheckoutFormData) => {
     if (!firestore || !user || !profile) {
       toast({
         variant: 'destructive',
@@ -103,8 +103,9 @@ export function CheckoutForm() {
     };
 
     const checkoutsCollection = collection(firestore, 'checkouts');
-    try {
-        const docRef = await addDocumentNonBlocking(checkoutsCollection, checkoutData);
+    
+    addDocumentNonBlocking(checkoutsCollection, checkoutData)
+      .then((docRef) => {
         if (docRef?.id) {
           setSubmittedCheckoutId(docRef.id);
         }
@@ -112,14 +113,12 @@ export function CheckoutForm() {
         title: 'Check-out Submitted!',
         description: 'Your impact report has been saved.',
         });
-    } catch (e) {
+      })
+      .catch((e: any) => {
+        // Error is already emitted globally by non-blocking function
+        // but we can add specific UI feedback here if needed.
         console.error("Failed to submit checkout", e)
-         toast({
-            variant: "destructive",
-            title: "Submission Error",
-            description: "Could not save your checkout report. Please try again.",
-        });
-    }
+      });
   };
   
   if (submittedCheckoutId) {

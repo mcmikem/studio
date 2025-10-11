@@ -5,8 +5,9 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase';
-import { createAlert, type AlertInput } from '@/ai/flows/create-alert-flow';
+import { useUser, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import { createAlert as createAlertFlow, type AlertInput } from '@/ai/flows/create-alert-flow';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -48,7 +49,7 @@ export function CreateAlertForm() {
     },
   });
 
-  const onSubmit = async (data: AlertFormData) => {
+  const onSubmit = (data: AlertFormData) => {
     if (!user) {
       toast({
         variant: 'destructive',
@@ -63,21 +64,22 @@ export function CreateAlertForm() {
       creatorId: user.uid,
     };
 
-    try {
-      await createAlert(alertInput);
-      toast({
-        title: 'Alert Sent!',
-        description: 'Your announcement has been broadcast to the team.',
+    createAlertFlow(alertInput)
+      .then(() => {
+        toast({
+          title: 'Alert Sent!',
+          description: 'Your announcement has been broadcast to the team.',
+        });
+        reset();
+      })
+      .catch((e: any) => {
+        console.error(e);
+        toast({
+          variant: 'destructive',
+          title: 'Failed to Send Alert',
+          description: e.message || 'There was an error sending the alert. Please try again.',
+        });
       });
-      reset();
-    } catch (e: any) {
-      console.error(e);
-      toast({
-        variant: 'destructive',
-        title: 'Failed to Send Alert',
-        description: e.message || 'There was an error sending the alert. Please try again.',
-      });
-    }
   };
 
   return (

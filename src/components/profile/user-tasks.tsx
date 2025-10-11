@@ -26,7 +26,7 @@ import { Input } from '../ui/input';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, PlusCircle } from 'lucide-react';
 import { Separator } from '../ui/separator';
@@ -52,7 +52,7 @@ function NewTaskForm() {
     resolver: zodResolver(taskSchema),
   });
 
-  const onSubmit = async (data: z.infer<typeof taskSchema>) => {
+  const onSubmit = (data: z.infer<typeof taskSchema>) => {
     if (!user || !firestore) return;
 
     const tasksCollection = collection(firestore, 'users', user.uid, 'tasks');
@@ -103,7 +103,7 @@ export function UserTasks() {
   const handleTaskToggle = (taskId: string, completed: boolean) => {
     if (!user || !firestore) return;
     const taskRef = doc(firestore, 'users', user.uid, 'tasks', taskId);
-    updateDoc(taskRef, { completed: completed }).catch(console.error); // Non-blocking update
+    updateDocumentNonBlocking(taskRef, { completed: completed });
   };
 
   const pendingTasks = tasks?.filter((task) => !task.completed) || [];

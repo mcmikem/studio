@@ -32,6 +32,7 @@ import {
   sampleAlerts,
   sampleCalendarEvents,
 } from "@/lib/data"
+import { setDocumentNonBlocking, addDocumentNonBlocking } from "./non-blocking-updates"
 
 // This maps specific emails to roles and names within the Omuto organization.
 const approvedUsers: Record<string, { name: string; role: string }> = {
@@ -177,20 +178,8 @@ async function createUserProfile(
       createdAt: serverTimestamp(),
     }
 
-    try {
-       await setDoc(userRef, userProfile);
-       console.log("User profile created successfully.");
-    } catch (error) {
-        console.error("Error creating user profile:", error)
-        errorEmitter.emit(
-          "permission-error",
-          new FirestorePermissionError({
-            path: userRef.path,
-            operation: "write",
-            requestResourceData: userProfile,
-          })
-        )
-    }
+    setDocumentNonBlocking(userRef, userProfile, { merge: true });
+    
   } else {
      console.log("User profile already exists, skipping creation.");
   }
