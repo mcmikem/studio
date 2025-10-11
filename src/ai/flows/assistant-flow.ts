@@ -7,7 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z, defineFlow } from 'genkit';
+import { z } from 'genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 
 // Note: The data-fetching tools have been removed from this file.
@@ -36,24 +36,26 @@ const exampleActionTool = ai.defineTool(
 );
 
 // This is the Genkit flow that will be exposed via the API route.
-export const assistantFlow = defineFlow(
+export const assistantFlow = ai.defineFlow(
   {
     name: 'assistantFlow',
     inputSchema: z.string(),
     outputSchema: z.string(),
-    stream: true, // This enables streaming for the flow
+    stream: true,
   },
   async (prompt, streamingCallback) => {
-    const { stream, response } = await ai.generateStream({
+    const { stream, response } = ai.generateStream({
       prompt: prompt,
       system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
       tools: [exampleActionTool],
     });
 
     for await (const chunk of stream) {
-        streamingCallback(chunk.text());
+        if(chunk.text) {
+          streamingCallback(chunk.text);
+        }
     }
     
-    return (await response).text();
+    return (await response).text;
   }
 );
