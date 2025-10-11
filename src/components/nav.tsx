@@ -182,8 +182,19 @@ export function AppSidebar() {
         </SidebarGroup>
         
         <SidebarGroup data-mobile={isMobile}>
-            <SidebarGroupLabel data-mobile={isMobile}>Support & Personal</SidebarGroupLabel>
+            <SidebarGroupLabel data-mobile={isMobile}>AI & Personal</SidebarGroupLabel>
             <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    href="/assistant"
+                    isActive={isActive('/assistant')}
+                    tooltip="AI Assistant"
+                    onClick={handleLinkClick}
+                  >
+                    <Sparkles />
+                    <span>AI Assistant</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton href="/chat" isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
                         <MessageSquare />

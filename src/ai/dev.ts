@@ -7,6 +7,7 @@
 
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
+import { defineFlow, runFlow } from 'genkit/flow';
 
 genkit({
   plugins: [googleAI()],
@@ -18,3 +19,4 @@ genkit({
 export * from './flows/create-alert-flow';
 export * from './flows/daily-planner-flow';
 export * from './flows/impact-story-generator';
+export * from './flows/assistant-flow';
