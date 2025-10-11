@@ -3,3 +3,4 @@
 import './flows/create-alert-flow';
 import './flows/daily-planner-flow';
 import './flows/impact-story-generator';
+import './flows/omuto-ai-flow';

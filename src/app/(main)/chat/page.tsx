@@ -13,36 +13,55 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, MessageSquare } from 'lucide-react';
+import { Send, MessageSquare, Wand } from 'lucide-react';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, addDoc } from 'firebase/firestore';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe } from '@/lib/utils';
 import { marked } from 'marked';
+import { omutoAIFlow } from '@/ai/flows/omuto-ai-flow';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+
 
 function MessageItem({ message }: { message: Message }) {
   const { user } = useUser();
   const isCurrentUser = user?.uid === message.userId;
+  const isAI = message.userId === 'omuto-ai';
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
 
-  // Sanitize and render markdown content
-  const renderedText = { __html: marked.parse(message.text) as string };
+  const renderedText = { __html: marked.parse(message.text || "") as string };
 
   return (
-    <div className={`flex items-start gap-3 ${isCurrentUser ? 'flex-row-reverse' : ''}`}>
+    <div className={cn('flex items-start gap-3', isCurrentUser && 'flex-row-reverse', isAI && 'justify-start')}>
       <Avatar className="h-8 w-8 border" data-ai-hint="person avatar">
-        <AvatarImage src={message.userAvatar} />
-        <AvatarFallback>{getInitials(message.userName)}</AvatarFallback>
+         {isAI ? (
+            <AvatarFallback className="bg-primary/20 text-primary"><Wand className="h-4 w-4" /></AvatarFallback>
+        ) : (
+          <>
+            <AvatarImage src={message.userAvatar} />
+            <AvatarFallback>{getInitials(message.userName)}</AvatarFallback>
+          </>
+        )}
       </Avatar>
-      <div className={`max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2 ${isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+      <div className={cn(
+          'max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2', 
+          isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-muted',
+          isAI && 'bg-background border'
+        )}>
+        <p className="font-semibold text-xs mb-1">{isAI ? "Omuto AI" : message.userName}</p>
         <div
           className="prose prose-sm dark:prose-invert"
           dangerouslySetInnerHTML={renderedText}
         />
-        <p className={`text-xs mt-1 ${isCurrentUser ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+        <p className={cn(
+            'text-xs mt-1', 
+            isCurrentUser ? 'text-primary-foreground/70' : 'text-muted-foreground',
+            isAI && 'text-muted-foreground'
+            )}>
           {formatDateSafe(message.createdAt)}
         </p>
       </div>
@@ -66,7 +85,6 @@ export default function ChatPage() {
   const { data: messages, isLoading } = useCollection<Message>(messagesQuery);
 
   useEffect(() => {
-    // Scroll to the bottom when new messages arrive
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
     }
@@ -77,24 +95,71 @@ export default function ChatPage() {
     if (!newMessage.trim() || !user || !profile) return;
 
     setIsSending(true);
-    const messageData = {
-      text: newMessage,
-      userId: user.uid,
-      userName: profile.name,
-      userAvatar: user.photoURL || '',
-      createdAt: serverTimestamp(),
-    };
-
+    const text = newMessage;
+    setNewMessage('');
+    
     const messagesCollection = collection(firestore, 'messages');
-    try {
-      await addDocumentNonBlocking(messagesCollection, messageData);
-      setNewMessage('');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // Optionally, show a toast notification for the error
-    } finally {
-      setIsSending(false);
+
+    // If message starts with @omuto, it's a query for the AI
+    if (text.startsWith('@omuto')) {
+       // Add user's message to Firestore immediately
+      const userMessageData = {
+        text: text,
+        userId: user.uid,
+        userName: profile.name,
+        userAvatar: user.photoURL || '',
+        createdAt: serverTimestamp(),
+      };
+      await addDoc(messagesCollection, userMessageData);
+
+      try {
+        const question = text.replace('@omuto', '').trim();
+        const aiHistory = messages
+          ?.filter(m => m.text.startsWith('@omuto') || m.userId === 'omuto-ai')
+          .map(m => ({
+            role: m.userId === 'omuto-ai' ? 'model' : 'user',
+            content: [{ text: m.text }]
+          })) || [];
+
+        const aiResponse = await omutoAIFlow({ question, history: aiHistory });
+        
+        const aiMessageData = {
+          text: aiResponse.answer,
+          userId: 'omuto-ai',
+          userName: 'Omuto AI',
+          userAvatar: '', // AI has no avatar
+          createdAt: serverTimestamp(),
+        };
+        await addDoc(messagesCollection, aiMessageData);
+
+      } catch (error) {
+        console.error('Error with Omuto AI:', error);
+        const errorMessageData = {
+            text: "Sorry, I encountered an error and couldn't process your request.",
+            userId: 'omuto-ai',
+            userName: 'Omuto AI',
+            userAvatar: '',
+            createdAt: serverTimestamp(),
+        };
+        await addDoc(messagesCollection, errorMessageData);
+      }
+    } else {
+        // Regular team chat message
+        const messageData = {
+          text: text,
+          userId: user.uid,
+          userName: profile.name,
+          userAvatar: user.photoURL || '',
+          createdAt: serverTimestamp(),
+        };
+        try {
+          await addDocumentNonBlocking(messagesCollection, messageData);
+        } catch (error) {
+          console.error('Error sending message:', error);
+        }
     }
+
+    setIsSending(false);
   };
 
   return (
@@ -126,10 +191,16 @@ export default function ChatPage() {
             </div>
           </ScrollArea>
           
-          <div className="p-4 border-t">
+          <div className="p-4 border-t space-y-2">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="border-primary/50 text-primary">
+                <Wand className="h-3 w-3 mr-1.5"/>
+                Start with <span className="font-bold mx-1">@omuto</span> to ask the AI
+              </Badge>
+            </div>
             <form onSubmit={handleSendMessage} className="flex items-center gap-2">
               <Textarea
-                placeholder="Type your message..."
+                placeholder="Type your message or ask @omuto..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => {
