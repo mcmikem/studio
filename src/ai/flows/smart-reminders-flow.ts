@@ -51,12 +51,18 @@ export const generateSmartReminders = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await ai.generate({
-      prompt: smartRemindersPrompt,
-      input: { userId: input.userId, userName: input.userName, userRole: input.userRole },
-      model: 'googleai/gemini-2.5-flash',
-      config: {
-        temperature: 0.5, // Be more creative with suggestions
-      },
+        prompt: {
+            prompt: smartRemindersPrompt,
+            input: {
+                userId: input.userId,
+                userName: input.userName,
+                userRole: input.userRole
+            }
+        },
+        model: 'googleai/gemini-2.5-flash',
+        config: {
+            temperature: 0.5, // Be more creative with suggestions
+        },
     });
 
     const output = llmResponse.output();
