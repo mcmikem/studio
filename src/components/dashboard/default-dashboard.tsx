@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User } from "@/lib/types"
+import type { User, Checkout, ImpactMetric } from "@/lib/types"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
 import { DailyActions } from "./daily-actions"
@@ -12,18 +12,24 @@ import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardHeader } from "./dashboard-header"
 import { QuickStatsSummary } from "./quick-stats-summary"
 
-export function DefaultDashboard({ profile }: { profile: User }) {
+interface DashboardProps {
+  profile: User;
+  checkouts: Checkout[] | null;
+  metrics: ImpactMetric[] | null;
+}
+
+export function DefaultDashboard({ profile, checkouts, metrics }: DashboardProps) {
 
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
        <div className="col-span-full mt-6">
-          <QuickStatsSummary />
+          <QuickStatsSummary metrics={metrics} />
       </div>
 
       <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <TeamPulse />
+          <TeamPulse checkouts={checkouts} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
           <DailyActions />

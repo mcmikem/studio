@@ -10,25 +10,11 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Briefcase, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-
-const statusIcons: { [key: string]: React.ReactNode } = {
-    "On Track": <CheckCircle2 className="h-4 w-4 text-green-500" />,
-    "At Risk": <AlertTriangle className="h-4 w-4 text-yellow-500" />,
-    "Delayed": <Clock className="h-4 w-4 text-red-500" />,
-};
-
-const statusColors: { [key: string]: string } = {
-    "On Track": "text-green-500",
-    "At Risk": "text-yellow-500",
-    "Delayed": "text-red-500",
-};
 
 const chartColors: { [key: string]: string } = {
   "On Track": "hsl(var(--chart-2))",
@@ -38,14 +24,7 @@ const chartColors: { [key: string]: string } = {
 };
 
 
-export function ProgramsOverview() {
-  const firestore = useFirestore();
-  const programsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'programs'), orderBy('deadline'));
-  }, [firestore]);
-
-  const { data: programs, isLoading } = useCollection<Program>(programsQuery);
+export function ProgramsOverview({ programs }: { programs: Program[] | null }) {
 
   const programStats = useMemo(() => {
     if (!programs) {
@@ -91,7 +70,7 @@ export function ProgramsOverview() {
                         <CardTitle className="text-sm font-medium">On Track</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold text-green-500">{programStats.onTrack}</div>}
+                        <div className="text-2xl font-bold text-green-500">{programStats.onTrack}</div>
                         <p className="text-xs text-muted-foreground">of {programStats.total} active programs</p>
                     </CardContent>
                 </Card>
@@ -100,7 +79,7 @@ export function ProgramsOverview() {
                         <CardTitle className="text-sm font-medium">At Risk</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold text-yellow-500">{programStats.atRisk}</div>}
+                        <div className="text-2xl font-bold text-yellow-500">{programStats.atRisk}</div>
                          <p className="text-xs text-muted-foreground">of {programStats.total} active programs</p>
                     </CardContent>
                 </Card>
@@ -109,7 +88,7 @@ export function ProgramsOverview() {
                         <CardTitle className="text-sm font-medium">Delayed</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        {isLoading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold text-red-500">{programStats.delayed}</div>}
+                        <div className="text-2xl font-bold text-red-500">{programStats.delayed}</div>
                          <p className="text-xs text-muted-foreground">of {programStats.total} active programs</p>
                     </CardContent>
                 </Card>
@@ -122,8 +101,7 @@ export function ProgramsOverview() {
                         <CardTitle>Program Health Distribution</CardTitle>
                     </CardHeader>
                     <CardContent>
-                         {isLoading && <div className="flex justify-center items-center h-64"><Skeleton className="h-48 w-48 rounded-full" /></div>}
-                         {!isLoading && programStats.chartData.length > 0 && (
+                         {programStats.chartData.length > 0 && (
                             <ResponsiveContainer width="100%" height={280}>
                                 <PieChart>
                                 <Tooltip
@@ -151,7 +129,7 @@ export function ProgramsOverview() {
                                 </PieChart>
                             </ResponsiveContainer>
                          )}
-                         {!isLoading && programStats.chartData.length === 0 && (
+                         {programStats.chartData.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
                                 <Briefcase className="h-12 w-12" />
                                 <p className="mt-4 font-semibold">No Active Programs Found</p>

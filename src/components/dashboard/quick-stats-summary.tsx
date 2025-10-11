@@ -1,15 +1,8 @@
 
 "use client"
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Skeleton } from "../ui/skeleton"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
-import { collection, query, where } from "firebase/firestore"
 import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
 import { useMemo } from "react"
@@ -31,23 +24,13 @@ const metricIcons: { [key: string]: React.ElementType } = {
   default: Target,
 }
 
-export function QuickStatsSummary() {
-  const firestore = useFirestore()
-  const metricsQuery = useMemoFirebase(() => {
-    if (!firestore) return null
-    return query(
-      collection(firestore, "impact-metrics"),
-      where("metric", "in", FEATURED_METRICS)
-    )
-  }, [firestore]);
-
-  const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery)
+export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null }) {
 
   const displayMetrics = useMemo(() => {
-    if (isLoading) return Array(FEATURED_METRICS.length).fill(null);
+    if (!metrics) return Array(FEATURED_METRICS.length).fill(null);
     return FEATURED_METRICS.map(
       (fm) =>
-        metrics?.find((m) => m.metric === fm) || {
+        metrics.find((m) => m.metric === fm) || {
           id: fm,
           metric: fm,
           current: 0,
@@ -55,12 +38,12 @@ export function QuickStatsSummary() {
           isPlaceholder: true,
         }
     )
-  }, [metrics, isLoading])
+  }, [metrics])
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {displayMetrics.map((metric, i) => {
-        if (isLoading || !metric) {
+        if (!metric) {
           return (
              <Card key={i} className="p-4 flex flex-col justify-between">
               <Skeleton className="h-7 w-7 mb-4" />

@@ -135,40 +135,23 @@ function MonthlyActivityReport() {
     )
 }
 
-function FinancialOverview() {
-  const firestore = useFirestore()
+function FinancialOverview({ activities }: { activities: Activity[] | null }) {
 
-  const startOfMonth = useMemo(() => {
-    const now = new Date()
-    return Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth(), 1))
-  }, [])
+  const { totalSpent, totalValue, isLoading } = useMemo(() => {
+    if (!activities) return { totalSpent: 0, totalValue: 0, isLoading: true };
+    
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const monthlyActivities = activities.filter(act => act.loggedAt.toDate() >= startOfMonth);
 
-  const activitiesQuery = useMemo(() => {
-    if (!firestore) return null
-    return query(
-      collection(firestore, "activities"),
-      where("loggedAt", ">=", startOfMonth)
-    )
-  }, [startOfMonth, firestore])
-
-  const { data: activities, isLoading } = useCollection<Activity>(
-    activitiesQuery
-  )
+    const spent = monthlyActivities.reduce((sum, activity) => sum + activity.actualCost, 0);
+    const value = monthlyActivities.reduce((sum, activity) => sum + activity.totalValue, 0);
+    
+    return { totalSpent: spent, totalValue: value, isLoading: false };
+  }, [activities]);
 
   const monthlyBudget = 2000000 // Mock budget for now
-
-  const totalSpent = useMemo(() => {
-    return (
-      activities?.reduce((sum, activity) => sum + activity.actualCost, 0) || 0
-    )
-  }, [activities])
-
-  const totalValue = useMemo(() => {
-    return (
-      activities?.reduce((sum, activity) => sum + activity.totalValue, 0) || 0
-    )
-  }, [activities])
-
   const remainingBudget = monthlyBudget - totalSpent
 
   return (
@@ -239,6 +222,21 @@ function FinancialOverview() {
 import { Label } from '@/components/ui/label';
 import { useCollection } from '@/firebase';
 export default function ReportsPage() {
+  const firestore = useFirestore();
+  const activitiesQuery = useMemo(() => {
+    if (!firestore) return null;
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    return query(
+      collection(firestore, "activities"),
+      where("loggedAt", ">=", Timestamp.fromDate(startOfMonth))
+    );
+  }, [firestore]);
+  
+  const { data: activities } = useCollection<Activity>(activitiesQuery);
+
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -249,10 +247,8 @@ export default function ReportsPage() {
           Turn your operational data into actionable intelligence.
         </p>
       </header>
-      <FinancialOverview />
+      <FinancialOverview activities={activities} />
       <MonthlyActivityReport />
     </div>
   );
 }
-
-    

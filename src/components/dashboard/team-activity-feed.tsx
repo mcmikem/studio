@@ -8,8 +8,9 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { RecentCheckouts } from "./recent-checkouts"
+import type { Checkout } from "@/lib/types"
 
-export function TeamPulse() {
+export function TeamPulse({ checkouts }: { checkouts: Checkout[] | null }) {
   return (
     <Card>
       <CardHeader>
@@ -19,7 +20,7 @@ export function TeamPulse() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <RecentCheckouts />
+        <RecentCheckouts checkouts={checkouts} />
       </CardContent>
     </Card>
   )

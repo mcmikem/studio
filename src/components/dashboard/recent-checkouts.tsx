@@ -2,9 +2,7 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { RecentCheckout } from '@/lib/types';
-import { collection, query, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
 import { tagColors } from '@/lib/data';
@@ -40,19 +38,11 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
 }
 
 
-export function RecentCheckouts() {
-  const firestore = useFirestore();
-
-  const checkoutsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10));
-  }, []);
-
-  const { data: checkouts, isLoading } = useCollection<RecentCheckout>(checkoutsQuery);
+export function RecentCheckouts({ checkouts }: { checkouts: RecentCheckout[] | null }) {
 
   return (
       <div className="space-y-4">
-        {isLoading && (
+        {!checkouts ? (
             Array.from({ length: 5 }).map((_, i) => (
                  <div key={i} className="flex items-center space-x-4">
                     <Skeleton className="h-9 w-9 rounded-full" />
@@ -66,16 +56,13 @@ export function RecentCheckouts() {
                     </div>
                 </div>
             ))
-        )}
-        {checkouts && checkouts.length > 0 ? (
+        ) : checkouts.length > 0 ? (
           checkouts.map((checkout) => <CheckoutItem key={checkout.id} checkout={checkout} />)
         ) : (
-          !isLoading && (
             <div className="flex flex-col items-center justify-center h-24 text-center text-muted-foreground">
                 <MessageSquareText className="h-8 w-8" />
                 <p className="mt-2 text-sm">No activity yet today. Post an update to get started!</p>
             </div>
-          )
         )}
       </div>
   );

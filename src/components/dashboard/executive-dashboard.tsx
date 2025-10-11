@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User } from "@/lib/types"
+import type { User, Program, Checkout } from "@/lib/types"
 import { Alerts } from "./alerts"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
@@ -11,7 +11,15 @@ import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
 import { DashboardHeader } from "./dashboard-header"
 
-export function ExecutiveDashboard({ profile }: { profile: User }) {
+interface DashboardProps {
+  profile: User;
+  programs: Program[] | null;
+  checkouts: Checkout[] | null;
+  metrics: any; // Add correct type
+}
+
+
+export function ExecutiveDashboard({ profile, programs, checkouts, metrics }: DashboardProps) {
 
   return (
     <div className="flex flex-col gap-6">
@@ -19,11 +27,11 @@ export function ExecutiveDashboard({ profile }: { profile: User }) {
 
        <DashboardGrid className="lg:grid-cols-3 mt-0">
         <div className="col-span-full">
-            <QuickStatsSummary />
+            <QuickStatsSummary metrics={metrics} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <ProgramsOverview />
-            <TeamPulse />
+            <ProgramsOverview programs={programs} />
+            <TeamPulse checkouts={checkouts} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <TeamToday />

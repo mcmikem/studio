@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User } from "@/lib/types"
+import type { User, Checkout } from "@/lib/types"
 import { DailyActions } from "./daily-actions"
 import { TeamPulse } from "./team-activity-feed"
 import { MyPriorities } from "./my-priorities"
@@ -9,7 +9,13 @@ import { TeamToday } from "./team-today"
 import { DashboardGrid } from "./dashboard-grid"
 import { DashboardHeader } from "./dashboard-header"
 
-export function FieldStaffDashboard({ profile }: { profile: User }) {
+
+interface DashboardProps {
+  profile: User;
+  checkouts: Checkout[] | null;
+}
+
+export function FieldStaffDashboard({ profile, checkouts }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
@@ -21,7 +27,7 @@ export function FieldStaffDashboard({ profile }: { profile: User }) {
           <TeamToday />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-          <TeamPulse />
+          <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>
     </div>

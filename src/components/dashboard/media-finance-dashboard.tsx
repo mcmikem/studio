@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User } from "@/lib/types"
+import type { User, Expense, Activity } from "@/lib/types"
 import {
   ArrowRight,
   Check,
@@ -18,18 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card"
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
-import {
-  collection,
-  limit,
-  orderBy,
-  query,
-  Timestamp,
-  where,
-  doc,
-} from "firebase/firestore"
+import { useFirestore, useUser } from "@/firebase"
 import { useMemo } from "react"
-import type { Activity, Expense } from "@/lib/types"
 import { Skeleton } from "../ui/skeleton"
 import {
   Table,
@@ -51,6 +41,7 @@ import { createAlert } from "@/ai/flows/create-alert-flow"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"
 import { DashboardHeader } from "./dashboard-header"
+import { doc } from "firebase/firestore"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-UG", {
@@ -60,51 +51,24 @@ const formatCurrency = (value: number) => {
   }).format(value)
 }
 
-function FinancialOverview() {
-  const firestore = useFirestore()
-
-  const startOfMonth = useMemo(() => {
-    const now = new Date()
-    return Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth(), 1))
-  }, [])
-
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null
-    return query(
-      collection(firestore, "activities"),
-      where("loggedAt", ">=", startOfMonth)
-    )
-  }, [startOfMonth, firestore])
-
-  const { data: activities, isLoading } = useCollection<Activity>(
-    activitiesQuery
-  )
-
+function FinancialOverview({ activities }: { activities: Activity[] | null }) {
   const monthlyBudget = 2000000 // Mock budget for now
 
-  const totalSpent = useMemo(() => {
-    return (
-      activities?.reduce((sum, activity) => sum + activity.actualCost, 0) || 0
-    )
-  }, [activities])
+  const { totalSpent, totalValue } = useMemo(() => {
+    if (!activities) return { totalSpent: 0, totalValue: 0 };
+    
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const monthlyActivities = activities.filter(act => act.loggedAt.toDate() >= startOfMonth);
 
-  const totalValue = useMemo(() => {
-    return (
-      activities?.reduce((sum, activity) => sum + activity.totalValue, 0) || 0
-    )
-  }, [activities])
+    const spent = monthlyActivities.reduce((sum, activity) => sum + activity.actualCost, 0);
+    const value = monthlyActivities.reduce((sum, activity) => sum + activity.totalValue, 0);
+    
+    return { totalSpent: spent, totalValue: value };
+  }, [activities]);
 
-  const remainingBudget = monthlyBudget - totalSpent
-
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Skeleton className="h-32" />
-        <Skeleton className="h-32" />
-        <Skeleton className="h-32" />
-      </div>
-    )
-  }
+  const remainingBudget = monthlyBudget - totalSpent;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -154,30 +118,18 @@ function FinancialOverview() {
   )
 }
 
-function PaymentQueue() {
+function PaymentQueue({ expenses }: { expenses: Expense[] | null }) {
   const firestore = useFirestore()
   const { toast } = useToast()
   
-  const pendingQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(
-      collection(firestore, "expenses"),
-      where("status", "==", "Pending"),
-      orderBy("createdAt", "desc")
-    );
-  }, [firestore]);
-
-  const approvedQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(
-      collection(firestore, "expenses"),
-      where("status", "==", "Approved"),
-      orderBy("createdAt", "desc")
-    );
-  }, [firestore]);
-
-  const { data: pendingExpenses, isLoading: isLoadingPending } = useCollection<Expense>(pendingQuery);
-  const { data: approvedExpenses, isLoading: isLoadingApproved } = useCollection<Expense>(approvedQuery);
+  const { pendingExpenses, approvedExpenses } = useMemo(() => {
+    if (!expenses) return { pendingExpenses: [], approvedExpenses: [] };
+    return {
+        pendingExpenses: expenses.filter(e => e.status === 'Pending'),
+        approvedExpenses: expenses.filter(e => e.status === 'Approved'),
+    }
+  }, [expenses]);
+  
   const { user: currentUser } = useUser();
 
   const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected' | 'Cleared') => {
@@ -208,8 +160,6 @@ function PaymentQueue() {
     }
   };
 
-  const isLoading = isLoadingPending || isLoadingApproved;
-
   const renderTable = (expenses: Expense[], type: 'pending' | 'approved') => (
     <Table>
       <TableHeader>
@@ -221,15 +171,6 @@ function PaymentQueue() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {isLoading &&
-          Array.from({ length: 2 }).map((_, i) => (
-            <TableRow key={i}>
-              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-              <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
-            </TableRow>
-          ))}
         {expenses && expenses.length > 0 ? (
           expenses.map((expense) => (
             <TableRow key={expense.id}>
@@ -256,13 +197,11 @@ function PaymentQueue() {
             </TableRow>
           ))
         ) : (
-          !isLoading && (
             <TableRow>
               <TableCell colSpan={4} className="text-center h-24">
                 The {type === 'pending' ? 'approval' : 'payment'} queue is empty.
               </TableCell>
             </TableRow>
-          )
         )}
       </TableBody>
     </Table>
@@ -277,11 +216,11 @@ function PaymentQueue() {
       <CardContent className="space-y-6">
         <div>
           <h3 className="font-semibold mb-2 flex items-center gap-2"><Badge variant="outline" className="border-yellow-500 bg-yellow-500/10 text-yellow-500">Pending Approval</Badge></h3>
-          {renderTable(pendingExpenses || [], 'pending')}
+          {renderTable(pendingExpenses, 'pending')}
         </div>
          <div>
           <h3 className="font-semibold mb-2 flex items-center gap-2"><Badge variant="outline" className="border-green-500 bg-green-500/10 text-green-500">Awaiting Payment</Badge></h3>
-          {renderTable(approvedExpenses || [], 'approved')}
+          {renderTable(approvedExpenses, 'approved')}
         </div>
         <Button asChild className="mt-4 w-full" variant="outline">
           <Link href="/management/expenses">
@@ -293,7 +232,14 @@ function PaymentQueue() {
   )
 }
 
-export function MediaFinanceDashboard({ profile }: { profile: User }) {
+interface DashboardProps {
+  profile: User;
+  activities: Activity[] | null;
+  pendingExpenses: Expense[] | null;
+}
+
+
+export function MediaFinanceDashboard({ profile, activities, pendingExpenses }: DashboardProps) {
 
   return (
     <div className="flex flex-col gap-6">
@@ -308,12 +254,12 @@ export function MediaFinanceDashboard({ profile }: { profile: User }) {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <FinancialOverview />
+                <FinancialOverview activities={activities} />
             </CardContent>
             </Card>
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <PaymentQueue />
+            <PaymentQueue expenses={pendingExpenses} />
              <Card>
               <CardHeader>
                 <CardTitle>Media Asset Library</CardTitle>
