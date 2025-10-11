@@ -1,6 +1,6 @@
 'use server';
 
-import { POST } from '@genkit-ai/next';
-import '@/ai'; // This registers the flows
+import { POST } from '@genkit-ai/next/server';
+import '@/ai/index'; // This registers the flows
 
 export { POST };
