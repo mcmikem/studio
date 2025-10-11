@@ -7,9 +7,8 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z, defineFlow } from 'genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import {defineFlow} from '@genkit-ai/flow';
 
 // Note: The data-fetching tools have been removed from this file.
 // The client is now responsible for fetching data and passing it into the prompt.
