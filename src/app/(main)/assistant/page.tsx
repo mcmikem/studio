@@ -104,7 +104,7 @@ export default function AssistantPage() {
       // Add a placeholder for the assistant's response
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
-      const { stream, response } = await streamAssistant(promptWithContext);
+      const { stream, response } = streamAssistant(promptWithContext);
       
       for await (const chunk of stream) {
         if (chunk.text) {

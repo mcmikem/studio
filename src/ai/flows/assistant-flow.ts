@@ -56,15 +56,14 @@ export const assistantFlow = ai.defineFlow(
 );
 
 
-export async function streamAssistant(prompt: string) {
+export function streamAssistant(prompt: string) {
+    // This function now correctly returns the stream and response promise
+    // without awaiting it on the server. The client is responsible for handling them.
     const { stream, response } = ai.generateStream({
         prompt: prompt,
         system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
-        tools: [exampleActionTool], // Keeping tool structure for future action-based tools
+        tools: [exampleActionTool],
     });
-
-    // The response promise must be awaited to ensure the flow completes.
-    await response;
     
     return {stream, response};
 }
