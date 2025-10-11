@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,33 +18,52 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
-import type { WeeklyWorkplan } from '@/lib/types';
+import type { WeeklyWorkplan, TeamWeeklyPlan } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarCheck, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+
+const individualTaskSchema = z.object({
+  value: z.string().min(1, 'Task description cannot be empty.'),
+});
 
 const workplanSchema = z.object({
-  priorities: z.array(z.object({ value: z.string().min(1, 'Priority cannot be empty.') })).min(1, 'At least one priority is required.'),
+  individualTasks: z.array(individualTaskSchema).min(1, 'Please add at least one personal task.'),
 });
 
 type WorkplanFormData = z.infer<typeof workplanSchema>;
 
-function NewWorkplanForm({ weekOf, onPlanCreated }: { weekOf: Date, onPlanCreated: () => void }) {
+function FinalizeWorkplanForm({
+  teamPlan,
+  onPlanCreated,
+}: {
+  teamPlan: TeamWeeklyPlan;
+  onPlanCreated: () => void;
+}) {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm<WorkplanFormData>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<WorkplanFormData>({
     resolver: zodResolver(workplanSchema),
     defaultValues: {
-      priorities: [{ value: '' }],
+      individualTasks: [{ value: '' }],
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control,
-    name: 'priorities',
+    name: 'individualTasks',
   });
 
   const onSubmit = async (data: WorkplanFormData) => {
@@ -52,13 +72,13 @@ function NewWorkplanForm({ weekOf, onPlanCreated }: { weekOf: Date, onPlanCreate
       return;
     }
 
-    const weekStartDate = startOfWeek(weekOf, { weekStartsOn: 1 });
-
     const newPlan: Omit<WeeklyWorkplan, 'id'> = {
       userId: user.uid,
       userName: profile.name,
-      weekOf: Timestamp.fromDate(weekStartDate),
-      keyPriorities: data.priorities.map(p => p.value),
+      weekOf: teamPlan.weekOf,
+      teamPlanId: teamPlan.id,
+      teamPriorities: teamPlan.keyPriorities,
+      individualTasks: data.individualTasks.map(t => t.value),
       createdAt: Timestamp.now(),
     };
 
@@ -67,91 +87,178 @@ function NewWorkplanForm({ weekOf, onPlanCreated }: { weekOf: Date, onPlanCreate
 
     toast({
       title: 'Workplan Saved!',
-      description: `Your plan for the week of ${format(weekStartDate, 'MMM do')} has been saved.`,
+      description: `Your plan for the week has been finalized.`,
     });
     reset();
     onPlanCreated();
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {fields.map((field, index) => (
-        <div key={field.id} className="flex items-center gap-2">
-          <Input
-            {...register(`priorities.${index}.value`)}
-            placeholder={`Priority #${index + 1}`}
-          />
-          <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
-            <Trash2 className="h-4 w-4" />
+    <div className="mt-6 space-y-4">
+      <Separator />
+      <h3 className="text-lg font-semibold">Step 2: Add Your Role-Specific Tasks</h3>
+      <p className="text-sm text-muted-foreground">Add your personal tasks that contribute to the team priorities for this week.</p>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {fields.map((field, index) => (
+          <div key={field.id} className="flex items-center gap-2">
+            <Input
+              {...register(`individualTasks.${index}.value`)}
+              placeholder={`Your Task #${index + 1}`}
+            />
+            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ))}
+        {errors.individualTasks?.root && (
+          <p className="text-sm text-destructive">{errors.individualTasks.root.message}</p>
+        )}
+
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Task
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Finalize My Weekly Plan
           </Button>
         </div>
-      ))}
-       {errors.priorities?.root && (
-        <p className="text-sm text-destructive">{errors.priorities.root.message}</p>
-      )}
-
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Priority
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Save Weekly Plan
-        </Button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }
 
-
 export default function WorkplanPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [currentPlan, setCurrentPlan] = useState<WeeklyWorkplan | null>(null);
+  const [teamPlan, setTeamPlan] = useState<TeamWeeklyPlan | null>(null);
+  const [userPlan, setUserPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const { user } = useUser();
   const firestore = useFirestore();
-  
+
   const weekStartDate = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEndDate = endOfWeek(currentDate, { weekStartsOn: 1 });
 
-  const fetchWorkplan = useCallback(async () => {
+  const fetchPlans = useCallback(async () => {
     if (!user || !firestore) return;
     setIsLoading(true);
-    
-    const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
-    const start = Timestamp.fromDate(startOfSelectedWeek);
 
-    const q = query(
-      collection(firestore, 'workplans'),
-      where('userId', '==', user.uid),
-      where('weekOf', '==', start),
-      limit(1)
-    );
+    const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+    const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
 
     try {
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-            const doc = querySnapshot.docs[0];
-            setCurrentPlan({ id: doc.id, ...doc.data() } as WeeklyWorkplan);
-        } else {
-            setCurrentPlan(null);
-        }
-    } catch(e) {
-        console.error("Error fetching workplan:", e);
+      // Fetch the team's plan for the week
+      const teamPlanQuery = query(
+        collection(firestore, 'team-workplans'),
+        where('weekOf', '==', weekStartTimestamp),
+        limit(1)
+      );
+      const teamPlanSnapshot = await getDocs(teamPlanQuery);
+      if (!teamPlanSnapshot.empty) {
+        const doc = teamPlanSnapshot.docs[0];
+        setTeamPlan({ id: doc.id, ...doc.data() } as TeamWeeklyPlan);
+      } else {
+        setTeamPlan(null);
+      }
+
+      // Fetch the user's finalized plan for the week
+      const userPlanQuery = query(
+        collection(firestore, 'workplans'),
+        where('userId', '==', user.uid),
+        where('weekOf', '==', weekStartTimestamp),
+        limit(1)
+      );
+      const userPlanSnapshot = await getDocs(userPlanQuery);
+      if (!userPlanSnapshot.empty) {
+        const doc = userPlanSnapshot.docs[0];
+        setUserPlan({ id: doc.id, ...doc.data() } as WeeklyWorkplan);
+      } else {
+        setUserPlan(null);
+      }
+    } catch (e) {
+      console.error("Error fetching workplans:", e);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }, [user, firestore, currentDate]);
 
   useEffect(() => {
-    fetchWorkplan();
-  }, [fetchWorkplan]);
-
+    fetchPlans();
+  }, [fetchPlans]);
 
   const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
   const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-10 w-1/2" />
+        </div>
+      );
+    }
+
+    if (userPlan) {
+      return (
+        <div className="space-y-6">
+            <Alert variant="default" className="bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
+                <AlertTitle className="font-bold text-green-800 dark:text-green-300">Your Workplan is Submitted!</AlertTitle>
+                <AlertDescription>
+                   Your daily check-in form will now be populated based on this finalized plan.
+                </AlertDescription>
+            </Alert>
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg">Team Priorities</h3>
+                <ul className="list-disc list-inside space-y-2 pl-4 text-muted-foreground">
+                    {userPlan.teamPriorities.map((priority, index) => (
+                    <li key={index}>{priority}</li>
+                    ))}
+                </ul>
+            </div>
+            <Separator />
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg">My Individual Tasks</h3>
+                 <ul className="list-disc list-inside space-y-2 pl-4">
+                    {userPlan.individualTasks.map((task, index) => (
+                    <li key={index} className="font-medium">{task}</li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+      );
+    }
+    
+    if (teamPlan) {
+        return (
+            <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Step 1: Review Team Priorities <Badge variant="secondary">{teamPlan.status}</Badge></h3>
+                <p className="text-sm text-muted-foreground">These are the key objectives set by management for this week.</p>
+                <Alert>
+                    <AlertTitle className="font-bold">Message from {teamPlan.authorName}:</AlertTitle>
+                    <AlertDescription className="italic">"{teamPlan.message}"</AlertDescription>
+                </Alert>
+                <ul className="list-disc list-inside space-y-2 pl-4">
+                    {teamPlan.keyPriorities.map((priority, index) => (
+                        <li key={index} className="text-md">{priority}</li>
+                    ))}
+                </ul>
+                <FinalizeWorkplanForm teamPlan={teamPlan} onPlanCreated={fetchPlans} />
+            </div>
+        )
+    }
+
+    return (
+      <div className="text-center py-10">
+        <p className="text-muted-foreground">
+          A team workplan has not been created by management for this week yet.
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -161,7 +268,7 @@ export default function WorkplanPage() {
           My Weekly Workplan
         </h1>
         <p className="text-muted-foreground">
-          Set your strategic priorities for the week. Your daily check-ins will be based on this plan.
+          Align your tasks with the team's weekly priorities set by management.
         </p>
       </header>
 
@@ -169,7 +276,7 @@ export default function WorkplanPage() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>
-                Week {getWeek(currentDate)}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
+              Week {getWeek(currentDate)}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
@@ -182,28 +289,7 @@ export default function WorkplanPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-             <div className="space-y-4">
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-8 w-2/3" />
-                <Skeleton className="h-8 w-full" />
-             </div>
-          ) : currentPlan ? (
-            <div className="space-y-3">
-              <h3 className="font-semibold text-lg">Your Key Priorities for this Week:</h3>
-              <ul className="list-disc list-inside space-y-2 pl-4">
-                {currentPlan.keyPriorities.map((priority, index) => (
-                  <li key={index} className="text-md">{priority}</li>
-                ))}
-              </ul>
-              <p className="text-sm text-muted-foreground pt-4">Your daily check-in form will now be populated with these priorities.</p>
-            </div>
-          ) : (
-            <div>
-                <CardDescription className="mb-4">You haven't created a workplan for this week yet. Set your key priorities below.</CardDescription>
-                <NewWorkplanForm weekOf={currentDate} onPlanCreated={fetchWorkplan} />
-            </div>
-          )}
+            {renderContent()}
         </CardContent>
       </Card>
     </div>

@@ -17,6 +17,7 @@ import {
   Rss,
   CalendarCheck,
   Newspaper,
+  CalendarClock,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -119,8 +120,8 @@ export function AppSidebar() {
                   tooltip="Daily Planner"
                   onClick={handleLinkClick}
                 >
-                  <CalendarCheck />
-                  <span>Daily Planner</span>
+                  <Sparkles />
+                  <span>AI Daily Planner</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

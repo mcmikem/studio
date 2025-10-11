@@ -24,6 +24,10 @@
           "description": "The user's email address.",
           "format": "email"
         },
+        "photoURL": {
+            "type": "string",
+            "description": "URL to the user's profile picture."
+        },
          "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -271,9 +275,6 @@
         "details": {
           "type": "object",
            "properties": {
-              "mainFocus": { "type": "array", "items": { "type": "string" }},
-              "customTask": { "type": "string" },
-              "workLocation": { "type": "string" },
               "timeBlocks": {
                 "type": "array",
                 "items": {
@@ -287,17 +288,14 @@
                 }
               },
               "multiWinConnections": { "type": "array", "items": { "type": "string" } },
-              "otherConnection": { "type": "string" },
-              "transport": { "type": "string" },
               "materials": { "type": "string" },
-              "teamSupport": { "type": "array", "items": { "type": "string" } },
-              "budget": { "type": "number" },
-              "challenges": { "type": "string" }
+              "challenges": { "type": "string" },
+              "bestPractice": { "type": "string" }
             }
         },
         "timestamp": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "name", "primaryMission", "timestamp"]
+      "required": ["userId", "name", "primaryMission", "details", "timestamp"]
     },
     "Task": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -461,24 +459,51 @@
       },
       "required": ["title", "partnerName", "amountRequested", "status", "submissionDate", "createdAt"]
     },
+    "TeamWeeklyPlan": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Team Weekly Plan",
+      "description": "A manager-created plan with high-level priorities for the entire team for a specific week.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "weekOf": { "type": "string", "format": "date", "description": "The start date of the week (e.g., a Monday)." },
+        "keyPriorities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "A list of the main team priorities for the week."
+        },
+        "message": { "type": "string", "description": "A brief message or focus from the manager for the week." },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "status": { "type": "string", "enum": ["Draft", "Published"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["weekOf", "keyPriorities", "authorId", "authorName", "status", "createdAt"]
+    },
     "WeeklyWorkplan": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Weekly Workplan",
-      "description": "Represents a user's strategic plan for a specific week.",
+      "description": "Represents a user's finalized strategic plan for a specific week, built upon the team's plan.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "userId": { "type": "string" },
         "userName": { "type": "string" },
-        "weekOf": { "type": "string", "format": "date", "description": "The start date of the week (e.g., a Monday)." },
-        "keyPriorities": {
+        "weekOf": { "type": "string", "format": "date" },
+        "teamPlanId": { "type": "string", "description": "Reference to the TeamWeeklyPlan for that week." },
+        "teamPriorities": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "A list of the main priorities for the week."
+          "description": "The inherited team priorities for the week."
+        },
+        "individualTasks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "The user's individual tasks contributing to the team priorities."
         },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "userName", "weekOf", "keyPriorities", "createdAt"]
+      "required": ["userId", "userName", "weekOf", "teamPlanId", "teamPriorities", "individualTasks", "createdAt"]
     }
   },
   "auth": {
@@ -572,11 +597,17 @@
       },
       "description": "Stores grant proposals and funding applications."
     },
+     "/team-workplans/{teamWorkplanId}": {
+      "schema": {
+        "$ref": "#/entities/TeamWeeklyPlan"
+      },
+      "description": "Stores manager-created team-wide weekly plans."
+    },
     "/workplans/{workplanId}": {
       "schema": {
         "$ref": "#/entities/WeeklyWorkplan"
       },
-      "description": "Stores weekly workplans for each user."
+      "description": "Stores individuals' finalized weekly workplans."
     }
   }
 }
