@@ -16,7 +16,8 @@ genkit({
   enableTracingAndMetrics: true,
 });
 
-export * from './flows/impact-story-generator';
+// Make sure all flows are exported from here
 export * from './flows/assistant-flow';
 export * from './flows/create-alert-flow';
 export * from './flows/daily-planner-flow';
+export * from './flows/impact-story-generator';

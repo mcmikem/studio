@@ -9,11 +9,27 @@ export async function POST(
 ) {
   const { input } = await req.json();
 
-  const { stream, response } = runFlow(params.flow, input);
+  try {
+    const { stream, response } = runFlow(params.flow, input);
 
-  return new NextResponse(stream as ReadableStream, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-    },
-  });
+    // Return the stream directly to the client
+    return new NextResponse(stream as ReadableStream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+      },
+    });
+  } catch (error: any) {
+    console.error(`Error running flow ${params.flow}:`, error);
+    return new NextResponse(
+      JSON.stringify({
+        error: `Failed to run flow: ${error.message || "Unknown error"}`,
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+  }
 }
