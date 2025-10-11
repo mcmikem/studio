@@ -56,7 +56,7 @@ export const assistantFlow = ai.defineFlow(
 );
 
 
-export function streamAssistant(prompt: string) {
+export async function streamAssistant(prompt: string) {
     // This function now correctly returns the stream and response promise
     // without awaiting it on the server. The client is responsible for handling them.
     const { stream, response } = ai.generateStream({
