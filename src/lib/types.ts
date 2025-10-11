@@ -253,3 +253,5 @@ export type TaskTemplate = {
     checklistItems: string[];
     createdAt: Timestamp;
 };
+
+    

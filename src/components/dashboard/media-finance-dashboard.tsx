@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Expense, Activity } from "@/lib/types"
+import type { User, Expense, Activity, ImpactMetric } from "@/lib/types"
 import {
   ArrowRight,
   Check,
@@ -50,7 +50,7 @@ const formatCurrency = (value: number) => {
   }).format(value)
 }
 
-function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metrics: any }) {
+function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metrics: ImpactMetric[] | null }) {
     const cycleOfDignityMetric = metrics?.find((m: any) => m.metric === "Cycle of Dignity Fundraising");
     const cycleOfDignityProgress = cycleOfDignityMetric ? (cycleOfDignityMetric.current / cycleOfDignityMetric.target) * 100 : 0;
 
@@ -59,13 +59,13 @@ function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metri
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         return expenses
-            .filter(e => (e.status === 'Approved' || e.status === 'Cleared') && e.date && new Date(e.date) >= startOfMonth)
+            .filter(e => (e.status === 'Approved' || e.status === 'Cleared') && e.createdAt && e.createdAt.toDate() >= startOfMonth)
             .reduce((sum, e) => sum + e.totalAmount, 0);
     }, [expenses]);
     
     const octoberBudget = 800000;
-    const expenseProgress = (octoberExpenses / octoberBudget) * 100;
-    const pendingApprovals = expenses?.filter(e => e.status === 'Pending').length || 0;
+    const expenseProgress = octoberBudget > 0 ? (octoberExpenses / octoberBudget) * 100 : 0;
+    const pendingApprovals = expenses?.filter(e => e.status === 'Pending').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
 
   return (
     <Card>
@@ -91,14 +91,14 @@ function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metri
         </div>
         <div className="flex items-center justify-between p-3 bg-muted rounded-md">
             <span className="font-medium">Pending Approvals</span>
-            <span className="font-bold text-lg">{pendingApprovals} expenses</span>
+            <span className="font-bold text-lg">{formatCurrency(pendingApprovals)}</span>
         </div>
       </CardContent>
     </Card>
   )
 }
 
-function PaymentQueue({ expenses }: { expenses: Expense[] | null }) {
+function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
   const firestore = useFirestore()
   const { toast } = useToast()
   
@@ -221,7 +221,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const { data: allExpenses } = useCollection<Expense>(allExpensesQuery);
   
   const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
-  const { data: metrics } = useCollection<any>(metricsQuery);
+  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
 
   return (
@@ -232,7 +232,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <BudgetHealth expenses={allExpenses} metrics={metrics} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <PaymentQueue expenses={allExpenses} />
+            <FinancialQueue expenses={allExpenses} />
              <Card>
               <CardHeader>
                 <CardTitle>🎥 Content Pipeline</CardTitle>
