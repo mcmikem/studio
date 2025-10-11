@@ -147,8 +147,8 @@ export const sampleImpactMetrics: Omit<ImpactMetric, 'id'>[] = [
 ];
 
 export const sampleAlerts: Omit<Alert, 'id' | 'createdAt'>[] = [
-    { type: 'Urgent', message: 'Final report for GlobalGiving grant is due in 3 days.', priority: 'High', action: '/reports' },
-    { type: 'Reminder', message: 'Team meeting tomorrow at 10 AM to discuss Girl Child Day.', priority: 'Medium', action: '/plan' },
+    { creatorId: 'system', type: 'Urgent', message: 'Final report for GlobalGiving grant is due in 3 days.', priority: 'High', action: '/reports' },
+    { creatorId: 'system', type: 'Reminder', message: 'Team meeting tomorrow at 10 AM to discuss Girl Child Day.', priority: 'Medium', action: '/plan' },
 ];
 
 export const sampleCalendarEvents: Omit<CalendarEvent, 'id' | 'createdAt'>[] = [
@@ -223,5 +223,3 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
         priority: 'High',
     },
 ];
-
-    
