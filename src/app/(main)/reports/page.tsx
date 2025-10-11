@@ -9,13 +9,14 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useFirestore } from '@/firebase';
 import { collection, query, where, Timestamp, getDocs } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
 import type { Activity } from '@/lib/types';
-import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingUp } from 'lucide-react';
+import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingUp, VenetianMask } from 'lucide-react';
 import { format } from 'date-fns';
-
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', {
@@ -73,7 +74,6 @@ function MonthlyActivityReport() {
         }
     }
 
-
     return (
         <Card>
             <CardHeader>
@@ -83,7 +83,7 @@ function MonthlyActivityReport() {
             <CardContent className="space-y-6">
                 <div className="flex items-end gap-4">
                     <div className="flex-grow">
-                        <label htmlFor="month" className="text-sm font-medium text-muted-foreground">Report Month</label>
+                        <Label htmlFor="month">Report Month</Label>
                         <Input id="month" type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} />
                     </div>
                     <Button onClick={handleGenerateReport} disabled={isLoadingReport}>
@@ -93,62 +93,166 @@ function MonthlyActivityReport() {
                 </div>
                 
                 {isLoadingReport && (
-                     <div className="flex items-center justify-center p-8">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4">
+                        <Skeleton className="h-32 w-full" />
+                        <Skeleton className="h-32 w-full" />
+                        <Skeleton className="h-32 w-full" />
+                        <Skeleton className="h-32 w-full" />
                     </div>
                 )}
 
                 {reportData && (
                     <Card className="bg-muted/50">
                         <CardHeader>
-                            <div>
-                                <CardTitle>Report for {reportData.month}</CardTitle>
-                                <CardDescription>Summary of key metrics.</CardDescription>
-                            </div>
+                            <CardTitle>Summary for {reportData.month}</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="flex flex-col items-center p-4 rounded-lg bg-background">
+                            <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
                                 <GitCommitHorizontal className="h-8 w-8 text-primary mb-2" />
-                                <p className="text-2xl font-bold">{reportData.totalActivities}</p>
-                                <p className="text-sm text-muted-foreground">Activities Logged</p>
+                                <p className="text-3xl font-bold">{reportData.totalActivities}</p>
+                                <p className="text-sm text-muted-foreground">Activities</p>
                             </div>
-                             <div className="flex flex-col items-center p-4 rounded-lg bg-background">
+                             <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
                                 <DollarSign className="h-8 w-8 text-red-500 mb-2" />
-                                <p className="text-2xl font-bold">{formatCurrency(reportData.totalCost)}</p>
+                                <p className="text-3xl font-bold">{formatCurrency(reportData.totalCost)}</p>
                                 <p className="text-sm text-muted-foreground">Total Cost</p>
                             </div>
-                             <div className="flex flex-col items-center p-4 rounded-lg bg-background">
+                             <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
                                 <TrendingUp className="h-8 w-8 text-green-500 mb-2" />
-                                <p className="text-2xl font-bold">{formatCurrency(reportData.totalValue)}</p>
+                                <p className="text-3xl font-bold">{formatCurrency(reportData.totalValue)}</p>
                                 <p className="text-sm text-muted-foreground">Total Value</p>
                             </div>
-                             <div className="flex flex-col items-center p-4 rounded-lg bg-background">
+                             <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
                                 <BarChart className="h-8 w-8 text-blue-500 mb-2" />
-                                <p className="text-2xl font-bold">{reportData.averageRoi.toFixed(0)}%</p>
+                                <p className="text-3xl font-bold">{reportData.averageRoi.toFixed(0)}%</p>
                                 <p className="text-sm text-muted-foreground">Average ROI</p>
                             </div>
                         </CardContent>
                     </Card>
                 )}
-
             </CardContent>
         </Card>
     )
 }
 
-import { Input } from '@/components/ui/input';
+function FinancialOverview() {
+  const firestore = useFirestore()
+
+  const startOfMonth = useMemo(() => {
+    const now = new Date()
+    return Timestamp.fromDate(new Date(now.getFullYear(), now.getMonth(), 1))
+  }, [])
+
+  const activitiesQuery = useMemo(() => {
+    if (!firestore) return null
+    return query(
+      collection(firestore, "activities"),
+      where("loggedAt", ">=", startOfMonth)
+    )
+  }, [startOfMonth, firestore])
+
+  const { data: activities, isLoading } = useCollection<Activity>(
+    activitiesQuery
+  )
+
+  const monthlyBudget = 2000000 // Mock budget for now
+
+  const totalSpent = useMemo(() => {
+    return (
+      activities?.reduce((sum, activity) => sum + activity.actualCost, 0) || 0
+    )
+  }, [activities])
+
+  const totalValue = useMemo(() => {
+    return (
+      activities?.reduce((sum, activity) => sum + activity.totalValue, 0) || 0
+    )
+  }, [activities])
+
+  const remainingBudget = monthlyBudget - totalSpent
+
+  return (
+      <Card>
+          <CardHeader>
+              <CardTitle>This Month's Financial Snapshot</CardTitle>
+              <CardDescription>A summary of spending and value generation for the current month.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-32" />
+                    <Skeleton className="h-32" />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card className="flex flex-col justify-between">
+                        <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-primary">
+                            <DollarSign />
+                            Monthly Spending
+                        </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <p className="text-3xl font-bold">{formatCurrency(totalSpent)}</p>
+                        <p className="text-sm text-muted-foreground">
+                            of {formatCurrency(monthlyBudget)} spent
+                        </p>
+                        </CardContent>
+                    </Card>
+                    <Card className="flex flex-col justify-between">
+                        <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-green-500">
+                            <TrendingUp />
+                            Value Generated
+                        </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <p className="text-3xl font-bold">{formatCurrency(totalValue)}</p>
+                        <p className="text-sm text-muted-foreground">
+                            from this month's activities
+                        </p>
+                        </CardContent>
+                    </Card>
+                    <Card className="flex flex-col justify-between">
+                        <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-blue-500">
+                            <VenetianMask />
+                            Remaining Budget
+                        </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                        <p className="text-3xl font-bold">
+                            {formatCurrency(remainingBudget)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">for the rest of the month</p>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+          </CardContent>
+      </Card>
+  )
+}
+
+
+import { Label } from '@/components/ui/label';
+import { useCollection } from '@/firebase';
 export default function ReportsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
         <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Reports
+          Reports & Analysis
         </h1>
         <p className="text-muted-foreground">
-          View and download automatically generated reports.
+          Turn your operational data into actionable intelligence.
         </p>
       </header>
+      <FinancialOverview />
       <MonthlyActivityReport />
     </div>
   );
 }
+
+    
