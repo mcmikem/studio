@@ -11,7 +11,7 @@ export function DashboardGrid({
   className,
 }: DashboardGridProps) {
   return (
-    <div className={cn("grid grid-cols-1 gap-6 mt-6", className)}>
+    <div className={cn("grid grid-cols-1 gap-6", className)}>
       {children}
     </div>
   );

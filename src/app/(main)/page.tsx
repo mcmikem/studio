@@ -12,18 +12,18 @@ const DashboardLoading = () => (
   <div className="flex flex-col gap-6">
     <Skeleton className="relative rounded-xl h-40 -mx-4 -mt-4 lg:-mx-6 lg:-mt-6" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-      <Skeleton className="h-24" />
-      <Skeleton className="h-24" />
-      <Skeleton className="h-24" />
-      <Skeleton className="h-24" />
+      <Skeleton className="h-28" />
+      <Skeleton className="h-28" />
+      <Skeleton className="h-28" />
+      <Skeleton className="h-28" />
     </div>
-    <div className="grid grid-cols-1 gap-6 mt-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-             <Skeleton className="h-96" />
-        </div>
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1 flex flex-col gap-6">
-            <Skeleton className="h-48" />
-            <Skeleton className="h-64" />
+             <Skeleton className="h-48" />
+             <Skeleton className="h-64" />
+        </div>
+        <div className="lg:col-span-2 flex flex-col gap-6">
+            <Skeleton className="h-96" />
         </div>
     </div>
   </div>
@@ -32,6 +32,7 @@ const DashboardLoading = () => (
 
 // Dynamically import each dashboard component
 const DefaultDashboard = dynamic(() => import('@/components/dashboard/default-dashboard').then(mod => mod.DefaultDashboard), { loading: () => <DashboardLoading /> });
+const AdminDashboard = dynamic(() => import('@/components/dashboard/admin-dashboard').then(mod => mod.AdminDashboard), { loading: () => <DashboardLoading /> });
 const ExecutiveDashboard = dynamic(() => import('@/components/dashboard/executive-dashboard').then(mod => mod.ExecutiveDashboard), { loading: () => <DashboardLoading /> });
 const ProgramManagerDashboard = dynamic(() => import('@/components/dashboard/program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardLoading /> });
 const FieldStaffDashboard = dynamic(() => import('@/components/dashboard/field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardLoading /> });
@@ -39,6 +40,7 @@ const MediaFinanceDashboard = dynamic(() => import('@/components/dashboard/media
 
 
 const roleToDashboard: { [key: string]: React.FC<any> } = {
+  'Administrator': AdminDashboard,
   'Executive Director': ExecutiveDashboard,
   'Programs & Partnerships Manager': ProgramManagerDashboard,
   'Operations & Field Manager': FieldStaffDashboard,

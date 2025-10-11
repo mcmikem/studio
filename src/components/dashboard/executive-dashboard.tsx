@@ -33,7 +33,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
 
-       <div className="col-span-full mt-6">
+       <div className="mt-6">
           <QuickStatsSummary metrics={metrics} />
       </div>
 
