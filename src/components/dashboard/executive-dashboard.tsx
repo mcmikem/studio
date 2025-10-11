@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, KeyResult } from "@/lib/types"
@@ -65,6 +66,7 @@ function TeamEffectiveness() {
         <Card>
             <CardHeader>
                 <CardTitle>📊 Team Effectiveness</CardTitle>
+                 <CardDescription>Key organizational performance metrics.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-x-4 gap-y-6">
                 <div>
@@ -73,7 +75,7 @@ function TeamEffectiveness() {
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Field Efficiency</p>
-                    <p className="text-2xl font-bold">45 <span className="text-sm font-normal">activities/week</span></p>
+                    <p className="text-2xl font-bold">45 <span className="text-sm font-normal">activities/wk</span></p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Cost Per Impact</p>
@@ -132,19 +134,23 @@ interface DashboardProps {
 }
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
+    const firestore = useFirestore();
+
+    const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
+    const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
 
        <div className="mt-6">
-          <QuickStatsSummary metrics={null} />
+          <QuickStatsSummary metrics={metrics} />
       </div>
 
        <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse />
-            <KeyResultsTracker />
+            <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <TeamEffectiveness />
