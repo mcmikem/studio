@@ -224,17 +224,3 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
         priority: 'High',
     },
 ];
-
-export const alertIcons: { [key: string]: React.ReactNode } = {
-    Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
-    Reminder: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
-    Info: <Info className="h-5 w-5 text-blue-500" />,
-};
-
-export const categoryColors: { [key: string]: string } = {
-    "Team Meetings": "bg-blue-500/10 text-blue-500 border-blue-500",
-    "Field Visits": "bg-green-500/10 text-green-500 border-green-500",
-    "Campaigns/Events": "bg-red-500/10 text-red-500 border-red-500",
-    "Deadlines": "bg-purple-500/10 text-purple-500 border-purple-500",
-    "Social Days": "bg-orange-500/10 text-orange-500 border-orange-500",
-};

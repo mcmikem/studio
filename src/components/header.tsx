@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban } from 'lucide-react';
+import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -23,7 +23,12 @@ import { collection, query, limit, orderBy } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import { formatDateSafe } from '@/lib/utils';
 import { Skeleton } from './ui/skeleton';
-import { alertIcons } from '@/lib/data';
+
+const alertIcons: { [key: string]: React.ReactNode } = {
+    Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
+    Reminder: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+    Info: <Info className="h-5 w-5 text-blue-500" />,
+};
 
 
 function QuickAddMenu() {
