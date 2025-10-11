@@ -104,7 +104,7 @@ export default function AssistantPage() {
       // Add a placeholder for the assistant's response
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
-      const stream = await streamAssistant(promptWithContext);
+      const { stream, response } = await streamAssistant(promptWithContext);
       
       for await (const chunk of stream) {
         if (chunk.text) {
@@ -118,6 +118,8 @@ export default function AssistantPage() {
           });
         }
       }
+      
+      await response;
 
     } catch (e) {
       console.error(e);

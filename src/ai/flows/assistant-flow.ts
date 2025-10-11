@@ -57,12 +57,12 @@ export const assistantFlow = ai.defineFlow(
 
 
 export async function streamAssistant(prompt: string) {
-    const { stream } = ai.generateStream({
+    const stream = ai.generateStream({
         prompt: prompt,
         system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
         tools: [exampleActionTool], // Keeping tool structure for future action-based tools
     });
-    return stream;
+    return {stream, response: stream.response};
 }
 
     
