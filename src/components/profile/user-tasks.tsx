@@ -65,7 +65,7 @@ function NewTaskForm() {
     toast({
       title: 'Task Added!',
     });
-    reset();
+    reset({ title: '', dueDate: '' });
   };
 
   return (
@@ -190,3 +190,5 @@ export function UserTasks() {
     </Card>
   );
 }
+
+    

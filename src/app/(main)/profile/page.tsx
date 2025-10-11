@@ -57,7 +57,7 @@ function RecentUserCheckouts() {
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading &&
-          Array.from({ length: 3 }).map((_, i) => (
+          Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex flex-col space-y-2 border-b pb-3">
               <Skeleton className="h-4 w-3/4" />
               <Skeleton className="h-4 w-1/4" />
@@ -77,9 +77,11 @@ function RecentUserCheckouts() {
           ))
         ) : (
           !isLoading && (
-            <p className="text-sm text-muted-foreground">
-              No checkout reports found.
-            </p>
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground py-8">
+              <History className="h-12 w-12" />
+              <p className="mt-4 font-semibold">No Activity Yet</p>
+              <p className="mt-1 text-sm">Complete your first checkout to see it here!</p>
+            </div>
           )
         )}
       </CardContent>
@@ -219,11 +221,12 @@ function UserProfileCard() {
                     <Briefcase className="h-4 w-4 mr-3 text-muted-foreground" />
                     <span>{profile?.role}</span>
                 </div>
+                <div className="flex items-center">
+                    <History className="h-4 w-4 mr-3 text-muted-foreground" />
+                    <span>User since {user?.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}</span>
+                </div>
             </div>
         </CardContent>
-        <CardFooter>
-            <p className="text-xs text-muted-foreground">User since {user?.metadata.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString() : 'N/A'}</p>
-        </CardFooter>
     </Card>
   )
 }
@@ -273,3 +276,5 @@ export default function ProfilePage() {
     </Suspense>
   );
 }
+
+    
