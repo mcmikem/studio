@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, ClipboardEdit, Rss, User, Sparkles } from 'lucide-react';
+import { Home, ClipboardEdit, Rss, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
