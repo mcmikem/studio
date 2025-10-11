@@ -202,29 +202,6 @@ export type Proposal = {
     createdAt?: Timestamp;
 }
 
-export type TeamWeeklyPlan = {
-  id: string;
-  weekOf: Timestamp;
-  keyPriorities: string[];
-  message: string;
-  authorId: string;
-  authorName: string;
-  status: 'Draft' | 'Published';
-  createdAt: Timestamp;
-};
-
-
-export type WeeklyWorkplan = {
-  id: string;
-  userId: string;
-  userName: string;
-  weekOf: Timestamp;
-  teamPlanId: string;
-  teamPriorities: string[];
-  individualTasks: string[];
-  createdAt: Timestamp;
-};
-
 export type DailyPlannerAIOutput = {
     timeBlocks: {
         startTime: string;
@@ -263,3 +240,26 @@ export type Message = {
     userAvatar: string;
     createdAt: Timestamp;
 }
+
+export type TeamWeeklyPlan = {
+  id: string;
+  weekOf: Timestamp;
+  keyPriorities: string[];
+  message: string;
+  authorId: string;
+  authorName: string;
+  status: 'Draft' | 'Published';
+  createdAt: Timestamp;
+};
+
+
+export type WeeklyWorkplan = {
+  id: string;
+  userId: string;
+  userName: string;
+  weekOf: Timestamp;
+  teamPlanId: string;
+  teamPriorities: string[];
+  individualTasks: string[];
+  createdAt: Timestamp;
+};

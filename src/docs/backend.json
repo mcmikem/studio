@@ -312,6 +312,22 @@
       },
       "required": ["title", "completed", "createdAt"]
     },
+    "TaskTemplate": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Task Template",
+      "type": "object",
+      "description": "A reusable checklist for common tasks.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "checklistItems": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "checklistItems", "createdAt"]
+    },
     "Project": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Project",
@@ -522,6 +538,21 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "category", "status", "condition", "currentHolder", "createdAt"]
+    },
+    "Message": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Message",
+        "description": "Represents a single chat message in the team space.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "text": { "type": "string" },
+            "userId": { "type": "string" },
+            "userName": { "type": "string" },
+            "userAvatar": { "type": "string", "format": "uri" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["text", "userId", "userName", "createdAt"]
     }
   },
   "auth": {
@@ -632,6 +663,18 @@
         "$ref": "#/entities/Equipment"
       },
       "description": "Stores the inventory of physical equipment."
+    },
+    "/task-templates/{templateId}": {
+      "schema": {
+        "$ref": "#/entities/TaskTemplate"
+      },
+      "description": "Stores reusable task templates and checklists."
+    },
+    "/messages/{messageId}": {
+        "schema": {
+            "$ref": "#/entities/Message"
+        },
+        "description": "Stores team chat messages."
     }
   }
 }
