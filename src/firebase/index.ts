@@ -5,6 +5,7 @@
 // functionality to the rest of the application. It simplifies imports.
 
 export * from './provider';
+export * from './client-provider';
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';
 export * from './non-blocking-updates';
