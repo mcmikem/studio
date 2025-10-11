@@ -5,6 +5,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
+import { NextRequest, NextResponse } from 'next/server';
 
 const AssistantInputSchema = z.object({
   history: z.array(
@@ -31,17 +32,24 @@ export const assistantFlow = ai.defineFlow(
   async (input) => {
     const { history, prompt } = input;
     
-    const response = await ai.generate({
+    const { stream, response } = ai.generateStream({
       prompt: prompt,
       history: history,
-      stream: true,
     });
     
-    let fullResponse = '';
-    for await (const chunk of response.stream()) {
-      fullResponse += chunk.text;
-    }
-    
-    return fullResponse;
+    const outputStream = new ReadableStream({
+        async start(controller) {
+            for await (const chunk of stream) {
+                controller.enqueue(chunk.text);
+            }
+            controller.close();
+        }
+    });
+
+    return new NextResponse(outputStream, {
+        headers: {
+            'Content-Type': 'text/plain; charset=utf-8'
+        }
+    }) as any;
   }
 );
