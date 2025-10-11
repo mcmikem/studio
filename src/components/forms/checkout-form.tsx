@@ -21,21 +21,13 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useUser,
   useFirestore,
-  useCollection,
-  useMemoFirebase,
 } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import {
   collection,
   serverTimestamp,
-  query,
-  where,
-  orderBy,
-  limit,
-  Timestamp,
 } from 'firebase/firestore';
-import { useEffect, useState, useMemo } from 'react';
-import type { Checkin } from '@/lib/types';
+import { useState } from 'react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
 
@@ -65,7 +57,6 @@ export function CheckoutForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    setValue,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
@@ -74,35 +65,6 @@ export function CheckoutForm() {
       prototypesTested: 0,
     },
   });
-
-  const startOfDay = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return Timestamp.fromDate(now);
-  }, []);
-
-  const recentCheckinQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return query(
-      collection(firestore, 'checkins'),
-      where('userId', '==', user.uid),
-      where('timestamp', '>=', startOfDay),
-      orderBy('timestamp', 'desc'),
-      limit(1)
-    );
-  }, [user, startOfDay, firestore]);
-
-  const { data: recentCheckins, isLoading: isLoadingCheckin } =
-    useCollection<Checkin>(recentCheckinQuery);
-  
-  useEffect(() => {
-    if (recentCheckins && recentCheckins.length > 0) {
-      const missionFromCheckin = recentCheckins[0]?.primaryMission;
-      if (missionFromCheckin) {
-        setValue('missionAccomplished', `Progress on: ${missionFromCheckin}. `);
-      }
-    }
-  }, [recentCheckins, setValue]);
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (!firestore || !user || !profile) {
@@ -208,9 +170,7 @@ export function CheckoutForm() {
           <Textarea
             id="mission-accomplished"
             placeholder={
-              isLoadingCheckin
-                ? "Loading today's mission..."
-                : 'What did you achieve?'
+              'What did you achieve? e.g., Finalized RED Campaign report and submitted to GlobalGiving.'
             }
             className="min-h-[100px]"
             {...register('missionAccomplished')}

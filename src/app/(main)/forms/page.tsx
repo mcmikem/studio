@@ -8,13 +8,13 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { CheckoutForm } from '@/components/forms/checkout-form';
-import { ClipboardEdit, LogIn, LogOut, BarChart3, Receipt } from 'lucide-react';
+import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn } from 'lucide-react';
 import { ActivityReportForm } from '@/components/forms/activity-report-form';
 import { ExpenseReportForm } from '@/components/forms/expense-report-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { PlannerCheckinForm } from '@/components/forms/planner-checkin-form';
+import { CheckinForm } from '@/components/forms/checkin-form';
 
 function FormsContent() {
   const searchParams = useSearchParams();
@@ -28,13 +28,13 @@ function FormsContent() {
           Forms Hub
         </h1>
         <p className="text-muted-foreground">
-          Your central place for all daily check-ins, reports, and logs.
+          Your central place for all daily reports, and logs.
         </p>
       </header>
 
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
-          <TabsTrigger value="check-in" className="py-2">
+        <TabsList className="grid w-full grid-cols-4 h-auto">
+           <TabsTrigger value="check-in" className="py-2">
             <LogIn className="mr-2 h-4 w-4" />
             Daily Check-in
           </TabsTrigger>
@@ -51,8 +51,8 @@ function FormsContent() {
             Expense Report
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="check-in">
-          <PlannerCheckinForm />
+         <TabsContent value="check-in">
+          <CheckinForm />
         </TabsContent>
         <TabsContent value="check-out">
           <Card>

@@ -1,364 +1,283 @@
-
 'use client';
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { useForm, useFieldArray, UseFormReturn } from 'react-hook-form';
+
+import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useToast } from '@/hooks/use-toast';
 import {
-  useFirestore,
-  useUser,
-  addDocumentNonBlocking,
-  useCollection,
-} from '@/firebase';
-import { collection, serverTimestamp, query, where, limit, Timestamp, getDocs, orderBy } from 'firebase/firestore';
-import type { Checkout, WeeklyWorkplan, User, KeyResult } from '@/lib/types';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, LogIn, Sparkles, PlusCircle, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { startOfWeek } from 'date-fns';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import Link from 'next/link';
-import { Skeleton } from '../ui/skeleton';
-import { Label } from '../ui/label';
-import { dailyPlannerAI, DailyPlannerAIInput } from '@/ai/flows/daily-planner-flow';
-import { Input } from '../ui/input';
-import { MultiSelect } from '../ui/multi-select';
+import { collection, query, where, orderBy, getDocs, Timestamp, limit } from 'firebase/firestore';
+import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput } from '@/lib/types';
+import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
+import { Loader2, Sparkles, AlertTriangle, ArrowRight } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { startOfWeek, endOfWeek, format } from 'date-fns';
 import { Separator } from '../ui/separator';
 
-const checkinSchema = z.object({
-  primaryMission: z.string().min(10, 'Please provide a clear mission for the day.'),
-  timeBlocks: z.array(z.object({
-    startTime: z.string().min(1),
-    endTime: z.string().min(1),
-    description: z.string().min(3),
-  })).optional(),
-  multiWinConnections: z.array(z.string()).optional(),
-  materials: z.string().optional(),
-  challenges: z.string().optional(),
+const planSchema = z.object({
+  primaryMission: z.string().min(10, 'Please describe your main goal for the day.'),
 });
 
-type CheckinFormData = z.infer<typeof checkinSchema>;
-
-const multiWinOptions = [
-  { value: 'Recruit a volunteer', label: 'Recruit a volunteer' },
-  { value: 'Capture content (photos/video)', label: 'Capture content (photos/video)' },
-  { value: 'Gather a testimonial or story', label: 'Gather a testimonial or story' },
-  { value: 'Identify a potential new partner', label: 'Identify a potential new partner' },
-  { value: 'Improve a process/template', label: 'Improve a process/template' },
-];
-
+type PlanFormData = z.infer<typeof planSchema>;
 
 function PlannerForm({
-    form,
-    profile,
-    onSubmit,
-    isSubmitting,
-    isDirty,
-    keyResults,
-    weeklyPlan,
+  profile,
+  weeklyPlan,
+  keyResults,
+  isGeneratingPlan,
+  onPlanGenerate,
 }: {
-    form: UseFormReturn<CheckinFormData>,
-    profile: User | null,
-    onSubmit: (data: CheckinFormData) => void,
-    isSubmitting: boolean,
-    isDirty: boolean,
-    keyResults: KeyResult[] | null,
-    weeklyPlan: WeeklyWorkplan | null,
+  profile: any;
+  weeklyPlan: WeeklyWorkplan | null;
+  keyResults: KeyResult[] | null;
+  isGeneratingPlan: boolean;
+  onPlanGenerate: (data: PlanFormData) => void;
 }) {
-  const { register, handleSubmit, formState: { errors }, setValue, control, getValues } = form;
-  
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'timeBlocks',
+
+  const { register, handleSubmit, formState: { errors, isDirty } } = useForm<PlanFormData>({
+    resolver: zodResolver(planSchema),
   });
 
-  const { toast } = useToast();
-  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
-  const [planGenerated, setPlanGenerated] = useState(false);
+  return (
+    <form onSubmit={handleSubmit(onPlanGenerate)}>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="primaryMission" className="text-lg">What is your primary mission for today?</Label>
+          <Input
+            id="primaryMission"
+            placeholder="e.g., Finalize the RED Campaign report for GlobalGiving"
+            {...register('primaryMission')}
+          />
+          {errors.primaryMission && (
+            <p className="text-sm text-destructive">{errors.primaryMission.message}</p>
+          )}
+        </div>
 
-   const handleGeneratePlan = async () => {
-    if (!profile) return;
-    const mission = control._getWatch('primaryMission');
-    if (!mission) {
-        toast({variant: 'destructive', title: "Please enter your mission first."});
-        return;
-    }
-    setIsGeneratingPlan(true);
+        <Alert>
+          <Sparkles className="h-4 w-4" />
+          <AlertTitle>How the AI Coach Works</AlertTitle>
+          <AlertDescription>
+            The AI will use your mission, your role as {profile.role}, your weekly priorities, and the live organizational Key Results to generate a strategic daily plan for you to review.
+          </AlertDescription>
+        </Alert>
 
-    const aiInput: DailyPlannerAIInput = {
-      task: mission,
-      role: profile.role,
-      userContext: 'First draft of my plan for today.',
-      weeklyPriorities: weeklyPlan?.keyPriorities,
-      keyResults: keyResults,
-    }
-
-    try {
-        const result = await dailyPlannerAI(aiInput);
-        
-        setValue('timeBlocks', result.timeBlocks?.length > 0 ? result.timeBlocks : [{startTime: "", endTime: "", description: ""}]);
-        setValue('multiWinConnections', result.multiWinConnections);
-        setValue('materials', result.materials);
-        setValue('challenges', result.challenges);
-        setPlanGenerated(true);
-        toast({ title: 'AI Plan Generated!', description: 'Review the suggestions and make any adjustments.'});
-
-    } catch(e) {
-        console.error(e);
-        toast({variant: 'destructive', title: "AI Planner Failed", description: "Could not generate a plan. Please fill it manually."})
-    } finally {
-        setIsGeneratingPlan(false);
-    }
-  }
-
-
-    return (
-       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className='space-y-2'>
-            <Label htmlFor="primaryMission">What is your single most important mission for today?</Label>
-            <Textarea
-                id="primaryMission"
-                {...register('primaryMission')}
-                placeholder="e.g., Finalize the RED Campaign report and submit to GlobalGiving."
-                className="min-h-[100px]"
-            />
-            {errors.primaryMission && <p className="text-sm text-destructive mt-2">{errors.primaryMission.message}</p>}
-          </div>
-
-           <Alert>
-            <Sparkles className="h-4 w-4" />
-            <AlertTitle>AI Productivity Coach</AlertTitle>
+        {weeklyPlan && (
+          <Alert variant="default" className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <AlertTitle>Your Priorities This Week</AlertTitle>
             <AlertDescription>
-                <p className="mb-4">Once your mission is set, let our AI assistant generate a strategic first draft of your daily schedule.</p>
-                <Button type="button" onClick={handleGeneratePlan} disabled={isGeneratingPlan || !getValues('primaryMission')}>
-                    {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4"/>}
-                    Generate AI Plan
-                </Button>
+              <ul className="list-disc list-inside">
+                {weeklyPlan.keyPriorities.map((p, i) => <li key={i}>{p}</li>)}
+              </ul>
             </AlertDescription>
           </Alert>
-          
-          { (planGenerated || isDirty) && !isGeneratingPlan && (
-              <div className="space-y-6 pt-4">
-                <Separator />
-                 <div className="space-y-2">
-                    <Label>Time Blocks</Label>
-                    {fields.map((field, index) => (
-                        <div key={field.id} className="flex items-center gap-2">
-                            <Input {...register(`timeBlocks.${index}.startTime`)} placeholder="09:00" />
-                            <Input {...register(`timeBlocks.${index}.endTime`)} placeholder="11:00" />
-                            <Input {...register(`timeBlocks.${index}.description`)} placeholder="Task description..." className="flex-grow" />
-                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
-                        </div>
-                    ))}
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({startTime: "", endTime: "", description: ""})}><PlusCircle className="mr-2 h-4 w-4" /> Add Block</Button>
-                 </div>
-                
-                 <div className="space-y-2">
-                    <Label>Multi-Win Connections</Label>
-                    <MultiSelect 
-                        options={multiWinOptions}
-                        onValueChange={(value) => setValue('multiWinConnections', value)}
-                        defaultValue={control._getWatch('multiWinConnections') || []}
-                        placeholder="Select connections..."
-                    />
-                 </div>
-
-                 <div className="grid grid-cols-1 gap-4">
-                      <div className="space-y-2">
-                        <Label>Materials & Resources Needed (AI Suggestion)</Label>
-                        <Input {...register('materials')} placeholder="e.g., Flipcharts, markers, transport for 2" />
-                     </div>
-                 </div>
-                 <div className="space-y-2">
-                    <Label>Potential Challenges & Mitigations (AI Suggestion)</Label>
-                    <Textarea {...register('challenges')} placeholder="e.g., Challenge: Boda boda availability. Mitigation: ..." />
-                 </div>
-
-                 <Button className="w-full" size="lg" type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? (<Loader2 className="mr-2 h-5 w-5 animate-spin" />) : (<LogIn className="mr-2 h-5 w-5" />)}
-                    Check In & Submit Final Plan
-                </Button>
-              </div>
+        )}
+      </CardContent>
+      <CardFooter>
+        <Button type="submit" disabled={isGeneratingPlan} size="lg">
+          {isGeneratingPlan ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="mr-2 h-4 w-4" />
           )}
-        </form>
-    );
+          Generate My Daily Plan
+        </Button>
+      </CardFooter>
+    </form>
+  );
 }
 
 
-export function PlannerCheckinForm() {
-  const { toast } = useToast();
-  const firestore = useFirestore();
+function PlannerCheckinFormComponent() {
+  const router = useRouter();
   const { user } = useUser();
   const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
-  
-  const form = useForm<CheckinFormData>({
-    resolver: zodResolver(checkinSchema),
-    defaultValues: {
-        primaryMission: '',
-        timeBlocks: [],
-        multiWinConnections: [],
-    }
-  });
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [planGenerated, setPlanGenerated] = useState(false);
+  const [aiOutput, setAiOutput] = useState<DailyPlannerAIOutput | null>(null);
+  const [primaryMission, setPrimaryMission] = useState("");
 
-  const { formState, setValue, reset } = form;
-  const isDirty = formState.isDirty;
-  
+  // --- Data Fetching ---
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
-  const [initialMission, setInitialMission] = useState('');
-  const [isContextLoading, setIsContextLoading] = useState(true);
-
-  // Use a ref to prevent re-running the fetch logic on every render
-  const hasFetchedContext = React.useRef(false);
+  const [isLoadingWeeklyPlan, setIsLoadingWeeklyPlan] = useState(true);
 
   useEffect(() => {
-    if (firestore && user && !hasFetchedContext.current) {
-        setIsContextLoading(true);
-        hasFetchedContext.current = true; // Mark as fetched
+    async function fetchWeeklyPlan() {
+      if (!user || !firestore) return;
+      setIsLoadingWeeklyPlan(true);
+      const today = new Date();
+      const start = startOfWeek(today, { weekStartsOn: 1 });
+      const weekStartTimestamp = Timestamp.fromDate(start);
 
-        const fetchContext = async () => {
-            let mission: string | null = null;
-            
-            const today = new Date();
-            const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
-            const workplanQuery = query(
-                collection(firestore, 'workplans'),
-                where('userId', '==', user.uid),
-                where('weekOf', '==', Timestamp.fromDate(weekStartDate)),
-                limit(1)
-            );
-
-            try {
-                const workplanSnapshot = await getDocs(workplanQuery);
-                if (!workplanSnapshot.empty) {
-                    const plan = workplanSnapshot.docs[0].data() as WeeklyWorkplan;
-                    setWeeklyPlan(plan);
-                    mission = `Today I will focus on... (This week's priorities: ${plan.keyPriorities.join(', ')})`;
-                } else {
-                    const checkoutQuery = query(
-                        collection(firestore, 'checkouts'),
-                        where('userId', '==', user.uid),
-                        orderBy('timestamp', 'desc'),
-                        limit(1)
-                    );
-
-                    const checkoutSnapshot = await getDocs(checkoutQuery);
-                    if (!checkoutSnapshot.empty) {
-                        const lastCheckout = checkoutSnapshot.docs[0].data() as Checkout;
-                        if (lastCheckout.tomorrowPlan) {
-                            mission = lastCheckout.tomorrowPlan;
-                        }
-                    }
-                }
-                if (mission) {
-                    setInitialMission(mission);
-                }
-            } catch (error) {
-                console.error("Error fetching context:", error);
-            } finally {
-                setIsContextLoading(false);
-            }
-        };
-
-        fetchContext();
+      const q = query(
+        collection(firestore, 'workplans'),
+        where('userId', '==', user.uid),
+        where('weekOf', '==', weekStartTimestamp),
+        limit(1)
+      );
+      try {
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          setWeeklyPlan(snapshot.docs[0].data() as WeeklyWorkplan);
+        }
+      } catch (e) {
+        console.error("Error fetching weekly plan", e);
+      } finally {
+        setIsLoadingWeeklyPlan(false);
+      }
     }
-  }, [firestore, user]);
+    fetchWeeklyPlan();
+  }, [user, firestore]);
 
-
-  useEffect(() => {
-    // Only set the mission if it has been fetched and the form hasn't been touched.
-    if (initialMission && !isDirty) {
-        setValue('primaryMission', initialMission);
-    }
-  }, [initialMission, isDirty, setValue]);
-
-
-  const keyResultsQuery = React.useMemo(() => {
+  const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'));
   }, [firestore]);
   const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
 
 
-  const onSubmit = async (data: CheckinFormData) => {
-    if (!firestore || !user || !profile) {
-      toast({ variant: 'destructive', title: 'Authentication Error' });
+  const onPlanGenerate = async (data: PlanFormData) => {
+    if (!profile || !keyResults) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Context',
+        description: 'User profile or organizational data is not yet loaded. Please wait a moment and try again.',
+      });
       return;
     }
 
-    const checkinData = {
-      primaryMission: data.primaryMission,
-      details: {
-          timeBlocks: data.timeBlocks,
-          multiWinConnections: data.multiWinConnections,
-          materials: data.materials,
-          challenges: data.challenges,
-      },
-      userId: user.uid,
-      name: profile.name,
-      timestamp: serverTimestamp(),
-    };
+    setIsGeneratingPlan(true);
+    setPrimaryMission(data.primaryMission);
 
-    const checkinsCollection = collection(firestore, 'checkins');
-    await addDocumentNonBlocking(checkinsCollection, checkinData);
-
-    toast({
-      title: 'Daily Plan Submitted!',
-      description: 'Your mission for the day is logged.',
-    });
-    reset();
+    try {
+      const output = await dailyPlannerAI({
+        userRole: profile.role,
+        primaryMission: data.primaryMission,
+        weeklyPriorities: weeklyPlan?.keyPriorities || [],
+        keyResults: keyResults,
+      });
+      setAiOutput(output);
+      setPlanGenerated(true);
+    } catch (error) {
+      console.error('AI generation error:', error);
+      toast({
+        variant: 'destructive',
+        title: 'AI Planner Failed',
+        description: 'The AI could not generate a plan. Please try again.',
+      });
+    } finally {
+      setIsGeneratingPlan(false);
+    }
   };
-  
-  const isLoading = isLoadingProfile || isLoadingKeyResults || isContextLoading;
 
-  if (isLoading) {
-    return (
-        <Card>
-            <CardHeader>
-                <Skeleton className="h-7 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-10 w-full" />
-            </CardContent>
-        </Card>
-    );
+  const handleFinalizeAndCheckin = () => {
+    const planData = {
+      primaryMission: primaryMission,
+      details: aiOutput
+    };
+    const params = new URLSearchParams();
+    params.set('plan', encodeURIComponent(JSON.stringify(planData)));
+    params.set('tab', 'check-in');
+    router.push(`/forms?${params.toString()}`);
   }
+
+  const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Daily Check-in & Strategic Planner</CardTitle>
+        <CardTitle>AI Daily Planner</CardTitle>
         <CardDescription>
-          State your mission, let the AI draft your plan, then execute.
+          Use your AI coach to brainstorm a strategic plan, then finalize it for your daily check-in.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <PlannerForm
-            form={form}
+      
+      {isLoading ? (
+        <CardContent>
+          <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      ) : profile ? (
+        <>
+          <PlannerForm
             profile={profile}
-            onSubmit={onSubmit}
-            isSubmitting={form.formState.isSubmitting}
-            isDirty={isDirty}
-            keyResults={keyResults}
             weeklyPlan={weeklyPlan}
-        />
-        {!weeklyPlan && !isContextLoading && (
-         <Alert variant="default" className="mt-6">
-            <AlertTitle>No Weekly Plan?</AlertTitle>
-            <AlertDescription>
-                <p>For more effective planning, set your priorities for the week. Your daily check-in will automatically start with them.</p>
-                <Button asChild variant="link" className="p-0 h-auto mt-2">
-                    <Link href="/workplan">Set Your Weekly Workplan</Link>
-                </Button>
-            </AlertDescription>
-        </Alert>
-        )}
-      </CardContent>
+            keyResults={keyResults}
+            isGeneratingPlan={isGeneratingPlan}
+            onPlanGenerate={onPlanGenerate}
+          />
+          
+          { (planGenerated && aiOutput) && !isGeneratingPlan && (
+              <div className="space-y-6 pt-4">
+                <Separator />
+                 <CardContent className="space-y-6">
+                    <h3 className="font-headline text-xl text-primary">Your AI-Generated Draft Plan</h3>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-3 p-4 bg-muted rounded-lg">
+                            <h4 className="font-semibold">Key Time Blocks</h4>
+                            <ul className="list-disc list-inside text-sm">
+                                {aiOutput.timeBlocks.map((b, i) => <li key={i}><strong>{b.startTime}-{b.endTime}:</strong> {b.description}</li>)}
+                            </ul>
+                        </div>
+                         <div className="space-y-3 p-4 bg-muted rounded-lg">
+                            <h4 className="font-semibold">Multi-Win Connections</h4>
+                             <ul className="list-disc list-inside text-sm">
+                                {aiOutput.multiWinConnections.map((c, i) => <li key={i}>{c}</li>)}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                     <div className="p-4 bg-muted rounded-lg">
+                        <h4 className="font-semibold">Suggested Resources</h4>
+                        <p className="text-sm">{aiOutput.materials || 'None suggested.'}</p>
+                    </div>
+
+                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                        <h4 className="font-semibold flex items-center gap-2"><AlertTriangle /> Challenges & Mitigations</h4>
+                        <p className="text-sm mt-2">{aiOutput.challenges}</p>
+                    </div>
+
+                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                        <h4 className="font-semibold flex items-center gap-2"><Sparkles /> Best Practice Tip</h4>
+                        <p className="text-sm italic mt-2">{aiOutput.bestPractice}</p>
+                    </div>
+                 </CardContent>
+                 <CardFooter>
+                    <Button size="lg" onClick={handleFinalizeAndCheckin}>
+                        Finalize & Proceed to Check-in Form
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </CardFooter>
+              </div>
+          )}
+        </>
+      ) : (
+        <CardContent>
+            <p>Could not load user profile.</p>
+        </CardContent>
+      )}
     </Card>
   );
+}
+
+export function PlannerCheckinForm() {
+    return (
+        <Suspense>
+            <PlannerCheckinFormComponent />
+        </Suspense>
+    )
 }

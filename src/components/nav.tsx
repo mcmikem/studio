@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import {
@@ -114,15 +112,15 @@ export function AppSidebar() {
         <SidebarGroup data-mobile={isMobile}>
           <SidebarGroupLabel data-mobile={isMobile}>Planning</SidebarGroupLabel>
            <SidebarMenu>
-              <SidebarMenuItem>
+               <SidebarMenuItem>
                 <SidebarMenuButton
-                  href="/workplan"
-                  isActive={isActive('/workplan')}
-                  tooltip="Weekly Workplan"
+                  href="/daily-plan"
+                  isActive={isActive('/daily-plan')}
+                  tooltip="Daily Planner"
                   onClick={handleLinkClick}
                 >
                   <CalendarCheck />
-                  <span>Weekly Workplan</span>
+                  <span>Daily Planner</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>

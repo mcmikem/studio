@@ -24,6 +24,15 @@ export type RecentCheckout = {
   timestamp?: Timestamp;
 };
 
+export type Checkin = {
+  id: string;
+  userId: string;
+  name: string;
+  primaryMission: string;
+  details: DailyPlannerAIOutput;
+  timestamp: Timestamp;
+};
+
 export type Checkout = {
   id?: string;
   name: string;
@@ -36,29 +45,6 @@ export type Checkout = {
   tomorrowPlan?: string;
   userId: string;
 }
-
-export type TimeBlock = {
-    startTime: string;
-    endTime: string;
-    description: string;
-};
-
-export type Checkin = {
-    id: string;
-    userId: string;
-    name: string;
-    primaryMission: string;
-    details?: {
-      timeBlocks?: TimeBlock[];
-      multiWinConnections?: string[];
-      teamSupport?: string[];
-      budget?: number;
-      challenges?: string;
-      materials?: string;
-    }
-    timestamp: Timestamp;
-}
-
 
 export type PlanGoal = {
   title: string;

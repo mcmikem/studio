@@ -210,6 +210,41 @@
         "loggedAt"
       ]
     },
+    "Checkin": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Checkin",
+      "type": "object",
+      "description": "Represents a user's start-of-day check-in and plan.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "primaryMission": { "type": "string" },
+        "details": {
+          "type": "object",
+           "properties": {
+              "timeBlocks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "startTime": { "type": "string" },
+                    "endTime": { "type": "string" },
+                    "description": { "type": "string" }
+                  },
+                  "required": ["startTime", "endTime", "description"]
+                }
+              },
+              "multiWinConnections": { "type": "array", "items": { "type": "string" } },
+              "materials": { "type": "string" },
+              "challenges": { "type": "string" },
+              "bestPractice": { "type": "string" }
+            }
+        },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "primaryMission", "details", "timestamp"]
+    },
     "Checkout": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Checkout",
@@ -261,43 +296,6 @@
         "task",
         "timestamp"
       ]
-    },
-    "Checkin": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Checkin",
-      "type": "object",
-      "description": "Represents a user's start-of-day check-in and plan.",
-      "properties": {
-        "id": { "type": "string" },
-        "userId": { "type": "string" },
-        "name": { "type": "string" },
-        "primaryMission": { "type": "string" },
-        "details": {
-          "type": "object",
-           "properties": {
-              "timeBlocks": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "startTime": { "type": "string" },
-                    "endTime": { "type": "string" },
-                    "description": { "type": "string" }
-                  },
-                  "required": ["startTime", "endTime", "description"]
-                }
-              },
-              "multiWinConnections": { "type": "array", "items": { "type": "string" } },
-              "teamSupport": { "type": "array", "items": { "type": "string" } },
-              "budget": { "type": "number" },
-              "challenges": { "type": "string" },
-              "materials": { "type": "string" }
-            },
-             "additionalProperties": true
-        },
-        "timestamp": { "type": "string", "format": "date-time" }
-      },
-      "required": ["userId", "name", "primaryMission", "timestamp"]
     },
     "Task": {
       "$schema": "http://json-schema.org/draft-07/schema#",
