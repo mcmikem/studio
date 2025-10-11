@@ -32,10 +32,11 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
 
-       <DashboardGrid className="lg:grid-cols-3 mt-0">
-        <div className="col-span-full">
-            <QuickStatsSummary metrics={metrics} />
-        </div>
+       <div className="col-span-full mt-6">
+          <QuickStatsSummary metrics={metrics} />
+      </div>
+
+       <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <ProgramsOverview programs={programs} />
             <TeamPulse checkouts={checkouts} />

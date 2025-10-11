@@ -257,7 +257,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
        <DashboardHeader profile={profile} />
-       <DashboardGrid className="lg:grid-cols-3 mt-0">
+       <DashboardGrid className="lg:grid-cols-3">
         <div className="col-span-full">
            <Card>
             <CardHeader>

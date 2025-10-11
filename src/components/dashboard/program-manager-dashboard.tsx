@@ -22,7 +22,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   return (
      <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
-       <DashboardGrid className="lg:grid-cols-3 mt-0">
+       <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <ProgramsOverview programs={programs} />
             <Alerts />

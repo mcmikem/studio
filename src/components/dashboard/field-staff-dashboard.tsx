@@ -23,7 +23,7 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
 
-      <DashboardGrid className="lg:grid-cols-3 mt-0">
+      <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-1 flex flex-col gap-6">
           <DailyActions />
           <MyPriorities />
