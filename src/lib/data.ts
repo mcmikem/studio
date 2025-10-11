@@ -1,5 +1,6 @@
 
 import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert } from './types';
+import { AlertTriangle, Info } from 'lucide-react';
 
 export const KNOWLEDGE_BASE = `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
 
@@ -223,3 +224,17 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
         priority: 'High',
     },
 ];
+
+export const alertIcons: { [key: string]: React.ReactNode } = {
+    Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
+    Reminder: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
+    Info: <Info className="h-5 w-5 text-blue-500" />,
+};
+
+export const categoryColors: { [key: string]: string } = {
+    "Team Meetings": "bg-blue-500/10 text-blue-500 border-blue-500",
+    "Field Visits": "bg-green-500/10 text-green-500 border-green-500",
+    "Campaigns/Events": "bg-red-500/10 text-red-500 border-red-500",
+    "Deadlines": "bg-purple-500/10 text-purple-500 border-purple-500",
+    "Social Days": "bg-orange-500/10 text-orange-500 border-orange-500",
+};

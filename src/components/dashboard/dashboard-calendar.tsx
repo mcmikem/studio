@@ -21,15 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { CalendarEvent as EventType } from '@/lib/types';
+import { categoryColors } from '@/lib/data';
 
-
-const categoryColors: { [key: string]: string } = {
-    "Team Meetings": "bg-blue-500/10 text-blue-500 border-blue-500",
-    "Field Visits": "bg-green-500/10 text-green-500 border-green-500",
-    "Campaigns/Events": "bg-red-500/10 text-red-500 border-red-500",
-    "Deadlines": "bg-purple-500/10 text-purple-500 border-purple-500",
-    "Social Days": "bg-orange-500/10 text-orange-500 border-orange-500",
-};
 
 const eventSchema = z.object({
     title: z.string().min(3, "Title is required."),

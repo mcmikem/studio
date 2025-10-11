@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/card"
 import { Skeleton } from "../ui/skeleton"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, where } from "firebase/firestore"
+import { collection, query, where } from "firebase/firestore"
 import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
 import { useMemo } from "react"
+import { Progress } from "../ui/progress"
 
 // Define which metrics to feature on the dashboard
 const FEATURED_METRICS = [
@@ -34,7 +35,6 @@ export function QuickStatsSummary() {
   const firestore = useFirestore()
   const metricsQuery = useMemoFirebase(() => {
     if (!firestore) return null
-    // Fetch only the featured metrics
     return query(
       collection(firestore, "impact-metrics"),
       where("metric", "in", FEATURED_METRICS)
@@ -43,7 +43,6 @@ export function QuickStatsSummary() {
 
   const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery)
 
-  // Ensure consistent order and handle missing metrics
   const displayMetrics = useMemo(() => {
     if (isLoading) return Array(FEATURED_METRICS.length).fill(null);
     return FEATURED_METRICS.map(
@@ -59,19 +58,16 @@ export function QuickStatsSummary() {
   }, [metrics, isLoading])
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {displayMetrics.map((metric, i) => {
         if (isLoading || !metric) {
           return (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+             <Card key={i} className="p-4 flex flex-col justify-between">
+              <Skeleton className="h-7 w-7 mb-4" />
+              <div className="space-y-1">
                 <Skeleton className="h-5 w-2/3" />
-                <Skeleton className="h-6 w-6" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-1/2" />
-                <Skeleton className="h-4 w-1/3 mt-1" />
-              </CardContent>
+                <Skeleton className="h-4 w-1/3" />
+              </div>
             </Card>
           )
         }
@@ -83,27 +79,29 @@ export function QuickStatsSummary() {
                 style: "currency",
                 currency: "UGX",
                 minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
               }).format(val)
-            : `${val.toLocaleString()} ${metric.unit || ""}`.trim()
+            : `${val.toLocaleString()}`
+        
+        const progress = metric.target > 0 ? (metric.current / metric.target) * 100 : 0;
 
         return (
-          <Card key={metric.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {metric.metric}
-              </CardTitle>
-              <Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {formatValue(metric.current)}
+          <Card key={metric.id} className="p-4 flex flex-col">
+              <div className="flex justify-between items-start">
+                <Icon className="h-7 w-7 text-muted-foreground" />
+                <span className="text-xs font-semibold text-muted-foreground">{metric.unit === 'UGX' ? 'UGX' : metric.unit}</span>
               </div>
-              {!metric.isPlaceholder && (
-                <p className="text-xs text-muted-foreground">
-                    Target: {formatValue(metric.target)}
-                </p>
-              )}
-            </CardContent>
+              <div className="mt-auto space-y-1 pt-4">
+                <div className="text-2xl font-bold">
+                    {formatValue(metric.current)}
+                </div>
+                 {!metric.isPlaceholder && (
+                    <div className="flex items-center gap-2">
+                        <Progress value={progress} className="h-1 flex-1" />
+                        <span className="text-xs text-muted-foreground">{progress.toFixed(0)}%</span>
+                    </div>
+                )}
+              </div>
           </Card>
         )
       })}
