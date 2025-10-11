@@ -5,7 +5,7 @@
  * This file is not intended to be modified.
  */
 
-import {genkit} from '@/ai/genkit';
+import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 
 genkit({
@@ -15,7 +15,6 @@ genkit({
 });
 
 // Make sure all flows are exported from here
-export * from './flows/assistant-flow';
 export * from './flows/create-alert-flow';
 export * from './flows/daily-planner-flow';
 export * from './flows/impact-story-generator';

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -91,17 +92,6 @@ export function AppSidebar() {
               >
                 <Rss />
                 <span>Team Stream</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                href="/assistant"
-                isActive={isActive('/assistant')}
-                tooltip="AI Assistant"
-                onClick={handleLinkClick}
-              >
-                <Sparkles />
-                <span>AI Assistant</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
