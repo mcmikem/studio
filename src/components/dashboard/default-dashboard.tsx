@@ -8,7 +8,6 @@ import { DailyActions } from "./daily-actions"
 import { TeamToday } from "./team-today"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { Alerts } from "./alerts"
-import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardHeader } from "./dashboard-header"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
@@ -41,6 +40,7 @@ export function DefaultDashboard({ profile }: DashboardProps) {
           <TeamToday />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
+           <Alerts />
           <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>

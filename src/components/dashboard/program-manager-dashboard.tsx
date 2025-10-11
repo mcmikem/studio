@@ -21,7 +21,7 @@ function TeamCoordination() {
     // This is placeholder data. In a real app, this would come from live check-in/task data.
     const teamStatus = [
         { name: 'Bwire', task: 'Tree planting @ Kibibi SS', status: 'on-track' },
-        { name: 'Kasirye', task: 'Girl Child Day prep @ Makerere', status: 'on-track' },
+        { name: 'Kasirye', task: 'Girl Day prep @ Makerere', status: 'on-track' },
         { name: 'Alex', task: 'Editing documentary (2h overdue)', status: 'at-risk' },
         { name: 'McMike', task: 'Not checked in today', status: 'off-track' },
     ];
@@ -67,7 +67,8 @@ function PartnershipPipeline({ partnerships }: { partnerships: Partnership[] | n
     // This is a simplified categorization. A real app might have this as a field.
     const hot = partnerships?.filter(p => p.status === 'Potential').slice(0, 1) || [];
     const warm = partnerships?.filter(p => p.status === 'Active').slice(0, 2) || [];
-    const cold = partnerships?.length - hot.length - warm.length || 0;
+    const cold = (partnerships?.length || 0) - hot.length - warm.length;
+
 
     return (
         <Card>
@@ -86,7 +87,7 @@ function PartnershipPipeline({ partnerships }: { partnerships: Partnership[] | n
                         <p className="text-sm text-muted-foreground">Warm</p>
                     </div>
                     <div>
-                        <p className="text-2xl font-bold">{cold}</p>
+                        <p className="text-2xl font-bold">{cold > 0 ? cold : 0}</p>
                         <p className="text-sm text-muted-foreground">Cold</p>
                     </div>
                 </div>
