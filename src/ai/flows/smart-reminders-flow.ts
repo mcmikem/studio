@@ -6,7 +6,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import { getUpcomingEvents, getPendingTasks } from '../tools/omuto-tools';
 import { SmartRemindersInputSchema, SmartRemindersOutputSchema, type SmartRemindersInput, type SmartRemindersOutput } from '@/lib/types';
 
@@ -25,11 +24,9 @@ const smartRemindersPrompt = ai.definePrompt(
 
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     const llmResponse = await ai.generate({
-        prompt: [
-            smartRemindersPrompt,
-            {
-                role: 'user',
-                content: [{ text: `Generate a short list of 3-4 smart, actionable reminders for ${input.userName} (Role: ${input.userRole}). Use the available tools to get their upcoming events and pending tasks.
+        model: 'googleai/gemini-2.5-flash',
+        tools: [smartRemindersPrompt],
+        prompt: `Generate a short list of 3-4 smart, actionable reminders for {{userName}} (Role: {{userRole}}). Use the available tools to get their upcoming events and pending tasks.
 
 Analyze the data and provide specific, helpful nudges. For example:
 - If a task is due soon, remind them of the deadline.
@@ -37,10 +34,12 @@ Analyze the data and provide specific, helpful nudges. For example:
 - Connect tasks to organizational goals if possible.
 - Keep the tone friendly and supportive.
 
-Current User ID is: ${input.userId}` }],
-            }
-        ],
-        model: 'googleai/gemini-2.5-flash',
+Current User ID is: {{userId}}`,
+        input: {
+            userId: input.userId,
+            userName: input.userName,
+            userRole: input.userRole,
+        },
         config: {
             temperature: 0.5, // Be more creative with suggestions
         },
