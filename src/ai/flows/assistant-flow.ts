@@ -31,19 +31,16 @@ export const assistantFlow = ai.defineFlow(
   async (input) => {
     const { history, prompt } = input;
     
-    const { stream, response } = await ai.generate({
+    const response = await ai.generate({
       prompt: prompt,
       history: history,
       stream: true,
     });
     
     let fullResponse = '';
-    for await (const chunk of stream) {
+    for await (const chunk of response.stream()) {
       fullResponse += chunk.text;
     }
-    
-    // wait for the full response to be available
-    await response;
     
     return fullResponse;
   }
