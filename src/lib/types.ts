@@ -247,3 +247,10 @@ export type Equipment = {
     purchaseDate?: string;
     createdAt: Timestamp;
 }
+
+export type TaskTemplate = {
+    id: string;
+    title: string;
+    checklistItems: string[];
+    createdAt: Timestamp;
+};

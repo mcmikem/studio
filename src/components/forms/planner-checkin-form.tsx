@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -20,15 +21,15 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, getDocs, Timestamp, limit } from 'firebase/firestore';
-import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput } from '@/lib/types';
+import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
-import { Loader2, Sparkles, AlertTriangle, ArrowRight, PlusCircle, Trash2, DollarSign } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { startOfWeek } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { Textarea } from '../ui/textarea';
-import { Checkbox } from '../ui/checkbox';
 import Link from 'next/link';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
 
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
@@ -47,17 +48,6 @@ const finalCheckinSchema = z.object({
     materials: z.string().optional(),
     challenges: z.string().optional(),
     bestPractice: z.string().optional(),
-    needsBudget: z.boolean(),
-    budgetAmount: z.coerce.number().optional(),
-    budgetTitle: z.string().optional(),
-}).refine(data => {
-    if (data.needsBudget) {
-        return !!data.budgetTitle && (data.budgetAmount || 0) > 0;
-    }
-    return true;
-}, {
-    message: "If budget is needed, title and amount are required.",
-    path: ["budgetTitle"] // You can choose where to show the error
 });
 
 
@@ -110,9 +100,15 @@ function PlannerCheckinFormComponent() {
     return query(collection(firestore, 'key-results'));
   }, [firestore]);
   const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
+
+  const templatesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'task-templates'), where('title', '!=', ''));
+  }, [firestore]);
+  const { data: taskTemplates } = useCollection<TaskTemplate>(templatesQuery);
   // --- End Data Fetching ---
 
-  const { register: registerMission, handleSubmit: handleMissionSubmit, formState: { errors: missionErrors } } = useForm<PlanFormData>({
+  const { register: registerMission, handleSubmit: handleMissionSubmit, setValue: setMissionValue, formState: { errors: missionErrors } } = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
   });
 
@@ -125,15 +121,11 @@ function PlannerCheckinFormComponent() {
         materials: "",
         challenges: "",
         bestPractice: "",
-        needsBudget: false,
-        budgetAmount: 0,
-        budgetTitle: ""
     }
   });
 
   const { fields: timeBlockFields, append: appendTimeBlock, remove: removeTimeBlock } = useFieldArray({ control, name: "timeBlocks" });
   const { fields: connectionFields, append: appendConnection, remove: removeConnection } = useFieldArray({ control, name: "multiWinConnections" });
-  const needsBudget = watch('needsBudget');
 
   const onPlanGenerate = async (data: PlanFormData) => {
     if (!profile || !keyResults) {
@@ -174,6 +166,14 @@ function PlannerCheckinFormComponent() {
       setIsGeneratingPlan(false);
     }
   };
+  
+  const applyTemplate = (template: TaskTemplate) => {
+    const checklistText = template.checklistItems.map(item => `- ${item}`).join('\n');
+    const newMissionText = `Task: ${template.title}\n\nChecklist:\n${checklistText}`;
+    setMissionValue('primaryMission', newMissionText);
+    toast({ title: "Template Applied!", description: `"${template.title}" checklist has been added to your mission.` });
+  };
+
 
   const handleFinalizeAndCheckin = async (data: any) => {
     const params = new URLSearchParams();
@@ -249,11 +249,30 @@ function PlannerCheckinFormComponent() {
                             </AlertDescription>
                         </Alert>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="flex-wrap gap-4">
                         <Button type="submit" disabled={isGeneratingPlan} size="lg">
                             {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                             Brainstorm My Daily Plan
                         </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="lg">
+                                    <ListChecks className="mr-2 h-4 w-4" />
+                                    Use a Template
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {taskTemplates && taskTemplates.length > 0 ? (
+                                    taskTemplates.map(template => (
+                                        <DropdownMenuItem key={template.id} onClick={() => applyTemplate(template)}>
+                                            {template.title}
+                                        </DropdownMenuItem>
+                                    ))
+                                ) : (
+                                    <DropdownMenuItem disabled>No templates found.</DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </CardFooter>
                 </form>
             )}
@@ -317,7 +336,7 @@ function PlannerCheckinFormComponent() {
                         </div>
                         <Separator/>
                         <div className="space-y-2">
-                            <Label className="font-semibold text-base">Potential Challenges & Mitigations</Label>
+                            <Label className="font-semibold text-base">Potential Challenges &amp; Mitigations</Label>
                              <Textarea {...register('challenges')} />
                         </div>
                         <Separator/>
@@ -330,7 +349,7 @@ function PlannerCheckinFormComponent() {
                     <CardFooter>
                         <Button size="lg" type="submit" disabled={isSubmitting}>
                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Finalize & Proceed to Check-in
+                            Finalize &amp; Proceed to Check-in
                             <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                     </CardFooter>

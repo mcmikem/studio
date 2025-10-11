@@ -1,4 +1,5 @@
 
+
 {
   "entities": {
     "User": {
@@ -310,6 +311,22 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "completed", "createdAt"]
+    },
+    "TaskTemplate": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Task Template",
+      "type": "object",
+      "description": "A reusable checklist for common tasks.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "checklistItems": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "checklistItems", "createdAt"]
     },
     "Project": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -631,6 +648,13 @@
         "$ref": "#/entities/Equipment"
       },
       "description": "Stores the inventory of physical equipment."
+    },
+    "/task-templates/{templateId}": {
+      "schema": {
+        "$ref": "#/entities/TaskTemplate"
+      },
+      "description": "Stores reusable task templates and checklists."
     }
   }
 }
+
