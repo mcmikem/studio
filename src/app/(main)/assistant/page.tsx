@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,6 +23,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { collection, query, orderBy, where, limit } from 'firebase/firestore';
 import type { Program, Partnership, Expense, Task, KeyResult } from '@/lib/types';
+import { useStream } from '@genkit-ai/next/client';
 
 const promptSchema = z.object({
   prompt: z.string().min(1, 'Please enter a prompt.'),
@@ -72,7 +73,40 @@ export default function AssistantPage() {
   // --- End of data fetching ---
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const {
+    stream,
+    start,
+    isLoading: isAiLoading,
+    error,
+  } = useStream(assistantFlow);
+
+  useEffect(() => {
+    if (stream) {
+      setMessages(prev => {
+        const lastMessage = prev[prev.length - 1];
+        if (lastMessage.role === 'assistant') {
+          return [...prev.slice(0, -1), { role: 'assistant', content: stream }];
+        }
+        return [...prev, { role: 'assistant', content: stream }];
+      });
+    }
+  }, [stream]);
+
+  useEffect(() => {
+    if (error) {
+      console.error(error);
+       setMessages(prev => {
+           const updatedMessages = [...prev];
+            const lastMessage = updatedMessages[updatedMessages.length - 1];
+            if (lastMessage.role === 'assistant' && lastMessage.content === '') {
+                 lastMessage.content = 'Sorry, I had trouble connecting to the AI.';
+                 return updatedMessages;
+            }
+           return [...updatedMessages, { role: 'assistant', content: 'Sorry, I had trouble connecting to the AI.' }];
+       });
+    }
+  }, [error]);
 
   const {
     register,
@@ -84,7 +118,6 @@ export default function AssistantPage() {
   });
 
   const onSubmit = async ({ prompt }: { prompt: string }) => {
-    setIsLoading(true);
     const newMessages: Message[] = [...messages, { role: 'user', content: prompt }];
     setMessages(newMessages);
     reset();
@@ -99,44 +132,7 @@ export default function AssistantPage() {
     ]);
     
     const promptWithContext = `${fullContext}\nUser's question: ${prompt}`;
-
-    try {
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-
-      // Call the server action, which returns the stream and response objects
-      const { stream, response } = await assistantFlow(promptWithContext);
-
-      // Handle the stream on the client
-      for await (const chunk of stream) {
-        if (chunk.text) {
-          setMessages(prev => {
-            const updatedMessages = [...prev];
-            const lastMessage = updatedMessages[updatedMessages.length - 1];
-            if (lastMessage.role === 'assistant') {
-              lastMessage.content += chunk.text;
-            }
-            return updatedMessages;
-          });
-        }
-      }
-
-      // Wait for the full response to complete
-      await response;
-
-    } catch (e) {
-      console.error(e);
-       setMessages(prev => {
-           const updatedMessages = [...prev];
-            const lastMessage = updatedMessages[updatedMessages.length - 1];
-            if (lastMessage.role === 'assistant' && lastMessage.content === '') {
-                 lastMessage.content = 'Sorry, I had trouble connecting to the AI.';
-                 return updatedMessages;
-            }
-           return [...updatedMessages, { role: 'assistant', content: 'Sorry, I had trouble connecting to the AI.' }];
-       });
-    } finally {
-      setIsLoading(false);
-    }
+    start(promptWithContext);
   };
 
   const getInitials = () => {
@@ -206,7 +202,7 @@ export default function AssistantPage() {
                   )}
                 </div>
               ))}
-              {isLoading && messages.length > 0 && messages[messages.length - 1].role === 'user' && (
+              {isAiLoading && (
                  <div className="flex items-start gap-3">
                     <Avatar className="h-9 w-9 border">
                       <AvatarFallback>
@@ -218,7 +214,7 @@ export default function AssistantPage() {
                     </div>
                 </div>
               )}
-              {messages.length === 0 && !isLoading && (
+              {messages.length === 0 && !isAiLoading && (
                 <div className="text-center text-muted-foreground pt-16 flex flex-col items-center">
                     <Bot className="h-12 w-12 mb-4" />
                     <p className="font-semibold">How can I help you today?</p>
@@ -230,9 +226,9 @@ export default function AssistantPage() {
         </CardContent>
         <CardFooter className="pt-6 border-t">
           <form onSubmit={handleSubmit(onSubmit)} className="w-full flex gap-2">
-            <Input {...register('prompt')} placeholder="Ask the AI assistant..." disabled={isLoading} />
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? <Loader2 className="animate-spin" /> : 'Send'}
+            <Input {...register('prompt')} placeholder="Ask the AI assistant..." disabled={isAiLoading} />
+            <Button type="submit" disabled={isAiLoading}>
+              {isAiLoading ? <Loader2 className="animate-spin" /> : 'Send'}
             </Button>
           </form>
         </CardFooter>

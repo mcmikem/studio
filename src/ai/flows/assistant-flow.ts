@@ -9,6 +9,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
+import {defineFlow} from '@genkit-ai/flow';
 
 // Note: The data-fetching tools have been removed from this file.
 // The client is now responsible for fetching data and passing it into the prompt.
@@ -36,27 +37,19 @@ const exampleActionTool = ai.defineTool(
 );
 
 
-const assistantStreamFlow = ai.defineFlow(
+export const assistantFlow = defineFlow(
   {
-    name: 'assistantStreamFlow',
+    name: 'assistantFlow',
     inputSchema: z.string(),
-    outputSchema: z.any(), // The output is a stream, so we use `any` here.
+    outputSchema: z.string(),
   },
   async (prompt) => {
-    const { stream, response } = ai.generateStream({
+    const response = await ai.generate({
       prompt: prompt,
       system: KNOWLEDGE_BASE + "\n\nThe user has provided the following context from the application. Use this live data to answer their question.",
       tools: [exampleActionTool], // Keeping tool structure for future action-based tools
+      stream: true
     });
-
-    // The server flow returns the stream and the response promise to the client.
-    return { stream, response };
+    return response;
   }
 );
-
-
-export async function assistantFlow(prompt: string) {
-  // This is now a standard async function that calls the defined flow
-  // and returns the stream object. The client component is responsible for handling the stream.
-  return assistantStreamFlow(prompt);
-}
