@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, Suspense } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -19,85 +19,44 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, where, orderBy, getDocs, Timestamp, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, limit } from 'firebase/firestore';
 import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
-import { Loader2, Sparkles, AlertTriangle, ArrowRight } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { startOfWeek, endOfWeek, format } from 'date-fns';
+import { Loader2, Sparkles, AlertTriangle, ArrowRight, PlusCircle, Trash2, DollarSign } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { startOfWeek } from 'date-fns';
 import { Separator } from '../ui/separator';
+import { Textarea } from '../ui/textarea';
 
 const planSchema = z.object({
-  primaryMission: z.string().min(10, 'Please describe your main goal for the day.'),
+  primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
 
-function PlannerForm({
-  profile,
-  weeklyPlan,
-  keyResults,
-  isGeneratingPlan,
-  onPlanGenerate,
-}: {
-  profile: any;
-  weeklyPlan: WeeklyWorkplan | null;
-  keyResults: KeyResult[] | null;
-  isGeneratingPlan: boolean;
-  onPlanGenerate: (data: PlanFormData) => void;
-}) {
-
-  const { register, handleSubmit, formState: { errors, isDirty } } = useForm<PlanFormData>({
-    resolver: zodResolver(planSchema),
-  });
-
-  return (
-    <form onSubmit={handleSubmit(onPlanGenerate)}>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="primaryMission" className="text-lg">What is your main focus for today?</Label>
-          <Input
-            id="primaryMission"
-            placeholder="e.g., Finalize the RED Campaign report and meet with new partners."
-            {...register('primaryMission')}
-          />
-          {errors.primaryMission && (
-            <p className="text-sm text-destructive">{errors.primaryMission.message}</p>
-          )}
-        </div>
-
-        <Alert>
-          <Sparkles className="h-4 w-4" />
-          <AlertTitle>How the AI Coach Works</AlertTitle>
-          <AlertDescription>
-            The AI will use your focus, your role as {profile.role}, your weekly priorities, and the live organizational Key Results to help you brainstorm a strategic daily plan.
-          </AlertDescription>
-        </Alert>
-
-        {weeklyPlan && (
-          <Alert variant="default" className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <AlertTitle>Your Priorities This Week</AlertTitle>
-            <AlertDescription>
-              <ul className="list-disc list-inside">
-                {weeklyPlan.keyPriorities.map((p, i) => <li key={i}>{p}</li>)}
-              </ul>
-            </AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-      <CardFooter>
-        <Button type="submit" disabled={isGeneratingPlan} size="lg">
-          {isGeneratingPlan ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="mr-2 h-4 w-4" />
-          )}
-          Brainstorm My Daily Plan
-        </Button>
-      </CardFooter>
-    </form>
-  );
-}
+const finalCheckinSchema = z.object({
+    primaryMission: z.string(),
+    timeBlocks: z.array(z.object({
+        startTime: z.string(),
+        endTime: z.string(),
+        description: z.string().min(1, 'Description cannot be empty.')
+    })),
+    multiWinConnections: z.array(z.object({ value: z.string().min(1, 'Connection cannot be empty.') })),
+    materials: z.string().optional(),
+    challenges: z.string().optional(),
+    bestPractice: z.string().optional(),
+    needsBudget: z.boolean(),
+    budgetAmount: z.coerce.number().optional(),
+    budgetTitle: z.string().optional(),
+}).refine(data => {
+    if (data.needsBudget) {
+        return !!data.budgetTitle && (data.budgetAmount || 0) > 0;
+    }
+    return true;
+}, {
+    message: "If budget is needed, title and amount are required.",
+    path: ["budgetTitle"] // You can choose where to show the error
+});
 
 
 function PlannerCheckinFormComponent() {
@@ -107,11 +66,9 @@ function PlannerCheckinFormComponent() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
-  const [planGenerated, setPlanGenerated] = useState(false);
   const [aiOutput, setAiOutput] = useState<DailyPlannerAIOutput | null>(null);
-  const [primaryMission, setPrimaryMission] = useState("");
-
-  // --- Data Fetching ---
+  
+  // --- Data Fetching for Context ---
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoadingWeeklyPlan, setIsLoadingWeeklyPlan] = useState(true);
 
@@ -133,6 +90,8 @@ function PlannerCheckinFormComponent() {
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
           setWeeklyPlan(snapshot.docs[0].data() as WeeklyWorkplan);
+        } else {
+            setWeeklyPlan(null);
         }
       } catch (e) {
         console.error("Error fetching weekly plan", e);
@@ -140,7 +99,9 @@ function PlannerCheckinFormComponent() {
         setIsLoadingWeeklyPlan(false);
       }
     }
-    fetchWeeklyPlan();
+    if (user && firestore) {
+      fetchWeeklyPlan();
+    }
   }, [user, firestore]);
 
   const keyResultsQuery = useMemoFirebase(() => {
@@ -148,20 +109,43 @@ function PlannerCheckinFormComponent() {
     return query(collection(firestore, 'key-results'));
   }, [firestore]);
   const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
+  // --- End Data Fetching ---
 
+  const { register: registerMission, handleSubmit: handleMissionSubmit, formState: { errors: missionErrors } } = useForm<PlanFormData>({
+    resolver: zodResolver(planSchema),
+  });
+
+  const { register, handleSubmit, control, watch, setValue, formState: { errors: checkinErrors, isSubmitting } } = useForm({
+    resolver: zodResolver(finalCheckinSchema),
+    defaultValues: {
+        primaryMission: "",
+        timeBlocks: [],
+        multiWinConnections: [],
+        materials: "",
+        challenges: "",
+        bestPractice: "",
+        needsBudget: false,
+        budgetAmount: 0,
+        budgetTitle: ""
+    }
+  });
+
+  const { fields: timeBlockFields, append: appendTimeBlock, remove: removeTimeBlock } = useFieldArray({ control, name: "timeBlocks" });
+  const { fields: connectionFields, append: appendConnection, remove: removeConnection } = useFieldArray({ control, name: "multiWinConnections" });
+  const needsBudget = watch('needsBudget');
 
   const onPlanGenerate = async (data: PlanFormData) => {
     if (!profile || !keyResults) {
       toast({
         variant: 'destructive',
         title: 'Missing Context',
-        description: 'User profile or organizational data is not yet loaded. Please wait a moment and try again.',
+        description: 'User profile or organizational data is not yet loaded. Please wait and try again.',
       });
       return;
     }
 
     setIsGeneratingPlan(true);
-    setPrimaryMission(data.primaryMission);
+    setAiOutput(null);
 
     try {
       const output = await dailyPlannerAI({
@@ -171,7 +155,13 @@ function PlannerCheckinFormComponent() {
         keyResults: keyResults,
       });
       setAiOutput(output);
-      setPlanGenerated(true);
+      setValue('primaryMission', data.primaryMission);
+      setValue('timeBlocks', output.timeBlocks);
+      setValue('multiWinConnections', output.multiWinConnections.map(c => ({ value: c })));
+      setValue('materials', output.materials);
+      setValue('challenges', output.challenges);
+      setValue('bestPractice', output.bestPractice);
+
     } catch (error) {
       console.error('AI generation error:', error);
       toast({
@@ -184,12 +174,26 @@ function PlannerCheckinFormComponent() {
     }
   };
 
-  const handleFinalizeAndCheckin = () => {
-    const planData = {
-      primaryMission: primaryMission,
-      details: aiOutput
-    };
+  const handleFinalizeAndCheckin = async (data: any) => {
     const params = new URLSearchParams();
+    
+    // The details object now contains the full, user-edited plan
+    const details = {
+        timeBlocks: data.timeBlocks,
+        multiWinConnections: data.multiWinConnections.map((c: {value: string}) => c.value),
+        materials: data.materials,
+        challenges: data.challenges,
+        bestPractice: data.bestPractice,
+    };
+
+    const planData = {
+      primaryMission: data.primaryMission,
+      details: details,
+      needsBudget: data.needsBudget,
+      budgetAmount: data.budgetAmount,
+      budgetTitle: data.budgetTitle,
+    };
+
     params.set('plan', encodeURIComponent(JSON.stringify(planData)));
     params.set('tab', 'check-in');
     router.push(`/forms?${params.toString()}`);
@@ -197,72 +201,162 @@ function PlannerCheckinFormComponent() {
 
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
 
+  if (isLoading) {
+    return (
+        <Card>
+            <CardContent className="flex justify-center items-center p-10">
+                <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+            </CardContent>
+        </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>AI Daily Planner</CardTitle>
         <CardDescription>
-          Use your AI coach to brainstorm a strategic plan, then finalize it for your daily check-in.
+          Brainstorm with your AI coach, then finalize your plan for submission.
         </CardDescription>
       </CardHeader>
       
-      {isLoading ? (
-        <CardContent>
-          <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
-      ) : profile ? (
+      {profile ? (
         <>
-          <PlannerForm
-            profile={profile}
-            weeklyPlan={weeklyPlan}
-            keyResults={keyResults}
-            isGeneratingPlan={isGeneratingPlan}
-            onPlanGenerate={onPlanGenerate}
-          />
-          
-          { (planGenerated && aiOutput) && !isGeneratingPlan && (
-              <div className="space-y-6 pt-4">
-                <Separator />
+            <form onSubmit={handleMissionSubmit(onPlanGenerate)}>
                  <CardContent className="space-y-6">
-                    <h3 className="font-headline text-xl text-primary">Your AI-Generated Draft Plan</h3>
-                    
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-3 p-4 bg-muted rounded-lg">
-                            <h4 className="font-semibold">Key Time Blocks</h4>
-                            <ul className="list-disc list-inside text-sm">
-                                {aiOutput.timeBlocks.map((b, i) => <li key={i}><strong>{b.startTime}-{b.endTime}:</strong> {b.description}</li>)}
+                    <div className="space-y-2">
+                        <Label htmlFor="primaryMission" className="text-lg">What is your main focus for today?</Label>
+                        <Input
+                            id="primaryMission"
+                            placeholder="e.g., Finalize RED Campaign report and meet new partners."
+                            {...registerMission('primaryMission')}
+                        />
+                        {missionErrors.primaryMission && (
+                            <p className="text-sm text-destructive">{missionErrors.primaryMission.message}</p>
+                        )}
+                    </div>
+                     {weeklyPlan && (
+                        <Alert variant="default" className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                            <AlertTitle>Your Priorities This Week</AlertTitle>
+                            <AlertDescription>
+                            <ul className="list-disc list-inside">
+                                {weeklyPlan.keyPriorities.map((p, i) => <li key={i}>{p}</li>)}
                             </ul>
-                        </div>
-                         <div className="space-y-3 p-4 bg-muted rounded-lg">
-                            <h4 className="font-semibold">Multi-Win Connections</h4>
-                             <ul className="list-disc list-inside text-sm">
-                                {aiOutput.multiWinConnections.map((c, i) => <li key={i}>{c}</li>)}
-                            </ul>
-                        </div>
-                    </div>
-                    
-                     <div className="p-4 bg-muted rounded-lg">
-                        <h4 className="font-semibold">Suggested Resources</h4>
-                        <p className="text-sm">{aiOutput.materials || 'None suggested.'}</p>
-                    </div>
-
-                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                        <h4 className="font-semibold flex items-center gap-2"><AlertTriangle /> Challenges & Mitigations</h4>
-                        <p className="text-sm mt-2">{aiOutput.challenges}</p>
-                    </div>
-
-                    <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                        <h4 className="font-semibold flex items-center gap-2"><Sparkles /> Best Practice Tip</h4>
-                        <p className="text-sm italic mt-2">{aiOutput.bestPractice}</p>
-                    </div>
+                            </AlertDescription>
+                        </Alert>
+                    )}
                  </CardContent>
-                 <CardFooter>
-                    <Button size="lg" onClick={handleFinalizeAndCheckin}>
-                        Finalize & Proceed to Check-in Form
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                  <CardFooter>
+                    <Button type="submit" disabled={isGeneratingPlan} size="lg">
+                        {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Brainstorm My Daily Plan
                     </Button>
                 </CardFooter>
+            </form>
+          
+          {isGeneratingPlan && (
+              <div className="flex flex-col items-center justify-center p-10 space-y-2">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground">Your AI coach is thinking...</p>
               </div>
+          )}
+
+          {aiOutput && !isGeneratingPlan && (
+              <form onSubmit={handleSubmit(handleFinalizeAndCheckin)}>
+                 <div className="space-y-6 pt-4">
+                    <Separator />
+                    <CardHeader className="px-6 pt-6 pb-0">
+                        <CardTitle className="text-xl text-primary">Your AI-Generated Draft Plan</CardTitle>
+                        <CardDescription>Review and edit the AI's suggestions below, then finalize and submit your check-in.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        {/* Time Blocks */}
+                        <div className="space-y-3">
+                            <Label className="font-semibold">Key Time Blocks</Label>
+                            {timeBlockFields.map((field, index) => (
+                                <div key={field.id} className="grid grid-cols-[80px_80px_1fr_auto] gap-2 items-center">
+                                    <Input {...register(`timeBlocks.${index}.startTime`)} placeholder="Start" />
+                                    <Input {...register(`timeBlocks.${index}.endTime`)} placeholder="End" />
+                                    <Input {...register(`timeBlocks.${index}.description`)} placeholder="Description" />
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeTimeBlock(index)}><Trash2 className="h-4 w-4" /></Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendTimeBlock({startTime: '', endTime: '', description: ''})}><PlusCircle className="mr-2 h-4 w-4" /> Add Time Block</Button>
+                        </div>
+
+                         {/* Multi-Win Connections */}
+                        <div className="space-y-3">
+                            <Label className="font-semibold">Multi-Win Connections</Label>
+                             {connectionFields.map((field, index) => (
+                                <div key={field.id} className="flex gap-2 items-center">
+                                    <Input {...register(`multiWinConnections.${index}.value`)} placeholder="e.g., Connects to KR1..." />
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeConnection(index)}><Trash2 className="h-4 w-4" /></Button>
+                                </div>
+                            ))}
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendConnection({value: ''})}><PlusCircle className="mr-2 h-4 w-4" /> Add Connection</Button>
+                        </div>
+                        
+                        <div className="space-y-2">
+                             <Label className="font-semibold">Suggested Resources / Materials</Label>
+                             <Textarea {...register('materials')} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="font-semibold">Potential Challenges & Mitigations</Label>
+                             <Textarea {...register('challenges')} />
+                        </div>
+
+                         <div className="space-y-2">
+                            <Label className="font-semibold">Best Practice Tip</Label>
+                             <Textarea {...register('bestPractice')} />
+                        </div>
+
+                        <Separator />
+
+                        {/* Budget Requisition */}
+                        <div className="space-y-4 rounded-lg border p-4">
+                             <div className="flex items-center space-x-2">
+                                <Controller
+                                    name="needsBudget"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <input
+                                            type="checkbox"
+                                            id="needsBudget"
+                                            checked={field.value}
+                                            onChange={e => field.onChange(e.target.checked)}
+                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                        />
+                                    )}
+                                />
+                                <Label htmlFor="needsBudget" className="text-base font-semibold">Do you need a budget for this mission?</Label>
+                            </div>
+
+                            {needsBudget && (
+                                <div className="space-y-4 pl-6 border-l-2 border-primary ml-2">
+                                     <div className="space-y-2">
+                                        <Label htmlFor="budgetTitle">Requisition Title</Label>
+                                        <Input id="budgetTitle" placeholder="e.g., Transport for Nindye SS Visit" {...register('budgetTitle')} />
+                                        {checkinErrors.budgetTitle && <p className="text-sm text-destructive">{checkinErrors.budgetTitle.message}</p>}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="budgetAmount">Amount Required (UGX)</Label>
+                                        <Input id="budgetAmount" type="number" placeholder="e.g., 25000" {...register('budgetAmount')} />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                    </CardContent>
+                    <CardFooter>
+                        <Button size="lg" type="submit" disabled={isSubmitting}>
+                           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Finalize & Proceed to Check-in
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                    </CardFooter>
+                 </div>
+              </form>
           )}
         </>
       ) : (
@@ -281,5 +375,3 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
-
-    
