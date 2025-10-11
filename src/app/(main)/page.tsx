@@ -36,7 +36,6 @@ const ExecutiveDashboard = dynamic(() => import('@/components/dashboard/executiv
 const ProgramManagerDashboard = dynamic(() => import('@/components/dashboard/program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardLoading /> });
 const FieldStaffDashboard = dynamic(() => import('@/components/dashboard/field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardLoading /> });
 const MediaFinanceDashboard = dynamic(() => import('@/components/dashboard/media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardLoading /> });
-const AdminDashboard = dynamic(() => import('@/components/dashboard/admin-dashboard').then(mod => mod.AdminDashboard), { loading: () => <DashboardLoading /> });
 
 
 const roleToDashboard: { [key: string]: React.FC<any> } = {
@@ -46,7 +45,6 @@ const roleToDashboard: { [key: string]: React.FC<any> } = {
   'Field Coordinator': FieldStaffDashboard,
   'Media & Communications Lead': MediaFinanceDashboard,
   'Resource Mobilization Lead': ProgramManagerDashboard,
-  'Administrator': AdminDashboard,
   'default': DefaultDashboard,
 };
 
