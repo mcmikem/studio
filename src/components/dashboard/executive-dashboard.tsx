@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Program, Checkout } from "@/lib/types"
+import type { User, Program, Checkout, ImpactMetric } from "@/lib/types"
 import { Alerts } from "./alerts"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
@@ -10,16 +10,24 @@ import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
 import { DashboardHeader } from "./dashboard-header"
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy, limit } from "firebase/firestore"
 
 interface DashboardProps {
   profile: User;
-  programs: Program[] | null;
-  checkouts: Checkout[] | null;
-  metrics: any; // Add correct type
 }
 
+export function ExecutiveDashboard({ profile }: DashboardProps) {
+  const firestore = useFirestore();
 
-export function ExecutiveDashboard({ profile, programs, checkouts, metrics }: DashboardProps) {
+  const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs'), orderBy('deadline')) : null, [firestore]);
+  const { data: programs } = useCollection<Program>(programsQuery);
+
+  const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
+  const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
+
+  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
+  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
   return (
     <div className="flex flex-col gap-6">

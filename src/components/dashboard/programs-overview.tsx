@@ -8,13 +8,11 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { Program } from '@/lib/types';
-import { Briefcase, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Briefcase } from 'lucide-react';
 
 const chartColors: { [key: string]: string } = {
   "On Track": "hsl(var(--chart-2))",
@@ -70,8 +68,8 @@ export function ProgramsOverview({ programs }: { programs: Program[] | null }) {
                         <CardTitle className="text-sm font-medium">On Track</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-green-500">{programStats.onTrack}</div>
-                        <p className="text-xs text-muted-foreground">of {programStats.total} active programs</p>
+                        <div className="text-2xl font-bold text-green-500">{programs ? programStats.onTrack : '...'}</div>
+                        <p className="text-xs text-muted-foreground">of {programs ? programStats.total : '...'} active programs</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -79,8 +77,8 @@ export function ProgramsOverview({ programs }: { programs: Program[] | null }) {
                         <CardTitle className="text-sm font-medium">At Risk</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-yellow-500">{programStats.atRisk}</div>
-                         <p className="text-xs text-muted-foreground">of {programStats.total} active programs</p>
+                        <div className="text-2xl font-bold text-yellow-500">{programs ? programStats.atRisk : '...'}</div>
+                         <p className="text-xs text-muted-foreground">of {programs ? programStats.total : '...'} active programs</p>
                     </CardContent>
                 </Card>
                  <Card>
@@ -88,8 +86,8 @@ export function ProgramsOverview({ programs }: { programs: Program[] | null }) {
                         <CardTitle className="text-sm font-medium">Delayed</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-500">{programStats.delayed}</div>
-                         <p className="text-xs text-muted-foreground">of {programStats.total} active programs</p>
+                        <div className="text-2xl font-bold text-red-500">{programs ? programStats.delayed : '...'}</div>
+                         <p className="text-xs text-muted-foreground">of {programs ? programStats.total : '...'} active programs</p>
                     </CardContent>
                 </Card>
             </div>
@@ -101,7 +99,7 @@ export function ProgramsOverview({ programs }: { programs: Program[] | null }) {
                         <CardTitle>Program Health Distribution</CardTitle>
                     </CardHeader>
                     <CardContent>
-                         {programStats.chartData.length > 0 && (
+                         {programs && programStats.chartData.length > 0 && (
                             <ResponsiveContainer width="100%" height={280}>
                                 <PieChart>
                                 <Tooltip
@@ -129,11 +127,11 @@ export function ProgramsOverview({ programs }: { programs: Program[] | null }) {
                                 </PieChart>
                             </ResponsiveContainer>
                          )}
-                         {programStats.chartData.length === 0 && (
+                         {(!programs || programStats.chartData.length === 0) && (
                             <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
                                 <Briefcase className="h-12 w-12" />
-                                <p className="mt-4 font-semibold">No Active Programs Found</p>
-                                <p className="text-sm">Add a program in the management section to see stats here.</p>
+                                <p className="mt-4 font-semibold">{programs ? 'No Active Programs Found' : 'Loading...'}</p>
+                                {programs && <p className="text-sm">Add a program in the management section to see stats here.</p>}
                             </div>
                          )}
                     </CardContent>

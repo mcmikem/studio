@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User, Program } from "@/lib/types"
@@ -8,12 +9,16 @@ import { Alerts } from "./alerts"
 import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardHeader } from "./dashboard-header"
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy } from "firebase/firestore"
 
 interface DashboardProps {
   profile: User;
-  programs: Program[] | null;
 }
-export function ProgramManagerDashboard({ profile, programs }: DashboardProps) {
+export function ProgramManagerDashboard({ profile }: DashboardProps) {
+  const firestore = useFirestore();
+  const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs'), orderBy('deadline')) : null, [firestore]);
+  const { data: programs } = useCollection<Program>(programsQuery);
   
   return (
      <div className="flex flex-col gap-6">

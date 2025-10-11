@@ -11,14 +11,21 @@ import { Alerts } from "./alerts"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardHeader } from "./dashboard-header"
 import { QuickStatsSummary } from "./quick-stats-summary"
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { collection, query, orderBy, limit } from "firebase/firestore"
 
 interface DashboardProps {
   profile: User;
-  checkouts: Checkout[] | null;
-  metrics: ImpactMetric[] | null;
 }
 
-export function DefaultDashboard({ profile, checkouts, metrics }: DashboardProps) {
+export function DefaultDashboard({ profile }: DashboardProps) {
+  const firestore = useFirestore();
+
+  const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
+  const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
+
+  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
+  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
   return (
     <div className="flex flex-col gap-6">

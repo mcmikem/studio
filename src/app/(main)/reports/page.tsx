@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, getDocs } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
 import type { Activity } from '@/lib/types';
@@ -17,6 +17,7 @@ import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingU
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Label } from '@/components/ui/label';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', {
@@ -218,12 +219,9 @@ function FinancialOverview({ activities }: { activities: Activity[] | null }) {
   )
 }
 
-
-import { Label } from '@/components/ui/label';
-import { useCollection } from '@/firebase';
 export default function ReportsPage() {
   const firestore = useFirestore();
-  const activitiesQuery = useMemo(() => {
+  const activitiesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     const startOfMonth = new Date();
     startOfMonth.setDate(1);

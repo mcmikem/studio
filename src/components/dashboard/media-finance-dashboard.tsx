@@ -18,9 +18,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card"
-import { useFirestore, useUser } from "@/firebase"
+import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
 import { useMemo } from "react"
-import { Skeleton } from "../ui/skeleton"
 import {
   Table,
   TableBody,
@@ -41,7 +40,7 @@ import { createAlert } from "@/ai/flows/create-alert-flow"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"
 import { DashboardHeader } from "./dashboard-header"
-import { doc } from "firebase/firestore"
+import { doc, collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-UG", {
@@ -234,12 +233,27 @@ function PaymentQueue({ expenses }: { expenses: Expense[] | null }) {
 
 interface DashboardProps {
   profile: User;
-  activities: Activity[] | null;
-  pendingExpenses: Expense[] | null;
 }
 
+export function MediaFinanceDashboard({ profile }: DashboardProps) {
+  const firestore = useFirestore();
 
-export function MediaFinanceDashboard({ profile, activities, pendingExpenses }: DashboardProps) {
+  const activitiesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    return query(
+      collection(firestore, "activities"),
+      where("loggedAt", ">=", Timestamp.fromDate(startOfMonth))
+    );
+  }, [firestore]);
+  const { data: activities } = useCollection<Activity>(activitiesQuery);
+
+  const pendingExpensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), where('status', 'in', ['Pending', 'Approved']), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const { data: pendingExpenses } = useCollection<Expense>(pendingExpensesQuery);
+
 
   return (
     <div className="flex flex-col gap-6">
