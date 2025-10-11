@@ -671,10 +671,14 @@
       "description": "Stores reusable task templates and checklists."
     },
     "/messages/{messageId}": {
-        "schema": {
-            "$ref": "#/entities/Message"
-        },
-        "description": "Stores team chat messages."
+      "schema": {
+        "$ref": "#/entities/Message"
+      },
+      "security": {
+        "read": "request.auth != null",
+        "write": "request.auth != null"
+      },
+      "description": "Stores team chat messages."
     }
   }
 }
