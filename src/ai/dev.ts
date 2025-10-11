@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview A development server for Genkit.
  *
