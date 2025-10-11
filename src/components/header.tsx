@@ -66,12 +66,11 @@ function QuickAddMenu() {
 function NotificationsMenu() {
     const firestore = useFirestore();
     const { user } = useUser();
-    const [isOpen, setIsOpen] = useState(false);
+    const [hasUnread, setHasUnread] = useState(true);
     
     // In a real app, 'read' status would be stored in a user-specific subcollection.
     // For this demo, we assume opening the menu marks them as "seen" in the session.
-    const hasUnread = true; // This would be derived from a query like `where('read', '==', false)`
-
+    
     const alertsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
         return query(collection(firestore, 'alerts'), orderBy('createdAt', 'desc'), limit(5));
@@ -79,28 +78,27 @@ function NotificationsMenu() {
 
     const { data: alerts, isLoading } = useCollection<AlertType>(alertsQuery);
     
-    const unreadCount = alerts?.length || 0; // Simplified for demo
-    
     const handleOpenChange = (open: boolean) => {
-        setIsOpen(open);
-        // Here you would typically trigger an update to mark notifications as read in Firestore
-        // e.g., markNotificationsAsRead(user.uid, alerts.map(a => a.id));
+        if (open && hasUnread) {
+            // Here you would typically trigger an update to mark notifications as read in Firestore
+            // e.g., markNotificationsAsRead(user.uid, alerts.map(a => a.id));
+            setHasUnread(false);
+        }
     };
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
+        <DropdownMenu onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
                  <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
-                    {isOpen ? (
+                    {!hasUnread && alerts && alerts.length > 0 && (
                         <CheckCircle className="absolute top-1 right-1 h-3 w-3 text-green-500" />
-                    ) : (
-                        unreadCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                            </span>
-                        )
+                    )}
+                    {hasUnread && !isLoading && alerts && alerts.length > 0 && (
+                        <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                        </span>
                     )}
                     <span className="sr-only">Notifications</span>
                 </Button>
