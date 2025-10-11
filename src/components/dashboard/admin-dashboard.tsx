@@ -40,16 +40,16 @@ export function AdminDashboard({ profile }: DashboardProps) {
       </div>
 
        <DashboardGrid className="lg:grid-cols-3">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-            <ProgramsOverview programs={programs} />
-            <TeamPulse checkouts={checkouts} />
-        </div>
-        <div className="lg:col-span-1 flex flex-col gap-6">
+         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
             <DashboardCalendar />
             <TeamToday />
             <Alerts />
             <ManagementQuickLinks />
+        </div>
+        <div className="lg:col-span-2 flex flex-col gap-6">
+            <ProgramsOverview programs={programs} />
+            <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>
     </div>

@@ -28,12 +28,12 @@ export function DashboardHeader({ profile }: { profile: User }) {
           data-ai-hint={headerImage.imageHint}
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20" />
       <div className="absolute bottom-0 left-0 p-6">
-        <p className="text-lg text-white/90">{getGreeting()}</p>
         <h1 className="font-headline text-3xl font-bold tracking-tight text-white">
           {profile?.name || "User"}
         </h1>
+        <p className="text-lg text-white/90">{getGreeting()}</p>
       </div>
     </div>
   )

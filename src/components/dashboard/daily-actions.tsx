@@ -22,7 +22,7 @@ export function DailyActions() {
         </CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-4">
-        <Button asChild size="lg" className="h-16">
+        <Button asChild size="lg" className="h-16 bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href="/forms">
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-2">
@@ -33,7 +33,7 @@ export function DailyActions() {
             </div>
           </Link>
         </Button>
-        <Button asChild size="lg" variant="secondary" className="h-16">
+        <Button asChild size="lg" className="h-16 bg-secondary hover:bg-secondary/90 text-secondary-foreground">
           <Link href="/forms?tab=check-out">
             <div className="flex flex-col items-center">
               <div className="flex items-center gap-2">
