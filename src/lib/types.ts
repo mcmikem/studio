@@ -254,4 +254,11 @@ export type TaskTemplate = {
     createdAt: Timestamp;
 };
 
-    
+export type Message = {
+    id: string;
+    text: string;
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    createdAt: Timestamp;
+}
