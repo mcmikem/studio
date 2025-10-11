@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -21,7 +22,7 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Users, Mail, Briefcase } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 export function TeamRoles() {
   const firestore = useFirestore();
@@ -59,6 +60,7 @@ export function TeamRoles() {
               <Card key={user.id}>
                 <CardContent className="pt-6 flex items-center gap-4">
                    <Avatar className="h-10 w-10">
+                      {user.photoURL && <AvatarImage src={user.photoURL} alt={user.name} />}
                       <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                     </Avatar>
                   <div>

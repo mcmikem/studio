@@ -10,21 +10,19 @@ import {
 } from '@/components/ui/card';
 import { Users, UserCheck, UserX } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
-
-// This component is being simplified as the "check-in" concept is removed.
-// It can be repurposed later if a new "who's active" feature is needed.
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { User } from '@/lib/types';
 
 export function TeamToday() {
-  const teamMembers = [
-    { id: '1', name: 'McMike Mutumba', status: 'Active' },
-    { id: '2', name: 'Dianah Nansikombi', status: 'Active' },
-    { id: '3', name: 'Kasirye Constantine', status: 'Active' },
-    { id: '4', name: 'Nsereko Alex', status: 'In Office' },
-    { id: '5', name: 'Bwire Bashir', status: 'In Field' },
-  ];
-  
-  const isLoading = false; // Mocking loading state
+  const firestore = useFirestore();
+  const usersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'users'), orderBy('name'));
+  }, [firestore]);
 
+  const { data: users, isLoading } = useCollection<User>(usersQuery);
+  
   return (
     <Card>
       <CardHeader>
@@ -37,21 +35,26 @@ export function TeamToday() {
       <CardContent className="space-y-3 text-sm">
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <Skeleton className="h-3 w-3 rounded-full mt-1" />
-                <div className="space-y-1.5">
-                  <Skeleton className="h-4 w-24" />
-                </div>
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-4 w-24" />
               </div>
             ))
-          : teamMembers.map((member) => (
-              <div key={member.id} className="flex items-start gap-3">
+          : users && users.length > 0 ? (
+              users.map((member) => (
+              <div key={member.id} className="flex items-center gap-3">
                 <UserCheck
-                  className={`flex h-4 w-4 flex-shrink-0 text-green-500 mt-0.5`}
+                  className={`flex h-4 w-4 flex-shrink-0 text-green-500`}
                 />
                 <p className="font-semibold">{member.name}</p>
+                 <p className="text-muted-foreground truncate">({member.role})</p>
               </div>
-            ))}
+            ))
+          ) : (
+             <div className="text-center text-muted-foreground py-4">
+                <p>No users found in the directory.</p>
+            </div>
+          )}
       </CardContent>
     </Card>
   );
