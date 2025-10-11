@@ -42,7 +42,7 @@ const eventSchema = z.object({
 function NewEventForm({ onFormSubmit }: { onFormSubmit: () => void }) {
     const firestore = useFirestore();
     const { toast } = useToast();
-    const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm({
+    const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm<z.infer<typeof eventSchema>>({
         resolver: zodResolver(eventSchema),
         defaultValues: {
             category: 'Team Meetings',

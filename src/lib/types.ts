@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type StatCard = {
@@ -68,7 +69,7 @@ export type SuccessMetric = {
 
 export type CalendarEvent = {
     id: string;
-    date: Timestamp | Date;
+    date: Timestamp;
     title: string;
     description?: string;
     responsible: string;
@@ -131,6 +132,7 @@ export type ImpactMetric = {
     current: number;
     unit?: string;
     valuePerUnit?: number;
+    createdAt?: Timestamp;
 }
 
 export type Alert = {
@@ -157,6 +159,7 @@ export type User = {
     email: string;
     role: string;
     photoURL?: string;
+    createdAt?: Timestamp;
 }
 
 export type KeyResult = {
