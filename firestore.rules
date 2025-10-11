@@ -4,66 +4,57 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if a user is signed in.
-    function isSignedIn() {
+    // Helper function to check if a user is authenticated
+    function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Default-deny all reads and writes to prevent accidental access.
-    match /{document=**} {
-      allow read, write: if false;
+    // Helper function to check if the user is the owner of the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
 
-    // /users/{userId}
-    // Users can read their own profile.
-    // Any authenticated user can list all user profiles for team views.
-    // Users can create and update their own profile.
+    // Users: Can only read/update their own profile. Anyone can create a user doc on signup.
     match /users/{userId} {
-      allow get, update, create: if isSignedIn() && request.auth.uid == userId;
-      allow list: if isSignedIn();
+      allow read, update: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated();
     }
 
-    // /users/{userId}/tasks/{taskId}
-    // Users can only manage their own tasks.
-    match /users/{userId}/tasks/{taskId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    // User-specific subcollections (like tasks)
+    match /users/{userId}/{collection}/{docId} {
+        allow read, write: if isAuthenticated() && isOwner(userId);
     }
 
-    // General collections for organizational data.
-    // Any signed-in user can read, create, update, and delete documents in these collections.
-    // This is a permissive rule for internal tools to ensure functionality.
-    match /checkins/{checkinId} {
-      allow read, write: if isSignedIn();
+    // General Collections:
+    // Allow any authenticated user to read.
+    // Allow authenticated users to create new documents.
+    // Only allow users to update/delete documents they created.
+    match /{collection}/{docId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated();
+        allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
     }
-    match /checkouts/{checkoutId} {
-      allow read, write: if isSignedIn();
-    }
-    match /activities/{activityId} {
-      allow read, write: if isSignedIn();
-    }
+    
+    // Special case for collections that don't have a `userId` field but should be manageable.
+    // These rules are more open and should be refined in a production environment.
     match /programs/{programId} {
-      allow read, write: if isSignedIn();
+        allow read, write: if isAuthenticated();
     }
-    match /partnerships/{partnershipId} {
-      allow read, write: if isSignedIn();
+     match /partnerships/{partnershipId} {
+        allow read, write: if isAuthenticated();
     }
-    match /impact-metrics/{metricId} {
-      allow read, write: if isSignedIn();
+     match /projects/{projectId} {
+        allow read, write: if isAuthenticated();
     }
-    match /projects/{projectId} {
-      allow read, write: if isSignedIn();
+     match /impact-metrics/{metricId} {
+        allow read, write: if isAuthenticated();
     }
-    match /events/{eventId} {
-      allow read, write: if isSignedIn();
+     match /events/{eventId} {
+        allow read, write: if isAuthenticated();
     }
-    match /alerts/{alertId} {
-      allow read, write: if isSignedIn();
+     match /key-results/{keyResultId} {
+        allow read, write: if isAuthenticated();
     }
-    match /key-results/{keyResultId} {
-      allow read, write: if isSignedIn();
-    }
-    match /expenses/{expenseId} {
-      allow read, write: if isSignedIn();
-    }
+
   }
 }
