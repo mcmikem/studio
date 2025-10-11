@@ -236,3 +236,14 @@ export type DailyPlannerAIOutput = {
     challenges: string;
     bestPractice: string;
 };
+
+export type Equipment = {
+    id: string;
+    name: string;
+    category: string;
+    status: "Available" | "In Use" | "Under Maintenance";
+    condition: "Good" | "Fair" | "Poor";
+    currentHolder: string;
+    purchaseDate?: string;
+    createdAt: Timestamp;
+}

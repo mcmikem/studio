@@ -504,6 +504,23 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "userName", "weekOf", "teamPlanId", "teamPriorities", "individualTasks", "createdAt"]
+    },
+    "Equipment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Equipment",
+      "description": "Represents a piece of physical equipment or an asset.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "status": { "type": "string", "enum": ["Available", "In Use", "Under Maintenance"] },
+        "condition": { "type": "string", "enum": ["Good", "Fair", "Poor"] },
+        "currentHolder": { "type": "string" },
+        "purchaseDate": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "category", "status", "condition", "currentHolder", "createdAt"]
     }
   },
   "auth": {
@@ -608,6 +625,12 @@
         "$ref": "#/entities/WeeklyWorkplan"
       },
       "description": "Stores individuals' finalized weekly workplans."
+    },
+    "/equipment/{equipmentId}": {
+      "schema": {
+        "$ref": "#/entities/Equipment"
+      },
+      "description": "Stores the inventory of physical equipment."
     }
   }
 }
