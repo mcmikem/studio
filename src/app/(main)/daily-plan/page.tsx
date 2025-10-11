@@ -1,8 +1,9 @@
 'use client';
 import { PlannerCheckinForm } from '@/components/forms/planner-checkin-form';
 import { CalendarCheck } from 'lucide-react';
+import { Suspense } from 'react';
 
-export default function DailyPlanPage() {
+function DailyPlanPageContent() {
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -17,4 +18,12 @@ export default function DailyPlanPage() {
       <PlannerCheckinForm />
     </div>
   );
+}
+
+export default function DailyPlanPage() {
+    return (
+        <Suspense>
+            <DailyPlanPageContent />
+        </Suspense>
+    )
 }

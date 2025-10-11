@@ -215,7 +215,7 @@ export type DailyPlannerAIOutput = {
         description: string;
     }[];
     multiWinConnections: string[];
-    materials?: string;
-    challenges?: string;
-    bestPractice?: string;
+    materials: string;
+    challenges: string;
+    bestPractice: string;
 };

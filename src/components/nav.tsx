@@ -112,6 +112,17 @@ export function AppSidebar() {
         <SidebarGroup data-mobile={isMobile}>
           <SidebarGroupLabel data-mobile={isMobile}>Planning</SidebarGroupLabel>
            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton
+                    href="/workplan"
+                    isActive={isActive('/workplan')}
+                    tooltip="Weekly Workplan"
+                    onClick={handleLinkClick}
+                    >
+                    <CalendarCheck />
+                    <span>Weekly Workplan</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                <SidebarMenuItem>
                 <SidebarMenuButton
                   href="/daily-plan"
