@@ -57,6 +57,7 @@ export const assistantFlow = ai.defineFlow(
         }
     }
     
-    return (await response).text;
+    const finalResponse = await response;
+    return finalResponse.text;
   }
 );
