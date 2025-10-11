@@ -80,7 +80,7 @@ function UserMenu({ user, profile }: { user: any, profile: any }) {
   const getInitials = (name?: string, email?: string) => {
     if (name) {
         const parts = name.split(' ');
-        if (parts.length > 1) {
+        if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
             return parts[0][0] + parts[parts.length - 1][0];
         }
         return name.substring(0, 2).toUpperCase();
