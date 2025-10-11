@@ -1,3 +1,4 @@
+
 import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert } from './types';
 
 export const KNOWLEDGE_BASE = `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
@@ -222,3 +223,5 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
         priority: 'High',
     },
 ];
+
+    
