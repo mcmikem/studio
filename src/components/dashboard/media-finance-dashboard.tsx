@@ -7,7 +7,6 @@ import {
   Check,
   DollarSign,
   FolderKanban,
-  Target,
   VenetianMask,
   X,
 } from "lucide-react"
@@ -41,6 +40,7 @@ import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"
 import { DashboardHeader } from "./dashboard-header"
 import { doc, collection, query, where, orderBy, Timestamp } from "firebase/firestore"
+import { Progress } from "../ui/progress"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-UG", {
@@ -50,70 +50,51 @@ const formatCurrency = (value: number) => {
   }).format(value)
 }
 
-function FinancialOverview({ activities }: { activities: Activity[] | null }) {
-  const monthlyBudget = 2000000 // Mock budget for now
+function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metrics: any }) {
+    const cycleOfDignityMetric = metrics?.find((m: any) => m.metric === "Cycle of Dignity Fundraising");
+    const cycleOfDignityProgress = cycleOfDignityMetric ? (cycleOfDignityMetric.current / cycleOfDignityMetric.target) * 100 : 0;
 
-  const { totalSpent, totalValue } = useMemo(() => {
-    if (!activities) return { totalSpent: 0, totalValue: 0 };
+    const octoberExpenses = useMemo(() => {
+        if (!expenses) return 0;
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        return expenses
+            .filter(e => (e.status === 'Approved' || e.status === 'Cleared') && e.date && new Date(e.date) >= startOfMonth)
+            .reduce((sum, e) => sum + e.totalAmount, 0);
+    }, [expenses]);
     
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    const monthlyActivities = activities.filter(act => act.loggedAt.toDate() >= startOfMonth);
-
-    const spent = monthlyActivities.reduce((sum, activity) => sum + activity.actualCost, 0);
-    const value = monthlyActivities.reduce((sum, activity) => sum + activity.totalValue, 0);
-    
-    return { totalSpent: spent, totalValue: value };
-  }, [activities]);
-
-  const remainingBudget = monthlyBudget - totalSpent;
+    const octoberBudget = 800000;
+    const expenseProgress = (octoberExpenses / octoberBudget) * 100;
+    const pendingApprovals = expenses?.filter(e => e.status === 'Pending').length || 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="flex flex-col justify-between">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary">
-            <DollarSign />
-            Monthly Spending
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold">{formatCurrency(totalSpent)}</p>
-          <p className="text-sm text-muted-foreground">
-            of {formatCurrency(monthlyBudget)} spent
-          </p>
-        </CardContent>
-      </Card>
-      <Card className="flex flex-col justify-between">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-500">
-            <Target />
-            Value Generated
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold">{formatCurrency(totalValue)}</p>
-          <p className="text-sm text-muted-foreground">
-            from this month's activities
-          </p>
-        </CardContent>
-      </Card>
-      <Card className="flex flex-col justify-between">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-500">
-            <VenetianMask />
-            Remaining Budget
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold">
-            {formatCurrency(remainingBudget)}
-          </p>
-          <p className="text-sm text-muted-foreground">for the rest of the month</p>
-        </CardContent>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>💰 Budget Health</CardTitle>
+        <CardDescription>A real-time overview of key financial metrics for this month.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+            <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium">Cycle of Dignity</span>
+                <span className="text-muted-foreground">{formatCurrency(cycleOfDignityMetric?.current || 0)} / {formatCurrency(cycleOfDignityMetric?.target || 2000000)}</span>
+            </div>
+            <Progress value={cycleOfDignityProgress} />
+        </div>
+         <div>
+            <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium">October Expenses</span>
+                 <span className="text-muted-foreground">{formatCurrency(octoberExpenses)} / {formatCurrency(octoberBudget)}</span>
+            </div>
+            <Progress value={expenseProgress} />
+             {expenseProgress > 75 && <p className="text-xs text-destructive mt-1">🟡 Alert: Transport budget is at {expenseProgress.toFixed(0)}%.</p>}
+        </div>
+        <div className="flex items-center justify-between p-3 bg-muted rounded-md">
+            <span className="font-medium">Pending Approvals</span>
+            <span className="font-bold text-lg">{pendingApprovals} expenses</span>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -165,7 +146,6 @@ function PaymentQueue({ expenses }: { expenses: Expense[] | null }) {
         <TableRow>
           <TableHead>User</TableHead>
           <TableHead>Amount</TableHead>
-          <TableHead>Date</TableHead>
           <TableHead className="text-right">Action</TableHead>
         </TableRow>
       </TableHeader>
@@ -178,7 +158,6 @@ function PaymentQueue({ expenses }: { expenses: Expense[] | null }) {
                 <p className="text-xs text-muted-foreground">{expense.title}</p>
               </TableCell>
               <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
-              <TableCell className="text-muted-foreground text-xs">{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
               <TableCell className="text-right">
                 {type === 'pending' && (
                   <div className="flex gap-2 justify-end">
@@ -189,7 +168,7 @@ function PaymentQueue({ expenses }: { expenses: Expense[] | null }) {
                 {type === 'approved' && (
                   <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Cleared')}>
                     <Check className="mr-2 h-4 w-4" />
-                    Mark as Cleared
+                    Mark Cleared
                   </Button>
                 )}
               </TableCell>
@@ -197,7 +176,7 @@ function PaymentQueue({ expenses }: { expenses: Expense[] | null }) {
           ))
         ) : (
             <TableRow>
-              <TableCell colSpan={4} className="text-center h-24">
+              <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
                 The {type === 'pending' ? 'approval' : 'payment'} queue is empty.
               </TableCell>
             </TableRow>
@@ -238,21 +217,11 @@ interface DashboardProps {
 export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
 
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
-    return query(
-      collection(firestore, "activities"),
-      where("loggedAt", ">=", Timestamp.fromDate(startOfMonth))
-    );
-  }, [firestore]);
-  const { data: activities } = useCollection<Activity>(activitiesQuery);
-
-  const pendingExpensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), where('status', 'in', ['Pending', 'Approved']), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const { data: pendingExpenses } = useCollection<Expense>(pendingExpensesQuery);
+  const allExpensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const { data: allExpenses } = useCollection<Expense>(allExpensesQuery);
+  
+  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
+  const { data: metrics } = useCollection<any>(metricsQuery);
 
 
   return (
@@ -260,23 +229,13 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
        <DashboardHeader profile={profile} />
        <DashboardGrid className="lg:grid-cols-3">
         <div className="col-span-full">
-           <Card>
-            <CardHeader>
-                <CardTitle>Financial Overview</CardTitle>
-                <CardDescription>
-                A summary of this month's spending and value generation.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <FinancialOverview activities={activities} />
-            </CardContent>
-            </Card>
+            <BudgetHealth expenses={allExpenses} metrics={metrics} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <PaymentQueue expenses={pendingExpenses} />
+            <PaymentQueue expenses={allExpenses} />
              <Card>
               <CardHeader>
-                <CardTitle>Media Asset Library</CardTitle>
+                <CardTitle>🎥 Content Pipeline</CardTitle>
                 <CardDescription>
                   A central place for all photos, videos, and brand assets.
                 </CardDescription>
@@ -285,8 +244,8 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
                 <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full min-h-48">
                   <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="font-semibold text-lg">Under Development</h3>
-                  <p className="text-muted-foreground text-sm">
-                    A searchable library for all media content is coming soon.
+                  <p className="text-muted-foreground text-sm max-w-sm">
+                    A searchable library and pipeline for all media content is coming soon. For now, please continue using our shared Google Drive folder.
                   </p>
                 </div>
               </CardContent>
@@ -301,3 +260,5 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
     </div>
   )
 }
+
+    
