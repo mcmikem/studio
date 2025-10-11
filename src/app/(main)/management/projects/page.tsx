@@ -55,6 +55,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Briefcase } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ProgressRing } from '@/components/ui/progress-ring';
 
 
 const statusColors: { [key: string]: string } = {
@@ -288,10 +289,7 @@ export default function ProjectsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Progress
-                          value={project.completion}
-                          className="h-2 w-24"
-                        />
+                        <ProgressRing progress={project.completion} size={40} strokeWidth={4} />
                         <span className="text-xs text-muted-foreground">
                           {project.completion}%
                         </span>

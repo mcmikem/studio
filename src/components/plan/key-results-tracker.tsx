@@ -18,6 +18,7 @@ import { Progress } from '../ui/progress';
 import { isPast, parseISO } from 'date-fns';
 import { cn, formatDateSafe } from '@/lib/utils';
 import { useMemo } from 'react';
+import { ProgressRing } from '../ui/progress-ring';
 
 const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -96,21 +97,23 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
              const isDeadlinePast = isPast(deadlineDate) && progressPercentage < 100;
              
             return (
-                <div key={kr.id} className="space-y-2">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <p className="font-semibold">{kr.title}: {kr.description}</p>
-                            <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
-                                <Flag className="inline h-3 w-3 mr-1" />
-                                Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
-                            </p>
+                <div key={kr.id} className="flex items-center gap-4">
+                    <ProgressRing progress={progressPercentage} size={60} strokeWidth={6} />
+                    <div className="flex-1 space-y-1">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <p className="font-semibold">{kr.title}: {kr.description}</p>
+                                <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
+                                    <Flag className="inline h-3 w-3 mr-1" />
+                                    Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
+                                </p>
+                            </div>
+                            <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>
                         </div>
-                        <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>
-                    </div>
-                    <Progress value={progressPercentage} className="h-3" />
-                    <div className="flex justify-between items-center text-xs text-muted-foreground">
-                        <span>{formatProgress(kr)}</span>
-                        <span>Target: {formatTarget(kr)}</span>
+                        <div className="flex justify-between items-center text-xs text-muted-foreground">
+                            <span>{formatProgress(kr)}</span>
+                            <span>Target: {formatTarget(kr)}</span>
+                        </div>
                     </div>
                 </div>
             )
