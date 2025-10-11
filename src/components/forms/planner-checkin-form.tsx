@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,11 +23,12 @@ import { collection, query, where, getDocs, Timestamp, limit } from 'firebase/fi
 import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
 import { Loader2, Sparkles, AlertTriangle, ArrowRight, PlusCircle, Trash2, DollarSign } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { startOfWeek } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { Textarea } from '../ui/textarea';
 import { Checkbox } from '../ui/checkbox';
+import Link from 'next/link';
 
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
@@ -73,37 +74,36 @@ function PlannerCheckinFormComponent() {
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoadingWeeklyPlan, setIsLoadingWeeklyPlan] = useState(true);
 
-  useEffect(() => {
-    async function fetchWeeklyPlan() {
-      if (!user || !firestore) return;
-      setIsLoadingWeeklyPlan(true);
-      const today = new Date();
-      const start = startOfWeek(today, { weekStartsOn: 1 });
-      const weekStartTimestamp = Timestamp.fromDate(start);
+  const fetchWeeklyPlan = useCallback(async () => {
+    if (!user || !firestore) return;
+    setIsLoadingWeeklyPlan(true);
+    const today = new Date();
+    const start = startOfWeek(today, { weekStartsOn: 1 });
+    const weekStartTimestamp = Timestamp.fromDate(start);
 
-      const q = query(
-        collection(firestore, 'workplans'),
-        where('userId', '==', user.uid),
-        where('weekOf', '==', weekStartTimestamp),
-        limit(1)
-      );
-      try {
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          setWeeklyPlan(snapshot.docs[0].data() as WeeklyWorkplan);
-        } else {
-            setWeeklyPlan(null);
-        }
-      } catch (e) {
-        console.error("Error fetching weekly plan", e);
-      } finally {
-        setIsLoadingWeeklyPlan(false);
+    const q = query(
+      collection(firestore, 'workplans'),
+      where('userId', '==', user.uid),
+      where('weekOf', '==', weekStartTimestamp),
+      limit(1)
+    );
+    try {
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        setWeeklyPlan(snapshot.docs[0].data() as WeeklyWorkplan);
+      } else {
+          setWeeklyPlan(null);
       }
-    }
-    if (user && firestore) {
-      fetchWeeklyPlan();
+    } catch (e) {
+      console.error("Error fetching weekly plan", e);
+    } finally {
+      setIsLoadingWeeklyPlan(false);
     }
   }, [user, firestore]);
+
+  useEffect(() => {
+    fetchWeeklyPlan();
+  }, [fetchWeeklyPlan]);
 
   const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -214,30 +214,35 @@ function PlannerCheckinFormComponent() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>AI Daily Planner</CardTitle>
-        <CardDescription>
-          Brainstorm with your AI coach, then finalize your plan for submission.
-        </CardDescription>
-      </CardHeader>
       
       {profile ? (
         <>
-            <form onSubmit={handleMissionSubmit(onPlanGenerate)}>
-                 <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="primaryMission" className="text-lg">What is your main focus for today?</Label>
-                        <Textarea
-                            id="primaryMission"
-                            placeholder="e.g., Finalize RED Campaign report and meet new partners. Also need to follow up with the tech team on the website updates."
-                            {...registerMission('primaryMission')}
-                            className="min-h-[100px]"
-                        />
-                        {missionErrors.primaryMission && (
-                            <p className="text-sm text-destructive">{missionErrors.primaryMission.message}</p>
-                        )}
-                    </div>
-                     {weeklyPlan && (
+            { !weeklyPlan ? (
+                <CardContent className="text-center py-12">
+                    <p className="text-muted-foreground">You must set your weekly workplan before creating a daily plan.</p>
+                    <Button asChild className="mt-4">
+                        <Link href="/workplan">
+                            Set Weekly Workplan
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                </CardContent>
+            ) : (
+                <form onSubmit={handleMissionSubmit(onPlanGenerate)}>
+                    <CardContent className="space-y-6 pt-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="primaryMission" className="text-lg">What is your main focus for today?</Label>
+                            <Textarea
+                                id="primaryMission"
+                                placeholder="e.g., Finalize RED Campaign report and meet new partners. Also need to follow up with the tech team on the website updates."
+                                {...registerMission('primaryMission')}
+                                className="min-h-[100px]"
+                            />
+                            {missionErrors.primaryMission && (
+                                <p className="text-sm text-destructive">{missionErrors.primaryMission.message}</p>
+                            )}
+                        </div>
+                        
                         <Alert variant="default" className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                             <AlertTitle>Your Priorities This Week</AlertTitle>
                             <AlertDescription>
@@ -246,15 +251,15 @@ function PlannerCheckinFormComponent() {
                             </ul>
                             </AlertDescription>
                         </Alert>
-                    )}
-                 </CardContent>
-                  <CardFooter>
-                    <Button type="submit" disabled={isGeneratingPlan} size="lg">
-                        {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                        Brainstorm My Daily Plan
-                    </Button>
-                </CardFooter>
-            </form>
+                    </CardContent>
+                    <CardFooter>
+                        <Button type="submit" disabled={isGeneratingPlan} size="lg">
+                            {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            Brainstorm My Daily Plan
+                        </Button>
+                    </CardFooter>
+                </form>
+            )}
           
           {isGeneratingPlan && (
               <div className="flex flex-col items-center justify-center p-10 space-y-2">

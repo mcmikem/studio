@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -11,13 +10,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { WeeklyWorkplan } from '@/lib/types';
@@ -30,11 +27,6 @@ const workplanSchema = z.object({
 });
 
 type WorkplanFormData = z.infer<typeof workplanSchema>;
-
-const getWeekId = (date: Date) => {
-    const monday = startOfWeek(date, { weekStartsOn: 1 });
-    return format(monday, 'yyyy-MM-dd');
-}
 
 function NewWorkplanForm({ weekOf, onPlanCreated }: { weekOf: Date, onPlanCreated: () => void }) {
   const { user } = useUser();
