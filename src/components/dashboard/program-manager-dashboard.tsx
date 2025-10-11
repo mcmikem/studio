@@ -27,7 +27,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const { data: users } = useCollection<User>(usersQuery);
 
   const todayStart = startOfDay(new Date());
-  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', todayStart)) : null, [firestore]);
+  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
   const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
   const startOfMonth = new Date();

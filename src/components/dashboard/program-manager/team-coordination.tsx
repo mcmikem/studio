@@ -15,7 +15,7 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
         const todayStart = startOfDay(new Date());
 
         return users.map(user => {
-            const userCheckin = checkins?.find(c => c.userId === user.id && c.timestamp.toDate() >= todayStart);
+            const userCheckin = checkins?.find(c => c.userId === user.id);
             if (userCheckin) {
                 return { name: user.name, task: userCheckin.primaryMission, status: 'on-track' };
             }
@@ -28,7 +28,7 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
     }, [users, checkins]);
 
     const resourceAlerts = useMemo(() => {
-        if (!expenses) return { transportBudget: 0 };
+        if (!expenses) return { transportBudgetUsed: 0 };
         const monthlyBudget = 800000; // Mock budget
         const transportExpenses = expenses
             .filter(e => e.status === 'Approved' || e.status === 'Cleared')
