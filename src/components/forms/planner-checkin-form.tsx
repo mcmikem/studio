@@ -10,6 +10,7 @@ import {
   useFirestore,
   useUser,
   addDocumentNonBlocking,
+  useCollection,
 } from '@/firebase';
 import { collection, serverTimestamp, query, where, limit, Timestamp, getDocs, orderBy } from 'firebase/firestore';
 import type { Checkout, WeeklyWorkplan, User, KeyResult } from '@/lib/types';
@@ -203,7 +204,8 @@ export function PlannerCheckinForm() {
     }
   });
 
-  const { formState: { isDirty }, setValue, reset } = form;
+  const { formState, setValue, reset } = form;
+  const isDirty = formState.isDirty;
   
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
   const [initialMission, setInitialMission] = useState('');
