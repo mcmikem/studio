@@ -17,6 +17,7 @@ import { DashboardCalendar } from "./dashboard-calendar"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { TeamCoordination } from "./program-manager/team-coordination"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
+import { SmartReminders } from "./field-staff-dashboard"
 
 interface DashboardProps {
   profile: User;
@@ -66,6 +67,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
        <DashboardGrid className="lg:grid-cols-3">
          <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
+            <SmartReminders profile={profile} />
             <ManagementQuickLinks />
             <Alerts />
             <TeamToday />

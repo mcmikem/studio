@@ -123,7 +123,7 @@ function QuickActions() {
     )
 }
 
-function SmartReminders({ profile }: { profile: User }) {
+export function SmartReminders({ profile }: { profile: User }) {
     const [reminders, setReminders] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
