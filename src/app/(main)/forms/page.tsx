@@ -33,26 +33,24 @@ function FormsContent() {
       </header>
 
       <Tabs defaultValue={defaultTab} className="w-full">
-        <div className="w-full overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-4 md:w-full min-w-[500px]">
-               <TabsTrigger value="check-in" className="py-2">
-                <LogIn className="mr-2 h-4 w-4" />
-                Daily Check-in
-              </TabsTrigger>
-              <TabsTrigger value="check-out" className="py-2">
-                <LogOut className="mr-2 h-4 w-4" />
-                Daily Check-out
-              </TabsTrigger>
-              <TabsTrigger value="activity" className="py-2">
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Activity Report
-              </TabsTrigger>
-              <TabsTrigger value="expense" className="py-2">
-                <Receipt className="mr-2 h-4 w-4" />
-                Expense Report
-              </TabsTrigger>
-            </TabsList>
-        </div>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:h-10">
+            <TabsTrigger value="check-in" className="py-2">
+            <LogIn className="mr-2 h-4 w-4" />
+            Daily Check-in
+            </TabsTrigger>
+            <TabsTrigger value="check-out" className="py-2">
+            <LogOut className="mr-2 h-4 w-4" />
+            Daily Check-out
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="py-2">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Activity Report
+            </TabsTrigger>
+            <TabsTrigger value="expense" className="py-2">
+            <Receipt className="mr-2 h-4 w-4" />
+            Expense Report
+            </TabsTrigger>
+        </TabsList>
          <TabsContent value="check-in">
           <CheckinForm />
         </TabsContent>
