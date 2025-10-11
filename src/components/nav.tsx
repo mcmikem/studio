@@ -15,6 +15,7 @@ import {
   Wand,
   Rss,
   CalendarCheck,
+  Newspaper,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -183,16 +184,16 @@ export function AppSidebar() {
         <SidebarGroup data-mobile={isMobile}>
             <SidebarGroupLabel data-mobile={isMobile}>AI & Personal</SidebarGroupLabel>
             <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton href="/chat" isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
-                        <MessageSquare />
-                        <span>Chat & Team Space</span>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton href="/reporting" isActive={isActive('/reporting')} tooltip="Reporting" onClick={handleLinkClick}>
+                        <Newspaper />
+                        <span>Reporting</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton href="/reports" isActive={isActive('/reports')} tooltip="Reports" onClick={handleLinkClick}>
+                    <SidebarMenuButton href="/reports" isActive={isActive('/reports')} tooltip="Analysis" onClick={handleLinkClick}>
                         <FileText />
-                        <span>Reports</span>
+                        <span>Analysis</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
@@ -211,6 +212,12 @@ export function AppSidebar() {
                     <SidebarMenuButton href="/impact-story" isActive={isActive('/impact-story')} tooltip="Impact Story Generator" onClick={handleLinkClick}>
                         <Wand />
                         <span>Story Generator</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton href="/chat" isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
+                        <MessageSquare />
+                        <span>Chat & Team Space</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
