@@ -50,19 +50,23 @@ const omutoAIPrompt = ai.definePrompt(
 
 
 // The main flow function that orchestrates the AI's response
-export const omutoAIFlow = ai.defineFlow(
-  {
-    name: 'omutoAIFlow',
-    inputSchema: OmutoAIInputSchema,
-    outputSchema: OmutoAIOutputSchema,
-  },
-  async (input) => {
+export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     
     // Call the Gemini model with the prepared prompt and history
-    const { output } = await omutoAIPrompt(input);
+    const llmResponse = await ai.generate({
+        model: 'googleai/gemini-2.5-flash',
+        prompt: input.question,
+        history: input.history,
+        system: KNOWLEDGE_BASE,
+        output: {
+            schema: OmutoAIOutputSchema,
+        }
+    });
+    
+    const output = llmResponse.output();
+
     if (!output) {
       throw new Error('AI failed to generate a response.');
     }
     return { answer: output.answer };
-  }
-);
+}

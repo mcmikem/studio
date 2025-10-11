@@ -53,7 +53,7 @@ function MessageItem({ message }: { message: Message }) {
         )}>
         <p className="font-semibold text-xs mb-1">{isAI ? "Omuto AI" : message.userName}</p>
         <div
-          className="prose prose-sm dark:prose-invert"
+          className="prose prose-sm dark:prose-invert max-w-full"
           dangerouslySetInnerHTML={renderedText}
         />
         <p className={cn(
@@ -71,7 +71,7 @@ function MessageItem({ message }: { message: Message }) {
 export default function ChatPage() {
   const firestore = useFirestore();
   const { user } = useUser();
-  const { profile } = useUserProfile(user);
+  const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -81,7 +81,7 @@ export default function ChatPage() {
     return query(collection(firestore, 'messages'), orderBy('createdAt', 'asc'));
   }, [firestore]);
 
-  const { data: messages, isLoading } = useCollection<Message>(messagesQuery);
+  const { data: messages, isLoading: isLoadingMessages } = useCollection<Message>(messagesQuery);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -107,15 +107,17 @@ export default function ChatPage() {
       createdAt: serverTimestamp(),
     };
     
-    // Add user's message to Firestore immediately, whether it's for AI or not.
+    // Add user's message to Firestore immediately.
     await addDoc(messagesCollection, userMessageData);
 
     // If message starts with @omuto, it's a query for the AI
     if (text.startsWith('@omuto')) {
       try {
         const question = text.replace('@omuto', '').trim();
+        
+        // Construct history for AI, ensuring it matches the expected schema
         const aiHistory = messages
-          ?.filter(m => m.text.startsWith('@omuto') || m.userId === 'omuto-ai')
+          ?.filter(m => m.userId === user.uid || m.userId === 'omuto-ai')
           .map(m => ({
             role: m.userId === 'omuto-ai' ? 'model' : 'user',
             content: [{ text: m.text }]
@@ -123,14 +125,16 @@ export default function ChatPage() {
 
         const aiResponse = await omutoAIFlow({ question, history: aiHistory });
         
-        const aiMessageData = {
-          text: aiResponse.answer,
-          userId: 'omuto-ai',
-          userName: 'Omuto AI',
-          userAvatar: '', // AI has no avatar
-          createdAt: serverTimestamp(),
-        };
-        await addDoc(messagesCollection, aiMessageData);
+        if(aiResponse.answer) {
+            const aiMessageData = {
+              text: aiResponse.answer,
+              userId: 'omuto-ai',
+              userName: 'Omuto AI',
+              userAvatar: '', // AI has no avatar
+              createdAt: serverTimestamp(),
+            };
+            await addDoc(messagesCollection, aiMessageData);
+        }
 
       } catch (error) {
         console.error('Error with Omuto AI:', error);
@@ -148,6 +152,8 @@ export default function ChatPage() {
     setIsSending(false);
   };
 
+  const isSendDisabled = !newMessage.trim() || isSending || isLoadingProfile || !profile;
+
   return (
     <div className="flex flex-col h-full">
       <header className="mb-6">
@@ -164,7 +170,7 @@ export default function ChatPage() {
         <CardContent className="flex-1 flex flex-col p-0">
           <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
             <div className="space-y-6">
-              {isLoading && (
+              {isLoadingMessages && (
                 <>
                   <Skeleton className="h-16 w-3/4" />
                   <Skeleton className="h-16 w-3/4 ml-auto" />
@@ -186,19 +192,23 @@ export default function ChatPage() {
             </div>
             <form onSubmit={handleSendMessage} className="flex items-center gap-2">
               <Textarea
-                placeholder="Type your message or ask @omuto..."
+                placeholder={
+                    isLoadingProfile ? "Loading profile..." : 
+                    !user ? "You must be logged in to chat." : 
+                    "Type your message or ask @omuto..."
+                }
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
+                  if (e.key === 'Enter' && !e.shiftKey && !isSendDisabled) {
                     e.preventDefault();
                     handleSendMessage(e);
                   }
                 }}
                 className="min-h-0 h-12 resize-none"
-                disabled={!user}
+                disabled={isLoadingProfile || !user}
               />
-              <Button type="submit" size="icon" disabled={!newMessage.trim() || isSending}>
+              <Button type="submit" size="icon" disabled={isSendDisabled}>
                 <Send className="h-5 w-5" />
               </Button>
             </form>
