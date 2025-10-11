@@ -1,9 +1,7 @@
 'use client';
 
 import {
-  Calculator,
   ClipboardList,
-  FileText,
   Home,
   Sparkles,
   Briefcase,
@@ -11,15 +9,12 @@ import {
   MessageSquare,
   Bell,
   User,
-  Truck,
-  Banknote,
   Handshake,
   ClipboardEdit,
-  Target,
+  FileText,
   Wand,
   Rss,
   CalendarCheck,
-  FolderKanban,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -63,7 +58,10 @@ export function AppSidebar() {
     }
   };
 
-  const isActive = (path: string) => pathname === path || (path !== '/' && pathname.startsWith(path));
+  const isActive = (path: string) => {
+    if (path === '/') return pathname === path;
+    return pathname.startsWith(path);
+  }
 
   return (
     <>
@@ -184,11 +182,17 @@ export function AppSidebar() {
                   <span>Management</span>
                 </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+                <SidebarMenuButton href="/resources" isActive={isActive('/resources')} tooltip="Resource Mobilization" onClick={handleLinkClick}>
+                    <Handshake />
+                    <span>Resources</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
         
         <SidebarGroup data-mobile={isMobile}>
-            <SidebarGroupLabel data-mobile={isMobile}>Support</SidebarGroupLabel>
+            <SidebarGroupLabel data-mobile={isMobile}>Support & Personal</SidebarGroupLabel>
             <SidebarMenu>
                 <SidebarMenuItem>
                     <SidebarMenuButton href="/chat" isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
@@ -197,23 +201,11 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton href="/resources" isActive={isActive('/resources')} tooltip="Resource Mobilization" onClick={handleLinkClick}>
-                        <Handshake />
-                        <span>Resources</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
                     <SidebarMenuButton href="/reports" isActive={isActive('/reports')} tooltip="Reports" onClick={handleLinkClick}>
                         <FileText />
                         <span>Reports</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
-
-         <SidebarGroup data-mobile={isMobile}>
-            <SidebarGroupLabel data-mobile={isMobile}>Personal</SidebarGroupLabel>
-            <SidebarMenu>
                  <SidebarMenuItem>
                     <SidebarMenuButton href="/notifications" isActive={isActive('/notifications')} tooltip="Notifications" onClick={handleLinkClick}>
                         <Bell />

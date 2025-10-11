@@ -22,6 +22,7 @@ export function DashboardHeader({ profile }: { profile: User }) {
           src={headerImage.imageUrl}
           alt={headerImage.description}
           fill
+          priority
           className="object-cover"
           data-ai-hint={headerImage.imageHint}
         />

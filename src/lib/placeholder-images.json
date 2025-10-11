@@ -8,9 +8,9 @@
     },
     {
       "id": "dashboard-header",
-      "description": "Leafy green background for dashboard header",
-      "imageUrl": "https://picsum.photos/seed/header/1200/400",
-      "imageHint": "nature leaves"
+      "description": "A vibrant photo of Ugandan children smiling, representing community and youth empowerment.",
+      "imageUrl": "https://images.unsplash.com/photo-1583299494348-d76c82a17a26?q=80&w=1932&auto=format&fit=crop&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx1Z2FuZGFuJTIwY2hpbGRyZW58ZW58MHx8fHwxNzE2NDEyNzUxfDA&ixlib=rb-4.0.3",
+      "imageHint": "ugandan children"
     },
     {
       "id": "user-avatar-1",
