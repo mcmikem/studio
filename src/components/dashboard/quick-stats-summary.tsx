@@ -45,7 +45,7 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
         if (!metric) {
           return (
              <Card key={i} className="p-4 flex flex-col justify-between">
-              <Skeleton className="h-7 w-7 mb-4" />
+              <Skeleton className="h-6 w-6 mb-4" />
               <div className="space-y-1">
                 <Skeleton className="h-5 w-2/3" />
                 <Skeleton className="h-4 w-1/3" />
@@ -66,23 +66,25 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
             : `${val.toLocaleString()}`
         
         const progress = metric.target > 0 ? (metric.current / metric.target) * 100 : 0;
+        const targetValueDisplay = metric.unit === 'UGX' ? `${(metric.target/1000000).toFixed(1)}M` : metric.target.toLocaleString();
 
         return (
           <Card key={metric.id} className="p-4 flex flex-col">
               <div className="flex justify-between items-start">
-                <Icon className="h-7 w-7 text-muted-foreground" />
-                <span className="text-xs font-semibold text-muted-foreground">{metric.unit === 'UGX' ? 'UGX' : metric.unit}</span>
+                <Icon className="h-6 w-6 text-muted-foreground" />
               </div>
-              <div className="mt-auto space-y-1 pt-4">
+              <div className="mt-auto space-y-2 pt-4">
+                <p className="text-sm font-medium text-muted-foreground">{metric.metric.split('(')[0]}</p>
                 <div className="text-2xl font-bold">
                     {formatValue(metric.current)}
                 </div>
                  {!metric.isPlaceholder && (
                     <div className="flex items-center gap-2">
                         <Progress value={progress} className="h-1 flex-1" />
-                        <span className="text-xs text-muted-foreground">{progress.toFixed(0)}%</span>
+                        <span className="text-xs font-semibold text-muted-foreground">{progress.toFixed(0)}%</span>
                     </div>
                 )}
+                 <p className="text-xs text-muted-foreground">Target: {targetValueDisplay}</p>
               </div>
           </Card>
         )

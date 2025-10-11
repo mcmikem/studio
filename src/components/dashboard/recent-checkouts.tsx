@@ -25,12 +25,11 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
         <AvatarFallback>{checkout.role}</AvatarFallback>
       </Avatar>
       <div className="grid gap-1 flex-1">
-        <p className="text-sm font-medium leading-none">{checkout.name}</p>
+        <div className="flex items-center justify-between">
+            <p className="text-sm font-medium leading-none">{checkout.name}</p>
+            <div className="text-xs text-muted-foreground whitespace-nowrap">{timeAgo}</div>
+        </div>
         <p className="text-sm text-muted-foreground">{checkout.task}</p>
-      </div>
-      <div className="ml-auto text-right flex-shrink-0">
-        <div className="text-sm text-muted-foreground whitespace-nowrap">{timeAgo}</div>
-        <Badge variant="outline" className={`mt-1 ${colorClass}`}>{primaryTag}</Badge>
       </div>
     </div>
   );
@@ -48,10 +47,6 @@ export function RecentCheckouts({ checkouts }: { checkouts: RecentCheckout[] | n
                     <div className="space-y-2 flex-1">
                         <Skeleton className="h-4 w-[150px]" />
                         <Skeleton className="h-4 w-[250px]" />
-                    </div>
-                    <div className="space-y-2 text-right">
-                        <Skeleton className="h-4 w-[60px] ml-auto" />
-                        <Skeleton className="h-5 w-[80px] ml-auto" />
                     </div>
                 </div>
             ))
