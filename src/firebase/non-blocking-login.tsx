@@ -98,18 +98,32 @@ const isEmailApproved = (email: string | null): boolean => {
   return Object.keys(approvedUsers).includes(email.toLowerCase())
 }
 
-async function seedInitialData(db: Firestore) {
+async function seedInitialData(db: Firestore, userId: string) {
   console.log("Checking if initial data seeding is needed...")
 
   const programsCollection = collection(db, "programs");
   const programsSnapshot = await getDocs(query(programsCollection, limit(1)));
 
+  // If core data already exists, only seed user-specific tasks.
   if (!programsSnapshot.empty) {
-    console.log("Core data (programs) already exists. Skipping seed.");
+    console.log("Core data exists. Seeding user-specific tasks only.");
+    const userTasksCollection = collection(db, "users", userId, "tasks");
+    const initialTasks = [
+      { title: "Complete your profile information", completed: false, createdAt: serverTimestamp() },
+      { title: "Review the October Operational Plan", completed: false, createdAt: serverTimestamp() },
+      { title: "Explore your new dashboard", completed: false, createdAt: serverTimestamp() },
+    ];
+    const userBatch = writeBatch(db);
+    initialTasks.forEach(task => {
+        const taskRef = doc(userTasksCollection);
+        userBatch.set(taskRef, task);
+    });
+    await userBatch.commit();
+    console.log("Initial tasks seeded for new user.");
     return;
   }
   
-  console.log("Seeding initial data...")
+  console.log("This is the first user. Seeding all initial data...")
   const batch = writeBatch(db)
 
   const collectionsToSeed = [
@@ -133,6 +147,18 @@ async function seedInitialData(db: Firestore) {
       batch.set(docRef, item)
     }
   }
+
+  // Also seed tasks for the very first user
+   const firstUserTasks = [
+      { title: "Set up the management dashboards", completed: false, createdAt: serverTimestamp() },
+      { title: "Invite the rest of the team", completed: false, createdAt: serverTimestamp() },
+    ];
+    const userTasksCollection = collection(db, "users", userId, "tasks");
+    firstUserTasks.forEach(task => {
+        const taskRef = doc(userTasksCollection);
+        batch.set(taskRef, task);
+    });
+
 
   try {
     await batch.commit()
@@ -165,8 +191,8 @@ async function createUserProfile(
   if (!docSnap.exists()) {
     console.log("User profile does not exist, creating one...");
     
-    // Seed data only for the very first user to sign up
-    await seedInitialData(db)
+    // Seed data. This function now handles logic for first user vs. subsequent users.
+    await seedInitialData(db, user.uid)
     
     const userData = approvedUsers[user.email.toLowerCase()]
     const userProfile = {

@@ -213,7 +213,7 @@ function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
     }
   };
 
-  const renderTable = (expenses: Expense[], type: 'pending' | 'approved') => (
+  const renderTable = (expensesToRender: Expense[], type: 'pending' | 'approved') => (
     <Table>
       <TableHeader>
         <TableRow>
@@ -223,8 +223,8 @@ function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {expenses && expenses.length > 0 ? (
-          expenses.map((expense) => (
+        {expensesToRender && expensesToRender.length > 0 ? (
+          expensesToRender.map((expense) => (
             <TableRow key={expense.id}>
               <TableCell>
                 <p className="font-medium">{expense.userName}</p>
@@ -321,5 +321,3 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
     </>
   )
 }
-
-    
