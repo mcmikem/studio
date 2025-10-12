@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -12,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useUser, useFirestore, useMemoFirebase, useCollection, updateDocumentNonBlocking } from '@/firebase';
-import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown } from 'lucide-react';
+import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown, LogOut as LogOutIcon, Settings, ChevronsUpDown, Eye } from 'lucide-react';
 import { collection, query, where, orderBy, limit, doc } from 'firebase/firestore';
 import type { RecentCheckout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -27,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { uploadImageAndUpdateProfile } from '@/firebase/storage';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
 
 const userRoles = [
     'Executive Director',
@@ -174,7 +173,7 @@ function UserProfileCard() {
                     <Skeleton className="h-24 w-24 rounded-full mb-4" />
                     <Skeleton className="h-8 w-40 mb-2" />
                     <Skeleton className="h-5 w-48" />
-                    <Skeleton className="h-6 w-20 mt-4" />
+                    <Skeleton className="h-10 w-48 mt-4" />
                 </div>
                  <div className="mt-6 space-y-4 text-sm">
                     <div className="flex items-center">
@@ -234,16 +233,18 @@ function UserProfileCard() {
                     <DropdownMenuTrigger asChild>
                        <Button variant="outline" className="mt-4">
                             {profile?.role}
-                            <ChevronDown className="ml-2 h-4 w-4" />
+                            <ChevronsUpDown className="ml-2 h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuLabel>Change My Role</DropdownMenuLabel>
-                        {userRoles.map(role => (
-                            <DropdownMenuItem key={role} onSelect={() => handleRoleChange(role)}>
-                                {role}
-                            </DropdownMenuItem>
-                        ))}
+                        <DropdownMenuGroup>
+                          {userRoles.map(role => (
+                              <DropdownMenuItem key={role} onSelect={() => handleRoleChange(role)}>
+                                  {role}
+                              </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuGroup>
                     </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -316,5 +317,3 @@ export default function ProfilePage() {
     </Suspense>
   );
 }
-
-    

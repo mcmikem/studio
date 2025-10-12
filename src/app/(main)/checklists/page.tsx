@@ -45,23 +45,26 @@ export default function ChecklistsPage() {
           <CardContent className="pt-6 space-y-4">
             <Skeleton className="h-8 w-1/2" />
             <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
+            <div className="space-y-3 pt-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
           </CardContent>
         )}
         {checklistToDisplay && !isLoading && (
           <>
             <CardHeader>
               <CardTitle>{checklistToDisplay.title}</CardTitle>
-              <CardDescription>A standard operational procedure.</CardDescription>
+              <CardDescription>A standard operational procedure from the management templates.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="space-y-3 mt-4">
                   {checklistToDisplay.checklistItems.map((item, itemIndex) => (
-                    <div key={itemIndex} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50">
-                      <Checkbox id={`${checklistToDisplay.title}-${itemIndex}`} />
+                    <div key={itemIndex} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <Checkbox id={`${checklistToDisplay.id}-${itemIndex}`} />
                       <label
-                        htmlFor={`${checklistToDisplay.title}-${itemIndex}`}
+                        htmlFor={`${checklistToDisplay.id}-${itemIndex}`}
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1"
                       >
                         {item}
@@ -77,7 +80,7 @@ export default function ChecklistsPage() {
             <EmptyState 
               icon={ListChecks}
               title="No Checklists Found"
-              description="Management can create reusable task templates in the 'Management' section."
+              description="Management can create reusable task templates in the 'Management > Templates' section."
             />
           </CardContent>
         )}
