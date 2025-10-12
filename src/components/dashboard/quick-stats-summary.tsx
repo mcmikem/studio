@@ -79,7 +79,7 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
             : `${val.toLocaleString()}`
         
         return (
-          <Link href="/management/metrics" key={metric.id}>
+          <Link href="/management/metrics" key={metric.id} className="block">
             <Card className="p-4 flex flex-col h-32 hover:bg-muted/50 transition-colors shadow-sm">
                 <div className="flex justify-between items-start">
                   <p className="text-sm font-semibold text-muted-foreground">{metric.metric.split('(')[0]}</p>
