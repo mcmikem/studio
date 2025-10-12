@@ -11,7 +11,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where } from 'firebase/firestore';
-import type { KeyResult, Activity, ImpactMetric } from '@/lib/types';
+import type { KeyResult, Activity, ImpactMetric, Partnership } from '@/lib/types';
 import { Target, Flag, AlertTriangle } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
@@ -50,13 +50,21 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     if (!firestore) return null;
     return query(collection(firestore, 'impact-metrics'));
   }, [firestore]);
+  
+  const partnershipsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'partnerships'));
+  }, [firestore]);
+
 
   const { data: keyResults, isLoading: isLoadingKR } = useCollection<KeyResult>(keyResultsQuery);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
   const { data: metrics, isLoading: isLoadingMetrics } = useCollection<ImpactMetric>(metricsQuery);
+  const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
+
 
   const processedKeyResults = useMemo(() => {
-    if (!keyResults || !activities || !metrics) return null;
+    if (!keyResults || !activities || !metrics || !partnerships) return null;
 
     const cycleOfDignityMetric = metrics.find(m => m.metric === 'Cycle of Dignity Fundraising');
 
@@ -69,7 +77,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
       
       if (kr.title === 'OCT-KR2') {
         liveProgress = activities.reduce((sum, act) => {
-            return sum + ((act as any).trees_planted || 0);
+            return sum + (act.trees_planted || 0);
         }, 0);
       }
 
@@ -79,13 +87,22 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
         }, 0);
       }
       
+      if (kr.title === 'OCT-KR4') {
+        liveProgress = partnerships.filter(p => {
+            if (!p.createdAt) return false;
+            const creationDate = p.createdAt.toDate();
+            // Assuming the plan is for October 2025
+            return creationDate.getFullYear() === 2025 && creationDate.getMonth() === 9; // 9 is October (0-indexed)
+        }).length;
+      }
+      
       // Future KR logic can be added here
-      // if (kr.title === 'OCT-KR2') { ... }
+      // if (kr.title === 'OCT-KR5') { ... }
 
       return { ...kr, currentProgress: liveProgress };
     })
 
-  }, [keyResults, activities, metrics]);
+  }, [keyResults, activities, metrics, partnerships]);
 
   const atRiskKr = useMemo(() => {
     if (!processedKeyResults) return null;
@@ -108,7 +125,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
      return kr.currentProgress.toLocaleString();
   }
   
-  const isLoading = isLoadingKR || isLoadingActivities || isLoadingMetrics;
+  const isLoading = isLoadingKR || isLoadingActivities || isLoadingMetrics || isLoadingPartnerships;
 
   return (
     <Card>
@@ -181,5 +198,3 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     </Card>
   );
 }
-
-    
