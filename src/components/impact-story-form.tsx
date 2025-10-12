@@ -33,16 +33,8 @@ import { collection, query, orderBy, doc } from "firebase/firestore";
 import type { Activity, Checkout } from "@/lib/types";
 import { Skeleton } from "./ui/skeleton";
 import { useSearchParams } from 'next/navigation';
+import { formatDateSafe } from "@/lib/utils";
 
-
-const fileToDataUri = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
 
 function ImpactStoryGeneratorContent() {
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
@@ -74,23 +66,28 @@ function ImpactStoryGeneratorContent() {
   }, [firestore]);
 
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
+
+  const checkoutsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, "checkouts"), orderBy("timestamp", "desc"));
+  }, [firestore]);
+
+  const { data: checkouts, isLoading: isLoadingCheckouts } = useCollection<Checkout>(checkoutsQuery);
+
   
   const selectedActivity = useMemo(() => {
     if (!selectedActivityId) return null;
     return activities?.find(a => a.id === selectedActivityId);
   }, [activities, selectedActivityId]);
 
-  const checkoutDocRef = useMemoFirebase(() => {
-    if (!firestore || !selectedCheckoutId) return null;
-    return doc(firestore, 'checkouts', selectedCheckoutId);
-  }, [firestore, selectedCheckoutId]);
-
-  const { data: selectedCheckout, isLoading: isLoadingCheckout } = useDoc<Checkout>(checkoutDocRef);
+  const selectedCheckout = useMemo(() => {
+    if (!selectedCheckoutId) return null;
+    return checkouts?.find(c => c.id === selectedCheckoutId);
+  }, [checkouts, selectedCheckoutId]);
 
 
   const generateStory = async () => {
     let input: ImpactStoryInput | null = null;
-    const photoDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // Placeholder
 
     if (selectedActivity) {
         input = {
@@ -99,7 +96,6 @@ function ImpactStoryGeneratorContent() {
             activityImpact: `Total value of ${selectedActivity.totalValue.toLocaleString()} UGX generated from a cost of ${selectedActivity.actualCost.toLocaleString()} UGX.`,
             userName: selectedActivity.userName,
             userQuote: "This program is making a real difference in our community!", // Placeholder quote
-            photoDataUri,
         };
     } else if (selectedCheckout) {
         const quote = selectedCheckout.learning || (selectedCheckout.tomorrowPlan ? `Tomorrow's focus: ${selectedCheckout.tomorrowPlan}` : "Reflecting on another impactful day.");
@@ -109,7 +105,6 @@ function ImpactStoryGeneratorContent() {
             activityImpact: `A daily report from our ${selectedCheckout.role}.`,
             userName: selectedCheckout.name,
             userQuote: quote,
-            photoDataUri,
         };
     } else {
         toast({ variant: 'destructive', title: 'Please select an activity or checkout report.'});
@@ -144,6 +139,7 @@ function ImpactStoryGeneratorContent() {
   
   const dataToDisplay = selectedActivity || selectedCheckout;
   const isCheckout = !!selectedCheckout;
+  const isLoadingData = isLoadingActivities || isLoadingCheckouts;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -157,7 +153,7 @@ function ImpactStoryGeneratorContent() {
         <CardContent className="space-y-6">
            <div className="space-y-2">
             <Label htmlFor="activity-select">Recent Activity Reports (ROI)</Label>
-            {isLoadingActivities ? <Skeleton className="h-10 w-full" /> : (
+            {isLoadingData ? <Skeleton className="h-10 w-full" /> : (
                  <Select onValueChange={id => { setSelectedActivityId(id); setSelectedCheckoutId(null); }} value={selectedActivityId || ''}>
                   <SelectTrigger id="activity-select">
                     <SelectValue placeholder="Select an ROI report..." />
@@ -165,7 +161,7 @@ function ImpactStoryGeneratorContent() {
                   <SelectContent>
                     {activities?.map(activity => (
                         <SelectItem key={activity.id} value={activity.id}>
-                            {activity.title} ({activity.loggedAt ? new Date(activity.loggedAt.toDate()).toLocaleDateString() : 'Date N/A'})
+                            {activity.title} ({formatDateSafe(activity.loggedAt, 'dateOnly')})
                         </SelectItem>
                     ))}
                   </SelectContent>
@@ -174,14 +170,21 @@ function ImpactStoryGeneratorContent() {
           </div>
           
            <div className="space-y-2">
-             <Label>Or use a Checkout Report</Label>
-             <p className="text-sm text-muted-foreground">You can also generate a story from a daily checkout update. If you just submitted one, it should be pre-selected.</p>
-             {isLoadingCheckout && checkoutIdFromUrl && <Skeleton className="h-10 w-full" />}
-             {selectedCheckout && (
-                <div className="p-2 border rounded-md bg-muted text-sm">
-                    Selected: Daily checkout from ${selectedCheckout.name} on ${selectedCheckout.timestamp ? new Date(selectedCheckout.timestamp.toDate()).toLocaleDateString() : '...'}
-                </div>
-             )}
+             <Label htmlFor="checkout-select">Recent Checkout Reports</Label>
+             {isLoadingData ? <Skeleton className="h-10 w-full" /> : (
+                 <Select onValueChange={id => { setSelectedCheckoutId(id); setSelectedActivityId(null); }} value={selectedCheckoutId || ''}>
+                  <SelectTrigger id="checkout-select">
+                    <SelectValue placeholder="Select a checkout report..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {checkouts?.map(checkout => (
+                        <SelectItem key={checkout.id} value={checkout.id}>
+                            {checkout.name} - {formatDateSafe(checkout.timestamp, 'dateOnly')}
+                        </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+            )}
           </div>
           
           {dataToDisplay && (
@@ -191,8 +194,8 @@ function ImpactStoryGeneratorContent() {
                  <CardContent className="text-sm pt-4 space-y-1">
                     {isCheckout ? (
                        <>
-                        <p><strong>Task:</strong> ${(dataToDisplay as Checkout).task}</p>
-                        <p><strong>Learning:</strong> ${(dataToDisplay as Checkout).learning}</p>
+                        <p><strong>Task:</strong> {(dataToDisplay as Checkout).task}</p>
+                        <p><strong>Learning:</strong> {(dataToDisplay as Checkout).learning}</p>
                        </>
                     ) : (
                        <>

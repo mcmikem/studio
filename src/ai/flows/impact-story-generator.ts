@@ -16,11 +16,6 @@ const ImpactStoryInputSchema = z.object({
   activityName: z.string().describe('The name of the activity.'),
   activityDescription: z.string().describe('A detailed description of the activity.'),
   activityImpact: z.string().describe('The measurable impact of the activity (e.g., number of trees planted, people reached).'),
-  photoDataUri: z
-    .string()
-    .describe(
-      "A photo related to the activity, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
   userName: z.string().describe('The name of a user involved in the activity, to add a personal touch.'),
   userQuote: z.string().describe('A quote from a user about the activity.'),
 });
@@ -47,8 +42,7 @@ const prompt = ai.definePrompt({
   Activity Description: {{{activityDescription}}}
   Activity Impact: {{{activityImpact}}}
   User Name: {{{userName}}}
-  User Quote: {{{userQuote}}}
-  Photo: {{media url=photoDataUri}}
+  User Quote: "{{{userQuote}}}"
 
   Generated Impact Story:`, // Ensure this outputs a complete, well-formed narrative
 });

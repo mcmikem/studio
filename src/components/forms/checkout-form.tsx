@@ -30,17 +30,14 @@ import {
 import { useState } from 'react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const checkoutSchema = z.object({
-  missionAccomplished: z
+  task: z
     .string()
-    .min(10, 'Please provide a meaningful summary.'),
-  parentsReached: z.coerce.number().optional(),
-  volunteersRecruited: z.coerce.number().optional(),
-  prototypesTested: z.coerce.number().optional(),
+    .min(10, 'Please provide a meaningful summary of what you accomplished.'),
   learning: z.string().optional(),
   tomorrowPlan: z.string().optional(),
-  photo: z.any().optional(),
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
@@ -50,7 +47,7 @@ export function CheckoutForm() {
   const firestore = useFirestore();
   const { user } = useUser();
   const { profile } = useUserProfile(user);
-  const [submittedCheckoutId, setSubmittedCheckoutId] = useState<string | null>(null);
+  const router = useRouter();
 
   const {
     register,
@@ -59,11 +56,6 @@ export function CheckoutForm() {
     reset,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: {
-      parentsReached: 0,
-      volunteersRecruited: 0,
-      prototypesTested: 0,
-    },
   });
 
   const onSubmit = (data: CheckoutFormData) => {
@@ -76,25 +68,11 @@ export function CheckoutForm() {
       return;
     }
 
-    const impactNumbers = [
-      data.parentsReached && `Parents Reached: ${data.parentsReached}`,
-      data.volunteersRecruited &&
-        `Volunteers Recruited: ${data.volunteersRecruited}`,
-      data.prototypesTested &&
-        `Prototypes Tested: ${data.prototypesTested}`,
-    ]
-      .filter(Boolean)
-      .join(' | ');
-
-    const fullTask = `${data.missionAccomplished} #Update ${
-      impactNumbers ? `| ${impactNumbers}` : ''
-    }`;
-
     const checkoutData = {
       name: profile.name,
       role: profile.role,
       avatar: user.photoURL || '',
-      task: fullTask,
+      task: data.task,
       learning: data.learning || "",
       tomorrowPlan: data.tomorrowPlan || "",
       timestamp: serverTimestamp(),
@@ -105,56 +83,18 @@ export function CheckoutForm() {
     
     addDocumentNonBlocking(checkoutsCollection, checkoutData)
       .then((docRef) => {
-        if (docRef?.id) {
-          setSubmittedCheckoutId(docRef.id);
-        }
         toast({
-        title: 'Check-out Submitted!',
-        description: 'Your impact report has been saved.',
+          title: 'Check-out Submitted!',
+          description: 'Your impact report has been saved to the Team Stream.',
         });
+        reset();
+        router.push('/stream'); // Redirect to the stream to see the update
       })
       .catch((e: any) => {
-        // Error is already emitted globally by non-blocking function
-        // but we can add specific UI feedback here if needed.
         console.error("Failed to submit checkout", e)
       });
   };
   
-  if (submittedCheckoutId) {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Report Submitted Successfully!</CardTitle>
-                <CardDescription>What would you like to do next?</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button variant="outline" onClick={() => {
-                    reset({
-                        missionAccomplished: '',
-                        learning: '',
-                        tomorrowPlan: '',
-                        parentsReached: 0,
-                        volunteersRecruited: 0,
-                        prototypesTested: 0,
-                    });
-                    setSubmittedCheckoutId(null);
-                }}>
-                    <Send className="mr-2 h-4 w-4" />
-                    Submit another report
-                </Button>
-                 <Button asChild>
-                    <Link href={`/impact-story?checkoutId=${submittedCheckoutId}`}>
-                        <Wand className="mr-2 h-4 w-4" />
-                        Generate Impact Story
-                    </Link>
-                </Button>
-            </CardContent>
-             <CardFooter>
-                <p className="text-xs text-muted-foreground">You can generate a compelling story for social media based on the report you just submitted.</p>
-            </CardFooter>
-        </Card>
-    )
-  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -164,81 +104,32 @@ export function CheckoutForm() {
             htmlFor="mission-accomplished"
             className="text-base font-semibold"
           >
-            Section 1: Mission Accomplishment
+            What was your main accomplishment today?
           </Label>
           <Textarea
             id="mission-accomplished"
             placeholder={
-              'What did you achieve? e.g., Finalized RED Campaign report and submitted to GlobalGiving.'
+              'e.g., Finalized RED Campaign report and submitted to GlobalGiving. Use #hashtags to categorize!'
             }
-            className="min-h-[100px]"
-            {...register('missionAccomplished')}
+            className="min-h-[120px]"
+            {...register('task')}
           />
-          {errors.missionAccomplished && (
+          {errors.task && (
             <p className="text-sm text-destructive">
-              {`${errors.missionAccomplished.message}`}
+              {`${errors.task.message}`}
             </p>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="impact-parents">Parents Reached</Label>
-              <Input
-                id="impact-parents"
-                type="number"
-                placeholder="e.g., 35"
-                {...register('parentsReached')}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="impact-volunteers">Volunteers Recruited</Label>
-              <Input
-                id="impact-volunteers"
-                type="number"
-                placeholder="e.g., 3"
-                {...register('volunteersRecruited')}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="impact-prototypes">Prototypes Tested</Label>
-              <Input
-                id="impact-prototypes"
-                type="number"
-                placeholder="e.g., 5"
-                {...register('prototypesTested')}
-              />
-            </div>
-          </div>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-4">
-          <Label className="text-base font-semibold">
-            Section 2: Evidence & Documentation
-          </Label>
-          <div className="space-y-2">
-            <Label htmlFor="photo">Attach Photo</Label>
-            <Input
-              id="photo"
-              type="file"
-              accept="image/*"
-              {...register('photo')}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground text-center">
-            Photos will be automatically tagged with activity and location.
-          </p>
         </div>
 
         <Separator />
 
         <div className="space-y-4">
           <Label htmlFor="learning" className="text-base font-semibold">
-            Section 3: Learning & Adaptation
+            What was your key learning or adaptation?
           </Label>
           <Textarea
             id="learning"
-            placeholder="What should we do differently next time?"
+            placeholder="Optional: What should we do differently next time?"
             className="min-h-[80px]"
             {...register('learning')}
           />
@@ -248,11 +139,11 @@ export function CheckoutForm() {
 
         <div className="space-y-4">
           <Label htmlFor="tomorrow-plan" className="text-base font-semibold">
-            Section 4: Plan Tomorrow's Win
+            What is your top priority for tomorrow?
           </Label>
           <Input
             id="tomorrow-plan"
-            placeholder="Tomorrow's priority will be..."
+            placeholder="Optional: Tomorrow's priority will be..."
             {...register('tomorrowPlan')}
           />
         </div>
