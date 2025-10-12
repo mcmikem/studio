@@ -139,4 +139,3 @@ export function TeamDeployment({ users, checkins }: { users: User[] | null; chec
         </Card>
     );
 }
-
