@@ -121,8 +121,6 @@ export function ExpenseReportForm() {
 
     addDocumentNonBlocking(expensesCollection, expenseData)
         .then(docRef => {
-            const isED = profile.role === 'Executive Director';
-            const approverRole = isED ? "Programs & Partnerships Manager" : "Executive Director";
             const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
             
             // This is a fire-and-forget call to the AI flow
@@ -138,7 +136,7 @@ export function ExpenseReportForm() {
 
             toast({
                 title: 'Expense Report Submitted!',
-                description: `Your report has been sent to the ${approverRole} for approval.`,
+                description: `Your report has been sent for approval.`,
             });
 
             reset({
@@ -288,3 +286,5 @@ export function ExpenseReportForm() {
       </form>
   );
 }
+
+    

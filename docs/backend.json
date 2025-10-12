@@ -468,7 +468,7 @@
           }
         },
         "totalAmount": { "type": "number", "description": "The sum of all item amounts." },
-        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Cleared"], "default": "Pending"},
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Disbursed", "Acknowledged"], "default": "Pending"},
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "userName", "date", "title", "type", "items", "totalAmount", "status", "createdAt"]
@@ -586,18 +586,34 @@
     "Testimony": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Testimony",
-        "description": "Represents a recorded video or audio testimony.",
+        "description": "A recorded testimony, which can be text, audio, or video.",
         "type": "object",
         "properties": {
             "id": { "type": "string" },
             "title": { "type": "string" },
-            "userId": { "type": "string" },
-            "userName": { "type": "string" },
-            "videoUrl": { "type": "string", "format": "uri" },
-            "audioUrl": { "type": "string", "format": "uri" },
+            "text": { "type": "string", "description": "Transcribed text of the testimony." },
+            "userId": { "type": "string", "description": "ID of the user who recorded the testimony." },
+            "userName": { "type": "string", "description": "Name of the user who recorded the testimony." },
+            "videoUrl": { "type": "string", "format": "uri", "description": "URL to the recorded video file." },
+            "audioUrl": { "type": "string", "format": "uri", "description": "URL to the recorded audio file." },
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["title", "userId", "userName", "createdAt"]
+    },
+    "AIFeedback": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AI Feedback",
+      "description": "Stores user feedback on the performance of AI-generated content.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "flow": { "type": "string", "description": "The name of the AI flow being rated (e.g., dailyPlannerAIFlow)." },
+        "userId": { "type": "string" },
+        "wasHelpful": { "type": "boolean" },
+        "comment": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["flow", "userId", "wasHelpful", "timestamp"]
     }
   },
   "auth": {
@@ -731,7 +747,16 @@
       "schema": {
         "$ref": "#/entities/Testimony"
       },
-      "description": "Stores recorded audio/video testimonies."
+      "description": "Stores recorded audio, video, or text testimonies."
+    },
+    "/ai-feedback/{feedbackId}": {
+      "schema": {
+        "$ref": "#/entities/AIFeedback"
+      },
+      "description": "Stores user feedback on AI-generated content."
     }
   }
 }
+
+
+    
