@@ -32,7 +32,7 @@ import {
   sampleAlerts,
   sampleCalendarEvents,
 } from "@/lib/data"
-import { setDocumentNonBlocking, addDocumentNonBlocking } from "./non-blocking-updates"
+import { setDocumentNonBlocking } from "./non-blocking-updates"
 
 // This maps specific emails to roles and names within the Omuto organization.
 const approvedUsers: Record<string, { name: string; role: string }> = {
@@ -101,40 +101,8 @@ const isEmailApproved = (email: string | null): boolean => {
 async function seedInitialData(db: Firestore, userId: string) {
   console.log("Checking if initial data seeding is needed...")
   
-  const userDocRef = doc(db, "users", userId);
-  const userDocSnap = await getDoc(userDocRef);
-  
-  // If the user document *already* exists, they are not a new user. Do nothing.
-  if (userDocSnap.exists()) {
-    console.log("User profile already exists. Skipping all data seeding.");
-    return;
-  }
-
-  // User does not exist, so let's check if they are the very first user.
-  const programsCollection = collection(db, "programs");
-  const programsSnapshot = await getDocs(query(programsCollection, limit(1)));
-
-  // If core data already exists, this new user just needs their tasks.
-  if (!programsSnapshot.empty) {
-    console.log("Core data exists. Seeding user-specific tasks only for new user.");
-    const userTasksCollection = collection(db, "users", userId, "tasks");
-    const initialTasks = [
-      { title: "Complete your profile information", completed: false, createdAt: serverTimestamp() },
-      { title: "Review the October Operational Plan", completed: false, createdAt: serverTimestamp() },
-      { title: "Explore your new dashboard", completed: false, createdAt: serverTimestamp() },
-    ];
-    const userBatch = writeBatch(db);
-    initialTasks.forEach(task => {
-        const taskRef = doc(userTasksCollection);
-        userBatch.set(taskRef, task);
-    });
-    await userBatch.commit();
-    console.log("Initial tasks seeded for new user.");
-    return;
-  }
-  
   // This is the very first user signup. Seed the entire database.
-  console.log("This is the first user. Seeding all initial data...")
+  console.log("Seeding all initial data...")
   const batch = writeBatch(db)
 
   const collectionsToSeed = [
@@ -159,18 +127,6 @@ async function seedInitialData(db: Firestore, userId: string) {
     }
   }
 
-  // Also seed tasks for the very first user
-   const firstUserTasks = [
-      { title: "Set up the management dashboards", completed: false, createdAt: serverTimestamp() },
-      { title: "Invite the rest of the team", completed: false, createdAt: serverTimestamp() },
-    ];
-    const userTasksCollection = collection(db, "users", userId, "tasks");
-    firstUserTasks.forEach(task => {
-        const taskRef = doc(userTasksCollection);
-        batch.set(taskRef, task);
-    });
-
-
   try {
     await batch.commit()
     console.log("Initial data seeded successfully.")
@@ -178,6 +134,24 @@ async function seedInitialData(db: Firestore, userId: string) {
     console.error("Error seeding data: ", error)
   }
 }
+
+async function seedUserTasks(db: Firestore, userId: string) {
+    console.log("Seeding user-specific tasks for new user.");
+    const userTasksCollection = collection(db, "users", userId, "tasks");
+    const initialTasks = [
+      { title: "Complete your profile information", completed: false, createdAt: serverTimestamp() },
+      { title: "Review the October Operational Plan", completed: false, createdAt: serverTimestamp() },
+      { title: "Explore your new dashboard", completed: false, createdAt: serverTimestamp() },
+    ];
+    const userBatch = writeBatch(db);
+    initialTasks.forEach(task => {
+        const taskRef = doc(userTasksCollection);
+        userBatch.set(taskRef, task);
+    });
+    await userBatch.commit();
+    console.log("Initial tasks seeded for new user.");
+}
+
 
 async function createUserProfile(
   userCredential: UserCredential,
@@ -202,10 +176,7 @@ async function createUserProfile(
   // Only create a user profile if one doesn't already exist.
   if (!docSnap.exists()) {
     console.log("User profile does not exist, creating one...");
-    
-    // Seed data. This function now handles logic for first user vs. subsequent users.
-    await seedInitialData(db, user.uid)
-    
+
     const userData = approvedUsers[user.email.toLowerCase()]
     const userProfile = {
       id: user.uid,
@@ -215,11 +186,19 @@ async function createUserProfile(
       photoURL: user.photoURL || '',
       createdAt: serverTimestamp(),
     }
-
-    setDocumentNonBlocking(userRef, userProfile, { merge: true });
+    
+    // Check if any core data exists. If not, this is the very first user.
+    const programsSnapshot = await getDocs(query(collection(db, "programs"), limit(1)));
+    if (programsSnapshot.empty) {
+        await seedInitialData(db, user.uid);
+    }
+    
+    // Now create the user profile document and seed their tasks
+    await setDoc(userRef, userProfile, { merge: true });
+    await seedUserTasks(db, user.uid);
     
   } else {
-     console.log("User profile already exists, skipping creation.");
+     console.log("User profile already exists, skipping creation and seeding.");
   }
 
   return userCredential
@@ -269,8 +248,6 @@ export function initiateGoogleSignIn(authInstance: Auth) {
   const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
     .then((userCredential) => {
-      // This check is now redundant because createUserProfile also checks,
-      // but it provides an early exit before calling the profile creation.
       if (!isEmailApproved(userCredential.user.email)) {
         // Must manually sign out if we reject the user after the popup succeeded.
         authInstance.signOut();
