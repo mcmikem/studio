@@ -1,5 +1,4 @@
 
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type StatCard = {
@@ -113,6 +112,10 @@ export type Activity = {
     primaryGoalType?: 'Metric' | 'Program';
     primaryGoalId?: string;
     primaryGoalQuantity?: number;
+    indirectValue?: number;
+    trees_planted?: number;
+    parents_attended?: number;
+    teachers_attended?: number;
 };
 
 export type Project = {
