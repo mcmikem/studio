@@ -53,6 +53,7 @@ export function ActivityReportForm() {
   const [loading, setLoading] = useState(false);
 
   const [activityName, setActivityName] = useState('');
+  const [ecosystemPhase, setEcosystemPhase] = useState<"Identify & Inspire" | "Equip & Empower" | "Activate & Sustain">('Identify & Inspire');
   const [transportCost, setTransportCost] = useState(15000);
   const [staffTimeCost, setStaffTimeCost] = useState(20000);
   const [materialsCost, setMaterialsCost] = useState(10000);
@@ -62,6 +63,9 @@ export function ActivityReportForm() {
   const [goalType, setGoalType] = useState<'Metric' | 'Program'>('Metric');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [goalQuantity, setGoalQuantity] = useState(0);
+
+  const [parentsAttended, setParentsAttended] = useState(0);
+  const [teachersAttended, setTeachersAttended] = useState(0);
 
   const metricsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -151,10 +155,11 @@ export function ActivityReportForm() {
     }
     setLoading(true);
 
-    const activityData = {
+    const activityData: any = {
       title: activityName,
       userId: user.uid,
       userName: profile.name,
+      ecosystem_phase: ecosystemPhase,
       estimatedCost: preActivityCost,
       actualCost: actualCost,
       directValue: directValue,
@@ -167,6 +172,11 @@ export function ActivityReportForm() {
       primaryGoalId: selectedGoalId,
       primaryGoalQuantity: goalQuantity,
     };
+
+    if (selectedProgram?.title === 'RED Campaign') {
+        activityData.parents_attended = parentsAttended;
+        activityData.teachers_attended = teachersAttended;
+    }
 
     const activitiesCollection = collection(firestore, 'activities');
     
@@ -182,6 +192,8 @@ export function ActivityReportForm() {
         setSelectedMultipliers([]);
         setSelectedGoalId(null);
         setGoalQuantity(0);
+        setParentsAttended(0);
+        setTeachersAttended(0);
     } catch(e) {
         console.error(e);
         toast({
@@ -258,7 +270,7 @@ export function ActivityReportForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6 px-0">
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="activityName">Activity Name</Label>
           <Input
             id="activityName"
@@ -266,6 +278,19 @@ export function ActivityReportForm() {
             value={activityName}
             onChange={(e) => setActivityName(e.target.value)}
           />
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="ecosystemPhase">Ecosystem Phase</Label>
+             <Select onValueChange={(value: "Identify & Inspire" | "Equip & Empower" | "Activate & Sustain") => setEcosystemPhase(value)} value={ecosystemPhase}>
+                <SelectTrigger id="ecosystemPhase">
+                    <SelectValue placeholder="Select phase..." />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="Identify & Inspire">Identify & Inspire</SelectItem>
+                    <SelectItem value="Equip & Empower">Equip & Empower</SelectItem>
+                    <SelectItem value="Activate & Sustain">Activate & Sustain</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
 
         <Separator />
@@ -287,6 +312,19 @@ export function ActivityReportForm() {
         </div>
 
         {renderGoalSelectors()}
+
+         {selectedProgram?.title === 'RED Campaign' && (
+            <div className="grid grid-cols-2 gap-4 mt-4 p-4 border rounded-md">
+                 <div className="space-y-2">
+                    <Label htmlFor="parents-attended">Parents Attended</Label>
+                    <Input id="parents-attended" type="number" placeholder="e.g., 25" value={parentsAttended} onChange={e => setParentsAttended(Number(e.target.value))} />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="teachers-attended">Teachers Attended</Label>
+                    <Input id="teachers-attended" type="number" placeholder="e.g., 5" value={teachersAttended} onChange={e => setTeachersAttended(Number(e.target.value))} />
+                </div>
+            </div>
+        )}
 
         <p className="text-sm text-muted-foreground">
           The "Direct Value" of your activity is now automatically calculated
@@ -463,3 +501,5 @@ export function ActivityReportForm() {
     </>
   );
 }
+
+    

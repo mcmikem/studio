@@ -11,7 +11,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where } from 'firebase/firestore';
-import type { KeyResult } from '@/lib/types';
+import type { KeyResult, Activity } from '@/lib/types';
 import { Target, Flag, AlertTriangle } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
@@ -35,20 +35,47 @@ interface KeyResultsTrackerProps {
 
 export function KeyResultsTracker({ title, description, showAtRisk }: KeyResultsTrackerProps) {
   const firestore = useFirestore();
+  
   const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
 
-  const { data: keyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
+  const activitiesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'activities'));
+  }, [firestore]);
+
+  const { data: keyResults, isLoading: isLoadingKR } = useCollection<KeyResult>(keyResultsQuery);
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
+
+  const processedKeyResults = useMemo(() => {
+    if (!keyResults || !activities) return null;
+
+    return keyResults.map(kr => {
+      let liveProgress = kr.currentProgress;
+
+      if (kr.title === 'OCT-KR3') {
+        liveProgress = activities.reduce((sum, act) => {
+            return sum + (act.parents_attended || 0) + (act.teachers_attended || 0);
+        }, 0);
+      }
+      
+      // Future KR logic can be added here
+      // if (kr.title === 'OCT-KR2') { ... }
+
+      return { ...kr, currentProgress: liveProgress };
+    })
+
+  }, [keyResults, activities]);
 
   const atRiskKr = useMemo(() => {
-    if (!keyResults) return null;
+    if (!processedKeyResults) return null;
     // Find the KR with the lowest progress that isn't complete yet
-    return keyResults
+    return processedKeyResults
         .filter(kr => kr.currentProgress / kr.target < 1)
         .sort((a,b) => (a.currentProgress / a.target) - (b.currentProgress / b.target))[0];
-  }, [keyResults]);
+  }, [processedKeyResults]);
 
 
   const formatTarget = (kr: KeyResult) => {
@@ -63,6 +90,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
      return kr.currentProgress.toLocaleString();
   }
   
+  const isLoading = isLoadingKR || isLoadingActivities;
 
   return (
     <Card>
@@ -90,8 +118,8 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
                 <Skeleton className="h-3 w-full" />
             </div>
           ))}
-        {keyResults && keyResults.length > 0 ? (
-          keyResults.map((kr) => {
+        {processedKeyResults && processedKeyResults.length > 0 ? (
+          processedKeyResults.map((kr) => {
              const progressPercentage = kr.target > 0 ? (kr.currentProgress / kr.target) * 100 : 0;
              const deadlineDate = parseISO(kr.deadline);
              const isDeadlinePast = isPast(deadlineDate) && progressPercentage < 100;
@@ -135,3 +163,5 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     </Card>
   );
 }
+
+    
