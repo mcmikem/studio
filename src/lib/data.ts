@@ -1,4 +1,5 @@
 
+
 import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert } from './types';
 import { AlertTriangle, Info } from 'lucide-react';
 

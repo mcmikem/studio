@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -117,6 +118,9 @@ export type Activity = {
     trees_planted?: number;
     parents_attended?: number;
     teachers_attended?: number;
+    memorableMoment?: string;
+    challengesLearned?: string;
+    beneficiaryQuote?: string;
 };
 
 export type Project = {
