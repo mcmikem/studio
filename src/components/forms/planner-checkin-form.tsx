@@ -18,12 +18,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, where, getDocs, Timestamp, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, limit, serverTimestamp } from 'firebase/firestore';
 import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
-import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { startOfWeek } from 'date-fns';
 import { Separator } from '../ui/separator';
@@ -59,6 +59,8 @@ function PlannerCheckinFormComponent() {
   const { toast } = useToast();
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [aiOutput, setAiOutput] = useState<DailyPlannerAIOutput | null>(null);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackComment, setFeedbackComment] = useState('');
   
   // --- Data Fetching for Context ---
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
@@ -139,6 +141,7 @@ function PlannerCheckinFormComponent() {
 
     setIsGeneratingPlan(true);
     setAiOutput(null);
+    setFeedbackSubmitted(false);
 
     try {
       const output = await dailyPlannerAI({
@@ -195,6 +198,24 @@ function PlannerCheckinFormComponent() {
     params.set('plan', encodeURIComponent(JSON.stringify(planData)));
     router.push(`/forms/check-in?${params.toString()}`);
   }
+
+  const handleFeedback = async (wasHelpful: boolean) => {
+    if (!firestore || !user) return;
+    
+    const feedbackData = {
+      flow: 'dailyPlannerAIFlow',
+      userId: user.uid,
+      wasHelpful,
+      comment: feedbackComment,
+      timestamp: serverTimestamp(),
+    };
+
+    await addDocumentNonBlocking(collection(firestore, 'ai-feedback'), feedbackData);
+    
+    toast({ title: "Feedback submitted!", description: "Thank you for helping us improve." });
+    setFeedbackSubmitted(true);
+  };
+
 
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
 
@@ -292,6 +313,30 @@ function PlannerCheckinFormComponent() {
                         <CardDescription>Review and edit the AI's suggestions below, then finalize and submit your check-in.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
+                        {/* Feedback Section */}
+                        {!feedbackSubmitted ? (
+                          <Card className="bg-muted/50 p-4">
+                            <div className="space-y-3">
+                              <p className="text-sm font-semibold">Was this draft plan helpful?</p>
+                              <div className="flex gap-2">
+                                <Button type="button" size="sm" variant="outline" onClick={() => handleFeedback(true)}><ThumbsUp className="mr-2 h-4 w-4" /> Yes</Button>
+                                <Button type="button" size="sm" variant="outline" onClick={() => handleFeedback(false)}><ThumbsDown className="mr-2 h-4 w-4" /> No</Button>
+                              </div>
+                              <Textarea
+                                placeholder="Optional: How can we improve this?"
+                                value={feedbackComment}
+                                onChange={(e) => setFeedbackComment(e.target.value)}
+                                className="text-sm"
+                              />
+                            </div>
+                          </Card>
+                        ) : (
+                          <Alert variant="default" className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                             <AlertTitle>Thank you for your feedback!</AlertTitle>
+                          </Alert>
+                        )}
+
+
                         {/* Time Blocks */}
                         <div className="space-y-3">
                             <Label className="font-semibold text-base">Key Time Blocks</Label>

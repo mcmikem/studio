@@ -599,6 +599,21 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["title", "userId", "userName", "createdAt"]
+    },
+    "AIFeedback": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AI Feedback",
+      "description": "Stores user feedback on the performance of AI-generated content.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "flow": { "type": "string", "description": "The name of the AI flow being rated (e.g., dailyPlannerAIFlow)." },
+        "userId": { "type": "string" },
+        "wasHelpful": { "type": "boolean" },
+        "comment": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["flow", "userId", "wasHelpful", "timestamp"]
     }
   },
   "auth": {
@@ -733,6 +748,12 @@
         "$ref": "#/entities/Testimony"
       },
       "description": "Stores recorded audio, video, or text testimonies."
+    },
+    "/ai-feedback/{feedbackId}": {
+      "schema": {
+        "$ref": "#/entities/AIFeedback"
+      },
+      "description": "Stores user feedback on AI-generated content."
     }
   }
 }
