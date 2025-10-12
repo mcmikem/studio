@@ -152,6 +152,9 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         );
     }, [firestore]);
     const { data: activities } = useCollection<Activity>(activitiesQuery);
+    
+    const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
+    const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
 
   return (
     <>
@@ -165,6 +168,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-1 flex flex-col gap-6">
             <TeamEffectiveness activities={activities} />
             <ManagementQuickLinks />
+            <Alerts />
+            <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>
     </>
