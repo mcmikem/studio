@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -66,6 +67,7 @@ export function ActivityReportForm() {
 
   const [parentsAttended, setParentsAttended] = useState(0);
   const [teachersAttended, setTeachersAttended] = useState(0);
+  const [treesPlanted, setTreesPlanted] = useState(0);
 
   const metricsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -177,6 +179,9 @@ export function ActivityReportForm() {
         activityData.parents_attended = parentsAttended;
         activityData.teachers_attended = teachersAttended;
     }
+    if (selectedProgram?.title === 'GreenSchools Campaign') {
+        activityData.trees_planted = treesPlanted;
+    }
 
     const activitiesCollection = collection(firestore, 'activities');
     
@@ -194,6 +199,7 @@ export function ActivityReportForm() {
         setGoalQuantity(0);
         setParentsAttended(0);
         setTeachersAttended(0);
+        setTreesPlanted(0);
     } catch(e) {
         console.error(e);
         toast({
@@ -313,7 +319,7 @@ export function ActivityReportForm() {
 
         {renderGoalSelectors()}
 
-         {selectedProgram?.title === 'RED Campaign' && (
+        {selectedProgram?.title === 'RED Campaign' && (
             <div className="grid grid-cols-2 gap-4 mt-4 p-4 border rounded-md">
                  <div className="space-y-2">
                     <Label htmlFor="parents-attended">Parents Attended</Label>
@@ -322,6 +328,15 @@ export function ActivityReportForm() {
                  <div className="space-y-2">
                     <Label htmlFor="teachers-attended">Teachers Attended</Label>
                     <Input id="teachers-attended" type="number" placeholder="e.g., 5" value={teachersAttended} onChange={e => setTeachersAttended(Number(e.target.value))} />
+                </div>
+            </div>
+        )}
+        
+        {selectedProgram?.title === 'GreenSchools Campaign' && (
+            <div className="mt-4 p-4 border rounded-md">
+                 <div className="space-y-2">
+                    <Label htmlFor="trees-planted">Trees Planted</Label>
+                    <Input id="trees-planted" type="number" placeholder="e.g., 150" value={treesPlanted} onChange={e => setTreesPlanted(Number(e.target.value))} />
                 </div>
             </div>
         )}
@@ -501,5 +516,7 @@ export function ActivityReportForm() {
     </>
   );
 }
+
+    
 
     

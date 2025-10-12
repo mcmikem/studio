@@ -147,6 +147,11 @@
           "type": "string",
           "description": "The title of the activity (e.g., Tree Planting at St. Mary's)."
         },
+        "ecosystem_phase": {
+            "type": "string",
+            "enum": ["Identify & Inspire", "Equip & Empower", "Activate & Sustain"],
+            "description": "The ecosystem phase this activity belongs to."
+        },
         "primaryGoalType": {
           "type": "string",
           "enum": ["Metric", "Program"],
@@ -192,12 +197,25 @@
           "type": "string",
           "description": "Server timestamp of when the activity was logged.",
           "format": "date-time"
+        },
+        "parents_attended": {
+            "type": "number",
+            "description": "Number of parents reached in a RED Campaign session."
+        },
+        "teachers_attended": {
+            "type": "number",
+            "description": "Number of teachers reached in a RED Campaign session."
+        },
+        "trees_planted": {
+            "type": "number",
+            "description": "Number of trees planted in a GreenSchools activity."
         }
       },
       "required": [
         "userId",
         "userName",
         "title",
+        "ecosystem_phase",
         "primaryGoalId",
         "primaryGoalType",
         "primaryGoalQuantity",
@@ -678,3 +696,6 @@
     }
   }
 }
+
+
+    

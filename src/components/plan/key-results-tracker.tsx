@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -64,6 +65,12 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
 
       if (kr.title === 'OCT-KR1' && cycleOfDignityMetric) {
         liveProgress = cycleOfDignityMetric.current;
+      }
+      
+      if (kr.title === 'OCT-KR2') {
+        liveProgress = activities.reduce((sum, act) => {
+            return sum + ((act as any).trees_planted || 0);
+        }, 0);
       }
 
       if (kr.title === 'OCT-KR3') {
@@ -174,3 +181,5 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     </Card>
   );
 }
+
+    
