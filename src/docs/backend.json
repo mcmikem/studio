@@ -205,18 +205,6 @@
         "teachers_attended": {
             "type": "number",
             "description": "Number of teachers reached in a RED Campaign session."
-        },
-        "memorableMoment": {
-            "type": "string",
-            "description": "A specific, powerful interaction or observation from the activity."
-        },
-        "challengesLearned": {
-            "type": "string",
-            "description": "Surprising challenges and how they were overcome."
-        },
-        "beneficiaryQuote": {
-            "type": "string",
-            "description": "A direct quote from a beneficiary."
         }
       },
       "required": [
@@ -769,3 +757,4 @@
     }
   }
 }
+
