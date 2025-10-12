@@ -79,7 +79,6 @@ const navConfig = {
     { href: '/resources', icon: Handshake, label: 'Resources' },
   ],
   communication: [
-    { href: '/reporting', icon: Newspaper, label: 'Reporting' },
     { href: '/reports', icon: FileText, label: 'Analysis' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/impact-story', icon: Wand, label: 'Story Generator' },
