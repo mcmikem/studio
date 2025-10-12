@@ -13,6 +13,7 @@ import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { TeamCoordination } from "./program-manager/team-coordination"
 import { QuickInsights } from "./program-manager/quick-insights"
+import { TeamDeployment } from "./team-deployment"
 
 
 interface DashboardProps {
@@ -51,6 +52,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
      <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker showAtRisk />
+            <TeamDeployment users={users} checkins={checkins} />
             <TeamCoordination users={users} checkins={checkins} expenses={expenses} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">

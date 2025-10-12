@@ -32,7 +32,6 @@ import {
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { DailyActions } from "./daily-actions"
-import { TeamToday } from "./team-today"
 import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
 import { useToast } from "@/hooks/use-toast"
@@ -44,6 +43,7 @@ import { DashboardHeader } from "./dashboard-header"
 import { doc, collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { Progress } from "../ui/progress"
 import { startOfMonth } from "date-fns"
+import { TeamDeployment } from "./team-deployment"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-UG", {
@@ -254,7 +254,6 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
-            <TeamToday />
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>

@@ -1,11 +1,10 @@
 
 "use client"
 
-import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity } from "@/lib/types"
+import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin } from "@/lib/types"
 import { Alerts } from "./alerts"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
-import { TeamToday } from "./team-today"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
@@ -18,8 +17,9 @@ import { Badge } from "../ui/badge"
 import { ArrowRight, Target, Users, Wand, Globe, TrendingUp, AlertTriangle } from "lucide-react"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useMemo } from "react"
-import { subDays, startOfWeek, isAfter, subMonths } from "date-fns"
+import { subDays, startOfWeek, isAfter, subMonths, startOfDay } from "date-fns"
 import Link from "next/link"
+import { TeamDeployment } from "./team-deployment"
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
@@ -155,6 +155,14 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     
     const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
     const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
+    
+    const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+    const { data: users } = useCollection<User>(usersQuery);
+
+    const todayStart = startOfDay(new Date());
+    const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
+    const { data: checkins } = useCollection<Checkin>(checkinsQuery);
+
 
   return (
     <>
@@ -164,6 +172,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse activities={activities} />
             <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
+            <TeamDeployment users={users} checkins={checkins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <TeamEffectiveness activities={activities} />

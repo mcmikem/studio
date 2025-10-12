@@ -5,7 +5,6 @@ import type { User, Program, Checkout, ImpactMetric, Partnership, Checkin, Expen
 import { Alerts } from "./alerts"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
-import { TeamToday } from "./team-today"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
@@ -18,6 +17,7 @@ import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { TeamCoordination } from "./program-manager/team-coordination"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { SmartReminders } from "./field-staff-dashboard"
+import { TeamDeployment } from "./team-deployment"
 
 interface DashboardProps {
   profile: User;
@@ -66,9 +66,9 @@ export function AdminDashboard({ profile }: DashboardProps) {
             <SmartReminders profile={profile} />
             <ManagementQuickLinks />
             <Alerts />
-            <TeamToday />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
+            <TeamDeployment users={users} checkins={checkins} />
             <KeyResultsTracker showAtRisk />
             <TeamCoordination users={users} checkins={checkins} expenses={expenses} />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
