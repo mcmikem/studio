@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser } from '@/firebase';
@@ -11,9 +10,6 @@ import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 // Define a loading component for dynamic imports
 const DashboardLoading = () => (
   <div className="space-y-6">
-    <div className="mt-[-4rem] md:mt-[-5rem] lg:mt-[-6rem] space-y-6">
-        <Skeleton className="h-48" />
-    </div>
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
       <Skeleton className="h-28" />
       <Skeleton className="h-28" />
@@ -71,7 +67,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col">
         <DashboardHeader profile={profile} />
-        <div className="flex-1 space-y-6 -mt-16">
+        <div className="flex-1 space-y-6 lg:-mt-16">
             <DashboardComponent profile={profile} />
         </div>
     </div>

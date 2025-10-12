@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -76,17 +75,20 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
         return (
           <Link href="/management/metrics" key={metric.id}>
             <Card className="p-4 flex flex-col h-32 hover:bg-muted/50 transition-colors shadow-sm">
-                <div className="flex-grow space-y-1">
+                <div className="flex justify-between items-start">
                   <p className="text-sm font-semibold text-muted-foreground">{metric.metric.split('(')[0]}</p>
+                   <Icon className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="mt-auto">
                    <div className="text-3xl font-bold">
                       {formatValue(metric.current)}
                   </div>
-                </div>
                  {!metric.isPlaceholder && (
                     <p className="text-xs text-muted-foreground mt-1">
                         Target: {metric.target.toLocaleString()}
                     </p>
                  )}
+                </div>
             </Card>
           </Link>
         )
