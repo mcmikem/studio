@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -10,12 +9,24 @@ import {
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { operationalChecklists } from '@/lib/checklists';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { TaskTemplate } from '@/lib/types';
 import { ListChecks } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export default function ChecklistsPage() {
+  const firestore = useFirestore();
+  const templatesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'task-templates'), orderBy('createdAt', 'desc'));
+  }, [firestore]);
+
+  const { data: templates, isLoading } = useCollection<TaskTemplate>(templatesQuery);
+
   // For now, we will display the first checklist. This can be expanded later.
-  const fieldVisitChecklist = operationalChecklists[0];
+  const checklistToDisplay = templates?.[0];
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,31 +41,46 @@ export default function ChecklistsPage() {
       </header>
 
       <Card>
-        <CardHeader>
-          <CardTitle>{fieldVisitChecklist.title}</CardTitle>
-          <CardDescription>{fieldVisitChecklist.category}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {fieldVisitChecklist.sections.map((section, index) => (
-            <div key={index}>
-              <h3 className="text-lg font-semibold">{section.title}</h3>
-              <Separator className="my-2" />
-              <div className="space-y-3 mt-4">
-                {section.items.map((item, itemIndex) => (
-                  <div key={itemIndex} className="flex items-center gap-3">
-                    <Checkbox id={`${section.title}-${itemIndex}`} />
-                    <label
-                      htmlFor={`${section.title}-${itemIndex}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {item}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </CardContent>
+        {isLoading && (
+          <CardContent className="pt-6 space-y-4">
+            <Skeleton className="h-8 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </CardContent>
+        )}
+        {checklistToDisplay && !isLoading && (
+          <>
+            <CardHeader>
+              <CardTitle>{checklistToDisplay.title}</CardTitle>
+              <CardDescription>A standard operational procedure.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="space-y-3 mt-4">
+                  {checklistToDisplay.checklistItems.map((item, itemIndex) => (
+                    <div key={itemIndex} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50">
+                      <Checkbox id={`${checklistToDisplay.title}-${itemIndex}`} />
+                      <label
+                        htmlFor={`${checklistToDisplay.title}-${itemIndex}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1"
+                      >
+                        {item}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+            </CardContent>
+          </>
+        )}
+        {!checklistToDisplay && !isLoading && (
+          <CardContent className="pt-6">
+            <EmptyState 
+              icon={ListChecks}
+              title="No Checklists Found"
+              description="Management can create reusable task templates in the 'Management' section."
+            />
+          </CardContent>
+        )}
       </Card>
     </div>
   );
