@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { PlusCircle, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
+import { PlusCircle, ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { CalendarEvent as EventType } from '@/lib/types';
+import Link from 'next/link';
 
 const categoryColors: { [key: string]: string } = {
     "Team Meetings": "bg-blue-500/10 text-blue-500 border-blue-500",
@@ -136,7 +137,7 @@ export function DashboardCalendar() {
 
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col group/card hover:bg-muted/50 transition-colors">
        <CardHeader>
         <div className="flex items-center justify-between">
             <div>
@@ -147,12 +148,12 @@ export function DashboardCalendar() {
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     New Event
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent onClick={(e) => e.stopPropagation()}>
                   <DialogHeader>
                       <DialogTitle>Add New Calendar Event</DialogTitle>
                       <DialogDescription>Fill in the details for the new event.</DialogDescription>
@@ -162,44 +163,49 @@ export function DashboardCalendar() {
             </Dialog>
         </div>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(subDays(currentDate, 1))}>
-                <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <h3 className="font-headline text-lg font-semibold text-center">
-                {format(currentDate, "eeee, MMMM d")}
-            </h3>
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(addDays(currentDate, 1))}>
-                <ChevronRight className="h-4 w-4" />
-            </Button>
-        </div>
-        <div className="space-y-3 flex-grow">
-            {isLoading && Array.from({length: 2}).map((_, i) => (
-                <div key={i} className='p-3 bg-muted rounded-lg space-y-2'>
-                    <Skeleton className='h-4 w-3/4' />
-                    <Skeleton className='h-4 w-1/2' />
-                </div>
-            ))}
-            {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
-                selectedDayEvents.map((event) => (
-                    <div key={event.id} className="p-3 bg-muted rounded-lg">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <p className="font-semibold">{event.title}</p>
-                                <p className="text-sm text-muted-foreground">{event.responsible} - {event.location}</p>
-                            </div>
-                            <Badge variant="outline" className={categoryColors[event.category]}>
-                                {event.category}
-                            </Badge>
-                        </div>
+      <Link href="/calendar" className="flex-grow flex flex-col">
+        <CardContent className="flex-grow flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(subDays(currentDate, 1)); }}>
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <h3 className="font-headline text-lg font-semibold text-center">
+                    {format(currentDate, "eeee, MMMM d")}
+                </h3>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(addDays(currentDate, 1)); }}>
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+            </div>
+            <div className="space-y-3 flex-grow">
+                {isLoading && Array.from({length: 2}).map((_, i) => (
+                    <div key={i} className='p-3 bg-muted rounded-lg space-y-2'>
+                        <Skeleton className='h-4 w-3/4' />
+                        <Skeleton className='h-4 w-1/2' />
                     </div>
-                ))
-            ) : (
-                !isLoading && <div className="flex items-center justify-center h-full text-sm text-muted-foreground pt-8">No events scheduled for this day.</div>
-            )}
-        </div>
-      </CardContent>
+                ))}
+                {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
+                    selectedDayEvents.map((event) => (
+                        <div key={event.id} className="p-3 bg-muted rounded-lg">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <p className="font-semibold">{event.title}</p>
+                                    <p className="text-sm text-muted-foreground">{event.responsible} - {event.location}</p>
+                                </div>
+                                <Badge variant="outline" className={categoryColors[event.category]}>
+                                    {event.category}
+                                </Badge>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    !isLoading && <div className="flex items-center justify-center h-full text-sm text-muted-foreground pt-8">No events scheduled for this day.</div>
+                )}
+            </div>
+            <div className="text-sm text-primary group-hover/card:underline flex items-center justify-end pt-4">
+                View full calendar <ArrowRight className="ml-1 h-4 w-4" />
+            </div>
+        </CardContent>
+      </Link>
     </Card>
   );
 }
