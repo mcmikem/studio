@@ -205,10 +205,6 @@
         "teachers_attended": {
             "type": "number",
             "description": "Number of teachers reached in a RED Campaign session."
-        },
-        "trees_planted": {
-            "type": "number",
-            "description": "Number of trees planted in a GreenSchools activity."
         }
       },
       "required": [
