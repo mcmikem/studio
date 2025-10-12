@@ -96,8 +96,11 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
         }).length;
       }
       
-      // Future KR logic can be added here
-      // if (kr.title === 'OCT-KR5') { ... }
+      // KR5-KR8 are based on percentage completion or manual milestones for now.
+      // The `currentProgress` from the database will be used directly.
+      // Future logic for checklist-based progress would go here.
+      // if (kr.title === 'OCT-KR5') { /* ... complex checklist logic ... */ }
+      // if (kr.title === 'OCT-KR6') { /* ... document upload logic ... */ }
 
       return { ...kr, currentProgress: liveProgress };
     })
@@ -114,15 +117,15 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
 
 
   const formatTarget = (kr: KeyResult) => {
-    if (kr.target === 100 && kr.currentProgress <= 100) return `${kr.target}%`;
-    if (kr.target >= 1000) return `${(kr.target / 1000000).toFixed(1)}M UGX`;
+    if (kr.title === 'OCT-KR1') return `${(kr.target / 1000000).toFixed(1)}M UGX`;
+    if (kr.target === 100 && kr.title.includes('KR')) return `${kr.target}%`;
     return kr.target.toLocaleString();
   }
 
   const formatProgress = (kr: KeyResult) => {
-    if (kr.target === 100 && kr.currentProgress <= 100) return `${kr.currentProgress}%`;
-    if (kr.target >= 1000) return `${(kr.currentProgress / 1000000).toFixed(1)}M`;
-     return kr.currentProgress.toLocaleString();
+    if (kr.title === 'OCT-KR1') return `${(kr.currentProgress / 1000000).toFixed(1)}M`;
+    if (kr.target === 100 && kr.title.includes('KR')) return `${kr.currentProgress}%`;
+    return kr.currentProgress.toLocaleString();
   }
   
   const isLoading = isLoadingKR || isLoadingActivities || isLoadingMetrics || isLoadingPartnerships;
