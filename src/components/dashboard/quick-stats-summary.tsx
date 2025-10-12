@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "../ui/skeleton"
 import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
@@ -57,7 +57,7 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
       {displayMetrics.map((metric, i) => {
         if (!metric) {
           return (
-             <Card key={i} className="p-4 flex flex-col justify-between">
+             <Card key={i} className="p-4 flex flex-col justify-between h-32">
               <Skeleton className="h-6 w-6 mb-4" />
               <div className="space-y-1">
                 <Skeleton className="h-5 w-2/3" />
@@ -73,30 +73,20 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
             ? formatCurrency(val)
             : `${val.toLocaleString()}`
         
-        const progress = metric.target > 0 ? (metric.current / metric.target) * 100 : 0;
-        const targetValueDisplay = metric.unit === 'UGX' ? `${(metric.target/1000000).toFixed(1)}M` : metric.target.toLocaleString();
-
         return (
           <Link href="/management/metrics" key={metric.id}>
-            <Card className="p-4 flex flex-col h-full hover:bg-muted/50 transition-colors">
-                <div className="flex justify-between items-start">
-                  <Icon className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="mt-auto space-y-1 pt-2">
-                  <p className="text-xs font-medium text-muted-foreground">{metric.metric.split('(')[0]}</p>
-                  <div className="text-2xl font-bold">
+            <Card className="p-4 flex flex-col h-32 hover:bg-muted/50 transition-colors shadow-sm">
+                <div className="flex-grow space-y-1">
+                  <p className="text-sm font-semibold text-muted-foreground">{metric.metric.split('(')[0]}</p>
+                   <div className="text-3xl font-bold">
                       {formatValue(metric.current)}
                   </div>
-                  {!metric.isPlaceholder && (
-                      <>
-                        <Progress value={progress} className="h-1 w-full bg-primary/20" />
-                        <div className="flex justify-between items-center">
-                            <span className="text-xs font-semibold text-muted-foreground">{progress.toFixed(0)}%</span>
-                            <span className="text-xs text-muted-foreground">Target: {targetValueDisplay}</span>
-                        </div>
-                      </>
-                  )}
                 </div>
+                 {!metric.isPlaceholder && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                        Target: {metric.target.toLocaleString()}
+                    </p>
+                 )}
             </Card>
           </Link>
         )
