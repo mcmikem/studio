@@ -8,8 +8,6 @@ import {
   query,
   orderBy,
   doc,
-  updateDoc,
-  serverTimestamp,
 } from 'firebase/firestore';
 import type { Task } from '@/lib/types';
 import {
@@ -32,6 +30,7 @@ import { Loader2, PlusCircle } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { formatDateSafe } from '@/lib/utils';
+import { serverTimestamp } from 'firebase/firestore';
 
 const taskSchema = z.object({
   title: z.string().min(3, 'Task title must be at least 3 characters.'),
@@ -92,6 +91,7 @@ export function UserTasks() {
 
   const tasksQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
+    // Simplified query: Only order by creation date. Filtering will be done on the client.
     return query(
       collection(firestore, 'users', user.uid, 'tasks'),
       orderBy('createdAt', 'desc')
@@ -106,8 +106,22 @@ export function UserTasks() {
     updateDocumentNonBlocking(taskRef, { completed: completed });
   };
 
-  const pendingTasks = tasks?.filter((task) => !task.completed) || [];
-  const completedTasks = tasks?.filter((task) => task.completed) || [];
+  // Client-side filtering
+  const { pendingTasks, completedTasks } = useMemo(() => {
+    const pending: Task[] = [];
+    const completed: Task[] = [];
+    if (tasks) {
+      for (const task of tasks) {
+        if (task.completed) {
+          completed.push(task);
+        } else {
+          pending.push(task);
+        }
+      }
+    }
+    return { pendingTasks: pending, completedTasks: completed };
+  }, [tasks]);
+
 
   return (
     <Card className="mt-4">
@@ -190,5 +204,3 @@ export function UserTasks() {
     </Card>
   );
 }
-
-    
