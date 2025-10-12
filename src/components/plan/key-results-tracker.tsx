@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -11,7 +10,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where } from 'firebase/firestore';
-import type { KeyResult, Activity } from '@/lib/types';
+import type { KeyResult, Activity, ImpactMetric } from '@/lib/types';
 import { Target, Flag, AlertTriangle } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
@@ -46,14 +45,26 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     return query(collection(firestore, 'activities'));
   }, [firestore]);
 
+  const metricsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'impact-metrics'));
+  }, [firestore]);
+
   const { data: keyResults, isLoading: isLoadingKR } = useCollection<KeyResult>(keyResultsQuery);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
+  const { data: metrics, isLoading: isLoadingMetrics } = useCollection<ImpactMetric>(metricsQuery);
 
   const processedKeyResults = useMemo(() => {
-    if (!keyResults || !activities) return null;
+    if (!keyResults || !activities || !metrics) return null;
+
+    const cycleOfDignityMetric = metrics.find(m => m.metric === 'Cycle of Dignity Fundraising');
 
     return keyResults.map(kr => {
       let liveProgress = kr.currentProgress;
+
+      if (kr.title === 'OCT-KR1' && cycleOfDignityMetric) {
+        liveProgress = cycleOfDignityMetric.current;
+      }
 
       if (kr.title === 'OCT-KR3') {
         liveProgress = activities.reduce((sum, act) => {
@@ -67,7 +78,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
       return { ...kr, currentProgress: liveProgress };
     })
 
-  }, [keyResults, activities]);
+  }, [keyResults, activities, metrics]);
 
   const atRiskKr = useMemo(() => {
     if (!processedKeyResults) return null;
@@ -90,7 +101,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
      return kr.currentProgress.toLocaleString();
   }
   
-  const isLoading = isLoadingKR || isLoadingActivities;
+  const isLoading = isLoadingKR || isLoadingActivities || isLoadingMetrics;
 
   return (
     <Card>
@@ -163,5 +174,3 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     </Card>
   );
 }
-
-    
