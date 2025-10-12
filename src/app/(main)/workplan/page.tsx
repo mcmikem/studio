@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 const individualTaskSchema = z.object({
   value: z.string().min(1, 'Task description cannot be empty.'),
@@ -210,7 +211,7 @@ export default function WorkplanPage() {
             <Alert variant="default" className="bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
                 <AlertTitle className="font-bold text-green-800 dark:text-green-300">Your Workplan is Submitted!</AlertTitle>
                 <AlertDescription>
-                   Your daily check-in form will now be populated based on this finalized plan.
+                   Your daily check-in form will now be populated based on this finalized plan. Go to the <Link href="/daily-plan" className="font-bold underline">AI Daily Planner</Link> to start your day.
                 </AlertDescription>
             </Alert>
             <div className="space-y-4">

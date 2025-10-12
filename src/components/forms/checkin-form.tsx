@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -8,7 +9,7 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -21,7 +22,6 @@ import Link from 'next/link';
 import { Loader2, ArrowRight } from 'lucide-react';
 import type { DailyPlannerAIOutput } from '@/lib/types';
 import { Separator } from '../ui/separator';
-import { useSearchParams } from 'next/navigation';
 
 const checkinSchema = z.object({
   primaryMission: z.string(),

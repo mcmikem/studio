@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -143,7 +144,7 @@ function PlannerCheckinFormComponent() {
       const output = await dailyPlannerAI({
         userRole: profile.role,
         primaryMission: data.primaryMission,
-        weeklyPriorities: weeklyPlan?.keyPriorities || [],
+        weeklyPriorities: weeklyPlan?.individualTasks || [],
         keyResults: keyResults,
       });
       setAiOutput(output);
@@ -192,8 +193,7 @@ function PlannerCheckinFormComponent() {
     };
 
     params.set('plan', encodeURIComponent(JSON.stringify(planData)));
-    params.set('tab', 'check-in');
-    router.push(`/forms?${params.toString()}`);
+    router.push(`/forms/check-in?${params.toString()}`);
   }
 
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
@@ -240,10 +240,10 @@ function PlannerCheckinFormComponent() {
                         </div>
                         
                         <Alert variant="default" className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-                            <AlertTitle>Your Priorities This Week</AlertTitle>
+                            <AlertTitle>Your Personal Priorities This Week</AlertTitle>
                             <AlertDescription>
                             <ul className="list-disc list-inside">
-                                {weeklyPlan.keyPriorities.map((p, i) => <li key={i}>{p}</li>)}
+                                {weeklyPlan.individualTasks.map((p, i) => <li key={i}>{p}</li>)}
                             </ul>
                             </AlertDescription>
                         </Alert>

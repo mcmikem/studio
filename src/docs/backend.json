@@ -473,6 +473,22 @@
       },
       "required": ["userId", "userName", "date", "title", "type", "items", "totalAmount", "status", "createdAt"]
     },
+    "Income": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Income",
+      "description": "Represents a single income or revenue entry.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "source": { "type": "string" },
+        "amount": { "type": "number" },
+        "dateReceived": { "type": "string", "format": "date" },
+        "type": { "type": "string", "enum": ["Grant", "Donation", "Sales", "Other"] },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["source", "amount", "dateReceived", "type", "createdAt"]
+    },
     "Proposal": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Proposal",
@@ -540,7 +556,6 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Equipment",
       "description": "Represents a piece of physical equipment or an asset.",
-      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
@@ -654,6 +669,12 @@
       },
       "description": "Stores expense reports submitted by users."
     },
+    "/income/{incomeId}": {
+      "schema": {
+        "$ref": "#/entities/Income"
+      },
+      "description": "Stores all income and revenue transactions."
+    },
     "/proposals/{proposalId}": {
       "schema": {
         "$ref": "#/entities/Proposal"
@@ -692,4 +713,3 @@
     }
   }
 }
-

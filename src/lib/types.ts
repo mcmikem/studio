@@ -1,6 +1,7 @@
 
 
 import type { Timestamp } from 'firebase/firestore';
+import { z } from 'zod';
 
 export type StatCard = {
   title: string;
@@ -217,17 +218,43 @@ export type Proposal = {
     createdAt?: Timestamp;
 }
 
-export type DailyPlannerAIOutput = {
-    timeBlocks: {
-        startTime: string;
-        endTime: string;
-        description: string;
-    }[];
-    multiWinConnections: string[];
-    materials: string;
-    challenges: string;
-    bestPractice: string;
+export type TeamWeeklyPlan = {
+  id: string;
+  weekOf: Timestamp;
+  keyPriorities: string[];
+  message: string;
+  authorId: string;
+  authorName: string;
+  status: 'Draft' | 'Published';
+  createdAt: Timestamp;
 };
+
+
+export type WeeklyWorkplan = {
+  id: string;
+  userId: string;
+  userName: string;
+  weekOf: Timestamp;
+  teamPlanId: string;
+  teamPriorities: string[];
+  individualTasks: string[];
+  createdAt: Timestamp;
+};
+
+
+export const DailyPlannerAIOutputSchema = z.object({
+    timeBlocks: z.array(z.object({
+        startTime: z.string().describe("e.g., '09:00 AM'"),
+        endTime: z.string().describe("e.g., '11:00 AM'"),
+        description: z.string(),
+    })).describe("A detailed, actionable schedule for the day."),
+    multiWinConnections: z.array(z.string()).describe("Specific ways the daily mission connects to broader organizational goals (e.g., specific Key Results)."),
+    materials: z.string().describe("A comma-separated list of materials or resources needed."),
+    challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
+    bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from the provided knowledge base."),
+});
+export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
+
 
 export type Equipment = {
     id: string;
@@ -256,29 +283,6 @@ export type Message = {
     createdAt: Timestamp;
 }
 
-export type TeamWeeklyPlan = {
-  id: string;
-  weekOf: Timestamp;
-  keyPriorities: string[];
-  message: string;
-  authorId: string;
-  authorName: string;
-  status: 'Draft' | 'Published';
-  createdAt: Timestamp;
-};
-
-
-export type WeeklyWorkplan = {
-  id: string;
-  userId: string;
-  userName: string;
-  weekOf: Timestamp;
-  teamPlanId: string;
-  teamPriorities: string[];
-  individualTasks: string[];
-  createdAt: Timestamp;
-};
-
 export type Checklist = {
   id: string;
   title: string;
@@ -291,8 +295,6 @@ export type Checklist = {
 
 
 // Smart Reminders Flow Types
-import { z } from 'zod';
-
 export const SmartRemindersInputSchema = z.object({
   userId: z.string(),
   userName: z.string(),

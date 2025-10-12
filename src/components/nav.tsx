@@ -92,7 +92,7 @@ const roleNavConfig = {
   'Programs & Partnerships Manager': ['all', 'field', 'planning', 'management', 'communication'],
   'Resource Mobilization Lead': ['all', 'planning', 'management', 'communication'],
   'Operations & Field Manager': ['all', 'field', 'planning', 'management'],
-  'Field Coordinator': ['all', 'field'],
+  'Field Coordinator': ['all', 'field', 'planning'],
   'Media & Communications Lead': ['all', 'field', 'communication'],
   'default': ['all'],
 };
