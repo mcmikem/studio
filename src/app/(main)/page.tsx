@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 // Define a loading component for dynamic imports
 const DashboardLoading = () => (
   <div className="flex flex-col gap-6">
-    <Skeleton className="relative rounded-xl h-40 -mx-4 -mt-4 lg:-mx-6 lg:-mt-6" />
+    <Skeleton className="relative rounded-xl h-48 -mx-4 -mt-4 lg:-mx-6 lg:-mt-6" />
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
       <Skeleton className="h-28" />
       <Skeleton className="h-28" />

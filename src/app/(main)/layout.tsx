@@ -18,7 +18,7 @@ export default function MainLayout({
             </Sidebar>
             <SidebarInset>
                 <AppHeader />
-                 <main className="p-4 lg:p-6 h-full flex flex-col mb-16 md:mb-0 bg-muted/30">
+                 <main className="p-4 lg:p-6 h-full flex flex-col mb-16 md:mb-0 bg-background/60">
                     {children}
                 </main>
                  <MobileBottomNav />

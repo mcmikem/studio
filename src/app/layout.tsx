@@ -1,6 +1,6 @@
+
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { Space_Grotesk } from 'next/font/google';
+import { Inter, Space_Grotesk as SpaceGrotesk } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
@@ -8,7 +8,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { AuthProvider } from '@/components/auth-provider';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const spaceGrotesk = Space_Grotesk({
+const spaceGrotesk = SpaceGrotesk({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-space-grotesk',

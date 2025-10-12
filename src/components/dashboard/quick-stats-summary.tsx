@@ -89,7 +89,7 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
                   </div>
                   {!metric.isPlaceholder && (
                       <>
-                        <Progress value={progress} className="h-1 w-full" />
+                        <Progress value={progress} className="h-1 w-full bg-primary/20" />
                         <div className="flex justify-between items-center">
                             <span className="text-xs font-semibold text-muted-foreground">{progress.toFixed(0)}%</span>
                             <span className="text-xs text-muted-foreground">Target: {targetValueDisplay}</span>

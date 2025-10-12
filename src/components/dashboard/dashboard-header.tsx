@@ -37,9 +37,8 @@ export function DashboardHeader({ profile }: { profile: User }) {
              <Image
                 src={headerImage}
                 alt="Dashboard header background"
-                layout="fill"
-                objectFit="cover"
-                className="opacity-20"
+                fill
+                className="opacity-20 object-cover"
                 data-ai-hint="background image"
             />
         )}
@@ -60,7 +59,7 @@ export function DashboardHeader({ profile }: { profile: User }) {
                 </div>
             </div>
             <div className="flex items-center justify-start md:justify-end gap-6 text-right">
-                <div className="text-white">
+                <div>
                     <p className="font-headline text-5xl font-bold tracking-tighter text-foreground">{format(currentTime, "HH:mm")}</p>
                     <p className="text-sm text-muted-foreground font-medium flex items-center justify-end gap-2">
                         <Calendar className="h-4 w-4" />
