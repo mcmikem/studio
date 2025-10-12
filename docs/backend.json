@@ -147,6 +147,11 @@
           "type": "string",
           "description": "The title of the activity (e.g., Tree Planting at St. Mary's)."
         },
+        "ecosystem_phase": {
+            "type": "string",
+            "enum": ["Identify & Inspire", "Equip & Empower", "Activate & Sustain"],
+            "description": "The ecosystem phase this activity belongs to."
+        },
         "primaryGoalType": {
           "type": "string",
           "enum": ["Metric", "Program"],
@@ -198,6 +203,7 @@
         "userId",
         "userName",
         "title",
+        "ecosystem_phase",
         "primaryGoalId",
         "primaryGoalType",
         "primaryGoalQuantity",
@@ -671,14 +677,11 @@
       "description": "Stores reusable task templates and checklists."
     },
     "/messages/{messageId}": {
-      "schema": {
-        "$ref": "#/entities/Message"
-      },
-      "security": {
-        "read": "request.auth != null",
-        "write": "request.auth != null"
-      },
-      "description": "Stores team chat messages."
+        "schema": {
+            "$ref": "#/entities/Message"
+        },
+        "description": "Stores team chat messages."
     }
   }
 }
+

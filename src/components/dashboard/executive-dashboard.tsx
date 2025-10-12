@@ -11,43 +11,70 @@ import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
 import { DashboardHeader } from "./dashboard-header"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy, limit } from "firebase/firestore"
+import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
 import { Progress } from "../ui/progress"
 import { Badge } from "../ui/badge"
 import { ArrowRight, Target, Users, Wand, Globe, TrendingUp, AlertTriangle } from "lucide-react"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useMemo } from "react"
-import { subWeeks, startOfWeek, isAfter } from "date-fns"
+import { subDays, startOfWeek, isAfter, subMonths } from "date-fns"
 
-function EcosystemPulse() {
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
+};
+
+
+function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
+
+    const { inspire, empower, sustain } = useMemo(() => {
+        if (!activities) {
+            return { inspire: 0, empower: 0, sustain: 0 };
+        }
+
+        const thirtyDaysAgo = subDays(new Date(), 30);
+
+        const recentActivities = activities.filter(act => 
+            act.loggedAt && isAfter(act.loggedAt.toDate(), thirtyDaysAgo)
+        );
+
+        const inspireCount = recentActivities.filter(a => a.ecosystem_phase === 'Identify & Inspire').length;
+        const empowerCount = recentActivities.filter(a => a.ecosystem_phase === 'Equip & Empower').length;
+        const sustainRevenue = recentActivities
+            .filter(a => a.ecosystem_phase === 'Activate & Sustain')
+            .reduce((sum, act) => sum + act.totalValue, 0);
+
+        return { inspire: inspireCount, empower: empowerCount, sustain: sustainRevenue };
+
+    }, [activities]);
+
     return (
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Globe className="h-6 w-6" /> Ecosystem Pulse</CardTitle>
-                <CardDescription>A high-level view of the Omuto Ecosystem's health. (Sample Data)</CardDescription>
+                <CardDescription>A high-level view of the Omuto Ecosystem's health in the last 30 days.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                     <div className="p-3 bg-muted rounded-lg">
                         <p className="text-sm font-semibold">Phase 1: Inspire</p>
-                        <p className="text-2xl font-bold">245</p>
-                        <p className="text-xs text-muted-foreground">8 schools active</p>
+                        <p className="text-2xl font-bold">{inspire}</p>
+                        <p className="text-xs text-muted-foreground">Active Programs</p>
                     </div>
                     <div className="p-3 bg-muted rounded-lg">
                         <p className="text-sm font-semibold">Phase 2: Empower</p>
-                        <p className="text-2xl font-bold">12</p>
-                        <p className="text-xs text-muted-foreground">6 YAP chapters</p>
+                        <p className="text-2xl font-bold">{empower}</p>
+                        <p className="text-xs text-muted-foreground">YAP Activities</p>
                     </div>
                      <div className="p-3 bg-muted rounded-lg">
                         <p className="text-sm font-semibold">Phase 3: Sustain</p>
-                        <p className="text-2xl font-bold">120k</p>
-                        <p className="text-xs text-muted-foreground">UGX Revenue</p>
+                        <p className="text-2xl font-bold">{formatCurrency(sustain)}</p>
+                        <p className="text-xs text-muted-foreground">Value Generated</p>
                     </div>
                 </div>
                  <div className="text-center pt-2">
                     <p className="text-sm text-muted-foreground">Youth Engagement Trend</p>
-                    <p className="text-lg font-bold text-green-500">↗︎ +15% this month</p>
+                    <p className="text-lg font-bold text-muted-foreground">(Sample Data) ↗︎ +15% this month</p>
                  </div>
             </CardContent>
         </Card>
@@ -60,7 +87,7 @@ function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
             return { weeklyAvg: 0, costPerImpact: 0 };
         }
 
-        const fourWeeksAgo = startOfWeek(subWeeks(new Date(), 3));
+        const fourWeeksAgo = startOfWeek(subDays(new Date(), 3 * 7)); // 3 full weeks ago + this partial week
         const recentActivities = activities.filter(act => 
             act.loggedAt && isAfter(act.loggedAt.toDate(), fourWeeksAgo)
         );
@@ -69,7 +96,7 @@ function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
 
         const totalCost = activities.reduce((sum, act) => sum + act.actualCost, 0);
         const totalValue = activities.reduce((sum, act) => sum + act.totalValue, 0);
-        const costPerImpact = totalValue > 0 ? totalCost / totalValue : 0; // Simplified; a real CPI needs a consistent 'unit' of impact
+        const costPerImpact = totalValue > 0 ? totalCost / totalValue : 0; 
 
         return { weeklyAvg, costPerImpact };
 
@@ -84,7 +111,7 @@ function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
             <CardContent className="grid grid-cols-2 gap-x-4 gap-y-6">
                 <div>
                     <p className="text-sm text-muted-foreground">Productivity</p>
-                    <p className="text-2xl font-bold">87% <span className="text-green-500 text-sm">(Sample)</span></p>
+                    <p className="text-2xl font-bold">87% <span className="text-sm font-normal text-muted-foreground">(Sample)</span></p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Field Efficiency</p>
@@ -96,7 +123,7 @@ function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Volunteer Ratio</p>
-                    <p className="text-2xl font-bold">1:3 <span className="text-sm font-normal">(Sample)</span></p>
+                    <p className="text-2xl font-bold">1:3 <span className="text-sm font-normal text-muted-foreground">(Sample)</span></p>
                 </div>
                  <div className="col-span-2">
                     <p className="text-sm text-muted-foreground">Top Performers (Sample)</p>
@@ -118,7 +145,16 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
     const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
     
-    const activitiesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc')) : null, [firestore]);
+    // Query for last 60 days of activities for pulse and effectiveness calcs
+    const sixtyDaysAgo = subDays(new Date(), 60);
+    const activitiesQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'activities'), 
+            where('loggedAt', '>=', Timestamp.fromDate(sixtyDaysAgo)),
+            orderBy('loggedAt', 'desc')
+        );
+    }, [firestore]);
     const { data: activities } = useCollection<Activity>(activitiesQuery);
 
   return (
@@ -127,7 +163,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
 
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <EcosystemPulse />
+            <EcosystemPulse activities={activities} />
             <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
