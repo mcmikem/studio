@@ -27,13 +27,10 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
   return (
-    <div className="flex flex-col gap-6">
-      <DashboardHeader profile={profile} />
-       <div className="mt-6">
-          <QuickStatsSummary metrics={metrics} />
-      </div>
+    <>
+      <QuickStatsSummary metrics={metrics} />
 
-      <DashboardGrid className="lg:grid-cols-3">
+      <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-1 flex flex-col gap-6">
           <DailyActions />
           <DashboardCalendar />
@@ -44,6 +41,6 @@ export function DefaultDashboard({ profile }: DashboardProps) {
           <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>
-    </div>
+    </>
   )
 }

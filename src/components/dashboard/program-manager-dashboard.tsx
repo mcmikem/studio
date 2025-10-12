@@ -43,9 +43,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const { data: activities } = useCollection<Activity>(activitiesQuery);
 
   return (
-     <div className="flex flex-col gap-6">
-      <DashboardHeader profile={profile} />
-       <DashboardGrid className="lg:grid-cols-3">
+     <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker title="October Plan Execution" showAtRisk />
             <TeamCoordination users={users} checkins={checkins} expenses={expenses} />
@@ -57,6 +55,5 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>
-    </div>
   )
 }

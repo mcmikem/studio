@@ -164,14 +164,10 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const { data: activities } = useCollection<Activity>(activitiesQuery);
 
   return (
-    <div className="flex flex-col gap-6">
-      <DashboardHeader profile={profile} />
+    <>
+      <QuickStatsSummary metrics={metrics} />
 
-       <div className="mt-6">
-          <QuickStatsSummary metrics={metrics} />
-      </div>
-
-       <DashboardGrid className="lg:grid-cols-3">
+       <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse />
             <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
@@ -182,6 +178,6 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>
-    </div>
+    </>
   )
 }

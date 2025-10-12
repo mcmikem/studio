@@ -17,11 +17,13 @@ export default function MainLayout({
                 <AppSidebar />
             </Sidebar>
             <SidebarInset>
-                <AppHeader />
-                 <main className="p-4 lg:p-6 h-full flex flex-col mb-16 md:mb-0 bg-background/60">
-                    {children}
-                </main>
-                 <MobileBottomNav />
+                <div className="relative flex flex-col flex-1 h-full">
+                    <AppHeader />
+                    <main className="flex-1 p-4 lg:p-6 mb-16 md:mb-0">
+                        {children}
+                    </main>
+                    <MobileBottomNav />
+                </div>
             </SidebarInset>
         </SidebarProvider>
     );

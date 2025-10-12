@@ -190,16 +190,12 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
 
   return (
-    <div className="flex flex-col gap-6">
-      <DashboardHeader profile={profile} />
-
-      <DashboardGrid className="lg:grid-cols-1">
+    <DashboardGrid className="mt-6 lg:grid-cols-1">
         <TodaysBattlePlan />
         <FieldIntelligence />
         <QuickActions />
         <SmartReminders profile={profile} />
         <TeamPulse checkouts={checkouts} />
-      </DashboardGrid>
-    </div>
+    </DashboardGrid>
   )
 }

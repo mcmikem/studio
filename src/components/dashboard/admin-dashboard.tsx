@@ -57,14 +57,10 @@ export function AdminDashboard({ profile }: DashboardProps) {
 
 
   return (
-    <div className="flex flex-col gap-6">
-      <DashboardHeader profile={profile} />
+    <>
+      <QuickStatsSummary metrics={metrics} />
 
-       <div className="mt-6">
-          <QuickStatsSummary metrics={metrics} />
-      </div>
-
-       <DashboardGrid className="lg:grid-cols-3">
+       <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
             <SmartReminders profile={profile} />
@@ -80,6 +76,6 @@ export function AdminDashboard({ profile }: DashboardProps) {
             <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>
-    </div>
+    </>
   )
 }

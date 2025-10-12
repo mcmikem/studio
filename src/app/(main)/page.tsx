@@ -6,11 +6,14 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 
 // Define a loading component for dynamic imports
 const DashboardLoading = () => (
-  <div className="flex flex-col gap-6">
-    <Skeleton className="relative rounded-xl h-48 -mx-4 -mt-4 lg:-mx-6 lg:-mt-6" />
+  <div className="space-y-6">
+    <div className="mt-[-4rem] md:mt-[-5rem] lg:mt-[-6rem] space-y-6">
+        <Skeleton className="h-48" />
+    </div>
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
       <Skeleton className="h-28" />
       <Skeleton className="h-28" />
@@ -55,25 +58,22 @@ export default function DashboardPage() {
   const { user } = useUser();
   const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
 
-  if (isLoadingProfile) {
+  if (isLoadingProfile || !profile) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
       </div>
     );
   }
-  
-  if (!profile) {
-     return (
-      <div className="flex h-full items-center justify-center">
-        <p>Could not load user profile.</p>
-      </div>
-    );
-  }
 
   const DashboardComponent = roleToDashboard[profile.role] || roleToDashboard['default'];
   
-  // The specific dashboard component will be responsible for its own data fetching.
-  // This prevents loading all data for all roles on a single page.
-  return <DashboardComponent profile={profile} />;
+  return (
+    <div className="flex flex-col">
+        <DashboardHeader profile={profile} />
+        <div className="flex-1 space-y-6 -mt-16">
+            <DashboardComponent profile={profile} />
+        </div>
+    </div>
+  );
 }

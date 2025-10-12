@@ -227,9 +227,8 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
 
 
   return (
-    <div className="flex flex-col gap-6">
-       <DashboardHeader profile={profile} />
-       <DashboardGrid className="lg:grid-cols-3">
+    <>
+       <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="col-span-full">
             <BudgetHealth expenses={allExpenses} metrics={metrics} />
         </div>
@@ -259,8 +258,6 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>
-    </div>
+    </>
   )
 }
-
-    

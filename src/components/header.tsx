@@ -24,6 +24,8 @@ import type { Alert as AlertType } from '@/lib/types';
 import { formatDateSafe } from '@/lib/utils';
 import { Skeleton } from './ui/skeleton';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -146,13 +148,30 @@ function NotificationsMenu() {
 }
 
 export function AppHeader() {
+  const pathname = usePathname();
+  const isDashboard = pathname === '/';
+
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
+    <header className={cn(
+        "sticky top-0 z-20 flex h-16 items-center justify-between gap-4 px-4 sm:px-6 transition-colors duration-300",
+        isDashboard ? 'bg-transparent text-white' : 'bg-background border-b'
+    )}>
        <div className="flex items-center gap-4">
-        <SidebarTrigger className="lg:hidden" />
-        <p className="hidden md:block text-sm text-muted-foreground font-medium">Empowering Youth. Building Sustainable Communities.</p>
+        <SidebarTrigger className={cn(
+            "lg:hidden",
+            isDashboard ? 'text-white' : 'text-foreground'
+        )} />
+        <p className={cn(
+            "hidden md:block text-sm font-medium",
+            isDashboard ? 'text-white/80' : 'text-muted-foreground'
+        )}>
+            Empowering Youth. Building Sustainable Communities.
+        </p>
       </div>
-      <div className="flex items-center gap-2">
+      <div className={cn(
+        "flex items-center gap-2",
+        isDashboard && "[&>button]:text-white [&>button]:bg-white/10 hover:[&>button]:bg-white/20"
+      )}>
         <QuickAddMenu />
         <NotificationsMenu />
         <UserMenu />

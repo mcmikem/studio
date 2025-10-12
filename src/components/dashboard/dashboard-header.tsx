@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export function DashboardHeader({ profile }: { profile: User }) {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header')?.imageUrl;
+  const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header-dark-leaves')?.imageUrl;
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000); // Update every second
@@ -32,43 +32,41 @@ export function DashboardHeader({ profile }: { profile: User }) {
   };
 
   return (
-    <div className="relative rounded-xl overflow-hidden -mx-4 -mt-4 lg:-mx-6 lg:-mt-6 p-6 md:p-8 h-48 flex flex-col justify-end bg-card">
+    <div className="relative rounded-b-2xl overflow-hidden p-6 md:p-8 h-48 flex flex-col justify-end bg-card shadow-lg">
         {headerImage && (
              <Image
                 src={headerImage}
                 alt="Dashboard header background"
                 fill
-                className="opacity-20 object-cover"
+                className="object-cover"
                 data-ai-hint="background image"
             />
         )}
+         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-4">
-                 <Avatar className="h-16 w-16 border-2 border-primary">
+                 <Avatar className="h-16 w-16 border-2 border-primary/70">
                     {profile?.photoURL && <AvatarImage src={profile.photoURL} alt={profile.name} />}
-                    <AvatarFallback className="text-xl">{getInitials(profile?.name)}</AvatarFallback>
+                    <AvatarFallback className="text-xl bg-black/50">{getInitials(profile?.name)}</AvatarFallback>
                 </Avatar>
-                <div>
-                    <h1 className="font-headline text-3xl font-bold tracking-tight text-foreground">
-                    Welcome, {profile?.name.split(' ')[0] || "User"}!
+                <div className="text-white">
+                    <p className="text-sm">Good Morning!</p>
+                    <h1 className="font-headline text-3xl font-bold tracking-tight">
+                    {profile?.name.split(' ')[0] || "User"}!
                     </h1>
-                    <p className="text-muted-foreground flex items-center gap-2">
-                        <UserIcon className="h-4 w-4" />
-                        {profile?.role || "Staff Member"}
-                    </p>
                 </div>
             </div>
-            <div className="flex items-center justify-start md:justify-end gap-6 text-right">
+             <div className="hidden md:flex items-center justify-end gap-6 text-right text-white">
                 <div>
-                    <p className="font-headline text-5xl font-bold tracking-tighter text-foreground">{format(currentTime, "HH:mm")}</p>
-                    <p className="text-sm text-muted-foreground font-medium flex items-center justify-end gap-2">
+                    <p className="font-headline text-5xl font-bold tracking-tighter">{format(currentTime, "HH:mm")}</p>
+                    <p className="text-sm font-medium flex items-center justify-end gap-2 opacity-80">
                         <Calendar className="h-4 w-4" />
                         <span>{format(currentTime, "eeee, MMMM d")}</span>
                     </p>
                 </div>
-                 <div className="text-center">
-                    <Sun className="h-12 w-12 text-yellow-400" />
-                    <p className="font-bold text-lg text-foreground">24°C</p>
+                 <div className="text-center opacity-80">
+                    <Sun className="h-12 w-12 text-yellow-300" />
+                    <p className="font-bold text-lg">24°C</p>
                 </div>
             </div>
         </div>
