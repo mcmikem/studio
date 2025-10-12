@@ -20,6 +20,7 @@ import { cn, formatDateSafe } from '@/lib/utils';
 import { useMemo } from 'react';
 import { ProgressRing } from '../ui/progress-ring';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import Link from 'next/link';
 
 const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -30,10 +31,11 @@ const priorityColors: { [key: string]: string } = {
 interface KeyResultsTrackerProps {
     title?: string;
     description?: string;
+    showAtRisk?: boolean;
 }
 
 
-export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps) {
+export function KeyResultsTracker({ title, description, showAtRisk }: KeyResultsTrackerProps) {
   const firestore = useFirestore();
   
   const keyResultsQuery = useMemoFirebase(() => {
@@ -53,7 +55,7 @@ export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps
   
   const partnershipsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'partnerships'));
+    return query(collection(firestore, 'partnerships'), orderBy('createdAt'));
   }, [firestore]);
 
 
@@ -70,10 +72,12 @@ export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps
 
     return keyResults.map(kr => {
       let liveProgress = kr.currentProgress;
+      let link = '/management/projects'; // Default link
 
       // KR1: Fundraising Growth
       if (kr.title === 'OCT-KR1' && cycleOfDignityMetric) {
         liveProgress = cycleOfDignityMetric.current;
+        link = '/management/metrics';
       }
       
       // KR2: Tree Planting
@@ -81,6 +85,7 @@ export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps
         liveProgress = activities.reduce((sum, act) => {
             return sum + (act.trees_planted || 0);
         }, 0);
+        link = '/activity-log';
       }
 
       // KR3: RED Campaign
@@ -88,6 +93,7 @@ export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps
         liveProgress = activities.reduce((sum, act) => {
             return sum + (act.parents_attended || 0) + (act.teachers_attended || 0);
         }, 0);
+        link = '/activity-log';
       }
       
       // KR4: New Partnerships
@@ -98,15 +104,18 @@ export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps
             // Assuming the plan is for October 2025
             return creationDate.getFullYear() === 2025 && creationDate.getMonth() === 9; // 9 is October (0-indexed)
         }).length;
+        link = '/management/partnerships';
       }
       
       // KR5-KR8: These are based on percentage completion or manual milestones.
       // The `currentProgress` from the database will be used directly.
       // Future logic for checklist-based progress would go here.
-      // if (kr.title === 'OCT-KR5') { /* ... complex checklist logic ... */ }
-      // if (kr.title === 'OCT-KR6') { /* ... document upload logic ... */ }
+      if (kr.title === 'OCT-KR5') { /* ... complex checklist logic ... */ link = '/management/projects'; }
+      if (kr.title === 'OCT-KR6') { /* ... document upload logic ... */ link = '/management/templates'; }
+      if (kr.title === 'OCT-KR7') { /* ... data system logic ... */ link = '/reports'; }
+      if (kr.title === 'OCT-KR8') { /* ... prototype logic ... */ link = '/management/equipment'; }
 
-      return { ...kr, currentProgress: liveProgress };
+      return { ...kr, currentProgress: liveProgress, link };
     })
 
   }, [keyResults, activities, metrics, partnerships]);
@@ -114,10 +123,6 @@ export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps
   const atRiskKr = useMemo(() => {
     if (!processedKeyResults) return null;
     const today = new Date();
-    
-    // Logic from Blueprint:
-    // BEHIND SCHEDULE ALERT: IF (Current Date > (Start Date + (Total Days * 0.7))) AND Progress % < 70 THEN "🟡 [KR Name] behind schedule"
-    // CRITICAL ALERT: IF (Days remaining < 7) AND (Progress % < (Days passed/Total Days * 100)) THEN "🔴 [KR Name] needs immediate attention"
     
     return processedKeyResults.map(kr => {
         const startDate = new Date('2025-10-01');
@@ -167,7 +172,7 @@ export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-         {atRiskKr && atRiskKr.length > 0 && (
+         {showAtRisk && atRiskKr && atRiskKr.length > 0 && (
             <Alert variant={atRiskKr.some(k => k.alertStatus === 'critical') ? 'destructive' : 'default'} className={cn(
                 !atRiskKr.some(k => k.alertStatus === 'critical') && "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
             )}>
@@ -199,25 +204,27 @@ export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps
              const isDeadlinePast = isPast(deadlineDate) && progressPercentage < 100;
              
             return (
-                <div key={kr.id} className="flex items-center gap-4">
-                    <ProgressRing progress={progressPercentage} size={60} strokeWidth={6} />
-                    <div className="flex-1 space-y-1">
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <p className="font-semibold">{kr.title}: {kr.description}</p>
-                                <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
-                                    <Flag className="inline h-3 w-3 mr-1" />
-                                    Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
-                                </p>
+                <Link href={kr.link} key={kr.id} className="block p-4 rounded-lg -m-4 hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-4">
+                        <ProgressRing progress={progressPercentage} size={60} strokeWidth={6} />
+                        <div className="flex-1 space-y-1">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="font-semibold">{kr.title}: {kr.description}</p>
+                                    <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
+                                        <Flag className="inline h-3 w-3 mr-1" />
+                                        Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
+                                    </p>
+                                </div>
+                                <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>
                             </div>
-                            <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>
-                        </div>
-                        <div className="flex justify-between items-center text-xs text-muted-foreground">
-                            <span>{formatProgress(kr)}</span>
-                            <span>Target: {formatTarget(kr)}</span>
+                            <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                <span>{formatProgress(kr)}</span>
+                                <span>Target: {formatTarget(kr)}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </Link>
             )
           })
         ) : (
