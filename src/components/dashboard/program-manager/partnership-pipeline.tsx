@@ -34,61 +34,61 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
 
     return (
         <Card className="hover:bg-muted/50 transition-colors">
-            <Link href="/management/partnerships">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Handshake /> Partnership Pipeline</CardTitle>
-                    <CardDescription>A snapshot of your current partner engagement.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {isLoading ? <Skeleton className="h-12 w-full" /> : (
-                        <div className="flex justify-around text-center">
-                            <div>
-                                <p className="text-2xl font-bold">{hotCount}</p>
-                                <p className="text-sm text-muted-foreground">Hot</p>
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">{warmCount}</p>
-                                <p className="text-sm text-muted-foreground">Warm</p>
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold">{coldCount}</p>
-                                <p className="text-sm text-muted-foreground">Cold</p>
-                            </div>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Handshake /> Partnership Pipeline</CardTitle>
+                <CardDescription>A snapshot of your current partner engagement.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {isLoading ? <Skeleton className="h-12 w-full" /> : (
+                    <div className="flex justify-around text-center">
+                        <div>
+                            <p className="text-2xl font-bold">{hotCount}</p>
+                            <p className="text-sm text-muted-foreground">Hot</p>
                         </div>
-                    )}
-                    <div className="space-y-2">
-                        {isLoading ? (
-                            <>
-                                <Skeleton className="h-16 w-full" />
-                                <Skeleton className="h-16 w-full" />
-                            </>
-                        ) : (
-                            <>
-                            {urgentItem && (
-                                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
-                                    <p className="text-xs font-semibold text-red-600">URGENT</p>
-                                    <p className="text-sm font-medium">{urgentItem.name} - {urgentItem.nextStep}</p>
-                                </div>
-                            )}
-                            {upcomingItem && (
-                                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md">
-                                    <p className="text-xs font-semibold text-blue-600">UPCOMING</p>
-                                    <p className="text-sm font-medium">{upcomingItem.name} - {upcomingItem.nextStep}</p>
-                                </div>
-                            )}
-                            {!urgentItem && !upcomingItem && (
-                                <div className="p-3 text-center text-sm text-muted-foreground">No urgent action items in the pipeline.</div>
-                            )}
-                            </>
-                        )}
+                        <div>
+                            <p className="text-2xl font-bold">{warmCount}</p>
+                            <p className="text-sm text-muted-foreground">Warm</p>
+                        </div>
+                        <div>
+                            <p className="text-2xl font-bold">{coldCount}</p>
+                            <p className="text-sm text-muted-foreground">Cold</p>
+                        </div>
                     </div>
-                    <Button asChild className="w-full" variant="outline" onClick={(e) => e.stopPropagation()}>
-                        <Link href="/management/partnerships">
-                            Manage All Partnerships <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                    </Button>
-                </CardContent>
-            </Link>
+                )}
+                <div className="space-y-2">
+                    {isLoading ? (
+                        <>
+                            <Skeleton className="h-16 w-full" />
+                            <Skeleton className="h-16 w-full" />
+                        </>
+                    ) : (
+                        <>
+                        {urgentItem && (
+                            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
+                                <p className="text-xs font-semibold text-red-600">URGENT</p>
+                                <p className="text-sm font-medium">{urgentItem.name} - {urgentItem.nextStep}</p>
+                            </div>
+                        )}
+                        {upcomingItem && (
+                            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md">
+                                <p className="text-xs font-semibold text-blue-600">UPCOMING</p>
+                                <p className="text-sm font-medium">{upcomingItem.name} - {upcomingItem.nextStep}</p>
+                            </div>
+                        )}
+                        {!urgentItem && !upcomingItem && (
+                            <div className="p-3 text-center text-sm text-muted-foreground">No urgent action items in the pipeline.</div>
+                        )}
+                        </>
+                    )}
+                </div>
+                 <Button asChild className="w-full" variant="outline">
+                    <Link href="/management/partnerships">
+                        Manage All Partnerships <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </CardContent>
         </Card>
     )
 }
+
+    

@@ -147,12 +147,12 @@ export function DashboardCalendar() {
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm" onClick={(e) => e.stopPropagation()}>
+                <Button variant="outline" size="sm">
                     <PlusCircle className="mr-2 h-4 w-4" />
                     New Event
                 </Button>
               </DialogTrigger>
-              <DialogContent onClick={(e) => e.stopPropagation()}>
+              <DialogContent>
                   <DialogHeader>
                       <DialogTitle>Add New Calendar Event</DialogTitle>
                       <DialogDescription>Fill in the details for the new event.</DialogDescription>
@@ -162,49 +162,53 @@ export function DashboardCalendar() {
             </Dialog>
         </div>
       </CardHeader>
-      <Link href="/calendar" className="flex-grow flex flex-col">
-        <CardContent className="flex-grow flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(subDays(currentDate, 1)); }}>
-                    <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <h3 className="font-headline text-lg font-semibold text-center">
-                    {format(currentDate, "eeee, MMMM d")}
-                </h3>
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(addDays(currentDate, 1)); }}>
-                    <ChevronRight className="h-4 w-4" />
-                </Button>
-            </div>
-            <div className="space-y-3 flex-grow">
-                {isLoading && Array.from({length: 2}).map((_, i) => (
-                    <div key={i} className='p-3 bg-muted rounded-lg space-y-2'>
-                        <Skeleton className='h-4 w-3/4' />
-                        <Skeleton className='h-4 w-1/2' />
-                    </div>
-                ))}
-                {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
-                    selectedDayEvents.map((event) => (
-                        <div key={event.id} className="p-3 bg-muted rounded-lg">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <p className="font-semibold">{event.title}</p>
-                                    <p className="text-sm text-muted-foreground">{event.responsible} - {event.location}</p>
-                                </div>
-                                <Badge variant="outline" className={categoryColors[event.category]}>
-                                    {event.category}
-                                </Badge>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    !isLoading && <div className="flex items-center justify-center h-full text-sm text-muted-foreground pt-8">No events scheduled for this day.</div>
-                )}
-            </div>
-            <div className="text-sm text-primary group-hover/card:underline flex items-center justify-end pt-4">
-                View full calendar <ArrowRight className="ml-1 h-4 w-4" />
-            </div>
-        </CardContent>
-      </Link>
+      <CardContent className="flex-grow flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(subDays(currentDate, 1)); }}>
+                  <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h3 className="font-headline text-lg font-semibold text-center">
+                  {format(currentDate, "eeee, MMMM d")}
+              </h3>
+              <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(addDays(currentDate, 1)); }}>
+                  <ChevronRight className="h-4 w-4" />
+              </Button>
+          </div>
+          <div className="space-y-3 flex-grow">
+              {isLoading && Array.from({length: 2}).map((_, i) => (
+                  <div key={i} className='p-3 bg-muted rounded-lg space-y-2'>
+                      <Skeleton className='h-4 w-3/4' />
+                      <Skeleton className='h-4 w-1/2' />
+                  </div>
+              ))}
+              {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
+                  selectedDayEvents.map((event) => (
+                      <div key={event.id} className="p-3 bg-muted rounded-lg">
+                          <div className="flex items-start justify-between">
+                              <div>
+                                  <p className="font-semibold">{event.title}</p>
+                                  <p className="text-sm text-muted-foreground">{event.responsible} - {event.location}</p>
+                              </div>
+                              <Badge variant="outline" className={categoryColors[event.category]}>
+                                  {event.category}
+                              </Badge>
+                          </div>
+                      </div>
+                  ))
+              ) : (
+                  !isLoading && <div className="flex items-center justify-center h-full text-sm text-muted-foreground pt-8">No events scheduled for this day.</div>
+              )}
+          </div>
+      </CardContent>
+      <CardContent>
+          <Button asChild className="w-full" variant="ghost">
+              <Link href="/calendar" className="text-sm text-primary group-hover/card:underline flex items-center justify-end w-full">
+                  View full calendar <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+          </Button>
+      </CardContent>
     </Card>
   );
 }
+
+    
