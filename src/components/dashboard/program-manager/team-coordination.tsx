@@ -82,5 +82,3 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
         </Card>
     )
 }
-
-    

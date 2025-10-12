@@ -50,7 +50,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   return (
      <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <KeyResultsTracker title="October Plan Execution" showAtRisk />
+            <KeyResultsTracker showAtRisk />
             <TeamCoordination users={users} checkins={checkins} expenses={expenses} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
@@ -62,5 +62,3 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
       </DashboardGrid>
   )
 }
-
-    

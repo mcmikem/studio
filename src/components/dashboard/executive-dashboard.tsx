@@ -119,11 +119,11 @@ function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Productivity</p>
-                    <p className="text-2xl font-bold">0<span className="text-sm font-normal text-muted-foreground"> (Sample)</span></p>
+                    <p className="text-2xl font-bold">N/A<span className="text-sm font-normal text-muted-foreground"> (Sample)</span></p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Volunteer Ratio</p>
-                    <p className="text-2xl font-bold">0<span className="text-sm font-normal text-muted-foreground"> (Sample)</span></p>
+                    <p className="text-2xl font-bold">N/A<span className="text-sm font-normal text-muted-foreground"> (Sample)</span></p>
                 </div>
             </CardContent>
         </Card>
@@ -170,5 +170,3 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     </>
   )
 }
-
-    

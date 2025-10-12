@@ -103,5 +103,3 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
         </Card>
     )
 }
-
-    
