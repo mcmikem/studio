@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Home, ClipboardEdit, Rss, User } from 'lucide-react';
@@ -16,7 +17,7 @@ export function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 z-50 w-full h-16 bg-background border-t border-border">
+    <div className="md:hidden fixed bottom-0 left-0 z-50 w-full h-20 bg-card border-t border-border/20 shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.3)]">
       <div className="grid h-full max-w-lg grid-cols-4 mx-auto font-medium">
         {navItems.map((item) => {
           const isActive = (item.href === '/' && pathname === '/') || (item.href !== '/' && pathname.startsWith(item.href));
@@ -25,13 +26,14 @@ export function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                'inline-flex flex-col items-center justify-center px-5 hover:bg-muted group',
+                'inline-flex flex-col items-center justify-center px-5 group relative',
                 isActive
-                  ? 'text-primary'
+                  ? 'text-accent'
                   : 'text-muted-foreground'
               )}
             >
-              <item.icon className="w-5 h-5 mb-1" />
+              {isActive && <div className="absolute top-0 h-1 w-8 bg-accent rounded-b-full" />}
+              <item.icon className="w-6 h-6 mb-1" />
               <span className="text-xs">{item.label}</span>
             </Link>
           );

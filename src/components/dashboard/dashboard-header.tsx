@@ -12,7 +12,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export function DashboardHeader({ profile }: { profile: User }) {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header-dark-leaves')?.imageUrl;
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000); // Update every second
@@ -31,22 +30,13 @@ export function DashboardHeader({ profile }: { profile: User }) {
   };
 
   return (
-    <div className="relative rounded-b-2xl overflow-hidden p-6 md:p-8 h-48 flex flex-col justify-end bg-card shadow-lg">
-        {headerImage && (
-             <Image
-                src={headerImage}
-                alt="Dashboard header background"
-                fill
-                className="object-cover"
-                data-ai-hint="background image"
-            />
-        )}
-         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
+    <div className="relative rounded-b-2xl overflow-hidden p-6 md:p-8 h-48 flex flex-col justify-end bg-background shadow-lg">
+         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-black/5" />
         <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-4">
-                 <Avatar className="h-16 w-16 border-2 border-primary/70">
+                 <Avatar className="h-16 w-16 border-2 border-accent/70">
                     {profile?.photoURL && <AvatarImage src={profile.photoURL} alt={profile.name} />}
-                    <AvatarFallback className="text-xl bg-black/50">{getInitials(profile?.name)}</AvatarFallback>
+                    <AvatarFallback className="text-xl bg-card/80">{getInitials(profile?.name)}</AvatarFallback>
                 </Avatar>
                 <div className="text-white">
                     <p className="text-sm">Good Morning!</p>

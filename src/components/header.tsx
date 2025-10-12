@@ -154,19 +154,13 @@ export function AppHeader() {
   return (
     <header className={cn(
         "sticky top-0 z-20 flex h-16 items-center justify-between gap-4 px-4 sm:px-6 transition-colors duration-300",
-        isDashboard ? 'bg-transparent text-white' : 'bg-background border-b'
+        isDashboard ? 'bg-transparent' : 'bg-background/80 backdrop-blur-sm border-b'
     )}>
        <div className="flex items-center gap-4">
         <SidebarTrigger className={cn(
             "lg:hidden",
             isDashboard ? 'text-white' : 'text-foreground'
         )} />
-        <p className={cn(
-            "hidden md:block text-sm font-medium",
-            isDashboard ? 'text-white/80' : 'text-muted-foreground'
-        )}>
-            Empowering Youth. Building Sustainable Communities.
-        </p>
       </div>
       <div className={cn(
         "flex items-center gap-2",
