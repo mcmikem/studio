@@ -22,7 +22,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, serverTimestamp } from 'firebase/firestore';
 import type { Partnership, Proposal } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, Goal, Building, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { Handshake, Goal, Building, PlusCircle, Edit, Trash2, Search, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -37,6 +37,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { formatDateSafe } from '@/lib/utils';
 import { format } from 'date-fns';
+import { findGrants, type GrantFinderOutput } from '@/ai/flows/grant-finder-flow';
+
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', {
@@ -66,18 +68,18 @@ const formatDateForInput = (date: string | Date | undefined): string => {
     }
 };
 
-function ProposalForm({ proposal, onFormSubmit }: { proposal?: Proposal; onFormSubmit: () => void }) {
+function ProposalForm({ proposal, onFormSubmit }: { proposal?: Partial<Proposal>; onFormSubmit: () => void }) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm<ProposalFormData>({
         resolver: zodResolver(proposalSchema),
-        defaultValues: proposal ? {
-            ...proposal,
-            submissionDate: formatDateForInput(proposal.submissionDate),
-            decisionDate: formatDateForInput(proposal.decisionDate),
-        } : {
-            status: 'Draft',
-            submissionDate: format(new Date(), 'yyyy-MM-dd')
+        defaultValues: {
+            title: proposal?.title || '',
+            partnerName: proposal?.partnerName || '',
+            amountRequested: proposal?.amountRequested || 0,
+            status: proposal?.status || 'Draft',
+            submissionDate: formatDateForInput(proposal?.submissionDate),
+            decisionDate: formatDateForInput(proposal?.decisionDate),
         }
     });
 
@@ -89,7 +91,7 @@ function ProposalForm({ proposal, onFormSubmit }: { proposal?: Proposal; onFormS
             createdAt: proposal?.createdAt || serverTimestamp(),
         };
 
-        if (proposal) {
+        if (proposal?.id) {
             const proposalRef = doc(firestore, 'proposals', proposal.id);
             updateDocumentNonBlocking(proposalRef, proposalData);
             toast({ title: "Proposal Updated!", description: `${data.title} has been updated.` });
@@ -153,11 +155,108 @@ function ProposalForm({ proposal, onFormSubmit }: { proposal?: Proposal; onFormS
             </div>
              <DialogFooter>
                 <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? 'Saving...' : (proposal ? 'Save Changes' : 'Add Proposal')}
+                    {isSubmitting ? 'Saving...' : (proposal?.id ? 'Save Changes' : 'Add Proposal')}
                 </Button>
             </DialogFooter>
         </form>
     );
+}
+
+function GrantDiscovery() {
+  const [query, setQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [results, setResults] = useState<GrantFinderOutput | null>(null);
+  const { toast } = useToast();
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [proposalToEdit, setProposalToEdit] = useState<Partial<Proposal> | undefined>(undefined);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    setIsLoading(true);
+    setResults(null);
+    try {
+      const response = await findGrants({ query });
+      setResults(response);
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Error', description: err.message || 'Failed to find grants.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleAddToTracker = (opportunity: GrantFinderOutput['opportunities'][0]) => {
+    setProposalToEdit({
+        title: opportunity.title,
+        partnerName: opportunity.funder,
+        amountRequested: opportunity.amount,
+        submissionDate: opportunity.deadline,
+        status: 'Draft',
+    });
+    setIsFormOpen(true);
+  };
+
+  return (
+    <>
+    <Card>
+      <CardHeader>
+        <CardTitle>AI Grant Discovery</CardTitle>
+        <CardDescription>Find new funding opportunities using AI.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <form onSubmit={handleSearch} className="flex items-center gap-2">
+          <Input 
+            placeholder="Enter keywords, e.g., 'youth empowerment'"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          </Button>
+        </form>
+        {isLoading && (
+            <div className="space-y-2 pt-4">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+            </div>
+        )}
+        {results && (
+          <div className="pt-4 space-y-3">
+             <h3 className="font-semibold">{results.opportunities.length} opportunities found for "{query}"</h3>
+            {results.opportunities.map((op, i) => (
+              <Card key={i} className="p-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between">
+                    <div className="flex-grow">
+                        <CardTitle className="text-base">{op.title}</CardTitle>
+                        <CardDescription>{op.funder}</CardDescription>
+                        <p className="text-sm mt-2">{op.description}</p>
+                    </div>
+                    <div className="flex-shrink-0 mt-4 sm:mt-0 sm:ml-4 text-left sm:text-right">
+                        <p className="font-bold text-lg">{formatCurrency(op.amount)}</p>
+                        <p className="text-xs text-muted-foreground">Deadline: {formatDateSafe(op.deadline, 'dateOnly')}</p>
+                         <Button size="sm" className="mt-2" onClick={() => handleAddToTracker(op)}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add to Tracker
+                        </Button>
+                    </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Add New Proposal</DialogTitle>
+                <DialogDescription>Review and save the discovered opportunity to your tracker.</DialogDescription>
+            </DialogHeader>
+            <ProposalForm proposal={proposalToEdit} onFormSubmit={() => setIsFormOpen(false)} />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 
@@ -431,6 +530,8 @@ export default function ResourcesPage() {
           Manage donor relations, funding opportunities, and proposals.
         </p>
       </header>
+
+      <GrantDiscovery />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">

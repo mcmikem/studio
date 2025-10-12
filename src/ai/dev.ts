@@ -25,4 +25,5 @@ export * from './flows/daily-planner-flow';
 export * from './flows/impact-story-generator';
 export * from './flows/omuto-ai-flow';
 export * from './flows/smart-reminders-flow';
+export * from './flows/grant-finder-flow';
 export * from './tools/omuto-tools';
