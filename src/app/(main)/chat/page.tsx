@@ -119,7 +119,7 @@ export default function ChatPage() {
         const aiHistory = messages
           ?.filter(m => m.userId === user.uid || m.userId === 'omuto-ai')
           .map(m => ({
-            role: m.userId === 'omuto-ai' ? 'model' : 'user',
+            role: m.userId === 'omuto-ai' ? 'model' as const : 'user' as const,
             content: [{ text: m.text }]
           })) || [];
 
