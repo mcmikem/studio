@@ -154,17 +154,16 @@ export function AppHeader() {
   return (
     <header className={cn(
         "sticky top-0 z-20 flex h-16 items-center justify-between gap-4 px-4 sm:px-6 transition-colors duration-300",
-        isDashboard ? 'bg-transparent' : 'bg-background/80 backdrop-blur-sm border-b'
+        !isDashboard && 'bg-background/80 backdrop-blur-sm border-b'
     )}>
        <div className="flex items-center gap-4">
         <SidebarTrigger className={cn(
             "lg:hidden",
-            isDashboard ? 'text-white' : 'text-foreground'
+            isDashboard ? 'text-card-foreground' : 'text-foreground'
         )} />
       </div>
       <div className={cn(
-        "flex items-center gap-2",
-        isDashboard && "[&>button]:text-white [&>button]:bg-white/10 hover:[&>button]:bg-white/20"
+        "flex items-center gap-2"
       )}>
         <QuickAddMenu />
         <NotificationsMenu />
