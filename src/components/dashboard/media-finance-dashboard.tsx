@@ -43,6 +43,7 @@ import { Badge } from "../ui/badge"
 import { DashboardHeader } from "./dashboard-header"
 import { doc, collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { Progress } from "../ui/progress"
+import { startOfMonth } from "date-fns"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-UG", {
@@ -56,17 +57,16 @@ function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metri
     const cycleOfDignityMetric = metrics?.find((m: any) => m.metric === "Cycle of Dignity Fundraising");
     const cycleOfDignityProgress = cycleOfDignityMetric ? (cycleOfDignityMetric.current / cycleOfDignityMetric.target) * 100 : 0;
 
-    const octoberExpenses = useMemo(() => {
+    const monthlyExpenses = useMemo(() => {
         if (!expenses) return 0;
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthStart = startOfMonth(new Date());
         return expenses
-            .filter(e => (e.status === 'Approved' || e.status === 'Cleared') && e.createdAt && e.createdAt.toDate() >= startOfMonth)
+            .filter(e => (e.status === 'Approved' || e.status === 'Cleared') && e.createdAt && e.createdAt.toDate() >= monthStart)
             .reduce((sum, e) => sum + e.totalAmount, 0);
     }, [expenses]);
     
-    const octoberBudget = 800000;
-    const expenseProgress = octoberBudget > 0 ? (octoberExpenses / octoberBudget) * 100 : 0;
+    const monthlyBudget = 800000;
+    const expenseProgress = monthlyBudget > 0 ? (monthlyExpenses / monthlyBudget) * 100 : 0;
     const pendingApprovals = expenses?.filter(e => e.status === 'Pending').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
 
   return (
@@ -85,11 +85,11 @@ function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metri
         </div>
          <div>
             <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium">October Expenses</span>
-                 <span className="text-muted-foreground">{formatCurrency(octoberExpenses)} / {formatCurrency(octoberBudget)}</span>
+                <span className="font-medium">Current Month's Expenses</span>
+                 <span className="text-muted-foreground">{formatCurrency(monthlyExpenses)} / {formatCurrency(monthlyBudget)}</span>
             </div>
             <Progress value={expenseProgress} />
-             {expenseProgress > 75 && <p className="text-xs text-destructive mt-1">🟡 Alert: Transport budget is at {expenseProgress.toFixed(0)}%.</p>}
+             {expenseProgress > 75 && <p className="text-xs text-destructive mt-1">🟡 Alert: Budget usage is at {expenseProgress.toFixed(0)}%.</p>}
         </div>
         <div className="flex items-center justify-between p-3 bg-muted rounded-md">
             <span className="font-medium">Pending Approvals</span>

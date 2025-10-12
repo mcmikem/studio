@@ -20,9 +20,13 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
         const warm = partnerships.filter(p => p.status === 'Active').length;
         const cold = partnerships.filter(p => p.status === 'Inactive').length;
 
-        // Simple logic for urgent/upcoming. A real app might use dates or keywords.
-        const urgent = partnerships.find(p => p.nextStep.toLowerCase().includes('mou'))
-        const upcoming = partnerships.find(p => p.nextStep.toLowerCase().includes('meeting') || p.nextStep.toLowerCase().includes('call'))
+        // More robust logic for urgent/upcoming
+        const urgentKeywords = ['deadline', 'report', 'due', 'mou'];
+        const upcomingKeywords = ['meeting', 'call', 'follow-up', 'proposal'];
+
+        const urgent = partnerships.find(p => p.status !== 'Inactive' && urgentKeywords.some(kw => p.nextStep.toLowerCase().includes(kw)));
+        const upcoming = partnerships.find(p => p.status !== 'Inactive' && !urgent && upcomingKeywords.some(kw => p.nextStep.toLowerCase().includes(kw)));
+
 
         return { hotCount: hot, warmCount: warm, coldCount: cold, urgentItem: urgent, upcomingItem: upcoming };
 

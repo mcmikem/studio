@@ -23,39 +23,39 @@ export function MyPriorities() {
       orderBy('createdAt', 'asc'),
       limit(3)
     );
-  }, [user]);
+  }, [user, firestore]);
 
   const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ClipboardList className="h-5 w-5" />
-          My Priorities
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3 text-sm">
-        {isLoading ? (
-          <>
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-5 w-4/5" />
-            <Skeleton className="h-5 w-2/3" />
-          </>
-        ) : tasks && tasks.length > 0 ? (
-          tasks.map(task => (
-            <div key={task.id} className="flex items-center gap-3">
-              <div className="flex h-5 w-5 items-center justify-center rounded-sm border border-primary"></div>
-              <span>{task.title}</span>
-            </div>
-          ))
-        ) : (
-          <p className="text-muted-foreground">No pending tasks. Great job!</p>
-        )}
-        <Button variant="link" className="p-0 h-auto" asChild>
-            <Link href="/profile?tab=tasks">View all tasks</Link>
-        </Button>
-      </CardContent>
+    <Card className="hover:bg-muted/50 transition-colors">
+      <Link href="/profile?tab=tasks">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" />
+              My Priorities
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            {isLoading ? (
+              <>
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-5 w-4/5" />
+                <Skeleton className="h-5 w-2/3" />
+              </>
+            ) : tasks && tasks.length > 0 ? (
+              tasks.map(task => (
+                <div key={task.id} className="flex items-center gap-3">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-sm border border-primary"></div>
+                  <span>{task.title}</span>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground">No pending tasks. Great job!</p>
+            )}
+            <p className="text-xs text-primary pt-2">View all tasks →</p>
+          </CardContent>
+      </Link>
     </Card>
   );
 }

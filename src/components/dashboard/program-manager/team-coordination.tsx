@@ -2,26 +2,21 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { User, Checkin, Expense } from "@/lib/types"
+import type { User, Checkin } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from '@/components/ui/skeleton';
 import { startOfDay } from 'date-fns';
-import { CheckCircle, CircleDot, UserX, Users } from 'lucide-react';
+import { CheckCircle, UserX, Users } from 'lucide-react';
 
 
 export function TeamCoordination({ users, checkins, expenses }: { users: User[] | null, checkins: Checkin[] | null, expenses: Expense[] | null }) {
     const teamStatus = useMemo(() => {
         if (!users) return [];
-        const todayStart = startOfDay(new Date());
-
+        
         return users.map(user => {
             const userCheckin = checkins?.find(c => c.userId === user.id);
             if (userCheckin) {
                 return { name: user.name, task: userCheckin.primaryMission, status: 'on-track' };
-            }
-            // Simple logic for overdue tasks would need task data. For now, we'll use a placeholder.
-            if (user.name === 'Alex Nsereko') {
-                 return { name: user.name, task: 'Editing documentary (2h overdue)', status: 'at-risk' };
             }
             return { name: user.name, task: 'Not checked in today', status: 'off-track' };
         });
@@ -45,7 +40,6 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
 
     const statusIcons = {
         'on-track': <CheckCircle className="h-4 w-4 text-green-500" />,
-        'at-risk': <CircleDot className="h-4 w-4 text-yellow-500" />,
         'off-track': <UserX className="h-4 w-4 text-red-500" />
     };
 
