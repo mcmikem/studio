@@ -20,10 +20,10 @@ const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', {
         style: 'currency',
         currency: 'UGX',
-        currencyDisplay: 'code',
+        currencyDisplay: 'symbol',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-    }).format(value);
+    }).format(value).replace('UGX', 'USH');
 };
 
 
@@ -107,3 +107,5 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
     </div>
   )
 }
+
+    

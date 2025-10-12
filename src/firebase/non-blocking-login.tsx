@@ -108,18 +108,25 @@ async function seedInitialData(db: Firestore, userId: string) {
   if (!programsSnapshot.empty) {
     console.log("Core data exists. Seeding user-specific tasks only.");
     const userTasksCollection = collection(db, "users", userId, "tasks");
-    const initialTasks = [
-      { title: "Complete your profile information", completed: false, createdAt: serverTimestamp() },
-      { title: "Review the October Operational Plan", completed: false, createdAt: serverTimestamp() },
-      { title: "Explore your new dashboard", completed: false, createdAt: serverTimestamp() },
-    ];
-    const userBatch = writeBatch(db);
-    initialTasks.forEach(task => {
-        const taskRef = doc(userTasksCollection);
-        userBatch.set(taskRef, task);
-    });
-    await userBatch.commit();
-    console.log("Initial tasks seeded for new user.");
+    
+    // Check if tasks have already been seeded for this user
+    const tasksSnapshot = await getDocs(query(userTasksCollection, limit(1)));
+    if (tasksSnapshot.empty) {
+        const initialTasks = [
+          { title: "Complete your profile information", completed: false, createdAt: serverTimestamp() },
+          { title: "Review the October Operational Plan", completed: false, createdAt: serverTimestamp() },
+          { title: "Explore your new dashboard", completed: false, createdAt: serverTimestamp() },
+        ];
+        const userBatch = writeBatch(db);
+        initialTasks.forEach(task => {
+            const taskRef = doc(userTasksCollection);
+            userBatch.set(taskRef, task);
+        });
+        await userBatch.commit();
+        console.log("Initial tasks seeded for new user.");
+    } else {
+        console.log("Tasks already exist for this user. Skipping seeding.");
+    }
     return;
   }
   
@@ -175,6 +182,7 @@ async function createUserProfile(
   const user = userCredential.user
   if (!user || !user.email) return userCredential
 
+  // CRITICAL FIX: Check for approval BEFORE any database operations.
   if (!isEmailApproved(user.email)) {
     // If user is not approved, delete their Firebase Auth account immediately
     // and throw an error to prevent them from staying logged in.
@@ -257,6 +265,8 @@ export function initiateGoogleSignIn(authInstance: Auth) {
   const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
     .then((userCredential) => {
+      // This check is now redundant because createUserProfile also checks,
+      // but it provides an early exit before calling the profile creation.
       if (!isEmailApproved(userCredential.user.email)) {
         throw new Error(
           "This email address is not authorized to use this application."
@@ -274,3 +284,5 @@ export function initiateGoogleSignIn(authInstance: Auth) {
       throw error
     })
 }
+
+    
