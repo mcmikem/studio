@@ -1,12 +1,14 @@
 
 import { ImpactStoryGenerator } from "@/components/impact-story-form";
 import { Suspense } from 'react';
+import { Wand } from "lucide-react";
 
 function ImpactStoryContent() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
+        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+          <Wand className="h-8 w-8" />
           Impact Story Generator
         </h1>
         <p className="text-muted-foreground">
