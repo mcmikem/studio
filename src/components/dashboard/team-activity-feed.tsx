@@ -1,3 +1,4 @@
+
 "use client"
 
 import {
@@ -6,22 +7,33 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card"
 import { RecentCheckouts } from "./recent-checkouts"
 import type { Checkout } from "@/lib/types"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
+import { Button } from "../ui/button"
 
 export function TeamPulse({ checkouts }: { checkouts: Checkout[] | null }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Team Pulse</CardTitle>
-        <CardDescription>
-          Live activity and updates from the team check-outs.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <RecentCheckouts checkouts={checkouts} />
-      </CardContent>
+    <Card className="hover:bg-muted/50 transition-colors group/card">
+      <Link href="/stream">
+        <CardHeader>
+          <CardTitle>Team Pulse</CardTitle>
+          <CardDescription>
+            Live activity and updates from the team check-outs.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <RecentCheckouts checkouts={checkouts} />
+        </CardContent>
+        <CardFooter>
+            <div className="text-sm text-primary group-hover/card:underline flex items-center justify-end w-full">
+                View full stream <ArrowRight className="ml-1 h-4 w-4" />
+            </div>
+        </CardFooter>
+      </Link>
     </Card>
   )
 }
