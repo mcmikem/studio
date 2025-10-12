@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -52,8 +53,8 @@ export default function RecordTestimonyPage() {
       // Logic for starting/stopping recording will be added in a future step.
       setIsRecording(!isRecording);
       toast({
-          title: isRecording ? "Recording Stopped" : "Recording Started",
-          description: isRecording ? "Your testimony recording has finished." : "You can now record your testimony.",
+          title: isRecording ? "Recording Stopped (Not Implemented)" : "Recording Started (Not Implemented)",
+          description: isRecording ? "Saving audio/video is not yet implemented." : "You can now record your testimony. Saving is not yet implemented.",
       })
   }
 
@@ -144,7 +145,7 @@ export default function RecordTestimonyPage() {
                      {hasPermission && (
                          <>
                              <Mic className="h-24 w-24" />
-                            <p className="mt-4">Ready to record audio</p>
+                            <p className="mt-4">Audio recording is not yet implemented.</p>
                          </>
                      )}
                  </div>
@@ -158,10 +159,14 @@ export default function RecordTestimonyPage() {
             <TabsContent value="video" className="pt-4">
                  <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
                     <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                    {hasPermission === null && (
+                     {hasPermission === null && !isRecording && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80">
-                            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                            <p className="mt-4 text-muted-foreground">Requesting camera access...</p>
+                            <p className="mt-4 text-muted-foreground">Click tab to request camera access.</p>
+                        </div>
+                    )}
+                     {hasPermission && !isRecording && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80">
+                            <p className="mt-4 text-muted-foreground">Video recording is not yet implemented.</p>
                         </div>
                     )}
                     {isRecording && (

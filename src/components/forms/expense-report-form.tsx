@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -92,7 +93,6 @@ export function ExpenseReportForm() {
       return;
     }
     
-    // Filter out empty items before submission
     const finalItems = data.items.filter(item => item.description.trim() !== '' && item.amount > 0);
     
     if (finalItems.length === 0) {
@@ -121,23 +121,21 @@ export function ExpenseReportForm() {
     try {
         const docRef = await addDocumentNonBlocking(expensesCollection, expenseData);
         
-        const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
-        
-        // This is a fire-and-forget call to the AI flow
-        if (docRef) {
-            await createAlert({
-                type: 'Reminder',
-                message: alertMessage,
-                priority: 'Medium',
-                action: `/management/expenses?highlight=${docRef.id}`,
-                creatorId: user.uid,
-            });
-        }
-
         toast({
             title: 'Expense Report Submitted!',
             description: `Your report has been sent for approval.`,
         });
+
+        if (docRef) {
+          const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
+          await createAlert({
+              type: 'Reminder',
+              message: alertMessage,
+              priority: 'Medium',
+              action: `/management/expenses?highlight=${docRef.id}`,
+              creatorId: user.uid,
+          });
+        }
 
         reset({
             type: 'Reimbursement',
@@ -148,7 +146,6 @@ export function ExpenseReportForm() {
         });
     } catch(e) {
         console.error(e);
-        // The global error emitter will catch permission errors, but this is a fallback.
         toast({
             variant: 'destructive',
             title: 'Submission Error',

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -230,8 +231,8 @@ export default function FinancePage() {
                 <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
               </TableRow>
             ))}
-            {transactions.map((t) => (
-              <TableRow key={`${t.transactionType}-${t.id}`}>
+            {transactions.map((t, index) => (
+              <TableRow key={`${t.transactionType}-${t.id}-${index}`}>
                 <TableCell>{formatDateSafe(t.date, 'dateOnly')}</TableCell>
                 <TableCell className="font-medium">{t.description}</TableCell>
                 <TableCell>

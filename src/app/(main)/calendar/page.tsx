@@ -7,7 +7,7 @@ import { format, isSameDay, addDays, subDays, startOfDay, endOfDay } from 'date-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon, PlusCircle, Clock, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -18,7 +18,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { CalendarEvent as EventType } from '@/lib/types';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
