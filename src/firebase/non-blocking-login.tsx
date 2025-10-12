@@ -100,36 +100,40 @@ const isEmailApproved = (email: string | null): boolean => {
 
 async function seedInitialData(db: Firestore, userId: string) {
   console.log("Checking if initial data seeding is needed...")
+  
+  const userDocRef = doc(db, "users", userId);
+  const userDocSnap = await getDoc(userDocRef);
+  
+  // If the user document *already* exists, they are not a new user. Do nothing.
+  if (userDocSnap.exists()) {
+    console.log("User profile already exists. Skipping all data seeding.");
+    return;
+  }
 
+  // User does not exist, so let's check if they are the very first user.
   const programsCollection = collection(db, "programs");
   const programsSnapshot = await getDocs(query(programsCollection, limit(1)));
 
-  // If core data already exists, only seed user-specific tasks.
+  // If core data already exists, this new user just needs their tasks.
   if (!programsSnapshot.empty) {
-    console.log("Core data exists. Seeding user-specific tasks only.");
+    console.log("Core data exists. Seeding user-specific tasks only for new user.");
     const userTasksCollection = collection(db, "users", userId, "tasks");
-    
-    // Check if tasks have already been seeded for this user
-    const tasksSnapshot = await getDocs(query(userTasksCollection, limit(1)));
-    if (tasksSnapshot.empty) {
-        const initialTasks = [
-          { title: "Complete your profile information", completed: false, createdAt: serverTimestamp() },
-          { title: "Review the October Operational Plan", completed: false, createdAt: serverTimestamp() },
-          { title: "Explore your new dashboard", completed: false, createdAt: serverTimestamp() },
-        ];
-        const userBatch = writeBatch(db);
-        initialTasks.forEach(task => {
-            const taskRef = doc(userTasksCollection);
-            userBatch.set(taskRef, task);
-        });
-        await userBatch.commit();
-        console.log("Initial tasks seeded for new user.");
-    } else {
-        console.log("Tasks already exist for this user. Skipping seeding.");
-    }
+    const initialTasks = [
+      { title: "Complete your profile information", completed: false, createdAt: serverTimestamp() },
+      { title: "Review the October Operational Plan", completed: false, createdAt: serverTimestamp() },
+      { title: "Explore your new dashboard", completed: false, createdAt: serverTimestamp() },
+    ];
+    const userBatch = writeBatch(db);
+    initialTasks.forEach(task => {
+        const taskRef = doc(userTasksCollection);
+        userBatch.set(taskRef, task);
+    });
+    await userBatch.commit();
+    console.log("Initial tasks seeded for new user.");
     return;
   }
   
+  // This is the very first user signup. Seed the entire database.
   console.log("This is the first user. Seeding all initial data...")
   const batch = writeBatch(db)
 
@@ -268,6 +272,8 @@ export function initiateGoogleSignIn(authInstance: Auth) {
       // This check is now redundant because createUserProfile also checks,
       // but it provides an early exit before calling the profile creation.
       if (!isEmailApproved(userCredential.user.email)) {
+        // Must manually sign out if we reject the user after the popup succeeded.
+        authInstance.signOut();
         throw new Error(
           "This email address is not authorized to use this application."
         );
@@ -284,5 +290,3 @@ export function initiateGoogleSignIn(authInstance: Auth) {
       throw error
     })
 }
-
-    

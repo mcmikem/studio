@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -27,7 +26,7 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
         if (!expenses) return { transportBudgetUsed: 0 };
         const monthlyBudget = 800000; // Mock budget
         const transportExpenses = expenses
-            .filter(e => e.status === 'Approved' || e.status === 'Cleared')
+            .filter(e => e.status === 'Approved' || e.status === 'Disbursed' || e.status === 'Acknowledged')
             .flatMap(e => e.items)
             .filter(item => item.category === 'Transport')
             .reduce((sum, item) => sum + item.amount, 0);

@@ -48,7 +48,7 @@ function QuickAddMenu() {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                     <DropdownMenuItem asChild>
-                        <Link href="/forms?tab=expense">
+                        <Link href="/forms/expense">
                             <Receipt className="mr-2 h-4 w-4" />
                             <span>New Expense Report</span>
                         </Link>
@@ -166,6 +166,9 @@ function ViewAsMenu() {
                     <DropdownMenuItem onClick={() => setViewAsRole('Programs & Partnerships Manager')}>
                         <span>Program Manager</span>
                     </DropdownMenuItem>
+                     <DropdownMenuItem onClick={() => setViewAsRole('Executive Director')}>
+                        <span>Executive Director</span>
+                    </DropdownMenuItem>
                 </DropdownMenuGroup>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -177,7 +180,7 @@ export function AppHeader() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
 
-  const managementRoles = ['Administrator', 'Executive Director', 'Programs & Partnerships Manager'];
+  const managementRoles = ['Administrator', 'Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager'];
   const canViewAs = profile && managementRoles.includes(profile.role);
 
   return (
