@@ -36,6 +36,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Separator } from './ui/separator';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { useUser } from '@/firebase';
 
 const OmutoLogo = () => (
     <div className="flex items-center gap-2" data-ai-hint="logo">
@@ -54,9 +56,53 @@ const OmutoLogo = () => (
     </div>
 );
 
+const navConfig = {
+  all: [
+    { href: '/', icon: Home, label: 'Dashboard' },
+    { href: '/profile', icon: User, label: 'My Profile' },
+  ],
+  field: [
+    { href: '/checkins', icon: LogIn, label: 'Check-in Stream' },
+    { href: '/stream', icon: Rss, label: 'Check-out Stream' },
+    { href: '/forms', icon: ClipboardEdit, label: 'Forms' },
+    { href: '/checklists', icon: ListChecks, label: 'Checklists' },
+    { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
+  ],
+  planning: [
+     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
+     { href: '/workplan', icon: CalendarCheck, label: 'Weekly Workplan' },
+     { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
+     { href: '/plan', icon: ClipboardList, label: 'Operational Plan' },
+  ],
+  management: [
+    { href: '/management/programs', icon: Briefcase, label: 'Management' },
+    { href: '/resources', icon: Handshake, label: 'Resources' },
+  ],
+  communication: [
+    { href: '/reporting', icon: Newspaper, label: 'Reporting' },
+    { href: '/reports', icon: FileText, label: 'Analysis' },
+    { href: '/notifications', icon: Bell, label: 'Notifications' },
+    { href: '/impact-story', icon: Wand, label: 'Story Generator' },
+    { href: '/chat', icon: MessageSquare, label: 'Chat & Team Space' },
+  ]
+};
+
+const roleNavConfig = {
+  'Administrator': ['all', 'field', 'planning', 'management', 'communication'],
+  'Executive Director': ['all', 'field', 'planning', 'management', 'communication'],
+  'Programs & Partnerships Manager': ['all', 'field', 'planning', 'management', 'communication'],
+  'Resource Mobilization Lead': ['all', 'planning', 'management', 'communication'],
+  'Operations & Field Manager': ['all', 'field', 'planning', 'management'],
+  'Field Coordinator': ['all', 'field'],
+  'Media & Communications Lead': ['all', 'field', 'communication'],
+  'default': ['all'],
+};
+
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
   const { isMobile, setOpenMobile } = useSidebar();
 
   const handleLinkClick = () => {
@@ -67,8 +113,38 @@ export function AppSidebar() {
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === path;
+    // For management, we need to check if the path starts with /management
+    if (path === '/management/programs') return pathname.startsWith('/management');
     return pathname.startsWith(path);
   }
+  
+  const userRole = profile?.role as keyof typeof roleNavConfig || 'default';
+  const allowedSections = roleNavConfig[userRole] || roleNavConfig['default'];
+
+  const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
+    if (!allowedSections.includes(sectionName)) return null;
+
+    return (
+      <SidebarGroup data-mobile={isMobile}>
+        <SidebarGroupLabel data-mobile={isMobile}>{title}</SidebarGroupLabel>
+        <SidebarMenu>
+          {navConfig[sectionName].map(item => (
+             <SidebarMenuItem key={item.href}>
+              <SidebarMenuButton
+                href={item.href}
+                isActive={isActive(item.href)}
+                tooltip={item.label}
+                onClick={handleLinkClick}
+              >
+                <item.icon />
+                <span>{item.label}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarGroup>
+    );
+  };
 
   return (
     <>
@@ -76,192 +152,11 @@ export function AppSidebar() {
         <OmutoLogo />
       </SidebarHeader>
       <SidebarContent data-mobile={isMobile}>
-        <SidebarGroup data-mobile={isMobile}>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                href="/"
-                isActive={pathname === '/'}
-                tooltip="Dashboard"
-                onClick={handleLinkClick}
-              >
-                <Home />
-                <span>Dashboard</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-              <SidebarMenuButton
-                href="/checkins"
-                isActive={isActive('/checkins')}
-                tooltip="Check-in Stream"
-                onClick={handleLinkClick}
-              >
-                <LogIn />
-                <span>Check-in Stream</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                href="/stream"
-                isActive={isActive('/stream')}
-                tooltip="Check-out Stream"
-                onClick={handleLinkClick}
-              >
-                <Rss />
-                <span>Check-out Stream</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-        
-        <SidebarGroup data-mobile={isMobile}>
-          <SidebarGroupLabel data-mobile={isMobile}>Planning</SidebarGroupLabel>
-           <SidebarMenu>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton
-                        href="/calendar"
-                        isActive={isActive('/calendar')}
-                        tooltip="Team Calendar"
-                        onClick={handleLinkClick}
-                    >
-                        <CalendarIcon />
-                        <span>Team Calendar</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton
-                    href="/workplan"
-                    isActive={isActive('/workplan')}
-                    tooltip="Weekly Workplan"
-                    onClick={handleLinkClick}
-                    >
-                    <CalendarCheck />
-                    <span>Weekly Workplan</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-               <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/daily-plan"
-                  isActive={isActive('/daily-plan')}
-                  tooltip="Daily Planner"
-                  onClick={handleLinkClick}
-                >
-                  <Sparkles />
-                  <span>AI Daily Planner</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/plan"
-                  isActive={isActive('/plan')}
-                  tooltip="October 2025 Plan"
-                  onClick={handleLinkClick}
-                >
-                  <ClipboardList />
-                  <span>Operational Plan</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        <SidebarGroup data-mobile={isMobile}>
-          <SidebarGroupLabel data-mobile={isMobile}>Execution</SidebarGroupLabel>
-          <SidebarMenu>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/forms"
-                  isActive={isActive('/forms')}
-                  tooltip="Forms Hub"
-                  onClick={handleLinkClick}
-                >
-                  <ClipboardEdit />
-                  <span>Forms</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/activity-log"
-                  isActive={isActive('/activity-log')}
-                  tooltip="Activity Log (ROI)"
-                  onClick={handleLinkClick}
-                >
-                  <AreaChart />
-                  <span>Activity Log (ROI)</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/checklists"
-                  isActive={isActive('/checklists')}
-                  tooltip="Checklists"
-                  onClick={handleLinkClick}
-                >
-                  <ListChecks />
-                  <span>Checklists</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-                <SidebarMenuButton
-                  href="/management/programs"
-                  isActive={isActive('/management')}
-                  tooltip="Management"
-                  onClick={handleLinkClick}
-                >
-                  <Briefcase />
-                  <span>Management</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-                <SidebarMenuButton href="/resources" isActive={isActive('/resources')} tooltip="Resource Mobilization" onClick={handleLinkClick}>
-                    <Handshake />
-                    <span>Resources</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-        
-        <SidebarGroup data-mobile={isMobile}>
-            <SidebarGroupLabel data-mobile={isMobile}>AI & Personal</SidebarGroupLabel>
-            <SidebarMenu>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton href="/reporting" isActive={isActive('/reporting')} tooltip="Reporting" onClick={handleLinkClick}>
-                        <Newspaper />
-                        <span>Reporting</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton href="/reports" isActive={isActive('/reports')} tooltip="Analysis" onClick={handleLinkClick}>
-                        <FileText />
-                        <span>Analysis</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton href="/notifications" isActive={isActive('/notifications')} tooltip="Notifications" onClick={handleLinkClick}>
-                        <Bell />
-                        <span>Notifications</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton href="/profile" isActive={isActive('/profile')} tooltip="My Profile" onClick={handleLinkClick}>
-                        <User />
-                        <span>My Profile</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton href="/impact-story" isActive={isActive('/impact-story')} tooltip="Impact Story Generator" onClick={handleLinkClick}>
-                        <Wand />
-                        <span>Story Generator</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton href="/chat" isActive={isActive('/chat')} tooltip="Team Chat" onClick={handleLinkClick}>
-                        <MessageSquare />
-                        <span>Chat & Team Space</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
-
+        {renderNavSection('all', 'Home')}
+        {renderNavSection('planning', 'Planning')}
+        {renderNavSection('field', 'Execution')}
+        {renderNavSection('management', 'Oversight')}
+        {renderNavSection('communication', 'Intelligence')}
       </SidebarContent>
       <SidebarFooter>
         <Separator className="my-2" />

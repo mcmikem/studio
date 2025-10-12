@@ -16,7 +16,7 @@ import { DashboardCalendar } from "./dashboard-calendar"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { TeamCoordination } from "./program-manager/team-coordination"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
-import { SmartReminders } from "./field-staff-dashboard"
+import { SmartReminders } from "./smart-reminders"
 import { TeamDeployment } from "./team-deployment"
 
 interface DashboardProps {

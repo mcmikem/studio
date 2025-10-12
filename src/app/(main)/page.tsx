@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser } from '@/firebase';
@@ -42,10 +43,10 @@ const roleToDashboard: { [key: string]: React.FC<any> } = {
   'Administrator': AdminDashboard,
   'Executive Director': ExecutiveDashboard,
   'Programs & Partnerships Manager': ProgramManagerDashboard,
-  'Operations & Field Manager': FieldStaffDashboard,
+  'Operations & Field Manager': ProgramManagerDashboard, // Using Program Manager for now
   'Field Coordinator': FieldStaffDashboard,
   'Media & Communications Lead': MediaFinanceDashboard,
-  'Resource Mobilization Lead': ProgramManagerDashboard,
+  'Resource Mobilization Lead': ProgramManagerDashboard, // Using Program Manager for now
   'default': DefaultDashboard,
 };
 
@@ -54,10 +55,20 @@ export default function DashboardPage() {
   const { user } = useUser();
   const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
 
-  if (isLoadingProfile || !profile) {
+  if (isLoadingProfile || !user) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  if (!profile) {
+    // This can happen briefly while the user profile is being created for the first time.
+     return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        <p className="ml-4">Finalizing account setup...</p>
       </div>
     );
   }
