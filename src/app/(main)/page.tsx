@@ -67,7 +67,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col">
         <DashboardHeader profile={profile} />
-        <div className="flex-1 space-y-6 lg:-mt-16">
+        <div className="flex-1 space-y-6 lg:mt-6">
             <DashboardComponent profile={profile} />
         </div>
     </div>

@@ -38,7 +38,7 @@ function QuickAddMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" size="icon">
+                 <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
                     <PlusCircle className="h-5 w-5" />
                     <span className="sr-only">Quick Add</span>
                 </Button>
@@ -91,10 +91,10 @@ function NotificationsMenu() {
     return (
         <DropdownMenu onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" size="icon" className="relative">
+                 <Button variant="ghost" size="icon" className="relative text-white hover:text-white hover:bg-white/10">
                     <Bell className="h-5 w-5" />
                     {!hasUnread && alerts && alerts.length > 0 && (
-                        <CheckCircle className="absolute top-1 right-1 h-3 w-3 text-green-500" />
+                        <CheckCircle className="absolute top-1 right-1 h-3 w-3 text-green-400" />
                     )}
                     {hasUnread && !isLoading && alerts && alerts.length > 0 && (
                         <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
@@ -153,13 +153,11 @@ export function AppHeader() {
 
   return (
     <header className={cn(
-        "sticky top-0 z-20 flex h-16 items-center justify-between gap-4 px-4 sm:px-6 transition-colors duration-300",
-        !isDashboard && 'bg-background/80 backdrop-blur-sm border-b'
+        "absolute top-0 z-20 flex h-16 items-center justify-between gap-4 px-4 sm:px-6 transition-colors duration-300 w-full",
     )}>
        <div className="flex items-center gap-4">
         <SidebarTrigger className={cn(
-            "lg:hidden",
-            isDashboard ? 'text-card-foreground' : 'text-foreground'
+            "lg:hidden text-white",
         )} />
       </div>
       <div className={cn(
@@ -203,7 +201,7 @@ function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-9 w-9 rounded-full"
+          className="relative h-9 w-9 rounded-full text-white hover:text-white hover:bg-white/10"
         >
           <Avatar className="h-9 w-9" data-ai-hint="user avatar">
             {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
