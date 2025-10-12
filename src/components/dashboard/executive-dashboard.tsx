@@ -1,4 +1,3 @@
-
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin } from "@/lib/types"
@@ -51,7 +50,7 @@ function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
     }, [activities]);
 
     return (
-        <Card className="hover:bg-muted/50 transition-colors">
+        <Card className="hover:bg-card/90 transition-colors">
             <Link href="/activity-log">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Globe className="h-6 w-6" /> Ecosystem Pulse</CardTitle>

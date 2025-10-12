@@ -12,15 +12,15 @@ import {
 import { RecentCheckouts } from "./recent-checkouts"
 import type { Checkout } from "@/lib/types"
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Rss } from "lucide-react"
 import { Button } from "../ui/button"
 
 export function TeamPulse({ checkouts }: { checkouts: Checkout[] | null }) {
   return (
-    <Card className="hover:bg-muted/50 transition-colors group/card">
+    <Card className="hover:bg-card/90 transition-colors group/card">
       <Link href="/stream">
         <CardHeader>
-          <CardTitle>Team Pulse</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Rss /> Team Pulse</CardTitle>
           <CardDescription>
             Live activity and updates from the team check-outs.
           </CardDescription>
