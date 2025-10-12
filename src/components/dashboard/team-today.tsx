@@ -12,7 +12,7 @@ import { Users, UserCheck, UserX, Clock } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
-import type { User, Checkin } from '@/lib/types';
+import type { User, Checkin, Activity } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
 import { differenceInHours } from 'date-fns';
 
@@ -36,33 +36,47 @@ export function TeamToday() {
       if (!firestore) return null;
       return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart)));
   }, [firestore]);
+  
+  const activitiesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(todayStart)), orderBy('loggedAt', 'desc'));
+  }, [firestore]);
 
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
 
   const teamStatus = useMemo(() => {
-      if (!users || !checkins) return [];
+      if (!users || !checkins || !activities) return [];
       const now = currentTime;
       const isPast10AM = now.getHours() >= 10;
 
       return users.map(user => {
           const userCheckin = checkins.find(c => c.userId === user.id);
+          const lastActivity = activities.find(a => a.userId === user.id);
+          
+          let status: 'Online' | 'Away' | 'Offline' | 'Not Checked In' = 'Offline';
+          
           if (userCheckin) {
               const hoursSinceCheckin = differenceInHours(now, userCheckin.timestamp.toDate());
               if (hoursSinceCheckin < 4) {
-                  return { ...user, status: 'Online' as const };
+                  status = 'Online';
               } else {
-                  return { ...user, status: 'Away' as const };
+                  status = 'Away';
               }
+          } else if (isPast10AM) {
+              status = 'Not Checked In';
           }
-          if (isPast10AM) {
-              return { ...user, status: 'Not Checked In' as const };
-          }
-          return { ...user, status: 'Offline' as const };
+          
+          return { 
+              ...user, 
+              status,
+              lastActivity: lastActivity?.title || null
+          };
       });
-  }, [users, checkins, currentTime]);
+  }, [users, checkins, activities, currentTime]);
 
-  const isLoading = isLoadingUsers || isLoadingCheckins;
+  const isLoading = isLoadingUsers || isLoadingCheckins || isLoadingActivities;
 
   const statusConfig = {
       Online: { icon: UserCheck, color: 'text-green-500', label: 'Online' },
@@ -85,7 +99,7 @@ export function TeamToday() {
           ? Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
                 <Skeleton className="h-4 w-4" />
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-full" />
               </div>
             ))
           : teamStatus && teamStatus.length > 0 ? (
@@ -94,13 +108,15 @@ export function TeamToday() {
                 return (
                   <div key={member.id} className="flex items-center gap-3">
                     <Icon className={`flex h-4 w-4 flex-shrink-0 ${color}`} />
-                    <p className="font-semibold">{member.name}</p>
-                    {member.status === 'Not Checked In' && (
-                        <p className="text-red-500 font-medium text-xs">({label})</p>
-                    )}
-                    {member.status !== 'Not Checked In' && (
-                       <p className="text-muted-foreground truncate">({member.role})</p>
-                    )}
+                    <div className="flex-grow truncate">
+                        <p className="font-semibold truncate">{member.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                           {member.status === 'Not Checked In' 
+                                ? <span className="text-red-500 font-medium">({label})</span>
+                                : member.lastActivity ? `Last: ${member.lastActivity}` : `(${member.role})`
+                            }
+                        </p>
+                    </div>
                   </div>
                 );
               })
