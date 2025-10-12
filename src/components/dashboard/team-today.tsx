@@ -13,11 +13,18 @@ import { Skeleton } from '../ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import type { User, Checkin } from '@/lib/types';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { differenceInHours } from 'date-fns';
 
 export function TeamToday() {
   const firestore = useFirestore();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
+
   const usersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'users'), orderBy('name'));
@@ -35,27 +42,33 @@ export function TeamToday() {
 
   const teamStatus = useMemo(() => {
       if (!users || !checkins) return [];
-      const now = new Date();
+      const now = currentTime;
+      const isPast10AM = now.getHours() >= 10;
+
       return users.map(user => {
           const userCheckin = checkins.find(c => c.userId === user.id);
           if (userCheckin) {
               const hoursSinceCheckin = differenceInHours(now, userCheckin.timestamp.toDate());
               if (hoursSinceCheckin < 4) {
                   return { ...user, status: 'Online' as const };
-              } else if (hoursSinceCheckin < 8) {
+              } else {
                   return { ...user, status: 'Away' as const };
               }
           }
+          if (isPast10AM) {
+              return { ...user, status: 'Not Checked In' as const };
+          }
           return { ...user, status: 'Offline' as const };
       });
-  }, [users, checkins]);
+  }, [users, checkins, currentTime]);
 
   const isLoading = isLoadingUsers || isLoadingCheckins;
 
   const statusConfig = {
-      Online: { icon: UserCheck, color: 'text-green-500' },
-      Away: { icon: Clock, color: 'text-yellow-500' },
-      Offline: { icon: UserX, color: 'text-red-500' },
+      Online: { icon: UserCheck, color: 'text-green-500', label: 'Online' },
+      Away: { icon: Clock, color: 'text-yellow-500', label: 'Away' },
+      Offline: { icon: UserX, color: 'text-muted-foreground', label: 'Offline' },
+      'Not Checked In': { icon: UserX, color: 'text-red-500', label: 'Not Checked In' },
   }
 
   return (
@@ -77,12 +90,17 @@ export function TeamToday() {
             ))
           : teamStatus && teamStatus.length > 0 ? (
               teamStatus.map((member) => {
-                const { icon: Icon, color } = statusConfig[member.status];
+                const { icon: Icon, color, label } = statusConfig[member.status];
                 return (
                   <div key={member.id} className="flex items-center gap-3">
                     <Icon className={`flex h-4 w-4 flex-shrink-0 ${color}`} />
                     <p className="font-semibold">{member.name}</p>
-                    <p className="text-muted-foreground truncate">({member.role})</p>
+                    {member.status === 'Not Checked In' && (
+                        <p className="text-red-500 font-medium text-xs">({label})</p>
+                    )}
+                    {member.status !== 'Not Checked In' && (
+                       <p className="text-muted-foreground truncate">({member.role})</p>
+                    )}
                   </div>
                 );
               })
