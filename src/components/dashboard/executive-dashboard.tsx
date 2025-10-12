@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Program, Checkout, ImpactMetric, KeyResult } from "@/lib/types"
+import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity } from "@/lib/types"
 import { Alerts } from "./alerts"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
@@ -17,6 +17,8 @@ import { Progress } from "../ui/progress"
 import { Badge } from "../ui/badge"
 import { ArrowRight, Target, Users, Wand, Globe, TrendingUp, AlertTriangle } from "lucide-react"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
+import { useMemo } from "react"
+import { subWeeks, startOfWeek, isAfter } from "date-fns"
 
 function EcosystemPulse() {
     // NOTE: Data is mocked for now. In a real app, this would be derived from complex queries.
@@ -60,8 +62,27 @@ function EcosystemPulse() {
     )
 }
 
-function TeamEffectiveness() {
-    // NOTE: Data is mocked.
+function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
+    const { weeklyAvg, costPerImpact } = useMemo(() => {
+        if (!activities) {
+            return { weeklyAvg: 0, costPerImpact: 0 };
+        }
+
+        const fourWeeksAgo = startOfWeek(subWeeks(new Date(), 3));
+        const recentActivities = activities.filter(act => 
+            act.loggedAt && isAfter(act.loggedAt.toDate(), fourWeeksAgo)
+        );
+
+        const weeklyAvg = recentActivities.length / 4;
+
+        const totalCost = activities.reduce((sum, act) => sum + act.actualCost, 0);
+        const totalValue = activities.reduce((sum, act) => sum + act.totalValue, 0);
+        const costPerImpact = totalValue > 0 ? totalCost / totalValue : 0; // Simplified; a real CPI needs a consistent 'unit' of impact
+
+        return { weeklyAvg, costPerImpact };
+
+    }, [activities]);
+    
     return (
         <Card>
             <CardHeader>
@@ -75,11 +96,11 @@ function TeamEffectiveness() {
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Field Efficiency</p>
-                    <p className="text-2xl font-bold">45 <span className="text-sm font-normal">activities/wk</span></p>
+                    <p className="text-2xl font-bold">{weeklyAvg.toFixed(1)} <span className="text-sm font-normal">activities/wk</span></p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Cost Per Impact</p>
-                    <p className="text-2xl font-bold">15,000 <span className="text-sm font-normal">UGX/person</span></p>
+                    <p className="text-2xl font-bold">{costPerImpact.toFixed(2)} <span className="text-sm font-normal">UGX/value</span></p>
                 </div>
                 <div>
                     <p className="text-sm text-muted-foreground">Volunteer Ratio</p>
@@ -138,6 +159,9 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
 
     const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
     const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
+    
+    const activitiesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc')) : null, [firestore]);
+    const { data: activities } = useCollection<Activity>(activitiesQuery);
 
   return (
     <div className="flex flex-col gap-6">
@@ -153,7 +177,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
             <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
-            <TeamEffectiveness />
+            <TeamEffectiveness activities={activities} />
             <CriticalDecisions />
             <ManagementQuickLinks />
         </div>

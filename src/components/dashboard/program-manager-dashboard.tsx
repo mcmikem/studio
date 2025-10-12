@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Program, Partnership, Checkout, Checkin, Expense } from "@/lib/types"
+import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
 import { DailyActions } from "./daily-actions"
 import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
@@ -39,6 +39,9 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   }, [firestore]);
   const { data: expenses } = useCollection<Expense>(expensesQuery);
   
+  const activitiesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc')) : null, [firestore]);
+  const { data: activities } = useCollection<Activity>(activitiesQuery);
+
   return (
      <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
@@ -50,7 +53,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
-            <QuickInsights />
+            <QuickInsights activities={activities} />
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>

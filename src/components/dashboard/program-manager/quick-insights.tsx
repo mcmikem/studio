@@ -2,21 +2,54 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SparklineChart, TrendingUp, BarChart } from "lucide-react";
+import { TrendingUp, BarChart } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import type { Activity } from "@/lib/types";
+import { useMemo } from "react";
+import { subWeeks, startOfWeek, isAfter } from "date-fns";
 
+export function QuickInsights({ activities }: { activities: Activity[] | null }) {
+    
+    const { chartData, weeklyTotal, trend } = useMemo(() => {
+        if (!activities) {
+            return { chartData: [], weeklyTotal: 0, trend: 0 };
+        }
 
-const sampleData = [
-  { week: 'W1', activities: 4 },
-  { week: 'W2', activities: 3 },
-  { week: 'W3', activities: 8 },
-  { week: 'W4', activities: 5 },
-  { week: 'W5', activities: 9 },
-  { week: 'W6', activities: 12 },
-];
+        const now = new Date();
+        const sixWeeksAgo = startOfWeek(subWeeks(now, 5)); // Include current week + 5 past weeks
+        const lastWeekStart = startOfWeek(subWeeks(now, 1));
+        const twoWeeksAgoStart = startOfWeek(subWeeks(now, 2));
 
+        const recentActivities = activities.filter(act => 
+            act.loggedAt && isAfter(act.loggedAt.toDate(), sixWeeksAgo)
+        );
 
-export function QuickInsights() {
+        // Group by week
+        const weeklyCounts = recentActivities.reduce((acc, act) => {
+            const weekStart = startOfWeek(act.loggedAt.toDate()).toISOString().split('T')[0];
+            if (!acc[weekStart]) {
+                acc[weekStart] = 0;
+            }
+            acc[weekStart]++;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const sortedWeeks = Object.keys(weeklyCounts).sort();
+
+        const chartData = sortedWeeks.map((week, index) => ({
+            week: `W${index + 1}`,
+            activities: weeklyCounts[week],
+        }));
+
+        const thisWeekCount = weeklyCounts[startOfWeek(now).toISOString().split('T')[0]] || 0;
+        const lastWeekCount = weeklyCounts[lastWeekStart.toISOString().split('T')[0]] || 0;
+        
+        const trend = thisWeekCount - lastWeekCount;
+
+        return { chartData, weeklyTotal: thisWeekCount, trend };
+
+    }, [activities]);
+
     return (
         <Card>
             <CardHeader>
@@ -27,13 +60,15 @@ export function QuickInsights() {
                 <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">Field Activity Trend</p>
                     <div className="flex items-baseline gap-2">
-                         <p className="text-2xl font-bold">12 Activities</p>
-                         <p className="text-sm font-bold text-green-500 flex items-center"><TrendingUp className="h-4 w-4" /> +3 from last week</p>
+                         <p className="text-2xl font-bold">{weeklyTotal} Activities</p>
+                         <p className={`text-sm font-bold flex items-center ${trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            <TrendingUp className="h-4 w-4" /> {trend >= 0 ? '+' : ''}{trend} from last week
+                        </p>
                     </div>
                 </div>
                  <div className="h-20 w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                       <AreaChart data={sampleData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                       <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="colorActivities" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
@@ -47,7 +82,7 @@ export function QuickInsights() {
                                     fontSize: '12px',
                                     padding: '2px 8px',
                                 }}
-                                labelFormatter={(label) => `Week ${sampleData[label as number].week}`}
+                                labelFormatter={(label) => `Week ${chartData[label as number]?.week}`}
                             />
                             <Area 
                                 type="monotone" 
