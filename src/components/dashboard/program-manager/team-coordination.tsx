@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { User, Checkin } from "@/lib/types"
+import type { User, Checkin, Expense } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from '@/components/ui/skeleton';
 import { startOfDay } from 'date-fns';
@@ -70,8 +70,8 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
                     <h4 className="font-semibold">Resource Alerts</h4>
                     {!expenses ? <Skeleton className="h-10 w-full" /> : (
                         <div className="p-3 bg-muted rounded-md text-sm">
-                            <p>• Transport budget: <span className="font-bold">{resourceAlerts.transportBudgetUsed.toFixed(0)}% used</span></p>
-                            <p>• Volunteer gap: <span className="font-bold text-red-500">Need 5 more for Friday</span></p>
+                            <p>• Transport budget: <span className="font-bold">{resourceAlerts.transportBudgetUsed.toFixed(0)}% used</span> (Sample)</p>
+                            <p>• Volunteer gap: <span className="font-bold text-red-500">Need 5 more for Friday</span> (Sample)</p>
                         </div>
                     )}
                  </div>

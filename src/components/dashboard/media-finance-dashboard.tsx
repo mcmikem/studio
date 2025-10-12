@@ -55,7 +55,8 @@ const formatCurrency = (value: number) => {
 
 function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metrics: ImpactMetric[] | null }) {
     const cycleOfDignityMetric = metrics?.find((m: any) => m.metric === "Cycle of Dignity Fundraising");
-    const cycleOfDignityProgress = cycleOfDignityMetric ? (cycleOfDignityMetric.current / cycleOfDignityMetric.target) * 100 : 0;
+    const monthlyBudget = cycleOfDignityMetric?.target || 0;
+    const cycleOfDignityProgress = monthlyBudget > 0 ? ((cycleOfDignityMetric?.current || 0) / monthlyBudget) * 100 : 0;
 
     const monthlyExpenses = useMemo(() => {
         if (!expenses) return 0;
@@ -65,7 +66,6 @@ function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metri
             .reduce((sum, e) => sum + e.totalAmount, 0);
     }, [expenses]);
     
-    const monthlyBudget = 800000;
     const expenseProgress = monthlyBudget > 0 ? (monthlyExpenses / monthlyBudget) * 100 : 0;
     const pendingApprovals = expenses?.filter(e => e.status === 'Pending').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
 
@@ -78,8 +78,8 @@ function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metri
       <CardContent className="space-y-4">
         <div>
             <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium">Cycle of Dignity</span>
-                <span className="text-muted-foreground">{formatCurrency(cycleOfDignityMetric?.current || 0)} / {formatCurrency(cycleOfDignityMetric?.target || 2000000)}</span>
+                <span className="font-medium">Cycle of Dignity Fundraising</span>
+                <span className="text-muted-foreground">{formatCurrency(cycleOfDignityMetric?.current || 0)} / {formatCurrency(monthlyBudget)}</span>
             </div>
             <Progress value={cycleOfDignityProgress} />
         </div>

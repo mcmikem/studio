@@ -98,11 +98,11 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
                 <div className="grid grid-cols-2 gap-4 text-center">
                     <div className="p-2 bg-muted rounded-md">
                         <p className="text-xl font-bold">45<span className="text-sm font-normal">h</span></p>
-                        <p className="text-xs text-muted-foreground">Volunteer Hours</p>
+                        <p className="text-xs text-muted-foreground">(Sample) Volunteer Hours</p>
                     </div>
                      <div className="p-2 bg-muted rounded-md">
                         <p className="text-xl font-bold">8</p>
-                        <p className="text-xs text-muted-foreground">Media Pieces Ready</p>
+                        <p className="text-xs text-muted-foreground">(Sample) Media Pieces</p>
                     </div>
                 </div>
             </CardContent>

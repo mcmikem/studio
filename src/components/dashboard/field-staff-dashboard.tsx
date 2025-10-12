@@ -53,10 +53,6 @@ function TodaysBattlePlan() {
                 ) : latestCheckin ? (
                     <div>
                         <h3 className="text-xl font-bold">🎯 Daily Mission: {latestCheckin.primaryMission}</h3>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                            <div className="flex items-center gap-1"><MapPin className="h-4 w-4"/> In the Field</div>
-                            <div className="flex items-center gap-1"><Milestone className="h-4 w-4"/> All Day</div>
-                        </div>
                     </div>
                 ) : (
                     <div className="text-center py-4">
@@ -64,44 +60,6 @@ function TodaysBattlePlan() {
                         <Button asChild variant="link"><Link href="/forms?tab=check-in">Check in now to set your mission!</Link></Button>
                     </div>
                 )}
-                 <div>
-                    <div className="flex justify-between items-center mb-1">
-                        <span className="text-sm font-medium">Mission Progress</span>
-                        <span className="text-sm font-medium">50% (Example)</span>
-                    </div>
-                    <Progress value={50} />
-                    <p className="text-sm text-muted-foreground mt-1">
-                        <span className="font-semibold text-primary">NEXT:</span> Follow up with St. Mary's School.
-                    </p>
-                </div>
-            </CardContent>
-        </Card>
-    )
-}
-
-function FieldIntelligence() {
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Field Intelligence</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                 <div>
-                    <h4 className="font-semibold text-md mb-2">📊 October Plan Impact</h4>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                        <div className="flex items-center gap-2"><Trees className="h-4 w-4 text-green-500" /> Trees: <span className="font-bold">458/510 (89%)</span></div>
-                        <div className="flex items-center gap-2"><Users className="h-4 w-4 text-red-500" /> Parents: <span className="font-bold">185/200 (92%)</span></div>
-                        <div className="flex items-center gap-2"><HandCoins className="h-4 w-4 text-yellow-500" /> Funds: <span className="font-bold">675K/1.5M (45%)</span></div>
-                        <div className="flex items-center gap-2"><FlaskConical className="h-4 w-4 text-blue-500" /> Pads: <span className="font-bold">5/10 (50%)</span></div>
-                    </div>
-                </div>
-                <div>
-                    <h4 className="font-semibold text-md mb-2">📍 Nearby Opportunities</h4>
-                     <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md"><Map className="h-4 w-4 text-primary" />St. Mary's School (2km) - needs RED Campaign</div>
-                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md"><UserPlus className="h-4 w-4 text-primary" />3 Volunteers available in your area</div>
-                    </div>
-                </div>
             </CardContent>
         </Card>
     )
@@ -192,7 +150,6 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-1">
         <TodaysBattlePlan />
-        <FieldIntelligence />
         <QuickActions />
         <SmartReminders profile={profile} />
         <TeamPulse checkouts={checkouts} />
