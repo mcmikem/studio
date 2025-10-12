@@ -283,6 +283,17 @@ export type Message = {
     createdAt: Timestamp;
 }
 
+export type Testimony = {
+    id: string;
+    title: string;
+    text?: string;
+    userId: string;
+    userName: string;
+    videoUrl?: string;
+    audioUrl?: string;
+    createdAt: Timestamp;
+};
+
 export type Checklist = {
   id: string;
   title: string;

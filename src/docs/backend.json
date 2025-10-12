@@ -582,6 +582,23 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["text", "userId", "userName", "createdAt"]
+    },
+    "Testimony": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Testimony",
+        "description": "A recorded testimony, which can be text, audio, or video.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "text": { "type": "string", "description": "Transcribed text of the testimony." },
+            "userId": { "type": "string", "description": "ID of the user who recorded the testimony." },
+            "userName": { "type": "string", "description": "Name of the user who recorded the testimony." },
+            "videoUrl": { "type": "string", "format": "uri", "description": "URL to the recorded video file." },
+            "audioUrl": { "type": "string", "format": "uri", "description": "URL to the recorded audio file." },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "userId", "userName", "createdAt"]
     }
   },
   "auth": {
@@ -710,6 +727,12 @@
             "$ref": "#/entities/Message"
         },
         "description": "Stores team chat messages."
+    },
+    "/testimonies/{testimonyId}": {
+      "schema": {
+        "$ref": "#/entities/Testimony"
+      },
+      "description": "Stores recorded audio, video, or text testimonies."
     }
   }
 }

@@ -84,7 +84,7 @@ const navConfig = {
     { href: '/reports', icon: FileText, label: 'Analysis' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/impact-story', icon: Wand, label: 'Story Generator' },
-    { href: '/record-testimony', icon: Video, label: 'Testimonies' },
+    { href: '/testimonies', icon: Video, label: 'Testimonies' },
     { href: '/chat', icon: MessageSquare, label: 'Chat & Team Space' },
   ]
 };
