@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser } from '@/firebase';
@@ -8,17 +9,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useViewAs } from '@/hooks/use-view-as';
 import type { User } from '@/lib/types';
+import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import type { ImpactMetric } from '@/lib/types';
 
 
 // Define a loading component for dynamic imports
 const DashboardLoading = () => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-      <Skeleton className="h-28" />
-    </div>
+  <div className="space-y-6 mt-6">
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1 flex flex-col gap-6">
              <Skeleton className="h-48" />
@@ -57,10 +56,14 @@ export default function DashboardPage() {
   const { user } = useUser();
   const { profile: realProfile, isLoading: isLoadingProfile } = useUserProfile(user);
   const { viewAsRole } = useViewAs();
+  const firestore = useFirestore();
 
   const effectiveRole = viewAsRole || realProfile?.role;
 
   const profile = viewAsRole ? ({ ...realProfile, role: viewAsRole } as User) : realProfile;
+
+  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics'), orderBy('createdAt', 'desc'), limit(4)) : null, [firestore]);
+  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
   if (isLoadingProfile || !user) {
     return (
@@ -83,9 +86,10 @@ export default function DashboardPage() {
   const DashboardComponent = roleToDashboard[effectiveRole as string] || roleToDashboard['default'];
   
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} />
-        <div className="flex-1 space-y-6 lg:mt-6">
+        <QuickStatsSummary metrics={metrics} />
+        <div className="flex-1">
             <DashboardComponent profile={profile} />
         </div>
     </div>

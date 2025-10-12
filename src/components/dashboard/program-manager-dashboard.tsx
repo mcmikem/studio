@@ -5,7 +5,6 @@ import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity }
 import { DailyActions } from "./daily-actions"
 import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
-import { DashboardHeader } from "./dashboard-header"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"

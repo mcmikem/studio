@@ -3,12 +3,10 @@
 
 import type { User, Program, Checkout, ImpactMetric, Partnership, Checkin, Expense } from "@/lib/types"
 import { Alerts } from "./alerts"
-import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
-import { DashboardHeader } from "./dashboard-header"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
 import { DailyActions } from "./daily-actions"
@@ -58,8 +56,6 @@ export function AdminDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-      <QuickStatsSummary metrics={metrics} />
-
        <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />

@@ -1,24 +1,21 @@
+
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin } from "@/lib/types"
 import { Alerts } from "./alerts"
-import { QuickStatsSummary } from "./quick-stats-summary"
 import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
-import { DashboardHeader } from "./dashboard-header"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
-import { Progress } from "../ui/progress"
-import { Badge } from "../ui/badge"
-import { ArrowRight, Target, Users, Wand, Globe, TrendingUp, AlertTriangle } from "lucide-react"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useMemo } from "react"
 import { subDays, startOfWeek, isAfter, subMonths, startOfDay } from "date-fns"
 import Link from "next/link"
 import { TeamDeployment } from "./team-deployment"
+import { Globe, TrendingUp } from "lucide-react"
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
@@ -165,8 +162,6 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-      <QuickStatsSummary metrics={metrics} />
-
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse activities={activities} />

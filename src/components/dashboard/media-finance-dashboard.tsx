@@ -5,14 +5,11 @@ import type { User, Expense, Activity, ImpactMetric, Income } from "@/lib/types"
 import {
   ArrowRight,
   Check,
-  DollarSign,
-  FolderKanban,
-  VenetianMask,
-  X,
   Wallet,
   Camera,
   Wand,
   CheckCheck,
+  X,
 } from "lucide-react"
 import {
   Card,
@@ -41,11 +38,8 @@ import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { createAlert } from "@/ai/flows/create-alert-flow"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"
-import { DashboardHeader } from "./dashboard-header"
 import { doc, collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
-import { Progress } from "../ui/progress"
 import { startOfMonth } from "date-fns"
-import { TeamDeployment } from "./team-deployment"
 import { Skeleton } from "../ui/skeleton"
 
 const formatCurrency = (value: number) => {
@@ -144,8 +138,6 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
             cashBalance: allTimeIncome - allTimeClearedExpenses
         };
     }, [income, expenses]);
-    
-    const pendingApprovals = expenses?.filter(e => e.status === 'Pending').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
 
   return (
     <Card>
@@ -171,17 +163,17 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
   )
 }
 
-function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
+function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
   const firestore = useFirestore()
   const { toast } = useToast()
   
   const { pendingExpenses, approvedExpenses } = useMemo(() => {
-    if (!expenses) return { pendingExpenses: [], approvedExpenses: [] };
+    if (!allExpenses) return { pendingExpenses: [], approvedExpenses: [] };
     return {
-        pendingExpenses: expenses.filter(e => e.status === 'Pending'),
-        approvedExpenses: expenses.filter(e => e.status === 'Approved'),
+        pendingExpenses: allExpenses.filter(e => e.status === 'Pending'),
+        approvedExpenses: allExpenses.filter(e => e.status === 'Approved'),
     }
-  }, [expenses]);
+  }, [allExpenses]);
   
   const { user: currentUser } = useUser();
 
@@ -310,7 +302,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <BudgetHealth expenses={allExpenses} income={allIncome} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <FinancialQueue expenses={allExpenses} />
+            <FinancialQueue allExpenses={allExpenses} />
              <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">

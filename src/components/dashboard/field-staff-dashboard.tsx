@@ -5,17 +5,15 @@ import type { User, Checkout, Checkin } from "@/lib/types"
 import { DailyActions } from "./daily-actions"
 import { TeamPulse } from "./team-activity-feed"
 import { MyPriorities } from "./my-priorities"
-import { TeamToday } from "./team-today"
 import { DashboardGrid } from "./dashboard-grid"
-import { DashboardHeader } from "./dashboard-header"
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, orderBy, limit, where } from "firebase/firestore"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
-import { Progress } from "../ui/progress"
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card"
 import { Button } from "../ui/button"
-import { Camera, MapPin, Plus, Receipt, FileText, Target, Milestone, Trees, Users, HandCoins, FlaskConical, Lightbulb, UserPlus, Map, Loader2 } from "lucide-react"
+import { Camera, Receipt, Target } from "lucide-react"
 import Link from "next/link"
 import { SmartReminders } from "./smart-reminders"
+import { Loader2 } from "lucide-react"
 
 function TodaysBattlePlan() {
     const { user } = useUser();
@@ -89,8 +87,8 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-1">
         <TodaysBattlePlan />
+        <DailyActions />
         <MyPriorities />
-        <QuickActions />
         <SmartReminders profile={profile} />
         <TeamPulse checkouts={checkouts} />
     </DashboardGrid>

@@ -8,8 +8,6 @@ import { DailyActions } from "./daily-actions"
 import { TeamDeployment } from "./team-deployment"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { Alerts } from "./alerts"
-import { DashboardHeader } from "./dashboard-header"
-import { QuickStatsSummary } from "./quick-stats-summary"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
 import { startOfDay } from "date-fns"
@@ -37,8 +35,6 @@ export function DefaultDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-      <QuickStatsSummary metrics={metrics} />
-
       <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-1 flex flex-col gap-6">
           <DailyActions />
