@@ -35,14 +35,15 @@ function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
 
         const thirtyDaysAgo = subDays(new Date(), 30);
 
-        const recentActivities = activities.filter(act => 
-            act.loggedAt && isAfter(act.loggedAt.toDate(), thirtyDaysAgo)
-        );
+        const recentActivities = activities.filter(act => {
+            if (!act.loggedAt || typeof act.loggedAt.toDate !== 'function') return false;
+            return isAfter(act.loggedAt.toDate(), thirtyDaysAgo)
+        });
 
-        const inspireCount = recentActivities.filter(a => a.ecosystem_phase === 'Identify & Inspire').length;
-        const empowerCount = recentActivities.filter(a => a.ecosystem_phase === 'Equip & Empower').length;
+        const inspireCount = recentActivities.filter(a => (a as any).ecosystem_phase === 'Identify & Inspire').length;
+        const empowerCount = recentActivities.filter(a => (a as any).ecosystem_phase === 'Equip & Empower').length;
         const sustainRevenue = recentActivities
-            .filter(a => a.ecosystem_phase === 'Activate & Sustain')
+            .filter(a => (a as any).ecosystem_phase === 'Activate & Sustain')
             .reduce((sum, act) => sum + act.totalValue, 0);
 
         return { inspire: inspireCount, empower: empowerCount, sustain: sustainRevenue };
@@ -169,3 +170,5 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     </>
   )
 }
+
+    

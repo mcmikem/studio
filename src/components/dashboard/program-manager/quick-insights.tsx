@@ -7,6 +7,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { Activity } from "@/lib/types";
 import { useMemo } from "react";
 import { subWeeks, startOfWeek, isAfter } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function QuickInsights({ activities }: { activities: Activity[] | null }) {
     
@@ -56,45 +57,51 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
                 <CardDescription>Key performance indicators at a glance.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground">Field Activity Trend</p>
-                    <div className="flex items-baseline gap-2">
-                         <p className="text-2xl font-bold">{weeklyTotal} Activities</p>
-                         <p className={`text-sm font-bold flex items-center ${trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            <TrendingUp className="h-4 w-4" /> {trend >= 0 ? '+' : ''}{trend} from last week
-                        </p>
+                {!activities ? <Skeleton className="h-24 w-full" /> : (
+                <>
+                    <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Field Activity Trend</p>
+                        <div className="flex items-baseline gap-2">
+                             <p className="text-2xl font-bold">{weeklyTotal} Activities</p>
+                             <p className={`text-sm font-bold flex items-center ${trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                <TrendingUp className="h-4 w-4" /> {trend >= 0 ? '+' : ''}{trend} from last week
+                            </p>
+                        </div>
                     </div>
-                </div>
-                 <div className="h-20 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                       <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorActivities" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
-                                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <Tooltip 
-                                contentStyle={{
-                                    backgroundColor: 'hsl(var(--background))',
-                                    borderColor: 'hsl(var(--border))',
-                                    fontSize: '12px',
-                                    padding: '2px 8px',
-                                }}
-                                labelFormatter={(label) => `Week ${chartData[label as number]?.week}`}
-                            />
-                            <Area 
-                                type="monotone" 
-                                dataKey="activities" 
-                                stroke="hsl(var(--primary))" 
-                                fillOpacity={1} 
-                                fill="url(#colorActivities)"
-                                strokeWidth={2}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>
+                     <div className="h-20 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                           <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorActivities" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4}/>
+                                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <Tooltip 
+                                    contentStyle={{
+                                        backgroundColor: 'hsl(var(--background))',
+                                        borderColor: 'hsl(var(--border))',
+                                        fontSize: '12px',
+                                        padding: '2px 8px',
+                                    }}
+                                    labelFormatter={(label) => `Week ${chartData[label as number]?.week}`}
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="activities" 
+                                    stroke="hsl(var(--primary))" 
+                                    fillOpacity={1} 
+                                    fill="url(#colorActivities)"
+                                    strokeWidth={2}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </>
+                )}
             </CardContent>
         </Card>
     )
 }
+
+    

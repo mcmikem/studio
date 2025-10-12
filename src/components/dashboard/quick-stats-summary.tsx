@@ -100,3 +100,5 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
     </div>
   )
 }
+
+    

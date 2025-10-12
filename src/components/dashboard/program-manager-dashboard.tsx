@@ -9,7 +9,7 @@ import { DashboardHeader } from "./dashboard-header"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
-import { startOfDay } from "date-fns"
+import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { TeamCoordination } from "./program-manager/team-coordination"
 import { QuickInsights } from "./program-manager/quick-insights"
@@ -39,7 +39,12 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   }, [firestore]);
   const { data: expenses } = useCollection<Expense>(expensesQuery);
   
-  const activitiesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc')) : null, [firestore]);
+  const activitiesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    const sixWeeksAgo = startOfDay(subDays(new Date(), 42));
+    return query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgo)), orderBy('loggedAt', 'desc'))
+  }, [firestore]);
+
   const { data: activities } = useCollection<Activity>(activitiesQuery);
 
   return (
@@ -57,3 +62,5 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
       </DashboardGrid>
   )
 }
+
+    
