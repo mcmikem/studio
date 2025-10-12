@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -175,8 +174,8 @@ export default function FinancePage() {
 
   const cashBalance = useMemo(() => {
       const totalIncome = income?.reduce((sum, i) => sum + i.amount, 0) || 0;
-      const totalClearedExpenses = expenses?.filter(e => e.status === 'Cleared').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
-      return totalIncome - totalClearedExpenses;
+      const totalDisbursedExpenses = expenses?.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
+      return totalIncome - totalDisbursedExpenses;
   }, [income, expenses]);
 
   const isLoading = isLoadingIncome || isLoadingExpenses;
