@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -8,13 +9,6 @@ import { Target, Users, HandCoins, Trees } from "lucide-react"
 import { useMemo } from "react"
 import { Progress } from "../ui/progress"
 
-// Define which metrics to feature on the dashboard
-const FEATURED_METRICS = [
-  "Cycle of Dignity Fundraising",
-  "Girls Supported (RED)",
-  "Youth Reached",
-  "Trees Planted (GreenSchools)",
-]
 
 const metricIcons: { [key: string]: React.ElementType } = {
   "Cycle of Dignity Fundraising": HandCoins,
@@ -38,18 +32,30 @@ const formatCurrency = (value: number) => {
 export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null }) {
 
   const displayMetrics = useMemo(() => {
-    if (!metrics) return Array(FEATURED_METRICS.length).fill(null);
-    return FEATURED_METRICS.map(
-      (fm) =>
-        metrics.find((m) => m.metric === fm) || {
-          id: fm,
-          metric: fm,
-          current: 0,
-          target: 0,
-          isPlaceholder: true,
-        }
-    )
+    if (!metrics) return Array(4).fill(null);
+    // Display the first 4 metrics from the live data
+    return metrics.slice(0, 4);
   }, [metrics])
+
+  if (metrics && metrics.length === 0) {
+    return (
+       <Card className="col-span-full">
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <p className="font-semibold">No Impact Metrics Found</p>
+          <p className="text-sm">
+            Go to{" "}
+            <Link
+              href="/management/metrics"
+              className="text-primary hover:underline"
+            >
+              Metrics Management
+            </Link>{" "}
+            to add your first KPI.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -83,11 +89,9 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
                    <div className="text-3xl font-bold">
                       {formatValue(metric.current)}
                   </div>
-                 {!metric.isPlaceholder && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                        Target: {metric.target.toLocaleString()}
-                    </p>
-                 )}
+                 <p className="text-xs text-muted-foreground mt-1">
+                    Target: {metric.target.toLocaleString()}
+                </p>
                 </div>
             </Card>
           </Link>
