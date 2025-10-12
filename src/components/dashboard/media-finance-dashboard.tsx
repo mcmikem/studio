@@ -11,6 +11,7 @@ import {
   X,
   Wallet,
   Camera,
+  Wand,
 } from "lucide-react"
 import {
   Card,
@@ -40,10 +41,11 @@ import { createAlert } from "@/ai/flows/create-alert-flow"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"
 import { DashboardHeader } from "./dashboard-header"
-import { doc, collection, query, where, orderBy, Timestamp } from "firebase/firestore"
+import { doc, collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 import { Progress } from "../ui/progress"
 import { startOfMonth } from "date-fns"
 import { TeamDeployment } from "./team-deployment"
+import { Skeleton } from "../ui/skeleton"
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat("en-UG", {
@@ -52,6 +54,70 @@ const formatCurrency = (value: number) => {
     minimumFractionDigits: 0,
   }).format(value)
 }
+
+function MediaOpportunities({ activities, isLoading }: { activities: Activity[] | null, isLoading: boolean }) {
+    const opportunities = useMemo(() => {
+        if (!activities) return [];
+        // The value for "Capturing content for fundraising" is 50000.
+        // We can check if indirectValue is not zero, but for a more robust check,
+        // it would be better if the selected multipliers were stored.
+        // For now, we'll assume any activity with indirect value has media potential.
+        return activities.filter(act => act.indirectValue && act.indirectValue > 0);
+    }, [activities]);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Camera /> Media Opportunities</CardTitle>
+                <CardDescription>
+                    A feed of recent field activities logged with media content.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-3">
+                    {isLoading && (
+                        Array.from({ length: 3 }).map((_, i) => (
+                             <div key={i} className="flex items-center justify-between p-3 rounded-md bg-muted">
+                                <div className="space-y-1">
+                                    <Skeleton className="h-5 w-48" />
+                                    <Skeleton className="h-4 w-32" />
+                                </div>
+                                <Skeleton className="h-9 w-28" />
+                            </div>
+                        ))
+                    )}
+                    {!isLoading && opportunities.length > 0 ? (
+                        opportunities.map(act => (
+                            <div key={act.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-md bg-muted">
+                                <div>
+                                    <p className="font-semibold">{act.title}</p>
+                                    <p className="text-xs text-muted-foreground">Logged by {act.userName} - {formatDateSafe(act.loggedAt)}</p>
+                                </div>
+                                <Button asChild size="sm" className="mt-2 sm:mt-0">
+                                    <Link href={`/impact-story?activityId=${act.id}`}>
+                                        <Wand className="mr-2 h-4 w-4" />
+                                        Generate Story
+                                    </Link>
+                                </Button>
+                            </div>
+                        ))
+                    ) : (
+                        !isLoading && (
+                             <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full min-h-48">
+                                <Camera className="h-12 w-12 text-muted-foreground mb-4" />
+                                <h3 className="font-semibold text-lg">No Media Opportunities</h3>
+                                <p className="text-muted-foreground text-sm max-w-sm">
+                                    No recent activities were logged with the "Capture Content" multiplier.
+                                </p>
+                            </div>
+                        )
+                    )}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
 
 function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metrics: ImpactMetric[] | null }) {
     const cycleOfDignityMetric = metrics?.find((m: any) => m.metric === "Cycle of Dignity Fundraising");
@@ -225,6 +291,12 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
   const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
+  const activitiesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'), limit(10));
+  }, [firestore]);
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
+
 
   return (
     <>
@@ -234,23 +306,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <FinancialQueue expenses={allExpenses} />
-             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Camera /> Content Pipeline</CardTitle>
-                <CardDescription>
-                  A central place for all photos, videos, and brand assets.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full min-h-48">
-                  <FolderKanban className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold text-lg">Under Development</h3>
-                  <p className="text-muted-foreground text-sm max-w-sm">
-                    A searchable library and pipeline for all media content is coming soon. For now, please continue using our shared Google Drive folder.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+             <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
