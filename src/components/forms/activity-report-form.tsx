@@ -505,10 +505,10 @@ export function ActivityReportForm() {
                   <TabsTrigger value="planning">1. Planning</TabsTrigger>
                   <TabsTrigger value="logging">2. Logging</TabsTrigger>
               </TabsList>
-              <TabsContent value="planning">
+              <TabsContent value="planning" className="pt-4">
                   {preActivityContent}
               </TabsContent>
-              <TabsContent value="logging">
+              <TabsContent value="logging" className="pt-4">
                   {postActivityContent}
               </TabsContent>
           </Tabs>

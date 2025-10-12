@@ -8,19 +8,49 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { CheckoutForm } from '@/components/forms/checkout-form';
-import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone } from 'lucide-react';
-import { ActivityReportForm } from '@/components/forms/activity-report-form';
-import { ExpenseReportForm } from '@/components/forms/expense-report-form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
-import { CheckinForm } from '@/components/forms/checkin-form';
-import { CreateAlertForm } from '@/components/forms/create-alert-form';
+import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
-function FormsContent() {
-  const searchParams = useSearchParams();
-  const defaultTab = searchParams.get('tab') || 'check-in';
+const formLinks = [
+  {
+    href: '/forms/check-in',
+    title: 'Daily Check-in',
+    description: 'Plan your day and align with team goals.',
+    icon: LogIn,
+    tab: 'check-in'
+  },
+  {
+    href: '/forms/check-out',
+    title: 'Daily Check-out',
+    description: 'Report your impact and share key learnings.',
+    icon: LogOut,
+    tab: 'check-out'
+  },
+  {
+    href: '/forms/activity',
+    title: 'Activity Report (ROI)',
+    description: 'Log a field activity and calculate its return on investment.',
+    icon: BarChart3,
+    tab: 'activity'
+  },
+  {
+    href: '/forms/expense',
+    title: 'Expense Report',
+    description: 'Submit a new expense or request funds.',
+    icon: Receipt,
+    tab: 'expense'
+  },
+  {
+    href: '/forms/alert',
+    title: 'Create Alert',
+    description: 'Broadcast an important message to the team.',
+    icon: Megaphone,
+    tab: 'alert'
+  },
+]
+
+
+export default function FormsPage() {
 
   return (
      <div className="flex flex-col gap-6">
@@ -34,93 +64,23 @@ function FormsContent() {
         </p>
       </header>
 
-      <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto md:h-10">
-            <TabsTrigger value="check-in" className="py-2">
-            <LogIn className="mr-2 h-4 w-4" />
-            Daily Check-in
-            </TabsTrigger>
-            <TabsTrigger value="check-out" className="py-2">
-            <LogOut className="mr-2 h-4 w-4" />
-            Daily Check-out
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="py-2">
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Activity Report
-            </TabsTrigger>
-            <TabsTrigger value="expense" className="py-2">
-            <Receipt className="mr-2 h-4 w-4" />
-            Expense Report
-            </TabsTrigger>
-             <TabsTrigger value="alert" className="py-2">
-            <Megaphone className="mr-2 h-4 w-4" />
-            Create Alert
-            </TabsTrigger>
-        </TabsList>
-         <TabsContent value="check-in">
-          <CheckinForm />
-        </TabsContent>
-        <TabsContent value="check-out">
-          <Card>
-            <CardHeader>
-              <CardTitle>Daily Check-out</CardTitle>
-              <CardDescription>
-                Report your impact, share learnings, and plan tomorrow's win.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CheckoutForm />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="activity">
-          <Card>
-            <CardHeader>
-              <CardTitle>Activity Report & ROI Calculator</CardTitle>
-              <CardDescription>
-                Plan your activity to maximize impact and log the results.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ActivityReportForm />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="expense">
-          <Card>
-             <CardHeader>
-              <CardTitle>New Expense Report</CardTitle>
-              <CardDescription>
-                Submit a new expense for reimbursement or request funds for an activity.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ExpenseReportForm />
-            </CardContent>
-          </Card>
-        </TabsContent>
-         <TabsContent value="alert">
-          <Card>
-             <CardHeader>
-              <CardTitle>Create New Alert</CardTitle>
-              <CardDescription>
-                Broadcast an important message or announcement to the entire team.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CreateAlertForm />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {formLinks.map(link => (
+          <Link href={link.href} key={link.href}>
+            <Card className="hover:bg-muted/50 hover:border-primary/50 transition-all h-full flex flex-col">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                    <link.icon className="h-8 w-8 text-primary" />
+                    <CardTitle>{link.title}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <CardDescription>{link.description}</CardDescription>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
-}
-
-export default function FormsPage() {
-    return (
-        <Suspense>
-            <FormsContent />
-        </Suspense>
-    );
 }
