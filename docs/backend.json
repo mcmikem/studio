@@ -556,7 +556,6 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Equipment",
       "description": "Represents a piece of physical equipment or an asset.",
-      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
@@ -583,6 +582,22 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["text", "userId", "userName", "createdAt"]
+    },
+    "Testimony": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Testimony",
+        "description": "Represents a recorded video or audio testimony.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "title": { "type": "string" },
+            "userId": { "type": "string" },
+            "userName": { "type": "string" },
+            "videoUrl": { "type": "string", "format": "uri" },
+            "audioUrl": { "type": "string", "format": "uri" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["title", "userId", "userName", "createdAt"]
     }
   },
   "auth": {
@@ -711,7 +726,12 @@
             "$ref": "#/entities/Message"
         },
         "description": "Stores team chat messages."
+    },
+    "/testimonies/{testimonyId}": {
+      "schema": {
+        "$ref": "#/entities/Testimony"
+      },
+      "description": "Stores recorded audio/video testimonies."
     }
   }
 }
-

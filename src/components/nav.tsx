@@ -21,6 +21,7 @@ import {
   Megaphone,
   Calendar as CalendarIcon,
   ListChecks,
+  Video,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -83,6 +84,7 @@ const navConfig = {
     { href: '/reports', icon: FileText, label: 'Analysis' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/impact-story', icon: Wand, label: 'Story Generator' },
+    { href: '/record-testimony', icon: Video, label: 'Testimonies' },
     { href: '/chat', icon: MessageSquare, label: 'Chat & Team Space' },
   ]
 };
