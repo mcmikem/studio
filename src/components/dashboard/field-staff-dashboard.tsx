@@ -73,9 +73,7 @@ function QuickActions() {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
                  <Button asChild variant="outline" size="lg"><Link href="/forms?tab=activity"><Camera className="mr-2 h-4 w-4"/>Log Activity</Link></Button>
-                 <Button variant="outline" size="lg" disabled><UserPlus className="mr-2 h-4 w-4"/>Add Volunteer</Button>
                  <Button asChild variant="outline" size="lg"><Link href="/forms?tab=expense"><Receipt className="mr-2 h-4 w-4"/>Add Expense</Link></Button>
-                 <Button variant="outline" size="lg" disabled><FileText className="mr-2 h-4 w-4"/>Field Report</Button>
             </CardContent>
         </Card>
     )
@@ -150,6 +148,7 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-1">
         <TodaysBattlePlan />
+        <MyPriorities />
         <QuickActions />
         <SmartReminders profile={profile} />
         <TeamPulse checkouts={checkouts} />

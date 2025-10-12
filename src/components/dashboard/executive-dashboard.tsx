@@ -19,6 +19,7 @@ import { ArrowRight, Target, Users, Wand, Globe, TrendingUp, AlertTriangle } fro
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useMemo } from "react"
 import { subDays, startOfWeek, isAfter, subMonths } from "date-fns"
+import Link from "next/link"
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
@@ -49,34 +50,32 @@ function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
     }, [activities]);
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Globe className="h-6 w-6" /> Ecosystem Pulse</CardTitle>
-                <CardDescription>A high-level view of the Omuto Ecosystem's health in the last 30 days.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                    <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-sm font-semibold">Phase 1: Inspire</p>
-                        <p className="text-2xl font-bold">{inspire}</p>
-                        <p className="text-xs text-muted-foreground">Active Programs</p>
+        <Card className="hover:bg-muted/50 transition-colors">
+            <Link href="/activity-log">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Globe className="h-6 w-6" /> Ecosystem Pulse</CardTitle>
+                    <CardDescription>A high-level view of the Omuto Ecosystem's health in the last 30 days.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <div className="p-3 bg-muted rounded-lg">
+                            <p className="text-sm font-semibold">Phase 1: Inspire</p>
+                            <p className="text-2xl font-bold">{inspire}</p>
+                            <p className="text-xs text-muted-foreground">Active Programs</p>
+                        </div>
+                        <div className="p-3 bg-muted rounded-lg">
+                            <p className="text-sm font-semibold">Phase 2: Empower</p>
+                            <p className="text-2xl font-bold">{empower}</p>
+                            <p className="text-xs text-muted-foreground">YAP Activities</p>
+                        </div>
+                         <div className="p-3 bg-muted rounded-lg">
+                            <p className="text-sm font-semibold">Phase 3: Sustain</p>
+                            <p className="text-2xl font-bold">{formatCurrency(sustain)}</p>
+                            <p className="text-xs text-muted-foreground">Value Generated</p>
+                        </div>
                     </div>
-                    <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-sm font-semibold">Phase 2: Empower</p>
-                        <p className="text-2xl font-bold">{empower}</p>
-                        <p className="text-xs text-muted-foreground">YAP Activities</p>
-                    </div>
-                     <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-sm font-semibold">Phase 3: Sustain</p>
-                        <p className="text-2xl font-bold">{formatCurrency(sustain)}</p>
-                        <p className="text-xs text-muted-foreground">Value Generated</p>
-                    </div>
-                </div>
-                 <div className="text-center pt-2">
-                    <p className="text-sm text-muted-foreground">Youth Engagement Trend</p>
-                    <p className="text-lg font-bold text-muted-foreground">(Sample Data) ↗︎ +15% this month</p>
-                 </div>
-            </CardContent>
+                </CardContent>
+             </Link>
         </Card>
     )
 }
@@ -109,11 +108,7 @@ function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
                  <CardDescription>Key organizational performance metrics.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-x-4 gap-y-6">
-                <div>
-                    <p className="text-sm text-muted-foreground">Productivity</p>
-                    <p className="text-2xl font-bold">87% <span className="text-sm font-normal text-muted-foreground">(Sample)</span></p>
-                </div>
-                <div>
+                 <div>
                     <p className="text-sm text-muted-foreground">Field Efficiency</p>
                     <p className="text-2xl font-bold">{weeklyAvg.toFixed(1)} <span className="text-sm font-normal">activities/wk</span></p>
                 </div>
@@ -122,12 +117,12 @@ function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
                     <p className="text-2xl font-bold">{costPerImpact.toFixed(2)} <span className="text-sm font-normal">UGX/value</span></p>
                 </div>
                 <div>
-                    <p className="text-sm text-muted-foreground">Volunteer Ratio</p>
-                    <p className="text-2xl font-bold">1:3 <span className="text-sm font-normal text-muted-foreground">(Sample)</span></p>
+                    <p className="text-sm text-muted-foreground">Productivity</p>
+                    <p className="text-2xl font-bold">0<span className="text-sm font-normal text-muted-foreground"> (Sample)</span></p>
                 </div>
-                 <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Top Performers (Sample)</p>
-                    <p className="font-semibold">Bwire (18 activities), Dianah (6 partnerships)</p>
+                <div>
+                    <p className="text-sm text-muted-foreground">Volunteer Ratio</p>
+                    <p className="text-2xl font-bold">0<span className="text-sm font-normal text-muted-foreground"> (Sample)</span></p>
                 </div>
             </CardContent>
         </Card>

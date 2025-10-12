@@ -18,8 +18,7 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
         const now = new Date();
         const sixWeeksAgo = startOfWeek(subWeeks(now, 5)); // Include current week + 5 past weeks
         const lastWeekStart = startOfWeek(subWeeks(now, 1));
-        const twoWeeksAgoStart = startOfWeek(subWeeks(now, 2));
-
+        
         const recentActivities = activities.filter(act => 
             act.loggedAt && isAfter(act.loggedAt.toDate(), sixWeeksAgo)
         );
@@ -94,16 +93,6 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
                             />
                         </AreaChart>
                     </ResponsiveContainer>
-                </div>
-                <div className="grid grid-cols-2 gap-4 text-center">
-                    <div className="p-2 bg-muted rounded-md">
-                        <p className="text-xl font-bold">45<span className="text-sm font-normal">h</span></p>
-                        <p className="text-xs text-muted-foreground">(Sample) Volunteer Hours</p>
-                    </div>
-                     <div className="p-2 bg-muted rounded-md">
-                        <p className="text-xl font-bold">8</p>
-                        <p className="text-xs text-muted-foreground">(Sample) Media Pieces</p>
-                    </div>
                 </div>
             </CardContent>
         </Card>
