@@ -12,6 +12,7 @@ import {
   Wallet,
   Camera,
   Wand,
+  CheckCheck,
 } from "lucide-react"
 import {
   Card,
@@ -131,16 +132,16 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
             .reduce((sum, i) => sum + i.amount, 0);
         
         const currentMonthExpenses = expenses
-            .filter(e => (e.status === 'Approved' || e.status === 'Cleared') && e.createdAt && e.createdAt.toDate() >= monthStart)
+            .filter(e => (e.status === 'Approved' || e.status === 'Disbursed' || e.status === 'Acknowledged') && e.createdAt && e.createdAt.toDate() >= monthStart)
             .reduce((sum, e) => sum + e.totalAmount, 0);
 
         const allTimeIncome = income.reduce((sum, i) => sum + i.amount, 0);
-        const allTimeExpenses = expenses.filter(e => e.status === 'Cleared').reduce((sum, e) => sum + e.totalAmount, 0);
+        const allTimeClearedExpenses = expenses.filter(e => e.status === 'Acknowledged' || e.status === 'Disbursed').reduce((sum, e) => sum + e.totalAmount, 0);
 
         return { 
             totalIncome: currentMonthIncome, 
             totalExpenses: currentMonthExpenses,
-            cashBalance: allTimeIncome - allTimeExpenses
+            cashBalance: allTimeIncome - allTimeClearedExpenses
         };
     }, [income, expenses]);
     
@@ -184,7 +185,7 @@ function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
   
   const { user: currentUser } = useUser();
 
-  const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected' | 'Cleared') => {
+  const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected' | 'Disbursed') => {
     if (!firestore || !currentUser) return;
     const expenseRef = doc(firestore, 'expenses', expense.id);
     try {
@@ -196,7 +197,7 @@ function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
 
       if (expense.userId !== currentUser.uid) {
         await createAlert({
-          type: status === 'Approved' ? 'Info' : status === 'Cleared' ? 'Info' : 'Urgent',
+          type: 'Info',
           message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been ${status.toLowerCase()}.`,
           priority: 'Medium',
           action: `/management/expenses?highlight=${expense.id}`,
@@ -238,9 +239,9 @@ function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
                   </div>
                 )}
                 {type === 'approved' && (
-                  <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Cleared')}>
-                    <Check className="mr-2 h-4 w-4" />
-                    Mark Cleared
+                  <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>
+                    <CheckCheck className="mr-2 h-4 w-4" />
+                    Mark Disbursed
                   </Button>
                 )}
               </TableCell>
@@ -249,7 +250,7 @@ function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
         ) : (
             <TableRow>
               <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
-                The {type === 'pending' ? 'approval' : 'payment'} queue is empty.
+                The {type === 'pending' ? 'approval' : 'disbursement'} queue is empty.
               </TableCell>
             </TableRow>
         )}
@@ -269,7 +270,7 @@ function FinancialQueue({ expenses }: { expenses: Expense[] | null }) {
           {renderTable(pendingExpenses, 'pending')}
         </div>
          <div>
-          <h3 className="font-semibold mb-2 flex items-center gap-2"><Badge variant="outline" className="border-green-500 bg-green-500/10 text-green-500">Awaiting Payment</Badge></h3>
+          <h3 className="font-semibold mb-2 flex items-center gap-2"><Badge variant="outline" className="border-blue-500 bg-blue-500/10 text-blue-500">Awaiting Disbursement</Badge></h3>
           {renderTable(approvedExpenses, 'approved')}
         </div>
         <Button asChild className="mt-4 w-full" variant="outline">

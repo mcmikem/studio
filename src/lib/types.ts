@@ -192,7 +192,7 @@ export type Expense = {
     items: ExpenseItem[];
     totalAmount: number;
     type: "Requisition" | "Reimbursement";
-    status: "Pending" | "Approved" | "Rejected" | "Cleared";
+    status: "Pending" | "Approved" | "Rejected" | "Disbursed" | "Acknowledged";
     createdAt?: Timestamp;
     title: string;
 };

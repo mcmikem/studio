@@ -468,7 +468,7 @@
           }
         },
         "totalAmount": { "type": "number", "description": "The sum of all item amounts." },
-        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Cleared"], "default": "Pending"},
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Disbursed", "Acknowledged"], "default": "Pending"},
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "userName", "date", "title", "type", "items", "totalAmount", "status", "createdAt"]

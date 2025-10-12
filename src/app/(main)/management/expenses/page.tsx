@@ -24,7 +24,7 @@ import type { Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, Receipt } from 'lucide-react';
+import { Check, X, Receipt, CheckCheck } from 'lucide-react';
 import { useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
@@ -48,9 +48,10 @@ const formatCurrency = (value: number) => {
 
 const statusColors: { [key: string]: string } = {
   Pending: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
-  Approved: 'border-green-500 bg-green-500/10 text-green-500',
+  Approved: 'border-blue-500 bg-blue-500/10 text-blue-500',
+  Disbursed: 'border-purple-500 bg-purple-500/10 text-purple-500',
+  Acknowledged: 'border-green-500 bg-green-500/10 text-green-500',
   Rejected: 'border-red-500 bg-red-500/10 text-red-500',
-  Cleared: 'border-blue-500 bg-blue-500/10 text-blue-500',
 };
 
 const typeColors: { [key: string]: string } = {
@@ -69,8 +70,6 @@ function ExpensesContent() {
     if (!firestore) return null;
     return query(
         collection(firestore, 'expenses'), 
-        where('status', '!=', 'Rejected'),
-        orderBy('status'),
         orderBy('createdAt', 'desc')
     );
   }, [firestore]);
@@ -80,7 +79,7 @@ function ExpensesContent() {
   const chartData = useMemo(() => {
     if (!expenses) return [];
     
-    const relevantExpenses = expenses.filter(e => e.status === 'Approved' || e.status === 'Cleared');
+    const relevantExpenses = expenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
     
     const categoryTotals = relevantExpenses.reduce((acc, expense) => {
         if (expense.items && Array.isArray(expense.items)) {
@@ -117,7 +116,7 @@ function ExpensesContent() {
   }, [highlightedExpenseId, expenses]);
 
 
-  const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected') => {
+  const handleStatusUpdate = async (expense: Expense, status: Expense['status']) => {
     if (!firestore || !currentUser) return;
     const expenseRef = doc(firestore, 'expenses', expense.id);
     try {
@@ -127,9 +126,10 @@ function ExpensesContent() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        if (expense.userId !== currentUser.uid) {
+        // We only send alerts for manager actions, not for self-acknowledgement.
+        if (status !== 'Acknowledged' && expense.userId !== currentUser.uid) {
             await createAlert({
-                type: status === 'Approved' ? 'Info' : 'Urgent',
+                type: status === 'Approved' ? 'Info' : status === 'Disbursed' ? 'Info' : 'Urgent',
                 message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
                 priority: status === 'Approved' ? 'Low' : 'Medium',
                 action: `/management/expenses?highlight=${expense.id}`,
@@ -156,7 +156,7 @@ function ExpensesContent() {
           Expense Management
         </h1>
         <p className="text-muted-foreground">
-          Review, approve, or reject expense reports submitted by the team.
+          Review, approve, disburse, and track all team expense reports.
         </p>
       </header>
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -164,156 +164,83 @@ function ExpensesContent() {
             <Card>
                 <CardHeader>
                   <CardTitle>Expense Report History</CardTitle>
-                  <CardDescription>This view shows all 'Pending', 'Approved', and 'Cleared' reports.</CardDescription>
+                  <CardDescription>This view shows all reports, including 'Pending', 'Approved', 'Disbursed', and 'Acknowledged'.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {/* Mobile View */}
-                    <div className="space-y-4 sm:hidden">
-                        {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
-                        {expenses && expenses.length > 0 ? (
-                            expenses.map((expense) => (
-                                <Card key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
-                                    <CardHeader>
-                                        <CardTitle className="text-base">{expense.title}</CardTitle>
-                                        <CardDescription>{expense.userName} - {formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="flex justify-between items-center">
-                                        <div>
-                                            <p className="font-bold text-lg">{formatCurrency(expense.totalAmount)}</p>
-                                        </div>
-                                        <div className='flex flex-col items-end gap-1'>
-                                            <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
-                                            <Badge variant="outline" className={typeColors[expense.type]}>{expense.type}</Badge>
-                                        </div>
-                                    </CardContent>
-                                    {expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
-                                        <CardFooter className="flex justify-end gap-2">
-                                            <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-primary border-primary hover:bg-primary/10 hover:text-primary"
-                                            onClick={() => handleStatusUpdate(expense, 'Approved')}
-                                            >
-                                            <Check className="mr-2 h-4 w-4" /> Approve
-                                            </Button>
-                                            <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-destructive border-destructive hover:bg-destructive/10 hover:text-destructive"
-                                            onClick={() => handleStatusUpdate(expense, 'Rejected')}
-                                            >
-                                            <X className="mr-2 h-4 w-4" /> Reject
-                                            </Button>
-                                        </CardFooter>
-                                    )}
-                                </Card>
-                            ))
-                        ) : (
-                            !isLoading && (
-                                <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
-                                    <Receipt className="h-12 w-12" />
-                                    <span className="text-lg font-semibold mt-2">No Expenses Found</span>
-                                    <p className="text-sm">No reports have been submitted yet.</p>
-                                </div>
-                            )
-                        )}
-                    </div>
-                    {/* Desktop View */}
-                    <div className="hidden sm:block">
-                        <Table>
-                        <TableHeader>
-                            <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                    <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading &&
+                        Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i}>
+                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading &&
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}>
-                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
-                                </TableRow>
-                            ))}
-                            {expenses && expenses.length > 0 ? (
-                            expenses.map((expense) => (
-                                <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
-                                <TableCell className="font-medium">{expense.userName}</TableCell>
-                                <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
-                                <TableCell>{expense.title}</TableCell>
-                                <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
-                                 <TableCell>
-                                    <Badge variant="outline" className={typeColors[expense.type]}>
-                                        {expense.type}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className={statusColors[expense.status]}>
-                                        {expense.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    {expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
-                                    <div className="flex justify-end gap-2">
-                                        <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-primary hover:text-primary"
-                                        onClick={() => handleStatusUpdate(expense, 'Approved')}
-                                        >
-                                        <Check className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="text-destructive hover:text-destructive"
-                                        onClick={() => handleStatusUpdate(expense, 'Rejected')}
-                                        >
-                                        <X className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                    )}
-                                </TableCell>
-                                </TableRow>
-                            ))
-                            ) : (
-                            !isLoading && (
-                                <TableRow>
-                                <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
-                                    <div className="flex flex-col items-center justify-center gap-2">
-                                    <Receipt className="h-12 w-12" />
-                                    <span className="text-lg font-semibold">
-                                        No Expenses Found
-                                    </span>
-                                    <p className="text-sm">
-                                        No reports have been submitted yet.
-                                    </p>
-                                    </div>
-                                </TableCell>
-                                </TableRow>
-                            )
-                            )}
-                        </TableBody>
-                        </Table>
-                    </div>
+                        ))}
+                        {expenses && expenses.length > 0 ? (
+                        expenses.map((expense) => (
+                            <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
+                            <TableCell className="font-medium">{expense.userName}</TableCell>
+                            <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
+                            <TableCell>{expense.title}</TableCell>
+                            <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
+                            <TableCell>
+                                <Badge variant="outline" className={statusColors[expense.status]}>
+                                    {expense.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                {expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                                  <div className="flex justify-end gap-2">
+                                      <Button variant="ghost" size="icon" className="text-primary hover:text-primary" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
+                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
+                                  </div>
+                                )}
+                                {expense.status === 'Approved' && currentUser?.role !== 'Field Coordinator' && (
+                                     <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
+                                )}
+                                {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
+                                     <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge Receipt</Button>
+                                )}
+                            </TableCell>
+                            </TableRow>
+                        ))
+                        ) : (
+                        !isLoading && (
+                            <TableRow>
+                            <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                                <div className="flex flex-col items-center justify-center gap-2">
+                                <Receipt className="h-12 w-12" />
+                                <span className="text-lg font-semibold">No Expenses Found</span>
+                                <p className="text-sm">No reports have been submitted yet.</p>
+                                </div>
+                            </TableCell>
+                            </TableRow>
+                        )
+                        )}
+                    </TableBody>
+                    </Table>
                 </CardContent>
             </Card>
         </div>
         <div className="lg:col-span-1">
              <Card>
                 <CardHeader>
-                    <CardTitle>Total Spending by Category</CardTitle>
-                    <CardDescription>Based on all 'Approved' and 'Cleared' expenses.</CardDescription>
+                    <CardTitle>Spending by Category</CardTitle>
+                    <CardDescription>Based on all 'Disbursed' and 'Acknowledged' expenses.</CardDescription>
                 </CardHeader>
                 <CardContent>
                      {isLoading && <Skeleton className="w-full h-64" />}
