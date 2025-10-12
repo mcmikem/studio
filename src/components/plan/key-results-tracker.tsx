@@ -15,10 +15,11 @@ import type { KeyResult, Activity, ImpactMetric, Partnership } from '@/lib/types
 import { Target, Flag, AlertTriangle } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
-import { isPast, parseISO } from 'date-fns';
+import { isPast, parseISO, differenceInDays } from 'date-fns';
 import { cn, formatDateSafe } from '@/lib/utils';
 import { useMemo } from 'react';
 import { ProgressRing } from '../ui/progress-ring';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -29,11 +30,10 @@ const priorityColors: { [key: string]: string } = {
 interface KeyResultsTrackerProps {
     title?: string;
     description?: string;
-    showAtRisk?: boolean;
 }
 
 
-export function KeyResultsTracker({ title, description, showAtRisk }: KeyResultsTrackerProps) {
+export function KeyResultsTracker({ title, description }: KeyResultsTrackerProps) {
   const firestore = useFirestore();
   
   const keyResultsQuery = useMemoFirebase(() => {
@@ -71,22 +71,26 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     return keyResults.map(kr => {
       let liveProgress = kr.currentProgress;
 
+      // KR1: Fundraising Growth
       if (kr.title === 'OCT-KR1' && cycleOfDignityMetric) {
         liveProgress = cycleOfDignityMetric.current;
       }
       
+      // KR2: Tree Planting
       if (kr.title === 'OCT-KR2') {
         liveProgress = activities.reduce((sum, act) => {
             return sum + (act.trees_planted || 0);
         }, 0);
       }
 
+      // KR3: RED Campaign
       if (kr.title === 'OCT-KR3') {
         liveProgress = activities.reduce((sum, act) => {
             return sum + (act.parents_attended || 0) + (act.teachers_attended || 0);
         }, 0);
       }
       
+      // KR4: New Partnerships
       if (kr.title === 'OCT-KR4') {
         liveProgress = partnerships.filter(p => {
             if (!p.createdAt) return false;
@@ -96,7 +100,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
         }).length;
       }
       
-      // KR5-KR8 are based on percentage completion or manual milestones for now.
+      // KR5-KR8: These are based on percentage completion or manual milestones.
       // The `currentProgress` from the database will be used directly.
       // Future logic for checklist-based progress would go here.
       // if (kr.title === 'OCT-KR5') { /* ... complex checklist logic ... */ }
@@ -109,22 +113,46 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
 
   const atRiskKr = useMemo(() => {
     if (!processedKeyResults) return null;
-    // Find the KR with the lowest progress that isn't complete yet
-    return processedKeyResults
-        .filter(kr => kr.currentProgress / kr.target < 1)
-        .sort((a,b) => (a.currentProgress / a.target) - (b.currentProgress / b.target))[0];
+    const today = new Date();
+    
+    // Logic from Blueprint:
+    // BEHIND SCHEDULE ALERT: IF (Current Date > (Start Date + (Total Days * 0.7))) AND Progress % < 70 THEN "🟡 [KR Name] behind schedule"
+    // CRITICAL ALERT: IF (Days remaining < 7) AND (Progress % < (Days passed/Total Days * 100)) THEN "🔴 [KR Name] needs immediate attention"
+    
+    return processedKeyResults.map(kr => {
+        const startDate = new Date('2025-10-01');
+        const deadline = parseISO(kr.deadline);
+        const totalDays = differenceInDays(deadline, startDate);
+        const daysPassed = differenceInDays(today, startDate);
+        const daysRemaining = differenceInDays(deadline, today);
+        const progressPercent = kr.target > 0 ? (kr.currentProgress / kr.target) * 100 : 0;
+
+        let status: 'on-track' | 'at-risk' | 'critical' = 'on-track';
+
+        if (progressPercent < 100) {
+           const requiredPace = (daysPassed / totalDays) * 100;
+            if (daysRemaining < 7 && progressPercent < requiredPace) {
+                status = 'critical';
+            } else if (daysPassed / totalDays > 0.7 && progressPercent < 70) {
+                status = 'at-risk';
+            }
+        }
+        
+        return {...kr, alertStatus: status};
+    }).filter(kr => kr.alertStatus !== 'on-track');
+
   }, [processedKeyResults]);
 
 
   const formatTarget = (kr: KeyResult) => {
     if (kr.title === 'OCT-KR1') return `${(kr.target / 1000000).toFixed(1)}M UGX`;
-    if (kr.target === 100 && kr.title.includes('KR')) return `${kr.target}%`;
+    if (kr.target === 100 && (kr.title === 'OCT-KR5' || kr.title === 'OCT-KR6' || kr.title === 'OCT-KR7')) return `${kr.target}%`;
     return kr.target.toLocaleString();
   }
 
   const formatProgress = (kr: KeyResult) => {
     if (kr.title === 'OCT-KR1') return `${(kr.currentProgress / 1000000).toFixed(1)}M`;
-    if (kr.target === 100 && kr.title.includes('KR')) return `${kr.currentProgress}%`;
+    if (kr.target === 100 && (kr.title === 'OCT-KR5' || kr.title === 'OCT-KR6' || kr.title === 'OCT-KR7')) return `${kr.currentProgress}%`;
     return kr.currentProgress.toLocaleString();
   }
   
@@ -139,14 +167,22 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-         {showAtRisk && atRiskKr && (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                <AlertTriangle className="h-5 w-5 text-red-500 mt-1 flex-shrink-0" />
-                <div>
-                    <p className="font-semibold text-red-600">AT RISK: {atRiskKr.title}</p>
-                    <p className="text-sm text-muted-foreground">{atRiskKr.description} is behind schedule. Consider reallocating resources.</p>
-                </div>
-            </div>
+         {atRiskKr && atRiskKr.length > 0 && (
+            <Alert variant={atRiskKr.some(k => k.alertStatus === 'critical') ? 'destructive' : 'default'} className={cn(
+                !atRiskKr.some(k => k.alertStatus === 'critical') && "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
+            )}>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle className="font-bold">
+                    {atRiskKr.some(k => k.alertStatus === 'critical') ? "Critical Alert" : "Attention Needed"}
+                </AlertTitle>
+                <AlertDescription>
+                    {atRiskKr[0].alertStatus === 'critical' 
+                        ? `${atRiskKr[0].title} is critically behind schedule and requires immediate action.` 
+                        : `${atRiskKr[0].title} is behind schedule. Consider reallocating resources.`
+                    }
+                    {atRiskKr.length > 1 && ` (+${atRiskKr.length - 1} more)`}
+                </AlertDescription>
+            </Alert>
         )}
         {isLoading &&
           Array.from({ length: 3 }).map((_, i) => (
