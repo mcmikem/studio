@@ -72,8 +72,8 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
                         <h4 className="font-semibold">Resource Alerts</h4>
                         {!expenses ? <Skeleton className="h-10 w-full" /> : (
                             <div className="p-3 bg-muted rounded-md text-sm">
-                                <p>• Transport budget: <span className="font-bold">{resourceAlerts.transportBudgetUsed.toFixed(0)}% used</span> (Sample)</p>
-                                <p>• Volunteer gap: <span className="font-bold text-red-500">Need 0 more</span> (Sample)</p>
+                                <p>• Transport budget: <span className="font-bold">{resourceAlerts.transportBudgetUsed.toFixed(0)}% used</span></p>
+                                <p>• Volunteer gap: <span className="font-bold text-red-500">Need 0 more</span></p>
                             </div>
                         )}
                      </div>
