@@ -11,10 +11,9 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useUser } from '@/firebase';
-import { User, Mail, Briefcase, History, Loader2, Upload } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { useUser, useFirestore, useMemoFirebase, useCollection, updateDocumentNonBlocking } from '@/firebase';
+import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown } from 'lucide-react';
+import { collection, query, where, orderBy, limit, doc } from 'firebase/firestore';
 import type { RecentCheckout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,6 +27,19 @@ import { useToast } from '@/hooks/use-toast';
 import { uploadImageAndUpdateProfile } from '@/firebase/storage';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+
+const userRoles = [
+    'Executive Director',
+    'Programs & Partnerships Manager',
+    'Operations & Field Manager',
+    'Resource Mobilization Lead',
+    'Media & Communications Lead',
+    'Field Coordinator',
+    'Administrator',
+    'Intern',
+    'Volunteer'
+];
 
 function RecentUserCheckouts() {
   const firestore = useFirestore();
@@ -142,6 +154,17 @@ function UserProfileCard() {
     fileInputRef.current?.click();
   };
 
+  const handleRoleChange = (newRole: string) => {
+    if (!user || !firestore || newRole === profile?.role) return;
+
+    const userDocRef = doc(firestore, 'users', user.uid);
+    updateDocumentNonBlocking(userDocRef, { role: newRole });
+    toast({
+        title: "Role Updated!",
+        description: `Your role has been changed to ${newRole}. Your dashboard and navigation will now update.`,
+    })
+  }
+
 
   if (isLoading) {
     return (
@@ -206,7 +229,24 @@ function UserProfileCard() {
 
                 <h2 className="text-2xl font-semibold">{profile?.name || 'User'}</h2>
                 <p className="text-muted-foreground">{profile?.email}</p>
-                <Badge className="mt-4">{profile?.role}</Badge>
+                
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button variant="outline" className="mt-4">
+                            {profile?.role}
+                            <ChevronDown className="ml-2 h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuLabel>Change My Role</DropdownMenuLabel>
+                        {userRoles.map(role => (
+                            <DropdownMenuItem key={role} onSelect={() => handleRoleChange(role)}>
+                                {role}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
             </div>
             <div className="mt-6 space-y-4 text-sm">
                 <div className="flex items-center">
