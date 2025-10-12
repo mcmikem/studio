@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -12,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info, CheckCircle, Eye } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -26,6 +25,7 @@ import { Skeleton } from './ui/skeleton';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useViewAs } from '@/hooks/use-view-as';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -70,9 +70,6 @@ function NotificationsMenu() {
     const { user } = useUser();
     const [hasUnread, setHasUnread] = useState(true);
     
-    // In a real app, 'read' status would be stored in a user-specific subcollection.
-    // For this demo, we assume opening the menu marks them as "seen" in the session.
-    
     const alertsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
         return query(collection(firestore, 'alerts'), orderBy('createdAt', 'desc'), limit(5));
@@ -82,8 +79,6 @@ function NotificationsMenu() {
     
     const handleOpenChange = (open: boolean) => {
         if (open && hasUnread) {
-            // Here you would typically trigger an update to mark notifications as read in Firestore
-            // e.g., markNotificationsAsRead(user.uid, alerts.map(a => a.id));
             setHasUnread(false);
         }
     };
@@ -147,9 +142,43 @@ function NotificationsMenu() {
     )
 }
 
+function ViewAsMenu() {
+    const { setViewAsRole } = useViewAs();
+    
+    return (
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                 <Button variant="ghost" size="icon" className="text-white hover:text-white hover:bg-white/10">
+                    <Eye className="h-5 w-5" />
+                    <span className="sr-only">View As</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuLabel>View As Role</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={() => setViewAsRole('Field Coordinator')}>
+                        <span>Field Coordinator</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setViewAsRole('Media & Communications Lead')}>
+                        <span>Media & Finance</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setViewAsRole('Programs & Partnerships Manager')}>
+                        <span>Program Manager</span>
+                    </DropdownMenuItem>
+                </DropdownMenuGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
+
 export function AppHeader() {
   const pathname = usePathname();
-  const isDashboard = pathname === '/';
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
+
+  const managementRoles = ['Administrator', 'Executive Director', 'Programs & Partnerships Manager'];
+  const canViewAs = profile && managementRoles.includes(profile.role);
 
   return (
     <header className={cn(
@@ -163,6 +192,7 @@ export function AppHeader() {
       <div className={cn(
         "flex items-center gap-2"
       )}>
+        {canViewAs && <ViewAsMenu />}
         <QuickAddMenu />
         <NotificationsMenu />
         <UserMenu />

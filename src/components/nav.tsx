@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -38,6 +37,8 @@ import {
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
+import { useViewAs } from '@/hooks/use-view-as';
+
 
 const OmutoLogo = () => (
     <div className="flex items-center gap-2" data-ai-hint="logo">
@@ -101,8 +102,12 @@ const roleNavConfig = {
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
-  const { profile } = useUserProfile(user);
+  const { profile: realProfile } = useUserProfile(user);
   const { isMobile, setOpenMobile } = useSidebar();
+  const { viewAsRole } = useViewAs();
+  
+  const effectiveRole = viewAsRole || realProfile?.role;
+
 
   const handleLinkClick = () => {
     if (isMobile) {
@@ -117,7 +122,7 @@ export function AppSidebar() {
     return pathname.startsWith(path);
   }
   
-  const userRole = profile?.role as keyof typeof roleNavConfig || 'default';
+  const userRole = effectiveRole as keyof typeof roleNavConfig || 'default';
   const allowedSections = roleNavConfig[userRole] || roleNavConfig['default'];
 
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {

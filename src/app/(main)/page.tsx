@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser } from '@/firebase';
@@ -7,6 +6,9 @@ import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+import { useViewAs } from '@/hooks/use-view-as';
+import type { User } from '@/lib/types';
+
 
 // Define a loading component for dynamic imports
 const DashboardLoading = () => (
@@ -53,7 +55,12 @@ const roleToDashboard: { [key: string]: React.FC<any> } = {
 
 export default function DashboardPage() {
   const { user } = useUser();
-  const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
+  const { profile: realProfile, isLoading: isLoadingProfile } = useUserProfile(user);
+  const { viewAsRole } = useViewAs();
+
+  const effectiveRole = viewAsRole || realProfile?.role;
+
+  const profile = viewAsRole ? ({ ...realProfile, role: viewAsRole } as User) : realProfile;
 
   if (isLoadingProfile || !user) {
     return (
@@ -73,7 +80,7 @@ export default function DashboardPage() {
     );
   }
 
-  const DashboardComponent = roleToDashboard[profile.role] || roleToDashboard['default'];
+  const DashboardComponent = roleToDashboard[effectiveRole as string] || roleToDashboard['default'];
   
   return (
     <div className="flex flex-col">
