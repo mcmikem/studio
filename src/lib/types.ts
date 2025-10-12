@@ -187,12 +187,12 @@ export type Expense = {
     userId: string;
     userName: string;
     date: string;
-    title: string;
     items: ExpenseItem[];
     totalAmount: number;
     type: "Requisition" | "Reimbursement";
     status: "Pending" | "Approved" | "Rejected" | "Cleared";
     createdAt?: Timestamp;
+    title: string;
 };
 
 export type Proposal = {

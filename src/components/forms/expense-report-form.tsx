@@ -126,13 +126,15 @@ export function ExpenseReportForm() {
             const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
             
             // This is a fire-and-forget call to the AI flow
-            createAlert({
-                type: 'Reminder',
-                message: alertMessage,
-                priority: 'Medium',
-                action: `/management/expenses?highlight=${docRef.id}`,
-                creatorId: user.uid,
-            });
+            if (docRef) {
+                createAlert({
+                    type: 'Reminder',
+                    message: alertMessage,
+                    priority: 'Medium',
+                    action: `/management/expenses?highlight=${docRef.id}`,
+                    creatorId: user.uid,
+                });
+            }
 
             toast({
                 title: 'Expense Report Submitted!',
