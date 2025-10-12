@@ -6,7 +6,7 @@ import type { User, Checkin, Expense } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from '@/components/ui/skeleton';
 import { startOfDay } from 'date-fns';
-import { CheckCircle, CircleDot, UserX } from 'lucide-react';
+import { CheckCircle, CircleDot, UserX, Users } from 'lucide-react';
 
 
 export function TeamCoordination({ users, checkins, expenses }: { users: User[] | null, checkins: Checkin[] | null, expenses: Expense[] | null }) {
@@ -52,7 +52,7 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>👥 Team Coordination</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Users /> Team Coordination</CardTitle>
                 <CardDescription>Live status of team deployment and resources.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

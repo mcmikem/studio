@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlusCircle, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
@@ -140,7 +140,7 @@ export function DashboardCalendar() {
        <CardHeader>
         <div className="flex items-center justify-between">
             <div>
-                 <CardTitle>📅 Team Calendar</CardTitle>
+                 <CardTitle className="flex items-center gap-2"><CalendarIcon /> Team Calendar</CardTitle>
                  <CardDescription>
                     Key events, deadlines, and activities.
                 </CardDescription>

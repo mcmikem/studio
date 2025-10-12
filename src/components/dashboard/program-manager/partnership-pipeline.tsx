@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Handshake } from 'lucide-react';
 
 export function PartnershipPipeline({ partnerships, isLoading }: { partnerships: Partnership[] | null, isLoading: boolean }) {
     
@@ -31,7 +31,7 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
     return (
         <Card>
             <CardHeader>
-                <CardTitle>🤝 Partnership Pipeline</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Handshake /> Partnership Pipeline</CardTitle>
                 <CardDescription>A snapshot of your current partner engagement.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

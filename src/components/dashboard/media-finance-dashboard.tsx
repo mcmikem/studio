@@ -9,6 +9,8 @@ import {
   FolderKanban,
   VenetianMask,
   X,
+  Wallet,
+  Camera,
 } from "lucide-react"
 import {
   Card,
@@ -70,7 +72,7 @@ function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metri
   return (
     <Card>
       <CardHeader>
-        <CardTitle>💰 Budget Health</CardTitle>
+        <CardTitle className="flex items-center gap-2"><Wallet /> Budget Health</CardTitle>
         <CardDescription>A real-time overview of key financial metrics for this month.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -235,7 +237,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <FinancialQueue expenses={allExpenses} />
              <Card>
               <CardHeader>
-                <CardTitle>🎥 Content Pipeline</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Camera /> Content Pipeline</CardTitle>
                 <CardDescription>
                   A central place for all photos, videos, and brand assets.
                 </CardDescription>

@@ -15,7 +15,7 @@ import { collection, query, orderBy, limit } from "firebase/firestore"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
 import { Progress } from "../ui/progress"
 import { Badge } from "../ui/badge"
-import { ArrowRight, Target, Users, Wand } from "lucide-react"
+import { ArrowRight, Target, Users, Wand, Globe, TrendingUp, AlertTriangle } from "lucide-react"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 
 function EcosystemPulse() {
@@ -30,7 +30,7 @@ function EcosystemPulse() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>🌍 Ecosystem Pulse</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Globe className="h-6 w-6" /> Ecosystem Pulse</CardTitle>
                 <CardDescription>A high-level view of the Omuto Ecosystem's health.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -65,7 +65,7 @@ function TeamEffectiveness() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>📊 Team Effectiveness</CardTitle>
+                <CardTitle className="flex items-center gap-2"><TrendingUp className="h-6 w-6" /> Team Effectiveness</CardTitle>
                  <CardDescription>Key organizational performance metrics.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-x-4 gap-y-6">
@@ -98,7 +98,7 @@ function CriticalDecisions() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>🎯 Attention Needed</CardTitle>
+                <CardTitle className="flex items-center gap-2"><AlertTriangle className="h-6 w-6" /> Attention Needed</CardTitle>
                 <CardDescription>Key strategic decisions based on current data.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">

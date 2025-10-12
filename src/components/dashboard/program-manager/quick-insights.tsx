@@ -2,7 +2,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SparklineChart, TrendingUp } from "lucide-react";
+import { SparklineChart, TrendingUp, BarChart } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
 
 
@@ -20,7 +20,7 @@ export function QuickInsights() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>📊 Quick Insights</CardTitle>
+                <CardTitle className="flex items-center gap-2"><BarChart /> Quick Insights</CardTitle>
                 <CardDescription>Key performance indicators at a glance.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
