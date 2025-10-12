@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type StatCard = {
@@ -193,6 +194,16 @@ export type Expense = {
     status: "Pending" | "Approved" | "Rejected" | "Cleared";
     createdAt?: Timestamp;
     title: string;
+};
+
+export type Income = {
+    id: string;
+    source: string;
+    amount: number;
+    dateReceived: string;
+    type: "Grant" | "Donation" | "Sales" | "Other";
+    notes?: string;
+    createdAt?: Timestamp;
 };
 
 export type Proposal = {

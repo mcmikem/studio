@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks } from 'lucide-react';
+import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks, DollarSign } from 'lucide-react';
 
 export default function ManagementLayout({
   children,
@@ -19,6 +19,7 @@ export default function ManagementLayout({
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
     { name: 'Expenses', href: '/management/expenses', icon: Receipt },
+    { name: 'Finance', href: '/management/finance', icon: DollarSign },
     { name: 'Workplans', href: '/management/workplans', icon: CalendarClock },
     { name: 'Equipment', href: '/management/equipment', icon: Box },
     { name: 'Templates', href: '/management/templates', icon: ListChecks },

@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Expense, Activity, ImpactMetric } from "@/lib/types"
+import type { User, Expense, Activity, ImpactMetric, Income } from "@/lib/types"
 import {
   ArrowRight,
   Check,
@@ -119,47 +119,51 @@ function MediaOpportunities({ activities, isLoading }: { activities: Activity[] 
 }
 
 
-function BudgetHealth({ expenses, metrics }: { expenses: Expense[] | null, metrics: ImpactMetric[] | null }) {
-    const cycleOfDignityMetric = metrics?.find((m: any) => m.metric === "Cycle of Dignity Fundraising");
-    const monthlyBudget = cycleOfDignityMetric?.target || 0;
-    const cycleOfDignityProgress = monthlyBudget > 0 ? ((cycleOfDignityMetric?.current || 0) / monthlyBudget) * 100 : 0;
+function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income: Income[] | null }) {
 
-    const monthlyExpenses = useMemo(() => {
-        if (!expenses) return 0;
+    const { totalIncome, totalExpenses, cashBalance } = useMemo(() => {
+        if (!income || !expenses) return { totalIncome: 0, totalExpenses: 0, cashBalance: 0 };
+        
         const monthStart = startOfMonth(new Date());
-        return expenses
+
+        const currentMonthIncome = income
+            .filter(i => i.dateReceived && new Date(i.dateReceived) >= monthStart)
+            .reduce((sum, i) => sum + i.amount, 0);
+        
+        const currentMonthExpenses = expenses
             .filter(e => (e.status === 'Approved' || e.status === 'Cleared') && e.createdAt && e.createdAt.toDate() >= monthStart)
             .reduce((sum, e) => sum + e.totalAmount, 0);
-    }, [expenses]);
+
+        const allTimeIncome = income.reduce((sum, i) => sum + i.amount, 0);
+        const allTimeExpenses = expenses.filter(e => e.status === 'Cleared').reduce((sum, e) => sum + e.totalAmount, 0);
+
+        return { 
+            totalIncome: currentMonthIncome, 
+            totalExpenses: currentMonthExpenses,
+            cashBalance: allTimeIncome - allTimeExpenses
+        };
+    }, [income, expenses]);
     
-    const expenseProgress = monthlyBudget > 0 ? (monthlyExpenses / monthlyBudget) * 100 : 0;
     const pendingApprovals = expenses?.filter(e => e.status === 'Pending').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><Wallet /> Budget Health</CardTitle>
-        <CardDescription>A real-time overview of key financial metrics for this month.</CardDescription>
+        <CardDescription>A real-time overview of the organization's cash flow.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-            <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium">Cycle of Dignity Fundraising</span>
-                <span className="text-muted-foreground">{formatCurrency(cycleOfDignityMetric?.current || 0)} / {formatCurrency(monthlyBudget)}</span>
-            </div>
-            <Progress value={cycleOfDignityProgress} />
+      <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-4 bg-muted rounded-lg text-center">
+            <p className="text-sm font-medium text-muted-foreground">Cash Balance</p>
+            <p className="text-3xl font-bold">{formatCurrency(cashBalance)}</p>
         </div>
-         <div>
-            <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium">Current Month's Expenses</span>
-                 <span className="text-muted-foreground">{formatCurrency(monthlyExpenses)} / {formatCurrency(monthlyBudget)}</span>
-            </div>
-            <Progress value={expenseProgress} />
-             {expenseProgress > 75 && <p className="text-xs text-destructive mt-1">🟡 Alert: Budget usage is at {expenseProgress.toFixed(0)}%.</p>}
+        <div className="p-4 bg-muted rounded-lg text-center">
+            <p className="text-sm font-medium text-muted-foreground">Income (This Month)</p>
+            <p className="text-3xl font-bold text-green-500">{formatCurrency(totalIncome)}</p>
         </div>
-        <div className="flex items-center justify-between p-3 bg-muted rounded-md">
-            <span className="font-medium">Pending Approvals</span>
-            <span className="font-bold text-lg">{formatCurrency(pendingApprovals)}</span>
+        <div className="p-4 bg-muted rounded-lg text-center">
+            <p className="text-sm font-medium text-muted-foreground">Expenses (This Month)</p>
+            <p className="text-3xl font-bold text-red-500">{formatCurrency(totalExpenses)}</p>
         </div>
       </CardContent>
     </Card>
@@ -288,8 +292,8 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const allExpensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: allExpenses } = useCollection<Expense>(allExpensesQuery);
   
-  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
-  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
+  const allIncomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const { data: allIncome } = useCollection<Income>(allIncomeQuery);
 
   const activitiesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -302,7 +306,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
     <>
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="col-span-full">
-            <BudgetHealth expenses={allExpenses} metrics={metrics} />
+            <BudgetHealth expenses={allExpenses} income={allIncome} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <FinancialQueue expenses={allExpenses} />
