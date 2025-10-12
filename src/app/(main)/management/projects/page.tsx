@@ -13,6 +13,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import {
   Table,
@@ -197,6 +198,56 @@ function ProjectForm({
   );
 }
 
+function ProjectCard({ project, onEdit, onDelete }: { project: Project, onEdit: () => void, onDelete: () => void }) {
+    return (
+        <Card className="flex flex-col">
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle className="text-lg">{project.name}</CardTitle>
+                     <Badge
+                        variant="outline"
+                        className={statusColors[project.status]}
+                      >
+                        {project.status}
+                      </Badge>
+                </div>
+                <CardDescription>Managed by {project.manager}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow flex flex-col items-center justify-center text-center gap-4">
+                 <ProgressRing progress={project.completion} size={100} strokeWidth={8} />
+                 <div>
+                    <p className="text-sm font-semibold">Next Milestone</p>
+                    <p className="text-sm text-muted-foreground">{project.nextMilestone}</p>
+                 </div>
+            </CardContent>
+            <CardFooter className="justify-end gap-2">
+                <Button variant="ghost" size="icon" onClick={onEdit}>
+                    <Edit className="h-4 w-4" />
+                </Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                        This will permanently delete the project "{project.name}".
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </CardFooter>
+        </Card>
+    )
+}
+
 export default function ProjectsPage() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -248,111 +299,31 @@ export default function ProjectsPage() {
         </Dialog>
       </CardHeader>
       <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project Name</TableHead>
-                <TableHead className="hidden sm:table-cell">Manager</TableHead>
-                <TableHead className="hidden md:table-cell">Status</TableHead>
-                <TableHead>Completion</TableHead>
-                <TableHead className="hidden lg:table-cell">Next Milestone</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading &&
-                Array.from({ length: 3 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
-                  </TableRow>
+          {isLoading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
+              </div>
+          )}
+          {!isLoading && projects && projects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {projects.map(project => (
+                    <ProjectCard
+                        key={project.id}
+                        project={project}
+                        onEdit={() => setEditingProject(project)}
+                        onDelete={() => handleDelete(project)}
+                    />
                 ))}
-              {projects && projects.length > 0 ? (
-                projects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell>
-                        <p className="font-medium">{project.name}</p>
-                         <p className="text-sm text-muted-foreground sm:hidden">{project.manager}</p>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell">{project.manager}</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge
-                        variant="outline"
-                        className={statusColors[project.status]}
-                      >
-                        {project.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <ProgressRing progress={project.completion} size={40} strokeWidth={4} />
-                        <span className="text-xs text-muted-foreground">
-                          {project.completion}%
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">{project.nextMilestone}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setEditingProject(project)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will
-                                permanently delete the project "{project.name}".
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(project)}
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-48">
-                      <EmptyState
-                        icon={Briefcase}
-                        title="No Projects Found"
-                        description="Add a project to get started."
-                        className="min-h-0"
-                      />
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
+              </div>
+          ) : (
+            !isLoading && (
+              <EmptyState
+                icon={Briefcase}
+                title="No Projects Found"
+                description="Add a project to get started."
+              />
+            )
+          )}
       </CardContent>
       {editingProject && (
         <Dialog

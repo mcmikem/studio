@@ -46,7 +46,7 @@ export function ProgressRing({
         </PieChart>
       </ResponsiveContainer>
       <div
-        className="absolute inset-0 flex items-center justify-center text-sm font-semibold"
+        className="absolute inset-0 flex items-center justify-center text-xs font-semibold"
         style={{ color: 'hsl(var(--primary))' }}
       >
         {`${Math.round(normalizedProgress)}%`}
