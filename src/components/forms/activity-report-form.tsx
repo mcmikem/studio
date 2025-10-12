@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -30,6 +28,7 @@ import type { ImpactMetric, Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Textarea } from '../ui/textarea';
 
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-UG', {
@@ -68,6 +67,11 @@ export function ActivityReportForm() {
   const [parentsAttended, setParentsAttended] = useState(0);
   const [teachersAttended, setTeachersAttended] = useState(0);
   const [treesPlanted, setTreesPlanted] = useState(0);
+
+  // New state for narrative fields
+  const [memorableMoment, setMemorableMoment] = useState('');
+  const [challengesLearned, setChallengesLearned] = useState('');
+  const [beneficiaryQuote, setBeneficiaryQuote] = useState('');
 
   const metricsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -173,6 +177,9 @@ export function ActivityReportForm() {
       primaryGoalType: goalType,
       primaryGoalId: selectedGoalId,
       primaryGoalQuantity: goalQuantity,
+      memorableMoment: memorableMoment,
+      challengesLearned: challengesLearned,
+      beneficiaryQuote: beneficiaryQuote,
     };
 
     if (selectedProgram?.title === 'RED Campaign') {
@@ -192,7 +199,7 @@ export function ActivityReportForm() {
           description: `${activityName} has been saved.`,
         });
 
-        // Reset some fields after logging
+        // Reset all fields after logging
         setActivityName('');
         setSelectedMultipliers([]);
         setSelectedGoalId(null);
@@ -200,6 +207,10 @@ export function ActivityReportForm() {
         setParentsAttended(0);
         setTeachersAttended(0);
         setTreesPlanted(0);
+        setMemorableMoment('');
+        setChallengesLearned('');
+        setBeneficiaryQuote('');
+
     } catch(e) {
         console.error(e);
         toast({
@@ -463,6 +474,40 @@ export function ActivityReportForm() {
         </div>
 
         <Separator />
+        
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">Post-Activity Debrief & Story</h3>
+          <CardDescription>This information will help the media team create impact stories.</CardDescription>
+          <div className="space-y-2">
+            <Label htmlFor="memorableMoment">Memorable Moment</Label>
+            <Textarea
+              id="memorableMoment"
+              placeholder="Describe a specific, powerful interaction or observation."
+              value={memorableMoment}
+              onChange={(e) => setMemorableMoment(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="challengesLearned">Challenges & Lessons Learned</Label>
+            <Textarea
+              id="challengesLearned"
+              placeholder="What was a surprising challenge and how did you overcome it?"
+              value={challengesLearned}
+              onChange={(e) => setChallengesLearned(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="beneficiaryQuote">Quote from a Beneficiary</Label>
+            <Textarea
+              id="beneficiaryQuote"
+              placeholder='e.g., "I never knew I could make my own pads before today!" - Jane'
+              value={beneficiaryQuote}
+              onChange={(e) => setBeneficiaryQuote(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <Separator />
 
         <div className="space-y-4 pt-2 bg-green-50 dark:bg-green-900/10 p-4 rounded-lg">
            <div className="flex justify-between items-center text-2xl pt-4">
@@ -516,7 +561,3 @@ export function ActivityReportForm() {
     </>
   );
 }
-
-    
-
-    

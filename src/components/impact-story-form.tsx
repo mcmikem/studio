@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect, Suspense } from "react";
@@ -95,7 +94,9 @@ function ImpactStoryGeneratorContent() {
             activityDescription: `An activity resulting in a ${selectedActivity.finalRoi.toFixed(0)}% ROI.`,
             activityImpact: `Total value of ${selectedActivity.totalValue.toLocaleString()} UGX generated from a cost of ${selectedActivity.actualCost.toLocaleString()} UGX.`,
             userName: selectedActivity.userName,
-            userQuote: "This program is making a real difference in our community!", // Placeholder quote
+            userQuote: selectedActivity.beneficiaryQuote || "This program is making a real difference in our community!",
+            memorableMoment: selectedActivity.memorableMoment,
+            challengesLearned: selectedActivity.challengesLearned,
         };
     } else if (selectedCheckout) {
         const quote = selectedCheckout.learning || (selectedCheckout.tomorrowPlan ? `Tomorrow's focus: ${selectedCheckout.tomorrowPlan}` : "Reflecting on another impactful day.");

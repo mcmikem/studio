@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -17,7 +16,9 @@ const ImpactStoryInputSchema = z.object({
   activityDescription: z.string().describe('A detailed description of the activity.'),
   activityImpact: z.string().describe('The measurable impact of the activity (e.g., number of trees planted, people reached).'),
   userName: z.string().describe('The name of a user involved in the activity, to add a personal touch.'),
-  userQuote: z.string().describe('A quote from a user about the activity.'),
+  userQuote: z.string().optional().describe('A quote from a user or beneficiary about the activity.'),
+  memorableMoment: z.string().optional().describe('A specific, powerful interaction or observation from the activity.'),
+  challengesLearned: z.string().optional().describe('Surprising challenges and how they were overcome.'),
 });
 export type ImpactStoryInput = z.infer<typeof ImpactStoryInputSchema>;
 
@@ -36,15 +37,26 @@ const prompt = ai.definePrompt({
   output: {schema: ImpactStoryOutputSchema},
   prompt: `You are a skilled storyteller for Omuto Foundation, crafting engaging narratives that highlight the impact of our activities.
 
-  Based on the following activity data, generate a compelling story suitable for social media and Omuto Pulse. Include a quote from a user involved in the activity, and make it inspiring and shareable. Focus on the human impact and the positive change created.
+  Based on the following activity data, generate a compelling story suitable for social media and Omuto Pulse. Weave in the narrative details provided to make the story authentic and inspiring. Focus on the human impact and the positive change created.
 
   Activity Name: {{{activityName}}}
   Activity Description: {{{activityDescription}}}
-  Activity Impact: {{{activityImpact}}}
-  User Name: {{{userName}}}
-  User Quote: "{{{userQuote}}}"
+  Measurable Impact: {{{activityImpact}}}
+  Team Member: {{{userName}}}
+  
+  {{#if memorableMoment}}
+  Memorable Moment: "{{{memorableMoment}}}"
+  {{/if}}
 
-  Generated Impact Story:`, // Ensure this outputs a complete, well-formed narrative
+  {{#if challengesLearned}}
+  Key Learning: "{{{challengesLearned}}}"
+  {{/if}}
+
+  {{#if userQuote}}
+  Quote from a Beneficiary: "{{{userQuote}}}"
+  {{/if}}
+
+  Generated Impact Story:`,
 });
 
 export const impactStoryGeneratorFlow = ai.defineFlow(
