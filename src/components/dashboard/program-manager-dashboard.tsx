@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
@@ -10,7 +11,6 @@ import { collection, query, where, orderBy, Timestamp } from "firebase/firestore
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { QuickInsights } from "./program-manager/quick-insights"
-import { TeamDeployment } from "./team-deployment"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { QuickAddTask } from "./quick-add-task"
 
@@ -26,7 +26,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users } = useCollection<User>(usersQuery);
 
-  const todayStart = startOfDay(new Date('2025-10-13T12:00:00Z'));
+  const todayStart = new Date('2025-10-13T12:00:00Z');
   const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
   const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
@@ -51,7 +51,6 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
      <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker showAtRisk />
-            <TeamDeployment users={users} checkins={checkins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />

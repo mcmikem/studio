@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin } from "@/lib/types"
@@ -13,7 +14,6 @@ import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useMemo } from "react"
 import { subDays, startOfWeek, isAfter, subMonths, startOfDay } from "date-fns"
 import Link from "next/link"
-import { TeamDeployment } from "./team-deployment"
 import { Globe, TrendingUp } from "lucide-react"
 import { QuickAddTask } from "./quick-add-task"
 
@@ -160,7 +160,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
     const { data: users } = useCollection<User>(usersQuery);
 
-    const todayStart = startOfDay(new Date('2025-10-13T12:00:00Z'));
+    const todayStart = new Date('2025-10-13T12:00:00Z');
     const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
     const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
@@ -171,7 +171,6 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse activities={activities} />
             <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
-            <TeamDeployment users={users} checkins={checkins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <QuickAddTask />

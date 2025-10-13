@@ -14,7 +14,6 @@ import { DashboardCalendar } from "./dashboard-calendar"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { SmartReminders } from "./smart-reminders"
-import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { startOfDay } from "date-fns"
 
@@ -40,7 +39,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users } = useCollection<User>(usersQuery);
 
-  const todayStart = startOfDay(new Date('2025-10-13T12:00:00Z'));
+  const todayStart = new Date('2025-10-13T12:00:00Z');
   const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
   const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
@@ -66,7 +65,6 @@ export function AdminDashboard({ profile }: DashboardProps) {
             <Alerts />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <TeamDeployment users={users} checkins={checkins} />
             <KeyResultsTracker showAtRisk />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
             <ProgramsOverview programs={programs} />

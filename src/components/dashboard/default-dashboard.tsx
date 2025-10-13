@@ -5,7 +5,6 @@ import type { User, Checkout, ImpactMetric, Checkin } from "@/lib/types"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
 import { DailyActions } from "./daily-actions"
-import { TeamDeployment } from "./team-deployment"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { Alerts } from "./alerts"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
@@ -29,7 +28,7 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users } = useCollection<User>(usersQuery);
 
-  const todayStart = startOfDay(new Date('2025-10-13T12:00:00Z'));
+  const todayStart = new Date('2025-10-13T12:00:00Z');
   const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
   const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
@@ -41,7 +40,6 @@ export function DefaultDashboard({ profile }: DashboardProps) {
           <DailyActions />
           <QuickAddTask />
           <DashboardCalendar />
-          <TeamDeployment users={users} checkins={checkins} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
            <Alerts />
