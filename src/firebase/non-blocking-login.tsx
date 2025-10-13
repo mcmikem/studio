@@ -1,3 +1,4 @@
+
 "use client"
 import {
   Auth,
@@ -72,7 +73,7 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
   },
   "alex@omuto.org": {
     name: "Nsereko Alex",
-    role: "Media & Communications Lead",
+    role: "Media & Finance Lead",
   },
 
   // Resource Mobilization
