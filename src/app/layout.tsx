@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk as SpaceGrotesk } from 'next/font/google';
 import './globals.css';
@@ -18,6 +17,9 @@ export const metadata: Metadata = {
   title: 'Omuto Central',
   description: 'The master tool for Omuto Foundation staff.',
   manifest: '/manifest.json',
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({
