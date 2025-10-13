@@ -68,9 +68,18 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
   const processedKeyResults = useMemo(() => {
     if (!keyResults || !activities || !metrics || !partnerships) return null;
 
+    // De-duplicate Key Results based on title
+    const uniqueKeyResults = keyResults.reduce((acc, current) => {
+        if (!acc.find(item => item.title === current.title)) {
+            acc.push(current);
+        }
+        return acc;
+    }, [] as KeyResult[]);
+
+
     const cycleOfDignityMetric = metrics.find(m => m.metric === 'Cycle of Dignity Fundraising');
 
-    return keyResults.map(kr => {
+    return uniqueKeyResults.map(kr => {
       let liveProgress = kr.currentProgress;
       let link = '/management/projects'; // Default link
 
