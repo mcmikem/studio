@@ -244,7 +244,7 @@ function UserMenu() {
     if (email) {
       return email.substring(0, 2).toUpperCase();
     }
-    return 'U';
+    return 'OG';
   };
 
   return (

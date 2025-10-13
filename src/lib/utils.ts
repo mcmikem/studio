@@ -47,28 +47,20 @@ export const formatDateSafe = (
 
 
 export const formatCurrency = (value: number) => {
+    const ugxFormatter = (val: number, notation: 'compact' | 'standard', minDigits: number, maxDigits: number) => 
+        new Intl.NumberFormat('en-UG', {
+            style: 'currency',
+            currency: 'UGX',
+            minimumFractionDigits: minDigits,
+            maximumFractionDigits: maxDigits,
+            notation: notation,
+        }).format(val);
+
     if (value >= 1000000) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'UGX',
-            minimumFractionDigits: 1,
-            maximumFractionDigits: 1,
-            notation: 'compact'
-        }).format(value).replace('UGX', '').trim();
+        return ugxFormatter(value, 'compact', 1, 1);
     }
-     if (value >= 1000) {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'UGX',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-            notation: 'compact'
-        }).format(value).replace('UGX', '').trim();
+    if (value >= 1000) {
+         return ugxFormatter(value, 'compact', 0, 0);
     }
-    return new Intl.NumberFormat('en-UG', { 
-        style: 'currency', 
-        currency: 'UGX',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(value);
+    return ugxFormatter(value, 'standard', 0, 0);
 };

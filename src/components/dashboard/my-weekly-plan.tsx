@@ -51,31 +51,9 @@ export function MyWeeklyPlan() {
     }
   }, [user, firestore]);
   
-  // NOTE: This component does not use realtime updates for simplicity on the dashboard.
-  // A full implementation might use useCollection.
-  // For now, we'll fetch once on mount.
   useEffect(() => {
-    if(user && firestore) {
-        const fetchPlan = async () => {
-            setIsLoading(true);
-            const today = new Date();
-            const start = startOfWeek(today, { weekStartsOn: 1 });
-            const weekStartTimestamp = Timestamp.fromDate(start);
-            const q = query(
-              collection(firestore, 'workplans'),
-              where('userId', '==', user.uid),
-              where('weekOf', '==', weekStartTimestamp),
-              limit(1)
-            );
-            const snapshot = await getDocs(q);
-            if (!snapshot.empty) {
-                setWeeklyPlan(snapshot.docs[0].data() as WeeklyWorkplan);
-            }
-             setIsLoading(false);
-        }
-        fetchPlan();
-    }
-  }, [user, firestore]);
+    fetchWeeklyPlan();
+  }, [fetchWeeklyPlan]);
 
   return (
     <Card className="hover:bg-muted/50 transition-colors">
