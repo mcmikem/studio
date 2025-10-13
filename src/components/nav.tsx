@@ -8,7 +8,7 @@ import {
   AreaChart,
   MessageSquare,
   Bell,
-  User,
+  User as UserIcon,
   Handshake,
   ClipboardEdit,
   FileText,
@@ -52,7 +52,7 @@ const OmutoLogo = () => (
 const navConfig = {
   all: [
     { href: '/', icon: Home, label: 'Dashboard' },
-    { href: '/profile', icon: User, label: 'My Profile' },
+    { href: '/profile', icon: UserIcon, label: 'My Profile' },
   ],
   field: [
     { href: '/checkins', icon: LogIn, label: 'Check-in Stream' },
@@ -70,6 +70,7 @@ const navConfig = {
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Management' },
     { href: '/management/resources', icon: Handshake, label: 'Resources' },
+    { href: '/management/users', icon: UserIcon, label: 'Users' },
   ],
   communication: [
     { href: '/reports', icon: FileText, label: 'Analysis' },
@@ -111,8 +112,7 @@ export function AppSidebar() {
   const isActive = (path: string) => {
     if (path === '/') return pathname === path;
     // For management, we need to check if the path starts with /management
-    if (path === '/management/programs') return pathname.startsWith('/management');
-    if (path === '/management/resources') return pathname.startsWith('/management/resources');
+    if (path === '/management/programs' || path === '/management/resources' || path === '/management/users') return pathname.startsWith('/management');
     return pathname.startsWith(path);
   }
   
