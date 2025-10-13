@@ -74,3 +74,4 @@ export function useDoc<T = DocumentData>(
 
   return { data, isLoading, error };
 }
+

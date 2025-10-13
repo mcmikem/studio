@@ -74,3 +74,4 @@ export function useCollection<T = DocumentData>(
 
   return { data, isLoading, error };
 }
+
