@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { User, Checkout, Checkin } from '@/lib/types';
@@ -13,6 +14,9 @@ import { Camera, Receipt, Target } from 'lucide-react';
 import Link from 'next/link';
 import { SmartReminders } from './smart-reminders';
 import { Loader2 } from 'lucide-react';
+import { DashboardCalendar } from './dashboard-calendar';
+import { QuickAddTask } from './quick-add-task';
+
 
 function TodaysBattlePlan() {
   const { user } = useUser();
@@ -64,30 +68,6 @@ function TodaysBattlePlan() {
   );
 }
 
-function QuickActions() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-4">
-        <Button asChild variant="outline" size="lg">
-          <Link href="/forms/activity">
-            <Camera className="mr-2 h-4 w-4" />
-            Log Activity
-          </Link>
-        </Button>
-        <Button asChild variant="outline" size="lg">
-          <Link href="/forms/expense">
-            <Receipt className="mr-2 h-4 w-4" />
-            Add Expense
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
 interface DashboardProps {
   profile: User;
 }
@@ -104,12 +84,18 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
 
   return (
-    <DashboardGrid className="mt-6 lg:grid-cols-1">
-      <TodaysBattlePlan />
-      <DailyActions />
-      <MyWeeklyPlan />
-      <SmartReminders profile={profile} />
-      <TeamPulse checkouts={checkouts} />
+    <DashboardGrid className="mt-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
+            <TodaysBattlePlan />
+            <DailyActions />
+            <SmartReminders profile={profile} />
+            <TeamPulse checkouts={checkouts} />
+        </div>
+        <div className="flex flex-col gap-6">
+            <QuickAddTask />
+            <DashboardCalendar />
+            <MyWeeklyPlan />
+        </div>
     </DashboardGrid>
   );
 }

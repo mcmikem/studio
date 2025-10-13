@@ -7,6 +7,7 @@ import { Skeleton } from "../ui/skeleton"
 import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
 import { useMemo } from "react"
+import { formatCurrency } from "@/lib/utils"
 
 const metricIcons: { [key: string]: React.ElementType } = {
   "Cycle of Dignity Fundraising": HandCoins,
@@ -15,16 +16,6 @@ const metricIcons: { [key: string]: React.ElementType } = {
   "Trees Planted (GreenSchools)": Trees,
   default: Target,
 }
-
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-UG', {
-        style: 'currency',
-        currency: 'UGX',
-        currencyDisplay: 'symbol',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(value).replace('UGX', 'USH');
-};
 
 
 export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null }) {
@@ -67,7 +58,7 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
   return (
     <Card>
         <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {displayMetrics.map((metric, i) => {
                 if (!metric) {
                 return (

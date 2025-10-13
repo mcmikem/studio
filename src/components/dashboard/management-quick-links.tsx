@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -8,7 +9,7 @@ import {
   CardDescription
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { Briefcase, FolderKanban, Handshake, Target, Receipt, ArrowRight } from 'lucide-react';
+import { Briefcase, FolderKanban, Handshake, Target, Receipt, ArrowRight, DollarSign, CalendarClock, Box, ListChecks } from 'lucide-react';
 import Link from 'next/link';
 
 const links = [
@@ -17,6 +18,10 @@ const links = [
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
     { name: 'Expenses', href: '/management/expenses', icon: Receipt },
+    { name: 'Finance', href: '/management/finance', icon: DollarSign },
+    { name: 'Workplans', href: '/management/workplans', icon: CalendarClock },
+    { name: 'Equipment', href: '/management/equipment', icon: Box },
+    { name: 'Templates', href: '/management/templates', icon: ListChecks },
 ]
 
 export function ManagementQuickLinks() {

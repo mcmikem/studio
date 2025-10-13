@@ -10,9 +10,9 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
-import { TeamCoordination } from "./program-manager/team-coordination"
 import { QuickInsights } from "./program-manager/quick-insights"
 import { TeamDeployment } from "./team-deployment"
+import { DashboardCalendar } from "./dashboard-calendar"
 
 
 interface DashboardProps {
@@ -52,10 +52,10 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker showAtRisk />
             <TeamDeployment users={users} checkins={checkins} />
-            <TeamCoordination users={users} checkins={checkins} expenses={expenses} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
+            <DashboardCalendar />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
             <QuickInsights activities={activities} />
             <ManagementQuickLinks />

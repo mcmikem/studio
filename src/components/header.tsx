@@ -23,10 +23,11 @@ import { collection, query, limit, orderBy, where } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import { formatDateSafe } from '@/lib/utils';
 import { Skeleton } from './ui/skeleton';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useViewAs } from '@/hooks/use-view-as';
+import { format } from 'date-fns';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -39,7 +40,7 @@ function QuickAddMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" size="icon" className="text-secondary-foreground hover:text-secondary-foreground hover:bg-white/10">
+                 <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50">
                     <PlusCircle className="h-5 w-5" />
                     <span className="sr-only">Quick Add</span>
                 </Button>
@@ -87,7 +88,7 @@ function NotificationsMenu() {
     return (
         <DropdownMenu onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" size="icon" className="relative text-secondary-foreground hover:text-secondary-foreground hover:bg-white/10">
+                 <Button variant="ghost" size="icon" className="relative text-foreground hover:bg-muted/50">
                     <Bell className="h-5 w-5" />
                     {!hasUnread && alerts && alerts.length > 0 && (
                         <CheckCircle className="absolute top-1 right-1 h-3 w-3 text-green-400" />
@@ -149,7 +150,7 @@ function ViewAsMenu() {
     return (
          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                 <Button variant="ghost" size="icon" className="text-secondary-foreground hover:text-secondary-foreground hover:bg-white/10">
+                 <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50">
                     <Eye className="h-5 w-5" />
                     <span className="sr-only">View As</span>
                 </Button>
@@ -176,6 +177,22 @@ function ViewAsMenu() {
     )
 }
 
+function LiveClock() {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <div className="hidden sm:flex items-center gap-2 text-sm">
+             <span className="font-semibold">{format(time, 'p')}</span>
+             <span className="text-muted-foreground hidden lg:inline-block">{format(time, 'eeee, MMM d')}</span>
+        </div>
+    )
+}
+
 export function AppHeader() {
   const pathname = usePathname();
   const { user } = useUser();
@@ -186,12 +203,13 @@ export function AppHeader() {
 
   return (
     <header className={cn(
-        "flex h-16 items-center justify-between gap-4 px-4 sm:px-6 w-full",
+        "flex h-16 items-center justify-between gap-4 px-4 sm:px-6 w-full border-b",
     )}>
        <div className="flex items-center gap-4">
         <SidebarTrigger className={cn(
             "lg:hidden text-foreground",
         )} />
+         <LiveClock />
       </div>
       <div className={cn(
         "flex items-center gap-2"
@@ -235,7 +253,7 @@ function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-9 w-9 rounded-full text-secondary-foreground hover:text-secondary-foreground hover:bg-white/10"
+          className="relative h-9 w-9 rounded-full text-foreground hover:bg-muted/50"
         >
           <Avatar className="h-9 w-9" data-ai-hint="user avatar">
             {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}

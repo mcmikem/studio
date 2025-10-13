@@ -1,5 +1,4 @@
 
-
 import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert, TeamWeeklyPlan } from './types';
 import { AlertTriangle, Info } from 'lucide-react';
 
@@ -148,10 +147,7 @@ export const sampleImpactMetrics: Omit<ImpactMetric, 'id'>[] = [
     { metric: 'Youth Reached', target: 1000, current: 247, unit: 'youth', valuePerUnit: 10000 },
 ];
 
-export const sampleAlerts: Omit<Alert, 'id' | 'createdAt'>[] = [
-    { creatorId: 'system', type: 'Urgent', message: 'Final report for GlobalGiving grant is due in 3 days.', priority: 'High', action: '/reports' },
-    { creatorId: 'system', type: 'Reminder', message: 'Team meeting tomorrow at 10 AM to discuss Girl Child Day.', priority: 'Medium', action: '/plan' },
-];
+export const sampleAlerts: Omit<Alert, 'id' | 'createdAt'>[] = [];
 
 export const sampleCalendarEvents: Omit<CalendarEvent, 'id' | 'createdAt'>[] = [
     { title: 'Girl Child Day Event', date: new Date('2025-10-11T09:00:00'), category: 'Campaigns/Events', location: 'Mpigi Town Square', responsible: 'Whole Team' },
@@ -237,7 +233,7 @@ export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] =
             "Secure 3 partnership meetings for programs support",
             "Drafting new YAP Chapters SOPs",
             "Shoot a documentary for Red Campaign to be used for partnerships",
-            "Produce first prototype batch of 10 of Dignity pads",
+            "Produce first prototype batch of 10 of Dignity pads.",
             "Complete field mapping for Mpigi,Butambala and Kampala",
             "Schedule a stake holder consultation meeting for Omuto Football Gala",
             "Draft 3 compelling stories about Menstrual Health management and Cycle of dignity campaign",

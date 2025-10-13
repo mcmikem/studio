@@ -12,7 +12,6 @@ import { collection, query, orderBy, limit, where, Timestamp } from "firebase/fi
 import { DailyActions } from "./daily-actions"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
-import { TeamCoordination } from "./program-manager/team-coordination"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { SmartReminders } from "./smart-reminders"
 import { TeamDeployment } from "./team-deployment"
@@ -60,13 +59,13 @@ export function AdminDashboard({ profile }: DashboardProps) {
          <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
             <SmartReminders profile={profile} />
+            <DashboardCalendar />
             <ManagementQuickLinks />
             <Alerts />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <TeamDeployment users={users} checkins={checkins} />
             <KeyResultsTracker showAtRisk />
-            <TeamCoordination users={users} checkins={checkins} expenses={expenses} />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
             <ProgramsOverview programs={programs} />
             <TeamPulse checkouts={checkouts} />
