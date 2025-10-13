@@ -53,7 +53,7 @@ function MessageItem({ message }: { message: Message }) {
         )}>
         <p className="font-semibold text-xs mb-1">{isAI ? "Omuto AI" : message.userName}</p>
         <div
-          className="prose prose-sm dark:prose-invert max-w-full"
+          className="prose prose-sm dark:prose-invert max-w-full [&_p]:my-2"
           dangerouslySetInnerHTML={renderedText}
         />
         <p className={cn(
@@ -123,7 +123,7 @@ export default function ChatPage() {
             content: [{ text: m.text }]
           })) || [];
 
-        const aiResponse = await omutoAIFlow({ question, history: aiHistory });
+        const aiResponse = await omutoAIFlow({ question, history: aiHistory, userId: user.uid });
         
         if(aiResponse.answer) {
             const aiMessageData = {

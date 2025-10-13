@@ -6,7 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { initializeFirebase } from '@/firebase/server';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, serverTimestamp, doc, addDoc } from 'firebase/firestore';
 import { z } from 'zod';
 
 export const findGrantOpportunities = ai.defineTool(
@@ -185,5 +185,53 @@ export const findExpensesByTitle = ai.defineTool(
             title: doc.data().title,
             url: `/management/expenses?highlight=${doc.id}`,
         }));
+    }
+);
+
+export const createCheckout = ai.defineTool(
+    {
+        name: 'createCheckout',
+        description: 'Creates an end-of-day checkout report for a user.',
+        inputSchema: z.object({
+            userId: z.string().describe("The ID of the user submitting the report."),
+            task: z.string().describe("The summary of what the user accomplished today."),
+            learning: z.string().optional().describe("The user's key learning or adaptation."),
+            tomorrowPlan: z.string().optional().describe("The user's top priority for tomorrow."),
+        }),
+        outputSchema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+        })
+    },
+    async ({ userId, task, learning, tomorrowPlan }) => {
+        const { firestore } = await initializeFirebase();
+
+        try {
+            const userRef = doc(firestore, 'users', userId);
+            const userSnap = await getDocs(query(collection(firestore, 'users'), where('id', '==', userId)));
+
+            if (userSnap.empty) {
+                return { success: false, message: `Could not find user with ID ${userId}.`};
+            }
+            const userProfile = userSnap.docs[0].data();
+
+            const checkoutData = {
+                userId,
+                task,
+                learning: learning || "",
+                tomorrowPlan: tomorrowPlan || "",
+                name: userProfile.name,
+                role: userProfile.role,
+                avatar: userProfile.photoURL || '',
+                timestamp: serverTimestamp(),
+            };
+
+            await addDoc(collection(firestore, 'checkouts'), checkoutData);
+
+            return { success: true, message: `Successfully submitted the checkout report for ${userProfile.name}.` };
+        } catch (error: any) {
+            console.error("Error creating checkout:", error);
+            return { success: false, message: `Failed to create checkout: ${error.message}` };
+        }
     }
 );
