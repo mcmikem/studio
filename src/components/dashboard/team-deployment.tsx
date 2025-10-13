@@ -1,156 +1,147 @@
+
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import type { User, Checkin } from '@/lib/types';
-import { Users, CheckCircle, UserX, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { parse, getMinutes, getHours, setHours, setMinutes, isBefore, isAfter, format } from 'date-fns';
+import { Skeleton } from '../ui/skeleton';
+import { Users, CheckCircle, XCircle } from 'lucide-react';
+import { parse, isWithinInterval, set } from 'date-fns';
 
-type MemberStatus = 'Checked In' | 'Not Checked In';
+interface TeamDeploymentProps {
+  users: User[] | null;
+  checkins: Checkin[] | null;
+}
 
-const parseTime = (timeStr: string): Date => {
-  const now = new Date();
-  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
-  if (!match) {
+const parseTimeString = (timeStr: string, date: Date) => {
     try {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        if(!isNaN(hours) && !isNaN(minutes)) {
-            return setMinutes(setHours(now, hours), minutes);
-        }
-    } catch {
-        // Fall through
+        const parsedTime = parse(timeStr, 'hh:mm a', date);
+        return parsedTime;
+    } catch (e) {
+        return null;
     }
-    console.error(`Invalid time format, could not parse: "${timeStr}"`);
-    return new Date(0); // Return a date in the past
-  }
-  
-  let [ , hoursStr, minutesStr, modifier] = match;
-  let hours = parseInt(hoursStr, 10);
-  const minutes = parseInt(minutesStr, 10);
-
-  if (modifier.toUpperCase() === 'PM' && hours < 12) {
-    hours += 12;
-  }
-  if (modifier.toUpperCase() === 'AM' && hours === 12) {
-    hours = 0;
-  }
-  
-  return setMinutes(setHours(now, hours), minutes);
 };
 
-export function TeamDeployment({ users, checkins }: { users: User[] | null; checkins: Checkin[] | null }) {
-    
-    // This state ensures we only render the time-sensitive logic on the client
-    const [isClient, setIsClient] = useState(false);
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
+export function TeamDeployment({ users, checkins }: TeamDeploymentProps) {
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
-    const teamStatus = useMemo(() => {
-        if (!users || !isClient) return [];
-        const now = new Date(); // Get current time directly inside the client-only logic
+  useEffect(() => {
+    // Set time on mount and update every minute to ensure it runs only on client
+    setCurrentTime(new Date());
+    const timerId = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timerId);
+  }, []);
 
-        return users.map(user => {
-            const userCheckin = checkins?.find(c => c.userId === user.id);
+  const teamStatus = useMemo(() => {
+    if (!users || !checkins || !currentTime) return null;
 
-            let status: MemberStatus = 'Not Checked In';
-            let currentTask = 'Not checked in today.';
-            let nextTask = '';
+    return users.map(user => {
+      const userCheckin = checkins.find(c => c.userId === user.id);
 
-            if (userCheckin) {
-                status = 'Checked In';
+      if (!userCheckin) {
+        return {
+          ...user,
+          status: 'Not Checked In',
+          currentActivity: 'N/A',
+          schedule: [],
+        };
+      }
 
-                const scheduledTask = userCheckin.details.timeBlocks.find(block => {
-                    try {
-                        const start = parseTime(block.startTime);
-                        const end = parseTime(block.endTime);
-                        return isAfter(now, start) && isBefore(now, end);
-                    } catch (e) {
-                        console.error(`Invalid time format for user ${user.name}:`, block);
-                        return false; 
-                    }
-                });
+      const today = new Date();
+      let currentActivity = 'Between tasks';
+      
+      for (const block of userCheckin.details.timeBlocks) {
+        const start = parseTimeString(block.startTime, today);
+        const end = parseTimeString(block.endTime, today);
 
-                if (scheduledTask) {
-                    currentTask = scheduledTask.description;
-                } else {
-                    currentTask = "Between tasks.";
-                     const upcoming = userCheckin.details.timeBlocks.find(block => {
-                        try {
-                           return isAfter(parseTime(block.startTime), now);
-                        } catch(e) { return false; }
-                    });
-                    if (upcoming) {
-                        nextTask = `Next: ${upcoming.description} at ${upcoming.startTime}`;
-                    }
-                }
-            }
+        if (start && end && isWithinInterval(currentTime, { start, end })) {
+          currentActivity = block.description;
+          break;
+        }
+      }
 
-            return {
-                ...user,
-                status,
-                primaryMission: userCheckin?.primaryMission,
-                currentTask,
-                nextTask,
-                details: userCheckin?.details
-            };
-        });
-    }, [users, checkins, isClient]);
+      return {
+        ...user,
+        status: 'Checked In',
+        currentActivity,
+        schedule: userCheckin.details.timeBlocks,
+        primaryMission: userCheckin.primaryMission,
+      };
+    });
+  }, [users, checkins, currentTime]);
 
-    const statusConfig = {
-        'Checked In': { icon: CheckCircle, color: 'text-green-500' },
-        'Not Checked In': { icon: UserX, color: 'text-red-500' },
-    };
-    
-    const isLoading = !users || !checkins || !isClient;
+  const checkedInCount = useMemo(() => {
+      return teamStatus?.filter(u => u.status === 'Checked In').length || 0;
+  }, [teamStatus]);
 
+  if (!teamStatus) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Users /> Team Deployment</CardTitle>
-                <CardDescription>Live feed of your team's daily missions and current activities.</CardDescription>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
             </CardHeader>
             <CardContent>
-                <Accordion type="multiple" className="w-full space-y-3">
-                    {isLoading && Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
-                    {!isLoading && teamStatus.map(member => {
-                        const { icon: Icon, color } = statusConfig[member.status];
-                        return (
-                             <Card key={member.id} className={cn(member.status === 'Not Checked In' ? 'bg-red-500/5' : 'bg-muted/40')}>
-                                <AccordionItem value={member.id} className="border-b-0">
-                                    <AccordionTrigger className="p-4 hover:no-underline">
-                                        <div className="flex items-center gap-3 w-full">
-                                            <Icon className={cn("h-6 w-6 flex-shrink-0", color)} />
-                                            <div className="flex-grow text-left">
-                                                <p className="font-bold">{member.name}</p>
-                                                <p className="text-sm text-muted-foreground truncate">{member.primaryMission || 'Not Checked In'}</p>
-                                            </div>
-                                        </div>
-                                    </AccordionTrigger>
-                                     <AccordionContent className="px-4 pb-4 space-y-3">
-                                        <div className="p-3 bg-background/50 rounded-md">
-                                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current Task</p>
-                                            <p className="font-medium">{member.currentTask}</p>
-                                            {member.nextTask && <p className="text-xs text-muted-foreground">{member.nextTask}</p>}
-                                        </div>
-                                        {member.details && (
-                                            <div>
-                                                <h4 className="font-semibold text-sm mb-1">Strategic Connections</h4>
-                                                <ul className="list-disc list-inside text-sm text-muted-foreground">
-                                                    {member.details.multiWinConnections.map((conn, i) => <li key={i}>{conn}</li>)}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </AccordionContent>
-                                </AccordionItem>
-                            </Card>
-                        )
-                    })}
-                </Accordion>
+                <Skeleton className="h-24 w-full" />
             </CardContent>
         </Card>
-    );
+    )
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+            <span>Team Deployment</span>
+            <Badge variant="outline">{checkedInCount} / {users?.length || 0} Active</Badge>
+        </CardTitle>
+        <CardDescription>
+          A live look at what the team is focused on right now based on their daily plans.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="single" collapsible className="w-full">
+            {teamStatus.map(member => (
+                <AccordionItem value={member.id} key={member.id}>
+                    <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3 w-full">
+                            <Avatar className="h-9 w-9 border">
+                                <AvatarImage src={member.photoURL} />
+                                <AvatarFallback>{member.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 text-left">
+                                <p className="font-semibold">{member.name}</p>
+                                <div className="flex items-center gap-2">
+                                    {member.status === 'Checked In' 
+                                        ? <CheckCircle className="h-4 w-4 text-green-500" />
+                                        : <XCircle className="h-4 w-4 text-muted-foreground" />
+                                    }
+                                    <p className="text-sm text-muted-foreground truncate">{member.currentActivity}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="space-y-3">
+                       {member.status === 'Checked In' && member.schedule.length > 0 ? (
+                            <>
+                                <p className="font-semibold text-primary">Mission: {member.primaryMission}</p>
+                                <ul className="list-disc list-inside space-y-2 text-xs">
+                                {member.schedule.map((item, index) => (
+                                    <li key={index}><strong>{item.startTime} - {item.endTime}:</strong> {item.description}</li>
+                                ))}
+                                </ul>
+                            </>
+                       ) : (
+                           <p className="text-sm text-muted-foreground text-center py-4">Not checked in for today.</p>
+                       )}
+                    </AccordionContent>
+                </AccordionItem>
+            ))}
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
 }
