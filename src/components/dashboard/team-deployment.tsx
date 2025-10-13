@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -16,18 +15,16 @@ const parseTime = (timeStr: string): Date => {
   const now = new Date();
   const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
   if (!match) {
-    // Fallback for simple 24h format if needed
     try {
         const [hours, minutes] = timeStr.split(':').map(Number);
         if(!isNaN(hours) && !isNaN(minutes)) {
             return setMinutes(setHours(now, hours), minutes);
         }
     } catch {
-        // fall through to error
+        // Fall through
     }
     console.error(`Invalid time format, could not parse: "${timeStr}"`);
-    // Return a date in the past to avoid incorrect matches
-    return new Date(0);
+    return new Date(0); // Return a date in the past
   }
   
   let [ , hoursStr, minutesStr, modifier] = match;
@@ -45,17 +42,16 @@ const parseTime = (timeStr: string): Date => {
 };
 
 export function TeamDeployment({ users, checkins }: { users: User[] | null; checkins: Checkin[] | null }) {
-    const [currentTime, setCurrentTime] = useState<Date | null>(null);
-
+    
+    // This state ensures we only render the time-sensitive logic on the client
+    const [isClient, setIsClient] = useState(false);
     useEffect(() => {
-        // This ensures the current time is only set on the client, avoiding hydration mismatches.
-        setCurrentTime(new Date());
-        const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
-        return () => clearInterval(timer);
+        setIsClient(true);
     }, []);
 
     const teamStatus = useMemo(() => {
-        if (!users || !currentTime) return [];
+        if (!users || !isClient) return [];
+        const now = new Date(); // Get current time directly inside the client-only logic
 
         return users.map(user => {
             const userCheckin = checkins?.find(c => c.userId === user.id);
@@ -66,7 +62,6 @@ export function TeamDeployment({ users, checkins }: { users: User[] | null; chec
 
             if (userCheckin) {
                 status = 'Checked In';
-                const now = currentTime;
 
                 const scheduledTask = userCheckin.details.timeBlocks.find(block => {
                     try {
@@ -103,14 +98,14 @@ export function TeamDeployment({ users, checkins }: { users: User[] | null; chec
                 details: userCheckin?.details
             };
         });
-    }, [users, checkins, currentTime]);
+    }, [users, checkins, isClient]);
 
     const statusConfig = {
         'Checked In': { icon: CheckCircle, color: 'text-green-500' },
         'Not Checked In': { icon: UserX, color: 'text-red-500' },
     };
     
-    const isLoading = !users || !checkins || !currentTime;
+    const isLoading = !users || !checkins || !isClient;
 
     return (
         <Card>
@@ -121,7 +116,7 @@ export function TeamDeployment({ users, checkins }: { users: User[] | null; chec
             <CardContent>
                 <Accordion type="multiple" className="w-full space-y-3">
                     {isLoading && Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
-                    {teamStatus.map(member => {
+                    {!isLoading && teamStatus.map(member => {
                         const { icon: Icon, color } = statusConfig[member.status];
                         return (
                              <Card key={member.id} className={cn(member.status === 'Not Checked In' ? 'bg-red-500/5' : 'bg-muted/40')}>
