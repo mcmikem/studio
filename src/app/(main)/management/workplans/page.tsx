@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -68,7 +68,6 @@ function TeamWorkplanForm({
     resolver: zodResolver(teamWorkplanSchema),
     defaultValues: existingPlan
       ? {
-          ...existingPlan,
           status: existingPlan.status,
           message: existingPlan.message,
           keyPriorities: existingPlan.keyPriorities.map(p => ({
@@ -88,7 +87,6 @@ function TeamWorkplanForm({
   useEffect(() => {
     reset(existingPlan
       ? {
-          ...existingPlan,
           status: existingPlan.status,
           message: existingPlan.message,
           keyPriorities: existingPlan.keyPriorities.map(p => ({
@@ -216,10 +214,21 @@ function TeamWorkplanForm({
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="status" className="text-lg font-semibold">Status</Label>
-                     <select {...register('status')} className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
-                        <option value="Draft">Draft (Visible only to management)</option>
-                        <option value="Published">Published (Visible to the whole team)</option>
-                    </select>
+                     <Controller
+                        name="status"
+                        control={control}
+                        render={({ field }) => (
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select status"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Draft">Draft (Visible only to management)</SelectItem>
+                                    <SelectItem value="Published">Published (Visible to the whole team)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        )}
+                    />
                 </div>
 
                 <Button type="submit" disabled={isSubmitting} size="lg">
@@ -330,19 +339,19 @@ export default function TeamWorkplansPage() {
                  <div>
                     <h4 className="font-semibold mb-2">Key Priorities for the Week:</h4>
                     <div className="space-y-3">
-                        {currentPlan.keyPriorities.map((p, i) => 
-                        <div key={i} className="p-3 border rounded-lg">
-                            <div className="flex justify-between items-start">
-                                <p className="font-medium pr-4">{p.activity}</p>
-                                <Badge variant="outline" className={priorityColors[p.priority]}>{p.priority}</Badge>
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-1 space-x-4">
-                                <span><span className="font-semibold">By:</span> {p.responsible}</span>
-                                {p.deadline && <span><span className="font-semibold">Due:</span> {format(new Date(p.deadline), 'MMM dd')}</span>}
-                            </div>
-                        </div>
-                        )}
-                    </ul>
+                        {currentPlan.keyPriorities.map((p, i) => (
+                          <div key={i} className="p-3 border rounded-lg">
+                              <div className="flex justify-between items-start">
+                                  <p className="font-medium pr-4">{p.activity}</p>
+                                  <Badge variant="outline" className={priorityColors[p.priority]}>{p.priority}</Badge>
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1 space-x-4">
+                                  <span><span className="font-semibold">By:</span> {p.responsible}</span>
+                                  {p.deadline && <span><span className="font-semibold">Due:</span> {format(new Date(p.deadline), 'MMM dd')}</span>}
+                              </div>
+                          </div>
+                        ))}
+                    </div>
                  </div>
             </CardContent>
         </Card>
