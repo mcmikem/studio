@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -199,13 +199,13 @@ export function DashboardCalendar() {
               )}
           </div>
       </CardContent>
-      <CardContent>
+      <CardFooter>
           <Button asChild className="w-full" variant="ghost">
               <Link href="/calendar" className="text-sm text-primary group-hover/card:underline flex items-center justify-end w-full">
                   View full calendar <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
           </Button>
-      </CardContent>
+      </CardFooter>
     </Card>
   );
 }

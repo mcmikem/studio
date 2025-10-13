@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { format, isSameDay, addDays, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon, PlusCircle, Clock, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
