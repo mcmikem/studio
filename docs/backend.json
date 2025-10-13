@@ -502,7 +502,8 @@
         "status": { "type": "string", "enum": ["Draft", "Submitted", "In Review", "Approved", "Rejected"] },
         "submissionDate": { "type": "string", "format": "date" },
         "decisionDate": { "type": "string", "format": "date" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "conceptNote": { "type": "string" }
       },
       "required": ["title", "partnerName", "amountRequested", "status", "submissionDate", "createdAt"]
     },
@@ -516,7 +517,16 @@
         "weekOf": { "type": "string", "format": "date", "description": "The start date of the week (e.g., a Monday)." },
         "keyPriorities": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "object",
+            "properties": {
+              "activity": { "type": "string" },
+              "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
+              "responsible": { "type": "array", "items": { "type": "string" } },
+              "deadline": { "type": "string", "format": "date-time" }
+            },
+            "required": ["activity", "priority", "responsible"]
+          },
           "description": "A list of the main team priorities for the week."
         },
         "message": { "type": "string", "description": "A brief message or focus from the manager for the week." },
@@ -540,7 +550,15 @@
         "teamPlanId": { "type": "string", "description": "Reference to the TeamWeeklyPlan for that week." },
         "teamPriorities": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "object",
+            "properties": {
+              "activity": { "type": "string" },
+              "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
+              "responsible": { "type": "array", "items": { "type": "string" } },
+              "deadline": { "type": "string", "format": "date-time" }
+            }
+          },
           "description": "The inherited team priorities for the week."
         },
         "individualTasks": {
@@ -758,5 +776,3 @@
   }
 }
 
-
-    
