@@ -11,7 +11,6 @@ dotenv.config({ path: '.env' });
 
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
-import { defineFlow, runFlow } from 'genkit/flow';
 
 genkit({
   plugins: [googleAI()],
