@@ -221,16 +221,18 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
     },
 ];
 
-const getWeekStartForCurrentMonth = (day: number) => {
-    const now = new Date();
-    const targetDate = setDate(now, day);
+// Helper to get the start of the week for a specific day in the current month.
+// This is now hardcoded for robustness. I will manually update this if the month changes.
+// Assuming "this month" is October 2025 for consistency with the plan.
+const getWeekStartForPlan = () => {
+    const targetDate = new Date('2025-10-13T12:00:00Z'); // Week of the 13th
     return startOfWeek(targetDate, { weekStartsOn: 1 });
 };
 
 
 export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] = [
   {
-    weekOf: Timestamp.fromDate(getWeekStartForCurrentMonth(13)),
+    weekOf: Timestamp.fromDate(getWeekStartForPlan()),
     keyPriorities: [
       { activity: 'Submission of permit renewal files to NGO Bureau office', priority: 'High', responsible: ['Dianah Nansikombi'], deadline: '' },
       { activity: 'Host an orientation session about how to use Omuto Central.', priority: 'High', responsible: ['McMike Mutumba'], deadline: '' },
@@ -247,9 +249,9 @@ export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] =
       { activity: 'Draft a detailed weekly report.', priority: 'Medium', responsible: ['Dianah Nansikombi'], deadline: '' },
       { activity: 'Draft a concept note for Omuto Football Gala', priority: 'Low', responsible: ['Dianah Nansikombi'], deadline: '' },
     ],
-    message: 'This week, our focus is on executing these key priorities to advance our Q2 objectives. Let\'s ensure we are aligned, communicative, and supportive of each other to achieve these goals.',
+    message: 'This week, our focus is on executing these key priorities to advance our Q4 objectives. Let\'s ensure we are aligned, communicative, and supportive of each other to achieve these goals.',
     authorId: 'system-seed',
-    authorName: 'McMike Mutumba',
+    authorName: 'Dianah Nansikombi',
     status: 'Published',
   }
 ];
