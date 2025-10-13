@@ -17,14 +17,9 @@ import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
+import { formatCurrency } from '@/lib/utils';
+import { BarChart3 } from 'lucide-react';
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-UG', {
-    style: 'currency',
-    currency: 'UGX',
-    minimumFractionDigits: 0,
-  }).format(value);
-};
 
 function MonthlyActivityReport() {
     const firestore = useFirestore();
@@ -241,8 +236,9 @@ export default function ReportsPage() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Reports &amp; Analysis
+        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+          <BarChart3 className="h-8 w-8" />
+          M&amp;E Hub
         </h1>
         <p className="text-muted-foreground">
           Turn your operational data into actionable intelligence.

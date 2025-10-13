@@ -24,6 +24,7 @@ import {
   Video,
   DollarSign,
   Box,
+  BarChart3,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -75,7 +76,7 @@ const navConfig = {
     { href: '/management/users', icon: UserIcon, label: 'Users' },
   ],
   communication: [
-    { href: '/reports', icon: FileText, label: 'Analysis' },
+    { href: '/reports', icon: BarChart3, label: 'M&amp;E Hub' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/impact-story', icon: Wand, label: 'Story Generator' },
     { href: '/testimonies', icon: Video, label: 'Testimonies' },
