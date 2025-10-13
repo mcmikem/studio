@@ -1,6 +1,6 @@
 
 
-import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert } from './types';
+import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert, TeamWeeklyPlan } from './types';
 import { AlertTriangle, Info } from 'lucide-react';
 
 export const KNOWLEDGE_BASE = `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
@@ -224,4 +224,30 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
         deadline: '2025-10-21',
         priority: 'High',
     },
+];
+
+export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] = [
+    {
+        weekOf: new Date('2024-05-13'), // Monday of that week
+        keyPriorities: [
+            "Submission of permit renewal files to NGO Bureau office",
+            "Host an orientation session about how to use Omuto Central",
+            "Increase mobilization of funds for Cycle of Dignity Campaign",
+            "Secure 3 PTA schools meeting for awareness of Red campaign",
+            "Secure 3 partnership meetings for programs support",
+            "Drafting new YAP Chapters SOPs",
+            "Shoot a documentary for Red Campaign to be used for partnerships",
+            "Produce first prototype batch of 10 of Dignity pads",
+            "Complete field mapping for Mpigi,Butambala and Kampala",
+            "Schedule a stake holder consultation meeting for Omuto Football Gala",
+            "Draft 3 compelling stories about Menstrual Health management and Cycle of dignity campaign",
+            "Hold a weekly review meeting(goals vs achievements)",
+            "Draft a detailed weekly report",
+            "Draft a concept note for Omuto Football Gala",
+        ],
+        message: "This week is about execution and pushing our key initiatives forward. Let's focus on hitting our targets for partnerships, fundraising, and the RED campaign. Great work on all fronts, let's keep the momentum going!",
+        authorId: "placeholder-dianah-id",
+        authorName: "Dianah Nansikombi",
+        status: "Published"
+    }
 ];
