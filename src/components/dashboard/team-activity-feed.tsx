@@ -37,5 +37,3 @@ export function TeamPulse({ checkouts }: { checkouts: Checkout[] | null }) {
     </Card>
   )
 }
-
-    

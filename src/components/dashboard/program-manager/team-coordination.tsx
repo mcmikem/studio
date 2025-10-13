@@ -1,12 +1,14 @@
+
 'use client';
 
 import { useMemo } from 'react';
 import type { User, Checkin, Expense } from "@/lib/types"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Skeleton } from '@/components/ui/skeleton';
 import { startOfDay } from 'date-fns';
-import { CheckCircle, UserX, Users } from 'lucide-react';
+import { CheckCircle, UserX, Users, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 
 export function TeamCoordination({ users, checkins, expenses }: { users: User[] | null, checkins: Checkin[] | null, expenses: Expense[] | null }) {
@@ -26,7 +28,7 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
         if (!expenses) return { transportBudgetUsed: 0 };
         const monthlyBudget = 800000; // Mock budget
         const transportExpenses = expenses
-            .filter(e => e.status === 'Approved' || e.status === 'Disbursed' || e.status === 'Acknowledged')
+            .filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged')
             .flatMap(e => e.items)
             .filter(item => item.category === 'Transport')
             .reduce((sum, item) => sum + item.amount, 0);
@@ -44,40 +46,45 @@ export function TeamCoordination({ users, checkins, expenses }: { users: User[] 
     };
 
     return (
-        <Card className="hover:bg-muted/50 transition-colors">
-            <Link href="/checkins">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Users /> Team Coordination</CardTitle>
-                    <CardDescription>Live status of team deployment and resources.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div>
-                        <h4 className="font-semibold mb-2">Team Deployment</h4>
-                        <div className="space-y-3">
-                            {!users || !checkins ? (
-                                Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-5 w-full" />)
-                            ) : (
-                                 teamStatus.map(member => (
-                                    <div key={member.name} className="flex items-center gap-2">
-                                        {statusIcons[member.status as keyof typeof statusIcons]}
-                                        <span className="font-medium">{member.name}</span>
-                                        <span className="text-muted-foreground truncate">- {member.task}</span>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                     <div className="space-y-2">
-                        <h4 className="font-semibold">Resource Alerts</h4>
-                        {!expenses ? <Skeleton className="h-10 w-full" /> : (
-                            <div className="p-3 bg-muted rounded-md text-sm">
-                                <p>• Transport budget: <span className="font-bold">{resourceAlerts.transportBudgetUsed.toFixed(0)}% used</span></p>
-                                <p>• Volunteer gap: <span className="font-bold text-red-500">Need 0 more</span></p>
-                            </div>
+        <Card className="hover:bg-muted/50 transition-colors group/card">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Users /> Team Coordination</CardTitle>
+                <CardDescription>Live status of team deployment and resources.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div>
+                    <h4 className="font-semibold mb-2">Team Deployment</h4>
+                    <div className="space-y-3">
+                        {!users || !checkins ? (
+                            Array.from({length: 4}).map((_, i) => <Skeleton key={i} className="h-5 w-full" />)
+                        ) : (
+                             teamStatus.map(member => (
+                                <div key={member.name} className="flex items-center gap-2">
+                                    {statusIcons[member.status as keyof typeof statusIcons]}
+                                    <span className="font-medium">{member.name}</span>
+                                    <span className="text-muted-foreground truncate">- {member.task}</span>
+                                </div>
+                            ))
                         )}
-                     </div>
-                </CardContent>
-            </Link>
+                    </div>
+                </div>
+                 <div className="space-y-2">
+                    <h4 className="font-semibold">Resource Alerts</h4>
+                    {!expenses ? <Skeleton className="h-10 w-full" /> : (
+                        <div className="p-3 bg-muted rounded-md text-sm">
+                            <p>• Transport budget: <span className="font-bold">{resourceAlerts.transportBudgetUsed.toFixed(0)}% used</span></p>
+                            <p>• Volunteer gap: <span className="font-bold text-red-500">Need 0 more</span></p>
+                        </div>
+                    )}
+                 </div>
+            </CardContent>
+            <CardFooter>
+                 <Button asChild className="w-full" variant="ghost">
+                    <Link href="/checkins" className="text-sm text-primary group-hover/card:underline flex items-center justify-end w-full">
+                        View Full Check-in Stream <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </CardFooter>
         </Card>
     )
 }

@@ -15,8 +15,6 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
 
   // Extract all hashtags from the task
   const tags = checkout.task?.match(/#\w+/g) || [];
-  const primaryTag = tags[0] || '#Update';
-  const colorClass = tagColors[primaryTag as keyof typeof tagColors] || tagColors['#Update'];
   const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1')?.imageUrl;
 
   return (
@@ -31,6 +29,15 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
             <div className="text-xs text-muted-foreground whitespace-nowrap">{timeAgo}</div>
         </div>
         <p className="text-sm text-muted-foreground">{checkout.task}</p>
+         {tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 pt-1">
+                {tags.map(tag => (
+                    <Badge key={tag} variant="outline" className={tagColors[tag as keyof typeof tagColors] || tagColors['#Update']}>
+                        {tag}
+                    </Badge>
+                ))}
+            </div>
+        )}
       </div>
     </div>
   );

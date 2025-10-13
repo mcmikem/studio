@@ -3,7 +3,7 @@
 
 import { useMemo } from 'react';
 import type { Partnership } from "@/lib/types"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -33,7 +33,7 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
     }, [partnerships]);
 
     return (
-        <Card className="hover:bg-muted/50 transition-colors">
+        <Card className="hover:bg-muted/50 transition-colors group/card">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Handshake /> Partnership Pipeline</CardTitle>
                 <CardDescription>A snapshot of your current partner engagement.</CardDescription>
@@ -81,14 +81,14 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
                         </>
                     )}
                 </div>
-                 <Button asChild className="w-full" variant="outline">
-                    <Link href="/management/partnerships">
+            </CardContent>
+             <CardFooter>
+                <Button asChild className="w-full" variant="ghost">
+                    <Link href="/management/partnerships" className="text-sm text-primary group-hover/card:underline flex items-center justify-end w-full">
                         Manage All Partnerships <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                 </Button>
-            </CardContent>
+            </CardFooter>
         </Card>
     )
 }
-
-    
