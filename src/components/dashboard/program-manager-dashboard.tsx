@@ -1,4 +1,3 @@
-
 "use client"
 
 import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
