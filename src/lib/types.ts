@@ -225,7 +225,7 @@ export type Proposal = {
 export type PriorityItem = {
     activity: string;
     priority: 'High' | 'Medium' | 'Low';
-    responsible: string;
+    responsible: string[];
     deadline?: string;
 }
 

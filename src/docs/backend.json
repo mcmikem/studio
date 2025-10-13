@@ -521,7 +521,7 @@
             "properties": {
               "activity": { "type": "string" },
               "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
-              "responsible": { "type": "string" },
+              "responsible": { "type": "array", "items": { "type": "string" } },
               "deadline": { "type": "string", "format": "date" }
             },
             "required": ["activity", "priority", "responsible"]
@@ -554,7 +554,7 @@
             "properties": {
               "activity": { "type": "string" },
               "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
-              "responsible": { "type": "string" },
+              "responsible": { "type": "array", "items": { "type": "string" } },
               "deadline": { "type": "string", "format": "date" }
             }
           },

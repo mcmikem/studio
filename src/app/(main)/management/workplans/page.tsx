@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -18,20 +17,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc } from 'firebase/firestore';
 import type { TeamWeeklyPlan, User } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
-import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2, Edit, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),
   priority: z.enum(['High', 'Medium', 'Low']),
-  responsible: z.string().min(1, 'Responsible person is required.'),
+  responsible: z.array(z.string()).min(1, 'At least one person must be responsible.'),
   deadline: z.string().optional(),
 });
 
@@ -75,12 +75,12 @@ function TeamWorkplanForm({
           keyPriorities: existingPlan.keyPriorities.map(p => ({
               activity: p.activity,
               priority: p.priority || 'Medium',
-              responsible: p.responsible,
+              responsible: Array.isArray(p.responsible) ? p.responsible : [p.responsible],
               deadline: p.deadline ? format(new Date(p.deadline), 'yyyy-MM-dd') : undefined,
           }))
         }
       : {
-          keyPriorities: [{ activity: '', priority: 'Medium', responsible: '', deadline: '' }],
+          keyPriorities: [{ activity: '', priority: 'Medium', responsible: [], deadline: '' }],
           message: '',
           status: 'Draft',
         },
@@ -91,15 +91,15 @@ function TeamWorkplanForm({
       ? {
           status: existingPlan.status,
           message: existingPlan.message,
-          keyPriorities: existingPlan.keyPriorities.map(p => ({
+           keyPriorities: existingPlan.keyPriorities.map(p => ({
               activity: p.activity,
               priority: p.priority || 'Medium',
-              responsible: p.responsible,
+              responsible: Array.isArray(p.responsible) ? p.responsible : [p.responsible],
               deadline: p.deadline ? format(new Date(p.deadline), 'yyyy-MM-dd') : undefined,
           }))
         }
       : {
-          keyPriorities: [{ activity: '', priority: 'Medium', responsible: '', deadline: '' }],
+          keyPriorities: [{ activity: '', priority: 'Medium', responsible: [], deadline: '' }],
           message: '',
           status: 'Draft',
         });
@@ -111,10 +111,10 @@ function TeamWorkplanForm({
   });
 
   const responsibleOptions = [
-    ...users.map(u => u.name),
-    'All Members',
-    'Volunteers',
-    'Interns',
+    ...users.map(u => ({ label: u.name, value: u.name })),
+    { label: 'All Members', value: 'All Members' },
+    { label: 'Volunteers', value: 'Volunteers' },
+    { label: 'Interns', value: 'Interns' },
   ];
 
   const onSubmit = async (data: TeamWorkplanFormData) => {
@@ -176,7 +176,7 @@ function TeamWorkplanForm({
                                 <Input id={`keyPriorities.${index}.activity`} {...register(`keyPriorities.${index}.activity`)} placeholder={`Priority Activity #${index + 1}`}/>
                                 {errors.keyPriorities?.[index]?.activity && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.activity?.message}</p>}
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor={`keyPriorities.${index}.priority`}>Priority</Label>
                                     <Controller
@@ -200,14 +200,12 @@ function TeamWorkplanForm({
                                         control={control}
                                         name={`keyPriorities.${index}.responsible`}
                                         render={({ field }) => (
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <SelectTrigger><SelectValue placeholder="Assign to..." /></SelectTrigger>
-                                            <SelectContent>
-                                                {responsibleOptions.map(option => (
-                                                    <SelectItem key={option} value={option}>{option}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                            <MultiSelect
+                                                options={responsibleOptions}
+                                                onValueChange={field.onChange}
+                                                defaultValue={field.value}
+                                                placeholder="Assign to..."
+                                            />
                                         )}
                                     />
                                      {errors.keyPriorities?.[index]?.responsible && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.responsible?.message}</p>}
@@ -225,7 +223,7 @@ function TeamWorkplanForm({
                     {errors.keyPriorities?.root && <p className="text-sm text-destructive">{errors.keyPriorities.root.message}</p>}
                 </div>
                 
-                <Button type="button" variant="outline" size="sm" onClick={() => append({ activity: '', priority: 'Medium', responsible: '', deadline: '' })}>
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ activity: '', priority: 'Medium', responsible: [], deadline: '' })}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Priority
                 </Button>
 
@@ -371,7 +369,7 @@ export default function TeamWorkplansPage() {
                                   <Badge variant="outline" className={priorityColors[p.priority]}>{p.priority}</Badge>
                               </div>
                               <div className="text-xs text-muted-foreground mt-1 space-x-4">
-                                  <span><span className="font-semibold">By:</span> {p.responsible}</span>
+                                  <span><span className="font-semibold">By:</span> {(p.responsible as string[]).join(', ')}</span>
                                   {p.deadline && <span><span className="font-semibold">Due:</span> {format(new Date(p.deadline), 'MMM dd')}</span>}
                               </div>
                           </div>

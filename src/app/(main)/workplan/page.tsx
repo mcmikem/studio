@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -237,7 +236,7 @@ export default function WorkplanPage() {
                         <TableRow key={index}>
                             <TableCell className="font-medium">{priority.activity}</TableCell>
                             <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
-                            <TableCell>{priority.responsible}</TableCell>
+                            <TableCell>{(priority.responsible as string[]).join(', ')}</TableCell>
                             <TableCell>{priority.deadline ? format(new Date(priority.deadline), 'MMM dd') : '-'}</TableCell>
                         </TableRow>
                         ))}
@@ -282,7 +281,7 @@ export default function WorkplanPage() {
                         <TableRow key={index}>
                             <TableCell className="font-medium">{priority.activity}</TableCell>
                             <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
-                            <TableCell>{priority.responsible}</TableCell>
+                            <TableCell>{(priority.responsible as string[]).join(', ')}</TableCell>
                             <TableCell>{priority.deadline ? format(new Date(priority.deadline), 'MMM dd') : '-'}</TableCell>
                         </TableRow>
                         ))}
