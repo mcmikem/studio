@@ -135,15 +135,18 @@ function TeamWorkplanForm({
         </CardHeader>
         <CardContent>
              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-center gap-2">
-                    <Input {...register(`keyPriorities.${index}.value`)} placeholder={`Team Priority #${index + 1}`}/>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                    </div>
-                ))}
-                {errors.keyPriorities?.root && <p className="text-sm text-destructive">{errors.keyPriorities.root.message}</p>}
+                <div className="space-y-2">
+                    <Label>Key Team Priorities</Label>
+                    {fields.map((field, index) => (
+                        <div key={field.id} className="flex items-center gap-2">
+                        <Input {...register(`keyPriorities.${index}.value`)} placeholder={`Team Priority #${index + 1}`}/>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                        </div>
+                    ))}
+                    {errors.keyPriorities?.root && <p className="text-sm text-destructive">{errors.keyPriorities.root.message}</p>}
+                </div>
                 
                 <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Priority
@@ -276,3 +279,5 @@ export default function TeamWorkplansPage() {
     </div>
   );
 }
+
+    
