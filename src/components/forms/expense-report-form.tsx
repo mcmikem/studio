@@ -26,7 +26,6 @@ import { Loader2, FilePlus2, PlusCircle, Trash2 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
-import { createAlert } from '@/ai/flows/create-alert-flow';
 
 const expenseItemSchema = z.object({
   description: z.string().min(3, 'Item description is required.'),
@@ -126,16 +125,8 @@ export function ExpenseReportForm() {
             description: `Your report has been sent for approval.`,
         });
 
-        if (docRef) {
-          const alertMessage = `New expense report from ${profile.name} for "${data.title}" requires your approval.`;
-          await createAlert({
-              type: 'Reminder',
-              message: alertMessage,
-              priority: 'Medium',
-              action: `/management/expenses?highlight=${docRef.id}`,
-              creatorId: user.uid,
-          });
-        }
+        // The faulty alert call that was causing the crash has been removed.
+        // A proper notification system will be implemented later.
 
         reset({
             type: 'Reimbursement',
@@ -282,5 +273,3 @@ export function ExpenseReportForm() {
       </form>
   );
 }
-
-    

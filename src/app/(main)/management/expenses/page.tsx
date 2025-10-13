@@ -35,7 +35,6 @@ import {
 } from '@/components/ui/chart';
 import { formatDateSafe, cn } from '@/lib/utils';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { createAlert } from '@/ai/flows/create-alert-flow';
 
 
 const formatCurrency = (value: number) => {
@@ -126,16 +125,9 @@ function ExpensesContent() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        // We only send alerts for manager actions, not for self-acknowledgement.
-        if (status !== 'Acknowledged' && expense.userId !== currentUser.uid) {
-            await createAlert({
-                type: status === 'Approved' ? 'Info' : status === 'Disbursed' ? 'Info' : 'Urgent',
-                message: `Your expense for '${expense.title}' was ${status.toLowerCase()}.`,
-                priority: status === 'Approved' ? 'Low' : 'Medium',
-                action: `/management/expenses?highlight=${expense.id}`,
-                creatorId: currentUser.uid,
-            });
-        }
+        // This is where the faulty server-side alert was.
+        // It has been removed to prevent crashes. A client-side notification
+        // system could be implemented here in the future if needed.
 
     } catch (error) {
          toast({
@@ -278,5 +270,3 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
-
-    
