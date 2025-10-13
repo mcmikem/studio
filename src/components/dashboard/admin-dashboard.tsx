@@ -16,6 +16,7 @@ import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { SmartReminders } from "./smart-reminders"
 import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
+import { startOfDay } from "date-fns"
 
 interface DashboardProps {
   profile: User;
@@ -39,8 +40,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users } = useCollection<User>(usersQuery);
 
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  const todayStart = startOfDay(new Date('2025-10-13T12:00:00Z'));
   const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
   const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
