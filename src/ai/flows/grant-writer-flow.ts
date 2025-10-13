@@ -9,13 +9,13 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 
-export const GrantWriterInputSchema = z.object({
+const GrantWriterInputSchema = z.object({
   partnerName: z.string().describe("The name of the potential funder or partner."),
   amountRequested: z.number().describe("The amount of funding being requested in UGX."),
 });
 export type GrantWriterInput = z.infer<typeof GrantWriterInputSchema>;
 
-export const GrantWriterOutputSchema = z.object({
+const GrantWriterOutputSchema = z.object({
   conceptNote: z.string().describe("A concise and persuasive concept note for the proposal, written in markdown format. It should include sections for Introduction, Problem Statement, Proposed Solution (linking to Omuto's ecosystem model), and Budget Overview."),
 });
 export type GrantWriterOutput = z.infer<typeof GrantWriterOutputSchema>;
@@ -43,19 +43,7 @@ Please tailor the note to be compelling for a potential funder. Highlight our un
 });
 
 export async function writeConceptNote(input: GrantWriterInput): Promise<GrantWriterOutput> {
-  const llmResponse = await ai.generate({
-    prompt: grantWriterPrompt.prompt,
-    model: 'googleai/gemini-2.5-flash',
-    customData: input,
-    output: {
-        schema: GrantWriterOutputSchema,
-    },
-    config: {
-      temperature: 0.7, // Be slightly more creative and persuasive
-    },
-  });
-
-  const { output } = llmResponse;
+  const { output } = await grantWriterPrompt(input);
   if (!output) {
     throw new Error('AI failed to generate a concept note.');
   }

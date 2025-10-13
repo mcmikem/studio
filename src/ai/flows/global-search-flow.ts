@@ -9,19 +9,19 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { findUsersByName, findProgramsByName, findExpensesByTitle } from '../tools/omuto-tools';
 
-export const SearchInputSchema = z.object({
+const SearchInputSchema = z.object({
   query: z.string().describe('The user\'s natural language search query.'),
 });
 export type SearchInput = z.infer<typeof SearchInputSchema>;
 
-export const SearchResultItemSchema = z.object({
+const SearchResultItemSchema = z.object({
     id: z.string(),
     type: z.string().describe("The type of the entity (e.g., 'User', 'Program', 'Expense')."),
     title: z.string().describe("The main title or name of the item."),
     url: z.string().describe("The in-app URL to navigate to the item."),
 });
 
-export const SearchOutputSchema = z.object({
+const SearchOutputSchema = z.object({
   results: z.array(SearchResultItemSchema).describe('A list of search results.'),
 });
 export type SearchOutput = z.infer<typeof SearchOutputSchema>;

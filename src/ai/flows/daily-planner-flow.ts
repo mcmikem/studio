@@ -65,7 +65,7 @@ const plannerPrompt = ai.definePrompt(
 );
 
 
-export const dailyPlannerAI = ai.defineFlow(
+const dailyPlannerAIFlow = ai.defineFlow(
   {
     name: 'dailyPlannerAIFlow',
     inputSchema: DailyPlannerAIInputSchema,
@@ -79,3 +79,7 @@ export const dailyPlannerAI = ai.defineFlow(
     return output;
   }
 );
+
+export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
+    return dailyPlannerAIFlow(input);
+}

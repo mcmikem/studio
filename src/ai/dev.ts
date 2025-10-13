@@ -18,14 +18,16 @@ genkit({
   enableTracingAndMetrics: true,
 });
 
-// Make sure all flows are exported from here
-export * from './flows/create-alert-flow';
-export * from './flows/daily-planner-flow';
-export * from './flows/impact-story-generator';
-export * from './flows/omuto-ai-flow';
-export * from './flows/smart-reminders-flow';
-export * from './flows/grant-finder-flow';
-export * from './flows/grant-writer-flow';
-export * from './flows/global-search-flow';
+// Make sure all flows are exported from here.
+// Note: We only export the functions themselves, not the Genkit flow objects.
+export { createAlert } from './flows/create-alert-flow';
+export { dailyPlannerAI } from './flows/daily-planner-flow';
+export { generateImpactStory } from './flows/impact-story-generator';
+export { omutoAIFlow } from './flows/omuto-ai-flow';
+export { generateSmartReminders } from './flows/smart-reminders-flow';
+export { findGrants } from './flows/grant-finder-flow';
+export { writeConceptNote } from './flows/grant-writer-flow';
+export { searchOmuto } from './flows/global-search-flow';
+
 // NOTE: omuto-tools now only contains server-side safe tools.
 export * from './tools/omuto-tools';

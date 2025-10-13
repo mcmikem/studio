@@ -60,7 +60,7 @@ const prompt = ai.definePrompt({
   Generated Impact Story:`,
 });
 
-export const impactStoryGeneratorFlow = ai.defineFlow(
+const impactStoryGeneratorFlow = ai.defineFlow(
   {
     name: 'impactStoryGeneratorFlow',
     inputSchema: ImpactStoryInputSchema,

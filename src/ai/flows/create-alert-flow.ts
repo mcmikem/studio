@@ -24,7 +24,7 @@ export async function createAlert(input: AlertInput): Promise<{ id: string }> {
     return createAlertFlow(input);
 }
 
-export const createAlertFlow = ai.defineFlow(
+const createAlertFlow = ai.defineFlow(
   {
     name: 'createAlertFlow',
     inputSchema: AlertInputSchema,

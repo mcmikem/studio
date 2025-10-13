@@ -9,13 +9,13 @@ import { ai } from '@/ai/genkit';
 import { findGrantOpportunities } from '../tools/omuto-tools';
 import { z } from 'zod';
 
-export const GrantFinderInputSchema = z.object({
+const GrantFinderInputSchema = z.object({
   query: z.string().describe('The user\'s search query for grant opportunities (e.g., "youth empowerment uganda").'),
 });
 export type GrantFinderInput = z.infer<typeof GrantFinderInputSchema>;
 
 
-export const GrantOpportunitySchema = z.object({
+const GrantOpportunitySchema = z.object({
   title: z.string(),
   funder: z.string(),
   description: z.string(),
@@ -23,7 +23,7 @@ export const GrantOpportunitySchema = z.object({
   deadline: z.string().describe("Formatted as YYYY-MM-DD"),
 });
 
-export const GrantFinderOutputSchema = z.object({
+const GrantFinderOutputSchema = z.object({
   opportunities: z.array(GrantOpportunitySchema).describe('A list of potential grant opportunities found.'),
 });
 export type GrantFinderOutput = z.infer<typeof GrantFinderOutputSchema>;
