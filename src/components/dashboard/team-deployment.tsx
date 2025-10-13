@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -15,7 +16,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, Timestamp, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { User, Checkin } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -42,16 +43,8 @@ export function TeamDeployment() {
   const firestore = useFirestore();
   const [teamStatus, setTeamStatus] = useState<TeamStatus[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
-
-  // Set the current time on the client-side
-  useEffect(() => {
-    setCurrentTime(new Date());
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
-    return () => clearInterval(timer);
-  }, []);
+  const [currentTime, setCurrentTime] = useState<Date>(new Date('2025-10-13T10:00:00Z')); // Use mock time for consistency
   
-  // Use a fixed date for demonstration purposes to match sample data
   const MOCK_CURRENT_DATE = new Date('2025-10-13T10:00:00Z');
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
@@ -77,16 +70,18 @@ export function TeamDeployment() {
         return;
     }
 
+    // This is the corrected logic.
+    // We map over ALL users, ensuring everyone is in the list.
     const checkinMap = new Map(checkins?.map(c => [c.userId, c]));
-
+    
     const newTeamStatus = users.map(user => {
       const userCheckin = checkinMap.get(user.id);
       let currentTask: string | null = null;
       
-      if (userCheckin && userCheckin.details.timeBlocks && currentTime) {
+      if (userCheckin && userCheckin.details.timeBlocks) {
         for (const block of userCheckin.details.timeBlocks) {
           try {
-            const now = MOCK_CURRENT_DATE;
+            const now = currentTime;
             const startTime = parse(block.startTime, 'hh:mm a', now);
             const endTime = parse(block.endTime, 'hh:mm a', now);
             
