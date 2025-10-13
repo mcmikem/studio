@@ -25,7 +25,7 @@ const grantWriterPrompt = ai.definePrompt({
   name: 'grantWriterPrompt',
   input: { schema: GrantWriterInputSchema },
   output: { schema: GrantWriterOutputSchema },
-  system: `You are a professional grant writer for the Omuto Foundation. Your task is to draft a compelling, concise concept note based on the provided partner name and funding amount. Use the organizational knowledge base.
+  system: `${KNOWLEDGE_BASE}
   
   **IMPORTANT:**
   - The tone should be professional, confident, and passionate.

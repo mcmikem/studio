@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -71,7 +72,7 @@ const navConfig = {
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Management' },
-    { href: '/management/finance', icon: DollarSign, label: 'Finance' },
+    { href: '/management/resources', icon: Handshake, label: 'Resources' },
     { href: '/management/users', icon: UserIcon, label: 'Users' },
   ],
   communication: [

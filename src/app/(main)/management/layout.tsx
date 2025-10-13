@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -16,7 +17,7 @@ export default function ManagementLayout({
     { name: 'Programs', href: '/management/programs', icon: FolderKanban },
     { name: 'Projects', href: '/management/projects', icon: Briefcase },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
-    { name: 'Finance', href: '/management/finance', icon: DollarSign },
+    { name: 'Resources', href: '/management/resources', icon: DollarSign },
     { name: 'Expenses', href: '/management/expenses', icon: Receipt },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
     { name: 'Workplans', href: '/management/workplans', icon: CalendarClock },
