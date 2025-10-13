@@ -1,6 +1,7 @@
+
 "use client"
 
-import type { User, Expense, Activity, ImpactMetric, Income } from "@/lib/types"
+import type { User, Expense, Activity, ImpactMetric, Income, Checkout } from "@/lib/types"
 import {
   ArrowRight,
   Check,
@@ -9,6 +10,8 @@ import {
   Wand,
   CheckCheck,
   X,
+  Rss,
+  Users,
 } from "lucide-react"
 import {
   Card,
@@ -40,6 +43,9 @@ import { doc, collection, query, where, orderBy, Timestamp, limit } from "fireba
 import { startOfMonth } from "date-fns"
 import { Skeleton } from "../ui/skeleton"
 import { QuickAddTask } from "./quick-add-task"
+import { SmartReminders } from "./smart-reminders"
+import { TeamPulse } from "./team-activity-feed"
+import { TeamDeployment } from "./team-deployment"
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -302,6 +308,9 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
     return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'), limit(10));
   }, [firestore]);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
+  
+  const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
+  const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
 
 
   return (
@@ -312,11 +321,14 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <FinancialQueue allExpenses={allExpenses} />
-             <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
+            <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
+            <TeamPulse checkouts={checkouts} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
             <QuickAddTask />
+            <SmartReminders profile={profile} />
+            <TeamDeployment />
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>
