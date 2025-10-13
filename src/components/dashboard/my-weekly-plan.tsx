@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import { CalendarCheck, Loader2 } from 'lucide-react';
 import type { WeeklyWorkplan } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
@@ -37,9 +36,9 @@ export function MyWeeklyPlan() {
     );
 
     try {
-      const snapshot = await (await fetch(q as any)).docs;
-      if (snapshot.length > 0) {
-        const doc = snapshot[0];
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
         setWeeklyPlan({ id: doc.id, ...doc.data() } as WeeklyWorkplan);
       } else {
         setWeeklyPlan(null);

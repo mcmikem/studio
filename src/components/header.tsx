@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -300,7 +299,3 @@ function UserMenu() {
     </DropdownMenu>
   );
 }
-
-    
-
-    
