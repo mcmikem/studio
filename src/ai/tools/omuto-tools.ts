@@ -8,9 +8,8 @@
 
 import { ai } from '@/ai/genkit';
 import { initializeFirebase } from '@/firebase/server';
-import { collection, query, where, orderBy, getDocs, Timestamp, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { z } from 'zod';
-import { format } from 'date-fns';
 
 export const findGrantOpportunities = ai.defineTool(
   {
@@ -105,7 +104,88 @@ export const findUsersByName = ai.defineTool(
             id: doc.id,
             type: 'User',
             title: doc.data().name,
-            url: `/profile?userId=${doc.id}`, // A profile page would need to be created
+            url: `/profile?userId=${doc.id}`,
+        }));
+    }
+);
+
+export const findProgramsByName = ai.defineTool(
+    {
+        name: 'findProgramsByName',
+        description: 'Finds programs by their title.',
+        inputSchema: z.object({
+            title: z.string().describe("The title of the program to search for."),
+        }),
+        outputSchema: z.array(
+            z.object({
+                id: z.string(),
+                type: z.literal('Program'),
+                title: z.string(),
+                url: z.string(),
+            })
+        ),
+    },
+    async ({ title }) => {
+        const { firestore } = await initializeFirebase();
+        const programsRef = collection(firestore, 'programs');
+        
+        const q = query(
+            programsRef,
+            where('title', '>=', title),
+            where('title', '<=', title + '\uf8ff')
+        );
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            return [];
+        }
+
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            type: 'Program',
+            title: doc.data().title,
+            url: `/management/programs`,
+        }));
+    }
+);
+
+
+export const findExpensesByTitle = ai.defineTool(
+    {
+        name: 'findExpensesByTitle',
+        description: 'Finds expense reports by their title.',
+        inputSchema: z.object({
+            title: z.string().describe("The title of the expense report to search for."),
+        }),
+        outputSchema: z.array(
+            z.object({
+                id: z.string(),
+                type: z.literal('Expense'),
+                title: z.string(),
+                url: z.string(),
+            })
+        ),
+    },
+    async ({ title }) => {
+        const { firestore } = await initializeFirebase();
+        const expensesRef = collection(firestore, 'expenses');
+        
+        const q = query(
+            expensesRef,
+            where('title', '>=', title),
+            where('title', '<=', title + '\uf8ff')
+        );
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            return [];
+        }
+
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            type: 'Expense',
+            title: doc.data().title,
+            url: `/management/expenses?highlight=${doc.id}`,
         }));
     }
 );

@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -84,6 +85,7 @@ export function GlobalCommandBar() {
                 >
                   <Icon className="mr-2 h-4 w-4" />
                   <span>{result.title}</span>
+                  <span className="ml-auto text-xs text-muted-foreground">{result.type}</span>
                 </CommandItem>
               );
             })}
