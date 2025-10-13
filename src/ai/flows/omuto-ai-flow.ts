@@ -30,25 +30,6 @@ const OmutoAIOutputSchema = z.object({
 });
 export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
 
-// Define the main prompt for the Omuto AI
-const omutoAIPrompt = ai.definePrompt(
-  {
-    name: 'omutoAIPrompt',
-    input: { schema: OmutoAIInputSchema },
-    output: { schema: OmutoAIOutputSchema },
-    system: KNOWLEDGE_BASE, // Embed the entire organizational knowledge base
-    prompt: `You are Omuto AI, an expert assistant for the Omuto Foundation. Your purpose is to provide accurate, helpful, and concise information to team members. Use the provided knowledge base and your internal reasoning to answer questions about planning, reporting, data analysis, M&E, and team operations. Be professional, encouraging, and align all guidance with Omuto's operational standards.
-
-    You can format your answers using markdown (e.g., for lists, bolding).
-
-    Start responding to the user's question now.
-
-    User's Question:
-    {{question}}`,
-  }
-);
-
-
 // The main flow function that orchestrates the AI's response
 export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     
