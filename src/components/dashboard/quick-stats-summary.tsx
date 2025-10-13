@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "../ui/skeleton"
 import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
