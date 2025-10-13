@@ -4,6 +4,7 @@
 import type { User } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Card } from "../ui/card";
 
 
 export function DashboardHeader({ profile }: { profile: User }) {
@@ -19,11 +20,11 @@ export function DashboardHeader({ profile }: { profile: User }) {
   };
 
   return (
-    <div className="relative rounded-2xl overflow-hidden p-6 bg-secondary text-secondary-foreground h-40 flex flex-col justify-center">
+    <Card className="relative rounded-2xl overflow-hidden p-6 bg-secondary text-secondary-foreground flex flex-col justify-center">
        <div className="relative z-10 flex items-center gap-4">
-          <Avatar className="h-16 w-16 border-2 border-primary">
+          <Avatar className="h-16 w-16 border-4 border-primary ring-4 ring-primary/20">
               {profile?.photoURL && <AvatarImage src={profile.photoURL} alt={profile.name} />}
-              <AvatarFallback className="text-2xl font-bold bg-primary/20 text-primary ring-2 ring-primary">
+              <AvatarFallback className="text-2xl font-bold bg-secondary text-primary">
                   {getInitials(profile?.name)}
               </AvatarFallback>
           </Avatar>
@@ -34,6 +35,6 @@ export function DashboardHeader({ profile }: { profile: User }) {
               </h1>
           </div>
       </div>
-    </div>
+    </Card>
   )
 }

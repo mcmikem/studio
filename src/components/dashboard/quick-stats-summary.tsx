@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "../ui/skeleton"
 import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
@@ -46,7 +46,7 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
 
   if (metrics && metrics.length === 0) {
     return (
-       <Card className="col-span-full mt-6">
+       <Card className="col-span-full">
         <CardContent className="p-6 text-center text-muted-foreground">
           <p className="font-semibold">No Impact Metrics Found</p>
           <p className="text-sm">
@@ -65,47 +65,49 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 -mt-12 z-10 relative">
-      {displayMetrics.map((metric, i) => {
-        if (!metric) {
-          return (
-             <Card key={i} className="p-4 flex flex-col justify-between h-32">
-              <Skeleton className="h-6 w-6 mb-4" />
-              <div className="space-y-1">
-                <Skeleton className="h-5 w-2/3" />
-                <Skeleton className="h-4 w-1/3" />
-              </div>
-            </Card>
-          )
-        }
+    <Card>
+        <CardContent className="p-4">
+            <div className="grid grid-cols-2 gap-4">
+            {displayMetrics.map((metric, i) => {
+                if (!metric) {
+                return (
+                    <Card key={i} className="p-4 flex flex-col justify-between h-32 bg-background">
+                    <Skeleton className="h-6 w-6 mb-4" />
+                    <div className="space-y-1">
+                        <Skeleton className="h-5 w-2/3" />
+                        <Skeleton className="h-4 w-1/3" />
+                    </div>
+                    </Card>
+                )
+                }
 
-        const Icon = metricIcons[metric.metric] || metricIcons.default
-        const formatValue = (val: number) =>
-          metric.unit === "UGX"
-            ? formatCurrency(val)
-            : `${val.toLocaleString()}`
-        
-        return (
-          <Link href="/management/metrics" key={metric.id} className="block">
-            <Card className="p-4 flex flex-col justify-between h-32 hover:bg-muted/50 transition-colors shadow-lg">
-                <div className="flex justify-between items-start text-muted-foreground">
-                  <p className="text-sm font-semibold">{metric.metric.split('(')[0]}</p>
-                   <Icon className="h-5 w-5" />
-                </div>
-                <div className="mt-auto">
-                   <div className="text-3xl font-bold text-foreground">
-                      {formatValue(metric.current)}
-                  </div>
-                 <p className="text-xs text-muted-foreground mt-1">
-                    Target: {metric.target.toLocaleString()}
-                </p>
-                </div>
-            </Card>
-          </Link>
-        )
-      })}
-    </div>
+                const Icon = metricIcons[metric.metric] || metricIcons.default
+                const formatValue = (val: number) =>
+                metric.unit === "UGX"
+                    ? formatCurrency(val)
+                    : `${val.toLocaleString()}`
+                
+                return (
+                <Link href="/management/metrics" key={metric.id} className="block">
+                    <Card className="p-4 flex flex-col justify-between h-32 hover:bg-muted transition-colors shadow-none border-0 bg-background">
+                        <div className="flex justify-between items-start text-muted-foreground">
+                        <p className="text-sm font-semibold">{metric.metric.split('(')[0]}</p>
+                        <Icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="mt-auto">
+                        <div className="text-2xl font-bold text-foreground">
+                            {formatValue(metric.current)}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Target: {metric.target.toLocaleString()}
+                        </p>
+                        </div>
+                    </Card>
+                </Link>
+                )
+            })}
+            </div>
+        </CardContent>
+    </Card>
   )
 }
-
-    

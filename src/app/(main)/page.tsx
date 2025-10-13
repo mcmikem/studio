@@ -8,11 +8,10 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useViewAs } from '@/hooks/use-view-as';
-import type { User } from '@/lib/types';
+import type { User, ImpactMetric } from '@/lib/types';
 import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import type { ImpactMetric } from '@/lib/types';
 
 
 // Define a loading component for dynamic imports
