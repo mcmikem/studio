@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { LogIn, Calendar, Clock, Target as TargetIcon } from 'lucide-react';
+import { LogIn, Calendar, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Checkin } from '@/lib/types';
@@ -39,7 +39,7 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                 
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-1">
-                        <AccordionTrigger>View Detailed Plan</AccordionTrigger>
+                        <AccordionTrigger>View Detailed AI-Generated Plan</AccordionTrigger>
                         <AccordionContent className="space-y-4 pt-2">
                              <div>
                                 <h4 className="font-semibold mb-2 flex items-center gap-2"><Clock className="h-4 w-4" /> Time Blocks</h4>
@@ -50,12 +50,16 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                                 </ul>
                             </div>
                              <div>
-                                <h4 className="font-semibold mb-2">Strategic Connections</h4>
+                                <h4 className="font-semibold mb-2 flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Connections</h4>
                                 <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                                     {checkin.details.multiWinConnections.map((connection, index) => (
                                         <li key={index}>{connection}</li>
                                     ))}
                                 </ul>
+                            </div>
+                             <div>
+                                <h4 className="font-semibold mb-2 flex items-center gap-2"><BrainCircuit className="h-4 w-4" /> AI Best Practice Tip</h4>
+                                <p className="text-sm text-muted-foreground italic">"{checkin.details.bestPractice}"</p>
                             </div>
                         </AccordionContent>
                     </AccordionItem>
