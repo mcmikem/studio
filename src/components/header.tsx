@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -11,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info, CheckCircle, Eye } from 'lucide-react';
+import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info, CheckCircle, Eye, Search } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser, useCollection, useMemoFirebase, useFirestore } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -27,6 +28,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useViewAs } from '@/hooks/use-view-as';
 import { format } from 'date-fns';
+import { useCommandState } from '@/hooks/use-command-state';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -196,9 +198,21 @@ export function AppHeader() {
   const pathname = usePathname();
   const { user } = useUser();
   const { profile } = useUserProfile(user);
+  const { setOpen } = useCommandState();
 
   const managementRoles = ['Administrator', 'Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager'];
   const canViewAs = profile && managementRoles.includes(profile.role);
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setOpen((open) => !open)
+      }
+    }
+    document.addEventListener("keydown", down)
+    return () => document.removeEventListener("keydown", down)
+  }, [setOpen]);
 
   return (
     <header className={cn(
@@ -208,11 +222,18 @@ export function AppHeader() {
         <SidebarTrigger className={cn(
             "lg:hidden text-foreground",
         )} />
-         <LiveClock />
+        <Button variant="outline" className="gap-2 hidden sm:flex" onClick={() => setOpen(true)}>
+            <Search className="h-4 w-4" />
+            Search...
+            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                <span className="text-xs">⌘</span>K
+            </kbd>
+        </Button>
       </div>
       <div className={cn(
         "flex items-center gap-2"
       )}>
+        <Button variant="ghost" size="icon" className="sm:hidden" onClick={() => setOpen(true)}><Search className="h-5 w-5" /></Button>
         {canViewAs && <ViewAsMenu />}
         <QuickAddMenu />
         <NotificationsMenu />

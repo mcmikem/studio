@@ -26,5 +26,6 @@ export * from './flows/omuto-ai-flow';
 export * from './flows/smart-reminders-flow';
 export * from './flows/grant-finder-flow';
 export * from './flows/grant-writer-flow';
+export * from './flows/global-search-flow';
 // NOTE: omuto-tools now only contains server-side safe tools.
 export * from './tools/omuto-tools';

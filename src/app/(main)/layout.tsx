@@ -8,6 +8,8 @@ import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { ViewAsProvider, useViewAs } from '@/hooks/use-view-as';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, X } from 'lucide-react';
+import { CommandStateProvider } from '@/hooks/use-command-state';
+import { GlobalCommandBar } from '@/components/global-command-bar';
 
 function ViewAsBanner() {
     const { viewAsRole, clearViewAs } = useViewAs();
@@ -44,6 +46,7 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
                         {children}
                     </main>
                     <MobileBottomNav />
+                    <GlobalCommandBar />
                 </div>
             </SidebarInset>
         </SidebarProvider>
@@ -56,8 +59,10 @@ export default function MainLayout({
     children: React.ReactNode;
 }) {
     return (
+      <CommandStateProvider>
         <ViewAsProvider>
             <MainLayoutContent>{children}</MainLayoutContent>
         </ViewAsProvider>
+      </CommandStateProvider>
     );
 }

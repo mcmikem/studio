@@ -66,3 +66,46 @@ export const findGrantOpportunities = ai.defineTool(
     return MOCK_OPPORTUNITIES.filter(op => op.description.toLowerCase().includes(query.split(' ')[0].toLowerCase()));
   }
 );
+
+
+export const findUsersByName = ai.defineTool(
+    {
+        name: 'findUsersByName',
+        description: 'Finds staff members by their name.',
+        inputSchema: z.object({
+            name: z.string().describe("The name of the staff member to search for."),
+        }),
+        outputSchema: z.array(
+            z.object({
+                id: z.string(),
+                type: z.literal('User'),
+                title: z.string(),
+                url: z.string(),
+            })
+        ),
+    },
+    async ({ name }) => {
+        const { firestore } = await initializeFirebase();
+        const usersRef = collection(firestore, 'users');
+        
+        // Firestore doesn't support case-insensitive or partial text search natively.
+        // A common workaround is to use range queries on a capitalized version of the name.
+        const q = query(
+            usersRef,
+            where('name', '>=', name),
+            where('name', '<=', name + '\uf8ff')
+        );
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            return [];
+        }
+
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            type: 'User',
+            title: doc.data().name,
+            url: `/profile?userId=${doc.id}`, // A profile page would need to be created
+        }));
+    }
+);
