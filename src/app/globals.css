@@ -5,21 +5,21 @@
 
 @layer base {
   :root {
-    /* Omuto Brand Palette - Light Theme from Design */
-    --background: 240 5% 96%; /* #F5F5F7 */
-    --foreground: 240 10% 3.9%; 
+    /* Omuto Website Palette - Light Theme */
+    --background: 48 83% 97%; /* #F9F7F0 - Off-white from website */
+    --foreground: 222 47% 11%; /* #111827 - Dark Blue/Black for text */
 
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 240 10% 3.9%;
+    --card: 0 0% 100%; /* White cards */
+    --card-foreground: 222 47% 11%;
  
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 222 47% 11%;
  
-    --primary: 16 100% 50%; /* #FF5722 - Bright Orange */
+    --primary: 0 84% 60%; /* #F23B3B - Bright Red from website */
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 222 47% 11%; /* #111827 - Dark Blue/Black */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 45 93% 47%; /* #E6B30B - Yellow from website */
+    --secondary-foreground: 222 47% 11%;
  
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
@@ -32,25 +32,25 @@
 
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 16 100% 50%;
+    --ring: 0 84% 60%;
  
     --radius: 1rem;
 
-    --chart-1: 16 100% 50%;
+    --chart-1: 0 84% 60%;
     --chart-2: 213 100% 60%;
     --chart-3: 173 58% 39%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     
-    /* Sidebar remains dark for contrast */
-    --sidebar-background: 222 47% 11%;
+    /* Sidebar remains dark for contrast, matching website header */
+    --sidebar-background: 222 47% 11%; /* #111827 */
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 50%;
+    --sidebar-primary: 0 84% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 16 100% 50%;
+    --sidebar-ring: 0 84% 60%;
   }
 
   .dark {
@@ -64,11 +64,11 @@
     --popover: 222 47% 11%;
     --popover-foreground: 0 0% 100%;
  
-    --primary: 16 100% 50%;
+    --primary: 0 84% 60%;
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 10% 3.9%;
+    --secondary: 45 93% 47%;
+    --secondary-foreground: 222 47% 11%;
  
     --muted: 222 47% 15%;
     --muted-foreground: 240 4% 46%;
@@ -81,16 +81,16 @@
 
     --border: 222 47% 20%;
     --input: 222 47% 20%;
-    --ring: 16 100% 50%;
+    --ring: 0 84% 60%;
  
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 50%;
+    --sidebar-primary: 0 84% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 16 100% 50%;
+    --sidebar-ring: 0 84% 60%;
   }
 }
 
@@ -100,5 +100,8 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 }
