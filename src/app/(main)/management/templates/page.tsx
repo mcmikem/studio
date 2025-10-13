@@ -41,7 +41,6 @@ import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Edit, Trash2, ListChecks, Loader2 } from 'lucide-react';
 import type { TaskTemplate } from '@/lib/types';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { Textarea } from '@/components/ui/textarea';
 import { EmptyState } from '@/components/ui/empty-state';
 
 const templateSchema = z.object({
