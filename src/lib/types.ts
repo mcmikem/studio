@@ -318,9 +318,10 @@ export type Checklist = {
 
 // Smart Reminders Flow Types
 export const SmartRemindersInputSchema = z.object({
-  userId: z.string(),
   userName: z.string(),
   userRole: z.string(),
+  upcomingEvents: z.array(z.any()),
+  pendingTasks: z.array(z.any()),
 });
 export type SmartRemindersInput = z.infer<typeof SmartRemindersInputSchema>;
 

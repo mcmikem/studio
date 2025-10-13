@@ -6,18 +6,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { SmartRemindersOutputSchema, type SmartRemindersOutput } from '@/lib/types';
-import { z } from 'zod';
-
-
-export const SmartRemindersInputSchema = z.object({
-  userName: z.string(),
-  userRole: z.string(),
-  upcomingEvents: z.array(z.any()),
-  pendingTasks: z.array(z.any()),
-});
-
-export type SmartRemindersInput = z.infer<typeof SmartRemindersInputSchema>;
+import { SmartRemindersOutputSchema, SmartRemindersInputSchema, type SmartRemindersOutput, type SmartRemindersInput } from '@/lib/types';
 
 
 const smartRemindersPrompt = ai.definePrompt(
