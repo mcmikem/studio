@@ -236,7 +236,7 @@ export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] =
             "Produce first prototype batch of 10 of Dignity pads.",
             "Complete field mapping for Mpigi,Butambala and Kampala",
             "Schedule a stake holder consultation meeting for Omuto Football Gala",
-            "Draft 3 compelling stories about Menstrual Health management and Cycle of dignity campaign",
+            "Draft 3 compelling stories about Menstrual Health management  and Cycle of dignity campaign",
             "Hold a weekly review meeting(goals vs achievements)",
             "Draft a detailed weekly report",
             "Draft a concept note for Omuto Football Gala",
@@ -247,3 +247,5 @@ export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] =
         status: "Published"
     }
 ];
+
+    
