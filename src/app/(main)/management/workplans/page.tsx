@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc, updateDoc } from 'firebase/firestore';
-import type { TeamWeeklyPlan } from '@/lib/types';
+import type { TeamWeeklyPlan, User } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2, Edit, Save } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -48,10 +48,12 @@ function TeamWorkplanForm({
     weekOf,
     existingPlan,
     onPlanSaved,
+    users
   }: {
     weekOf: Date;
     existingPlan?: TeamWeeklyPlan | null;
     onPlanSaved: () => void;
+    users: User[];
   }) {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
@@ -108,6 +110,13 @@ function TeamWorkplanForm({
     name: 'keyPriorities',
   });
 
+  const responsibleOptions = [
+    ...users.map(u => u.name),
+    'All Members',
+    'Volunteers',
+    'Interns',
+  ];
+
   const onSubmit = async (data: TeamWorkplanFormData) => {
     if (!user || !profile || !firestore) {
       toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
@@ -162,12 +171,12 @@ function TeamWorkplanForm({
                     <Label className="text-lg font-semibold">Key Team Priorities</Label>
                     {fields.map((field, index) => (
                         <div key={field.id} className="p-4 border rounded-lg space-y-4 relative">
+                            <div className="space-y-2">
+                                <Label htmlFor={`keyPriorities.${index}.activity`}>Activity</Label>
+                                <Input id={`keyPriorities.${index}.activity`} {...register(`keyPriorities.${index}.activity`)} placeholder={`Priority Activity #${index + 1}`}/>
+                                {errors.keyPriorities?.[index]?.activity && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.activity?.message}</p>}
+                            </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2 col-span-2">
-                                    <Label htmlFor={`keyPriorities.${index}.activity`}>Activity</Label>
-                                    <Input id={`keyPriorities.${index}.activity`} {...register(`keyPriorities.${index}.activity`)} placeholder={`Priority Activity #${index + 1}`}/>
-                                    {errors.keyPriorities?.[index]?.activity && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.activity?.message}</p>}
-                                </div>
                                 <div className="space-y-2">
                                     <Label htmlFor={`keyPriorities.${index}.priority`}>Priority</Label>
                                     <Controller
@@ -187,13 +196,26 @@ function TeamWorkplanForm({
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor={`keyPriorities.${index}.responsible`}>Responsible</Label>
-                                    <Input id={`keyPriorities.${index}.responsible`} {...register(`keyPriorities.${index}.responsible`)} placeholder="e.g., Dianah & Kasirye"/>
+                                     <Controller
+                                        control={control}
+                                        name={`keyPriorities.${index}.responsible`}
+                                        render={({ field }) => (
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <SelectTrigger><SelectValue placeholder="Assign to..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {responsibleOptions.map(option => (
+                                                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        )}
+                                    />
                                      {errors.keyPriorities?.[index]?.responsible && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.responsible?.message}</p>}
                                 </div>
-                                 <div className="space-y-2 col-span-2">
-                                    <Label htmlFor={`keyPriorities.${index}.deadline`}>Deadline (Optional)</Label>
-                                    <Input id={`keyPriorities.${index}.deadline`} type="date" {...register(`keyPriorities.${index}.deadline`)} />
-                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor={`keyPriorities.${index}.deadline`}>Deadline (Optional)</Label>
+                                <Input id={`keyPriorities.${index}.deadline`} type="date" {...register(`keyPriorities.${index}.deadline`)} />
                             </div>
                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)} disabled={fields.length <= 1}>
                                 <Trash2 className="h-4 w-4" />
@@ -248,6 +270,9 @@ export default function TeamWorkplansPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const firestore = useFirestore();
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(
+    useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore])
+  );
 
   const weekStartDate = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEndDate = endOfWeek(currentDate, { weekStartsOn: 1 });
@@ -315,10 +340,10 @@ export default function TeamWorkplansPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {(isLoading || isLoadingUsers) ? (
             <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin"/></div>
           ) : (
-             <TeamWorkplanForm weekOf={currentDate} existingPlan={currentPlan} onPlanSaved={fetchTeamPlan} />
+             <TeamWorkplanForm weekOf={currentDate} existingPlan={currentPlan} onPlanSaved={fetchTeamPlan} users={users || []} />
           )}
         </CardContent>
       </Card>
