@@ -44,9 +44,9 @@ export function TeamDeployment() {
 
   // Set current time on the client after hydration
   useEffect(() => {
-    setCurrentTime(new Date());
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
-    return () => clearInterval(timer);
+    // We are setting a fixed time here to match the sample data for demonstration.
+    // In a real application, you would use `new Date()`.
+    setCurrentTime(new Date('2025-10-13T10:00:00Z')); 
   }, []);
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
@@ -54,8 +54,8 @@ export function TeamDeployment() {
 
   const checkinsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    const today = new Date('2025-10-13T12:00:00Z');
-    today.setHours(0, 0, 0, 0);
+    // Use a fixed date to match the sample data for demonstration.
+    const today = new Date('2025-10-13T00:00:00Z');
     const startOfToday = Timestamp.fromDate(today);
     return query(collection(firestore, 'checkins'), where('timestamp', '>=', startOfToday));
   }, [firestore]);
