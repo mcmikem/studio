@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -16,7 +15,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, Timestamp } from 'firebase/firestore';
+import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { User, Checkin } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -50,12 +49,12 @@ export function TeamDeployment() {
     return () => clearInterval(timer);
   }, []);
 
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
+  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const checkinsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    const today = new Date();
+    const today = new Date('2025-10-13T12:00:00Z');
     today.setHours(0, 0, 0, 0);
     const startOfToday = Timestamp.fromDate(today);
     return query(collection(firestore, 'checkins'), where('timestamp', '>=', startOfToday));
