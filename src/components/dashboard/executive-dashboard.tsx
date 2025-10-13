@@ -16,9 +16,15 @@ import { subDays, startOfWeek, isAfter, subMonths, startOfDay } from "date-fns"
 import Link from "next/link"
 import { TeamDeployment } from "./team-deployment"
 import { Globe, TrendingUp } from "lucide-react"
+import { QuickAddTask } from "./quick-add-task"
 
 const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
+    return new Intl.NumberFormat('en-UG', {
+        style: 'currency',
+        currency: 'UGX',
+        minimumFractionDigits: 0,
+        notation: 'compact' 
+    }).format(value);
 };
 
 
@@ -169,6 +175,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
             <TeamDeployment users={users} checkins={checkins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
+            <QuickAddTask />
             <TeamEffectiveness activities={activities} />
             <ManagementQuickLinks />
             <Alerts />

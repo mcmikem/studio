@@ -41,14 +41,25 @@ import { Badge } from "../ui/badge"
 import { doc, collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 import { startOfMonth } from "date-fns"
 import { Skeleton } from "../ui/skeleton"
+import { QuickAddTask } from "./quick-add-task"
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-UG", {
-    style: "currency",
-    currency: "UGX",
-    minimumFractionDigits: 0,
-  }).format(value)
-}
+    if (value >= 1000000) {
+        return new Intl.NumberFormat('en-UG', {
+            style: 'currency',
+            currency: 'UGX',
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+            notation: 'compact'
+        }).format(value);
+    }
+    return new Intl.NumberFormat('en-UG', { 
+        style: 'currency', 
+        currency: 'UGX',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(value);
+};
 
 function MediaOpportunities({ activities, isLoading }: { activities: Activity[] | null, isLoading: boolean }) {
     const opportunities = useMemo(() => {
@@ -307,6 +318,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
+            <QuickAddTask />
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>
