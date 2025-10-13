@@ -34,7 +34,7 @@
     --input: 240 6% 90%;
     --ring: 0 84% 60%;
  
-    --radius: 1rem;
+    --radius: 0.75rem;
 
     --chart-1: 0 84% 60%;
     --chart-2: 213 100% 60%;
@@ -100,8 +100,5 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-  .card {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   }
 }
