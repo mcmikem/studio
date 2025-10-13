@@ -46,7 +46,7 @@ No pending tasks.
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     const llmResponse = await smartRemindersPrompt(input);
     
-    const output = llmResponse.output();
+    const { output } = llmResponse;
     if (!output) {
       throw new Error('AI failed to generate reminders.');
     }

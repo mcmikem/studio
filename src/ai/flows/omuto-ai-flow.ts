@@ -63,7 +63,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         }
     });
     
-    const output = llmResponse.output();
+    const { output } = llmResponse;
 
     if (!output) {
       throw new Error('AI failed to generate a response.');

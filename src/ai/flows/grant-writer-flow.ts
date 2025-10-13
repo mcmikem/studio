@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -54,7 +55,7 @@ export async function writeConceptNote(input: GrantWriterInput): Promise<GrantWr
     },
   });
 
-  const output = llmResponse.output();
+  const { output } = llmResponse;
   if (!output) {
     throw new Error('AI failed to generate a concept note.');
   }

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -67,6 +68,9 @@ export const impactStoryGeneratorFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error('Could not generate story');
+    }
+    return output;
   }
 );
