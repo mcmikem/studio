@@ -13,14 +13,21 @@ import { parse, getMinutes, getHours, setHours, setMinutes, isBefore, isAfter, f
 type MemberStatus = 'Checked In' | 'Not Checked In';
 
 const parseTime = (timeStr: string): Date => {
-  // Handles "09:00 AM" format
   const now = new Date();
-  // Using a more robust regex to handle time parsing
   const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
   if (!match) {
     // Fallback for simple 24h format if needed
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    return setMinutes(setHours(now, hours), minutes);
+    try {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        if(!isNaN(hours) && !isNaN(minutes)) {
+            return setMinutes(setHours(now, hours), minutes);
+        }
+    } catch {
+        // fall through to error
+    }
+    console.error(`Invalid time format, could not parse: "${timeStr}"`);
+    // Return a date in the past to avoid incorrect matches
+    return new Date(0);
   }
   
   let [ , hoursStr, minutesStr, modifier] = match;
@@ -38,15 +45,17 @@ const parseTime = (timeStr: string): Date => {
 };
 
 export function TeamDeployment({ users, checkins }: { users: User[] | null; checkins: Checkin[] | null }) {
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
     useEffect(() => {
+        // This ensures the current time is only set on the client, avoiding hydration mismatches.
+        setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
         return () => clearInterval(timer);
     }, []);
 
     const teamStatus = useMemo(() => {
-        if (!users) return [];
+        if (!users || !currentTime) return [];
 
         return users.map(user => {
             const userCheckin = checkins?.find(c => c.userId === user.id);
@@ -66,7 +75,7 @@ export function TeamDeployment({ users, checkins }: { users: User[] | null; chec
                         return isAfter(now, start) && isBefore(now, end);
                     } catch (e) {
                         console.error(`Invalid time format for user ${user.name}:`, block);
-                        return false; // Invalid time format
+                        return false; 
                     }
                 });
 
@@ -101,7 +110,7 @@ export function TeamDeployment({ users, checkins }: { users: User[] | null; chec
         'Not Checked In': { icon: UserX, color: 'text-red-500' },
     };
     
-    const isLoading = !users || !checkins;
+    const isLoading = !users || !checkins || !currentTime;
 
     return (
         <Card>
