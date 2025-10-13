@@ -11,6 +11,7 @@ import { collection, query, where, orderBy, Timestamp } from "firebase/firestore
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { QuickInsights } from "./program-manager/quick-insights"
+import { TeamDeployment } from "./team-deployment"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { QuickAddTask } from "./quick-add-task"
 
@@ -51,6 +52,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
      <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker showAtRisk />
+            <TeamDeployment />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />

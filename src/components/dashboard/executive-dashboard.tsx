@@ -15,6 +15,7 @@ import { useMemo } from "react"
 import { subDays, startOfWeek, isAfter, subMonths, startOfDay } from "date-fns"
 import Link from "next/link"
 import { Globe, TrendingUp } from "lucide-react"
+import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 
 const formatCurrency = (value: number) => {
@@ -171,6 +172,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse activities={activities} />
             <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
+             <TeamDeployment />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <QuickAddTask />

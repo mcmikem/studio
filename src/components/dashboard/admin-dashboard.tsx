@@ -14,6 +14,7 @@ import { DashboardCalendar } from "./dashboard-calendar"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { SmartReminders } from "./smart-reminders"
+import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { startOfDay } from "date-fns"
 
@@ -60,6 +61,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
             <DailyActions />
             <QuickAddTask />
             <SmartReminders profile={profile} />
+            <TeamDeployment />
             <DashboardCalendar />
             <ManagementQuickLinks />
             <Alerts />
