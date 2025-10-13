@@ -502,7 +502,8 @@
         "status": { "type": "string", "enum": ["Draft", "Submitted", "In Review", "Approved", "Rejected"] },
         "submissionDate": { "type": "string", "format": "date" },
         "decisionDate": { "type": "string", "format": "date" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "conceptNote": { "type": "string" }
       },
       "required": ["title", "partnerName", "amountRequested", "status", "submissionDate", "createdAt"]
     },
@@ -774,4 +775,3 @@
     }
   }
 }
-

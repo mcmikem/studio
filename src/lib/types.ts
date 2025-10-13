@@ -219,6 +219,7 @@ export type Proposal = {
     submissionDate: string;
     decisionDate?: string;
     createdAt?: Timestamp;
+    conceptNote?: string;
 }
 
 export type PriorityItem = {
