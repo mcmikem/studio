@@ -2,6 +2,7 @@
 import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert, TeamWeeklyPlan } from './types';
 import { AlertTriangle, Info } from 'lucide-react';
 import { startOfWeek } from 'date-fns';
+import { Timestamp } from 'firebase/firestore';
 
 
 export const KNOWLEDGE_BASE = `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
@@ -224,30 +225,30 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
     },
 ];
 
-const getCurrentMonthWeekOf13th = () => {
+const getStartOfWeekForCurrentMonth = (dayOfMonth: number) => {
     const now = new Date();
-    const dateOf13th = new Date(now.getFullYear(), now.getMonth(), 13);
-    return startOfWeek(dateOf13th, { weekStartsOn: 1 });
+    const date = new Date(now.getFullYear(), now.getMonth(), dayOfMonth);
+    return startOfWeek(date, { weekStartsOn: 1 });
 }
 
 
 export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] = [
     {
-        weekOf: getCurrentMonthWeekOf13th(),
+        weekOf: Timestamp.fromDate(getStartOfWeekForCurrentMonth(13)),
         keyPriorities: [
             "Submission of permit renewal files to NGO Bureau office",
-            "Host an orientation session about how to use Omuto Central",
+            "Host an orientation session about how to use Omuto Central.",
             "Increase mobilization of funds for Cycle of Dignity Campaign",
             "Secure 3 PTA schools meeting for awareness of Red campaign",
             "Secure 3 partnership meetings for programs support",
             "Drafting new YAP Chapters SOPs",
             "Shoot a documentary for Red Campaign to be used for partnerships",
-            "Produce first prototype batch of 10 of Dignity pads",
+            "Produce first prototype batch of 10 of Dignity pads.",
             "Complete field mapping for Mpigi,Butambala and Kampala",
             "Schedule a stake holder consultation meeting for Omuto Football Gala",
             "Draft 3 compelling stories about Menstrual Health management and Cycle of dignity campaign",
             "Hold a weekly review meeting(goals vs achievements)",
-            "Draft a detailed weekly report",
+            "Draft a detailed weekly report.",
             "Draft a concept note for Omuto Football Gala"
         ],
         message: "This week is about execution and pushing our key initiatives forward. Let's focus on hitting our targets for partnerships, fundraising, and the RED campaign.",
@@ -256,3 +257,6 @@ export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] =
         status: "Published"
     }
 ];
+
+
+    
