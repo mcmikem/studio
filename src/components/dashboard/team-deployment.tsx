@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -15,12 +15,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, Timestamp, orderBy, getDocs } from 'firebase/firestore';
 import type { User, Checkin } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users } from 'lucide-react';
+import { Users, Loader2 } from 'lucide-react';
 import { parse, isWithinInterval, set } from 'date-fns';
 
 type TeamStatus = {
@@ -40,43 +40,45 @@ const getInitials = (name?: string) => {
 
 export function TeamDeployment() {
   const firestore = useFirestore();
-  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [teamStatus, setTeamStatus] = useState<TeamStatus[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Set current time on the client after hydration
-  useEffect(() => {
-    // We are setting a fixed time here to match the sample data for demonstration.
-    // In a real application, you would use `new Date()`.
-    setCurrentTime(new Date('2025-10-13T10:00:00Z')); 
-  }, []);
+  // Using a fixed date for demonstration purposes to match sample data
+  const MOCK_CURRENT_DATE = new Date('2025-10-13T10:00:00Z');
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const checkinsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    // Use a fixed date to match the sample data for demonstration.
-    const today = new Date('2025-10-13T00:00:00Z');
-    const startOfToday = Timestamp.fromDate(today);
-    return query(collection(firestore, 'checkins'), where('timestamp', '>=', startOfToday));
+    const today = MOCK_CURRENT_DATE;
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
   }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
-  const teamStatus = useMemo((): TeamStatus[] | null => {
-    if (isLoadingUsers || isLoadingCheckins || !users || !currentTime) {
-      return null;
+  useEffect(() => {
+    if (isLoadingUsers || isLoadingCheckins) {
+      setIsLoading(true);
+      return;
     }
-    
-    // Create a map for quick check-in lookup
+
+    if (!users) {
+        setIsLoading(false);
+        setTeamStatus([]);
+        return;
+    }
+
     const checkinMap = new Map(checkins?.map(c => [c.userId, c]));
 
-    return users.map(user => {
+    const newTeamStatus = users.map(user => {
       const userCheckin = checkinMap.get(user.id);
       let currentTask: string | null = null;
       
       if (userCheckin && userCheckin.details.timeBlocks) {
         for (const block of userCheckin.details.timeBlocks) {
           try {
-            const now = currentTime;
+            const now = MOCK_CURRENT_DATE; // Use mocked date for comparison
             // Parse time strings like "09:00 AM" into Date objects for today
             const startTime = parse(block.startTime, 'hh:mm a', now);
             const endTime = parse(block.endTime, 'hh:mm a', now);
@@ -87,7 +89,6 @@ export function TeamDeployment() {
             }
           } catch (e) {
             console.error("Error parsing time block:", block, e);
-            // Ignore invalid time blocks
           }
         }
       }
@@ -99,9 +100,11 @@ export function TeamDeployment() {
       };
     });
 
-  }, [users, checkins, currentTime, isLoadingUsers, isLoadingCheckins]);
+    setTeamStatus(newTeamStatus);
+    setIsLoading(false);
+
+  }, [users, checkins, isLoadingUsers, isLoadingCheckins]);
   
-  const isLoading = !teamStatus;
 
   return (
     <Card>
@@ -134,11 +137,11 @@ export function TeamDeployment() {
                                 <p className="text-xs text-muted-foreground">{status.user.role}</p>
                             </div>
                         </div>
-                        <Badge variant={status.checkedIn ? 'default' : 'outline'} className={status.checkedIn ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}>
+                        <Badge variant={status.checkedIn ? 'default' : 'destructive'} className={status.checkedIn ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}>
                           {status.checkedIn ? 'Checked In' : 'Not Checked In'}
                         </Badge>
                     </AccordionTrigger>
-                    <AccordionContent className="pl-6">
+                    <AccordionContent className="pl-6 pt-2">
                        {status.checkedIn ? (
                             status.currentTask ? (
                                 <div>
@@ -155,6 +158,17 @@ export function TeamDeployment() {
                 </AccordionItem>
             ))}
            </Accordion>
+        )}
+         {!isLoading && (!teamStatus || teamStatus.length === 0) && (
+            <div className="flex flex-col items-center justify-center h-full min-h-[200px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
+              <Users className="h-12 w-12 text-muted-foreground" />
+              <h2 className="mt-4 text-xl font-semibold">
+                No Staff Found
+              </h2>
+              <p className="mt-2 max-w-md text-muted-foreground">
+                Could not load team member information.
+              </p>
+            </div>
         )}
       </CardContent>
     </Card>
