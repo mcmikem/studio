@@ -236,8 +236,8 @@ export default function WorkplanPage() {
                         <TableRow key={index}>
                             <TableCell className="font-medium">{priority.activity}</TableCell>
                             <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
-                            <TableCell>{(priority.responsible as string[]).join(', ')}</TableCell>
-                            <TableCell>{priority.deadline ? format(new Date(priority.deadline), 'MMM dd') : '-'}</TableCell>
+                            <TableCell>{(Array.isArray(priority.responsible) ? priority.responsible.join(', ') : priority.responsible)}</TableCell>
+                            <TableCell>{priority.deadline ? format(new Date(priority.deadline as any), 'MMM dd') : '-'}</TableCell>
                         </TableRow>
                         ))}
                     </TableBody>
@@ -281,8 +281,8 @@ export default function WorkplanPage() {
                         <TableRow key={index}>
                             <TableCell className="font-medium">{priority.activity}</TableCell>
                             <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
-                            <TableCell>{(priority.responsible as string[]).join(', ')}</TableCell>
-                            <TableCell>{priority.deadline ? format(new Date(priority.deadline), 'MMM dd') : '-'}</TableCell>
+                            <TableCell>{(Array.isArray(priority.responsible) ? priority.responsible.join(', ') : priority.responsible)}</TableCell>
+                            <TableCell>{priority.deadline ? format(new Date(priority.deadline as any), 'MMM dd') : '-'}</TableCell>
                         </TableRow>
                         ))}
                     </TableBody>
