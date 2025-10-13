@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview A collection of Genkit tools for accessing Omuto Foundation data.
  * IMPORTANT: These tools may use the Admin SDK and should only be used in server-side flows.
