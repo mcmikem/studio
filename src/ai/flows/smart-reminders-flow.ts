@@ -27,17 +27,17 @@ Upcoming Events:
 {{#each upcomingEvents}}
 - {{this.title}} on {{this.date}}
 {{/each}}
-{{#if (upcomingEvents.length === 0)}}
+{{#unless upcomingEvents}}
 No upcoming events in the next 7 days.
-{{/if}}
+{{/unless}}
 
 Pending Tasks:
 {{#each pendingTasks}}
-- {{this.title}} (Due: {{this.dueDate || 'No due date'}})
+- {{this.title}} (Due: {{this.dueDate}})
 {{/each}}
-{{#if (pendingTasks.length === 0)}}
+{{#unless pendingTasks}}
 No pending tasks.
-{{/if}}
+{{/unless}}
 `
   }
 );
