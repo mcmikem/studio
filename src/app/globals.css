@@ -102,3 +102,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .card {
+    background-image: radial-gradient(hsl(var(--border)) 1px, transparent 0);
+    background-size: 10px 10px;
+  }
+  .dark .card {
+     background-image: radial-gradient(hsl(var(--border) / 0.5) 1px, transparent 0);
+  }
+}
