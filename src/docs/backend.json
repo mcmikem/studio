@@ -522,7 +522,7 @@
               "activity": { "type": "string" },
               "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
               "responsible": { "type": "array", "items": { "type": "string" } },
-              "deadline": { "type": "string", "format": "date" }
+              "deadline": { "type": "string", "format": "date-time" }
             },
             "required": ["activity", "priority", "responsible"]
           },
@@ -555,7 +555,7 @@
               "activity": { "type": "string" },
               "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
               "responsible": { "type": "array", "items": { "type": "string" } },
-              "deadline": { "type": "string", "format": "date" }
+              "deadline": { "type": "string", "format": "date-time" }
             }
           },
           "description": "The inherited team priorities for the week."

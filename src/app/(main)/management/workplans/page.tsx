@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -28,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),
@@ -44,6 +44,16 @@ const teamWorkplanSchema = z.object({
 });
 
 type TeamWorkplanFormData = z.infer<typeof teamWorkplanSchema>;
+
+const formatDateForInput = (date: Timestamp | string | undefined): string => {
+    if (!date) return '';
+    try {
+        const d = (date as Timestamp).toDate ? (date as Timestamp).toDate() : new Date(date as string);
+        return format(d, 'yyyy-MM-dd');
+    } catch {
+        return '';
+    }
+};
 
 function TeamWorkplanForm({
     weekOf,
@@ -77,7 +87,7 @@ function TeamWorkplanForm({
               activity: p.activity,
               priority: p.priority || 'Medium',
               responsible: Array.isArray(p.responsible) ? p.responsible : [p.responsible],
-              deadline: p.deadline ? format(new Date(p.deadline), 'yyyy-MM-dd') : undefined,
+              deadline: p.deadline ? formatDateForInput(p.deadline) : '',
           }))
         }
       : {
@@ -96,7 +106,7 @@ function TeamWorkplanForm({
               activity: p.activity,
               priority: p.priority || 'Medium',
               responsible: Array.isArray(p.responsible) ? p.responsible : [p.responsible],
-              deadline: p.deadline ? format(new Date(p.deadline), 'yyyy-MM-dd') : undefined,
+              deadline: p.deadline ? formatDateForInput(p.deadline) : '',
           }))
         }
       : {
@@ -132,7 +142,7 @@ function TeamWorkplanForm({
         weekOf: Timestamp.fromDate(weekStartDate),
         keyPriorities: data.keyPriorities.map(p => ({
             ...p,
-            deadline: p.deadline || '',
+            deadline: p.deadline ? Timestamp.fromDate(new Date(p.deadline)) : '',
         })),
         message: data.message,
         authorId: user.uid,
@@ -143,7 +153,7 @@ function TeamWorkplanForm({
     try {
         if(existingPlan) {
             const planRef = doc(firestore, 'team-workplans', existingPlan.id);
-            await updateDocumentNonBlocking(planRef, planData);
+            await updateDocumentNonBlocking(planRef, planData as any);
             toast({ title: 'Plan Updated!', description: `The plan for the week has been updated.` });
 
         } else {
@@ -198,25 +208,25 @@ function TeamWorkplanForm({
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor={`keyPriorities.${index}.responsible`}>Responsible</Label>
-                                     <Controller
-                                        control={control}
-                                        name={`keyPriorities.${index}.responsible`}
-                                        render={({ field }) => (
-                                            <MultiSelect
-                                                options={responsibleOptions}
-                                                onValueChange={field.onChange}
-                                                defaultValue={field.value}
-                                                placeholder="Assign to..."
-                                            />
-                                        )}
-                                    />
-                                     {errors.keyPriorities?.[index]?.responsible && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.responsible?.message}</p>}
+                                    <Label htmlFor={`keyPriorities.${index}.deadline`}>Deadline (Optional)</Label>
+                                    <Input id={`keyPriorities.${index}.deadline`} type="date" {...register(`keyPriorities.${index}.deadline`)} />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor={`keyPriorities.${index}.deadline`}>Deadline (Optional)</Label>
-                                <Input id={`keyPriorities.${index}.deadline`} type="date" {...register(`keyPriorities.${index}.deadline`)} />
+                             <div className="space-y-2">
+                                <Label htmlFor={`keyPriorities.${index}.responsible`}>Responsible</Label>
+                                    <Controller
+                                    control={control}
+                                    name={`keyPriorities.${index}.responsible`}
+                                    render={({ field }) => (
+                                        <MultiSelect
+                                            options={responsibleOptions}
+                                            onValueChange={field.onChange}
+                                            defaultValue={field.value}
+                                            placeholder="Assign to..."
+                                        />
+                                    )}
+                                />
+                                    {errors.keyPriorities?.[index]?.responsible && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.responsible?.message}</p>}
                             </div>
                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)} disabled={fields.length <= 1}>
                                 <Trash2 className="h-4 w-4" />
@@ -375,7 +385,7 @@ export default function TeamWorkplansPage() {
                               </div>
                               <div className="text-xs text-muted-foreground mt-1 space-x-4">
                                   <span><span className="font-semibold">By:</span> {(Array.isArray(p.responsible) ? p.responsible.join(', ') : p.responsible)}</span>
-                                  {p.deadline && <span><span className="font-semibold">Due:</span> {format(new Date(p.deadline), 'MMM dd')}</span>}
+                                  {p.deadline && <span><span className="font-semibold">Due:</span> {format(p.deadline instanceof Timestamp ? p.deadline.toDate() : new Date(p.deadline), 'MMM dd')}</span>}
                               </div>
                           </div>
                         ))}

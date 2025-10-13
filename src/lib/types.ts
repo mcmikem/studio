@@ -1,6 +1,5 @@
 
 
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -226,7 +225,7 @@ export type PriorityItem = {
     activity: string;
     priority: 'High' | 'Medium' | 'Low';
     responsible: string[];
-    deadline?: string;
+    deadline?: string | Timestamp;
 }
 
 export type TeamWeeklyPlan = {
