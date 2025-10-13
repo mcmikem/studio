@@ -16,6 +16,7 @@ export default function ManagementLayout({
     { name: 'Programs', href: '/management/programs', icon: FolderKanban },
     { name: 'Projects', href: '/management/projects', icon: Briefcase },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
+    { name: 'Resources', href: '/management/resources', icon: Handshake },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
     { name: 'Expenses', href: '/management/expenses', icon: Receipt },
     { name: 'Finance', href: '/management/finance', icon: DollarSign },

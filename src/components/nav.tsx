@@ -69,7 +69,7 @@ const navConfig = {
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Management' },
-    { href: '/resources', icon: Handshake, label: 'Resources' },
+    { href: '/management/resources', icon: Handshake, label: 'Resources' },
   ],
   communication: [
     { href: '/reports', icon: FileText, label: 'Analysis' },
@@ -112,6 +112,7 @@ export function AppSidebar() {
     if (path === '/') return pathname === path;
     // For management, we need to check if the path starts with /management
     if (path === '/management/programs') return pathname.startsWith('/management');
+    if (path === '/management/resources') return pathname.startsWith('/management/resources');
     return pathname.startsWith(path);
   }
   
