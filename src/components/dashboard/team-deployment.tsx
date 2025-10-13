@@ -9,18 +9,34 @@ import { Badge } from '@/components/ui/badge';
 import type { User, Checkin } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
 import { Users, CheckCircle, XCircle } from 'lucide-react';
-import { parse, isWithinInterval, set } from 'date-fns';
+import { parse, isWithinInterval } from 'date-fns';
 
 interface TeamDeploymentProps {
   users: User[] | null;
   checkins: Checkin[] | null;
 }
 
-const parseTimeString = (timeStr: string, date: Date) => {
+const parseTimeString = (timeStr: string, date: Date): Date | null => {
     try {
-        const parsedTime = parse(timeStr, 'hh:mm a', date);
-        return parsedTime;
+        // Attempt to parse time strings like "09:00 AM"
+        const [time, modifier] = timeStr.split(' ');
+        if (!time) return null;
+        let [hours, minutes] = time.split(':').map(Number);
+
+        if (hours === undefined || minutes === undefined) return null;
+
+        if (modifier && modifier.toLowerCase() === 'pm' && hours < 12) {
+            hours += 12;
+        }
+        if (modifier && modifier.toLowerCase() === 'am' && hours === 12) {
+            hours = 0;
+        }
+
+        const newDate = new Date(date);
+        newDate.setHours(hours, minutes, 0, 0);
+        return newDate;
     } catch (e) {
+        console.error("Failed to parse time string:", timeStr, e);
         return null;
     }
 };
@@ -29,17 +45,19 @@ export function TeamDeployment({ users, checkins }: TeamDeploymentProps) {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   useEffect(() => {
-    // Set time on mount and update every minute to ensure it runs only on client
+    // This effect runs only on the client after hydration
     setCurrentTime(new Date());
-    const timerId = setInterval(() => setCurrentTime(new Date()), 60000);
+    const timerId = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
     return () => clearInterval(timerId);
   }, []);
 
   const teamStatus = useMemo(() => {
-    if (!users || !checkins || !currentTime) return null;
+    if (!users || !currentTime) return null; // Wait for users and client-side time
+
+    const today = new Date(currentTime); // Use the state-managed time
 
     return users.map(user => {
-      const userCheckin = checkins.find(c => c.userId === user.id);
+      const userCheckin = checkins?.find(c => c.userId === user.id);
 
       if (!userCheckin) {
         return {
@@ -47,10 +65,10 @@ export function TeamDeployment({ users, checkins }: TeamDeploymentProps) {
           status: 'Not Checked In',
           currentActivity: 'N/A',
           schedule: [],
+          primaryMission: 'No check-in found for today.',
         };
       }
 
-      const today = new Date();
       let currentActivity = 'Between tasks';
       
       for (const block of userCheckin.details.timeBlocks) {
@@ -74,7 +92,8 @@ export function TeamDeployment({ users, checkins }: TeamDeploymentProps) {
   }, [users, checkins, currentTime]);
 
   const checkedInCount = useMemo(() => {
-      return teamStatus?.filter(u => u.status === 'Checked In').length || 0;
+      if (!teamStatus) return 0;
+      return teamStatus.filter(u => u.status === 'Checked In').length || 0;
   }, [teamStatus]);
 
   if (!teamStatus) {
