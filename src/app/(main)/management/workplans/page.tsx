@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -110,12 +111,14 @@ function TeamWorkplanForm({
     name: 'keyPriorities',
   });
 
-  const responsibleOptions = [
-    ...users.map(u => ({ label: u.name, value: u.name })),
-    { label: 'All Members', value: 'All Members' },
-    { label: 'Volunteers', value: 'Volunteers' },
-    { label: 'Interns', value: 'Interns' },
-  ];
+  const responsibleOptions = users
+    ? [
+        ...users.map(u => ({ label: u.name, value: u.name })),
+        { label: 'All Members', value: 'All Members' },
+        { label: 'Volunteers', value: 'Volunteers' },
+        { label: 'Interns', value: 'Interns' },
+      ]
+    : [];
 
   const onSubmit = async (data: TeamWorkplanFormData) => {
     if (!user || !profile || !firestore) {
@@ -176,7 +179,7 @@ function TeamWorkplanForm({
                                 <Input id={`keyPriorities.${index}.activity`} {...register(`keyPriorities.${index}.activity`)} placeholder={`Priority Activity #${index + 1}`}/>
                                 {errors.keyPriorities?.[index]?.activity && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.activity?.message}</p>}
                             </div>
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor={`keyPriorities.${index}.priority`}>Priority</Label>
                                     <Controller
@@ -265,7 +268,7 @@ function TeamWorkplanForm({
 export default function TeamWorkplansPage() {
   const [currentDate, setCurrentDate] = useState(new Date('2025-10-13T12:00:00Z'));
   const [currentPlan, setCurrentPlan] = useState<TeamWeeklyPlan | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPlan, setIsLoadingPlan] = useState(true);
 
   const firestore = useFirestore();
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(
@@ -277,7 +280,7 @@ export default function TeamWorkplansPage() {
 
   const fetchTeamPlan = useCallback(async () => {
     if (!firestore) return;
-    setIsLoading(true);
+    setIsLoadingPlan(true);
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
@@ -299,7 +302,7 @@ export default function TeamWorkplansPage() {
     } catch (e) {
       console.error("Error fetching team workplan:", e);
     } finally {
-      setIsLoading(false);
+      setIsLoadingPlan(false);
     }
   }, [firestore, currentDate]);
 
@@ -315,6 +318,8 @@ export default function TeamWorkplansPage() {
     Medium: "border-yellow-500 bg-yellow-500/10 text-yellow-500",
     Low: "border-blue-500 bg-blue-500/10 text-blue-500",
   };
+  
+  const isLoading = isLoadingPlan || isLoadingUsers;
 
   return (
     <div className="flex flex-col gap-6">
@@ -338,7 +343,7 @@ export default function TeamWorkplansPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {(isLoading || isLoadingUsers) ? (
+          {isLoading ? (
             <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin"/></div>
           ) : (
              <TeamWorkplanForm weekOf={currentDate} existingPlan={currentPlan} onPlanSaved={fetchTeamPlan} users={users || []} />
@@ -346,7 +351,7 @@ export default function TeamWorkplansPage() {
         </CardContent>
       </Card>
 
-      {currentPlan && (
+      {currentPlan && !isLoading && (
         <Card>
             <CardHeader>
                 <CardTitle className="flex justify-between items-center">
@@ -369,7 +374,7 @@ export default function TeamWorkplansPage() {
                                   <Badge variant="outline" className={priorityColors[p.priority]}>{p.priority}</Badge>
                               </div>
                               <div className="text-xs text-muted-foreground mt-1 space-x-4">
-                                  <span><span className="font-semibold">By:</span> {(p.responsible as string[]).join(', ')}</span>
+                                  <span><span className="font-semibold">By:</span> {(Array.isArray(p.responsible) ? p.responsible.join(', ') : p.responsible)}</span>
                                   {p.deadline && <span><span className="font-semibold">Due:</span> {format(new Date(p.deadline), 'MMM dd')}</span>}
                               </div>
                           </div>
