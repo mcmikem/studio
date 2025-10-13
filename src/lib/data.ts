@@ -1,7 +1,8 @@
 
+
 import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert, TeamWeeklyPlan } from './types';
 import { AlertTriangle, Info } from 'lucide-react';
-import { startOfWeek } from 'date-fns';
+import { startOfWeek, setDate } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 
 
@@ -220,36 +221,34 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
     },
 ];
 
-const getStartOfWeekForCurrentMonth = (dayOfMonth: number) => {
+const getWeekStartForCurrentMonth = (day: number) => {
     const now = new Date();
-    // Handle edge case where dayOfMonth might not exist in a shorter month
-    const date = new Date(now.getFullYear(), now.getMonth(), 1);
-    date.setDate(dayOfMonth);
-    return startOfWeek(date, { weekStartsOn: 1 });
-}
+    const targetDate = setDate(now, day);
+    return startOfWeek(targetDate, { weekStartsOn: 1 });
+};
 
 
 export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] = [
   {
-    weekOf: Timestamp.fromDate(getStartOfWeekForCurrentMonth(13)),
+    weekOf: Timestamp.fromDate(getWeekStartForCurrentMonth(13)),
     keyPriorities: [
-        { activity: 'Submission of permit renewal files to NGO Bureau office', priority: 'High', responsible: ['Dianah'], deadline: '2024-05-14' },
-        { activity: 'Host an orientation session about how to use Omuto Central.', priority: 'High', responsible: ['Executive Director'], deadline: '2024-05-15' },
-        { activity: 'Increase mobilization of funds for Cycle of Dignity Campaign', priority: 'High', responsible: ['All Members'] },
-        { activity: 'Secure 3 PTA schools meeting for awareness of Red campaign', priority: 'Medium', responsible: ['Dianah'] },
-        { activity: 'Secure 3 partnership meetings for programs support', priority: 'Medium', responsible: ['Dianah', 'Kasirye'] },
-        { activity: 'Drafting new YAP Chapters SOPs', priority: 'Low', responsible: ['Dianah'], deadline: '2024-05-17' },
-        { activity: 'Shoot a documentary for Red Campaign to be used for partnerships', priority: 'High', responsible: ['Alex'] },
-        { activity: 'Produce first prototype batch of 10 of Dignity pads.', priority: 'High', responsible: ['Kasirye'], deadline: '2024-05-16' },
-        { activity: 'Complete field mapping for Mpigi,Butambala and Kampala', priority: 'Medium', responsible: ['Kasirye', 'Dianah'] },
-        { activity: 'Schedule a stake holder consultation meeting for Omuto Football Gala', priority: 'Low', responsible: ['Kasirye'] },
-        { activity: 'Draft 3 compelling stories about Menstrual Health management and Cycle of dignity campaign', priority: 'Medium', responsible: ['Alex'] },
-        { activity: 'Hold a weekly review meeting(goals vs achievements)', priority: 'High', responsible: ['All Members'], deadline: '2024-05-17' },
-        { activity: 'Draft a detailed weekly report.', priority: 'Medium', responsible: ['Dianah'] },
-        { activity: 'Draft a concept note for Omuto Football Gala', priority: 'Low', responsible: ['Dianah'] },
+      { activity: 'Submission of permit renewal files to NGO Bureau office', priority: 'High', responsible: ['Dianah Nansikombi'], deadline: '' },
+      { activity: 'Host an orientation session about how to use Omuto Central.', priority: 'High', responsible: ['McMike Mutumba'], deadline: '' },
+      { activity: 'Increase mobilization of funds for Cycle of Dignity Campaign', priority: 'High', responsible: ['All Members'], deadline: '' },
+      { activity: 'Secure 3 PTA schools meeting for awareness of Red campaign', priority: 'Medium', responsible: ['Dianah Nansikombi'], deadline: '' },
+      { activity: 'Secure 3 partnership meetings for programs support', priority: 'Medium', responsible: ['Dianah Nansikombi', 'Kasirye Constantine'], deadline: '' },
+      { activity: 'Drafting new YAP Chapters SOPs', priority: 'Low', responsible: ['Dianah Nansikombi'], deadline: '' },
+      { activity: 'Shoot a documentary for Red Campaign to be used for partnerships', priority: 'High', responsible: ['Nsereko Alex'], deadline: '' },
+      { activity: 'Produce first prototype batch of 10 of Dignity pads.', priority: 'High', responsible: ['Kasirye Constantine'], deadline: '' },
+      { activity: 'Complete field mapping for Mpigi,Butambala and Kampala', priority: 'Medium', responsible: ['Kasirye Constantine', 'Dianah Nansikombi'], deadline: '' },
+      { activity: 'Schedule a stake holder consultation meeting for Omuto Football Gala', priority: 'Low', responsible: ['Kasirye Constantine'], deadline: '' },
+      { activity: 'Draft 3 compelling stories about Menstrual Health management and Cycle of dignity campaign', priority: 'Medium', responsible: ['Nsereko Alex'], deadline: '' },
+      { activity: 'Hold a weekly review meeting(goals vs achievements)', priority: 'High', responsible: ['All Members'], deadline: '' },
+      { activity: 'Draft a detailed weekly report.', priority: 'Medium', responsible: ['Dianah Nansikombi'], deadline: '' },
+      { activity: 'Draft a concept note for Omuto Football Gala', priority: 'Low', responsible: ['Dianah Nansikombi'], deadline: '' },
     ],
-    message: 'This week is critical for our Q2 objectives. Let\'s focus on execution, securing our partnerships, and pushing our fundraising efforts for the Cycle of Dignity campaign. Every action counts.',
-    authorId: 'system',
+    message: 'This week, our focus is on executing these key priorities to advance our Q2 objectives. Let\'s ensure we are aligned, communicative, and supportive of each other to achieve these goals.',
+    authorId: 'system-seed',
     authorName: 'McMike Mutumba',
     status: 'Published',
   }
