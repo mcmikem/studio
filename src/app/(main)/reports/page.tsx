@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -243,7 +242,7 @@ export default function ReportsPage() {
     <div className="flex flex-col gap-6">
       <header>
         <h1 className="font-headline text-3xl font-bold tracking-tight">
-          Reports & Analysis
+          Reports &amp; Analysis
         </h1>
         <p className="text-muted-foreground">
           Turn your operational data into actionable intelligence.
