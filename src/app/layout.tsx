@@ -17,6 +17,7 @@ const spaceGrotesk = SpaceGrotesk({
 export const metadata: Metadata = {
   title: 'Omuto Central',
   description: 'The master tool for Omuto Foundation staff.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
