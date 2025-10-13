@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -21,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Loader2 } from 'lucide-react';
-import { parse, isWithinInterval, set } from 'date-fns';
+import { isWithinInterval, parse } from 'date-fns';
 
 type TeamStatus = {
   user: User;
@@ -42,8 +42,16 @@ export function TeamDeployment() {
   const firestore = useFirestore();
   const [teamStatus, setTeamStatus] = useState<TeamStatus[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
-  // Using a fixed date for demonstration purposes to match sample data
+  // Set the current time on the client-side
+  useEffect(() => {
+    setCurrentTime(new Date());
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
+    return () => clearInterval(timer);
+  }, []);
+  
+  // Use a fixed date for demonstration purposes to match sample data
   const MOCK_CURRENT_DATE = new Date('2025-10-13T10:00:00Z');
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
@@ -64,8 +72,8 @@ export function TeamDeployment() {
     }
 
     if (!users) {
-        setIsLoading(false);
         setTeamStatus([]);
+        setIsLoading(false);
         return;
     }
 
@@ -75,14 +83,13 @@ export function TeamDeployment() {
       const userCheckin = checkinMap.get(user.id);
       let currentTask: string | null = null;
       
-      if (userCheckin && userCheckin.details.timeBlocks) {
+      if (userCheckin && userCheckin.details.timeBlocks && currentTime) {
         for (const block of userCheckin.details.timeBlocks) {
           try {
-            const now = MOCK_CURRENT_DATE; // Use mocked date for comparison
-            // Parse time strings like "09:00 AM" into Date objects for today
+            const now = MOCK_CURRENT_DATE;
             const startTime = parse(block.startTime, 'hh:mm a', now);
             const endTime = parse(block.endTime, 'hh:mm a', now);
-
+            
             if (isWithinInterval(now, { start: startTime, end: endTime })) {
               currentTask = block.description;
               break;
@@ -103,7 +110,7 @@ export function TeamDeployment() {
     setTeamStatus(newTeamStatus);
     setIsLoading(false);
 
-  }, [users, checkins, isLoadingUsers, isLoadingCheckins]);
+  }, [users, checkins, isLoadingUsers, isLoadingCheckins, currentTime]);
   
 
   return (
@@ -122,7 +129,7 @@ export function TeamDeployment() {
             <Skeleton className="h-12 w-full" />
           </div>
         )}
-        {!isLoading && teamStatus && (
+        {!isLoading && teamStatus && teamStatus.length > 0 ? (
            <Accordion type="single" collapsible className="w-full">
             {teamStatus.map(status => (
                  <AccordionItem value={status.user.id} key={status.user.id}>
@@ -158,8 +165,8 @@ export function TeamDeployment() {
                 </AccordionItem>
             ))}
            </Accordion>
-        )}
-         {!isLoading && (!teamStatus || teamStatus.length === 0) && (
+        ) : (
+            !isLoading && (
             <div className="flex flex-col items-center justify-center h-full min-h-[200px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
               <Users className="h-12 w-12 text-muted-foreground" />
               <h2 className="mt-4 text-xl font-semibold">
@@ -169,6 +176,7 @@ export function TeamDeployment() {
                 Could not load team member information.
               </p>
             </div>
+            )
         )}
       </CardContent>
     </Card>
