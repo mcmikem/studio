@@ -15,13 +15,23 @@ type MemberStatus = 'Checked In' | 'Not Checked In';
 const parseTime = (timeStr: string): Date => {
   // Handles "09:00 AM" format
   const now = new Date();
-  const [time, modifier] = timeStr.split(' ');
-  let [hours, minutes] = time.split(':').map(Number);
+  // Using a more robust regex to handle time parsing
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (!match) {
+    // Fallback for simple 24h format if needed
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return setMinutes(setHours(now, hours), minutes);
+  }
   
-  if (hours === 12) {
-    hours = modifier.toUpperCase() === 'AM' ? 0 : 12;
-  } else {
-    hours = modifier.toUpperCase() === 'PM' ? hours + 12 : hours;
+  let [ , hoursStr, minutesStr, modifier] = match;
+  let hours = parseInt(hoursStr, 10);
+  const minutes = parseInt(minutesStr, 10);
+
+  if (modifier.toUpperCase() === 'PM' && hours < 12) {
+    hours += 12;
+  }
+  if (modifier.toUpperCase() === 'AM' && hours === 12) {
+    hours = 0;
   }
   
   return setMinutes(setHours(now, hours), minutes);
@@ -55,6 +65,7 @@ export function TeamDeployment({ users, checkins }: { users: User[] | null; chec
                         const end = parseTime(block.endTime);
                         return isAfter(now, start) && isBefore(now, end);
                     } catch (e) {
+                        console.error(`Invalid time format for user ${user.name}:`, block);
                         return false; // Invalid time format
                     }
                 });
