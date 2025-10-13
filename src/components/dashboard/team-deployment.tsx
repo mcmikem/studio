@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -22,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Loader2 } from 'lucide-react';
-import { isWithinInterval, parse } from 'date-fns';
+import { isWithinInterval, parse, startOfDay } from 'date-fns';
 
 type TeamStatus = {
   user: User;
@@ -43,23 +42,32 @@ export function TeamDeployment() {
   const firestore = useFirestore();
   const [teamStatus, setTeamStatus] = useState<TeamStatus[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentTime, setCurrentTime] = useState<Date>(new Date('2025-10-13T10:00:00Z')); // Use mock time for consistency
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+  // Set current time on client-side mount
+  useEffect(() => {
+    setCurrentTime(new Date());
+    // Update time every minute
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
   
-  const MOCK_CURRENT_DATE = new Date('2025-10-13T10:00:00Z');
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const checkinsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    const today = MOCK_CURRENT_DATE;
-    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
+    const today = startOfDay(new Date()); // Use real start of day
+    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(today)));
   }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   useEffect(() => {
-    if (isLoadingUsers || isLoadingCheckins) {
+    // Wait until all data and client-side time are available
+    if (isLoadingUsers || isLoadingCheckins || !currentTime) {
       setIsLoading(true);
       return;
     }
@@ -70,8 +78,6 @@ export function TeamDeployment() {
         return;
     }
 
-    // This is the corrected logic.
-    // We map over ALL users, ensuring everyone is in the list.
     const checkinMap = new Map(checkins?.map(c => [c.userId, c]));
     
     const newTeamStatus = users.map(user => {
