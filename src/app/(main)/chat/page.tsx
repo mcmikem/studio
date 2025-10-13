@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, MessageSquare, Wand } from 'lucide-react';
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, orderBy, serverTimestamp, addDoc } from 'firebase/firestore';
 import type { Message } from '@/lib/types';
@@ -108,7 +108,7 @@ export default function ChatPage() {
     };
     
     // Add user's message to Firestore immediately.
-    await addDoc(messagesCollection, userMessageData);
+    addDocumentNonBlocking(messagesCollection, userMessageData);
 
     // If message starts with @omuto, it's a query for the AI
     if (text.startsWith('@omuto')) {
@@ -133,7 +133,7 @@ export default function ChatPage() {
               userAvatar: '', // AI has no avatar
               createdAt: serverTimestamp(),
             };
-            await addDoc(messagesCollection, aiMessageData);
+            addDocumentNonBlocking(messagesCollection, aiMessageData);
         }
 
       } catch (error) {
@@ -145,7 +145,7 @@ export default function ChatPage() {
             userAvatar: '',
             createdAt: serverTimestamp(),
         };
-        await addDoc(messagesCollection, errorMessageData);
+        addDocumentNonBlocking(messagesCollection, errorMessageData);
       }
     }
 

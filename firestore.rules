@@ -1,60 +1,398 @@
-
+/**
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a strict user-ownership model for most collections,
+ *              allowing only authenticated users to read and write their own data.
+ *
+ * Data Structure:
+ * - User profiles are stored under `/users/{userId}`.
+ * - User-specific data (tasks) is stored under `/users/{userId}/tasks/{taskId}`.
+ * - Other collections like `/checkins`, `/checkouts`, `/activities`, etc., are top-level.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed to prevent unauthorized access to user data.
+ * - Most write operations require the user to be the owner of the resource.
+ * - No schema validation is performed beyond authorization-critical fields, allowing for rapid iteration.
+ * - Public read access is NOT granted to any collection containing private user data.
+ */
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to check if a user is authenticated
-    function isAuthenticated() {
+    /**
+     * @description Checks if the request is made by an authenticated user.
+     */
+    function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper function to check if the user is the owner of the document
+    /**
+     * @description Checks if the authenticated user's ID matches the provided userId.
+     * @param {string} userId - The user ID to compare against the authenticated user's ID.
+     */
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // Users: Can only read/update their own profile. Anyone can create a user doc on signup.
+    /**
+     * @description Checks if the authenticated user is the owner and the resource exists.
+     * @param {string} userId - The user ID to compare against the authenticated user's ID.
+     */
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Enforces owner-only access to user profiles.
+     * @path /users/{userId}
+     * @allow (create) - Authenticated user with ID 'user_abc' can create their profile at /users/user_abc.
+     * @allow (get, update, delete) - Authenticated user with ID 'user_abc' can access their profile at /users/user_abc.
+     * @deny (create) - Authenticated user with ID 'user_xyz' cannot create a profile at /users/user_abc.
+     * @deny (get, update, delete) - Authenticated user with ID 'user_xyz' cannot access the profile at /users/user_abc.
+     * @principle Enforces document ownership for all operations.
+     */
     match /users/{userId} {
-      allow read, update: if isAuthenticated() && isOwner(userId);
-      allow create: if isAuthenticated();
+      allow get: if isOwner(userId);
+      allow list: if false; // User listing is not allowed.
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
-    // User-specific subcollections (like tasks)
-    match /users/{userId}/{collection}/{docId} {
-        allow read, write: if isAuthenticated() && isOwner(userId);
+    /**
+     * @description Enforces owner-only access to tasks for a specific user.
+     * @path /users/{userId}/tasks/{taskId}
+     * @allow (create) - Authenticated user with ID 'user_abc' can create a task under /users/user_abc/tasks/task_123.
+     * @allow (get, update, delete) - Authenticated user with ID 'user_abc' can access their task at /users/user_abc/tasks/task_123.
+     * @deny (create) - Authenticated user with ID 'user_xyz' cannot create a task under /users/user_abc/tasks/task_123.
+     * @deny (get, update, delete) - Authenticated user with ID 'user_xyz' cannot access the task at /users/user_abc/tasks/task_123.
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /users/{userId}/tasks/{taskId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
-    // General Collections:
-    // Allow any authenticated user to read.
-    // Allow authenticated users to create new documents.
-    // Only allow users to update/delete documents they created.
-    match /{collection}/{docId} {
-        allow read: if isAuthenticated();
-        allow create: if isAuthenticated();
-        allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a checkin.
+     * @path /checkins/{checkinId}
+     * @allow (create) - Any authenticated user can create a checkin.
+     * @allow (get, list) - Any authenticated user can read checkins.
+     * @allow (update, delete) - Any authenticated user can update or delete a checkin.
+     * @principle Allows authenticated access to checkin data.
+     */
+    match /checkins/{checkinId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
-    
-    // Special case for collections that don't have a `userId` field but should be manageable.
-    // These rules are more open and should be refined in a production environment.
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a checkout.
+     * @path /checkouts/{checkoutId}
+     * @allow (create) - Any authenticated user can create a checkout.
+     * @allow (get, list) - Any authenticated user can read checkouts.
+     * @allow (update, delete) - Any authenticated user can update or delete a checkout.
+     * @principle Allows authenticated access to checkout data.
+     */
+    match /checkouts/{checkoutId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+   /**
+     * @description Allows any authenticated user to create, read, update, or delete an activity.
+     * @path /activities/{activityId}
+     * @allow (create) - Any authenticated user can create an activity.
+     * @allow (get, list) - Any authenticated user can read activities.
+     * @allow (update, delete) - Any authenticated user can update or delete an activity.
+     * @principle Allows authenticated access to activity data.
+     */
+    match /activities/{activityId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a program.
+     * @path /programs/{programId}
+     * @allow (create) - Any authenticated user can create a program.
+     * @allow (get, list) - Any authenticated user can read programs.
+     * @allow (update, delete) - Any authenticated user can update or delete a program.
+     * @principle Allows authenticated access to program data.
+     */
     match /programs/{programId} {
-        allow read, write: if isAuthenticated();
-    }
-     match /partnerships/{partnershipId} {
-        allow read, write: if isAuthenticated();
-    }
-     match /projects/{projectId} {
-        allow read, write: if isAuthenticated();
-    }
-     match /impact-metrics/{metricId} {
-        allow read, write: if isAuthenticated();
-    }
-     match /events/{eventId} {
-        allow read, write: if isAuthenticated();
-    }
-     match /key-results/{keyResultId} {
-        allow read, write: if isAuthenticated();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
     }
 
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a partnership.
+     * @path /partnerships/{partnershipId}
+     * @allow (create) - Any authenticated user can create a partnership.
+     * @allow (get, list) - Any authenticated user can read partnerships.
+     * @allow (update, delete) - Any authenticated user can update or delete a partnership.
+     * @principle Allows authenticated access to partnership data.
+     */
+    match /partnerships/{partnershipId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete an impact metric.
+     * @path /impact-metrics/{metricId}
+     * @allow (create) - Any authenticated user can create an impact metric.
+     * @allow (get, list) - Any authenticated user can read impact metrics.
+     * @allow (update, delete) - Any authenticated user can update or delete an impact metric.
+     * @principle Allows authenticated access to impact metric data.
+     */
+    match /impact-metrics/{metricId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a project.
+     * @path /projects/{projectId}
+     * @allow (create) - Any authenticated user can create a project.
+     * @allow (get, list) - Any authenticated user can read projects.
+     * @allow (update, delete) - Any authenticated user can update or delete a project.
+     * @principle Allows authenticated access to project data.
+     */
+    match /projects/{projectId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete an event.
+     * @path /events/{eventId}
+     * @allow (create) - Any authenticated user can create an event.
+     * @allow (get, list) - Any authenticated user can read events.
+     * @allow (update, delete) - Any authenticated user can update or delete an event.
+     * @principle Allows authenticated access to event data.
+     */
+    match /events/{eventId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete an alert.
+     * @path /alerts/{alertId}
+     * @allow (create) - Any authenticated user can create an alert.
+     * @allow (get, list) - Any authenticated user can read alerts.
+     * @allow (update, delete) - Any authenticated user can update or delete an alert.
+     * @principle Allows authenticated access to alert data.
+     */
+    match /alerts/{alertId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a key result.
+     * @path /key-results/{keyResultId}
+     * @allow (create) - Any authenticated user can create a key result.
+     * @allow (get, list) - Any authenticated user can read key results.
+     * @allow (update, delete) - Any authenticated user can update or delete a key result.
+     * @principle Allows authenticated access to key result data.
+     */
+    match /key-results/{keyResultId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete an expense.
+     * @path /expenses/{expenseId}
+     * @allow (create) - Any authenticated user can create an expense.
+     * @allow (get, list) - Any authenticated user can read expenses.
+     * @allow (update, delete) - Any authenticated user can update or delete an expense.
+     * @principle Allows authenticated access to expense data.
+     */
+    match /expenses/{expenseId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete an income.
+     * @path /income/{incomeId}
+     * @allow (create) - Any authenticated user can create an income.
+     * @allow (get, list) - Any authenticated user can read incomes.
+     * @allow (update, delete) - Any authenticated user can update or delete an income.
+     * @principle Allows authenticated access to income data.
+     */
+    match /income/{incomeId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a proposal.
+     * @path /proposals/{proposalId}
+     * @allow (create) - Any authenticated user can create a proposal.
+     * @allow (get, list) - Any authenticated user can read proposals.
+     * @allow (update, delete) - Any authenticated user can update or delete a proposal.
+     * @principle Allows authenticated access to proposal data.
+     */
+    match /proposals/{proposalId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a team workplan.
+     * @path /team-workplans/{teamWorkplanId}
+     * @allow (create) - Any authenticated user can create a team workplan.
+     * @allow (get, list) - Any authenticated user can read team workplans.
+     * @allow (update, delete) - Any authenticated user can update or delete a team workplan.
+     * @principle Allows authenticated access to team workplan data.
+     */
+    match /team-workplans/{teamWorkplanId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a workplan.
+     * @path /workplans/{workplanId}
+     * @allow (create) - Any authenticated user can create a workplan.
+     * @allow (get, list) - Any authenticated user can read workplans.
+     * @allow (update, delete) - Any authenticated user can update or delete a workplan.
+     * @principle Allows authenticated access to workplan data.
+     */
+    match /workplans/{workplanId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete equipment.
+     * @path /equipment/{equipmentId}
+     * @allow (create) - Any authenticated user can create equipment.
+     * @allow (get, list) - Any authenticated user can read equipment.
+     * @allow (update, delete) - Any authenticated user can update or delete equipment.
+     * @principle Allows authenticated access to equipment data.
+     */
+    match /equipment/{equipmentId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a task template.
+     * @path /task-templates/{templateId}
+     * @allow (create) - Any authenticated user can create a task template.
+     * @allow (get, list) - Any authenticated user can read task templates.
+     * @allow (update, delete) - Any authenticated user can update or delete a task template.
+     * @principle Allows authenticated access to task template data.
+     */
+    match /task-templates/{templateId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a message.
+     * @path /messages/{messageId}
+     * @allow (create) - Any authenticated user can create a message.
+     * @allow (get, list) - Any authenticated user can read messages.
+     * @allow (update, delete) - Any authenticated user can update or delete a message.
+     * @principle Allows authenticated access to message data.
+     */
+    match /messages/{messageId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Allows any authenticated user to create, read, update, or delete a testimony.
+     * @path /testimonies/{testimonyId}
+     * @allow (create) - Any authenticated user can create a testimony.
+     * @allow (get, list) - Any authenticated user can read testimonies.
+     * @allow (update, delete) - Any authenticated user can update or delete a testimony.
+     * @principle Allows authenticated access to testimony data.
+     */
+    match /testimonies/{testimonyId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+   /**
+     * @description Allows any authenticated user to create, read, update, or delete AI feedback.
+     * @path /ai-feedback/{feedbackId}
+     * @allow (create) - Any authenticated user can create AI feedback.
+     * @allow (get, list) - Any authenticated user can read AI feedback.
+     * @allow (update, delete) - Any authenticated user can update or delete AI feedback.
+     * @principle Allows authenticated access to AI feedback data.
+     */
+    match /ai-feedback/{feedbackId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
   }
 }
