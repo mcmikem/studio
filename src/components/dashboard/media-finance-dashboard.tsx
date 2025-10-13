@@ -1,4 +1,3 @@
-
 "use client"
 
 import type { User, Expense, Activity, ImpactMetric, Income } from "@/lib/types"
@@ -18,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card"
-import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
+import { useCollection, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
 import { useMemo } from "react"
 import {
   Table,
@@ -34,7 +33,6 @@ import { DailyActions } from "./daily-actions"
 import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
 import { useToast } from "@/hooks/use-toast"
-import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates"
 import { createAlert } from "@/ai/flows/create-alert-flow"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"

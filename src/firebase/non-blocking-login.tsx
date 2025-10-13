@@ -1,4 +1,3 @@
-
 "use client"
 import {
   Auth,
@@ -33,7 +32,7 @@ import {
   sampleCalendarEvents,
   sampleTeamWeeklyPlans,
 } from "@/lib/data"
-import { setDocumentNonBlocking } from "./non-blocking-updates"
+import { setDocumentNonBlocking } from "@/firebase";
 
 // This maps specific emails to roles and names within the Omuto organization.
 const approvedUsers: Record<string, { name: string; role: string }> = {

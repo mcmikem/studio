@@ -1,13 +1,11 @@
-
 'use client';
 
 import { useEffect } from 'react';
-import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useFirestore, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { User as AuthUser } from 'firebase/auth';
 import type { User as UserProfile } from '@/lib/types';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+
 
 export function useUserProfile(user: AuthUser | null) {
   const firestore = useFirestore();
