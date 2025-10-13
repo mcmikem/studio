@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: 'The master tool for Omuto Foundation staff.',
   manifest: '/manifest.json',
   icons: {
-    icon: '/logo.png',
+    icon: '/logo.svg',
   },
 };
 

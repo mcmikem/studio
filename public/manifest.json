@@ -1,21 +1,16 @@
 {
   "name": "Omuto Central",
-  "short_name": "Omuto",
+  "short_name": "Omuto Central",
   "description": "The master tool for Omuto Foundation staff.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#FF5722",
+  "background_color": "#F9F7F0",
+  "theme_color": "#111827",
   "icons": [
     {
-      "src": "/logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/logo.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }
