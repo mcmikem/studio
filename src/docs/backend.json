@@ -516,7 +516,16 @@
         "weekOf": { "type": "string", "format": "date", "description": "The start date of the week (e.g., a Monday)." },
         "keyPriorities": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "object",
+            "properties": {
+              "activity": { "type": "string" },
+              "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
+              "responsible": { "type": "string" },
+              "deadline": { "type": "string", "format": "date" }
+            },
+            "required": ["activity", "priority", "responsible"]
+          },
           "description": "A list of the main team priorities for the week."
         },
         "message": { "type": "string", "description": "A brief message or focus from the manager for the week." },
@@ -540,7 +549,15 @@
         "teamPlanId": { "type": "string", "description": "Reference to the TeamWeeklyPlan for that week." },
         "teamPriorities": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "object",
+            "properties": {
+              "activity": { "type": "string" },
+              "priority": { "type": "string", "enum": ["High", "Medium", "Low"] },
+              "responsible": { "type": "string" },
+              "deadline": { "type": "string", "format": "date" }
+            }
+          },
           "description": "The inherited team priorities for the week."
         },
         "individualTasks": {
@@ -757,4 +774,3 @@
     }
   }
 }
-

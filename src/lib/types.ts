@@ -1,5 +1,6 @@
 
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -221,10 +222,17 @@ export type Proposal = {
     createdAt?: Timestamp;
 }
 
+export type PriorityItem = {
+    activity: string;
+    priority: 'High' | 'Medium' | 'Low';
+    responsible: string;
+    deadline?: string;
+}
+
 export type TeamWeeklyPlan = {
   id: string;
   weekOf: Timestamp;
-  keyPriorities: string[];
+  keyPriorities: PriorityItem[];
   message: string;
   authorId: string;
   authorName: string;
@@ -239,7 +247,7 @@ export type WeeklyWorkplan = {
   userName: string;
   weekOf: Timestamp;
   teamPlanId: string;
-  teamPriorities: string[];
+  teamPriorities: PriorityItem[];
   individualTasks: string[];
   createdAt: Timestamp;
 };

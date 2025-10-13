@@ -11,7 +11,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,9 +26,18 @@ import { Label } from '@/components/ui/label';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const priorityItemSchema = z.object({
+  activity: z.string().min(1, 'Activity description is required.'),
+  priority: z.enum(['High', 'Medium', 'Low']),
+  responsible: z.string().min(1, 'Responsible person is required.'),
+  deadline: z.string().optional(),
+});
+
 
 const teamWorkplanSchema = z.object({
-  keyPriorities: z.array(z.object({ value: z.string().min(1, 'Priority cannot be empty.') })).min(1, 'At least one priority is required.'),
+  keyPriorities: z.array(priorityItemSchema).min(1, 'At least one priority is required.'),
   message: z.string().min(5, "A brief message is required."),
   status: z.enum(['Draft', 'Published']),
 });
@@ -60,12 +68,18 @@ function TeamWorkplanForm({
     resolver: zodResolver(teamWorkplanSchema),
     defaultValues: existingPlan
       ? {
-          keyPriorities: existingPlan.keyPriorities.map(p => ({ value: p })),
-          message: existingPlan.message,
+          ...existingPlan,
           status: existingPlan.status,
+          message: existingPlan.message,
+          keyPriorities: existingPlan.keyPriorities.map(p => ({
+              activity: p.activity,
+              priority: p.priority || 'Medium',
+              responsible: p.responsible,
+              deadline: p.deadline ? format(new Date(p.deadline), 'yyyy-MM-dd') : undefined,
+          }))
         }
       : {
-          keyPriorities: [{ value: '' }],
+          keyPriorities: [{ activity: '', priority: 'Medium', responsible: '', deadline: '' }],
           message: '',
           status: 'Draft',
         },
@@ -74,12 +88,18 @@ function TeamWorkplanForm({
   useEffect(() => {
     reset(existingPlan
       ? {
-          keyPriorities: existingPlan.keyPriorities.map(p => ({ value: p })),
-          message: existingPlan.message,
+          ...existingPlan,
           status: existingPlan.status,
+          message: existingPlan.message,
+          keyPriorities: existingPlan.keyPriorities.map(p => ({
+              activity: p.activity,
+              priority: p.priority || 'Medium',
+              responsible: p.responsible,
+              deadline: p.deadline ? format(new Date(p.deadline), 'yyyy-MM-dd') : undefined,
+          }))
         }
       : {
-          keyPriorities: [{ value: '' }],
+          keyPriorities: [{ activity: '', priority: 'Medium', responsible: '', deadline: '' }],
           message: '',
           status: 'Draft',
         });
@@ -100,7 +120,10 @@ function TeamWorkplanForm({
 
     const planData = {
         weekOf: Timestamp.fromDate(weekStartDate),
-        keyPriorities: data.keyPriorities.map(p => p.value),
+        keyPriorities: data.keyPriorities.map(p => ({
+            ...p,
+            deadline: p.deadline || '',
+        })),
         message: data.message,
         authorId: user.uid,
         authorName: profile.name,
@@ -134,40 +157,74 @@ function TeamWorkplanForm({
              <CardDescription>Set the high-level priorities and message for the entire team for this week.</CardDescription>
         </CardHeader>
         <CardContent>
-             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                    <Label>Key Team Priorities</Label>
+             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                
+                {/* Priorities Field Array */}
+                <div className="space-y-4">
+                    <Label className="text-lg font-semibold">Key Team Priorities</Label>
                     {fields.map((field, index) => (
-                        <div key={field.id} className="flex items-center gap-2">
-                        <Input {...register(`keyPriorities.${index}.value`)} placeholder={`Team Priority #${index + 1}`}/>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div key={field.id} className="p-4 border rounded-lg space-y-4 relative">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2 col-span-2">
+                                    <Label htmlFor={`keyPriorities.${index}.activity`}>Activity</Label>
+                                    <Input id={`keyPriorities.${index}.activity`} {...register(`keyPriorities.${index}.activity`)} placeholder={`Priority Activity #${index + 1}`}/>
+                                    {errors.keyPriorities?.[index]?.activity && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.activity?.message}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`keyPriorities.${index}.priority`}>Priority</Label>
+                                    <Controller
+                                        control={control}
+                                        name={`keyPriorities.${index}.priority`}
+                                        render={({ field }) => (
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <SelectTrigger><SelectValue placeholder="Set priority" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="High">High</SelectItem>
+                                                <SelectItem value="Medium">Medium</SelectItem>
+                                                <SelectItem value="Low">Low</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        )}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`keyPriorities.${index}.responsible`}>Responsible</Label>
+                                    <Input id={`keyPriorities.${index}.responsible`} {...register(`keyPriorities.${index}.responsible`)} placeholder="e.g., Dianah & Kasirye"/>
+                                     {errors.keyPriorities?.[index]?.responsible && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.responsible?.message}</p>}
+                                </div>
+                                 <div className="space-y-2 col-span-2">
+                                    <Label htmlFor={`keyPriorities.${index}.deadline`}>Deadline (Optional)</Label>
+                                    <Input id={`keyPriorities.${index}.deadline`} type="date" {...register(`keyPriorities.${index}.deadline`)} />
+                                </div>
+                            </div>
+                            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
                         </div>
                     ))}
                     {errors.keyPriorities?.root && <p className="text-sm text-destructive">{errors.keyPriorities.root.message}</p>}
                 </div>
                 
-                <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}>
+                <Button type="button" variant="outline" size="sm" onClick={() => append({ activity: '', priority: 'Medium', responsible: '', deadline: '' })}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Priority
                 </Button>
 
-                <div className="space-y-2">
-                    <Label htmlFor="message">Weekly Message/Focus</Label>
+                 <div className="space-y-2">
+                    <Label htmlFor="message" className="text-lg font-semibold">Weekly Message/Focus</Label>
                     <Textarea id="message" {...register('message')} placeholder="e.g., 'This week is all about finalizing our Q3 reports and preparing for the partner visits...'" />
                     {errors.message && <p className="text-sm text-destructive">{`${errors.message.message}`}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
+                    <Label htmlFor="status" className="text-lg font-semibold">Status</Label>
                      <select {...register('status')} className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background">
                         <option value="Draft">Draft (Visible only to management)</option>
                         <option value="Published">Published (Visible to the whole team)</option>
                     </select>
                 </div>
 
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} size="lg">
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {existingPlan ? 'Save Changes' : 'Save Team Plan'}
+                    {existingPlan ? 'Save Changes to Plan' : 'Save Team Plan'}
                 </Button>
             </form>
         </CardContent>
@@ -221,8 +278,11 @@ export default function TeamWorkplansPage() {
   const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
   const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
   
-  // A manager should be able to do this. We're simplifying auth for now.
-  const canEdit = true;
+  const priorityColors: { [key: string]: string } = {
+    High: "border-red-500 bg-red-500/10 text-red-500",
+    Medium: "border-yellow-500 bg-yellow-500/10 text-yellow-500",
+    Low: "border-blue-500 bg-blue-500/10 text-blue-500",
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -262,15 +322,26 @@ export default function TeamWorkplansPage() {
                     <Badge variant={currentPlan.status === 'Published' ? 'default' : 'secondary'}>{currentPlan.status}</Badge>
                 </CardTitle>
             </CardHeader>
-             <CardContent className="space-y-4">
+             <CardContent className="space-y-6">
                 <Alert>
                     <AlertTitle>Message from {currentPlan.authorName}</AlertTitle>
                     <AlertDescription>"{currentPlan.message}"</AlertDescription>
                 </Alert>
                  <div>
                     <h4 className="font-semibold mb-2">Key Priorities for the Week:</h4>
-                    <ul className="list-disc list-inside space-y-1">
-                        {currentPlan.keyPriorities.map((p, i) => <li key={i}>{p}</li>)}
+                    <div className="space-y-3">
+                        {currentPlan.keyPriorities.map((p, i) => 
+                        <div key={i} className="p-3 border rounded-lg">
+                            <div className="flex justify-between items-start">
+                                <p className="font-medium pr-4">{p.activity}</p>
+                                <Badge variant="outline" className={priorityColors[p.priority]}>{p.priority}</Badge>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1 space-x-4">
+                                <span><span className="font-semibold">By:</span> {p.responsible}</span>
+                                {p.deadline && <span><span className="font-semibold">Due:</span> {format(new Date(p.deadline), 'MMM dd')}</span>}
+                            </div>
+                        </div>
+                        )}
                     </ul>
                  </div>
             </CardContent>
@@ -279,5 +350,3 @@ export default function TeamWorkplansPage() {
     </div>
   );
 }
-
-    

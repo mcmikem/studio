@@ -11,7 +11,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const individualTaskSchema = z.object({
   value: z.string().min(1, 'Task description cannot be empty.'),
@@ -143,6 +143,12 @@ export default function WorkplanPage() {
   const weekStartDate = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEndDate = endOfWeek(currentDate, { weekStartsOn: 1 });
 
+  const priorityColors: { [key: string]: string } = {
+    High: "border-red-500 bg-red-500/10 text-red-500",
+    Medium: "border-yellow-500 bg-yellow-500/10 text-yellow-500",
+    Low: "border-blue-500 bg-blue-500/10 text-blue-500",
+  };
+
   const fetchPlans = useCallback(async () => {
     if (!user || !firestore) return;
     setIsLoading(true);
@@ -216,11 +222,28 @@ export default function WorkplanPage() {
             </Alert>
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Team Priorities</h3>
-                <ul className="list-disc list-inside space-y-2 pl-4 text-muted-foreground">
-                    {userPlan.teamPriorities.map((priority, index) => (
-                    <li key={index}>{priority}</li>
-                    ))}
-                </ul>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Activity</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Responsible</TableHead>
+                        <TableHead>Deadline</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {userPlan.teamPriorities.map((priority, index) => (
+                        <TableRow key={index}>
+                            <TableCell className="font-medium">{priority.activity}</TableCell>
+                            <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
+                            <TableCell>{priority.responsible}</TableCell>
+                            <TableCell>{priority.deadline ? format(new Date(priority.deadline), 'MMM dd') : '-'}</TableCell>
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
             </div>
             <Separator />
             <div className="space-y-4">
@@ -244,11 +267,28 @@ export default function WorkplanPage() {
                     <AlertTitle className="font-bold">Message from {teamPlan.authorName}:</AlertTitle>
                     <AlertDescription className="italic">"{teamPlan.message}"</AlertDescription>
                 </Alert>
-                <ul className="list-disc list-inside space-y-2 pl-4">
-                    {teamPlan.keyPriorities.map((priority, index) => (
-                        <li key={index} className="text-md">{priority}</li>
-                    ))}
-                </ul>
+                 <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Activity</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Responsible</TableHead>
+                        <TableHead>Deadline</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {teamPlan.keyPriorities.map((priority, index) => (
+                        <TableRow key={index}>
+                            <TableCell className="font-medium">{priority.activity}</TableCell>
+                            <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
+                            <TableCell>{priority.responsible}</TableCell>
+                            <TableCell>{priority.deadline ? format(new Date(priority.deadline), 'MMM dd') : '-'}</TableCell>
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
                 <FinalizeWorkplanForm teamPlan={teamPlan} onPlanCreated={fetchPlans} />
             </div>
         )
