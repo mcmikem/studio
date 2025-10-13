@@ -44,18 +44,8 @@ No pending tasks.
 
 
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
-    const llmResponse = await ai.generate({
-        model: 'googleai/gemini-2.5-flash',
-        prompt: smartRemindersPrompt.prompt,
-        customData: input,
-        output: {
-          schema: smartRemindersPrompt.output.schema,
-        },
-        config: {
-            temperature: 0.5, // Be more creative with suggestions
-        },
-    });
-
+    const llmResponse = await smartRemindersPrompt(input);
+    
     const output = llmResponse.output();
     if (!output) {
       throw new Error('AI failed to generate reminders.');
