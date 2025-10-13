@@ -263,7 +263,7 @@ function TeamWorkplanForm({
 
 
 export default function TeamWorkplansPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date('2025-10-13T12:00:00Z'));
   const [currentPlan, setCurrentPlan] = useState<TeamWeeklyPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -324,7 +324,7 @@ export default function TeamWorkplansPage() {
              <div>
                 <CardTitle>Team Weekly Plans</CardTitle>
                 <CardDescription>
-                Week {getWeek(currentDate)}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
+                Week {getWeek(currentDate, { weekStartsOn: 1 })}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
                 </CardDescription>
              </div>
             <div className="flex items-center gap-2">

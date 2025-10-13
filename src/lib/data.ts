@@ -221,19 +221,10 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
     },
 ];
 
-// Helper to get the start of the week for a specific day in the current month.
-const getWeekStartForPlan = () => {
-    // Hardcode to a specific date to ensure consistency for seeding.
-    // This will create the plan for the week of Monday, July 8th, 2024.
-    // The user will need to navigate to this week in the UI.
-    const targetDate = new Date('2024-07-13T12:00:00Z');
-    return startOfWeek(targetDate, { weekStartsOn: 1 });
-};
-
 
 export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] = [
   {
-    weekOf: Timestamp.fromDate(getWeekStartForPlan()),
+    weekOf: Timestamp.fromDate(startOfWeek(new Date('2025-10-13T12:00:00Z'), { weekStartsOn: 1 })),
     keyPriorities: [
         { activity: 'Submission of permit renewal files to NGO Bureau office', priority: 'High', responsible: ['Dianah Nansikombi'], deadline: '' },
         { activity: 'Host an orientation session about how to use Omuto Central.', priority: 'High', responsible: ['McMike Mutumba'], deadline: '' },
@@ -259,4 +250,5 @@ export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] =
     
 
     
+
 
