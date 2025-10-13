@@ -7,20 +7,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Skeleton } from "../ui/skeleton"
 import { Lightbulb, Loader2 } from "lucide-react"
 import type { User } from "@/lib/types"
+import { getUpcomingEvents, getPendingTasks } from "./dashboard-tools"
+import { useFirestore } from "@/firebase"
 
 export function SmartReminders({ profile }: { profile: User }) {
     const [reminders, setReminders] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const firestore = useFirestore();
 
     useEffect(() => {
-        async function fetchReminders() {
-            if (!profile) return;
+        async function fetchAndGenerateReminders() {
+            if (!profile || !firestore) return;
             setIsLoading(true);
             try {
+                // 1. Fetch data on the client using client-side tools
+                const [events, tasks] = await Promise.all([
+                    getUpcomingEvents(firestore),
+                    getPendingTasks(firestore, profile.id)
+                ]);
+
+                // 2. Pass fetched data to the AI flow
                 const response = await generateSmartReminders({
-                    userId: profile.id,
                     userName: profile.name,
                     userRole: profile.role,
+                    upcomingEvents: events,
+                    pendingTasks: tasks,
                 });
                 setReminders(response.reminders);
             } catch (error) {
@@ -30,8 +41,8 @@ export function SmartReminders({ profile }: { profile: User }) {
                 setIsLoading(false);
             }
         }
-        fetchReminders();
-    }, [profile]);
+        fetchAndGenerateReminders();
+    }, [profile, firestore]);
 
 
     return (
