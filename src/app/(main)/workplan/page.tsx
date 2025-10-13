@@ -132,7 +132,7 @@ function FinalizeWorkplanForm({
 }
 
 export default function WorkplanPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date('2024-05-13'));
   const [teamPlan, setTeamPlan] = useState<TeamWeeklyPlan | null>(null);
   const [userPlan, setUserPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -298,3 +298,5 @@ export default function WorkplanPage() {
     </div>
   );
 }
+
+    

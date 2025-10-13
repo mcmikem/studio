@@ -224,7 +224,7 @@ export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
 
 export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] = [
     {
-        weekOf: new Date('2024-05-13'), // Monday of that week
+        weekOf: new Date('2024-05-13T00:00:00.000Z'),
         keyPriorities: [
             "Submission of permit renewal files to NGO Bureau office",
             "Host an orientation session about how to use Omuto Central",
@@ -233,17 +233,19 @@ export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] =
             "Secure 3 partnership meetings for programs support",
             "Drafting new YAP Chapters SOPs",
             "Shoot a documentary for Red Campaign to be used for partnerships",
-            "Produce first prototype batch of 10 of Dignity pads.",
+            "Produce first prototype batch of 10 of Dignity pads",
             "Complete field mapping for Mpigi,Butambala and Kampala",
             "Schedule a stake holder consultation meeting for Omuto Football Gala",
             "Draft 3 compelling stories about Menstrual Health management  and Cycle of dignity campaign",
             "Hold a weekly review meeting(goals vs achievements)",
             "Draft a detailed weekly report",
-            "Draft a concept note for Omuto Football Gala",
+            "Draft a concept note for Omuto Football Gala"
         ],
-        message: "This week is about execution and pushing our key initiatives forward. Let's focus on hitting our targets for partnerships, fundraising, and the RED campaign. Great work on all fronts, let's keep the momentum going!",
+        message: "This week is about execution and pushing our key initiatives forward. Let's focus on hitting our targets for partnerships, fundraising, and the RED campaign.",
         authorId: "placeholder-dianah-id",
         authorName: "Dianah Nansikombi",
         status: "Published"
     }
 ];
+
+    
