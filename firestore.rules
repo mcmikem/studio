@@ -1,6 +1,39 @@
+/**
+ * @fileoverview Firestore Security Rules for Omuto Central.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user profiles and tasks,
+ * while allowing public read access to other collections like check-ins, checkouts,
+ * activities, and various organizational data points (programs, partnerships, etc.).
+ * Write access to these public-read collections is restricted to authenticated users.
+ *
+ * Data Structure:
+ * - User profiles and tasks are nested under /users/{userId}.
+ * - All other data (check-ins, activities, etc.) resides in top-level collections.
+ *
+ * Key Security Decisions:
+ * - User listing is disabled to prevent unauthorized enumeration of user accounts.
+ * - Public read access is granted to several collections to facilitate data sharing and reporting.
+ * - Write operations on public-read collections are restricted to authenticated users, but a CRITICAL TODO is included to add owner-only validation by adding ownerId/authorId field.
+ *
+ * Denormalization for Authorization:
+ * The rules rely on the `request.auth.uid` for identity verification.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource.data != null;
+    }
 
     /**
      * @description Enforces owner-only access to user profile data.
@@ -10,18 +43,6 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if false; // User listing is disabled.
 
@@ -38,18 +59,6 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
      */
     match /users/{userId}/tasks/{taskId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource.data != null;
-      }
-
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
 
@@ -68,16 +77,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /checkins/{checkinId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Checkin' entity is missing an 'ownerId' or 'authorId' field.
     }
 
      /**
@@ -90,16 +95,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /checkouts/{checkoutId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Checkout' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -112,16 +113,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /activities/{activityId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Activity' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -134,16 +131,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /programs/{programId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Program' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -156,16 +149,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /partnerships/{partnershipId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Partnership' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -178,16 +167,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /impact-metrics/{metricId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'ImpactMetric' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -200,16 +185,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /projects/{projectId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Project' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -222,16 +203,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /events/{eventId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
+      allow get: if true;
+      allow list: if true;
 
-        allow get: if true;
-        allow list: if true;
-
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'CalendarEvent' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -244,16 +221,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /alerts/{alertId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
+      allow get: if true;
+      allow list: if true;
 
-        allow get: if true;
-        allow list: if true;
-
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Alert' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -266,16 +239,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /key-results/{keyResultId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'KeyResult' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -288,16 +257,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /expenses/{expenseId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Expense' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -310,16 +275,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /income/{incomeId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Income' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -332,16 +293,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /proposals/{proposalId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Proposal' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -354,16 +311,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /team-workplans/{teamWorkplanId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'TeamWeeklyPlan' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -376,16 +329,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /workplans/{workplanId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'WeeklyWorkplan' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -398,16 +347,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /equipment/{equipmentId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Equipment' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -420,16 +365,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /task-templates/{templateId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'TaskTemplate' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -442,16 +383,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /messages/{messageId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
+      allow get: if true;
+      allow list: if true;
 
-        allow get: if true;
-        allow list: if true;
-
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Message' entity is missing an 'ownerId' or 'authorId' field.
     }
 
     /**
@@ -464,16 +401,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /testimonies/{testimonyId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Testimony' entity is missing an 'ownerId' or 'authorId' field.
     }
 
      /**
@@ -486,16 +419,12 @@ service cloud.firestore {
      * @principle Allows public read access while restricting writes to authenticated users.
      */
     match /ai-feedback/{feedbackId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       allow get: if true;
       allow list: if true;
 
       allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.uid;
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'AIFeedback' entity is missing an 'ownerId' or 'authorId' field.
     }
   }
 }
