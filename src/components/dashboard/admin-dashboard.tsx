@@ -39,8 +39,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users } = useCollection<User>(usersQuery);
 
-  const todayStart = new Date('2025-10-13T12:00:00Z');
-  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
+  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
   const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
   const startOfMonth = new Date();

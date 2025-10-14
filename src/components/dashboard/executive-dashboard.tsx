@@ -162,8 +162,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
     const { data: users } = useCollection<User>(usersQuery);
 
-    const todayStart = startOfDay(new Date());
-    const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
+    const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
     const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
 

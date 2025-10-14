@@ -8,7 +8,7 @@ import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 
-export function DashboardHeader({ profile }: { profile: User }) {
+export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
 
   return (
@@ -26,7 +26,7 @@ export function DashboardHeader({ profile }: { profile: User }) {
             </>
         )}
        <div className="relative z-10 text-white">
-          <p className="text-md text-white/80">Good Morning!</p>
+          <p className="text-md text-white/80">{title || `Good Morning!`}</p>
           <h1 className="font-headline text-3xl font-bold tracking-tight text-white">
               {profile?.name.split(' ')[0] || "User"}!
           </h1>

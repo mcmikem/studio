@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Expense, Activity, ImpactMetric, Income, Checkout } from "@/lib/types"
+import type { User, Expense, Activity, ImpactMetric, Income, Checkout, Checkin } from "@/lib/types"
 import {
   ArrowRight,
   Check,
@@ -40,7 +40,7 @@ import { createAlert } from "@/ai/flows/create-alert-flow"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"
 import { doc, collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
-import { startOfMonth } from "date-fns"
+import { startOfDay, startOfMonth } from "date-fns"
 import { Skeleton } from "../ui/skeleton"
 import { QuickAddTask } from "./quick-add-task"
 import { SmartReminders } from "./smart-reminders"
@@ -203,13 +203,13 @@ function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
       });
 
       if (expense.userId !== currentUser.uid && (status === 'Approved' || status === 'Rejected')) {
-        createAlert({
+        await createAlert({
           type: 'Info',
           message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been ${status.toLowerCase()}.`,
           priority: 'Medium',
           action: `/management/expenses?highlight=${expense.id}`,
           creatorId: currentUser.uid,
-        }).catch(err => console.error("Failed to create alert:", err));
+        });
       }
     } catch (error) {
       toast({
@@ -311,6 +311,9 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   
   const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
   const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
+
+  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
+  const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
 
   return (

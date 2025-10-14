@@ -27,8 +27,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users } = useCollection<User>(usersQuery);
 
-  const todayStart = new Date('2025-10-13T12:00:00Z');
-  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))) : null, [firestore]);
+  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
   const { data: checkins } = useCollection<Checkin>(checkinsQuery);
 
   const startOfMonth = new Date();
@@ -42,8 +41,8 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   
   const activitiesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    const sixWeeksAgo = startOfDay(subDays(new Date(), 42));
-    return query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgo)), orderBy('loggedAt', 'desc'))
+    const fourteenDaysAgo = startOfDay(subDays(new Date(), 14));
+    return query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(fourteenDaysAgo)), orderBy('loggedAt', 'desc'))
   }, [firestore]);
 
   const { data: activities } = useCollection<Activity>(activitiesQuery);

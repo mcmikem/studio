@@ -39,15 +39,15 @@ const FieldStaffDashboard = dynamic(() => import('@/components/dashboard/field-s
 const MediaFinanceDashboard = dynamic(() => import('@/components/dashboard/media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardLoading /> });
 
 
-const roleToDashboard: { [key: string]: React.FC<any> } = {
-  'Administrator': AdminDashboard,
-  'Executive Director': ExecutiveDashboard,
-  'Programs & Partnerships Manager': ProgramManagerDashboard,
-  'Operations & Field Manager': ProgramManagerDashboard, // Using Program Manager for now
-  'Field Coordinator': FieldStaffDashboard,
-  'Media & Communications Lead': MediaFinanceDashboard,
-  'Resource Mobilization Lead': ProgramManagerDashboard, // Using Program Manager for now
-  'default': DefaultDashboard,
+const roleToDashboard: { [key: string]: { component: React.FC<any>, title: string } } = {
+  'Administrator': { component: AdminDashboard, title: 'Administrator Dashboard' },
+  'Executive Director': { component: ExecutiveDashboard, title: 'Executive Dashboard' },
+  'Programs & Partnerships Manager': { component: ProgramManagerDashboard, title: 'Program Dashboard' },
+  'Operations & Field Manager': { component: ProgramManagerDashboard, title: 'Operations Dashboard' }, // Using Program Manager for now
+  'Field Coordinator': { component: FieldStaffDashboard, title: 'Field Operations' },
+  'Media & Communications Lead': { component: MediaFinanceDashboard, title: 'Media & Finance Hub' },
+  'Resource Mobilization Lead': { component: ProgramManagerDashboard, title: 'Resource Mobilization' }, // Using Program Manager for now
+  'default': { component: DefaultDashboard, title: 'Welcome to Omuto Central' },
 };
 
 
@@ -82,11 +82,11 @@ export default function DashboardPage() {
     );
   }
 
-  const DashboardComponent = roleToDashboard[effectiveRole as string] || roleToDashboard['default'];
+  const { component: DashboardComponent, title: dashboardTitle } = roleToDashboard[effectiveRole as string] || roleToDashboard['default'];
   
   return (
     <div className="flex flex-col gap-6">
-        <DashboardHeader profile={profile} />
+        <DashboardHeader profile={profile} title={dashboardTitle} />
         <QuickStatsSummary metrics={metrics} />
         <div className="flex-1">
             <DashboardComponent profile={profile} />
