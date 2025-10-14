@@ -37,10 +37,10 @@ export function AdminDashboard({ profile }: DashboardProps) {
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-  const { data: users } = useCollection<User>(usersQuery);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
-  const { data: checkins } = useCollection<Checkin>(checkinsQuery);
+  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
@@ -59,7 +59,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
             <DailyActions />
             <QuickAddTask />
             <SmartReminders profile={profile} />
-            <TeamDeployment />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             <DashboardCalendar />
             <ManagementQuickLinks />
             <Alerts />

@@ -39,46 +39,32 @@ const getInitials = (name?: string) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-export function TeamDeployment() {
-  const firestore = useFirestore();
+interface TeamDeploymentProps {
+    users: User[] | null;
+    checkins: Checkin[] | null;
+    isLoading: boolean;
+}
+
+export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentProps) {
   const [teamStatus, setTeamStatus] = useState<TeamStatus[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   // Set current time on client-side mount
   useEffect(() => {
-    // Set initial time
     setCurrentTime(new Date());
-
-    // Update time every minute
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000); 
-    
     return () => clearInterval(timer);
   }, []);
-  
-
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
-
-  const checkinsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    const today = new Date();
-    const startOfToday = startOfDay(today);
-    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
-  }, [firestore]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   useEffect(() => {
-    if (isLoadingUsers || isLoadingCheckins || !currentTime) {
-      setIsLoading(true);
+    if (isLoading || !currentTime) {
       return;
     }
 
     if (!users) {
         setTeamStatus([]);
-        setIsLoading(false);
         return;
     }
     
@@ -114,9 +100,8 @@ export function TeamDeployment() {
     });
 
     setTeamStatus(newTeamStatus);
-    setIsLoading(false);
 
-  }, [users, checkins, isLoadingUsers, isLoadingCheckins, currentTime]);
+  }, [users, checkins, isLoading, currentTime]);
   
 
   return (

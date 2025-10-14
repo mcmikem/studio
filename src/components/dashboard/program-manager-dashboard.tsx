@@ -6,7 +6,7 @@ import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
-import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
+import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { QuickInsights } from "./program-manager/quick-insights"
@@ -25,10 +25,10 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-  const { data: users } = useCollection<User>(usersQuery);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
-  const { data: checkins } = useCollection<Checkin>(checkinsQuery);
+  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   const startOfMonth = new Date();
   startOfMonth.setDate(1);
@@ -51,7 +51,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
      <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker showAtRisk />
-            <TeamDeployment />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins}/>
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />

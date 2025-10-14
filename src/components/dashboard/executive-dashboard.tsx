@@ -160,10 +160,10 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
     
     const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-    const { data: users } = useCollection<User>(usersQuery);
+    const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
     const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
-    const { data: checkins } = useCollection<Checkin>(checkinsQuery);
+    const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
 
   return (
@@ -172,7 +172,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse activities={activities} />
             <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
-             <TeamDeployment />
+             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <QuickAddTask />
