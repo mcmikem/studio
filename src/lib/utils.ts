@@ -1,7 +1,6 @@
-
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { format, formatDistanceToNow, isValid, parseISO } from "date-fns";
+import { format as formatFns, formatDistanceToNow, isValid, parseISO } from "date-fns";
 import type { Timestamp } from "firebase/firestore";
 
 export function cn(...inputs: ClassValue[]) {
@@ -10,20 +9,19 @@ export function cn(...inputs: ClassValue[]) {
 
 export const formatDateSafe = (
   dateValue: Timestamp | Date | string | null | undefined,
-  formatType: "distance" | "dateOnly" = "distance"
+  formatType: "distance" | "dateOnly" | "iso" = "distance"
 ): string => {
   if (!dateValue) return "N/A";
 
   let date: Date;
 
   try {
-    if (typeof dateValue === "string") {
-      // Handles ISO strings like '2025-10-31' or full ISO strings
-      // parseISO is more reliable than new Date() for strings.
-      date = parseISO(dateValue);
-    } else if (dateValue && typeof (dateValue as any).toDate === 'function') {
+    if (dateValue && typeof (dateValue as any).toDate === 'function') {
       // Handles Firestore Timestamps
       date = (dateValue as Timestamp).toDate();
+    } else if (typeof dateValue === "string") {
+       // Handles ISO strings
+      date = parseISO(dateValue);
     } else {
       // Handles native Date objects
       date = dateValue as Date;
@@ -38,8 +36,11 @@ export const formatDateSafe = (
     if (formatType === "distance") {
       return formatDistanceToNow(date, { addSuffix: true });
     }
+    if (formatType === "iso") {
+      return formatFns(date, "yyyy-MM-dd");
+    }
     // 'dateOnly' format
-    return format(date, "dd MMM yyyy");
+    return formatFns(date, "dd MMM yyyy");
 
   } catch (e) {
     return "Invalid Date";

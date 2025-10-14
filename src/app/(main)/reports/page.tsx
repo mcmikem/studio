@@ -49,6 +49,17 @@ function MonthlyActivityReport() {
             const snapshot = await getDocs(activitiesQuery);
             const activities = snapshot.docs.map(doc => doc.data() as Activity);
 
+            if (activities.length === 0) {
+              setReportData({
+                month: format(new Date(parseInt(year), parseInt(month) - 1), 'MMMM yyyy'),
+                totalActivities: 0,
+                totalCost: 0,
+                totalValue: 0,
+                averageRoi: 0,
+              });
+              return;
+            }
+
             const totalCost = activities.reduce((sum, act) => sum + act.actualCost, 0);
             const totalValue = activities.reduce((sum, act) => sum + act.totalValue, 0);
             const averageRoi = totalCost > 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0;
@@ -68,6 +79,13 @@ function MonthlyActivityReport() {
             setIsLoadingReport(false);
         }
     }
+    
+    const summaryCards = reportData ? [
+        { key: 'activities', icon: GitCommitHorizontal, value: reportData.totalActivities, label: 'Activities' },
+        { key: 'cost', icon: DollarSign, value: formatCurrency(reportData.totalCost), label: 'Total Cost', color: 'text-red-500' },
+        { key: 'value', icon: TrendingUp, value: formatCurrency(reportData.totalValue), label: 'Total Value', color: 'text-green-500' },
+        { key: 'roi', icon: BarChart, value: `${reportData.averageRoi.toFixed(0)}%`, label: 'Average ROI', color: 'text-blue-500' },
+    ] : [];
 
     return (
         <Card>
@@ -102,26 +120,13 @@ function MonthlyActivityReport() {
                             <CardTitle>Summary for {reportData.month}</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
-                                <GitCommitHorizontal className="h-8 w-8 text-primary mb-2" />
-                                <p className="text-3xl font-bold">{reportData.totalActivities}</p>
-                                <p className="text-sm text-muted-foreground">Activities</p>
-                            </div>
-                             <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
-                                <DollarSign className="h-8 w-8 text-red-500 mb-2" />
-                                <p className="text-3xl font-bold">{formatCurrency(reportData.totalCost)}</p>
-                                <p className="text-sm text-muted-foreground">Total Cost</p>
-                            </div>
-                             <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
-                                <TrendingUp className="h-8 w-8 text-green-500 mb-2" />
-                                <p className="text-3xl font-bold">{formatCurrency(reportData.totalValue)}</p>
-                                <p className="text-sm text-muted-foreground">Total Value</p>
-                            </div>
-                             <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
-                                <BarChart className="h-8 w-8 text-blue-500 mb-2" />
-                                <p className="text-3xl font-bold">{reportData.averageRoi.toFixed(0)}%</p>
-                                <p className="text-sm text-muted-foreground">Average ROI</p>
-                            </div>
+                            {summaryCards.map(card => (
+                                <div key={card.key} className="flex flex-col items-center justify-center p-4 rounded-lg bg-background text-center">
+                                    <card.icon className={`h-8 w-8 mb-2 ${card.color || 'text-primary'}`} />
+                                    <p className="text-3xl font-bold">{card.value}</p>
+                                    <p className="text-sm text-muted-foreground">{card.label}</p>
+                                </div>
+                            ))}
                         </CardContent>
                     </Card>
                 )}

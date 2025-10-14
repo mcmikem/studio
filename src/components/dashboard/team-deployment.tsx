@@ -15,7 +15,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, Timestamp, orderBy, getDocs } from 'firebase/firestore';
 import type { User, Checkin } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -81,9 +81,7 @@ export function TeamDeployment() {
         setIsLoading(false);
         return;
     }
-
-    // This is the corrected logic.
-    // We map over ALL users, ensuring everyone is in the list.
+    
     const checkinMap = new Map(checkins?.map(c => [c.userId, c]));
     
     const newTeamStatus = users.map(user => {
@@ -94,10 +92,12 @@ export function TeamDeployment() {
         for (const block of userCheckin.details.timeBlocks) {
           try {
             const now = currentTime;
-            const startTime = parse(block.startTime, 'hh:mm a', now);
-            const endTime = parse(block.endTime, 'hh:mm a', now);
+            // Assuming the date part is the same day for parsing
+            const baseDate = startOfDay(now);
+            const startTime = parse(block.startTime, 'hh:mm a', baseDate);
+            const endTime = parse(block.endTime, 'hh:mm a', baseDate);
             
-            if (isWithinInterval(now, { start: startTime, end: endTime })) {
+            if (isValid(startTime) && isValid(endTime) && isWithinInterval(now, { start: startTime, end: endTime })) {
               currentTask = block.description;
               break;
             }
@@ -151,7 +151,7 @@ export function TeamDeployment() {
                                 <p className="text-xs text-muted-foreground">{status.user.role}</p>
                             </div>
                         </div>
-                        <Badge variant={status.checkedIn ? 'default' : 'destructive'} className={status.checkedIn ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}>
+                        <Badge variant={status.checkedIn ? 'default' : 'secondary'} className={status.checkedIn ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}>
                           {status.checkedIn ? 'Checked In' : 'Not Checked In'}
                         </Badge>
                     </AccordionTrigger>

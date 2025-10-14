@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -36,7 +35,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { format, parseISO, isValid, isPast } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn, formatDateSafe } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 
 
@@ -66,21 +65,6 @@ const programSchema = z.object({
 
 type ProgramFormData = z.infer<typeof programSchema>;
 
-const formatDateForInput = (date: string | Date | Timestamp): string => {
-  if (!date) return '';
-  try {
-    let d: Date;
-    if (date instanceof Timestamp) {
-      d = date.toDate();
-    } else {
-      d = new Date(date);
-    }
-    return format(d, 'yyyy-MM-dd');
-  } catch {
-    return '';
-  }
-};
-
 
 function ProgramForm({
   program,
@@ -103,7 +87,7 @@ function ProgramForm({
       ...program,
       objectives: program.objectives.join('\n'),
       valuePerObjective: program.valuePerObjective || 0,
-      deadline: formatDateForInput(program.deadline),
+      deadline: formatDateSafe(program.deadline, 'iso'),
     } : {
       status: 'On Track',
       valuePerObjective: 0,
@@ -223,7 +207,7 @@ export default function ProgramsPage() {
   const { data: programs, isLoading } = useCollection<Program>(programsQuery);
 
   const ProgramCard = ({ program }: { program: Program }) => {
-    const deadlineDate = new Date(program.deadline);
+    const deadlineDate = parseISO(program.deadline);
     const isDeadlinePast = isPast(deadlineDate) && program.status !== 'Completed';
 
     return (
