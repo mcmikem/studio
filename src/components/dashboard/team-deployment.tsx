@@ -47,12 +47,13 @@ export function TeamDeployment() {
 
   // Set current time on client-side mount
   useEffect(() => {
-    const now = new Date();
-    setCurrentTime(now);
+    // Set initial time
+    setCurrentTime(new Date());
 
+    // Update time every minute
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 60000); // Update every minute
+    }, 60000); 
     
     return () => clearInterval(timer);
   }, []);
