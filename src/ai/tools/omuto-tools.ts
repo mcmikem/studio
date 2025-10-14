@@ -6,7 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { initializeFirebase } from '@/firebase/server';
-import { collection, query, where, getDocs, serverTimestamp, doc, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc } from 'firebase/firestore';
 import { z } from 'zod';
 
 export const findGrantOpportunities = ai.defineTool(
@@ -208,12 +208,12 @@ export const createCheckout = ai.defineTool(
 
         try {
             const userRef = doc(firestore, 'users', userId);
-            const userSnap = await getDocs(query(collection(firestore, 'users'), where('id', '==', userId)));
+            const userSnap = await getDoc(userRef);
 
-            if (userSnap.empty) {
+            if (!userSnap.exists()) {
                 return { success: false, message: `Could not find user with ID ${userId}.`};
             }
-            const userProfile = userSnap.docs[0].data();
+            const userProfile = userSnap.data();
 
             const checkoutData = {
                 userId,
