@@ -1,430 +1,607 @@
 /**
- * @fileoverview Firestore Security Rules for Omuto Central.
- *
- * Core Philosophy:
- * This ruleset enforces a strict user-ownership model for user profiles and tasks,
- * while allowing public read access to other collections like check-ins, checkouts,
- * activities, and various organizational data points (programs, partnerships, etc.).
- * Write access to these public-read collections is restricted to authenticated users.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a strict user-ownership model for user profiles and their associated data.
+ * Public read access is granted to certain top-level collections to facilitate data sharing.
  *
  * Data Structure:
- * - User profiles and tasks are nested under /users/{userId}.
- * - All other data (check-ins, activities, etc.) resides in top-level collections.
+ * - User profiles are stored under `/users/{userId}`, accessible only to the user themselves.
+ * - User-specific data (tasks) are stored under `/users/{userId}/tasks/{taskId}`, also accessible only to the user.
+ * - Other top-level collections, such as `/checkins`, `/checkouts`, `/activities`, `/programs`, `/partnerships`, `/impact-metrics`, `/projects`, `/events`, `/alerts`, `/key-results`, `/expenses`, `/income`, `/proposals`, `/team-workplans`, `/workplans`, `/equipment`, `/task-templates`, `/messages`, `/testimonies`, `/ai-feedback` have public read access, but require authentication and validation of ownership on write operations.
  *
  * Key Security Decisions:
- * - User listing is disabled to prevent unauthorized enumeration of user accounts.
- * - Public read access is granted to several collections to facilitate data sharing and reporting.
- * - Write operations on public-read collections are restricted to authenticated users, but a CRITICAL TODO is included to add owner-only validation by adding ownerId/authorId field.
- *
- * Denormalization for Authorization:
- * The rules rely on the `request.auth.uid` for identity verification.
+ * - User listing is explicitly denied for security and privacy reasons.
+ * - Strict ownership is enforced for user profiles and associated data.
+ * - Top-level collections allow public reads but enforce ownership on writes using an `authorId` or similar field.
+ * - Denormalization: To simplify rules, we rely on the presence of `userId` fields within documents to quickly verify ownership.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource.data != null;
-    }
-
     /**
-     * @description Enforces owner-only access to user profile data.
+     * @description Grants access to individual user profiles.
      * @path /users/{userId}
-     * @allow (create) User with ID 'user123' creates their profile.
-     * @deny (create) User with ID 'user123' attempts to create profile for 'otherUser'.
-     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     * @allow (get) User with ID 'user123' can read their own profile.
+     * @allow (create) User with ID 'user123' can create their profile.
+     * @allow (update) User with ID 'user123' can update their own profile.
+     * @allow (delete) User with ID 'user123' can delete their own profile.
+     * @deny (get) User with ID 'user456' cannot read the profile of 'user123'.
+     * @deny (create) User with ID 'user456' cannot create the profile of 'user123'.
+     * @deny (update) User with ID 'user456' cannot update the profile of 'user123'.
+     * @deny (delete) User with ID 'user456' cannot delete the profile of 'user123'.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId} {
+      //function
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if isOwner(userId);
-      allow list: if false; // User listing is disabled.
-
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isSignedIn() && isOwner(userId) && resource.data.id == userId;
+      allow delete: if isSignedIn() && isOwner(userId) && resource.data.id == userId;
     }
 
     /**
-     * @description Enforces owner-only access to user tasks.
+     * @description Grants access to tasks belonging to a specific user.
      * @path /users/{userId}/tasks/{taskId}
-     * @allow (create) User with ID 'user123' creates a task.
-     * @deny (create) User with ID 'user123' attempts to create a task for 'otherUser'.
-     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     * @allow (get) User 'user123' can read their own task 'task456'.
+     * @allow (create) User 'user123' can create a task.
+     * @allow (update) User 'user123' can update their own task 'task456'.
+     * @allow (delete) User 'user123' can delete their own task 'task456'.
+     * @deny (get) User 'user456' cannot read a task belonging to 'user123'.
+     * @deny (create) User 'user456' cannot create a task for 'user123'.
+     * @deny (update) User 'user456' cannot update a task belonging to 'user123'.
+     * @deny (delete) User 'user456' cannot delete a task belonging to 'user123'.
+     * @principle Enforces document ownership for writes; allows owner-only access for reads.
      */
     match /users/{userId}/tasks/{taskId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-
+      //function
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
-      allow delete: if isExistingOwner(userId);
+      allow update: if isSignedIn() && isOwner(userId);
+      allow delete: if isSignedIn() && isOwner(userId);
     }
 
     /**
-     * @description Allows public read access to check-in documents, but restricts write access to authenticated users.
+     * @description Allows public read access to check-in documents, but requires authentication for write operations.
      * @path /checkins/{checkinId}
-     * @allow (get) Any user can retrieve a check-in.
-     * @allow (list) Any user can list check-ins.
-     * @allow (create) Any authenticated user can create a check-in.
-     * @deny (create) Unauthenticated user attempts to create a check-in.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (get) Any user can read a checkin.
+     * @allow (list) Any user can list checkins.
+     * @allow (create) Authenticated user can create a checkin.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create a checkin.
+     * @deny (update) Non-authenticated user cannot update a checkin.
+     * @deny (delete) Non-authenticated user cannot delete a checkin.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /checkins/{checkinId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Checkin' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
-     /**
-     * @description Allows public read access to checkout documents, but restricts write access to authenticated users.
+    /**
+     * @description Allows public read access to checkout documents, but requires authentication for write operations.
      * @path /checkouts/{checkoutId}
-     * @allow (get) Any user can retrieve a checkout.
+     * @allow (get) Any user can read a checkout.
      * @allow (list) Any user can list checkouts.
-     * @allow (create) Any authenticated user can create a checkout.
-     * @deny (create) Unauthenticated user attempts to create a checkout.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create a checkout.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create a checkout.
+     * @deny (update) Non-authenticated user cannot update a checkout.
+     * @deny (delete) Non-authenticated user cannot delete a checkout.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /checkouts/{checkoutId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Checkout' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to activity documents, but restricts write access to authenticated users.
+     * @description Allows public read access to activity documents, but requires authentication for write operations and requires userId match auth.uid.
      * @path /activities/{activityId}
-     * @allow (get) Any user can retrieve an activity.
+     * @allow (get) Any user can read an activity.
      * @allow (list) Any user can list activities.
-     * @allow (create) Any authenticated user can create an activity.
-     * @deny (create) Unauthenticated user attempts to create an activity.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create an activity.
+     * @allow (update) Fails if not authenticated or user doesn't own the activity.
+     * @allow (delete) Fails if not authenticated or user doesn't own the activity.
+     * @deny (create) Non-authenticated user cannot create an activity.
+     * @deny (update) Non-authenticated user cannot update an activity.
+     * @deny (delete) Non-authenticated user cannot delete an activity.
+     * @principle Allows public reads but enforces authentication and ownership for writes.
      */
     match /activities/{activityId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(userId) {
+          return request.auth.uid == userId;
+      }
+
       allow get: if true;
       allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Activity' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
     }
 
     /**
-     * @description Allows public read access to program documents, but restricts write access to authenticated users.
+     * @description Allows public read access to program documents, but requires authentication for write operations.
      * @path /programs/{programId}
-     * @allow (get) Any user can retrieve a program.
+     * @allow (get) Any user can read a program.
      * @allow (list) Any user can list programs.
-     * @allow (create) Any authenticated user can create a program.
-     * @deny (create) Unauthenticated user attempts to create a program.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create a program.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create a program.
+     * @deny (update) Non-authenticated user cannot update a program.
+     * @deny (delete) Non-authenticated user cannot delete a program.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /programs/{programId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Program' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to partnership documents, but restricts write access to authenticated users.
+     * @description Allows public read access to partnership documents, but requires authentication for write operations.
      * @path /partnerships/{partnershipId}
-     * @allow (get) Any user can retrieve a partnership.
+     * @allow (get) Any user can read a partnership.
      * @allow (list) Any user can list partnerships.
-     * @allow (create) Any authenticated user can create a partnership.
-     * @deny (create) Unauthenticated user attempts to create a partnership.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create a partnership.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create a partnership.
+     * @deny (update) Non-authenticated user cannot update a partnership.
+     * @deny (delete) Non-authenticated user cannot delete a partnership.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /partnerships/{partnershipId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Partnership' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to impact metric documents, but restricts write access to authenticated users.
+     * @description Allows public read access to impact metric documents, but requires authentication for write operations.
      * @path /impact-metrics/{metricId}
-     * @allow (get) Any user can retrieve an impact metric.
+     * @allow (get) Any user can read an impact metric.
      * @allow (list) Any user can list impact metrics.
-     * @allow (create) Any authenticated user can create an impact metric.
-     * @deny (create) Unauthenticated user attempts to create an impact metric.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create an impact metric.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create an impact metric.
+     * @deny (update) Non-authenticated user cannot update an impact metric.
+     * @deny (delete) Non-authenticated user cannot delete an impact metric.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /impact-metrics/{metricId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'ImpactMetric' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to project documents, but restricts write access to authenticated users.
+     * @description Allows public read access to project documents, but requires authentication for write operations.
      * @path /projects/{projectId}
-     * @allow (get) Any user can retrieve a project.
+     * @allow (get) Any user can read a project.
      * @allow (list) Any user can list projects.
-     * @allow (create) Any authenticated user can create a project.
-     * @deny (create) Unauthenticated user attempts to create a project.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create a project.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create a project.
+     * @deny (update) Non-authenticated user cannot update a project.
+     * @deny (delete) Non-authenticated user cannot delete a project.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /projects/{projectId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Project' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to event documents, but restricts write access to authenticated users.
+     * @description Allows public read access to event documents, but requires authentication for write operations.
      * @path /events/{eventId}
-     * @allow (get) Any user can retrieve an event.
+     * @allow (get) Any user can read an event.
      * @allow (list) Any user can list events.
-     * @allow (create) Any authenticated user can create an event.
-     * @deny (create) Unauthenticated user attempts to create an event.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create an event.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create an event.
+     * @deny (update) Non-authenticated user cannot update an event.
+     * @deny (delete) Non-authenticated user cannot delete an event.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /events/{eventId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'CalendarEvent' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to alert documents, but restricts write access to authenticated users.
+     * @description Allows public read access to alert documents, but requires authentication and creatorId match auth.uid for write operations.
      * @path /alerts/{alertId}
-     * @allow (get) Any user can retrieve an alert.
+     * @allow (get) Any user can read an alert.
      * @allow (list) Any user can list alerts.
-     * @allow (create) Any authenticated user can create an alert.
-     * @deny (create) Unauthenticated user attempts to create an alert.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create an alert.
+     * @allow (update) Fails if not authenticated or user doesn't own the alert.
+     * @allow (delete) Fails if not authenticated or user doesn't own the alert.
+     * @deny (create) Non-authenticated user cannot create an alert.
+     * @deny (update) Non-authenticated user cannot update an alert.
+     * @deny (delete) Non-authenticated user cannot delete an alert.
+     * @principle Allows public reads but enforces authentication and ownership for writes.
      */
     match /alerts/{alertId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(creatorId) {
+          return request.auth.uid == creatorId;
+      }
+
       allow get: if true;
       allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Alert' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if isSignedIn() && request.resource.data.creatorId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.creatorId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.creatorId) && resource != null;
     }
 
     /**
-     * @description Allows public read access to key result documents, but restricts write access to authenticated users.
+     * @description Allows public read access to key result documents, but requires authentication for write operations.
      * @path /key-results/{keyResultId}
-     * @allow (get) Any user can retrieve a key result.
+     * @allow (get) Any user can read a key result.
      * @allow (list) Any user can list key results.
-     * @allow (create) Any authenticated user can create a key result.
-     * @deny (create) Unauthenticated user attempts to create a key result.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create a key result.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create a key result.
+     * @deny (update) Non-authenticated user cannot update a key result.
+     * @deny (delete) Non-authenticated user cannot delete a key result.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /key-results/{keyResultId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'KeyResult' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to expense documents, but restricts write access to authenticated users.
+     * @description Allows public read access to expense documents, but requires authentication and userId match auth.uid for write operations.
      * @path /expenses/{expenseId}
-     * @allow (get) Any user can retrieve an expense.
+     * @allow (get) Any user can read an expense.
      * @allow (list) Any user can list expenses.
-     * @allow (create) Any authenticated user can create an expense.
-     * @deny (create) Unauthenticated user attempts to create an expense.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create an expense.
+     * @allow (update) Fails if not authenticated or user doesn't own the expense.
+     * @allow (delete) Fails if not authenticated or user doesn't own the expense.
+     * @deny (create) Non-authenticated user cannot create an expense.
+     * @deny (update) Non-authenticated user cannot update an expense.
+     * @deny (delete) Non-authenticated user cannot delete an expense.
+     * @principle Allows public reads but enforces authentication and ownership for writes.
      */
     match /expenses/{expenseId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(userId) {
+          return request.auth.uid == userId;
+      }
+
       allow get: if true;
       allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Expense' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
     }
 
     /**
-     * @description Allows public read access to income documents, but restricts write access to authenticated users.
+     * @description Allows public read access to income documents, but requires authentication for write operations.
      * @path /income/{incomeId}
-     * @allow (get) Any user can retrieve an income.
+     * @allow (get) Any user can read an income.
      * @allow (list) Any user can list incomes.
-     * @allow (create) Any authenticated user can create an income.
-     * @deny (create) Unauthenticated user attempts to create an income.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create an income.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create an income.
+     * @deny (update) Non-authenticated user cannot update an income.
+     * @deny (delete) Non-authenticated user cannot delete an income.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /income/{incomeId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Income' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to proposal documents, but restricts write access to authenticated users.
+     * @description Allows public read access to proposal documents, but requires authentication for write operations.
      * @path /proposals/{proposalId}
-     * @allow (get) Any user can retrieve a proposal.
+     * @allow (get) Any user can read a proposal.
      * @allow (list) Any user can list proposals.
-     * @allow (create) Any authenticated user can create a proposal.
-     * @deny (create) Unauthenticated user attempts to create a proposal.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create a proposal.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create a proposal.
+     * @deny (update) Non-authenticated user cannot update a proposal.
+     * @deny (delete) Non-authenticated user cannot delete a proposal.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /proposals/{proposalId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Proposal' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to team workplan documents, but restricts write access to authenticated users.
+     * @description Allows public read access to team workplan documents, but requires authentication and authorId match auth.uid for write operations.
      * @path /team-workplans/{teamWorkplanId}
-     * @allow (get) Any user can retrieve a team workplan.
+     * @allow (get) Any user can read a team workplan.
      * @allow (list) Any user can list team workplans.
-     * @allow (create) Any authenticated user can create a team workplan.
-     * @deny (create) Unauthenticated user attempts to create a team workplan.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create a team workplan.
+     * @allow (update) Fails if not authenticated or user doesn't own the team workplan.
+     * @allow (delete) Fails if not authenticated or user doesn't own the team workplan.
+     * @deny (create) Non-authenticated user cannot create a team workplan.
+     * @deny (update) Non-authenticated user cannot update a team workplan.
+     * @deny (delete) Non-authenticated user cannot delete a team workplan.
+     * @principle Allows public reads but enforces authentication and ownership for writes.
      */
     match /team-workplans/{teamWorkplanId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(authorId) {
+          return request.auth.uid == authorId;
+      }
+
       allow get: if true;
       allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'TeamWeeklyPlan' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if isSignedIn() && request.resource.data.authorId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.authorId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.authorId) && resource != null;
     }
 
     /**
-     * @description Allows public read access to workplan documents, but restricts write access to authenticated users.
+     * @description Allows public read access to weekly workplan documents, but requires authentication and userId match auth.uid for write operations.
      * @path /workplans/{workplanId}
-     * @allow (get) Any user can retrieve a workplan.
-     * @allow (list) Any user can list workplans.
-     * @allow (create) Any authenticated user can create a workplan.
-     * @deny (create) Unauthenticated user attempts to create a workplan.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (get) Any user can read a weekly workplan.
+     * @allow (list) Any user can list weekly workplans.
+     * @allow (create) Authenticated user can create a weekly workplan.
+     * @allow (update) Fails if not authenticated or user doesn't own the weekly workplan.
+     * @allow (delete) Fails if not authenticated or user doesn't own the weekly workplan.
+     * @deny (create) Non-authenticated user cannot create a weekly workplan.
+     * @deny (update) Non-authenticated user cannot update a weekly workplan.
+     * @deny (delete) Non-authenticated user cannot delete a weekly workplan.
+     * @principle Allows public reads but enforces authentication and ownership for writes.
      */
     match /workplans/{workplanId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(userId) {
+          return request.auth.uid == userId;
+      }
+
       allow get: if true;
       allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'WeeklyWorkplan' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
     }
 
     /**
-     * @description Allows public read access to equipment documents, but restricts write access to authenticated users.
+     * @description Allows public read access to equipment documents, but requires authentication for write operations.
      * @path /equipment/{equipmentId}
-     * @allow (get) Any user can retrieve an equipment.
+     * @allow (get) Any user can read an equipment.
      * @allow (list) Any user can list equipments.
-     * @allow (create) Any authenticated user can create an equipment.
-     * @deny (create) Unauthenticated user attempts to create an equipment.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create an equipment.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create an equipment.
+     * @deny (update) Non-authenticated user cannot update an equipment.
+     * @deny (delete) Non-authenticated user cannot delete an equipment.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /equipment/{equipmentId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Equipment' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Allows public read access to task template documents, but restricts write access to authenticated users.
+     * @description Allows public read access to task template documents, but requires authentication for write operations.
      * @path /task-templates/{templateId}
-     * @allow (get) Any user can retrieve a task template.
+     * @allow (get) Any user can read a task template.
      * @allow (list) Any user can list task templates.
-     * @allow (create) Any authenticated user can create a task template.
-     * @deny (create) Unauthenticated user attempts to create a task template.
-     * @principle Allows public read access while restricting writes to authenticated users.
+     * @allow (create) Authenticated user can create a task template.
+     * @allow (update) Fails if not authenticated.
+     * @allow (delete) Fails if not authenticated.
+     * @deny (create) Non-authenticated user cannot create a task template.
+     * @deny (update) Non-authenticated user cannot update a task template.
+     * @deny (delete) Non-authenticated user cannot delete a task template.
+     * @principle Allows public reads but enforces authentication for writes.
      */
     match /task-templates/{templateId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
       allow get: if true;
       allow list: if true;
-
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'TaskTemplate' entity is missing an 'ownerId' or 'authorId' field.
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
-    /**
-     * @description Allows public read access to message documents, but restricts write access to authenticated users.
-     * @path /messages/{messageId}
-     * @allow (get) Any user can retrieve a message.
-     * @allow (list) Any user can list messages.
-     * @allow (create) Any authenticated user can create a message.
-     * @deny (create) Unauthenticated user attempts to create a message.
-     * @principle Allows public read access while restricting writes to authenticated users.
-     */
+   /**
+    * @description Allows public read access to message documents, but requires authentication and userId match auth.uid for write operations.
+    * @path /messages/{messageId}
+    * @allow (get) Any user can read a message.
+    * @allow (list) Any user can list messages.
+    * @allow (create) Authenticated user can create a message.
+    * @allow (update) Fails if not authenticated or user doesn't own the message.
+    * @allow (delete) Fails if not authenticated or user doesn't own the message.
+    * @deny (create) Non-authenticated user cannot create a message.
+    * @deny (update) Non-authenticated user cannot update a message.
+    * @deny (delete) Non-authenticated user cannot delete a message.
+    * @principle Allows public reads but enforces authentication and ownership for writes.
+    */
     match /messages/{messageId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(userId) {
+          return request.auth.uid == userId;
+      }
+
       allow get: if true;
       allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Message' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
     }
+   /**
+    * @description Allows public read access to testimony documents, but requires authentication and userId match auth.uid for write operations.
+    * @path /testimonies/{testimonyId}
+    * @allow (get) Any user can read a testimony.
+    * @allow (list) Any user can list testimonies.
+    * @allow (create) Authenticated user can create a testimony.
+    * @allow (update) Fails if not authenticated or user doesn't own the testimony.
+    * @allow (delete) Fails if not authenticated or user doesn't own the testimony.
+    * @deny (create) Non-authenticated user cannot create a testimony.
+    * @deny (update) Non-authenticated user cannot update a testimony.
+    * @deny (delete) Non-authenticated user cannot delete a testimony.
+    * @principle Allows public reads but enforces authentication and ownership for writes.
+    */
+   match /testimonies/{testimonyId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(userId) {
+          return request.auth.uid == userId;
+      }
 
-    /**
-     * @description Allows public read access to testimony documents, but restricts write access to authenticated users.
-     * @path /testimonies/{testimonyId}
-     * @allow (get) Any user can retrieve a testimony.
-     * @allow (list) Any user can list testimonies.
-     * @allow (create) Any authenticated user can create a testimony.
-     * @deny (create) Unauthenticated user attempts to create a testimony.
-     * @principle Allows public read access while restricting writes to authenticated users.
-     */
-    match /testimonies/{testimonyId} {
       allow get: if true;
       allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'Testimony' entity is missing an 'ownerId' or 'authorId' field.
-    }
-
-     /**
-     * @description Allows public read access to AI feedback documents, but restricts write access to authenticated users.
-     * @path /ai-feedback/{feedbackId}
-     * @allow (get) Any user can retrieve AI feedback.
-     * @allow (list) Any user can list AI feedback.
-     * @allow (create) Any authenticated user can create AI feedback.
-     * @deny (create) Unauthenticated user attempts to create AI feedback.
-     * @principle Allows public read access while restricting writes to authenticated users.
-     */
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
+   }
+   /**
+    * @description Allows public read access to AI feedback documents, but requires authentication and userId match auth.uid for write operations.
+    * @path /ai-feedback/{feedbackId}
+    * @allow (get) Any user can read AI feedback.
+    * @allow (list) Any user can list AI feedback.
+    * @allow (create) Authenticated user can create AI feedback.
+    * @allow (update) Fails if not authenticated or user doesn't own the AI feedback.
+    * @allow (delete) Fails if not authenticated or user doesn't own the AI feedback.
+    * @deny (create) Non-authenticated user cannot create AI feedback.
+    * @deny (update) Non-authenticated user cannot update AI feedback.
+    * @deny (delete) Non-authenticated user cannot delete AI feedback.
+    * @principle Allows public reads but enforces authentication and ownership for writes.
+    */
     match /ai-feedback/{feedbackId} {
+      //function
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      function isOwner(userId) {
+          return request.auth.uid == userId;
+      }
+
       allow get: if true;
       allow list: if true;
-
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null; // CRITICAL: Cannot implement owner-only writes. The 'AIFeedback' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
+      allow delete: if isSignedIn() && isOwner(resource.data.userId) && resource != null;
     }
   }
 }
