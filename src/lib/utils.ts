@@ -54,6 +54,5 @@ export const formatCurrency = (value: number) => {
         style: 'currency',
         currency: 'UGX',
         minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
     }).format(value);
 };

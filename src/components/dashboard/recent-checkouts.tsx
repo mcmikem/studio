@@ -27,7 +27,7 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   return (
     <div className="flex items-start gap-4">
       <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
-        <AvatarImage src={checkout.avatar} alt="Avatar" />
+        <AvatarImage src={checkout.avatar} alt={checkout.name} />
         <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
       </Avatar>
       <div className="grid gap-1 flex-1">
