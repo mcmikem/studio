@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -46,15 +47,14 @@ export function TeamDeployment() {
 
   // Set current time on client-side mount
   useEffect(() => {
-    // We use a mock time consistent with the sample data to ensure functionality is visible.
-    const mockTime = new Date('2025-10-13T10:30:00Z');
-    setCurrentTime(mockTime);
+    const now = new Date();
+    setCurrentTime(now);
 
-    // In a real-time scenario, you would use new Date() and update it.
-    // const timer = setInterval(() => {
-    //   setCurrentTime(new Date());
-    // }, 60000);
-    // return () => clearInterval(timer);
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+    
+    return () => clearInterval(timer);
   }, []);
   
 
@@ -63,8 +63,7 @@ export function TeamDeployment() {
 
   const checkinsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    // Query for the specific date of the sample data.
-    const today = new Date('2025-10-13T12:00:00Z');
+    const today = new Date();
     const startOfToday = startOfDay(today);
     return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
   }, [firestore]);
@@ -92,12 +91,11 @@ export function TeamDeployment() {
         for (const block of userCheckin.details.timeBlocks) {
           try {
             const now = currentTime;
-            // Assuming the date part is the same day for parsing
             const baseDate = startOfDay(now);
             const startTime = parse(block.startTime, 'hh:mm a', baseDate);
             const endTime = parse(block.endTime, 'hh:mm a', baseDate);
             
-            if (isValid(startTime) && isValid(endTime) && isWithinInterval(now, { start: startTime, end: endTime })) {
+            if (isWithinInterval(now, { start: startTime, end: endTime })) {
               currentTask = block.description;
               break;
             }

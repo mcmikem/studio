@@ -202,14 +202,14 @@ function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
         description: `The expense from ${expense.userName} has been marked as ${status.toLowerCase()}.`,
       });
 
-      if (expense.userId !== currentUser.uid) {
-        await createAlert({
+      if (expense.userId !== currentUser.uid && (status === 'Approved' || status === 'Rejected')) {
+        createAlert({
           type: 'Info',
           message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been ${status.toLowerCase()}.`,
           priority: 'Medium',
           action: `/management/expenses?highlight=${expense.id}`,
           creatorId: currentUser.uid,
-        });
+        }).catch(err => console.error("Failed to create alert:", err));
       }
     } catch (error) {
       toast({
