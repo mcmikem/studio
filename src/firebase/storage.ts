@@ -41,7 +41,8 @@ export async function uploadImageAndUpdateProfile(
     throw new Error('File is not an image.');
   }
 
-  const filePath = `profile-pictures/${user.uid}/${file.name}`;
+  const fileExtension = file.name.split('.').pop();
+  const filePath = `profile-pictures/${user.uid}/profile.${fileExtension}`;
   const downloadURL = await uploadFile(file, filePath);
   
   // 3. Update the Firebase Auth user profile
