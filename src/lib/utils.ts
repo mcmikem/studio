@@ -1,3 +1,4 @@
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { format as formatFns, formatDistanceToNow, isValid, parseISO } from "date-fns";
@@ -49,20 +50,10 @@ export const formatDateSafe = (
 
 
 export const formatCurrency = (value: number) => {
-    const ugxFormatter = (val: number, notation: 'compact' | 'standard', minDigits: number, maxDigits: number) => 
-        new Intl.NumberFormat('en-UG', {
-            style: 'currency',
-            currency: 'UGX',
-            minimumFractionDigits: minDigits,
-            maximumFractionDigits: maxDigits,
-            notation: notation,
-        }).format(val);
-
-    if (value >= 1000000) {
-        return ugxFormatter(value, 'compact', 1, 1);
-    }
-    if (value >= 1000) {
-         return ugxFormatter(value, 'compact', 0, 0);
-    }
-    return ugxFormatter(value, 'standard', 0, 0);
+    return new Intl.NumberFormat('en-UG', {
+        style: 'currency',
+        currency: 'UGX',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(value);
 };

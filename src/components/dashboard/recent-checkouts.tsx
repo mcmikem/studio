@@ -8,20 +8,27 @@ import { Badge } from '../ui/badge';
 import { tagColors } from '@/lib/data';
 import { formatDateSafe } from '@/lib/utils';
 import { MessageSquareText } from 'lucide-react';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = formatDateSafe(checkout.timestamp);
 
   // Extract all hashtags from the task
   const tags = checkout.task?.match(/#\w+/g) || [];
-  const userAvatar = PlaceHolderImages.find(p => p.id === 'user-avatar-1')?.imageUrl;
+  
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
+        return parts[0][0] + parts[parts.length - 1][0];
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
 
   return (
     <div className="flex items-start gap-4">
       <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
-        <AvatarImage src={checkout.avatar || userAvatar} alt="Avatar" />
-        <AvatarFallback>{checkout.role}</AvatarFallback>
+        <AvatarImage src={checkout.avatar} alt="Avatar" />
+        <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
       </Avatar>
       <div className="grid gap-1 flex-1">
         <div className="flex items-center justify-between">

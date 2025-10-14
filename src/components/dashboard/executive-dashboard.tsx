@@ -18,15 +18,7 @@ import { Globe, TrendingUp } from "lucide-react"
 import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { SmartReminders } from "./smart-reminders"
-
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-UG', {
-        style: 'currency',
-        currency: 'UGX',
-        minimumFractionDigits: 0,
-        notation: 'compact' 
-    }).format(value);
-};
+import { formatCurrency } from "@/lib/utils"
 
 
 function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
