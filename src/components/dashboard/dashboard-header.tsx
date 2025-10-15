@@ -1,7 +1,7 @@
 
-
 "use client"
 
+import { useMemo } from "react";
 import type { User, Checkin } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { Card } from "../ui/card";
