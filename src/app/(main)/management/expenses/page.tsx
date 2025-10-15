@@ -125,10 +125,6 @@ function ExpensesContent() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        // This is where the faulty server-side alert was.
-        // It has been removed to prevent crashes. A client-side notification
-        // system could be implemented here in the future if needed.
-
     } catch (error) {
          toast({
             variant: "destructive",

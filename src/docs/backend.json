@@ -465,7 +465,7 @@
             "type": "object",
             "properties": {
               "description": { "type": "string" },
-              "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
+              "category": { "type": "string", "enum": ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"] },
               "amount": { "type": "number" }
             },
             "required": ["description", "category", "amount"]
@@ -487,7 +487,7 @@
         "source": { "type": "string" },
         "amount": { "type": "number" },
         "dateReceived": { "type": "string", "format": "date" },
-        "type": { "type": "string", "enum": ["Grant", "Donation", "Sales", "Other"] },
+        "type": { "type": "string", "enum": ["Member Donations", "Fundraising", "In-kind Contributions", "Grants", "Partnerships", "Omuto Essentials", "Imac Enterprises", "Other"] },
         "notes": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },

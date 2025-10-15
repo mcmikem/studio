@@ -116,7 +116,7 @@ export function AppSidebar() {
   const isActive = (path: string) => {
     if (path === '/') return pathname === path;
     // For management, we need to check if the path starts with /management
-    if (path.startsWith('/management/')) return pathname.startsWith('/management');
+    if (path.startsWith('/management')) return pathname.startsWith('/management');
     if (path.startsWith('/reports')) return pathname.startsWith('/reports');
     return pathname.startsWith(path);
   }

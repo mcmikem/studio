@@ -62,7 +62,7 @@ const incomeSchema = z.object({
   source: z.string().min(3, 'Source is required.'),
   amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
   dateReceived: z.string().min(1, 'Date is required.'),
-  type: z.enum(['Grant', 'Donation', 'Sales', 'Other']),
+  type: z.enum(['Member Donations', 'Fundraising', 'In-kind Contributions', 'Grants', 'Partnerships', 'Omuto Essentials', 'Imac Enterprises', 'Other']),
   notes: z.string().optional(),
 });
 
@@ -80,7 +80,7 @@ function IncomeForm({ onFormSubmit }: { onFormSubmit: () => void }) {
   } = useForm<IncomeFormData>({
     resolver: zodResolver(incomeSchema),
     defaultValues: {
-      type: 'Grant',
+      type: 'Grants',
       dateReceived: format(new Date(), 'yyyy-MM-dd'),
     },
   });
@@ -131,9 +131,13 @@ function IncomeForm({ onFormSubmit }: { onFormSubmit: () => void }) {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Grant">Grant</SelectItem>
-                  <SelectItem value="Donation">Donation</SelectItem>
-                  <SelectItem value="Sales">Product/Service Sales</SelectItem>
+                  <SelectItem value="Member Donations">Member Donations</SelectItem>
+                  <SelectItem value="Fundraising">Fundraising</SelectItem>
+                  <SelectItem value="In-kind Contributions">In-kind Contributions</SelectItem>
+                  <SelectItem value="Grants">Grants</SelectItem>
+                  <SelectItem value="Partnerships">Partnerships</SelectItem>
+                  <SelectItem value="Omuto Essentials">Omuto Essentials</SelectItem>
+                  <SelectItem value="Imac Enterprises">Imac Enterprises</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>

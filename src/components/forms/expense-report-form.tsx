@@ -29,7 +29,7 @@ import { Separator } from '../ui/separator';
 
 const expenseItemSchema = z.object({
   description: z.string().min(3, 'Item description is required.'),
-  category: z.enum(["Transport", "Materials", "Food", "Airtime", "Other"]),
+  category: z.enum(["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"]),
   amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
 });
 
@@ -213,11 +213,13 @@ export function ExpenseReportForm() {
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <SelectTrigger id={`items.${index}.category`}><SelectValue placeholder="Category..." /></SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="Transport">Transport</SelectItem>
-                                    <SelectItem value="Materials">Materials</SelectItem>
-                                    <SelectItem value="Food">Food</SelectItem>
-                                    <SelectItem value="Airtime">Airtime</SelectItem>
-                                    <SelectItem value="Other">Other</SelectItem>
+                                    {[
+                                        "Transport", "Rent", "Office Dev't", "Projects", "Stationery",
+                                        "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy",
+                                        "Phone", "Food", "Mobile Money Charges", "IGA Expense",
+                                        "Allowances and stipends", "Kibanja", "Professional Services",
+                                        "community support", "miscellaneous", "Withdraw"
+                                    ].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                   </SelectContent>
                                 </Select>
                               )}
