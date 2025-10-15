@@ -249,10 +249,12 @@ export function initiateGoogleSignIn(authInstance: Auth) {
   const provider = new GoogleAuthProvider()
   const db = getFirestore(authInstance.app)
   return signInWithPopup(authInstance, provider)
-    .then((userCredential) => {
+    .then(async (userCredential) => {
       if (!isEmailApproved(userCredential.user.email)) {
-        // Must manually sign out if we reject the user after the popup succeeded.
-        authInstance.signOut();
+        // If the user's email is not on the approved list, we must
+        // delete the newly created Firebase Auth user to prevent them
+        // from being stuck in an authenticated but unauthorized state.
+        await userCredential.user.delete();
         throw new Error(
           "This email address is not authorized to use this application."
         );
@@ -269,4 +271,3 @@ export function initiateGoogleSignIn(authInstance: Auth) {
       throw error
     })
 }
-

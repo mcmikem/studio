@@ -8,6 +8,7 @@ import type { ImpactMetric } from "@/lib/types"
 import { Target, Users, HandCoins, Trees } from "lucide-react"
 import { useMemo } from "react"
 import { formatCurrency } from "@/lib/utils"
+import { EmptyState } from "../ui/empty-state"
 
 const metricIcons: { [key: string]: React.ElementType } = {
   "Cycle of Dignity Fundraising": HandCoins,
@@ -38,18 +39,13 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
   if (metrics && metrics.length === 0) {
     return (
        <Card className="col-span-full">
-        <CardContent className="p-6 text-center text-muted-foreground">
-          <p className="font-semibold">No Impact Metrics Found</p>
-          <p className="text-sm">
-            Go to{" "}
-            <Link
-              href="/management/metrics"
-              className="text-primary hover:underline"
-            >
-              Metrics Management
-            </Link>{" "}
-            to add your first KPI.
-          </p>
+        <CardContent className="p-0">
+             <EmptyState
+                icon={Target}
+                title="No Impact Metrics Found"
+                description="Go to Management > Metrics to add your first KPI."
+                className="min-h-0 py-10"
+              />
         </CardContent>
       </Card>
     )
@@ -62,12 +58,15 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
             {displayMetrics.map((metric, i) => {
                 if (!metric) {
                 return (
-                    <Card key={i} className="p-4 flex flex-col justify-between h-32 bg-background">
-                    <Skeleton className="h-6 w-6 mb-4" />
-                    <div className="space-y-1">
+                    <Card key={i} className="p-4 flex flex-col justify-between h-32 bg-background border-0 shadow-none">
+                      <div className="flex justify-between items-start text-muted-foreground">
                         <Skeleton className="h-5 w-2/3" />
-                        <Skeleton className="h-4 w-1/3" />
-                    </div>
+                        <Skeleton className="h-5 w-5" />
+                      </div>
+                      <div className="mt-auto space-y-2">
+                          <Skeleton className="h-6 w-1/2" />
+                          <Skeleton className="h-3 w-1/3" />
+                      </div>
                     </Card>
                 )
                 }

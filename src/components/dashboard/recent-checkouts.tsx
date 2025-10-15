@@ -8,6 +8,7 @@ import { Badge } from '../ui/badge';
 import { tagColors } from '@/lib/data';
 import { formatDateSafe } from '@/lib/utils';
 import { MessageSquareText } from 'lucide-react';
+import { EmptyState } from '../ui/empty-state';
 
 function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
   const timeAgo = formatDateSafe(checkout.timestamp);
@@ -68,10 +69,12 @@ export function RecentCheckouts({ checkouts }: { checkouts: RecentCheckout[] | n
         ) : checkouts.length > 0 ? (
           checkouts.map((checkout) => <CheckoutItem key={checkout.id} checkout={checkout} />)
         ) : (
-            <div className="flex flex-col items-center justify-center h-24 text-center text-muted-foreground">
-                <MessageSquareText className="h-8 w-8" />
-                <p className="mt-2 text-sm">No activity yet today. Post an update to get started!</p>
-            </div>
+            <EmptyState 
+                icon={MessageSquareText}
+                title="No Activity Yet"
+                description="No team members have checked out yet today. Updates will appear here live."
+                className="min-h-0 py-10"
+            />
         )}
       </div>
   );

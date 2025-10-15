@@ -235,10 +235,6 @@
       "type": "object",
       "description": "Represents a user's end-of-day checkout update.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the checkout."
-        },
         "userId": {
           "type": "string",
           "description": "The ID of the user submitting the checkout."
@@ -782,4 +778,3 @@
     }
   }
 }
-

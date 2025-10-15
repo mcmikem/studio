@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users } from 'lucide-react';
 import { isWithinInterval, parse, startOfDay } from 'date-fns';
+import { EmptyState } from '../ui/empty-state';
 
 type TeamStatus = {
   user: User;
@@ -156,15 +157,12 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
            </Accordion>
         ) : (
             !isLoading && (
-            <div className="flex flex-col items-center justify-center h-full min-h-[200px] rounded-lg border-2 border-dashed border-border bg-card text-center p-8">
-              <Users className="h-12 w-12 text-muted-foreground" />
-              <h2 className="mt-4 text-xl font-semibold">
-                No Staff Found
-              </h2>
-              <p className="mt-2 max-w-md text-muted-foreground">
-                Could not load team member information.
-              </p>
-            </div>
+            <EmptyState
+                icon={Users}
+                title="No Staff Found"
+                description="Could not load team member information."
+                className="min-h-0"
+             />
             )
         )}
       </CardContent>
