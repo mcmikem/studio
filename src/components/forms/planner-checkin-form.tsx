@@ -143,12 +143,21 @@ function PlannerCheckinFormComponent() {
     setAiOutput(null);
     setFeedbackSubmitted(false);
 
+    // Convert any complex objects (like Timestamps) to simple, serializable ones
+    const serializableKeyResults = keyResults.map(kr => ({
+      ...kr,
+      // Ensure deadline is a string. If it's a Timestamp, convert it.
+      deadline: kr.deadline ? new Date(kr.deadline).toISOString().split('T')[0] : 'N/A',
+      // Explicitly remove any non-serializable properties if they exist
+      createdAt: undefined, 
+    }));
+
     try {
       const output = await dailyPlannerAI({
         userRole: profile.role,
         primaryMission: data.primaryMission,
         weeklyPriorities: weeklyPlan?.individualTasks || [],
-        keyResults: keyResults,
+        keyResults: serializableKeyResults,
       });
       setAiOutput(output);
       setValue('primaryMission', data.primaryMission);
