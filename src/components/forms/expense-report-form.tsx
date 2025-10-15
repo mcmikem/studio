@@ -118,15 +118,12 @@ export function ExpenseReportForm() {
     const expensesCollection = collection(firestore, 'expenses');
 
     try {
-        const docRef = await addDocumentNonBlocking(expensesCollection, expenseData);
+        await addDocumentNonBlocking(expensesCollection, expenseData);
         
         toast({
             title: 'Expense Report Submitted!',
             description: `Your report has been sent for approval.`,
         });
-
-        // The faulty alert call that was causing the crash has been removed.
-        // A proper notification system will be implemented later.
 
         reset({
             type: 'Reimbursement',
@@ -275,3 +272,5 @@ export function ExpenseReportForm() {
       </form>
   );
 }
+
+    

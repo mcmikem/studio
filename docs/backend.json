@@ -235,10 +235,6 @@
       "type": "object",
       "description": "Represents a user's end-of-day checkout update.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the checkout."
-        },
         "userId": {
           "type": "string",
           "description": "The ID of the user submitting the checkout."
@@ -465,7 +461,7 @@
             "type": "object",
             "properties": {
               "description": { "type": "string" },
-              "category": { "type": "string", "enum": ["Transport", "Materials", "Food", "Airtime", "Other"] },
+              "category": { "type": "string", "enum": ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"] },
               "amount": { "type": "number" }
             },
             "required": ["description", "category", "amount"]
@@ -487,7 +483,7 @@
         "source": { "type": "string" },
         "amount": { "type": "number" },
         "dateReceived": { "type": "string", "format": "date" },
-        "type": { "type": "string", "enum": ["Grant", "Donation", "Sales", "Other"] },
+        "type": { "type": "string", "enum": ["Member Donations", "Fundraising", "In-kind Contributions", "Grants", "Partnerships", "Omuto Essentials", "Imac Enterprises", "Other"] },
         "notes": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
@@ -614,6 +610,9 @@
             "id": { "type": "string" },
             "title": { "type": "string" },
             "text": { "type": "string", "description": "Transcribed text of the testimony." },
+            "summary": { "type": "string", "description": "AI-generated summary of the testimony." },
+            "quotes": { "type": "array", "items": { "type": "string" }, "description": "AI-extracted key quotes." },
+            "hashtags": { "type": "array", "items": { "type": "string" }, "description": "AI-suggested social media hashtags." },
             "userId": { "type": "string", "description": "ID of the user who recorded the testimony." },
             "userName": { "type": "string", "description": "Name of the user who recorded the testimony." },
             "videoUrl": { "type": "string", "format": "uri", "description": "URL to the recorded video file." },
@@ -779,3 +778,5 @@
     }
   }
 }
+
+    
