@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc, addDoc } from 'firebase/firestore';
-import type { TeamWeeklyPlan, User } from '@/lib/types';
+import type { TeamWeeklyPlan, User, PriorityItem } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -141,20 +141,30 @@ function TeamWorkplanForm({
 
     const planData = {
         weekOf: Timestamp.fromDate(weekStartDate),
-        keyPriorities: data.keyPriorities.map(p => ({
-            ...p,
-            deadline: p.deadline ? Timestamp.fromDate(new Date(p.deadline)) : '',
-        })),
+        keyPriorities: data.keyPriorities.map(p => {
+          const priority: Partial<PriorityItem> = {
+            activity: p.activity,
+            priority: p.priority,
+            responsible: p.responsible,
+          };
+          if (p.deadline) {
+            priority.deadline = Timestamp.fromDate(new Date(p.deadline));
+          }
+          return priority;
+        }),
         message: data.message,
         authorId: user.uid,
         authorName: profile.name,
         status: data.status,
-    }
+    };
 
     try {
         if(existingPlan) {
             const planRef = doc(firestore, 'team-workplans', existingPlan.id);
-            await updateDocumentNonBlocking(planRef, planData as any);
+            await updateDocumentNonBlocking(planRef, {
+                ...planData,
+                keyPriorities: planData.keyPriorities as PriorityItem[], // Ensure correct type
+            });
             toast({ title: 'Plan Updated!', description: `The plan for the week has been updated.` });
 
         } else {
@@ -398,4 +408,3 @@ export default function TeamWorkplansPage() {
     </div>
   );
 }
-
