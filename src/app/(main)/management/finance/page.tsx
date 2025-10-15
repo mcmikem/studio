@@ -47,16 +47,14 @@ import type { Income, Expense } from '@/lib/types';
 import { format } from 'date-fns';
 import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDateSafe } from '@/lib/utils';
+import { formatDateSafe, formatCurrency } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-UG', {
-    style: 'currency',
-    currency: 'UGX',
-    minimumFractionDigits: 0,
-  }).format(value);
-};
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
 
 const incomeSchema = z.object({
   source: z.string().min(3, 'Source is required.'),
@@ -182,14 +180,45 @@ export default function FinancePage() {
       const totalDisbursedExpenses = expenses?.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
       return totalIncome - totalDisbursedExpenses;
   }, [income, expenses]);
+  
+  const chartData = useMemo(() => {
+    if (!expenses) return [];
+    
+    const relevantExpenses = expenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
+    
+    const categoryTotals = relevantExpenses.reduce((acc, expense) => {
+        if (expense.items && Array.isArray(expense.items)) {
+            expense.items.forEach(item => {
+                if (!acc[item.category]) {
+                    acc[item.category] = 0;
+                }
+                acc[item.category] += item.amount;
+            });
+        }
+        return acc;
+    }, {} as Record<string, number>);
+
+    return Object.entries(categoryTotals).map(([name, total]) => ({
+      name,
+      total,
+    }));
+  }, [expenses]);
+  
+  const chartConfig = {
+    total: {
+      label: "Total",
+      color: "hsl(var(--primary))",
+    },
+  };
 
   const isLoading = isLoadingIncome || isLoadingExpenses;
 
   return (
+    <div className="space-y-6">
     <Card>
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <CardTitle>Financial Ledger</CardTitle>
+          <CardTitle>Financial Ledger (Cashbook)</CardTitle>
           <CardDescription>A complete log of all income and expense transactions.</CardDescription>
         </div>
         <div className="flex gap-2">
@@ -260,5 +289,34 @@ export default function FinancePage() {
         </Table>
       </CardContent>
     </Card>
+      <Card>
+        <CardHeader>
+            <CardTitle>Spending by Category</CardTitle>
+            <CardDescription>Based on all 'Disbursed' and 'Acknowledged' expenses.</CardDescription>
+        </CardHeader>
+        <CardContent>
+             {isLoading && <Skeleton className="w-full h-96" />}
+             {!isLoading && chartData.length > 0 && (
+                <ChartContainer config={chartConfig} className="w-full h-96">
+                    <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 120 }}>
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))' }} />
+                        <ChartTooltip
+                            cursor={false}
+                            content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)}/>}
+                        />
+                        <Bar dataKey="total" fill="var(--color-total)" radius={4} />
+                    </BarChart>
+                </ChartContainer>
+            )}
+            {!isLoading && chartData.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
+                    <DollarSign className="h-12 w-12" />
+                    <p className="mt-4 font-semibold">No spending data to show.</p>
+                </div>
+            )}
+        </CardContent>
+    </Card>
+    </div>
   );
 }

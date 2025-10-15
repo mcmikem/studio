@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -26,6 +25,7 @@ import {
   DollarSign,
   Box,
   BarChart3,
+  Wallet,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -62,7 +62,7 @@ const navConfig = {
     { href: '/checkins', icon: LogIn, label: 'Check-in Stream' },
     { href: '/stream', icon: Rss, label: 'Check-out Stream' },
     { href: '/forms', icon: ClipboardEdit, label: 'Forms' },
-    { href: '/checklists', icon: ListChecks, label: 'Checklists' },
+    { href: '/my-finances', icon: Wallet, label: 'My Finances' },
     { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
   ],
   planning: [
@@ -93,7 +93,7 @@ const roleNavConfig = {
   'Operations & Field Manager': ['all', 'field', 'planning', 'management'],
   'Field Coordinator': ['all', 'field', 'planning'],
   'Media & Communications Lead': ['all', 'field', 'communication'],
-  'default': ['all'],
+  'default': ['all', 'field', 'planning'],
 };
 
 
