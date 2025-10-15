@@ -26,14 +26,17 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
     return query(
       collection(firestore, 'checkins'),
       where('userId', '==', user.uid),
-      where('timestamp', '>=', todayTimestamp),
-      orderBy('timestamp', 'desc'),
-      limit(1)
+      where('timestamp', '>=', todayTimestamp)
     );
   }, [user, firestore]);
 
   const { data: checkins, isLoading: isLoadingCheckin } = useCollection<Checkin>(latestCheckinQuery);
-  const latestCheckin = checkins?.[0];
+
+  // Since we removed orderBy, we sort on the client.
+  const latestCheckin = useMemo(() => {
+    if (!checkins || checkins.length === 0) return null;
+    return checkins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
+  }, [checkins]);
 
   return (
     <>
