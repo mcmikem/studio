@@ -74,9 +74,9 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
 
                 const Icon = metricIcons[metric.metric] || metricIcons.default
                 const formatValue = (val: number) =>
-                metric.unit === "UGX"
-                    ? formatCurrency(val)
-                    : `${val.toLocaleString()}`
+                  metric.unit === "UGX"
+                    ? formatCurrency(val, true) // Use compact formatting
+                    : `${val.toLocaleString()}`;
                 
                 return (
                 <Link href="/management/metrics" key={metric.id} className="block">
