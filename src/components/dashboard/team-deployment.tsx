@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -20,13 +21,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users } from 'lucide-react';
-import { isWithinInterval, parse, startOfDay } from 'date-fns';
+import { isWithinInterval, parse, startOfDay, format } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
 
 type TeamStatus = {
   user: User;
   checkedIn: boolean;
   currentTask: string | null;
+  checkinTime: string | null;
 };
 
 const getInitials = (name?: string) => {
@@ -72,21 +74,25 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
     const newTeamStatus = users.map(user => {
       const userCheckin = checkinMap.get(user.id);
       let currentTask: string | null = null;
+      let checkinTime: string | null = null;
       
-      if (userCheckin && userCheckin.details.timeBlocks) {
-        for (const block of userCheckin.details.timeBlocks) {
-          try {
-            const now = currentTime;
-            const baseDate = startOfDay(now);
-            const startTime = parse(block.startTime, 'hh:mm a', baseDate);
-            const endTime = parse(block.endTime, 'hh:mm a', baseDate);
-            
-            if (isWithinInterval(now, { start: startTime, end: endTime })) {
-              currentTask = block.description;
-              break;
+      if (userCheckin) {
+        checkinTime = format(userCheckin.timestamp.toDate(), 'p');
+        if (userCheckin.details.timeBlocks) {
+          for (const block of userCheckin.details.timeBlocks) {
+            try {
+              const now = currentTime;
+              const baseDate = startOfDay(now);
+              const startTime = parse(block.startTime, 'hh:mm a', baseDate);
+              const endTime = parse(block.endTime, 'hh:mm a', baseDate);
+              
+              if (isWithinInterval(now, { start: startTime, end: endTime })) {
+                currentTask = block.description;
+                break;
+              }
+            } catch (e) {
+              console.error("Error parsing time block:", block, e);
             }
-          } catch (e) {
-            console.error("Error parsing time block:", block, e);
           }
         }
       }
@@ -94,7 +100,8 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
       return {
         user,
         checkedIn: !!userCheckin,
-        currentTask: currentTask
+        currentTask: currentTask,
+        checkinTime: checkinTime,
       };
     });
 
@@ -135,7 +142,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
                             </div>
                         </div>
                         <Badge variant={status.checkedIn ? 'default' : 'secondary'} className={status.checkedIn ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}>
-                          {status.checkedIn ? 'Checked In' : 'Not Checked In'}
+                          {status.checkedIn ? `Checked in at ${status.checkinTime}` : 'Not Checked In'}
                         </Badge>
                     </AccordionTrigger>
                     <AccordionContent className="pl-6 pt-2">
