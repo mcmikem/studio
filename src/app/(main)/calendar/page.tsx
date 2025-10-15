@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -119,37 +120,6 @@ function NewEventForm({ onFormSubmit, defaultDate }: { onFormSubmit: () => void,
     );
 }
 
-
-function DateSelector({ selectedDate, onDateSelect }: { selectedDate: Date, onDateSelect: (date: Date) => void }) {
-    const dates = useMemo(() => {
-        const start = subDays(new Date(), 7);
-        return Array.from({ length: 30 }).map((_, i) => addDays(start, i));
-    }, []);
-
-    return (
-        <ScrollArea className="w-full whitespace-nowrap rounded-md">
-            <div className="flex w-max space-x-2 p-2">
-                {dates.map(date => {
-                    const isSelected = isSameDay(date, selectedDate);
-                    return (
-                        <Button
-                            key={date.toISOString()}
-                            variant={isSelected ? 'default' : 'ghost'}
-                            className={cn("flex flex-col h-auto p-3 text-center rounded-lg", isSelected && "shadow-lg")}
-                            onClick={() => onDateSelect(date)}
-                        >
-                            <span className="text-xs font-medium uppercase">{format(date, 'EEE')}</span>
-                            <span className="text-2xl font-bold">{format(date, 'd')}</span>
-                        </Button>
-                    );
-                })}
-            </div>
-            <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-    );
-}
-
-
 export default function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -180,17 +150,24 @@ export default function CalendarPage() {
         </header>
 
         <Card className='flex-shrink-0'>
-            <CardHeader className='pb-2'>
-                 <div className="flex items-center justify-between">
-                    <CardTitle>{format(selectedDate, "eeee, MMMM d")}</CardTitle>
-                     <Button variant="outline" size="icon" onClick={() => setSelectedDate(new Date())}>
-                        <span className='text-xs font-bold'>Today</span>
-                     </Button>
+             <CardHeader className='pb-4'>
+                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                     <div className="flex-grow text-center sm:text-left">
+                        <CardTitle>{format(selectedDate, "eeee, MMMM d")}</CardTitle>
+                     </div>
+                     <div className="flex items-center gap-2">
+                         <Button variant="outline" size="icon" onClick={() => setSelectedDate(subDays(selectedDate, 1))}>
+                             <ChevronLeft className="h-4 w-4" />
+                         </Button>
+                         <Button variant="outline" onClick={() => setSelectedDate(new Date())}>
+                            Today
+                         </Button>
+                         <Button variant="outline" size="icon" onClick={() => setSelectedDate(addDays(selectedDate, 1))}>
+                             <ChevronRight className="h-4 w-4" />
+                         </Button>
+                     </div>
                 </div>
             </CardHeader>
-            <CardContent>
-                <DateSelector selectedDate={selectedDate} onDateSelect={setSelectedDate} />
-            </CardContent>
         </Card>
 
         <div className="flex-grow">
