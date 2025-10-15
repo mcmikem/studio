@@ -45,7 +45,7 @@ const plannerPrompt = ai.definePrompt(
     system: KNOWLEDGE_BASE, // Embed the entire organizational DNA
     prompt: `You are an expert productivity coach for a youth-led NGO in Uganda. A staff member with the role of '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
 
-    Their personal priorities for this week are: {{#each weeklyPriorities}}- {{this}} {{/each}}.
+    Their personal priorities for this week are: {{#each weeklyPriorities}}- {{{this}}} {{/each}}.
 
     CURRENT ORGANIZATIONAL KEY RESULTS:
     {{#each keyResults}}
