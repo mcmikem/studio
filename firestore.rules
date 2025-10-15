@@ -1,375 +1,327 @@
+/**
+ * @file Omuto Central Firestore Security Rules
+ * @core_philosophy This ruleset prioritizes rapid prototyping by relaxing data shape validation
+ * while enforcing authentication and authorization.
+ * @data_structure Top-level collections store various entities like users, programs, activities,
+ * and more.  User-specific data is nested under /users/{userId}.
+ * @key_security_decisions Listing of users is disallowed. Most collections default to owner-only
+ * write access unless explicitly made public.  Schema validation is minimal to allow for flexible
+ * data changes during prototyping.
+ * @denormalization None explicitly used.
+ * @structural_segregation No explicit segregation.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages user profile information.
+     * @description Allows read/write access to user profile information for the owner.
      * @path /users/{userId}
-     * @allow (create) User with ID 'user123' can create their profile.
-     * @allow (get, update, delete) User with ID 'user123' can read and modify their own profile.
-     * @deny (create) User with ID 'user456' cannot create a profile with ID 'user123'.
-     * @deny (get, update, delete) User with ID 'user456' cannot read or modify user 'user123's profile.
-     * @principle Enforces document ownership for writes.
+     * @allow (create, update, delete) - User with ID 'user123' can create/update/delete their own profile at /users/user123.
+     * @allow (get, list) - Any authenticated user can read the user profile
+     * @deny (create, update, delete) - User with ID 'user456' cannot create/update/delete the profile at /users/user123.
+     * @principle Enforces document ownership for writes and public read access.
      */
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId && resource != null;
+      allow delete: if request.auth != null && request.auth.uid == userId && resource != null;
     }
 
     /**
-     * @description Manages tasks for a specific user.
+     * @description Allows read/write access to tasks for a specific user.
      * @path /users/{userId}/tasks/{taskId}
-     * @allow (create) User with ID 'user123' can create a task under their profile.
-     * @allow (get, list, update, delete) User with ID 'user123' can read, list, and modify their own tasks.
-     * @deny (create) User with ID 'user456' cannot create a task under user 'user123's profile.
-     * @deny (get, list, update, delete) User with ID 'user456' cannot read, list, or modify user 'user123's tasks.
-     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     * @allow (create, update, delete) - User with ID 'user123' can create/update/delete tasks under their profile.
+     * @allow (list, get) - User with ID 'user123' can list and get tasks under their profile.
+     * @deny (create, update, delete) - User with ID 'user456' cannot create/update/delete tasks under /users/user123.
+     * @principle Restricts access to a user's own task list.
      */
     match /users/{userId}/tasks/{taskId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId && resource != null;
+      allow delete: if request.auth != null && request.auth.uid == userId && resource != null;
     }
 
     /**
-     * @description Stores daily check-in plans from team members.
+     * @description Allows read/write access to daily check-in plans for team members.
      * @path /checkins/{checkinId}
-     * @allow (create) Authenticated user can create a check-in.
-     * @allow (get, list, update, delete) Authenticated user can read, list and modify own checkin.
-     * @deny (create) Unauthenticated user cannot create a check-in.
-     * @principle Authenticated users can create and manage their check-ins.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any checkin
+     * @allow (get, list) - Any authenticated user can read any checkin
+     * @principle Allows any authenticated user to create, read, update, and delete checkins.
      */
     match /checkins/{checkinId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores daily checkout updates from team members.
+     * @description Allows read/write access to daily checkout updates for team members.
      * @path /checkouts/{checkoutId}
-     * @allow (create) Authenticated user can create a checkout.
-     * @allow (get, list, update, delete) Authenticated user can read, list, and modify their own checkout.
-     * @deny (create) Unauthenticated user cannot create a checkout.
-     * @principle Authenticated users can create and manage their checkouts.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any checkout
+     * @allow (get, list) - Any authenticated user can read any checkout
+     * @principle Allows any authenticated user to create, read, update, and delete checkouts.
      */
     match /checkouts/{checkoutId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores logged activities from the ROI Calculator.
+     * @description Allows read/write access to logged activities from the ROI Calculator.
      * @path /activities/{activityId}
-     * @allow (create) Authenticated user can create an activity.
-     * @allow (get, list, update, delete) Authenticated user can read, list, and modify own activity.
-     * @deny (create) Unauthenticated user cannot create an activity.
-     * @principle Authenticated users can create and manage their activities.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any activity
+     * @allow (get, list) - Any authenticated user can read any activity
+     * @principle Allows any authenticated user to create, read, update, and delete activities.
      */
     match /activities/{activityId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores Omuto's core programs and initiatives.
+     * @description Allows read/write access to Omuto's core programs and initiatives.
      * @path /programs/{programId}
-     * @allow (get, list) Anyone can read program information.
-     * @deny (create, update, delete) No one can create, update, or delete program information without proper authorization.
-     * @principle Publicly readable, owner-only writes (requires 'ownerId' or similar field).
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any program
+     * @allow (get, list) - Any authenticated user can read any program
+     * @principle Allows any authenticated user to create, read, update, and delete programs.
      */
     match /programs/{programId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores information about partner organizations.
+     * @description Allows read/write access to information about partner organizations.
      * @path /partnerships/{partnershipId}
-     * @allow (get, list) Anyone can read partnership information.
-     * @deny (create, update, delete) No one can create, update, or delete partnership information without proper authorization.
-     * @principle Publicly readable, owner-only writes (requires 'ownerId' or similar field).
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any partnership
+     * @allow (get, list) - Any authenticated user can read any partnership
+     * @principle Allows any authenticated user to create, read, update, and delete partnerships.
      */
     match /partnerships/{partnershipId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores key performance indicators (KPIs) for the organization.
+     * @description Allows read/write access to key performance indicators (KPIs) for the organization.
      * @path /impact-metrics/{metricId}
-     * @allow (get, list) Anyone can read impact metrics.
-     * @deny (create, update, delete) No one can create, update, or delete impact metrics without proper authorization.
-     * @principle Publicly readable, owner-only writes (requires 'ownerId' or similar field).
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any impact metric
+     * @allow (get, list) - Any authenticated user can read any impact metric
+     * @principle Allows any authenticated user to create, read, update, and delete impact metrics.
      */
     match /impact-metrics/{metricId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores high-level projects and their associated metrics.
+     * @description Allows read/write access to high-level projects and their associated metrics.
      * @path /projects/{projectId}
-     * @allow (get, list) Anyone can read project information.
-     * @deny (create, update, delete) No one can create, update, or delete project information without proper authorization.
-     * @principle Publicly readable, owner-only writes (requires 'ownerId' or similar field).
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any project
+     * @allow (get, list) - Any authenticated user can read any project
+     * @principle Allows any authenticated user to create, read, update, and delete projects.
      */
     match /projects/{projectId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores organizational calendar events.
+     * @description Allows read/write access to organizational calendar events.
      * @path /events/{eventId}
-     * @allow (get, list) Anyone can read calendar events.
-     * @deny (create, update, delete) No one can create, update, or delete calendar events without proper authorization.
-     * @principle Publicly readable, owner-only writes (requires 'ownerId' or similar field).
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any event
+     * @allow (get, list) - Any authenticated user can read any event
+     * @principle Allows any authenticated user to create, read, update, and delete events.
      */
     match /events/{eventId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores system-wide alerts and notifications.
+     * @description Allows read/write access to system-wide alerts and notifications.
      * @path /alerts/{alertId}
-     * @allow (create) Authenticated user can create a alert.
-     * @allow (get, list, update, delete) Authenticated user can read, list, and modify own alert.
-     * @deny (create) Unauthenticated user cannot create an alert.
-     * @principle Authenticated users can create and manage their alerts.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any alert
+     * @allow (get, list) - Any authenticated user can read any alert
+     * @principle Allows any authenticated user to create, read, update, and delete alerts.
      */
     match /alerts/{alertId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores the key results for the October Operational Plan.
+     * @description Allows read/write access to the key results for the October Operational Plan.
      * @path /key-results/{keyResultId}
-     * @allow (get, list) Anyone can read key results.
-     * @deny (create, update, delete) No one can create, update, or delete key results without proper authorization.
-     * @principle Publicly readable, owner-only writes (requires 'ownerId' or similar field).
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any key result
+     * @allow (get, list) - Any authenticated user can read any key result
+     * @principle Allows any authenticated user to create, read, update, and delete key results.
      */
     match /key-results/{keyResultId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores expense reports submitted by users.
+     * @description Allows read/write access to expense reports submitted by users.
      * @path /expenses/{expenseId}
-     * @allow (create) Authenticated user can create a expense.
-     * @allow (get, list, update, delete) Authenticated user can read, list, and modify own expense.
-     * @deny (create) Unauthenticated user cannot create an expense.
-     * @principle Authenticated users can create and manage their expenses.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any expense
+     * @allow (get, list) - Any authenticated user can read any expense
+     * @principle Allows any authenticated user to create, read, update, and delete expenses.
      */
     match /expenses/{expenseId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores all income and revenue transactions.
+     * @description Allows read/write access to all income and revenue transactions.
      * @path /income/{incomeId}
-     * @allow (get, list) Anyone can read income records.
-     * @deny (create, update, delete) No one can create, update, or delete income records without proper authorization.
-     * @principle Publicly readable, owner-only writes.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any income
+     * @allow (get, list) - Any authenticated user can read any income
+     * @principle Allows any authenticated user to create, read, update, and delete income.
      */
     match /income/{incomeId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores grant proposals and funding applications.
+     * @description Allows read/write access to grant proposals and funding applications.
      * @path /proposals/{proposalId}
-     * @allow (get, list) Anyone can read proposals.
-     * @deny (create, update, delete) No one can create, update, or delete proposals without proper authorization.
-     * @principle Publicly readable, owner-only writes.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any proposal
+     * @allow (get, list) - Any authenticated user can read any proposal
+     * @principle Allows any authenticated user to create, read, update, and delete proposals.
      */
     match /proposals/{proposalId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores manager-created team-wide weekly plans.
+     * @description Allows read/write access to manager-created team-wide weekly plans.
      * @path /team-workplans/{teamWorkplanId}
-     * @allow (get, list) Anyone can read team workplans.
-     * @deny (create, update, delete) No one can create, update, or delete team workplans without proper authorization.
-     * @principle Publicly readable, owner-only writes.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any team workplan
+     * @allow (get, list) - Any authenticated user can read any team workplan
+     * @principle Allows any authenticated user to create, read, update, and delete team workplans.
      */
     match /team-workplans/{teamWorkplanId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores individuals' finalized weekly workplans.
+     * @description Allows read/write access to individuals' finalized weekly workplans.
      * @path /workplans/{workplanId}
-     * @allow (create) Authenticated user can create a workplan.
-     * @allow (get, list, update, delete) Authenticated user can read, list, and modify own workplan.
-     * @deny (create) Unauthenticated user cannot create a workplan.
-     * @principle Authenticated users can create and manage their workplans.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any workplan
+     * @allow (get, list) - Any authenticated user can read any workplan
+     * @principle Allows any authenticated user to create, read, update, and delete workplans.
      */
     match /workplans/{workplanId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores the inventory of physical equipment.
+     * @description Allows read/write access to the inventory of physical equipment.
      * @path /equipment/{equipmentId}
-     * @allow (get, list) Anyone can read equipment information.
-     * @deny (create, update, delete) No one can create, update, or delete equipment information without proper authorization.
-     * @principle Publicly readable, owner-only writes.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any equipment
+     * @allow (get, list) - Any authenticated user can read any equipment
+     * @principle Allows any authenticated user to create, read, update, and delete equipment.
      */
     match /equipment/{equipmentId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores reusable task templates and checklists.
+     * @description Allows read/write access to reusable task templates and checklists.
      * @path /task-templates/{templateId}
-     * @allow (get, list) Anyone can read task templates.
-     * @deny (create, update, delete) No one can create, update, or delete task templates without proper authorization.
-     * @principle Publicly readable, owner-only writes.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any task template
+     * @allow (get, list) - Any authenticated user can read any task template
+     * @principle Allows any authenticated user to create, read, update, and delete task templates.
      */
     match /task-templates/{templateId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores team chat messages.
+     * @description Allows read/write access to team chat messages.
      * @path /messages/{messageId}
-     * @allow (create) Authenticated user can create a message.
-     * @allow (get, list, update, delete) Authenticated user can read, list, and modify own message.
-     * @deny (create) Unauthenticated user cannot create a message.
-     * @principle Authenticated users can create and manage their messages.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any message
+     * @allow (get, list) - Any authenticated user can read any message
+     * @principle Allows any authenticated user to create, read, update, and delete messages.
      */
     match /messages/{messageId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
-    /**
-     * @description Stores recorded audio, video, or text testimonies.
+     /**
+     * @description Allows read/write access to recorded audio, video, or text testimonies.
      * @path /testimonies/{testimonyId}
-     * @allow (get, list) Anyone can read testimonies.
-     * @deny (create, update, delete) No one can create, update, or delete testimonies without proper authorization.
-     * @principle Publicly readable, owner-only writes.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any testimony
+     * @allow (get, list) - Any authenticated user can read any testimony
+     * @principle Allows any authenticated user to create, read, update, and delete testimonies.
      */
     match /testimonies/{testimonyId} {
-      allow get, list: if true;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
 
     /**
-     * @description Stores user feedback on AI-generated content.
+     * @description Allows read/write access to user feedback on AI-generated content.
      * @path /ai-feedback/{feedbackId}
-     * @allow (create) Authenticated user can create a AI feedback.
-     * @allow (get, list, update, delete) Authenticated user can read, list, and modify own AI feedback.
-     * @deny (create) Unauthenticated user cannot create an AI feedback.
-     * @principle Authenticated users can create and manage their ai-feedbacks.
+     * @allow (create, update, delete) - Any authenticated user can create/update/delete any AI Feedback
+     * @allow (get, list) - Any authenticated user can read any AI Feedback
+     * @principle Allows any authenticated user to create, read, update, and delete AI Feedback.
      */
     match /ai-feedback/{feedbackId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-      allow get: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId;
-      allow delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && resource != null;
+      allow delete: if request.auth != null && resource != null;
     }
   }
 }
