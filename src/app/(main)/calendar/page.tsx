@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, PlusCircle, Clock, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { Calendar as CalendarIcon, PlusCircle, Clock, ChevronLeft, ChevronRight, CheckCircle, User } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,8 +19,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import type { CalendarEvent as EventType } from '@/lib/types';
 import { EmptyState } from '@/components/ui/empty-state';
-import { cn } from '@/lib/utils';
+import { cn, formatDateSafe } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const categoryColors: { [key: string]: string } = {
     "Team Meetings": "bg-blue-500/10 text-blue-500 border-blue-500",
@@ -218,30 +219,30 @@ export default function CalendarPage() {
                     </Dialog>
                 </CardHeader>
                 <CardContent>
-                    <div className="space-y-4">
-                         {isLoading && Array.from({length: 2}).map((_, i) => (
-                            <div key={i} className='p-4 bg-muted rounded-lg space-y-2'>
-                                <Skeleton className='h-5 w-3/4' />
-                                <Skeleton className='h-4 w-1/2' />
-                            </div>
+                    {/* Mobile View */}
+                    <div className="space-y-4 sm:hidden">
+                        {isLoading && Array.from({length: 2}).map((_, i) => (
+                           <Card key={i}><CardContent className="pt-6"><Skeleton className="h-20 w-full" /></CardContent></Card>
                         ))}
-                         {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
+                        {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
                             selectedDayEvents.map((event) => (
-                                <div key={event.id} className="flex items-start gap-4 p-4 border rounded-lg shadow-sm bg-background">
-                                    <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 text-primary">
-                                        <Clock className="h-5 w-5" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className="font-semibold">{event.title}</p>
-                                        <p className="text-sm text-muted-foreground">{event.responsible} at {event.location}</p>
-                                    </div>
-                                    <Badge variant="outline" className={cn("self-center", categoryColors[event.category])}>
-                                        {event.category}
-                                    </Badge>
-                                </div>
+                                <Card key={event.id}>
+                                    <CardHeader>
+                                        <CardTitle>{event.title}</CardTitle>
+                                        <Badge variant="outline" className={cn("w-fit", categoryColors[event.category])}>
+                                            {event.category}
+                                        </Badge>
+                                    </CardHeader>
+                                    <CardContent className="space-y-2 text-sm">
+                                        <div className="flex items-center text-muted-foreground">
+                                            <User className="h-4 w-4 mr-2" />
+                                            <span>{event.responsible} at {event.location}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             ))
                         ) : (
-                            !isLoading && (
+                             !isLoading && (
                                 <EmptyState 
                                     icon={CheckCircle}
                                     title="No Events Today"
@@ -250,6 +251,57 @@ export default function CalendarPage() {
                                 />
                             )
                         )}
+                    </div>
+                    
+                    {/* Desktop View */}
+                    <div className="hidden sm:block">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Event</TableHead>
+                                    <TableHead>Responsible</TableHead>
+                                    <TableHead>Location</TableHead>
+                                    <TableHead>Category</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                             <TableBody>
+                                {isLoading && Array.from({length: 3}).map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-6 w-28" /></TableCell>
+                                    </TableRow>
+                                ))}
+                                {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
+                                    selectedDayEvents.map((event) => (
+                                        <TableRow key={event.id}>
+                                            <TableCell className="font-medium">{event.title}</TableCell>
+                                            <TableCell>{event.responsible}</TableCell>
+                                            <TableCell>{event.location}</TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className={cn("self-center", categoryColors[event.category])}>
+                                                    {event.category}
+                                                </Badge>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    !isLoading && (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="h-48 text-center">
+                                                <EmptyState 
+                                                    icon={CheckCircle}
+                                                    title="No Events Today"
+                                                    description="Your schedule is clear. Select another day or add a new event."
+                                                    className="min-h-0"
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                )}
+                             </TableBody>
+                        </Table>
                     </div>
                 </CardContent>
             </Card>
