@@ -16,12 +16,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc, addDoc } from 'firebase/firestore';
 import type { TeamWeeklyPlan, User, PriorityItem } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
-import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2, Wand } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { parseWorkplan } from '@/ai/flows/parse-workplan-flow';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),
@@ -71,6 +72,8 @@ function TeamWorkplanForm({
   const { profile } = useUserProfile(user);
   const firestore = useFirestore();
   const { toast } = useToast();
+  const [pastedText, setPastedText] = useState('');
+  const [isParsing, setIsParsing] = useState(false);
 
   const {
     register,
@@ -131,6 +134,40 @@ function TeamWorkplanForm({
       ]
     : [];
 
+    const handleParseWithAI = async () => {
+        if (!pastedText.trim()) {
+            toast({ variant: 'destructive', title: 'No text provided', description: 'Please paste your workplan text into the box.' });
+            return;
+        }
+        setIsParsing(true);
+        try {
+            const parsedData = await parseWorkplan({ textPlan: pastedText });
+            
+            // Map responsible strings to valid options, defaulting to 'All Members' if not found
+            const validPriorities = parsedData.keyPriorities.map(p => {
+                const validResponsible = p.responsible.filter(r => responsibleOptions.some(option => option.value === r));
+                return {
+                    ...p,
+                    responsible: validResponsible.length > 0 ? validResponsible : ['All Members'],
+                    deadline: p.deadline || ''
+                };
+            });
+
+            reset({
+                message: parsedData.message,
+                keyPriorities: validPriorities,
+                status: 'Draft' // Default to draft after parsing
+            });
+
+            toast({ title: 'Plan Parsed!', description: 'The AI has filled out the form for you. Please review and save.' });
+        } catch (error) {
+            console.error("AI parsing error:", error);
+            toast({ variant: 'destructive', title: 'AI Parsing Failed', description: 'Could not understand the provided text. Please try rephrasing.' });
+        } finally {
+            setIsParsing(false);
+        }
+    };
+
   const onSubmit = async (data: TeamWorkplanFormData) => {
     if (!user || !profile || !firestore) {
       toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
@@ -185,10 +222,24 @@ function TeamWorkplanForm({
     <Card>
         <CardHeader>
              <CardTitle>{existingPlan ? 'Edit Team Plan' : 'Create New Team Plan'}</CardTitle>
-             <CardDescription>Set the high-level priorities and message for the entire team for this week.</CardDescription>
+             <CardDescription>Set the high-level priorities and message for the entire team for this week, or paste your plan below to have AI fill the form.</CardDescription>
         </CardHeader>
-        <CardContent>
-             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <CardContent className='space-y-6'>
+            <div className="space-y-2">
+                <Label htmlFor="paste-area">Paste Your Workplan Text Here</Label>
+                <Textarea
+                    id="paste-area"
+                    placeholder="Paste your unstructured weekly plan notes here..."
+                    className="min-h-[120px]"
+                    value={pastedText}
+                    onChange={(e) => setPastedText(e.target.value)}
+                />
+            </div>
+             <Button type="button" onClick={handleParseWithAI} disabled={isParsing}>
+                {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
+                Parse with AI
+            </Button>
+             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-6 border-t">
                 
                 {/* Priorities Field Array */}
                 <div className="space-y-4">
@@ -408,3 +459,5 @@ export default function TeamWorkplansPage() {
     </div>
   );
 }
+
+    

@@ -28,6 +28,9 @@ export { generateSmartReminders } from './flows/smart-reminders-flow';
 export { findGrants } from './flows/grant-finder-flow';
 export { writeConceptNote } from './flows/grant-writer-flow';
 export { searchOmuto } from './flows/global-search-flow';
+export { parseWorkplan } from './flows/parse-workplan-flow';
 
 // NOTE: omuto-tools now only contains server-side safe tools.
 export * from './tools/omuto-tools';
+
+    
