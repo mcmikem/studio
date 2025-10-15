@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
@@ -5,7 +6,7 @@ import { DailyActions } from "./daily-actions"
 import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
@@ -14,6 +15,8 @@ import { TeamDeployment } from "./team-deployment"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { QuickAddTask } from "./quick-add-task"
 import { SmartReminders } from "./smart-reminders"
+import { useMemo } from "react"
+import { TodaysFocus } from "./todays-focus"
 
 
 interface DashboardProps {
@@ -21,6 +24,8 @@ interface DashboardProps {
 }
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
+  const { user } = useUser();
+
   const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
 
@@ -46,8 +51,31 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   }, [firestore]);
 
   const { data: activities } = useCollection<Activity>(activitiesQuery);
+  
+  const latestCheckinQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTimestamp = Timestamp.fromDate(today);
+
+    return query(
+      collection(firestore, 'checkins'),
+      where('userId', '==', user.uid),
+      where('timestamp', '>=', todayTimestamp)
+    );
+  }, [user, firestore]);
+  
+  const { data: userCheckins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
+
+  const latestCheckin = useMemo(() => {
+    if (!userCheckins || userCheckins.length === 0) return null;
+    return userCheckins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
+  }, [userCheckins]);
+
 
   return (
+    <>
+    {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />}
      <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker showAtRisk />
@@ -63,5 +91,6 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
             <ManagementQuickLinks />
         </div>
       </DashboardGrid>
+    </>
   )
 }

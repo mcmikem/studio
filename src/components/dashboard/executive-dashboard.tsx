@@ -7,7 +7,7 @@ import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
@@ -19,6 +19,7 @@ import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { SmartReminders } from "./smart-reminders"
 import { formatCurrency } from "@/lib/utils"
+import { TodaysFocus } from "./todays-focus"
 
 
 function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
@@ -132,6 +133,7 @@ interface DashboardProps {
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
     const firestore = useFirestore();
+    const { user } = useUser();
 
     const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
     const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
@@ -157,9 +159,30 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
     const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
+    const latestCheckinQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTimestamp = Timestamp.fromDate(today);
+
+    return query(
+      collection(firestore, 'checkins'),
+      where('userId', '==', user.uid),
+      where('timestamp', '>=', todayTimestamp)
+    );
+  }, [user, firestore]);
+  
+  const { data: userCheckins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
+
+  const latestCheckin = useMemo(() => {
+    if (!userCheckins || userCheckins.length === 0) return null;
+    return userCheckins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
+  }, [userCheckins]);
+
 
   return (
     <>
+       {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />}
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse activities={activities} />
