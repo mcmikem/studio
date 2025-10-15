@@ -22,16 +22,6 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
   const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
 
-  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
-  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
-  
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-  const { data: users } = useCollection<User>(usersQuery);
-
-  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
-  const { data: checkins } = useCollection<Checkin>(checkinsQuery);
-
-
   return (
     <>
       <DashboardGrid className="mt-6 lg:grid-cols-3">

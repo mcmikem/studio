@@ -7,8 +7,6 @@ import { Target, Clock } from 'lucide-react';
 import type { Checkin } from '@/lib/types';
 import { isWithinInterval, parse, startOfDay, differenceInMilliseconds } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
-import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { collection, query, where, Timestamp } from 'firebase/firestore';
 
 interface TodaysFocusProps {
   checkin: Checkin | null;
@@ -94,4 +92,3 @@ export function TodaysFocus({ checkin, isLoading }: TodaysFocusProps) {
     </Card>
   );
 }
-
