@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -12,13 +13,14 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, getDocs } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
 import type { Activity } from '@/lib/types';
-import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingUp } from 'lucide-react';
+import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingUp, ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/lib/utils';
 import { BarChart3 } from 'lucide-react';
+import Link from 'next/link';
 
 
 function MonthlyActivityReport() {
@@ -249,6 +251,21 @@ export default function ReportsPage() {
           Turn your operational data into actionable intelligence.
         </p>
       </header>
+      <Card>
+        <CardHeader>
+            <CardTitle>AI Program Deep Dive</CardTitle>
+            <CardDescription>
+                Go beyond the numbers. Use AI to analyze qualitative data from your programs to find themes, challenges, and key learnings.
+            </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Button asChild>
+                <Link href="/reports/deep-dive">
+                    Launch Program Deep Dive <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+        </CardContent>
+      </Card>
       <FinancialOverview activities={activities} />
       <MonthlyActivityReport />
     </div>

@@ -122,6 +122,7 @@ export type Activity = {
     memorableMoment?: string;
     challengesLearned?: string;
     beneficiaryQuote?: string;
+    ecosystem_phase?: "Identify & Inspire" | "Equip & Empower" | "Activate & Sustain";
 };
 
 export type Project = {

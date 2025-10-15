@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -76,7 +77,7 @@ const navConfig = {
     { href: '/management/users', icon: UserIcon, label: 'Users' },
   ],
   communication: [
-    { href: '/reports', icon: BarChart3, label: 'M&amp;E Hub' },
+    { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/impact-story', icon: Wand, label: 'Story Generator' },
     { href: '/testimonies', icon: Video, label: 'Testimonies' },
@@ -116,6 +117,7 @@ export function AppSidebar() {
     if (path === '/') return pathname === path;
     // For management, we need to check if the path starts with /management
     if (path.startsWith('/management/')) return pathname.startsWith('/management');
+    if (path.startsWith('/reports')) return pathname.startsWith('/reports');
     return pathname.startsWith(path);
   }
   

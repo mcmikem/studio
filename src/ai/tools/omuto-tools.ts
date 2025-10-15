@@ -6,7 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { initializeFirebase } from '@/firebase/server';
-import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
 export const findGrantOpportunities = ai.defineTool(
@@ -233,5 +233,46 @@ export const createCheckout = ai.defineTool(
             console.error("Error creating checkout:", error);
             return { success: false, message: `Failed to create checkout: ${error.message}` };
         }
+    }
+);
+
+
+export const getActivitiesForProgram = ai.defineTool(
+    {
+        name: 'getActivitiesForProgram',
+        description: 'Retrieves all activity reports for a specific program within a given date range.',
+        inputSchema: z.object({
+            programId: z.string().describe('The ID of the program to fetch activities for.'),
+            startDate: z.string().describe('The start date of the range (YYYY-MM-DD).'),
+            endDate: z.string().describe('The end date of the range (YYYY-MM-DD).'),
+        }),
+        outputSchema: z.array(z.any()), // We can be more specific, but 'any' is fine for the tool
+    },
+    async ({ programId, startDate, endDate }) => {
+        const { firestore } = await initializeFirebase();
+        
+        const activitiesRef = collection(firestore, 'activities');
+        const q = query(
+            activitiesRef,
+            where('primaryGoalType', '==', 'Program'),
+            where('primaryGoalId', '==', programId),
+            where('loggedAt', '>=', Timestamp.fromDate(new Date(startDate))),
+            where('loggedAt', '<=', Timestamp.fromDate(new Date(endDate)))
+        );
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            return [];
+        }
+        
+        // Return serializable data
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                // Timestamps are not directly serializable for Genkit prompts, but we can pass the relevant text
+            };
+        });
     }
 );
