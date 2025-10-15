@@ -11,6 +11,11 @@ dotenv.config({ path: '.env' });
 
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
+import { defineGcpAuth } from '@genkit-ai/google-genai/auth';
+import {v2} from '@google-cloud/translate';
+import {google} from 'googleapis';
+import wav from 'wav';
+
 
 genkit({
   plugins: [googleAI()],
@@ -29,6 +34,8 @@ export { findGrants } from './flows/grant-finder-flow';
 export { writeConceptNote } from './flows/grant-writer-flow';
 export { searchOmuto } from './flows/global-search-flow';
 export { parseWorkplan } from './flows/parse-workplan-flow';
+export { processTestimony } from './flows/testimony-processor-flow';
+
 
 // NOTE: omuto-tools now only contains server-side safe tools.
 export * from './tools/omuto-tools';

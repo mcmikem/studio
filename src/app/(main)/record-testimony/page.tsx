@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Mic, Video, StopCircle, Loader2, AlertTriangle, FileText, Save, Upload } from 'lucide-react';
+import { Camera, Mic, Video, StopCircle, Loader2, AlertTriangle, FileText, Save, Upload, Wand } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,12 +15,14 @@ import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { serverTimestamp, collection } from 'firebase/firestore';
 import { uploadFile } from '@/firebase/storage';
+import { processTestimony, TestimonyOutput } from '@/ai/flows/testimony-processor-flow';
 
 
 export default function RecordTestimonyPage() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [title, setTitle] = useState('');
   const [textContent, setTextContent] = useState('');
   const [activeTab, setActiveTab] = useState<'text' | 'audio' | 'video'>('text');
@@ -56,7 +59,6 @@ export default function RecordTestimonyPage() {
   };
   
   useEffect(() => {
-    // Cleanup stream on component unmount
     return () => {
         mediaStreamRef.current?.getTracks().forEach(track => track.stop());
     }
@@ -69,7 +71,7 @@ export default function RecordTestimonyPage() {
     }
     
     recordedChunksRef.current = [];
-    const mimeType = activeTab === 'video' ? 'video/webm' : 'audio/webm';
+    const mimeType = activeTab === 'video' ? 'video/webm;codecs=vp9' : 'audio/webm';
     
     try {
         mediaRecorderRef.current = new MediaRecorder(mediaStreamRef.current, { mimeType });
@@ -85,14 +87,13 @@ export default function RecordTestimonyPage() {
       }
     };
 
-    mediaRecorderRef.current.onstop = async () => {
-        const blob = new Blob(recordedChunksRef.current, { type: mimeType });
-        await saveTestimony(blob);
-        recordedChunksRef.current = [];
-        // Stop all tracks to turn off camera light
-        mediaStreamRef.current?.getTracks().forEach(track => track.stop());
-        mediaStreamRef.current = null;
-        setHasPermission(null); // Require permission again for next recording
+    mediaRecorderRef.current.onstop = () => {
+      const blob = new Blob(recordedChunksRef.current, { type: mimeType });
+      saveTestimony(blob, mimeType); // Pass blob and mimeType
+      recordedChunksRef.current = [];
+      mediaStreamRef.current?.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+      setHasPermission(null);
     };
 
     mediaRecorderRef.current.start();
@@ -117,7 +118,7 @@ export default function RecordTestimonyPage() {
   };
 
 
-  const saveTestimony = async (mediaBlob?: Blob) => {
+  const saveTestimony = async (mediaBlob?: Blob, mimeType?: string) => {
       if (!title.trim()) {
           toast({ variant: 'destructive', title: 'Missing Information', description: 'Please provide a title for the testimony.' });
           return;
@@ -131,28 +132,59 @@ export default function RecordTestimonyPage() {
       
       let audioUrl = '';
       let videoUrl = '';
+      let aiAnalysis: TestimonyOutput | null = null;
 
-      if (mediaBlob) {
-          try {
-            const path = `testimonies/${user.uid}/${Date.now()}.${activeTab === 'video' ? 'webm' : 'mp3'}`;
+      if (mediaBlob && mimeType) {
+        setIsProcessingAI(true);
+        try {
+            const path = `testimonies/${user.uid}/${Date.now()}.${activeTab === 'video' ? 'webm' : 'webm'}`;
             const downloadUrl = await uploadFile(mediaBlob, path);
+            
             if (activeTab === 'video') videoUrl = downloadUrl;
             if (activeTab === 'audio') audioUrl = downloadUrl;
-          } catch (e) {
-              console.error("Upload error:", e);
-              toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not upload your recording.' });
-              setIsSaving(false);
-              return;
+            
+            // Convert Blob to data URI for AI processing
+            const reader = new FileReader();
+            reader.readAsDataURL(mediaBlob);
+            reader.onloadend = async () => {
+                const base64data = reader.result as string;
+                try {
+                  aiAnalysis = await processTestimony({ mediaUri: base64data });
+                  await finishSaving(audioUrl, videoUrl, aiAnalysis);
+                } catch(aiError) {
+                  console.error("AI processing error:", aiError);
+                  toast({ variant: 'destructive', title: 'AI Analysis Failed', description: 'Could not transcribe or analyze the recording. Saving raw file only.' });
+                  await finishSaving(audioUrl, videoUrl, null); // Save without AI data
+                } finally {
+                  setIsProcessingAI(false);
+                }
+            };
+        } catch (e) {
+            console.error("Upload error:", e);
+            toast({ variant: 'destructive', title: 'Upload Failed', description: 'Could not upload your recording.' });
+            setIsSaving(false);
+            setIsProcessingAI(false);
+            return;
+        }
+      } else {
+          if (!textContent.trim()) {
+            toast({ variant: 'destructive', title: 'Missing Information', description: 'Please write some text for the testimony.' });
+            setIsSaving(false);
+            return;
           }
-      } else if (!textContent.trim()) {
-           toast({ variant: 'destructive', title: 'Missing Information', description: 'Please write some text for the testimony.' });
-           setIsSaving(false);
-           return;
+          await finishSaving(audioUrl, videoUrl, null);
       }
+  };
+  
+  const finishSaving = async (audioUrl: string, videoUrl: string, aiData: TestimonyOutput | null) => {
+      if (!user || !profile || !firestore) return;
       
       const testimonyData = {
           title,
-          text: textContent,
+          text: aiData ? aiData.transcription : textContent,
+          summary: aiData?.summary || '',
+          quotes: aiData?.quotes || [],
+          hashtags: aiData?.hashtags || [],
           userId: user.uid,
           userName: profile.name,
           createdAt: serverTimestamp(),
@@ -171,7 +203,7 @@ export default function RecordTestimonyPage() {
       } finally {
           setIsSaving(false);
       }
-  };
+  }
 
 
   return (
@@ -213,7 +245,7 @@ export default function RecordTestimonyPage() {
                         </Button>
                     </div>
                 </TabsContent>
-                <TabsContent value="audio" className="pt-4">
+                 <TabsContent value="audio" className="pt-4">
                     <div className="aspect-video w-full bg-muted rounded-lg flex flex-col items-center justify-center relative overflow-hidden text-muted-foreground">
                         {hasPermission === null && <p>Click the tab to grant mic access.</p>}
                         {hasPermission === false && (
@@ -235,11 +267,17 @@ export default function RecordTestimonyPage() {
                             </div>
                         )}
                     </div>
-                    <div className="flex justify-center mt-4">
+                    <div className="flex flex-col items-center mt-4 gap-4">
                         <Button onClick={handleRecordClick} size="lg" className="h-16 w-16 rounded-full" disabled={!hasPermission || isSaving}>
-                            {isSaving ? <Loader2 className="h-8 w-8 animate-spin" /> : (isRecording ? <StopCircle className="h-8 w-8" /> : <Mic className="h-8 w-8" />)}
+                            {(isSaving || isProcessingAI) ? <Loader2 className="h-8 w-8 animate-spin" /> : (isRecording ? <StopCircle className="h-8 w-8" /> : <Mic className="h-8 w-8" />)}
                             <span className="sr-only">{isRecording ? "Stop Recording" : "Start Recording"}</span>
                         </Button>
+                        {isProcessingAI && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Wand className="h-4 w-4 animate-spin" />
+                                AI is transcribing and analyzing...
+                            </div>
+                        )}
                     </div>
                 </TabsContent>
                 <TabsContent value="video" className="pt-4">
@@ -266,11 +304,17 @@ export default function RecordTestimonyPage() {
                             </AlertDescription>
                         </Alert>
                     )}
-                    <div className="flex justify-center mt-4">
+                    <div className="flex flex-col items-center mt-4 gap-4">
                         <Button onClick={handleRecordClick} size="lg" className="h-16 w-16 rounded-full" disabled={!hasPermission || isSaving}>
-                           {isSaving ? <Loader2 className="h-8 w-8 animate-spin" /> : (isRecording ? <StopCircle className="h-8 w-8" /> : <Camera className="h-8 w-8" />)}
+                           {(isSaving || isProcessingAI) ? <Loader2 className="h-8 w-8 animate-spin" /> : (isRecording ? <StopCircle className="h-8 w-8" /> : <Camera className="h-8 w-8" />)}
                            <span className="sr-only">{isRecording ? "Stop Recording" : "Start Recording"}</span>
                         </Button>
+                         {isProcessingAI && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Wand className="h-4 w-4 animate-spin" />
+                                AI is transcribing and analyzing...
+                            </div>
+                        )}
                     </div>
                 </TabsContent>
             </Tabs>

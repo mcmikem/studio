@@ -1,5 +1,6 @@
 
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -298,6 +299,9 @@ export type Testimony = {
     id: string;
     title: string;
     text?: string;
+    summary?: string;
+    quotes?: string[];
+    hashtags?: string[];
     userId: string;
     userName: string;
     videoUrl?: string;

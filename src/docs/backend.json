@@ -235,6 +235,10 @@
       "type": "object",
       "description": "Represents a user's end-of-day checkout update.",
       "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the checkout."
+        },
         "userId": {
           "type": "string",
           "description": "The ID of the user submitting the checkout."
@@ -610,6 +614,9 @@
             "id": { "type": "string" },
             "title": { "type": "string" },
             "text": { "type": "string", "description": "Transcribed text of the testimony." },
+            "summary": { "type": "string", "description": "AI-generated summary of the testimony." },
+            "quotes": { "type": "array", "items": { "type": "string" }, "description": "AI-extracted key quotes." },
+            "hashtags": { "type": "array", "items": { "type": "string" }, "description": "AI-suggested social media hashtags." },
             "userId": { "type": "string", "description": "ID of the user who recorded the testimony." },
             "userName": { "type": "string", "description": "Name of the user who recorded the testimony." },
             "videoUrl": { "type": "string", "format": "uri", "description": "URL to the recorded video file." },
