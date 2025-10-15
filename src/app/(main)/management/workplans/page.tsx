@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -17,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc, addDoc } from 'firebase/firestore';
 import type { TeamWeeklyPlan, User } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2 } from 'lucide-react';
@@ -157,7 +158,7 @@ function TeamWorkplanForm({
             toast({ title: 'Plan Updated!', description: `The plan for the week has been updated.` });
 
         } else {
-             await addDocumentNonBlocking(collection(firestore, 'team-workplans'), {
+             await addDoc(collection(firestore, 'team-workplans'), {
                 ...planData,
                 createdAt: Timestamp.now(),
             });
@@ -276,7 +277,7 @@ function TeamWorkplanForm({
 
 
 export default function TeamWorkplansPage() {
-  const [currentDate, setCurrentDate] = useState(new Date('2025-10-13T12:00:00Z'));
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [currentPlan, setCurrentPlan] = useState<TeamWeeklyPlan | null>(null);
   const [isLoadingPlan, setIsLoadingPlan] = useState(true);
 
@@ -397,3 +398,4 @@ export default function TeamWorkplansPage() {
     </div>
   );
 }
+
