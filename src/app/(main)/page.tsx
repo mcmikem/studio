@@ -68,20 +68,22 @@ export default function DashboardPage() {
 
   const latestCheckinQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayTimestamp = Timestamp.fromDate(today);
-
+    const todayStart = startOfDay(new Date());
     return query(
       collection(firestore, 'checkins'),
       where('userId', '==', user.uid),
-      where('timestamp', '>=', todayTimestamp),
-      orderBy('timestamp', 'desc'),
-      limit(1)
+      where('timestamp', '>=', Timestamp.fromDate(todayStart)),
     );
   }, [user, firestore]);
+
   const { data: userCheckins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
-  const latestCheckin = userCheckins?.[0] || null;
+
+  // Since we removed orderBy, we sort on the client.
+  const latestCheckin = useMemo(() => {
+    if (!userCheckins || userCheckins.length === 0) return null;
+    // Sort to get the most recent one, just in case of multiple check-ins
+    return userCheckins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
+  }, [userCheckins]);
 
 
   if (isLoadingProfile || !user) {
