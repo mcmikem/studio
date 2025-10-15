@@ -1,17 +1,11 @@
 
 "use client"
 
-import { useMemo } from "react";
-import type { User, Checkin } from "@/lib/types"
-import { cn } from "@/lib/utils"
+import type { User } from "@/lib/types"
 import { Card } from "../ui/card";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { TodaysFocus } from "./todays-focus";
-import { useUser, useFirestore, useMemoFirebase, useCollection } from "@/firebase";
-import { collection, query, where, orderBy, limit, Timestamp } from "firebase/firestore";
-
-
+ 
 export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
  

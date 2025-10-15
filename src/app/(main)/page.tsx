@@ -1,17 +1,19 @@
 
 'use client';
 
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useViewAs } from '@/hooks/use-view-as';
-import type { User, ImpactMetric } from '@/lib/types';
+import type { User, ImpactMetric, Checkin } from '@/lib/types';
 import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
+import { startOfDay } from 'date-fns';
+import { useMemo } from 'react';
+import { TodaysFocus } from '@/components/dashboard/todays-focus';
 
 
 // Define a loading component for dynamic imports
@@ -64,6 +66,24 @@ export default function DashboardPage() {
   const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics'), orderBy('createdAt', 'desc'), limit(4)) : null, [firestore]);
   const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
+  const latestCheckinQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayTimestamp = Timestamp.fromDate(today);
+
+    return query(
+      collection(firestore, 'checkins'),
+      where('userId', '==', user.uid),
+      where('timestamp', '>=', todayTimestamp),
+      orderBy('timestamp', 'desc'),
+      limit(1)
+    );
+  }, [user, firestore]);
+  const { data: userCheckins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
+  const latestCheckin = userCheckins?.[0] || null;
+
+
   if (isLoadingProfile || !user) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -87,6 +107,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} title={dashboardTitle} />
+        <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />
         <QuickStatsSummary metrics={metrics} />
         <div className="flex-1">
             <DashboardComponent profile={profile} />

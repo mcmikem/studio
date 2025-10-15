@@ -46,7 +46,6 @@ import { QuickAddTask } from "./quick-add-task"
 import { SmartReminders } from "./smart-reminders"
 import { TeamPulse } from "./team-activity-feed"
 import { TeamDeployment } from "./team-deployment"
-import { TodaysFocus } from "./todays-focus"
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -320,30 +319,8 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
-  const latestCheckinQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayTimestamp = Timestamp.fromDate(today);
-
-    return query(
-      collection(firestore, 'checkins'),
-      where('userId', '==', user.uid),
-      where('timestamp', '>=', todayTimestamp)
-    );
-  }, [user, firestore]);
-  
-  const { data: userCheckins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
-
-  const latestCheckin = useMemo(() => {
-    if (!userCheckins || userCheckins.length === 0) return null;
-    return userCheckins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
-  }, [userCheckins]);
-
-
   return (
     <>
-       {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />}
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="col-span-full">
             <BudgetHealth expenses={allExpenses} income={allIncome} />

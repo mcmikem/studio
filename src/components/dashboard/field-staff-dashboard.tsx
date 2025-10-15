@@ -16,9 +16,6 @@ import { SmartReminders } from './smart-reminders';
 import { Loader2 } from 'lucide-react';
 import { DashboardCalendar } from './dashboard-calendar';
 import { QuickAddTask } from './quick-add-task';
-import { useMemo } from 'react';
-import { startOfDay } from 'date-fns';
-import { TodaysFocus } from './todays-focus';
 
 
 interface DashboardProps {
@@ -38,29 +35,8 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   );
   const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
 
-  const latestCheckinQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayTimestamp = Timestamp.fromDate(today);
-
-    return query(
-      collection(firestore, 'checkins'),
-      where('userId', '==', user.uid),
-      where('timestamp', '>=', todayTimestamp)
-    );
-  }, [user, firestore]);
-
-  const { data: checkins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
-  const latestCheckin = useMemo(() => {
-    if (!checkins || checkins.length === 0) return null;
-    return checkins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
-  }, [checkins]);
-
   return (
     <>
-        {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />}
         <DashboardGrid className="mt-6 lg:grid-cols-2">
             <div className="flex flex-col gap-6">
                 <DailyActions />

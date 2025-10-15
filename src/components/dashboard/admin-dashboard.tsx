@@ -18,7 +18,6 @@ import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { startOfDay } from "date-fns"
 import { useMemo } from "react"
-import { TodaysFocus } from "./todays-focus"
 
 interface DashboardProps {
   profile: User;
@@ -55,30 +54,9 @@ export function AdminDashboard({ profile }: DashboardProps) {
   }, [firestore]);
   const { data: expenses } = useCollection<Expense>(expensesQuery);
 
-  const latestCheckinQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayTimestamp = Timestamp.fromDate(today);
-
-    return query(
-      collection(firestore, 'checkins'),
-      where('userId', '==', user.uid),
-      where('timestamp', '>=', todayTimestamp)
-    );
-  }, [user, firestore]);
-  
-  const { data: userCheckins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
-
-  const latestCheckin = useMemo(() => {
-    if (!userCheckins || userCheckins.length === 0) return null;
-    return userCheckins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
-  }, [userCheckins]);
-
 
   return (
     <>
-       {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />}
        <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-1 flex flex-col gap-6">
             <DailyActions />
