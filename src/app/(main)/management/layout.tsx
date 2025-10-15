@@ -1,9 +1,14 @@
+
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks, DollarSign, Users } from 'lucide-react';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { useUser } from '@/firebase';
+import { useViewAs } from '@/hooks/use-view-as';
+
 
 export default function ManagementLayout({
   children,
@@ -11,12 +16,17 @@ export default function ManagementLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
+  const { viewAsRole } = useViewAs();
+  
+  const effectiveRole = viewAsRole || profile?.role;
 
-  const tabs = [
+  const allTabs = [
     { name: 'Programs', href: '/management/programs', icon: FolderKanban },
     { name: 'Projects', href: '/management/projects', icon: Briefcase },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
-    { name: 'Finance', href: '/management/finance', icon: DollarSign },
+    { name: 'Finance', href: '/management/finance', icon: DollarSign, roles: ['Executive Director', 'Media & Finance Lead'] },
     { name: 'Expenses', href: '/management/expenses', icon: Receipt },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
     { name: 'Workplans', href: '/management/workplans', icon: CalendarClock },
@@ -24,6 +34,13 @@ export default function ManagementLayout({
     { name: 'Templates', href: '/management/templates', icon: ListChecks },
     { name: 'Users', href: '/management/users', icon: Users },
   ];
+
+  const tabs = allTabs.filter(tab => {
+    if (tab.roles) {
+      return tab.roles.includes(effectiveRole || '');
+    }
+    return true;
+  });
 
   return (
     <div className="flex flex-col gap-6">

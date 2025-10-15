@@ -1,6 +1,5 @@
 
 
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -185,7 +184,7 @@ export type KeyResult = {
 
 export type ExpenseItem = {
     description: string;
-    category: "Transport" | "Materials" | "Food" | "Airtime" | "Other";
+    category: "Transport" | "Rent" | "Office Dev't" | "Projects" | "Stationery" | "Registration" | "Meetings" | "Media" | "Fuel" | "Printing & Photocopy" | "Phone" | "Food" | "Mobile Money Charges" | "IGA Expense" | "Allowances and stipends" | "Kibanja" | "Professional Services" | "community support" | "miscellaneous" | "Withdraw";
     amount: number;
 }
 
@@ -207,7 +206,7 @@ export type Income = {
     source: string;
     amount: number;
     dateReceived: string;
-    type: "Grant" | "Donation" | "Sales" | "Other";
+    type: "Member Donations" | "Fundraising" | "In-kind Contributions" | "Grants" | "Partnerships" | "Omuto Essentials" | "Imac Enterprises" | "Other";
     notes?: string;
     createdAt?: Timestamp;
 };

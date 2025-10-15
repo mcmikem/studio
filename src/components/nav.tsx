@@ -131,7 +131,8 @@ export function AppSidebar() {
     
     const navItems = navConfig[sectionName].filter(item => {
         if ('roles' in item) {
-            return (item.roles as string[]).includes(userRole);
+            // Check if user has one of the required roles
+            return (item.roles as string[]).some(role => [profile?.role, viewAsRole].includes(role));
         }
         return true;
     });

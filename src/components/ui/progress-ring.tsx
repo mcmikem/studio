@@ -47,7 +47,7 @@ export function ProgressRing({
       </ResponsiveContainer>
       <div
         className="absolute inset-0 flex items-center justify-center text-center font-bold"
-        style={{ fontSize: size / 4.5, color: 'hsl(var(--primary))' }}
+        style={{ fontSize: size / 3.5, color: 'hsl(var(--foreground))' }}
       >
         {`${Math.round(normalizedProgress)}%`}
       </div>

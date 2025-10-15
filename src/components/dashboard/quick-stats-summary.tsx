@@ -22,7 +22,7 @@ const metricIcons: { [key: string]: React.ElementType } = {
 export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null }) {
 
   const displayMetrics = useMemo(() => {
-    if (!metrics) return Array(4).fill(null);
+    if (!metrics) return null;
     // Prioritize specific metrics from the design
     const priorityOrder = ["Girls Supported (RED)", "Cycle of Dignity Fundraising", "Schools Supported", "Trees Planted (GreenSchools)"];
     const sortedMetrics = [...metrics].sort((a, b) => {
@@ -35,6 +35,29 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
     });
     return sortedMetrics.slice(0, 4);
   }, [metrics])
+
+  if (metrics === null) {
+     return (
+       <Card>
+        <CardContent className="p-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array(4).fill(null).map((_, i) => (
+                 <Card key={i} className="p-4 flex flex-col justify-between h-32 bg-background border-0 shadow-none">
+                      <div className="flex justify-between items-start text-muted-foreground">
+                        <Skeleton className="h-5 w-2/3" />
+                        <Skeleton className="h-5 w-5" />
+                      </div>
+                      <div className="mt-auto space-y-2">
+                          <Skeleton className="h-6 w-1/2" />
+                          <Skeleton className="h-3 w-1/3" />
+                      </div>
+                    </Card>
+              ))}
+            </div>
+        </CardContent>
+      </Card>
+     )
+  }
 
   if (metrics && metrics.length === 0) {
     return (
@@ -55,22 +78,7 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
     <Card>
         <CardContent className="p-4">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {displayMetrics.map((metric, i) => {
-                if (!metric) {
-                return (
-                    <Card key={i} className="p-4 flex flex-col justify-between h-32 bg-background border-0 shadow-none">
-                      <div className="flex justify-between items-start text-muted-foreground">
-                        <Skeleton className="h-5 w-2/3" />
-                        <Skeleton className="h-5 w-5" />
-                      </div>
-                      <div className="mt-auto space-y-2">
-                          <Skeleton className="h-6 w-1/2" />
-                          <Skeleton className="h-3 w-1/3" />
-                      </div>
-                    </Card>
-                )
-                }
-
+            {displayMetrics?.map((metric) => {
                 const Icon = metricIcons[metric.metric] || metricIcons.default
                 const formatValue = (val: number) =>
                   metric.unit === "UGX"

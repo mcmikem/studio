@@ -190,7 +190,7 @@ export function ExpenseReportForm() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute top-1 right-1 h-6 w-6 sm:hidden"
+                            className="absolute top-1 right-1 h-6 w-6 sm:self-end"
                             onClick={() => remove(index)}
                         >
                             <Trash2 className="h-4 w-4" />
@@ -227,16 +227,6 @@ export function ExpenseReportForm() {
                             <Input id={`items.${index}.amount`} type="number" placeholder="10000" {...register(`items.${index}.amount`)} />
                              {errors.items?.[index]?.amount && <p className="text-sm text-destructive">{`${errors.items?.[index]?.amount?.message}`}</p>}
                         </div>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="hidden sm:flex self-end"
-                            onClick={() => remove(index)}
-                        >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Remove Item</span>
-                        </Button>
                     </div>
                 ))}
              </div>
@@ -272,5 +262,3 @@ export function ExpenseReportForm() {
       </form>
   );
 }
-
-    
