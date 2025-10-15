@@ -292,7 +292,7 @@ export type Message = {
     userName: string;
     userAvatar: string;
     createdAt: Timestamp;
-}
+};
 
 export type Testimony = {
     id: string;
