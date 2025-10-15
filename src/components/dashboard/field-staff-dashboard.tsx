@@ -52,7 +52,7 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
     );
   }, [user, firestore]);
 
-  const { data: checkins, isLoading } = useCollection<Checkin>(latestCheckinQuery);
+  const { data: checkins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
   const latestCheckin = useMemo(() => {
     if (!checkins || checkins.length === 0) return null;
     return checkins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
@@ -60,7 +60,7 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-        {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoading} />}
+        {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />}
         <DashboardGrid className="mt-6 lg:grid-cols-2">
             <div className="flex flex-col gap-6">
                 <DailyActions />
