@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -73,7 +74,7 @@ const navConfig = {
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Management' },
-    { href: '/management/finance', icon: DollarSign, label: 'Finance' },
+    { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead'] },
     { href: '/management/users', icon: UserIcon, label: 'Users' },
   ],
   communication: [
@@ -91,6 +92,7 @@ const roleNavConfig = {
   'Programs & Partnerships Manager': ['all', 'field', 'planning', 'management', 'communication'],
   'Resource Mobilization Lead': ['all', 'planning', 'management', 'communication'],
   'Operations & Field Manager': ['all', 'field', 'planning', 'management'],
+  'Media & Finance Lead': ['all', 'field', 'planning', 'management', 'communication'],
   'Field Coordinator': ['all', 'field', 'planning'],
   'Media & Communications Lead': ['all', 'field', 'communication'],
   'default': ['all', 'field', 'planning'],
@@ -126,12 +128,21 @@ export function AppSidebar() {
 
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
     if (!allowedSections.includes(sectionName)) return null;
+    
+    const navItems = navConfig[sectionName].filter(item => {
+        if ('roles' in item) {
+            return (item.roles as string[]).includes(userRole);
+        }
+        return true;
+    });
+
+    if (navItems.length === 0) return null;
 
     return (
       <SidebarGroup data-mobile={isMobile}>
         <SidebarGroupLabel data-mobile={isMobile}>{title}</SidebarGroupLabel>
         <SidebarMenu>
-          {navConfig[sectionName].map(item => (
+          {navItems.map(item => (
              <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 href={item.href}

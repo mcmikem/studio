@@ -32,6 +32,8 @@ import {
   sampleAlerts,
   sampleCalendarEvents,
   sampleTeamWeeklyPlans,
+  sampleHistoricalIncome,
+  sampleHistoricalExpenses,
 } from "@/lib/data"
 import { setDocumentNonBlocking } from "@/firebase";
 
@@ -115,6 +117,8 @@ async function seedInitialData(db: Firestore, userId: string) {
     { name: "alerts", data: sampleAlerts },
     { name: "events", data: sampleCalendarEvents },
     { name: "team-workplans", data: sampleTeamWeeklyPlans },
+    { name: 'income', data: sampleHistoricalIncome },
+    { name: 'expenses', data: sampleHistoricalExpenses },
      { name: "proposals", data: [
         { title: 'GlobalGiving Youth Empowerment Grant', partnerName: 'GlobalGiving', amountRequested: 5000000, status: 'Submitted', submissionDate: '2025-09-15', createdAt: new Date() },
         { title: 'Local District Education Fund', partnerName: 'Mpigi District', amountRequested: 2500000, status: 'Draft', submissionDate: '2025-10-20', createdAt: new Date() },

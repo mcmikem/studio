@@ -1,6 +1,6 @@
 
 
-import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert, TeamWeeklyPlan } from './types';
+import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert, TeamWeeklyPlan, Expense, Income } from './types';
 import { AlertTriangle, Info } from 'lucide-react';
 import { startOfWeek, setDate } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
@@ -247,6 +247,36 @@ export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] =
     status: 'Published',
   }
 ];
+
+
+export const sampleHistoricalIncome: Omit<Income, 'id' | 'createdAt'>[] = [
+    { source: 'Member Donations', amount: 2552000, dateReceived: '2025-01-15', type: 'Member Donations' },
+    { source: 'Member Donations', amount: 3003000, dateReceived: '2025-02-15', type: 'Member Donations' },
+    { source: 'Member Donations', amount: 3139853, dateReceived: '2025-03-15', type: 'Member Donations' },
+    { source: 'Member Donations', amount: 4687392, dateReceived: '2025-04-15', type: 'Member Donations' },
+    { source: 'Member Donations', amount: 2878799, dateReceived: '2025-05-15', type: 'Member Donations' },
+    { source: 'Member Donations', amount: 525550, dateReceived: '2025-06-15', type: 'Member Donations' },
+    { source: 'Member Donations', amount: 2121448, dateReceived: '2025-07-15', type: 'Member Donations' },
+    { source: 'Partnerships', amount: 945500, dateReceived: '2025-07-20', type: 'Partnerships' },
+    { source: 'Imac Enterprises', amount: 140000, dateReceived: '2025-07-25', type: 'Imac Enterprises' },
+    { source: 'Member Donations', amount: 504080, dateReceived: '2025-08-15', type: 'Member Donations' },
+    { source: 'Imac Enterprises', amount: 70000, dateReceived: '2025-08-25', type: 'Imac Enterprises' },
+    { source: 'Member Donations', amount: 505734, dateReceived: '2025-09-15', type: 'Member Donations' },
+    { source: 'Member Donations', amount: 509855, dateReceived: '2025-10-15', type: 'Member Donations' },
+];
+
+export const sampleHistoricalExpenses: Omit<Expense, 'id' | 'createdAt'>[] = [
+  { userId: 'system', userName: 'System Seed', date: '2025-01-20', title: 'Office Setup', type: 'Reimbursement', items: [{ description: 'Office Rent Q1', category: 'Rent', amount: 750000 }, { description: 'Internet Installation', category: 'Office Dev\'t', amount: 150000 }], totalAmount: 900000, status: 'Acknowledged' },
+  { userId: 'system', userName: 'System Seed', date: '2025-02-10', title: 'RED Campaign Launch', type: 'Requisition', items: [{ description: 'Transport to schools', category: 'Transport', amount: 200000 }, { description: 'Printing awareness materials', category: 'Printing & Photocopy', amount: 120000 }], totalAmount: 320000, status: 'Acknowledged' },
+  { userId: 'system', userName: 'System Seed', date: '2025-03-05', title: 'Monthly Staff Stipends', type: 'Requisition', items: [{ description: 'February Stipends', category: 'Allowances and stipends', amount: 1800000 }], totalAmount: 1800000, status: 'Acknowledged' },
+  { userId: 'system', userName: 'System Seed', date: '2025-04-18', title: 'GreenSchools Kickoff', type: 'Requisition', items: [{ description: 'Purchase of 200 seedlings', category: 'Projects', amount: 300000 }, { description: 'Fuel for project vehicle', category: 'Fuel', amount: 100000 }], totalAmount: 400000, status: 'Acknowledged' },
+  { userId: 'system', userName: 'System Seed', date: '2025-05-25', title: 'Partner Meeting - UNICEF', type: 'Reimbursement', items: [{ description: 'Meeting refreshments', category: 'Meetings', amount: 80000 }], totalAmount: 80000, status: 'Acknowledged' },
+  { userId: 'system', userName: 'System Seed', date: '2025-06-15', title: 'Office Supplies', type: 'Requisition', items: [{ description: 'Stationery and consumables', category: 'Stationery', amount: 250000 }], totalAmount: 250000, status: 'Acknowledged' },
+  { userId: 'system', userName: 'System Seed', date: '2025-07-30', title: 'Imac Enterprises Materials', type: 'Requisition', items: [{ description: 'Raw materials for soap production', category: 'IGA Expense', amount: 100000 }], totalAmount: 100000, status: 'Acknowledged' },
+  { userId: 'system', userName: 'System Seed', date: '2025-08-20', title: 'Butambala Field Visit', type: 'Reimbursement', items: [{ description: 'Transport for field coordinator', category: 'Transport', amount: 150000 }], totalAmount: 150000, status: 'Acknowledged' },
+  { userId: 'system', userName: 'System Seed', date: '2025-09-10', title: 'Media Team Content Day', type: 'Requisition', items: [{ description: 'Fuel and subject facilitation', category: 'Media', amount: 200000 }], totalAmount: 200000, status: 'Acknowledged' },
+];
     
 
     
+
