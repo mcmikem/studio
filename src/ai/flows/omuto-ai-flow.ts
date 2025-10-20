@@ -45,15 +45,17 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
 
 - **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"`,
         tools: [createCheckout],
-        output: {
-            schema: OmutoAIOutputSchema,
-        }
     });
     
-    const { output } = llmResponse;
+    const choice = llmResponse.choices[0];
+    const toolResponse = choice.toolRequest?.responses[0];
 
-    if (!output) {
+    // If the model used a tool, the answer is in the tool's response.
+    // Otherwise, it's in the text part of the message.
+    const answer = toolResponse ? String(toolResponse.response) : choice.message.content[0].text;
+
+    if (!answer) {
       throw new Error('AI failed to generate a response.');
     }
-    return { answer: output.answer };
+    return { answer };
 }
