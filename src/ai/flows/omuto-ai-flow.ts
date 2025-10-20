@@ -48,11 +48,13 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     });
     
     const choice = llmResponse.choices[0];
-    const toolResponse = choice.toolRequest?.responses[0];
-
+    
     // If the model used a tool, the answer is in the tool's response.
     // Otherwise, it's in the text part of the message.
-    const answer = toolResponse ? String(toolResponse.response) : choice.message.content[0].text;
+    const toolResponse = choice.toolRequest?.responses[0];
+    const answer = toolResponse
+      ? String(toolResponse.response)
+      : choice.message.content[0]?.text;
 
     if (!answer) {
       throw new Error('AI failed to generate a response.');
