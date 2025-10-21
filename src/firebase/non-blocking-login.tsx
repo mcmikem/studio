@@ -41,21 +41,15 @@ import { setDocumentNonBlocking } from "@/firebase";
 const approvedUsers: Record<string, { name: string; role: string }> = {
   // Executive
   "mcmike@omuto.org": { name: "McMike Mutumba", role: "Executive Director" },
-  "mcmike.mutumba@gmail.com": {
-    name: "McMike Mutumba",
-    role: "Executive Director",
-  },
+  "1mark2mike@gmail.com": { name: "McMike Mutumba", role: "Executive Director" },
+
 
   // Programs & Partnerships
   "programs@omuto.org": {
     name: "Dianah Nansikombi",
     role: "Programs & Partnerships Manager",
   },
-  "nansikombidianah@gmail.com": {
-    name: "Dianah Nansikombi",
-    role: "Programs & Partnerships Manager",
-  },
-
+  
   // Operations & Field
   "operations@omuto.org": {
     name: "Kasirye Constantine",
