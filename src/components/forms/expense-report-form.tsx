@@ -75,7 +75,7 @@ export function ExpenseReportForm() {
   const watchedItems = useWatch({ control, name: 'items' });
   
   const totalAmount = React.useMemo(() => {
-    return watchedItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+    return watchedItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
   }, [watchedItems]);
 
   React.useEffect(() => {
