@@ -18,8 +18,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, orderBy, doc, where, updateDoc } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import type { Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -33,17 +33,9 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { formatDateSafe, cn } from '@/lib/utils';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { formatDateSafe, cn, formatCurrency } from '@/lib/utils';
+import { createAlert } from '@/ai/flows/create-alert-flow';
 
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-UG', {
-    style: 'currency',
-    currency: 'UGX',
-    minimumFractionDigits: 0,
-  }).format(value);
-};
 
 const statusColors: { [key: string]: string } = {
   Pending: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
@@ -124,6 +116,17 @@ function ExpensesContent() {
           title: `Expense ${status}`,
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
+
+        // Notify user of approval or rejection
+        if (expense.userId !== currentUser.uid && (status === 'Approved' || status === 'Rejected')) {
+            await createAlert({
+                type: status === 'Approved' ? 'Info' : 'Urgent',
+                message: `Your expense report for "${expense.title}" has been ${status.toLowerCase()}.`,
+                priority: 'Medium',
+                action: `/my-finances`, // Link to their finance page
+                creatorId: currentUser.uid,
+            });
+        }
 
     } catch (error) {
          toast({

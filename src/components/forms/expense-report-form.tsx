@@ -26,6 +26,8 @@ import { Loader2, FilePlus2, PlusCircle, Trash2 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
+import { createAlert } from '@/ai/flows/create-alert-flow';
+import { formatCurrency } from '@/lib/utils';
 
 const expenseItemSchema = z.object({
   description: z.string().min(3, 'Item description is required.'),
@@ -118,11 +120,20 @@ export function ExpenseReportForm() {
     const expensesCollection = collection(firestore, 'expenses');
 
     try {
-        await addDocumentNonBlocking(expensesCollection, expenseData);
+        const docRef = await addDocumentNonBlocking(expensesCollection, expenseData);
         
         toast({
             title: 'Expense Report Submitted!',
             description: `Your report has been sent for approval.`,
+        });
+
+        // Create an alert for management
+        await createAlert({
+            type: 'Urgent',
+            message: `${profile.name} submitted an expense report for ${formatCurrency(finalTotal)}.`,
+            priority: 'High',
+            action: `/management/expenses?highlight=${docRef.id}`,
+            creatorId: user.uid,
         });
 
         reset({

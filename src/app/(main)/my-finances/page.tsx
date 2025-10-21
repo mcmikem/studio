@@ -2,16 +2,18 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { collection, query, where, orderBy, doc } from 'firebase/firestore';
 import type { Expense } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Wallet, Receipt } from 'lucide-react';
+import { Wallet, Receipt, CheckCheck } from 'lucide-react';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const statusColors: { [key: string]: string } = {
   Pending: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
@@ -24,6 +26,7 @@ const statusColors: { [key: string]: string } = {
 export default function MyFinancesPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const userExpensesQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -49,6 +52,25 @@ export default function MyFinancesPage() {
 
     return { fundsHeld, pendingReimbursement };
   }, [expenses]);
+  
+  const handleAcknowledge = async (expense: Expense) => {
+    if (!firestore) return;
+    const expenseRef = doc(firestore, 'expenses', expense.id);
+    try {
+      await updateDocumentNonBlocking(expenseRef, { status: 'Acknowledged' });
+      toast({
+        title: 'Receipt Acknowledged',
+        description: `You have confirmed receipt of funds for "${expense.title}".`,
+      });
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Update Failed',
+        description: 'Could not acknowledge receipt. Please try again.',
+      });
+    }
+  };
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -101,6 +123,7 @@ export default function MyFinancesPage() {
                 <TableHead>Type</TableHead>
                 <TableHead>Amount</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -111,6 +134,7 @@ export default function MyFinancesPage() {
                   <TableCell><Skeleton className="h-5 w-28" /></TableCell>
                   <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
                 </TableRow>
               ))}
               {expenses && expenses.length > 0 ? (
@@ -125,12 +149,20 @@ export default function MyFinancesPage() {
                         {expense.status}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                       {expense.status === 'Disbursed' && (
+                          <Button size="sm" variant="secondary" onClick={() => handleAcknowledge(expense)}>
+                            <CheckCheck className="mr-2 h-4 w-4"/>
+                            Acknowledge
+                          </Button>
+                        )}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-48">
+                    <TableCell colSpan={6} className="h-48">
                       <EmptyState
                         icon={Receipt}
                         title="No Expense Reports"
