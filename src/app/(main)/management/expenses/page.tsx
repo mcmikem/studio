@@ -112,7 +112,7 @@ function ExpensesContent() {
     if (!firestore || !currentUser) return;
     const expenseRef = doc(firestore, 'expenses', expense.id);
     try {
-        await updateDocumentNonBlocking(expenseRef, { status: status });
+        updateDocumentNonBlocking(expenseRef, { status: status });
         toast({
           title: `Expense ${status}`,
           description: `The expense report has been marked as ${status.toLowerCase()}.`,

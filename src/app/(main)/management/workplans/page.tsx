@@ -198,7 +198,7 @@ function TeamWorkplanForm({
     };
 
     try {
-        const wasPreviouslyDraft = existingPlan?.status === 'Draft';
+        const wasPreviouslyDraft = existingPlan?.status === 'Draft' || !existingPlan;
 
         if(existingPlan) {
             const planRef = doc(firestore, 'team-workplans', existingPlan.id);
@@ -475,5 +475,3 @@ export default function TeamWorkplansPage() {
     </div>
   );
 }
-
-    
