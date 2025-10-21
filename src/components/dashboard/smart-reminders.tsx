@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useCallback } from "react"
 import { generateSmartReminders } from "@/ai/flows/smart-reminders-flow"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Skeleton } from "../ui/skeleton"
@@ -10,44 +10,55 @@ import type { User } from "@/lib/types"
 import { getUpcomingEvents, getPendingTasks } from "./dashboard-tools"
 import { useFirestore } from "@/firebase"
 
+const MAX_RETRIES = 2;
+const RETRY_DELAY = 3000; // 3 seconds
+
 export function SmartReminders({ profile }: { profile: User }) {
     const [reminders, setReminders] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const firestore = useFirestore();
 
-    useEffect(() => {
-        async function fetchAndGenerateReminders() {
-            if (!profile || !firestore) return;
-            setIsLoading(true);
-            try {
-                // 1. Fetch data on the client using client-side tools
-                const [events, tasks] = await Promise.all([
-                    getUpcomingEvents(firestore),
-                    getPendingTasks(firestore, profile.id)
-                ]);
+    const fetchAndGenerateReminders = useCallback(async (retries = MAX_RETRIES) => {
+        if (!profile || !firestore) {
+            setIsLoading(false);
+            return;
+        };
 
-                // 2. Pass fetched data to the AI flow
-                const response = await generateSmartReminders({
-                    userName: profile.name,
-                    userRole: profile.role,
-                    upcomingEvents: events,
-                    pendingTasks: tasks,
-                });
-                setReminders(response.reminders);
-            } catch (error: any) {
-                console.error("Failed to generate smart reminders:", error);
-                // Handle the 503 service unavailable error gracefully
-                if (error.message && error.message.includes('503 Service Unavailable')) {
+        try {
+            const [events, tasks] = await Promise.all([
+                getUpcomingEvents(firestore),
+                getPendingTasks(firestore, profile.id)
+            ]);
+
+            const response = await generateSmartReminders({
+                userName: profile.name,
+                userRole: profile.role,
+                upcomingEvents: events,
+                pendingTasks: tasks,
+            });
+            setReminders(response.reminders);
+            setIsLoading(false);
+        } catch (error: any) {
+            console.error("Failed to generate smart reminders:", error);
+            
+            if (error.message && error.message.includes('503 Service Unavailable') && retries > 0) {
+                console.log(`AI service unavailable. Retrying in ${RETRY_DELAY / 1000}s... (${retries} retries left)`);
+                setTimeout(() => fetchAndGenerateReminders(retries - 1), RETRY_DELAY);
+            } else {
+                 if (error.message && error.message.includes('503 Service Unavailable')) {
                     setReminders(["The AI is currently busy. Reminders will be back shortly."]);
                 } else {
                     setReminders(["Could not load AI reminders at this time."]);
                 }
-            } finally {
                 setIsLoading(false);
             }
         }
-        fetchAndGenerateReminders();
     }, [profile, firestore]);
+
+    useEffect(() => {
+        setIsLoading(true);
+        fetchAndGenerateReminders();
+    }, [fetchAndGenerateReminders]);
 
 
     return (
