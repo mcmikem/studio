@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -26,7 +25,7 @@ import { Loader2, FilePlus2, PlusCircle, Trash2 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/dev';
 import { formatCurrency } from '@/lib/utils';
 
 const expenseItemSchema = z.object({

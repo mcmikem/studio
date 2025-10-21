@@ -47,9 +47,9 @@ const plannerPrompt = ai.definePrompt(
 
     Their personal priorities for this week are: {{#each weeklyPriorities}}- {{{this}}} {{/each}}.
 
-    CURRENT ORGANIZATIONAL KEY RESULTS:
+    CURRENT ORGANIZATIONAL KEY RESULTS (Summary):
     {{#each keyResults}}
-    - {{this.title}}: {{this.description}} (Priority: {{this.priority}}, Deadline: {{this.deadline}})
+    - {{this.title}} (Deadline: {{this.deadline}})
     {{/each}}
 
     Your task is to generate a structured, strategic daily plan and ask clarifying questions to help the user think deeper. You are a coach, not just a scheduler.
