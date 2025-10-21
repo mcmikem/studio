@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -27,6 +28,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { createAlert } from '@/ai/flows/create-alert-flow';
 
 const individualTaskSchema = z.object({
   value: z.string().min(1, 'Task description cannot be empty.'),
@@ -91,6 +93,15 @@ function FinalizeWorkplanForm({
       title: 'Workplan Saved!',
       description: `Your plan for the week has been finalized.`,
     });
+
+    await createAlert({
+      type: 'Info',
+      priority: 'Low',
+      message: `${profile.name} has finalized their workplan for the week.`,
+      action: '/management/workplans', // A link for managers to see all plans maybe?
+      creatorId: user.uid,
+    });
+    
     reset();
     onPlanCreated();
   };
@@ -205,7 +216,15 @@ export default function WorkplanPage() {
     if (deadline.toDate) { // It's a Firestore Timestamp
       return format(deadline.toDate(), 'MMM dd');
     }
-    return format(new Date(deadline), 'MMM dd'); // It's a string or Date
+    try {
+        const parsedDate = new Date(deadline);
+        if(!isNaN(parsedDate.getTime())) {
+            return format(parsedDate, 'MMM dd');
+        }
+    } catch (e) {
+        // Fallback for different formats if needed
+    }
+    return String(deadline);
   };
 
   const renderContent = () => {

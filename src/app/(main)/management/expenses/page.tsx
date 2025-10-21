@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -118,12 +119,21 @@ function ExpensesContent() {
         });
 
         // Notify user of approval or rejection
-        if (expense.userId !== currentUser.uid && (status === 'Approved' || status === 'Rejected')) {
+        if (expense.userId !== currentUser.uid && (status === 'Approved' || status === 'Rejected' || status === 'Disbursed')) {
+            let message = '';
+            if (status === 'Approved') {
+                message = `Your expense report for "${expense.title}" has been approved and is awaiting disbursement.`;
+            } else if (status === 'Rejected') {
+                message = `Your expense report for "${expense.title}" has been rejected.`;
+            } else if (status === 'Disbursed') {
+                message = `Funds for "${expense.title}" have been disbursed. Please go to "My Finances" to acknowledge receipt.`;
+            }
+
             await createAlert({
-                type: status === 'Approved' ? 'Info' : 'Urgent',
-                message: `Your expense report for "${expense.title}" has been ${status.toLowerCase()}.`,
-                priority: 'Medium',
-                action: `/my-finances`, // Link to their finance page
+                type: status === 'Rejected' ? 'Urgent' : 'Info',
+                message: message,
+                priority: status === 'Rejected' ? 'High' : 'Medium',
+                action: `/my-finances`, 
                 creatorId: currentUser.uid,
             });
         }

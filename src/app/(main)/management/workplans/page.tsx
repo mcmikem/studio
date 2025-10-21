@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
@@ -30,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { parseWorkplan } from '@/ai/flows/parse-workplan-flow';
+import { createAlert } from '@/ai/flows/create-alert-flow';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),
@@ -196,6 +198,8 @@ function TeamWorkplanForm({
     };
 
     try {
+        const wasPreviouslyDraft = existingPlan?.status === 'Draft';
+
         if(existingPlan) {
             const planRef = doc(firestore, 'team-workplans', existingPlan.id);
             await updateDocumentNonBlocking(planRef, {
@@ -211,6 +215,18 @@ function TeamWorkplanForm({
             });
             toast({ title: 'Plan Saved!', description: `The team plan for the week has been saved as a ${data.status}.` });
         }
+
+        // If the plan is being published for the first time
+        if (data.status === 'Published' && wasPreviouslyDraft) {
+            await createAlert({
+                type: 'Info',
+                priority: 'Medium',
+                message: `${profile.name} has published the workplan for the week of ${format(weekStartDate, 'MMM d')}.`,
+                action: '/workplan',
+                creatorId: user.uid,
+            });
+        }
+
         onPlanSaved();
     } catch (e) {
         console.error("Failed to save team plan:", e)
