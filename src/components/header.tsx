@@ -19,7 +19,7 @@ import { signOut } from 'firebase/auth';
 import { Badge } from './ui/badge';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
-import { collection, query, limit, orderBy, where } from 'firebase/firestore';
+import { collection, query, limit, orderBy, where, Timestamp } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import { formatDateSafe } from '@/lib/utils';
 import { Skeleton } from './ui/skeleton';
@@ -27,7 +27,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useViewAs } from '@/hooks/use-view-as';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { useCommandState } from '@/hooks/use-command-state';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
@@ -75,7 +75,13 @@ function NotificationsMenu() {
     
     const alertsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return query(collection(firestore, 'alerts'), orderBy('createdAt', 'desc'), limit(5));
+        const threeDaysAgo = subDays(new Date(), 3);
+        return query(
+            collection(firestore, 'alerts'), 
+            where('createdAt', '>=', Timestamp.fromDate(threeDaysAgo)),
+            orderBy('createdAt', 'desc'), 
+            limit(5)
+        );
     }, [user, firestore]);
 
     const { data: alerts, isLoading } = useCollection<AlertType>(alertsQuery);

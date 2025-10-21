@@ -7,10 +7,11 @@ import { Button } from '../ui/button';
 import { AlertTriangle, Info, BellRing } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import Link from 'next/link';
 import { formatDateSafe } from '@/lib/utils';
+import { subDays } from 'date-fns';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -29,7 +30,12 @@ export function NotificationsList() {
   const firestore = useFirestore();
   const alertsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'alerts'), orderBy('createdAt', 'desc'));
+    const threeDaysAgo = subDays(new Date(), 3);
+    return query(
+        collection(firestore, 'alerts'),
+        where('createdAt', '>=', Timestamp.fromDate(threeDaysAgo)),
+        orderBy('createdAt', 'desc')
+    );
   }, [firestore]);
 
   const { data: alerts, isLoading } = useCollection<AlertType>(alertsQuery);
@@ -39,7 +45,7 @@ export function NotificationsList() {
     <Card>
       <CardHeader>
         <CardTitle>All Notifications</CardTitle>
-        <CardDescription>A chronological log of all system alerts.</CardDescription>
+        <CardDescription>A chronological log of all system alerts from the last 3 days.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading && (

@@ -148,10 +148,7 @@ export const sampleImpactMetrics: Omit<ImpactMetric, 'id'>[] = [
 
 export const sampleAlerts: Omit<Alert, 'id' | 'createdAt'>[] = [];
 
-export const sampleCalendarEvents: Omit<CalendarEvent, 'id' | 'createdAt'>[] = [
-    { title: 'Girl Child Day Event', date: new Date('2025-10-11T09:00:00'), category: 'Campaigns/Events', location: 'Mpigi Town Square', responsible: 'Whole Team' },
-    { title: 'Finalize RED Campaign Documentary', date: new Date('2025-10-26T17:00:00'), category: 'Deadlines', location: 'Office', responsible: 'Alex Nsereko' },
-];
+export const sampleCalendarEvents: Omit<CalendarEvent, 'id' | 'createdAt'>[] = [];
 
 
 export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
@@ -279,6 +276,7 @@ export const sampleHistoricalExpenses: Omit<Expense, 'id' | 'createdAt'>[] = [
     
 
     
+
 
 
 
