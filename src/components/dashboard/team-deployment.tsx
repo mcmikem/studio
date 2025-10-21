@@ -81,6 +81,11 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
               const startTime = parse(block.startTime, 'hh:mm a', baseDate);
               const endTime = parse(block.endTime, 'hh:mm a', baseDate);
               
+              if (!isValid(startTime) || !isValid(endTime)) {
+                console.error("Invalid time format in time block:", block);
+                continue; // Skip this block if time is invalid
+              }
+              
               if (isWithinInterval(now, { start: startTime, end: endTime })) {
                 currentTask = block.description;
                 break;
