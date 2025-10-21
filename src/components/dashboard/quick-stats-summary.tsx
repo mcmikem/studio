@@ -90,7 +90,7 @@ export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null 
                     <Card className="p-4 flex flex-col justify-between h-32 hover:bg-muted transition-colors shadow-none border-0 bg-background">
                         <div className="flex justify-between items-start text-muted-foreground">
                         <p className="text-sm font-semibold">{metric.metric.split('(')[0]}</p>
-                        <Icon className="h-5 w-5 text-primary" />
+                        {Icon && <Icon className="h-5 w-5 text-primary" />}
                         </div>
                         <div className="mt-auto">
                         <div className="text-2xl font-bold text-foreground">

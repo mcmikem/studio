@@ -17,12 +17,13 @@ if (!getApps().length) {
   firebaseApp = getApp();
 }
 
-const auth = getAuth(firebaseApp);
-const firestore = getFirestore(firebaseApp);
+const auth: Auth = getAuth(firebaseApp);
+const firestore: Firestore = getFirestore(firebaseApp);
 
-// Enable offline persistence
-enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED })
-  .catch((err) => {
+// Enable offline persistence only once
+try {
+    enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED });
+} catch (err: any) {
     if (err.code === 'failed-precondition') {
       console.warn(
         'Firestore offline persistence failed: Multiple tabs open. Persistence will be enabled in one tab only.'
@@ -32,7 +33,7 @@ enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED })
         'Firestore offline persistence failed: The current browser does not support all of the features required.'
       );
     }
-  });
+}
 
 
 // --- Context and State Definitions ---
@@ -81,7 +82,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     // Initial check in case onAuthStateChanged is not immediate
     if (auth.currentUser !== userAuthState.user) {
         setUserAuthState({ user: auth.currentUser, isUserLoading: false, userError: null });
-    } else {
+    } else if (userAuthState.isUserLoading) {
         setUserAuthState(prev => ({...prev, isUserLoading: false}));
     }
 
@@ -112,28 +113,30 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
 
 // --- Hooks ---
 
+const useStableFirebase = () => {
+    return { firebaseApp, firestore, auth };
+};
+
+
 export const useFirebaseServices = () => {
   const context = useContext(FirebaseContext);
   if (context === undefined) {
     throw new Error('useFirebaseServices must be used within a FirebaseProvider.');
   }
-  return {
-    firebaseApp: context.firebaseApp,
-    firestore: context.firestore,
-    auth: context.auth,
-  };
+  // Return the stable singleton instances directly
+  return useStableFirebase();
 };
 
 export const useAuth = (): Auth => {
-  return useFirebaseServices().auth;
+  return useStableFirebase().auth;
 };
 
 export const useFirestore = (): Firestore => {
-  return useFirebaseServices().firestore;
+  return useStableFirebase().firestore;
 };
 
 export const useFirebaseApp = (): FirebaseApp => {
-  return useFirebaseServices().firebaseApp;
+  return useStableFirebase().firebaseApp;
 };
 
 export const useUser = () => {
@@ -146,7 +149,12 @@ export const useUser = () => {
 };
 
 
-export function useMemoFirebase<T>(factory: () => T, deps: React.DependencyList | undefined): T {
+/**
+ * A stable version of useMemo for Firebase objects.
+ * The factory function will only re-run if the dependencies in the deps array change.
+ * It's crucial to use this for creating queries to prevent infinite re-renders.
+ */
+export function useMemoFirebase<T>(factory: () => T, deps: React.DependencyList): T {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     return useMemo(factory, deps);
 }

@@ -60,7 +60,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
   }, []);
 
   useEffect(() => {
-    if (isLoading || !currentTime) {
+    if (!currentTime || isLoading) {
       return;
     }
 
@@ -69,7 +69,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         return;
     }
     
-    // FIX: De-duplicate users based on ID to prevent rendering issues from bad data.
+    // De-duplicate users based on ID to prevent rendering issues from bad data.
     const uniqueUsers = Array.from(new Map(users.map(user => [user.id, user])).values());
 
     const checkinMap = new Map(checkins?.map(c => [c.userId, c]));
@@ -122,17 +122,16 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading && (
+        {isLoading || teamStatus === null ? (
           <div className="space-y-2">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
-        )}
-        {!isLoading && teamStatus && teamStatus.length > 0 ? (
+        ) : teamStatus.length > 0 ? (
            <Accordion type="single" collapsible className="w-full">
             {teamStatus.map(status => {
-                if (!status.user) return null; // Added safe-guard
+                if (!status.user?.id) return null; // Added safe-guard
                 return (
                     <AccordionItem value={status.user.id} key={status.user.id}>
                         <AccordionTrigger>
@@ -169,14 +168,12 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
             })}
            </Accordion>
         ) : (
-            !isLoading && (
             <EmptyState
                 icon={Users}
                 title="No Staff Found"
                 description="Could not load team member information."
                 className="min-h-0"
              />
-            )
         )}
       </CardContent>
     </Card>
