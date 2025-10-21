@@ -69,9 +69,12 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         return;
     }
     
+    // FIX: De-duplicate users based on ID to prevent rendering issues from bad data.
+    const uniqueUsers = Array.from(new Map(users.map(user => [user.id, user])).values());
+
     const checkinMap = new Map(checkins?.map(c => [c.userId, c]));
     
-    const newTeamStatus = users.map(user => {
+    const newTeamStatus = uniqueUsers.map(user => {
       const userCheckin = checkinMap.get(user.id);
       let currentTask: string | null = null;
       let checkinTime: string | null = null;
