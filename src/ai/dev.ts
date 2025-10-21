@@ -15,7 +15,10 @@ import { defineGcpAuth } from '@genkit-ai/google-genai/auth';
 import {v2} from '@google-cloud/translate';
 import {google} from 'googleapis';
 import wav from 'wav';
+import { initializeFirebase } from '@/firebase/server';
 
+// Initialize Firebase Admin SDK first
+initializeFirebase();
 
 genkit({
   plugins: [googleAI()],

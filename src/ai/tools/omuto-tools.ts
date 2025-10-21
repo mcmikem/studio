@@ -6,7 +6,7 @@
 
 import { ai } from '@/ai/genkit';
 import { initializeFirebase } from '@/firebase/server';
-import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { z } from 'zod';
 
 export const findGrantOpportunities = ai.defineTool(
@@ -272,6 +272,92 @@ export const getActivitiesForProgram = ai.defineTool(
                 id: doc.id,
                 ...data,
                 // Timestamps are not directly serializable for Genkit prompts, but we can pass the relevant text
+            };
+        });
+    }
+);
+
+export const getRecentCheckouts = ai.defineTool(
+    {
+        name: 'getRecentCheckouts',
+        description: 'Retrieves the most recent end-of-day checkout reports from the team.',
+        inputSchema: z.object({
+            count: z.number().optional().default(5).describe('The number of recent checkouts to retrieve.'),
+        }),
+        outputSchema: z.array(
+            z.object({
+                name: z.string(),
+                task: z.string(),
+                learning: z.string().optional(),
+                tomorrowPlan: z.string().optional(),
+            })
+        ),
+    },
+    async ({ count }) => {
+        const { firestore } = await initializeFirebase();
+        const checkoutsRef = collection(firestore, 'checkouts');
+        const q = query(
+            checkoutsRef,
+            orderBy('timestamp', 'desc'),
+            limit(count)
+        );
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            return [];
+        }
+
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                name: data.name,
+                task: data.task,
+                learning: data.learning,
+                tomorrowPlan: data.tomorrowPlan,
+            };
+        });
+    }
+);
+
+export const getRecentCheckins = ai.defineTool(
+    {
+        name: 'getRecentCheckins',
+        description: "Retrieves today's start-of-day check-in reports from the team.",
+        inputSchema: z.object({
+            count: z.number().optional().default(10).describe('The number of recent check-ins to retrieve.'),
+        }),
+        outputSchema: z.array(
+            z.object({
+                name: z.string(),
+                primaryMission: z.string(),
+            })
+        ),
+    },
+    async ({ count }) => {
+        const { firestore } = await initializeFirebase();
+        const checkinsRef = collection(firestore, 'checkins');
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startOfToday = Timestamp.fromDate(today);
+
+        const q = query(
+            checkinsRef,
+            where('timestamp', '>=', startOfToday),
+            orderBy('timestamp', 'desc'),
+            limit(count)
+        );
+
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+            return [];
+        }
+
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                name: data.name,
+                primaryMission: data.primaryMission,
             };
         });
     }

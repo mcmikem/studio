@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -9,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import { createCheckout } from '../tools/omuto-tools';
+import { createCheckout, getRecentCheckins, getRecentCheckouts } from '../tools/omuto-tools';
 
 // Define the structure of a single message in the chat history
 const HistoryMessageSchema = z.object({
@@ -43,8 +44,9 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         
 ## Tool Usage Instructions
 
-- **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"`,
-        tools: [createCheckout],
+- **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"
+- **getRecentCheckins / getRecentCheckouts**: If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user.`,
+        tools: [createCheckout, getRecentCheckins, getRecentCheckouts],
     });
     
     const toolResponse = llmResponse.toolRequest?.responses[0];
