@@ -73,16 +73,16 @@ export default function DashboardPage() {
       collection(firestore, 'checkins'),
       where('userId', '==', user.uid),
       where('timestamp', '>=', Timestamp.fromDate(todayStart)),
+      orderBy('timestamp', 'desc'),
+      limit(1)
     );
   }, [user, firestore]);
 
   const { data: userCheckins, isLoading: isLoadingUserCheckin } = useCollection<Checkin>(latestCheckinQuery);
 
-  // Since we removed orderBy, we sort on the client.
   const latestCheckin = useMemo(() => {
     if (!userCheckins || userCheckins.length === 0) return null;
-    // Sort to get the most recent one, just in case of multiple check-ins
-    return userCheckins.sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
+    return userCheckins[0];
   }, [userCheckins]);
 
 
