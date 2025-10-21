@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -21,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users } from 'lucide-react';
-import { isWithinInterval, parse, startOfDay, format } from 'date-fns';
+import { isWithinInterval, parse, startOfDay, format, isValid } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
 
 type TeamStatus = {
