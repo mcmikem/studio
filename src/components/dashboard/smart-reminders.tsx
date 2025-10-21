@@ -34,9 +34,14 @@ export function SmartReminders({ profile }: { profile: User }) {
                     pendingTasks: tasks,
                 });
                 setReminders(response.reminders);
-            } catch (error) {
+            } catch (error: any) {
                 console.error("Failed to generate smart reminders:", error);
-                setReminders(["Could not load AI reminders at this time."]);
+                // Handle the 503 service unavailable error gracefully
+                if (error.message && error.message.includes('503 Service Unavailable')) {
+                    setReminders(["The AI is currently busy. Reminders will be back shortly."]);
+                } else {
+                    setReminders(["Could not load AI reminders at this time."]);
+                }
             } finally {
                 setIsLoading(false);
             }
