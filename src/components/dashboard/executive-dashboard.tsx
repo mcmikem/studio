@@ -84,7 +84,7 @@ function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
 
         const fourWeeksAgo = startOfWeek(subDays(new Date(), 3 * 7)); // 3 full weeks ago + this partial week
         const recentActivities = activities.filter(act => 
-            act.loggedAt && isAfter(act.loggedAt.toDate(), fourWeeksAgo)
+            act.loggedAt && act.loggedAt.toDate && isAfter(act.loggedAt.toDate(), fourWeeksAgo)
         );
 
         const weeklyAvg = recentActivities.length / 4;

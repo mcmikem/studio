@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -68,12 +69,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     if (!keyResults || !activities || !metrics || !partnerships) return null;
 
     // De-duplicate Key Results based on title
-    const uniqueKeyResults = keyResults.reduce((acc, current) => {
-        if (!acc.find(item => item.title === current.title)) {
-            acc.push(current);
-        }
-        return acc;
-    }, [] as KeyResult[]);
+    const uniqueKeyResults = Array.from(new Map(keyResults.map(item => [item.title, item])).values());
 
 
     const cycleOfDignityMetric = metrics.find(m => m.metric === 'Cycle of Dignity Fundraising');

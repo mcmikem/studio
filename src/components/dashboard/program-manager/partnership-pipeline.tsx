@@ -20,13 +20,28 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
         const warm = partnerships.filter(p => p.status === 'Active').length;
         const cold = partnerships.filter(p => p.status === 'Inactive').length;
 
-        // More robust logic for urgent/upcoming
         const urgentKeywords = ['deadline', 'report', 'due', 'mou'];
-        const upcomingKeywords = ['meeting', 'call', 'follow-up', 'proposal'];
+        const upcomingKeywords = ['meeting', 'call', 'follow-up', 'proposal', 'submit', 'draft'];
 
-        const urgent = partnerships.find(p => p.status !== 'Inactive' && urgentKeywords.some(kw => p.nextStep.toLowerCase().includes(kw)));
-        const upcoming = partnerships.find(p => p.status !== 'Inactive' && !urgent && upcomingKeywords.some(kw => p.nextStep.toLowerCase().includes(kw)));
-
+        const activeOrPotential = partnerships.filter(p => p.status !== 'Inactive');
+        
+        let urgent = null;
+        for (const p of activeOrPotential) {
+            if (urgentKeywords.some(kw => p.nextStep.toLowerCase().includes(kw))) {
+                urgent = p;
+                break;
+            }
+        }
+        
+        let upcoming = null;
+        if (!urgent) {
+            for (const p of activeOrPotential) {
+                if (upcomingKeywords.some(kw => p.nextStep.toLowerCase().includes(kw))) {
+                    upcoming = p;
+                    break;
+                }
+            }
+        }
 
         return { hotCount: hot, warmCount: warm, coldCount: cold, urgentItem: urgent, upcomingItem: upcoming };
 
