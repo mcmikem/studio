@@ -41,7 +41,6 @@ import { setDocumentNonBlocking } from "@/firebase";
 const approvedUsers: Record<string, { name: string; role: string }> = {
   // Executive
   "mcmike@omuto.org": { name: "McMike Mutumba", role: "Executive Director" },
-  "1mark2mike@gmail.com": { name: "McMike Mutumba", role: "Executive Director" },
   "mcmike.mutumba@gmail.com": {
     name: "McMike Mutumba",
     role: "Executive Director",
