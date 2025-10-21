@@ -8,6 +8,8 @@ import { ai } from '@/ai/genkit';
 import { initializeFirebase } from '@/firebase/server';
 import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { z } from 'zod';
+import { SearchResultItemSchema } from '@/lib/types';
+
 
 export const findGrantOpportunities = ai.defineTool(
   {
@@ -72,21 +74,12 @@ export const findUsersByName = ai.defineTool(
         inputSchema: z.object({
             name: z.string().describe("The name of the staff member to search for."),
         }),
-        outputSchema: z.array(
-            z.object({
-                id: z.string(),
-                type: z.literal('User'),
-                title: z.string(),
-                url: z.string(),
-            })
-        ),
+        outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ name }) => {
         const { firestore } = await initializeFirebase();
         const usersRef = collection(firestore, 'users');
         
-        // Firestore doesn't support case-insensitive or partial text search natively.
-        // A common workaround is to use range queries on a capitalized version of the name.
         const q = query(
             usersRef,
             where('name', '>=', name),
@@ -114,14 +107,7 @@ export const findProgramsByName = ai.defineTool(
         inputSchema: z.object({
             title: z.string().describe("The title of the program to search for."),
         }),
-        outputSchema: z.array(
-            z.object({
-                id: z.string(),
-                type: z.literal('Program'),
-                title: z.string(),
-                url: z.string(),
-            })
-        ),
+        outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
         const { firestore } = await initializeFirebase();
@@ -155,14 +141,7 @@ export const findExpensesByTitle = ai.defineTool(
         inputSchema: z.object({
             title: z.string().describe("The title of the expense report to search for."),
         }),
-        outputSchema: z.array(
-            z.object({
-                id: z.string(),
-                type: z.literal('Expense'),
-                title: z.string(),
-                url: z.string(),
-            })
-        ),
+        outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
         const { firestore } = await initializeFirebase();
@@ -187,6 +166,35 @@ export const findExpensesByTitle = ai.defineTool(
         }));
     }
 );
+
+export const searchOmuto = ai.defineTool(
+    {
+        name: 'searchOmuto',
+        description: 'Performs a global search across users, programs, and expenses to find information within the Omuto Central app.',
+        inputSchema: z.object({
+            query: z.string().describe("The user's natural language search query."),
+        }),
+        outputSchema: z.array(SearchResultItemSchema),
+    },
+    async ({ query }) => {
+        console.log(`Searching Omuto for: ${query}`);
+        // Run all searches in parallel for efficiency
+        const [userResults, programResults, expenseResults] = await Promise.all([
+            findUsersByName({ name: query }),
+            findProgramsByName({ title: query }),
+            findExpensesByTitle({ title: query }),
+        ]);
+
+        const combinedResults = [...userResults, ...programResults, ...expenseResults];
+        
+        // Ensure uniqueness of results, as some queries might be broad
+        const uniqueResults = Array.from(new Map(combinedResults.map(item => [item.id, item])).values());
+        
+        console.log(`Found ${uniqueResults.length} unique results.`);
+        return uniqueResults;
+    }
+);
+
 
 export const createCheckout = ai.defineTool(
     {
@@ -362,3 +370,5 @@ export const getRecentCheckins = ai.defineTool(
         });
     }
 );
+
+    
