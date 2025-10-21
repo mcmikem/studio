@@ -98,6 +98,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
       isUserLoading: userAuthState.isUserLoading,
       userError: userAuthState.userError,
     };
+    // The userAuthState object is the only dependency that should trigger a re-render
   }, [userAuthState]);
 
   return (
