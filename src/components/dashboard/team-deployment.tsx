@@ -47,34 +47,26 @@ interface TeamDeploymentProps {
 }
 
 export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentProps) {
-  const [teamStatus, setTeamStatus] = useState<TeamStatus[] | null>(null);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
-  // Set current time on client-side mount
+  // Set current time only on the client-side after mount.
   useEffect(() => {
     setCurrentTime(new Date());
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); 
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (!currentTime || isLoading) {
-      return;
-    }
-
-    if (!users) {
-        setTeamStatus([]);
-        return;
+  const teamStatus = useMemo(() => {
+    // Guard against running this logic before data is loaded.
+    if (!users || !checkins || !currentTime) {
+      return null;
     }
     
     // De-duplicate users based on ID to prevent rendering issues from bad data.
     const uniqueUsers = Array.from(new Map(users.map(user => [user.id, user])).values());
-
-    const checkinMap = new Map(checkins?.map(c => [c.userId, c]));
+    const checkinMap = new Map(checkins.map(c => [c.userId, c]));
     
-    const newTeamStatus = uniqueUsers.map(user => {
+    return uniqueUsers.map(user => {
       const userCheckin = checkinMap.get(user.id);
       let currentTask: string | null = null;
       let checkinTime: string | null = null;
@@ -107,11 +99,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         checkinTime: checkinTime,
       };
     });
-
-    setTeamStatus(newTeamStatus);
-
-  }, [users, checkins, isLoading, currentTime]);
-  
+  }, [users, checkins, currentTime]);
 
   return (
     <Card>
@@ -122,7 +110,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading || teamStatus === null ? (
+        {isLoading || !teamStatus ? (
           <div className="space-y-2">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
