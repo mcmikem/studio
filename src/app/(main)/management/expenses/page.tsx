@@ -35,7 +35,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { formatDateSafe, cn, formatCurrency } from '@/lib/utils';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/dev';
 
 
 const statusColors: { [key: string]: string } = {

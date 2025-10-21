@@ -31,7 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { parseWorkplan } from '@/ai/flows/parse-workplan-flow';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/dev';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),
