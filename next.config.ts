@@ -45,6 +45,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Exclude server-only modules from client-side bundle
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        "async_hooks": false,
+        "child_process": false,
+        "fs": false,
+        "net": false,
+        "tls": false,
+      };
+    }
+    return config;
+  },
 };
 
 export default pwaConfig(nextConfig);
