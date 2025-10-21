@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -90,7 +89,7 @@ const roleNavConfig = {
   'Administrator': ['all', 'field', 'planning', 'management', 'communication'],
   'Executive Director': ['all', 'field', 'planning', 'management', 'communication'],
   'Programs & Partnerships Manager': ['all', 'field', 'planning', 'management', 'communication'],
-  'Resource Mobilization Lead': ['all', 'planning', 'management', 'communication'],
+  'Resource Mobilization Lead': ['all', 'field', 'planning', 'management', 'communication'],
   'Operations & Field Manager': ['all', 'field', 'planning', 'management'],
   'Media & Finance Lead': ['all', 'field', 'planning', 'management', 'communication'],
   'Field Coordinator': ['all', 'field', 'planning'],
