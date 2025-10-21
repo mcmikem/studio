@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -198,6 +199,14 @@ export default function WorkplanPage() {
 
   const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
   const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
+  
+  const formatDeadline = (deadline: any) => {
+    if (!deadline) return '-';
+    if (deadline.toDate) { // It's a Firestore Timestamp
+      return format(deadline.toDate(), 'MMM dd');
+    }
+    return format(new Date(deadline), 'MMM dd'); // It's a string or Date
+  };
 
   const renderContent = () => {
     if (isLoading) {
@@ -237,7 +246,7 @@ export default function WorkplanPage() {
                             <TableCell className="font-medium">{priority.activity}</TableCell>
                             <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
                             <TableCell>{(Array.isArray(priority.responsible) ? priority.responsible.join(', ') : priority.responsible)}</TableCell>
-                            <TableCell>{priority.deadline ? format(new Date(priority.deadline as any), 'MMM dd') : '-'}</TableCell>
+                            <TableCell>{formatDeadline(priority.deadline)}</TableCell>
                         </TableRow>
                         ))}
                     </TableBody>
@@ -282,7 +291,7 @@ export default function WorkplanPage() {
                             <TableCell className="font-medium">{priority.activity}</TableCell>
                             <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
                             <TableCell>{(Array.isArray(priority.responsible) ? priority.responsible.join(', ') : priority.responsible)}</TableCell>
-                            <TableCell>{priority.deadline ? format(new Date(priority.deadline as any), 'MMM dd') : '-'}</TableCell>
+                            <TableCell>{formatDeadline(priority.deadline)}</TableCell>
                         </TableRow>
                         ))}
                     </TableBody>
