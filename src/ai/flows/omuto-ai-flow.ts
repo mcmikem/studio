@@ -42,10 +42,12 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         history: input.history,
         system: `${KNOWLEDGE_BASE}
         
-## Tool Usage Instructions
+## Tool Usage Instructions & Dynamic Knowledge
+
+Your knowledge is not just static; you can learn about the team's current activities by using the tools provided.
 
 - **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"
-- **getRecentCheckins / getRecentCheckouts**: If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user.`,
+- **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.`,
         tools: [createCheckout, getRecentCheckins, getRecentCheckouts],
     });
     
