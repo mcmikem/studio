@@ -47,17 +47,15 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         tools: [createCheckout],
     });
     
-    const choice = llmResponse.choices[0];
-    
-    // If the model used a tool, the answer is in the tool's response.
-    // Otherwise, it's in the text part of the message.
-    const toolResponse = choice.toolRequest?.responses[0];
-    const answer = toolResponse
+    const toolResponse = llmResponse.toolRequest?.responses[0];
+    let answer = toolResponse
       ? String(toolResponse.response)
-      : choice.message.content[0]?.text;
+      : llmResponse.text;
 
     if (!answer) {
-      throw new Error('AI failed to generate a response.');
+      console.error("AI did not return a text or tool response.", llmResponse);
+      answer = "I'm sorry, but I wasn't able to generate a response. Please try again.";
     }
+
     return { answer };
 }
