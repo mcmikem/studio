@@ -128,39 +128,42 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         )}
         {!isLoading && teamStatus && teamStatus.length > 0 ? (
            <Accordion type="single" collapsible className="w-full">
-            {teamStatus.map(status => (
-                 <AccordionItem value={status.user.id} key={status.user.id}>
-                    <AccordionTrigger>
-                        <div className="flex items-center gap-4 flex-1">
-                            <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
-                                <AvatarImage src={status.user.photoURL} />
-                                <AvatarFallback>{getInitials(status.user.name)}</AvatarFallback>
-                            </Avatar>
-                            <div className="text-left">
-                                <p className="font-semibold">{status.user.name}</p>
-                                <p className="text-xs text-muted-foreground">{status.user.role}</p>
-                            </div>
-                        </div>
-                        <Badge variant={status.checkedIn ? 'default' : 'secondary'} className={status.checkedIn ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}>
-                          {status.checkedIn ? `Checked in at ${status.checkinTime}` : 'Not Checked In'}
-                        </Badge>
-                    </AccordionTrigger>
-                    <AccordionContent className="pl-6 pt-2">
-                       {status.checkedIn ? (
-                            status.currentTask ? (
-                                <div>
-                                    <p className="text-xs text-muted-foreground font-semibold">CURRENTLY:</p>
-                                    <p>{status.currentTask}</p>
+            {teamStatus.map(status => {
+                if (!status.user) return null; // Added safe-guard
+                return (
+                    <AccordionItem value={status.user.id} key={status.user.id}>
+                        <AccordionTrigger>
+                            <div className="flex items-center gap-4 flex-1">
+                                <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
+                                    <AvatarImage src={status.user.photoURL} />
+                                    <AvatarFallback>{getInitials(status.user.name)}</AvatarFallback>
+                                </Avatar>
+                                <div className="text-left">
+                                    <p className="font-semibold">{status.user.name}</p>
+                                    <p className="text-xs text-muted-foreground">{status.user.role}</p>
                                 </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground italic">No task scheduled for the current time.</p>
-                            )
-                       ) : (
-                           <p className="text-sm text-muted-foreground italic">Waiting for user to check in.</p>
-                       )}
-                    </AccordionContent>
-                </AccordionItem>
-            ))}
+                            </div>
+                            <Badge variant={status.checkedIn ? 'default' : 'secondary'} className={status.checkedIn ? 'bg-green-500/20 text-green-700 border-green-500/30' : ''}>
+                            {status.checkedIn ? `Checked in at ${status.checkinTime}` : 'Not Checked In'}
+                            </Badge>
+                        </AccordionTrigger>
+                        <AccordionContent className="pl-6 pt-2">
+                        {status.checkedIn ? (
+                                status.currentTask ? (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground font-semibold">CURRENTLY:</p>
+                                        <p>{status.currentTask}</p>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground italic">No task scheduled for the current time.</p>
+                                )
+                        ) : (
+                            <p className="text-sm text-muted-foreground italic">Waiting for user to check in.</p>
+                        )}
+                        </AccordionContent>
+                    </AccordionItem>
+                )
+            })}
            </Accordion>
         ) : (
             !isLoading && (
