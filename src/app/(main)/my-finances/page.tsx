@@ -9,11 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Wallet, Receipt, CheckCheck } from 'lucide-react';
+import { Wallet, Receipt, CheckCheck, PlusCircle } from 'lucide-react';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 const statusColors: { [key: string]: string } = {
   Pending: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
@@ -47,7 +48,7 @@ export default function MyFinancesPage() {
       .reduce((sum, e) => sum + e.totalAmount, 0);
 
     const pendingReimbursement = expenses
-      .filter(e => e.type === 'Reimbursement' && e.status === 'Approved')
+      .filter(e => e.type === 'Reimbursement' && (e.status === 'Approved' || e.status === 'Pending'))
       .reduce((sum, e) => sum + e.totalAmount, 0);
 
     return { fundsHeld, pendingReimbursement };
@@ -74,14 +75,22 @@ export default function MyFinancesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Wallet className="h-8 w-8" />
-          My Finances
-        </h1>
-        <p className="text-muted-foreground">
-          A personal ledger of your funds, requests, and reimbursements.
-        </p>
+      <header className="flex justify-between items-start">
+        <div>
+            <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Wallet className="h-8 w-8" />
+            My Finances
+            </h1>
+            <p className="text-muted-foreground">
+            A personal ledger of your funds, requests, and reimbursements.
+            </p>
+        </div>
+         <Button asChild>
+            <Link href="/forms/expense">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                New Expense Report
+            </Link>
+        </Button>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -99,7 +108,7 @@ export default function MyFinancesPage() {
         <Card>
           <CardHeader>
             <CardTitle>My Pending Reimbursements</CardTitle>
-            <CardDescription>Approved personal expenses waiting to be paid back to you by the organization.</CardDescription>
+            <CardDescription>Submitted reimbursements waiting for approval and disbursement.</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? <Skeleton className="h-10 w-32" /> : (
