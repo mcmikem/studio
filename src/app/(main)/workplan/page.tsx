@@ -28,7 +28,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { createAlert } from '@/ai/dev';
+import { createAlert } from '@/ai/flows/create-alert-flow';
 
 const individualTaskSchema = z.object({
   value: z.string().min(1, 'Task description cannot be empty.'),
