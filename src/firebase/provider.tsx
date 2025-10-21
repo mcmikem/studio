@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getFirestore, type Firestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
 import { getAuth, type Auth, onAuthStateChanged, type User } from 'firebase/auth';
 import { firebaseConfig } from './config';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
@@ -19,6 +19,21 @@ if (!getApps().length) {
 
 const auth = getAuth(firebaseApp);
 const firestore = getFirestore(firebaseApp);
+
+// Enable offline persistence
+enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED })
+  .catch((err) => {
+    if (err.code === 'failed-precondition') {
+      console.warn(
+        'Firestore offline persistence failed: Multiple tabs open. Persistence will be enabled in one tab only.'
+      );
+    } else if (err.code === 'unimplemented') {
+      console.warn(
+        'Firestore offline persistence failed: The current browser does not support all of the features required.'
+      );
+    }
+  });
+
 
 // --- Context and State Definitions ---
 
