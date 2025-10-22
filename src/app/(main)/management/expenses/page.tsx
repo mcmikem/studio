@@ -25,7 +25,7 @@ import type { Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, Receipt, CheckCheck } from 'lucide-react';
+import { Check, X, Receipt, CheckCheck, Undo2 } from 'lucide-react';
 import { useMemo, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/chart';
 import { formatDateSafe, cn, formatCurrency } from '@/lib/utils';
 import { createAlert } from '@/ai/flows/create-alert-flow';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 
 const statusColors: { [key: string]: string } = {
@@ -54,6 +55,7 @@ const typeColors: { [key: string]: string } = {
 function ExpensesContent() {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
+  const { profile } = useUserProfile(currentUser);
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const highlightedExpenseId = searchParams.get('highlight');
@@ -107,6 +109,15 @@ function ExpensesContent() {
     }
   }, [highlightedExpenseId, expenses]);
 
+  const managementRoles = [
+    'Executive Director',
+    'Programs & Partnerships Manager',
+    'Operations & Field Manager',
+    'Media & Finance Lead'
+  ];
+
+  const canManage = profile && managementRoles.includes(profile.role);
+
 
   const handleStatusUpdate = async (expense: Expense, status: Expense['status']) => {
     if (!firestore || !currentUser) return;
@@ -127,15 +138,19 @@ function ExpensesContent() {
                 message = `Your expense report for "${expense.title}" has been rejected.`;
             } else if (status === 'Disbursed') {
                 message = `Funds for "${expense.title}" have been disbursed. Please go to "My Finances" to acknowledge receipt.`;
+            } else if (status === 'Pending') {
+                message = `The decision on your expense report for "${expense.title}" was reversed. It is now pending review again.`;
             }
 
-            await createAlert({
-                type: status === 'Rejected' ? 'Urgent' : 'Info',
-                message: message,
-                priority: status === 'Rejected' ? 'High' : 'Medium',
-                action: `/my-finances`, 
-                creatorId: currentUser.uid,
-            });
+            if (message) {
+              await createAlert({
+                  type: status === 'Rejected' ? 'Urgent' : 'Info',
+                  message: message,
+                  priority: status === 'Rejected' ? 'High' : 'Medium',
+                  action: `/my-finances`, 
+                  creatorId: currentUser.uid,
+              });
+            }
         }
 
     } catch (error) {
@@ -203,14 +218,19 @@ function ExpensesContent() {
                                     {expense.status}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="text-right">
-                                {expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                             <TableCell className="text-right">
+                                {canManage && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
                                   <div className="flex justify-end gap-2">
                                       <Button variant="ghost" size="icon" className="text-primary hover:text-primary" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
                                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
                                   </div>
                                 )}
-                                {expense.status === 'Approved' && currentUser?.role !== 'Field Coordinator' && (
+                                {canManage && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                                  <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
+                                    <Undo2 className="mr-2 h-4 w-4" /> Reverse
+                                  </Button>
+                                )}
+                                {canManage && expense.status === 'Approved' && currentUser?.role !== 'Field Coordinator' && (
                                      <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
                                 )}
                                 {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
@@ -279,3 +299,4 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
+
