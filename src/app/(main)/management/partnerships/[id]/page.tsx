@@ -17,6 +17,7 @@ import { Handshake, Mail, Phone, User, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { useParams } from 'next/navigation';
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
@@ -25,9 +26,11 @@ const statusColors: { [key: string]: string } = {
     "Stalled": "border-red-500 bg-red-500/10 text-red-500",
 };
 
-export default function PartnerProfilePage({ params }: { params: { id: string } }) {
+export default function PartnerProfilePage() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
-  const partnerDocRef = doc(firestore, 'partnerships', params.id);
+  const partnerDocRef = doc(firestore, 'partnerships', id);
   const { data: partner, isLoading } = useDoc<Partnership>(partnerDocRef);
 
   if (isLoading) {
