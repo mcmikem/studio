@@ -32,6 +32,7 @@ export type Checkin = {
   userId: string;
   name: string;
   primaryMission: string;
+  mood: string;
   details: DailyPlannerAIOutput;
   timestamp: Timestamp;
 };
@@ -41,7 +42,12 @@ export type Checkout = {
   name: string;
   role: string;
   avatar: string;
-  task: string;
+  tasks: {
+      description: string;
+      status: 'Done' | 'Not Done';
+      reason?: string;
+  }[];
+  task: string; // Keep for fallback compatibility
   time?: string;
   timestamp?: Timestamp;
   learning?: string;

@@ -262,6 +262,10 @@
             "type": "string",
             "description": "Key learnings or what to do differently next time."
         },
+        "tomorrowPlan": {
+            "type": "string",
+            "description": "The user's stated priority for the next day."
+        },
         "timestamp": {
           "type": "string",
           "description": "Server timestamp of when the checkout was submitted.",
@@ -578,6 +582,7 @@
     "Equipment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Equipment",
+      "type": "object",
       "description": "Represents a piece of physical equipment or an asset.",
       "properties": {
         "id": { "type": "string" },
@@ -796,8 +801,7 @@
       "schema": {
         "$ref": "#/entities/TeamWeeklyPlan"
       },
-      "description": "Stores manager-created team-wide weekly plans.",
-      "rules": "allow read, write: if request.auth != null && (request.auth.uid == resource.data.authorId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager']);"
+      "description": "Stores manager-created team-wide weekly plans."
     },
     "/workplans/{workplanId}": {
       "schema": {
@@ -837,5 +841,3 @@
     }
   }
 }
-
-    

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -63,14 +64,14 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
 
                  {checkout.learning && (
                     <div>
-                         <h4 className="font-semibold mb-1 flex items-center gap-2"><Lightbulb /> Key Learning</h4>
-                        <p className="text-muted-foreground text-sm">{checkout.learning}</p>
+                         <h4 className="font-semibold mb-1 flex items-center gap-2"><Lightbulb className="h-4 w-4 text-yellow-500"/> Key Learning</h4>
+                        <p className="text-muted-foreground text-sm italic">"{checkout.learning}"</p>
                     </div>
                 )}
                 
                 {checkout.tomorrowPlan && (
                     <div>
-                        <h4 className="font-semibold mb-1 flex items-center gap-2"><BookOpen /> Tomorrow's Priority</h4>
+                        <h4 className="font-semibold mb-1 flex items-center gap-2"><BookOpen className="h-4 w-4 text-blue-500"/> Tomorrow's Priority</h4>
                         <p className="text-muted-foreground text-sm">{checkout.tomorrowPlan}</p>
                     </div>
                 )}
