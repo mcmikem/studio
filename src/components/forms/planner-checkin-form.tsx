@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -400,7 +401,7 @@ function PlannerCheckinFormComponent() {
 
                         {/* Time Blocks */}
                         <div className="space-y-3">
-                            <Label className="font-semibold text-base flex items-center gap-2"><ListChecks /> Key Time Blocks</Label>
+                            <Label className="font-semibold text-base flex items-center gap-2"><ListChecks className="h-5 w-5" /> Key Time Blocks</Label>
                             {timeBlockFields.map((field, index) => (
                                 <div key={field.id} className="p-3 border rounded-lg space-y-2 relative">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -426,7 +427,7 @@ function PlannerCheckinFormComponent() {
                         <Separator/>
                          {/* Multi-Win Connections */}
                         <div className="space-y-3">
-                            <Label className="font-semibold text-base flex items-center gap-2"><LinkIcon /> Multi-Win Connections</Label>
+                            <Label className="font-semibold text-base flex items-center gap-2"><LinkIcon className="h-5 w-5" /> Multi-Win Connections</Label>
                              {connectionFields.map((field, index) => (
                                 <div key={field.id} className="flex gap-2 items-center">
                                     <Input {...register(`multiWinConnections.${index}.value`)} placeholder="e.g., Connects to KR1..." />
@@ -437,17 +438,17 @@ function PlannerCheckinFormComponent() {
                         </div>
                         <Separator/>
                         <div className="space-y-2">
-                             <Label className="font-semibold text-base flex items-center gap-2"><Wrench /> Suggested Resources</Label>
+                             <Label className="font-semibold text-base flex items-center gap-2"><Wrench className="h-5 w-5" /> Suggested Resources</Label>
                              <Textarea {...register('materials')} />
                         </div>
                         <Separator/>
                         <div className="space-y-2">
-                            <Label className="font-semibold text-base flex items-center gap-2"><Puzzle /> Potential Challenges</Label>
+                            <Label className="font-semibold text-base flex items-center gap-2"><Puzzle className="h-5 w-5" /> Potential Challenges</Label>
                              <Textarea {...register('challenges')} />
                         </div>
                         <Separator/>
                          <div className="space-y-2">
-                            <Label className="font-semibold text-base flex items-center gap-2"><BrainCircuit /> Best Practice Tip</Label>
+                            <Label className="font-semibold text-base flex items-center gap-2"><BrainCircuit className="h-5 w-5" /> Best Practice Tip</Label>
                              <Textarea {...register('bestPractice')} />
                         </div>
 
@@ -479,3 +480,5 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
+
+    
