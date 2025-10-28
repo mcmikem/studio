@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -328,11 +329,16 @@ export default function PartnershipsPage() {
   const { toast } = useToast();
   
   const pipeline = useMemo(() => {
-    if (!partnerships) return { Prospecting: [], Negotiation: [], Active: [], Stalled: [] };
+    const initial = { Prospecting: [], Negotiation: [], Active: [], Stalled: [] };
+    if (!partnerships) return initial;
+    
     return partnerships.reduce((acc, p) => {
-        acc[p.status].push(p);
+        if (p.status && acc[p.status]) {
+            acc[p.status].push(p);
+        }
         return acc;
-    }, { Prospecting: [], Negotiation: [], Active: [], Stalled: [] } as Record<Partnership['status'], Partnership[]>);
+    }, initial as Record<Partnership['status'], Partnership[]>);
+
   }, [partnerships]);
   
   const pipelineStages: Partnership['status'][] = ['Active', 'Negotiation', 'Prospecting', 'Stalled'];
