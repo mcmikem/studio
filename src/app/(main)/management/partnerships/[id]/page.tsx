@@ -77,7 +77,7 @@ function HealthCheckForm({ partner, onFormSubmit }: { partner: Partnership; onFo
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<HealthCheckFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue, watch } = useForm<HealthCheckFormData>({
     resolver: zodResolver(healthCheckSchema),
     defaultValues: {
       communication: 3, delivery: 3, alignment: 3, value: 3,
@@ -117,24 +117,31 @@ function HealthCheckForm({ partner, onFormSubmit }: { partner: Partnership; onFo
     }
   };
 
-  const StarRating = ({ name }: { name: keyof HealthCheckFormData }) => (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map(star => (
-        <label key={star}>
-          <input type="radio" value={star} {...register(name)} className="sr-only" />
-          <Star className={`cursor-pointer h-6 w-6 `} />
-        </label>
-      ))}
-    </div>
-  );
+  const StarRating = ({ name, label }: { name: keyof HealthCheckFormData, label: string }) => {
+    const rating = watch(name);
+    return (
+      <div className="flex justify-between items-center">
+        <Label>{label}</Label>
+        <div className="flex gap-1">
+          {[1, 2, 3, 4, 5].map(star => (
+            <Star
+              key={star}
+              className={`cursor-pointer h-6 w-6 transition-colors ${rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`}
+              onClick={() => setValue(name, star)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-3">
-        <div className="flex justify-between items-center"><Label>Communication</Label><StarRating name="communication" /></div>
-        <div className="flex justify-between items-center"><Label>Delivery on Promises</Label><StarRating name="delivery" /></div>
-        <div className="flex justify-between items-center"><Label>Strategic Alignment</Label><StarRating name="alignment" /></div>
-        <div className="flex justify-between items-center"><Label>Value Provided</Label><StarRating name="value" /></div>
+        <StarRating name="communication" label="Communication" />
+        <StarRating name="delivery" label="Delivery on Promises" />
+        <StarRating name="alignment" label="Strategic Alignment" />
+        <StarRating name="value" label="Value Provided" />
       </div>
       <div className="space-y-2">
         <Label htmlFor="issues">Issues or Concerns</Label>
