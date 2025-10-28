@@ -1,4 +1,5 @@
 
+
 'use client';
 import {
   Card,
@@ -25,6 +26,7 @@ import { Separator } from '../ui/separator';
 
 const checkinSchema = z.object({
   primaryMission: z.string(),
+  mood: z.string(),
   details: z.any(),
 });
 
@@ -48,6 +50,7 @@ function CheckinFormComponent() {
                 const planData = JSON.parse(decodeURIComponent(planDataString));
                 setValue('primaryMission', planData.primaryMission);
                 setValue('details', planData.details);
+                setValue('mood', planData.mood);
             } catch (error) {
                 console.error("Failed to parse plan data:", error);
                 toast({
@@ -76,6 +79,7 @@ function CheckinFormComponent() {
             userId: user.uid,
             name: profile.name,
             primaryMission: data.primaryMission,
+            mood: data.mood,
             details: data.details,
             timestamp: serverTimestamp(),
         };
@@ -173,3 +177,5 @@ export function CheckinForm() {
         </Suspense>
     )
 }
+
+    
