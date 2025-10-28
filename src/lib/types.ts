@@ -92,30 +92,31 @@ export type Program = {
     createdAt?: Timestamp;
 }
 
-export type Partnership = {
-  id: string;
-  name: string;
-  type: "NGO" | "Government" | "Corporate" | "Individual";
-  focusAreas?: string[];
-  contactPerson: string;
-  contactRole?: string;
-  contactPhone?: string;
-  contactEmail: string;
-  offers?: string[];
-  receives?: string[];
-  financialValue?: number;
-  inKindValue?: string;
-  strategicValue?: string;
-  strategicFit?: number;
-  resourcePotential?: "High" | "Medium" | "Low";
-  riskLevel?: "High" | "Medium" | "Low";
-  priority?: "Immediate" | "Short-term" | "Long-term";
-  status: "Prospecting" | "Negotiation" | "Active" | "Stalled";
-  health?: "Strong" | "Needs Attention" | "At Risk";
-  nextStep: string;
-  createdAt: Timestamp;
-  lastContacted: Timestamp;
-};
+export const PartnershipSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.enum(["NGO", "Government", "Corporate", "Individual"]),
+  focusAreas: z.array(z.string()).optional(),
+  contactPerson: z.string(),
+  contactRole: z.string().optional(),
+  contactPhone: z.string().optional(),
+  contactEmail: z.string().email(),
+  offers: z.array(z.string()).optional(),
+  receives: z.array(z.string()).optional(),
+  financialValue: z.number().optional(),
+  inKindValue: z.string().optional(),
+  strategicValue: z.string().optional(),
+  strategicFit: z.number().optional(),
+  resourcePotential: z.enum(["High", "Medium", "Low"]).optional(),
+  riskLevel: z.enum(["High", "Medium", "Low"]).optional(),
+  priority: z.enum(["Immediate", "Short-term", "Long-term"]).optional(),
+  status: z.enum(["Prospecting", "Negotiation", "Active", "Stalled"]),
+  health: z.enum(["Strong", "Needs Attention", "At Risk"]).optional(),
+  nextStep: z.string(),
+  createdAt: z.any(), // Allow any for schema validation, will be Timestamp
+  lastContacted: z.any(), // Allow any for schema validation, will be Timestamp
+});
+export type Partnership = z.infer<typeof PartnershipSchema>;
 
 
 export type Activity = {
