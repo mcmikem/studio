@@ -79,7 +79,7 @@ function FinalizeWorkplanForm({
     const newPlan: Omit<WeeklyWorkplan, 'id'> = {
       userId: user.uid,
       userName: profile.name,
-      weekOf: teamPlan.weekOf,
+      weekOf: teamPlan.weekOf, // Use the EXACT timestamp from the team plan
       teamPlanId: teamPlan.id,
       teamPriorities: teamPlan.keyPriorities,
       individualTasks: data.individualTasks.map(t => t.value),
@@ -165,16 +165,13 @@ export default function WorkplanPage() {
     setIsLoading(true);
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
-    const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
     const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
-    const weekEndTimestamp = Timestamp.fromDate(endOfSelectedWeek);
 
     try {
-      // Fetch the team's plan for the week using a range query
+      // Fetch the team's plan for the week
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
-        where('weekOf', '>=', weekStartTimestamp),
-        where('weekOf', '<=', weekEndTimestamp),
+        where('weekOf', '==', weekStartTimestamp),
         where('status', '==', 'Published'),
         limit(1)
       );
@@ -182,25 +179,27 @@ export default function WorkplanPage() {
       if (!teamPlanSnapshot.empty) {
         const doc = teamPlanSnapshot.docs[0];
         setTeamPlan({ id: doc.id, ...doc.data() } as TeamWeeklyPlan);
+
+         // Fetch the user's finalized plan for the week using the team plan's exact timestamp
+        const userPlanQuery = query(
+            collection(firestore, 'workplans'),
+            where('userId', '==', user.uid),
+            where('weekOf', '==', doc.data().weekOf), // Use exact timestamp from team plan
+            limit(1)
+        );
+        const userPlanSnapshot = await getDocs(userPlanQuery);
+        if (!userPlanSnapshot.empty) {
+            const userDoc = userPlanSnapshot.docs[0];
+            setUserPlan({ id: userDoc.id, ...userDoc.data() } as WeeklyWorkplan);
+        } else {
+            setUserPlan(null);
+        }
+
       } else {
         setTeamPlan(null);
-      }
-
-      // Fetch the user's finalized plan for the week using a range query
-      const userPlanQuery = query(
-        collection(firestore, 'workplans'),
-        where('userId', '==', user.uid),
-        where('weekOf', '>=', weekStartTimestamp),
-        where('weekOf', '<=', weekEndTimestamp),
-        limit(1)
-      );
-      const userPlanSnapshot = await getDocs(userPlanQuery);
-      if (!userPlanSnapshot.empty) {
-        const doc = userPlanSnapshot.docs[0];
-        setUserPlan({ id: doc.id, ...doc.data() } as WeeklyWorkplan);
-      } else {
         setUserPlan(null);
       }
+
     } catch (e) {
       console.error("Error fetching workplans:", e);
     } finally {
