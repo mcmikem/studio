@@ -153,6 +153,7 @@ export type Alert = {
     action: string;
     creatorId: string;
     createdAt?: Timestamp;
+    readBy?: string[];
 }
 
 export type Task = {
