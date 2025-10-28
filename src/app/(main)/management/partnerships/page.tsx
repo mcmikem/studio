@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -7,21 +6,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { Handshake, PlusCircle, Edit, Trash2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -53,15 +45,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { EmptyState } from '@/components/ui/empty-state';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Link from 'next/link';
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
-    "Prospecting": "border-blue-500 bg-blue-500/10 text-blue-500",
     "Negotiation": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
+    "Prospecting": "border-blue-500 bg-blue-500/10 text-blue-500",
     "Stalled": "border-red-500 bg-red-500/10 text-red-500",
 };
 
@@ -381,33 +373,42 @@ export default function PartnershipsPage() {
                      {isLoading && <div className="space-y-2"><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>}
                      <div className="space-y-2">
                         {pipeline[stage].map(partner => (
-                             <Card key={partner.id} className="p-3">
-                                <p className="font-semibold text-sm">{partner.name}</p>
-                                <p className="text-xs text-muted-foreground">{partner.nextStep}</p>
-                                <div className="flex justify-end mt-2">
-                                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingPartnership(partner)}>
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-7 w-7">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
+                             <Card key={partner.id} className="p-3 hover:bg-muted/50 transition-colors">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-semibold text-sm">{partner.name}</p>
+                                        <p className="text-xs text-muted-foreground">{partner.nextStep}</p>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingPartnership(partner)}>
+                                            <Edit className="h-4 w-4" />
+                                        </Button>
+                                         <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-7 w-7">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
                                 </div>
+                                <Button asChild variant="link" className="p-0 h-auto mt-2">
+                                     <Link href={`/management/partnerships/${partner.id}`} className="text-xs">
+                                        View Profile <ArrowRight className="ml-1 h-3 w-3" />
+                                     </Link>
+                                </Button>
                             </Card>
                         ))}
                         {!isLoading && pipeline[stage].length === 0 && (
