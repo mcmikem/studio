@@ -112,7 +112,8 @@ export type Partnership = {
   priority?: "Immediate" | "Short-term" | "Long-term";
   status: "Prospecting" | "Negotiation" | "Active" | "Stalled";
   nextStep: string;
-  createdAt?: Timestamp;
+  createdAt: Timestamp;
+  lastContacted: Timestamp;
 };
 
 

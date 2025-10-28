@@ -117,9 +117,10 @@
         "priority": { "type": "string", "enum": ["Immediate", "Short-term", "Long-term"], "description": "The engagement priority." },
         "status": { "type": "string", "enum": ["Prospecting", "Negotiation", "Active", "Stalled"], "description": "The current status of the partnership." },
         "nextStep": { "type": "string", "description": "The next actionable step for this partnership." },
-        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of when the partnership was created." }
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of when the partnership was created." },
+        "lastContacted": { "type": "string", "format": "date-time", "description": "Server timestamp of the last interaction with the partner." }
       },
-      "required": ["name", "type", "contactPerson", "contactEmail", "status", "nextStep", "createdAt"]
+      "required": ["name", "type", "contactPerson", "contactEmail", "status", "nextStep", "createdAt", "lastContacted"]
     },
     "Activity": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -775,3 +776,5 @@
     }
   }
 }
+
+    
