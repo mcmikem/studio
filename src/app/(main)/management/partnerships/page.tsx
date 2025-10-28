@@ -324,7 +324,7 @@ function UrgentActions({ partnerships }: { partnerships: Partnership[] | null })
                  overdue.push(p);
             }
              // Check for stale partnerships
-            if (p.lastContacted && p.lastContacted.toDate() < thirtyDaysAgo && p.status !== 'Stalled' && p.status !== 'Active') {
+            if (p.lastContacted && p.lastContacted.toDate && p.lastContacted.toDate() < thirtyDaysAgo && p.status !== 'Stalled' && p.status !== 'Active') {
                 atRisk.push(p);
             }
         });
@@ -516,4 +516,3 @@ export default function PartnershipsPage() {
     </div>
   );
 }
-
