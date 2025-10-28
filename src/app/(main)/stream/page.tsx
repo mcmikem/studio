@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -7,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter
 } from '@/components/ui/card';
 import { Rss, LogOut, BookOpen, Lightbulb, Check, X } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
@@ -17,14 +15,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { tagColors } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
 
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
     
     // The 'tasks' field might be an array or a single string for older documents.
-    const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [{ description: checkout.tasks, status: 'Done' }];
+    const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [{ description: checkout.task, status: 'Done' }];
 
     const completedTasks = tasksArray.filter(t => t.status === 'Done');
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
