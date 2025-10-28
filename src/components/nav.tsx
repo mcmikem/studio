@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -73,6 +74,7 @@ const navConfig = {
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Management' },
+    { href: '/management/partnerships', icon: Handshake, label: 'Partnerships' },
     { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead'] },
     { href: '/management/users', icon: UserIcon, label: 'Users' },
   ],
@@ -129,6 +131,7 @@ export function AppSidebar() {
     if (!allowedSections.includes(sectionName)) return null;
     
     const navItems = navConfig[sectionName].filter(item => {
+        if (item.href === '/management/programs' && sectionName === 'management') return false; // Hide generic management link
         if ('roles' in item) {
             // Check if user has one of the required roles
             return (item.roles as string[]).includes(effectiveRole || '');
