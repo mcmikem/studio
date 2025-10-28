@@ -163,12 +163,14 @@ export default function WorkplanPage() {
   const fetchPlans = useCallback(async () => {
     if (!user || !firestore) return;
     setIsLoading(true);
+    setTeamPlan(null);
+    setUserPlan(null);
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
     const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
 
     try {
-      // Fetch the team's plan for the week using a range query
+      // 1. Fetch the published team plan for the week.
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
         where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
@@ -177,16 +179,17 @@ export default function WorkplanPage() {
         limit(1)
       );
       const teamPlanSnapshot = await getDocs(teamPlanQuery);
+      
       if (!teamPlanSnapshot.empty) {
         const teamPlanDoc = teamPlanSnapshot.docs[0];
         const fetchedTeamPlan = { id: teamPlanDoc.id, ...teamPlanDoc.data() } as TeamWeeklyPlan;
         setTeamPlan(fetchedTeamPlan);
 
-         // Fetch the user's finalized plan for the week using the team plan's exact timestamp
+        // 2. Once we have a team plan, check if the current user has already submitted their individual plan.
         const userPlanQuery = query(
             collection(firestore, 'workplans'),
             where('userId', '==', user.uid),
-            where('weekOf', '==', fetchedTeamPlan.weekOf), // Use exact timestamp from the found team plan
+            where('teamPlanId', '==', fetchedTeamPlan.id),
             limit(1)
         );
         const userPlanSnapshot = await getDocs(userPlanQuery);
@@ -196,7 +199,6 @@ export default function WorkplanPage() {
         } else {
             setUserPlan(null);
         }
-
       } else {
         setTeamPlan(null);
         setUserPlan(null);
@@ -371,4 +373,3 @@ export default function WorkplanPage() {
     </div>
   );
 }
-
