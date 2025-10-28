@@ -83,9 +83,7 @@ export function MyWeeklyPlan() {
           ) : (
              <div className="text-center py-4">
                 <p className="text-muted-foreground">You haven't finalized your workplan for this week.</p>
-                 <Button variant="link">
-                    <Link href="/workplan">Set your plan now!</Link>
-                </Button>
+                 <Button variant="link">Set your plan now!</Button>
             </div>
           )}
           {weeklyPlan && weeklyPlan.individualTasks.length > 4 && (
