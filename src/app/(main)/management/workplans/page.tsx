@@ -176,7 +176,9 @@ function TeamWorkplanForm({
       return;
     }
     
+    // ** FIX: Normalize the timestamp to the start of the week **
     const weekStartDate = startOfWeek(weekOf, { weekStartsOn: 1 });
+    weekStartDate.setHours(0, 0, 0, 0); // Set to midnight
 
     const planData = {
         weekOf: Timestamp.fromDate(weekStartDate),
@@ -371,6 +373,7 @@ export default function TeamWorkplansPage() {
     setIsLoadingPlan(true);
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+    startOfSelectedWeek.setHours(0, 0, 0, 0); // Normalize to midnight
     const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
 
     const q = query(

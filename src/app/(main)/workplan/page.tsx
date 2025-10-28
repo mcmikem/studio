@@ -79,7 +79,8 @@ function FinalizeWorkplanForm({
     const newPlan: Omit<WeeklyWorkplan, 'id'> = {
       userId: user.uid,
       userName: profile.name,
-      weekOf: teamPlan.weekOf, // Use the EXACT timestamp from the team plan
+      // ** FIX: Use the exact timestamp from the team plan **
+      weekOf: teamPlan.weekOf,
       teamPlanId: teamPlan.id,
       teamPriorities: teamPlan.keyPriorities,
       individualTasks: data.individualTasks.map(t => t.value),
@@ -167,6 +168,7 @@ export default function WorkplanPage() {
     setUserPlan(null);
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+    startOfSelectedWeek.setHours(0, 0, 0, 0); // Normalize to midnight
     const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
 
     try {
