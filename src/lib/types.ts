@@ -111,6 +111,7 @@ export type Partnership = {
   riskLevel?: "High" | "Medium" | "Low";
   priority?: "Immediate" | "Short-term" | "Long-term";
   status: "Prospecting" | "Negotiation" | "Active" | "Stalled";
+  health?: "Strong" | "Needs Attention" | "At Risk";
   nextStep: string;
   createdAt: Timestamp;
   lastContacted: Timestamp;
@@ -374,12 +375,27 @@ export type Meeting = {
     partnerId: string;
     partnerName: string;
     date: Timestamp;
-    attendees: string[];
+    attendees: string;
     type: "Exploration" | "Proposal" | "Progress" | "Problem" | "Renewal";
-    decisions: string;
-    actionItems: string[];
+    decisions?: string;
+    actionItems?: string[];
     nextSteps: string;
     createdAt: Timestamp;
 };
 
+export type HealthCheck = {
+    id: string;
+    partnerId: string;
+    partnerName: string;
+    checkDate: Timestamp;
+    communication: number;
+    delivery: number;
+    alignment: number;
+    value: number;
+    issues: string;
+    recommendation: "Continue" | "Improve" | "Pause" | "Terminate";
+    nextReviewDate: string;
+    checkedBy: string;
+    createdAt: Timestamp;
+};
     

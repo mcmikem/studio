@@ -116,6 +116,7 @@
         "riskLevel": { "type": "string", "enum": ["High", "Medium", "Low"], "description": "The assessed risk level of the partnership." },
         "priority": { "type": "string", "enum": ["Immediate", "Short-term", "Long-term"], "description": "The engagement priority." },
         "status": { "type": "string", "enum": ["Prospecting", "Negotiation", "Active", "Stalled"], "description": "The current status of the partnership." },
+        "health": { "type": "string", "enum": ["Strong", "Needs Attention", "At Risk"], "description": "The overall health of the partnership." },
         "nextStep": { "type": "string", "description": "The next actionable step for this partnership." },
         "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of when the partnership was created." },
         "lastContacted": { "type": "string", "format": "date-time", "description": "Server timestamp of the last interaction with the partner." }
@@ -652,6 +653,27 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["partnerId", "partnerName", "date", "attendees", "type", "nextSteps", "createdAt"]
+    },
+     "HealthCheck": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Health Check",
+      "description": "Represents a periodic health check for a partnership.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "partnerId": { "type": "string" },
+        "partnerName": { "type": "string" },
+        "checkDate": { "type": "string", "format": "date-time" },
+        "communication": { "type": "number", "description": "Rating from 1-5" },
+        "delivery": { "type": "number", "description": "Rating from 1-5" },
+        "alignment": { "type": "number", "description": "Rating from 1-5" },
+        "value": { "type": "number", "description": "Rating from 1-5" },
+        "issues": { "type": "string", "description": "Summary of issues or concerns." },
+        "recommendation": { "type": "string", "enum": ["Continue", "Improve", "Pause", "Terminate"] },
+        "nextReviewDate": { "type": "string", "format": "date" },
+        "checkedBy": { "type": "string", "description": "Name of the staff member who did the check." }
+      },
+      "required": ["partnerId", "checkDate", "communication", "delivery", "alignment", "value", "recommendation", "nextReviewDate", "checkedBy"]
     }
   },
   "auth": {
@@ -708,6 +730,12 @@
         "$ref": "#/entities/Meeting"
       },
       "description": "Stores logged meetings for a specific partner."
+    },
+    "/partnerships/{partnershipId}/healthChecks/{healthCheckId}": {
+      "schema": {
+        "$ref": "#/entities/HealthCheck"
+      },
+      "description": "Stores periodic health check records for a partner."
     },
     "/impact-metrics/{metricId}": {
       "schema": {
@@ -801,7 +829,5 @@
     }
   }
 }
-
-    
 
     

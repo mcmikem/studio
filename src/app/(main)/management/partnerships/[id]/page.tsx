@@ -11,10 +11,10 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useDoc, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import { collection, doc, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
-import type { Partnership, Meeting } from '@/lib/types';
+import { collection, doc, query, where, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
+import type { Partnership, Meeting, HealthCheck } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, Mail, Phone, User, ArrowLeft, Calendar, FileText, PlusCircle } from 'lucide-react';
+import { Handshake, Mail, Phone, User, ArrowLeft, Calendar, FileText, PlusCircle, HeartPulse, Star } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -31,7 +31,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format } from 'date-fns';
+import { format, addMonths } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
@@ -53,6 +53,113 @@ const meetingSchema = z.object({
 
 type MeetingFormData = z.infer<typeof meetingSchema>;
 
+const healthCheckSchema = z.object({
+  communication: z.coerce.number().min(1).max(5),
+  delivery: z.coerce.number().min(1).max(5),
+  alignment: z.coerce.number().min(1).max(5),
+  value: z.coerce.number().min(1).max(5),
+  issues: z.string().optional(),
+  recommendation: z.enum(["Continue", "Improve", "Pause", "Terminate"]),
+  nextReviewDate: z.string().min(1, "Next review date is required."),
+});
+type HealthCheckFormData = z.infer<typeof healthCheckSchema>;
+
+
+function HealthCheckForm({ partner, onFormSubmit }: { partner: Partnership; onFormSubmit: () => void }) {
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<HealthCheckFormData>({
+    resolver: zodResolver(healthCheckSchema),
+    defaultValues: {
+      communication: 3, delivery: 3, alignment: 3, value: 3,
+      recommendation: "Continue",
+      nextReviewDate: format(addMonths(new Date(), 3), 'yyyy-MM-dd'),
+    },
+  });
+
+  const onSubmit = async (data: HealthCheckFormData) => {
+    if (!firestore || !user || !profile) return;
+    const healthCheckCollection = collection(firestore, 'partnerships', partner.id, 'healthChecks');
+    const partnerRef = doc(firestore, 'partnerships', partner.id);
+    
+    const newHealthCheck: Omit<HealthCheck, 'id'> = {
+      partnerId: partner.id,
+      partnerName: partner.name,
+      checkDate: serverTimestamp() as Timestamp,
+      createdAt: serverTimestamp() as Timestamp,
+      checkedBy: profile.name,
+      ...data,
+    };
+    
+    // Determine overall health status
+    const avgRating = (data.communication + data.delivery + data.alignment + data.value) / 4;
+    let newHealthStatus: Partnership['health'] = 'Strong';
+    if (avgRating < 2.5) newHealthStatus = 'At Risk';
+    else if (avgRating < 4) newHealthStatus = 'Needs Attention';
+    
+    try {
+      await addDocumentNonBlocking(healthCheckCollection, newHealthCheck);
+      await updateDocumentNonBlocking(partnerRef, { health: newHealthStatus });
+      toast({ title: "Health Check Logged!", description: `The health status for ${partner.name} has been updated.` });
+      onFormSubmit();
+    } catch (e) {
+      console.error("Error logging health check:", e);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not save the health check.' });
+    }
+  };
+
+  const StarRating = ({ name }: { name: keyof HealthCheckFormData }) => (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map(star => (
+        <label key={star}>
+          <input type="radio" value={star} {...register(name)} className="sr-only" />
+          <Star className={`cursor-pointer h-6 w-6 `} />
+        </label>
+      ))}
+    </div>
+  );
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-3">
+        <div className="flex justify-between items-center"><Label>Communication</Label><StarRating name="communication" /></div>
+        <div className="flex justify-between items-center"><Label>Delivery on Promises</Label><StarRating name="delivery" /></div>
+        <div className="flex justify-between items-center"><Label>Strategic Alignment</Label><StarRating name="alignment" /></div>
+        <div className="flex justify-between items-center"><Label>Value Provided</Label><StarRating name="value" /></div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="issues">Issues or Concerns</Label>
+        <Textarea id="issues" {...register("issues")} placeholder="Any challenges or friction points?" />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="recommendation">Recommendation</Label>
+        <Select defaultValue="Continue" onValueChange={(value) => setValue('recommendation', value as any)}>
+            <SelectTrigger><SelectValue/></SelectTrigger>
+            <SelectContent>
+                <SelectItem value="Continue">Continue</SelectItem>
+                <SelectItem value="Improve">Improve</SelectItem>
+                <SelectItem value="Pause">Pause</SelectItem>
+                <SelectItem value="Terminate">Terminate</SelectItem>
+            </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="nextReviewDate">Next Review Date</Label>
+        <Input id="nextReviewDate" type="date" {...register("nextReviewDate")} />
+      </div>
+      <DialogFooter>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Save Health Check
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
 function MeetingLogForm({ partner, onFormSubmit }: { partner: Partnership, onFormSubmit: () => void }) {
     const { user } = useUser();
     const { profile } = useUserProfile(user);
@@ -64,7 +171,7 @@ function MeetingLogForm({ partner, onFormSubmit }: { partner: Partnership, onFor
         defaultValues: {
             date: format(new Date(), 'yyyy-MM-dd'),
             type: 'Progress',
-            attendees: `${profile?.name}, ${partner.contactPerson}`,
+            attendees: `${profile?.name || ''}, ${partner.contactPerson}`,
         },
     });
 
@@ -77,7 +184,7 @@ function MeetingLogForm({ partner, onFormSubmit }: { partner: Partnership, onFor
             ...data,
             partnerId: partner.id,
             partnerName: partner.name,
-            date: serverTimestamp(),
+            date: Timestamp.fromDate(new Date(data.date)),
             createdAt: serverTimestamp()
         };
 
@@ -200,6 +307,8 @@ export default function PartnerProfilePage() {
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
   const [isLogMeetingOpen, setIsLogMeetingOpen] = useState(false);
+  const [isHealthCheckOpen, setIsHealthCheckOpen] = useState(false);
+
 
   const partnerDocRef = useMemo(() => {
     if (!firestore || !id) return null;
@@ -250,21 +359,38 @@ export default function PartnerProfilePage() {
             <Button asChild variant="outline">
                 <Link href="/management/partnerships"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Partnerships</Link>
             </Button>
-            <Dialog open={isLogMeetingOpen} onOpenChange={setIsLogMeetingOpen}>
-                <DialogTrigger asChild>
-                    <Button>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Log Meeting
-                    </Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Log Interaction with {partner.name}</DialogTitle>
-                        <DialogDescription>Record the key outcomes and next steps from your meeting.</DialogDescription>
-                    </DialogHeader>
-                    <MeetingLogForm partner={partner} onFormSubmit={() => setIsLogMeetingOpen(false)} />
-                </DialogContent>
-            </Dialog>
+            <div className="flex gap-2">
+                <Dialog open={isHealthCheckOpen} onOpenChange={setIsHealthCheckOpen}>
+                    <DialogTrigger asChild>
+                         <Button variant="secondary">
+                            <HeartPulse className="mr-2 h-4 w-4" />
+                            Health Check
+                        </Button>
+                    </DialogTrigger>
+                     <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Partnership Health Check: {partner.name}</DialogTitle>
+                            <DialogDescription>Rate the partnership across key indicators.</DialogDescription>
+                        </DialogHeader>
+                        <HealthCheckForm partner={partner} onFormSubmit={() => setIsHealthCheckOpen(false)} />
+                    </DialogContent>
+                </Dialog>
+                <Dialog open={isLogMeetingOpen} onOpenChange={setIsLogMeetingOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Log Meeting
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Log Interaction with {partner.name}</DialogTitle>
+                            <DialogDescription>Record the key outcomes and next steps from your meeting.</DialogDescription>
+                        </DialogHeader>
+                        <MeetingLogForm partner={partner} onFormSubmit={() => setIsLogMeetingOpen(false)} />
+                    </DialogContent>
+                </Dialog>
+            </div>
         </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
          <div className="lg:col-span-2 space-y-6">
@@ -356,6 +482,3 @@ export default function PartnerProfilePage() {
     </div>
   );
 }
-
-
-    
