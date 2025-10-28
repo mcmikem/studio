@@ -8,7 +8,8 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server';
-import { collection, serverTimestamp } from 'firebase-admin/firestore';
+import { serverTimestamp } from 'firebase/firestore';
+import { addDocumentNonBlocking } from '@/firebase';
 
 const AlertInputSchema = z.object({
   type: z.enum(['Urgent', 'Reminder', 'Info']),
@@ -31,11 +32,6 @@ const createAlertFlow = ai.defineFlow(
     outputSchema: z.object({ id: z.string() }),
   },
   async (alertData) => {
-    // In a production app, you would add security logic here.
-    // For example, check if the creator (alertData.creatorId) has the permission
-    // to create alerts of this type or for the target users.
-    // e.g., if (userRole !== 'admin') throw new Error('Permission denied');
-
     try {
       const { firestore } = await initializeFirebase();
       const alertsCollection = firestore.collection('alerts');
@@ -43,6 +39,7 @@ const createAlertFlow = ai.defineFlow(
       const newAlert = {
         ...alertData,
         createdAt: serverTimestamp(),
+        readBy: [],
       };
 
       const docRef = await alertsCollection.add(newAlert);
