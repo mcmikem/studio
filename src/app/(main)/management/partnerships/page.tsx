@@ -15,7 +15,7 @@ import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, u
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, PlusCircle, Edit, Trash2, ArrowRight, AlertTriangle, CheckCircle, Clock, DollarSign, Gift, BrainCircuit } from 'lucide-react';
+import { Handshake, PlusCircle, Edit, Trash2, ArrowRight, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -51,8 +51,6 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import { isPast, subDays } from 'date-fns';
-import { formatCurrency } from '@/lib/utils';
-import { PartnershipIntelligence } from '@/components/management/partnerships/intelligence';
 
 
 const statusColors: { [key: string]: string } = {
@@ -315,47 +313,6 @@ function PartnershipForm({
   );
 }
 
-function ValueDashboard({ partnerships }: { partnerships: Partnership[] | null }) {
-    const { financialValue, inKindCount, strategicCount } = useMemo(() => {
-        if (!partnerships) {
-            return { financialValue: 0, inKindCount: 0, strategicCount: 0 };
-        }
-        const activePartners = partnerships.filter(p => p.status === 'Active');
-
-        const totalFinancial = activePartners.reduce((sum, p) => sum + (p.financialValue || 0), 0);
-        const inKind = activePartners.filter(p => p.inKindValue && p.inKindValue.trim() !== '').length;
-        const strategic = activePartners.filter(p => p.strategicValue && p.strategicValue.trim() !== '').length;
-
-        return { financialValue: totalFinancial, inKindCount: inKind, strategicCount: strategic };
-    }, [partnerships]);
-    
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Partnership Value Dashboard</CardTitle>
-                <CardDescription>An overview of the value from active partnerships.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-muted rounded-lg text-center">
-                    <DollarSign className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                    <p className="text-2xl font-bold">{formatCurrency(financialValue)}</p>
-                    <p className="text-xs text-muted-foreground">Est. Annual Financial Value</p>
-                </div>
-                 <div className="p-4 bg-muted rounded-lg text-center">
-                    <Gift className="h-6 w-6 text-blue-500 mx-auto mb-2" />
-                    <p className="text-2xl font-bold">{inKindCount}</p>
-                    <p className="text-xs text-muted-foreground">Partners with In-Kind Value</p>
-                </div>
-                <div className="p-4 bg-muted rounded-lg text-center">
-                    <BrainCircuit className="h-6 w-6 text-purple-500 mx-auto mb-2" />
-                    <p className="text-2xl font-bold">{strategicCount}</p>
-                    <p className="text-xs text-muted-foreground">Partners with Strategic Value</p>
-                </div>
-            </CardContent>
-        </Card>
-    )
-}
-
 function UrgentActions({ partnerships }: { partnerships: Partnership[] | null }) {
     const actions = useMemo(() => {
         if (!partnerships) return { overdue: [], atRisk: [], recent: [] };
@@ -466,101 +423,91 @@ export default function PartnershipsPage() {
 
   return (
     <div className="space-y-6">
-       <ValueDashboard partnerships={partnerships} />
-       
-       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
-            <Card>
-                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div>
-                    <CardTitle className="flex items-center gap-2"><Handshake className="h-6 w-6" />Partnership Pipeline</CardTitle>
-                    <CardDescription>Manage your organization's partnerships and strategic alliances.</CardDescription>
-                    </div>
-                    <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Partner
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-2xl">
-                        <DialogHeader>
-                        <DialogTitle>New Partner Intake Form</DialogTitle>
-                        <DialogDescription>
-                            Enter the details of the new partner organization.
-                        </DialogDescription>
-                        </DialogHeader>
-                        <PartnershipForm onFormSubmit={() => setIsNewDialogOpen(false)} />
-                    </DialogContent>
-                    </Dialog>
-                </CardHeader>
-                <CardContent className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {pipelineStages.map(stage => (
-                            <div key={stage}>
-                                <h3 className="font-semibold flex items-center gap-2 mb-2">
-                                    <Badge variant="outline" className={`${statusColors[stage]} text-sm`}>{stage}</Badge>
-                                    <span className="text-sm text-muted-foreground">({pipeline[stage]?.length || 0})</span>
-                                </h3>
-                                {isLoading && <div className="space-y-2"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>}
-                                <div className="space-y-2">
-                                    {pipeline[stage] && pipeline[stage]!.map(partner => (
-                                        <Card key={partner.id} className="p-3 hover:bg-muted/50 transition-colors">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className="font-semibold text-sm">{partner.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{partner.nextStep}</p>
-                                                </div>
-                                                <div className="flex gap-1">
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingPartnership(partner)}>
-                                                        <Edit className="h-4 w-4" />
+      <Card>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <CardTitle className="flex items-center gap-2"><Handshake className="h-6 w-6" />Partnership Pipeline</CardTitle>
+            <CardDescription>Manage your organization's partnerships and strategic alliances.</CardDescription>
+          </div>
+          <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Partner
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>New Partner Intake Form</DialogTitle>
+                <DialogDescription>
+                  Enter the details of the new partner organization.
+                </DialogDescription>
+              </DialogHeader>
+              <PartnershipForm onFormSubmit={() => setIsNewDialogOpen(false)} />
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {pipelineStages.map(stage => (
+                    <div key={stage}>
+                        <h3 className="font-semibold flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className={`${statusColors[stage]} text-sm`}>{stage}</Badge>
+                            <span className="text-sm text-muted-foreground">({pipeline[stage]?.length || 0})</span>
+                        </h3>
+                        {isLoading && <div className="space-y-2"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>}
+                        <div className="space-y-2">
+                            {pipeline[stage] && pipeline[stage]!.map(partner => (
+                                <Card key={partner.id} className="p-3 hover:bg-muted/50 transition-colors">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="font-semibold text-sm">{partner.name}</p>
+                                            <p className="text-xs text-muted-foreground">{partner.nextStep}</p>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingPartnership(partner)}>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-7 w-7">
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-7 w-7">
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center justify-between mt-2">
-                                                <Button asChild variant="link" className="p-0 h-auto">
-                                                    <Link href={`/management/partnerships/${partner.id}`} className="text-xs">
-                                                        View Profile <ArrowRight className="ml-1 h-3 w-3" />
-                                                    </Link>
-                                                </Button>
-                                                {partner.health && <Badge variant="outline" className={healthColors[partner.health]}>{partner.health}</Badge>}
-                                            </div>
-                                        </Card>
-                                    ))}
-                                    {!isLoading && (!pipeline[stage] || pipeline[stage]!.length === 0) && (
-                                        <div className="text-center text-xs text-muted-foreground p-4 border-2 border-dashed rounded-lg">No partners in this stage.</div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-2">
+                                        <Button asChild variant="link" className="p-0 h-auto">
+                                            <Link href={`/management/partnerships/${partner.id}`} className="text-xs">
+                                                View Profile <ArrowRight className="ml-1 h-3 w-3" />
+                                            </Link>
+                                        </Button>
+                                        {partner.health && <Badge variant="outline" className={healthColors[partner.health]}>{partner.health}</Badge>}
+                                    </div>
+                                </Card>
+                            ))}
+                            {!isLoading && (!pipeline[stage] || pipeline[stage]!.length === 0) && (
+                                <div className="text-center text-xs text-muted-foreground p-4 border-2 border-dashed rounded-lg">No partners in this stage.</div>
+                            )}
+                        </div>
                     </div>
-                </CardContent>
-              </Card>
-        </div>
-        <div className="xl:col-span-1 space-y-6">
-            <PartnershipIntelligence />
-            <UrgentActions partnerships={partnerships} />
-        </div>
-      </div>
+                ))}
+            </div>
+        </CardContent>
+      </Card>
       
        <Dialog open={!!editingPartnership} onOpenChange={(open) => !open && setEditingPartnership(null)}>
          <DialogContent className="sm:max-w-2xl">

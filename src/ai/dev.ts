@@ -52,7 +52,6 @@ export { searchOmuto } from './flows/global-search-flow';
 export { parseWorkplan } from './flows/parse-workplan-flow';
 export { processTestimony } from './flows/testimony-processor-flow';
 export { analyzeProgramQualitativeData } from './flows/qualitative-analysis-flow';
-export { partnershipAdvisor } from './flows/partnership-advisor-flow';
 
 
 // NOTE: omuto-tools now only contains server-side safe tools.

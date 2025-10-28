@@ -370,34 +370,4 @@ export const getRecentCheckins = ai.defineTool(
         });
     }
 );
-
-export const getPartnerships = ai.defineTool(
-    {
-        name: 'getPartnerships',
-        description: 'Retrieves all partnership records from the database.',
-        inputSchema: z.object({}),
-        outputSchema: z.array(PartnershipSchema),
-    },
-    async () => {
-        const { firestore } = await initializeFirebase();
-        const partnershipsRef = collection(firestore, 'partnerships');
-        const q = query(partnershipsRef, orderBy('createdAt', 'desc'));
-        const snapshot = await getDocs(q);
-        
-        if (snapshot.empty) {
-            return [];
-        }
-
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            // Convert Firestore Timestamps to ISO strings for AI consumption
-            return {
-                id: doc.id,
-                ...data,
-                createdAt: (data.createdAt as Timestamp)?.toDate().toISOString(),
-                lastContacted: (data.lastContacted as Timestamp)?.toDate().toISOString(),
-            };
-        }) as z.infer<typeof z.array<typeof PartnershipSchema>>;
-    }
-);
     
