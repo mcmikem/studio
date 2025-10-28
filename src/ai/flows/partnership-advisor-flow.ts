@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -35,7 +34,7 @@ const advisorPrompt = ai.definePrompt({
   - **Opportunity Seizing:** Find partners in 'Prospecting' or 'Negotiation' with high potential that need a nudge to move forward.
   - **Alignment:** Ensure 'Active' partners are still aligned with our current Key Results (like OCT-KR4).
   
-  Provide concise, direct, and actionable advice.`,
+  Provide concise, direct, and actionable advice. Use the 'getPartnerships' tool to fetch the required data.`,
   tools: [getPartnerships],
   output: {
     schema: PartnershipAdvisorOutputSchema,
@@ -45,8 +44,11 @@ const advisorPrompt = ai.definePrompt({
 export async function partnershipAdvisor(input: PartnershipAdvisorInput): Promise<PartnershipAdvisorOutput> {
   const llmResponse = await ai.generate({
     model: 'googleai/gemini-2.5-flash',
-    prompt: `Analyze our current partnership pipeline and provide your top 3 strategic recommendations. Today's date is ${new Date().toDateString()}.`,
-    tools: [advisorPrompt],
+    prompt: 'Analyze our current partnership pipeline and provide your top 3 strategic recommendations.',
+    tools: [getPartnerships],
+    output: {
+        schema: PartnershipAdvisorOutputSchema,
+    }
   });
 
   const output = llmResponse.output;
