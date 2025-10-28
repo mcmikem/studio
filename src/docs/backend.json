@@ -97,37 +97,29 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Partnership",
       "type": "object",
-      "description": "Represents a partnership with another organization.",
+      "description": "Represents a partnership with another organization, including intake and assessment data.",
       "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name of the partner organization."
-        },
-        "contactPerson": {
-          "type": "string",
-          "description": "The primary contact at the partner organization."
-        },
-        "contactEmail": {
-          "type": "string",
-          "format": "email",
-          "description": "The email address of the primary contact."
-        },
-        "status": {
-          "type": "string",
-          "enum": ["Active", "Potential", "Inactive"],
-          "description": "The current status of the partnership."
-        },
-        "nextStep": {
-          "type": "string",
-          "description": "The next actionable step for this partnership."
-        },
-         "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Server timestamp of when the partnership was created."
-        }
+        "name": { "type": "string", "description": "The name of the partner organization." },
+        "type": { "type": "string", "enum": ["NGO", "Government", "Corporate", "Individual"], "description": "The type of partner organization." },
+        "focusAreas": { "type": "array", "items": { "type": "string" }, "description": "Key operational areas of the partner (e.g., Education, Health)." },
+        "contactPerson": { "type": "string", "description": "The primary contact at the partner organization." },
+        "contactRole": { "type": "string", "description": "The role of the primary contact." },
+        "contactPhone": { "type": "string", "description": "The phone number of the primary contact." },
+        "contactEmail": { "type": "string", "format": "email", "description": "The email address of the primary contact." },
+        "offers": { "type": "array", "items": { "type": "string" }, "description": "What the partner offers (e.g., Funding, Expertise)." },
+        "receives": { "type": "array", "items": { "type": "string" }, "description": "What Omuto offers in return (e.g., Community Access, Implementation)." },
+        "financialValue": { "type": "number", "description": "The estimated annual financial value (UGX) of the partnership." },
+        "inKindValue": { "type": "string", "description": "Description of the in-kind value (e.g., Equipment, Volunteers)." },
+        "strategicValue": { "type": "string", "description": "Description of the strategic value (e.g., Access to new schools)." },
+        "strategicFit": { "type": "number", "description": "Rating from 1-5 on strategic alignment." },
+        "resourcePotential": { "type": "string", "enum": ["High", "Medium", "Low"], "description": "The potential for resource mobilization." },
+        "riskLevel": { "type": "string", "enum": ["High", "Medium", "Low"], "description": "The assessed risk level of the partnership." },
+        "priority": { "type": "string", "enum": ["Immediate", "Short-term", "Long-term"], "description": "The engagement priority." },
+        "status": { "type": "string", "enum": ["Prospecting", "Negotiation", "Active", "Stalled"], "description": "The current status of the partnership." },
+        "nextStep": { "type": "string", "description": "The next actionable step for this partnership." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of when the partnership was created." }
       },
-      "required": ["name", "contactPerson", "contactEmail", "status", "nextStep", "createdAt"]
+      "required": ["name", "type", "contactPerson", "contactEmail", "status", "nextStep", "createdAt"]
     },
     "Activity": {
       "$schema": "http://json-schema.org/draft-07/schema#",

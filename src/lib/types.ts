@@ -93,14 +93,28 @@ export type Program = {
 }
 
 export type Partnership = {
-    id: string;
-    name: string;
-    contactPerson: string;
-    contactEmail: string;
-    status: "Active" | "Potential" | "Inactive";
-    nextStep: string;
-    createdAt?: Timestamp;
-}
+  id: string;
+  name: string;
+  type: "NGO" | "Government" | "Corporate" | "Individual";
+  focusAreas?: string[];
+  contactPerson: string;
+  contactRole?: string;
+  contactPhone?: string;
+  contactEmail: string;
+  offers?: string[];
+  receives?: string[];
+  financialValue?: number;
+  inKindValue?: string;
+  strategicValue?: string;
+  strategicFit?: number;
+  resourcePotential?: "High" | "Medium" | "Low";
+  riskLevel?: "High" | "Medium" | "Low";
+  priority?: "Immediate" | "Short-term" | "Long-term";
+  status: "Prospecting" | "Negotiation" | "Active" | "Stalled";
+  nextStep: string;
+  createdAt?: Timestamp;
+};
+
 
 export type Activity = {
     id: string;
