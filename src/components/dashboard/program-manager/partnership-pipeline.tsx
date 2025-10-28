@@ -11,19 +11,19 @@ import { ArrowRight, Handshake } from 'lucide-react';
 
 export function PartnershipPipeline({ partnerships, isLoading }: { partnerships: Partnership[] | null, isLoading: boolean }) {
     
-    const { hotCount, warmCount, coldCount, urgentItem, upcomingItem } = useMemo(() => {
+    const { activeCount, negotiationCount, prospectingCount, urgentItem, upcomingItem } = useMemo(() => {
         if (!partnerships) {
-            return { hotCount: 0, warmCount: 0, coldCount: 0, urgentItem: null, upcomingItem: null };
+            return { activeCount: 0, negotiationCount: 0, prospectingCount: 0, urgentItem: null, upcomingItem: null };
         }
 
-        const hot = partnerships.filter(p => p.status === 'Potential').length;
-        const warm = partnerships.filter(p => p.status === 'Active').length;
-        const cold = partnerships.filter(p => p.status === 'Inactive').length;
+        const active = partnerships.filter(p => p.status === 'Active').length;
+        const negotiation = partnerships.filter(p => p.status === 'Negotiation').length;
+        const prospecting = partnerships.filter(p => p.status === 'Prospecting').length;
 
         const urgentKeywords = ['deadline', 'report', 'due', 'mou'];
         const upcomingKeywords = ['meeting', 'call', 'follow-up', 'proposal', 'submit', 'draft'];
 
-        const activeOrPotential = partnerships.filter(p => p.status !== 'Inactive');
+        const activeOrPotential = partnerships.filter(p => p.status !== 'Stalled');
         
         let urgent = null;
         for (const p of activeOrPotential) {
@@ -43,7 +43,13 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
             }
         }
 
-        return { hotCount: hot, warmCount: warm, coldCount: cold, urgentItem: urgent, upcomingItem: upcoming };
+        return { 
+            activeCount: active, 
+            negotiationCount: negotiation, 
+            prospectingCount: prospecting, 
+            urgentItem: urgent, 
+            upcomingItem: upcoming 
+        };
 
     }, [partnerships]);
 
@@ -57,16 +63,16 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
                 {isLoading ? <Skeleton className="h-12 w-full" /> : (
                     <div className="flex justify-around text-center">
                         <div>
-                            <p className="text-2xl font-bold">{hotCount}</p>
-                            <p className="text-sm text-muted-foreground">Hot</p>
+                            <p className="text-2xl font-bold">{activeCount}</p>
+                            <p className="text-sm text-muted-foreground">Active</p>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{warmCount}</p>
-                            <p className="text-sm text-muted-foreground">Warm</p>
+                            <p className="text-2xl font-bold">{negotiationCount}</p>
+                            <p className="text-sm text-muted-foreground">Negotiation</p>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">{coldCount}</p>
-                            <p className="text-sm text-muted-foreground">Cold</p>
+                            <p className="text-2xl font-bold">{prospectingCount}</p>
+                            <p className="text-sm text-muted-foreground">Prospecting</p>
                         </div>
                     </div>
                 )}
