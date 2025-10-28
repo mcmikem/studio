@@ -165,13 +165,16 @@ export default function WorkplanPage() {
     setIsLoading(true);
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+    const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
     const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
+    const weekEndTimestamp = Timestamp.fromDate(endOfSelectedWeek);
 
     try {
-      // Fetch the team's plan for the week
+      // Fetch the team's plan for the week using a range query
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
-        where('weekOf', '==', weekStartTimestamp),
+        where('weekOf', '>=', weekStartTimestamp),
+        where('weekOf', '<=', weekEndTimestamp),
         where('status', '==', 'Published'),
         limit(1)
       );
@@ -183,11 +186,12 @@ export default function WorkplanPage() {
         setTeamPlan(null);
       }
 
-      // Fetch the user's finalized plan for the week
+      // Fetch the user's finalized plan for the week using a range query
       const userPlanQuery = query(
         collection(firestore, 'workplans'),
         where('userId', '==', user.uid),
-        where('weekOf', '==', weekStartTimestamp),
+        where('weekOf', '>=', weekStartTimestamp),
+        where('weekOf', '<=', weekEndTimestamp),
         limit(1)
       );
       const userPlanSnapshot = await getDocs(userPlanQuery);
