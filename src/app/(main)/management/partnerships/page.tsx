@@ -11,7 +11,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -34,7 +34,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +59,12 @@ const statusColors: { [key: string]: string } = {
     "Negotiation": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
     "Prospecting": "border-blue-500 bg-blue-500/10 text-blue-500",
     "Stalled": "border-red-500 bg-red-500/10 text-red-500",
+};
+
+const healthColors: { [key: string]: string } = {
+    "Strong": "border-green-500 bg-green-500/10 text-green-500",
+    "Needs Attention": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
+    "At Risk": "border-red-500 bg-red-500/10 text-red-500",
 };
 
 const partnershipSchema = z.object({
@@ -152,6 +157,7 @@ function PartnershipForm({
     } else {
         const partnershipsCollection = collection(firestore, 'partnerships');
         partnershipData.createdAt = serverTimestamp() as any;
+        partnershipData.health = "Strong"; // Default health for new partners
         addDocumentNonBlocking(partnershipsCollection, partnershipData);
         toast({
           title: "Partnership Added!",
@@ -369,12 +375,12 @@ function UrgentActions({ partnerships }: { partnerships: Partnership[] | null })
                  overdue.push(p);
             }
              // Check for stale partnerships
-            if (p.lastContacted && p.lastContacted.toDate && p.lastContacted.toDate() < thirtyDaysAgo && p.status !== 'Stalled' && p.status !== 'Active') {
+            if (p.lastContacted && p.lastContacted.toDate && isPast(subDays(p.lastContacted.toDate(), -30)) && p.status !== 'Stalled' && p.status !== 'Active') {
                 atRisk.push(p);
             }
         });
 
-        const recent = partnerships.filter(p => p.createdAt && p.createdAt.toDate() > sevenDaysAgo);
+        const recent = partnerships.filter(p => p.createdAt && isPast(subDays(p.createdAt.toDate(), -7)));
 
         return { overdue, atRisk, recent };
     }, [partnerships]);
@@ -498,7 +504,7 @@ export default function PartnershipsPage() {
                             <Badge variant="outline" className={`${statusColors[stage]} text-sm`}>{stage}</Badge>
                             <span className="text-sm text-muted-foreground">({pipeline[stage]?.length || 0})</span>
                         </h3>
-                        {isLoading && <div className="space-y-2"><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>}
+                        {isLoading && <div className="space-y-2"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>}
                         <div className="space-y-2">
                             {pipeline[stage] && pipeline[stage]!.map(partner => (
                                 <Card key={partner.id} className="p-3 hover:bg-muted/50 transition-colors">
@@ -532,11 +538,14 @@ export default function PartnershipsPage() {
                                             </AlertDialog>
                                         </div>
                                     </div>
-                                    <Button asChild variant="link" className="p-0 h-auto mt-2">
-                                        <Link href={`/management/partnerships/${partner.id}`} className="text-xs">
-                                            View Profile <ArrowRight className="ml-1 h-3 w-3" />
-                                        </Link>
-                                    </Button>
+                                    <div className="flex items-center justify-between mt-2">
+                                        <Button asChild variant="link" className="p-0 h-auto">
+                                            <Link href={`/management/partnerships/${partner.id}`} className="text-xs">
+                                                View Profile <ArrowRight className="ml-1 h-3 w-3" />
+                                            </Link>
+                                        </Button>
+                                        {partner.health && <Badge variant="outline" className={healthColors[partner.health]}>{partner.health}</Badge>}
+                                    </div>
                                 </Card>
                             ))}
                             {!isLoading && (!pipeline[stage] || pipeline[stage]!.length === 0) && (

@@ -43,6 +43,12 @@ const statusColors: { [key: string]: string } = {
     "Stalled": "border-red-500 bg-red-500/10 text-red-500",
 };
 
+const healthColors: { [key: string]: string } = {
+    "Strong": "border-green-500 bg-green-500/10 text-green-500",
+    "Needs Attention": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
+    "At Risk": "border-red-500 bg-red-500/10 text-red-500",
+};
+
 const meetingSchema = z.object({
   date: z.string().min(1, 'Meeting date is required.'),
   attendees: z.string().min(3, 'Please list attendees.'),
@@ -71,7 +77,7 @@ function HealthCheckForm({ partner, onFormSubmit }: { partner: Partnership; onFo
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<HealthCheckFormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<HealthCheckFormData>({
     resolver: zodResolver(healthCheckSchema),
     defaultValues: {
       communication: 3, delivery: 3, alignment: 3, value: 3,
@@ -397,13 +403,16 @@ export default function PartnerProfilePage() {
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="text-2xl flex items-center gap-2">
-                            <Handshake className="h-7 w-7" /> {partner.name}
-                        </CardTitle>
-                        <CardDescription>{partner.type} Partner</CardDescription>
-                    </div>
-                    <Badge variant="outline" className={statusColors[partner.status]}>{partner.status}</Badge>
+                        <div>
+                            <CardTitle className="text-2xl flex items-center gap-2">
+                                <Handshake className="h-7 w-7" /> {partner.name}
+                            </CardTitle>
+                            <CardDescription>{partner.type} Partner</CardDescription>
+                        </div>
+                        <div className="flex gap-2">
+                            {partner.health && <Badge variant="outline" className={healthColors[partner.health]}>{partner.health}</Badge>}
+                            <Badge variant="outline" className={statusColors[partner.status]}>{partner.status}</Badge>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-8">
