@@ -32,6 +32,7 @@ import Link from 'next/link';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
+
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
   mood: z.string().min(1, 'Please select your current mood.'),
@@ -53,6 +54,8 @@ const finalCheckinSchema = z.object({
     bestPractice: z.string().optional(),
 });
 
+const MAX_RETRIES = 2;
+const RETRY_DELAY = 3000; // 3 seconds
 
 function PlannerCheckinFormComponent() {
   const router = useRouter();
@@ -60,7 +63,7 @@ function PlannerCheckinFormComponent() {
   const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState<'idle' | 'loading' | 'retrying' | 'error'>('idle');
   const [aiOutput, setAiOutput] = useState<DailyPlannerAIOutput | null>(null);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState('');
@@ -146,44 +149,50 @@ function PlannerCheckinFormComponent() {
       return;
     }
 
-    setIsGeneratingPlan(true);
+    setGenerationStatus('loading');
     setAiOutput(null);
     setFeedbackSubmitted(false);
 
-    // Convert any complex objects (like Timestamps) to simple, serializable ones
     const serializableKeyResults = keyResults.map(kr => ({
       ...kr,
-      // Ensure deadline is a string. If it's a Timestamp, convert it.
       deadline: kr.deadline ? new Date(kr.deadline).toISOString().split('T')[0] : 'N/A',
-      // Explicitly remove any non-serializable properties if they exist
       createdAt: undefined, 
     }));
 
-    try {
-      const output = await dailyPlannerAI({
-        userRole: profile.role,
-        primaryMission: data.primaryMission,
-        weeklyPriorities: weeklyPlan?.individualTasks || [],
-        keyResults: serializableKeyResults,
-      });
-      setAiOutput(output);
-      setValue('primaryMission', data.primaryMission);
-      setValue('mood', data.mood);
-      setValue('timeBlocks', output.timeBlocks);
-      setValue('multiWinConnections', output.multiWinConnections.map(c => ({ value: c })));
-      setValue('materials', output.materials);
-      setValue('challenges', output.challenges);
-      setValue('bestPractice', output.bestPractice);
-
-    } catch (error) {
-      console.error('AI generation error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'AI Planner Failed',
-        description: 'The AI could not generate a plan. Please try again.',
-      });
-    } finally {
-      setIsGeneratingPlan(false);
+    for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
+        try {
+          const output = await dailyPlannerAI({
+            userRole: profile.role,
+            primaryMission: data.primaryMission,
+            weeklyPriorities: weeklyPlan?.individualTasks || [],
+            keyResults: serializableKeyResults,
+          });
+          setAiOutput(output);
+          setValue('primaryMission', data.primaryMission);
+          setValue('mood', data.mood);
+          setValue('timeBlocks', output.timeBlocks);
+          setValue('multiWinConnections', output.multiWinConnections.map(c => ({ value: c })));
+          setValue('materials', output.materials);
+          setValue('challenges', output.challenges);
+          setValue('bestPractice', output.bestPractice);
+          setGenerationStatus('idle');
+          return; // Success
+        } catch (error: any) {
+           console.error(`AI generation attempt ${attempt} failed:`, error);
+           if (error.message?.includes('503') && attempt <= MAX_RETRIES) {
+                setGenerationStatus('retrying');
+                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+           } else {
+                setGenerationStatus('error');
+                toast({
+                    variant: 'destructive',
+                    title: 'AI Planner Failed',
+                    description: error.message?.includes('503') ? 'The AI assistant is currently overloaded. Please try again in a few moments.' : 'The AI could not generate a plan. Please try again.',
+                    duration: 7000,
+                });
+                return; // Failure
+           }
+        }
     }
   };
   
@@ -198,7 +207,6 @@ function PlannerCheckinFormComponent() {
   const handleFinalizeAndCheckin = async (data: any) => {
     const params = new URLSearchParams();
     
-    // The details object now contains the full, user-edited plan
     const details = {
         timeBlocks: data.timeBlocks,
         multiWinConnections: data.multiWinConnections.map((c: {value: string}) => c.value),
@@ -236,6 +244,7 @@ function PlannerCheckinFormComponent() {
 
 
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
+  const isGeneratingPlan = generationStatus === 'loading' || generationStatus === 'retrying';
 
   if (isLoading) {
     return (
@@ -325,7 +334,7 @@ function PlannerCheckinFormComponent() {
                     <CardFooter className="flex-wrap gap-4">
                         <Button type="submit" disabled={isGeneratingPlan} size="lg">
                             {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                            Brainstorm My Daily Plan
+                            {generationStatus === 'loading' ? 'Generating...' : generationStatus === 'retrying' ? 'Retrying...' : 'Brainstorm My Daily Plan'}
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -353,7 +362,7 @@ function PlannerCheckinFormComponent() {
           {isGeneratingPlan && (
               <div className="flex flex-col items-center justify-center p-10 space-y-2">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-muted-foreground">Your AI coach is thinking...</p>
+                <p className="text-muted-foreground">{generationStatus === 'retrying' ? 'AI is busy, retrying...' : 'Your AI coach is thinking...'}</p>
               </div>
           )}
 
@@ -470,3 +479,5 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
+
+    
