@@ -368,3 +368,18 @@ export const SearchOutputSchema = z.object({
   results: z.array(SearchResultItemSchema).describe('A list of search results.'),
 });
 export type SearchOutput = z.infer<typeof SearchOutputSchema>;
+
+export type Meeting = {
+    id: string;
+    partnerId: string;
+    partnerName: string;
+    date: Timestamp;
+    attendees: string[];
+    type: "Exploration" | "Proposal" | "Progress" | "Problem" | "Renewal";
+    decisions: string;
+    actionItems: string[];
+    nextSteps: string;
+    createdAt: Timestamp;
+};
+
+    
