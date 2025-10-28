@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useParams } from 'next/navigation';
+import { useMemo } from 'react';
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
@@ -30,7 +31,12 @@ export default function PartnerProfilePage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
-  const partnerDocRef = doc(firestore, 'partnerships', id);
+
+  const partnerDocRef = useMemo(() => {
+    if (!firestore || !id) return null;
+    return doc(firestore, 'partnerships', id);
+  }, [firestore, id]);
+  
   const { data: partner, isLoading } = useDoc<Partnership>(partnerDocRef);
 
   if (isLoading) {
