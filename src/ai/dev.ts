@@ -13,12 +13,17 @@ dotenv.config({ path: '.env' });
 
 // Manually load the service account key and set it as an environment variable
 const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
-try {
-  const serviceAccount = fs.readFileSync(serviceAccountPath, 'utf-8');
-  process.env.FIREBASE_SERVICE_ACCOUNT = serviceAccount;
-} catch (error) {
-  console.error('Failed to read service account key. Ensure secrets/serviceAccountKey.json exists.');
-  process.exit(1);
+if (fs.existsSync(serviceAccountPath)) {
+  try {
+    const serviceAccount = fs.readFileSync(serviceAccountPath, 'utf-8');
+    process.env.FIREBASE_SERVICE_ACCOUNT = serviceAccount;
+    console.log('Firebase service account loaded successfully.');
+  } catch (error) {
+    console.error('Failed to read service account key:', error);
+    process.exit(1);
+  }
+} else {
+    console.warn('Service account key not found at secrets/serviceAccountKey.json. Server-side flows may fail.');
 }
 
 
