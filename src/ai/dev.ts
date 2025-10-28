@@ -4,10 +4,23 @@
  *
  * This file is not intended to be modified.
  */
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Must be the first import
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
+
+// Manually load the service account key and set it as an environment variable
+const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
+try {
+  const serviceAccount = fs.readFileSync(serviceAccountPath, 'utf-8');
+  process.env.FIREBASE_SERVICE_ACCOUNT = serviceAccount;
+} catch (error) {
+  console.error('Failed to read service account key. Ensure secrets/serviceAccountKey.json exists.');
+  process.exit(1);
+}
+
 
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
