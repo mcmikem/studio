@@ -792,7 +792,7 @@
         "$ref": "#/entities/TeamWeeklyPlan"
       },
       "description": "Stores manager-created team-wide weekly plans.",
-      "rules": "if request.auth != null then (allow read) else (allow write: if request.auth.uid == resource.data.authorId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager'])"
+      "rules": "allow read, write: if request.auth != null && (request.auth.uid == resource.data.authorId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager']);"
     },
     "/workplans/{workplanId}": {
       "schema": {
@@ -834,4 +834,3 @@
 }
 
     
-
