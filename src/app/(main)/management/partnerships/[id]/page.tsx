@@ -10,18 +10,31 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, doc, query, where, orderBy } from 'firebase/firestore';
+import { useCollection, useDoc, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { collection, doc, query, where, orderBy, serverTimestamp } from 'firebase/firestore';
 import type { Partnership, Meeting } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, Mail, Phone, User, ArrowLeft, Calendar, FileText } from 'lucide-react';
+import { Handshake, Mail, Phone, User, ArrowLeft, Calendar, FileText, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { formatDateSafe } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useForm, Controller } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format } from 'date-fns';
+import { Loader2 } from 'lucide-react';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { useUser } from '@/firebase';
 
 const statusColors: { [key: string]: string } = {
     "Active": "border-green-500 bg-green-500/10 text-green-500",
@@ -29,6 +42,110 @@ const statusColors: { [key: string]: string } = {
     "Prospecting": "border-blue-500 bg-blue-500/10 text-blue-500",
     "Stalled": "border-red-500 bg-red-500/10 text-red-500",
 };
+
+const meetingSchema = z.object({
+  date: z.string().min(1, 'Meeting date is required.'),
+  attendees: z.string().min(3, 'Please list attendees.'),
+  type: z.enum(["Exploration", "Proposal", "Progress", "Problem", "Renewal"]),
+  decisions: z.string().optional(),
+  nextSteps: z.string().min(3, 'Next steps are required.'),
+});
+
+type MeetingFormData = z.infer<typeof meetingSchema>;
+
+function MeetingLogForm({ partner, onFormSubmit }: { partner: Partnership, onFormSubmit: () => void }) {
+    const { user } = useUser();
+    const { profile } = useUserProfile(user);
+    const firestore = useFirestore();
+    const { toast } = useToast();
+
+    const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm<MeetingFormData>({
+        resolver: zodResolver(meetingSchema),
+        defaultValues: {
+            date: format(new Date(), 'yyyy-MM-dd'),
+            type: 'Progress',
+            attendees: `${profile?.name}, ${partner.contactPerson}`,
+        },
+    });
+
+    const onSubmit = async (data: MeetingFormData) => {
+        if (!firestore) return;
+        const meetingCollection = collection(firestore, 'partnerships', partner.id, 'meetings');
+        const partnerRef = doc(firestore, 'partnerships', partner.id);
+        
+        const newMeeting = {
+            ...data,
+            partnerId: partner.id,
+            partnerName: partner.name,
+            date: serverTimestamp(),
+            createdAt: serverTimestamp()
+        };
+
+        try {
+            await addDocumentNonBlocking(meetingCollection, newMeeting);
+            await updateDocumentNonBlocking(partnerRef, {
+                lastContacted: serverTimestamp(),
+                nextStep: data.nextSteps,
+            });
+
+            toast({ title: "Meeting Logged!", description: "The interaction has been saved to the partner's timeline." });
+            reset();
+            onFormSubmit();
+        } catch (e) {
+            console.error("Error logging meeting:", e);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not save the meeting log.' });
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="date">Meeting Date</Label>
+                <Input id="date" type="date" {...register("date")} />
+                {errors.date && <p className="text-sm text-destructive">{`${errors.date.message}`}</p>}
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="attendees">Attendees</Label>
+                <Input id="attendees" {...register("attendees")} placeholder="e.g., McMike, Dianah, Sarah K." />
+                 {errors.attendees && <p className="text-sm text-destructive">{`${errors.attendees.message}`}</p>}
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="type">Meeting Type</Label>
+                 <Controller
+                    name="type"
+                    control={control}
+                    render={({ field }) => (
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Exploration">Exploration</SelectItem>
+                            <SelectItem value="Proposal">Proposal</SelectItem>
+                            <SelectItem value="Progress">Progress</SelectItem>
+                            <SelectItem value="Problem">Problem</SelectItem>
+                            <SelectItem value="Renewal">Renewal</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    )}
+                />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="decisions">Decisions Made (Optional)</Label>
+                <Textarea id="decisions" {...register("decisions")} placeholder="e.g., Agreed on joint event in Q1." />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="nextSteps">Next Steps</Label>
+                <Textarea id="nextSteps" {...register("nextSteps")} placeholder="e.g., Dianah to send draft MoU by Friday." />
+                {errors.nextSteps && <p className="text-sm text-destructive">{`${errors.nextSteps.message}`}</p>}
+            </div>
+             <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Meeting Log
+                </Button>
+            </DialogFooter>
+        </form>
+    );
+}
 
 function ActivityTimeline({ partnerId }: { partnerId: string }) {
     const firestore = useFirestore();
@@ -52,7 +169,7 @@ function ActivityTimeline({ partnerId }: { partnerId: string }) {
              <EmptyState
                 icon={FileText}
                 title="No Activity Logged"
-                description="No meetings or interactions have been logged for this partner yet."
+                description="Log your first meeting or interaction to start building the timeline."
                 className="min-h-0 py-10"
               />
         )
@@ -82,6 +199,7 @@ export default function PartnerProfilePage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
+  const [isLogMeetingOpen, setIsLogMeetingOpen] = useState(false);
 
   const partnerDocRef = useMemo(() => {
     if (!firestore || !id) return null;
@@ -128,9 +246,26 @@ export default function PartnerProfilePage() {
 
   return (
     <div className="space-y-6">
-       <Button asChild variant="outline">
-          <Link href="/management/partnerships"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Partnerships</Link>
-       </Button>
+        <div className="flex justify-between items-center">
+            <Button asChild variant="outline">
+                <Link href="/management/partnerships"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Partnerships</Link>
+            </Button>
+            <Dialog open={isLogMeetingOpen} onOpenChange={setIsLogMeetingOpen}>
+                <DialogTrigger asChild>
+                    <Button>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Log Meeting
+                    </Button>
+                </DialogTrigger>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Log Interaction with {partner.name}</DialogTitle>
+                        <DialogDescription>Record the key outcomes and next steps from your meeting.</DialogDescription>
+                    </DialogHeader>
+                    <MeetingLogForm partner={partner} onFormSubmit={() => setIsLogMeetingOpen(false)} />
+                </DialogContent>
+            </Dialog>
+        </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
          <div className="lg:col-span-2 space-y-6">
             <Card>
@@ -221,5 +356,6 @@ export default function PartnerProfilePage() {
     </div>
   );
 }
+
 
     
