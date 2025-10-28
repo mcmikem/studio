@@ -21,7 +21,10 @@ import { Separator } from '@/components/ui/separator';
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
     
     // The 'tasks' field might be an array or a single string for older documents.
-    const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [{ description: checkout.task, status: 'Done' }];
+    // This provides backward compatibility.
+    const tasksArray = Array.isArray(checkout.tasks) 
+        ? checkout.tasks 
+        : [{ description: checkout.task, status: 'Done' as const }];
 
     const completedTasks = tasksArray.filter(t => t.status === 'Done');
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
@@ -57,6 +60,9 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
                             </div>
                         </div>
                     ))}
+                     {tasksArray.length === 0 && (
+                        <p className="text-sm text-muted-foreground italic">No specific tasks were reported.</p>
+                    )}
                   </div>
                 </div>
 
