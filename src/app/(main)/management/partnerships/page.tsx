@@ -15,7 +15,7 @@ import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, u
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, PlusCircle, Edit, Trash2, ArrowRight, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Handshake, PlusCircle, Edit, Trash2, ArrowRight, AlertTriangle, CheckCircle, Clock, DollarSign, TrendingUp, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -50,7 +50,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
-import { isPast, subDays } from 'date-fns';
+import { isPast, subDays, startOfMonth } from 'date-fns';
+import { formatCurrency } from '@/lib/utils';
 
 
 const statusColors: { [key: string]: string } = {
@@ -383,6 +384,64 @@ function UrgentActions({ partnerships }: { partnerships: Partnership[] | null })
     );
 }
 
+function PartnershipStats({ partnerships, isLoading }: { partnerships: Partnership[] | null, isLoading: boolean }) {
+    const stats = useMemo(() => {
+        if (!partnerships) {
+            return {
+                pipelineValue: 0,
+                newThisMonth: 0,
+                activeThisMonth: 0,
+                atRiskCount: 0,
+            };
+        }
+        
+        const monthStart = startOfMonth(new Date());
+
+        const pipelineValue = partnerships
+            .filter(p => (p.status === 'Prospecting' || p.status === 'Negotiation') && p.financialValue)
+            .reduce((sum, p) => sum + p.financialValue!, 0);
+            
+        const newThisMonth = partnerships.filter(p => p.createdAt?.toDate() >= monthStart).length;
+        
+        const activeThisMonth = partnerships.filter(p => p.lastContacted?.toDate() >= monthStart).length;
+        
+        const atRiskCount = partnerships.filter(p => p.health === 'At Risk').length;
+        
+        return { pipelineValue, newThisMonth, activeThisMonth, atRiskCount };
+
+    }, [partnerships]);
+    
+    if (isLoading) {
+        return <Skeleton className="h-44 w-full" />;
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Pipeline Snapshot</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 gap-x-4 gap-y-6">
+                <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground flex items-center gap-2"><DollarSign className="h-4 w-4" /> Pipeline Value</p>
+                    <p className="text-2xl font-bold">{formatCurrency(stats.pipelineValue)}</p>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Activity (This Month)</p>
+                    <p className="text-2xl font-bold">{stats.newThisMonth} <span className="text-sm font-normal text-muted-foreground">New</span> / {stats.activeThisMonth} <span className="text-sm font-normal text-muted-foreground">Engaged</span></p>
+                </div>
+                 <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> At-Risk Partners</p>
+                    <p className="text-2xl font-bold">{stats.atRiskCount}</p>
+                </div>
+                <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground flex items-center gap-2"><Users className="h-4 w-4" /> Total Active</p>
+                    <p className="text-2xl font-bold">{partnerships?.filter(p => p.status === 'Active').length}</p>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
 export default function PartnershipsPage() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingPartnership, setEditingPartnership] = useState<Partnership | null>(null);
@@ -447,7 +506,16 @@ export default function PartnershipsPage() {
             </DialogContent>
           </Dialog>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div className="lg:col-span-2">
+                    <PartnershipStats partnerships={partnerships} isLoading={isLoading} />
+                </div>
+                <div>
+                     <UrgentActions partnerships={partnerships} />
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {pipelineStages.map(stage => (
                     <div key={stage}>
