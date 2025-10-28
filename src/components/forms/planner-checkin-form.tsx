@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -23,7 +22,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, getDocs, Timestamp, limit, serverTimestamp } from 'firebase/firestore';
 import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
-import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks, ThumbsUp, ThumbsDown, BrainCircuit, Link as LinkIcon, Puzzle, Wrench } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { startOfWeek } from 'date-fns';
 import { Separator } from '../ui/separator';
@@ -44,10 +43,10 @@ const finalCheckinSchema = z.object({
     primaryMission: z.string(),
     mood: z.string(),
     timeBlocks: z.array(z.object({
-        startTime: z.string(),
-        endTime: z.string(),
+        startTime: z.string().min(1, 'Start time is required.'),
+        endTime: z.string().min(1, 'End time is required.'),
         description: z.string().min(1, 'Description cannot be empty.')
-    })),
+    })).min(1, 'At least one time block is required.'),
     multiWinConnections: z.array(z.object({ value: z.string().min(1, 'Connection cannot be empty.') })),
     materials: z.string().optional(),
     challenges: z.string().optional(),
@@ -123,7 +122,7 @@ function PlannerCheckinFormComponent() {
     }
   });
 
-  const { register, handleSubmit, control, watch, setValue, formState: { errors: checkinErrors, isSubmitting } } = useForm({
+  const { register, handleSubmit, control, watch, setValue, formState: { errors: checkinErrors, isSubmitting } } = useForm<z.infer<typeof finalCheckinSchema>>({
     resolver: zodResolver(finalCheckinSchema),
     defaultValues: {
         primaryMission: "",
@@ -401,7 +400,7 @@ function PlannerCheckinFormComponent() {
 
                         {/* Time Blocks */}
                         <div className="space-y-3">
-                            <Label className="font-semibold text-base">Key Time Blocks</Label>
+                            <Label className="font-semibold text-base flex items-center gap-2"><ListChecks /> Key Time Blocks</Label>
                             {timeBlockFields.map((field, index) => (
                                 <div key={field.id} className="p-3 border rounded-lg space-y-2 relative">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -417,6 +416,7 @@ function PlannerCheckinFormComponent() {
                                     <div className="space-y-1">
                                         <Label htmlFor={`timeBlocks.${index}.description`}>Description</Label>
                                         <Textarea id={`timeBlocks.${index}.description`} {...register(`timeBlocks.${index}.description`)} placeholder="Description of the task or event" />
+                                         {checkinErrors.timeBlocks?.[index]?.description && <p className="text-sm text-destructive">{checkinErrors.timeBlocks?.[index]?.description?.message}</p>}
                                     </div>
                                      <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeTimeBlock(index)}><Trash2 className="h-4 w-4" /></Button>
                                 </div>
@@ -426,7 +426,7 @@ function PlannerCheckinFormComponent() {
                         <Separator/>
                          {/* Multi-Win Connections */}
                         <div className="space-y-3">
-                            <Label className="font-semibold text-base">Multi-Win Connections</Label>
+                            <Label className="font-semibold text-base flex items-center gap-2"><LinkIcon /> Multi-Win Connections</Label>
                              {connectionFields.map((field, index) => (
                                 <div key={field.id} className="flex gap-2 items-center">
                                     <Input {...register(`multiWinConnections.${index}.value`)} placeholder="e.g., Connects to KR1..." />
@@ -437,17 +437,17 @@ function PlannerCheckinFormComponent() {
                         </div>
                         <Separator/>
                         <div className="space-y-2">
-                             <Label className="font-semibold text-base">Suggested Resources / Materials</Label>
+                             <Label className="font-semibold text-base flex items-center gap-2"><Wrench /> Suggested Resources</Label>
                              <Textarea {...register('materials')} />
                         </div>
                         <Separator/>
                         <div className="space-y-2">
-                            <Label className="font-semibold text-base">Potential Challenges & Mitigations</Label>
+                            <Label className="font-semibold text-base flex items-center gap-2"><Puzzle /> Potential Challenges</Label>
                              <Textarea {...register('challenges')} />
                         </div>
                         <Separator/>
                          <div className="space-y-2">
-                            <Label className="font-semibold text-base">Best Practice Tip</Label>
+                            <Label className="font-semibold text-base flex items-center gap-2"><BrainCircuit /> Best Practice Tip</Label>
                              <Textarea {...register('bestPractice')} />
                         </div>
 
@@ -479,5 +479,3 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
-
-    

@@ -28,7 +28,7 @@ const DailyPlannerAIOutputSchema = z.object({
     startTime: z.string().describe("e.g., '09:00 AM'"),
     endTime: z.string().describe("e.g., '11:00 AM'"),
     description: z.string().describe("A specific, actionable task for this time block. This should be a clear to-do item."),
-  })).describe("A detailed, actionable schedule for the day. Each description should be a concrete task."),
+  })).describe("A detailed, actionable schedule for the day. Each description should be a concrete task. Do not make up tasks; base them on the user's primary mission and context."),
   multiWinConnections: z.array(z.string()).describe("Specific ways the daily mission connects to broader organizational goals (e.g., specific Key Results)."),
   materials: z.string().describe("A comma-separated list of materials or resources needed."),
   challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
@@ -54,7 +54,7 @@ const plannerPrompt = ai.definePrompt(
 
     Your task is to generate a structured, strategic daily plan. You are a coach, not just a scheduler.
 
-    1.  **Time Blocks:** Break down the user's primary mission into a series of specific, actionable tasks. Assign each task to a logical time block. The 'description' for each time block MUST be a concrete to-do item (e.g., "Draft the first section of the RED Campaign report" or "Call 3 potential partners from the list"). Do NOT put coaching questions or general advice in the description field.
+    1.  **Time Blocks:** Break down the user's primary mission into a series of specific, actionable tasks. Assign each task to a logical time block. The 'description' for each time block MUST be a concrete to-do item (e.g., "Draft the first section of the RED Campaign report" or "Call 3 potential partners from the list"). Do NOT put coaching questions or general advice in the description field. Make sure your tasks directly relate to the user's stated primary mission.
     2.  **Multi-Win Connections:** Explicitly connect the daily mission to AT LEAST TWO specific weekly priorities or organizational Key Results. This is critical for strategic alignment.
     3.  **Materials:** List specific, tangible items needed (e.g., "Updated partners spreadsheet," "Camera with charged battery"). Do NOT suggest monetary budget figures.
     4.  **Challenges & Mitigations:** Identify at least one potential challenge and provide a concrete, actionable mitigation strategy. This is risk management. Example: "Challenge: Partner may be unavailable. Mitigation: Send a confirmation WhatsApp message one hour before the meeting."
