@@ -15,7 +15,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, PlusCircle, Edit, Trash2, ArrowRight, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Handshake, PlusCircle, Edit, Trash2, ArrowRight, AlertTriangle, CheckCircle, Clock, DollarSign, Gift, BrainCircuit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -52,6 +52,7 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import { isPast, subDays } from 'date-fns';
+import { formatCurrency } from '@/lib/utils';
 
 
 const statusColors: { [key: string]: string } = {
@@ -118,7 +119,10 @@ function PartnershipForm({
   const { toast } = useToast();
   const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm<PartnershipFormData>({
     resolver: zodResolver(partnershipSchema),
-     defaultValues: partnership || {
+     defaultValues: partnership ? {
+        ...partnership,
+        lastContacted: partnership.lastContacted ? partnership.lastContacted.toDate().toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+     } : {
       status: 'Prospecting',
       type: 'NGO',
       focusAreas: [],
@@ -129,13 +133,14 @@ function PartnershipForm({
       resourcePotential: 'Medium',
       riskLevel: 'Low',
       priority: 'Short-term',
+      lastContacted: new Date().toISOString().split('T')[0],
     },
   });
 
   const onSubmit = async (data: z.infer<typeof partnershipSchema>) => {
     if (!firestore) return;
 
-    const partnershipData: Partial<Partnership> = { ...data };
+    const partnershipData: Partial<Partnership> = { ...data, lastContacted: serverTimestamp() as any, };
 
     if (partnership) {
         const partnershipRef = doc(firestore, 'partnerships', partnership.id);
@@ -147,7 +152,6 @@ function PartnershipForm({
     } else {
         const partnershipsCollection = collection(firestore, 'partnerships');
         partnershipData.createdAt = serverTimestamp() as any;
-        partnershipData.lastContacted = serverTimestamp() as any;
         addDocumentNonBlocking(partnershipsCollection, partnershipData);
         toast({
           title: "Partnership Added!",
@@ -309,6 +313,47 @@ function PartnershipForm({
   );
 }
 
+function ValueDashboard({ partnerships }: { partnerships: Partnership[] | null }) {
+    const { financialValue, inKindCount, strategicCount } = useMemo(() => {
+        if (!partnerships) {
+            return { financialValue: 0, inKindCount: 0, strategicCount: 0 };
+        }
+        const activePartners = partnerships.filter(p => p.status === 'Active');
+
+        const totalFinancial = activePartners.reduce((sum, p) => sum + (p.financialValue || 0), 0);
+        const inKind = activePartners.filter(p => p.inKindValue && p.inKindValue.trim() !== '').length;
+        const strategic = activePartners.filter(p => p.strategicValue && p.strategicValue.trim() !== '').length;
+
+        return { financialValue: totalFinancial, inKindCount: inKind, strategicCount: strategic };
+    }, [partnerships]);
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Partnership Value Dashboard</CardTitle>
+                <CardDescription>An overview of the value from active partnerships.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-muted rounded-lg text-center">
+                    <DollarSign className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                    <p className="text-2xl font-bold">{formatCurrency(financialValue)}</p>
+                    <p className="text-xs text-muted-foreground">Est. Annual Financial Value</p>
+                </div>
+                 <div className="p-4 bg-muted rounded-lg text-center">
+                    <Gift className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                    <p className="text-2xl font-bold">{inKindCount}</p>
+                    <p className="text-xs text-muted-foreground">Partners with In-Kind Value</p>
+                </div>
+                <div className="p-4 bg-muted rounded-lg text-center">
+                    <BrainCircuit className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                    <p className="text-2xl font-bold">{strategicCount}</p>
+                    <p className="text-xs text-muted-foreground">Partners with Strategic Value</p>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
 function UrgentActions({ partnerships }: { partnerships: Partnership[] | null }) {
     const actions = useMemo(() => {
         if (!partnerships) return { overdue: [], atRisk: [], recent: [] };
@@ -403,15 +448,15 @@ export default function PartnershipsPage() {
   const { toast } = useToast();
   
   const pipeline = useMemo(() => {
-    const initial: Record<string, Partnership[]> = { Prospecting: [], Negotiation: [], Active: [], Stalled: [] };
+    const initial: Partial<Record<Partnership['status'], Partnership[]>> = { Prospecting: [], Negotiation: [], Active: [], Stalled: [] };
     if (!partnerships) return initial;
     
     return partnerships.reduce((acc, p) => {
         if (p.status && acc[p.status]) {
-            acc[p.status].push(p);
+            acc[p.status]!.push(p);
         }
         return acc;
-    }, initial);
+    }, initial as Record<Partnership['status'], Partnership[]>);
 
   }, [partnerships]);
   
@@ -419,10 +464,12 @@ export default function PartnershipsPage() {
 
   return (
     <div className="space-y-6">
+       <ValueDashboard partnerships={partnerships} />
+
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-            <CardTitle className="flex items-center gap-2"><Handshake className="h-6 w-6" />Partnerships</CardTitle>
+            <CardTitle className="flex items-center gap-2"><Handshake className="h-6 w-6" />Partnership Pipeline</CardTitle>
             <CardDescription>Manage your organization's partnerships and strategic alliances.</CardDescription>
             </div>
             <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
@@ -449,11 +496,11 @@ export default function PartnershipsPage() {
                     <div key={stage}>
                         <h3 className="font-semibold flex items-center gap-2 mb-2">
                             <Badge variant="outline" className={`${statusColors[stage]} text-sm`}>{stage}</Badge>
-                            <span className="text-sm text-muted-foreground">({pipeline[stage].length})</span>
+                            <span className="text-sm text-muted-foreground">({pipeline[stage]?.length || 0})</span>
                         </h3>
                         {isLoading && <div className="space-y-2"><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>}
                         <div className="space-y-2">
-                            {pipeline[stage].map(partner => (
+                            {pipeline[stage] && pipeline[stage]!.map(partner => (
                                 <Card key={partner.id} className="p-3 hover:bg-muted/50 transition-colors">
                                     <div className="flex justify-between items-start">
                                         <div>
@@ -492,7 +539,7 @@ export default function PartnershipsPage() {
                                     </Button>
                                 </Card>
                             ))}
-                            {!isLoading && pipeline[stage].length === 0 && (
+                            {!isLoading && (!pipeline[stage] || pipeline[stage]!.length === 0) && (
                                 <div className="text-center text-xs text-muted-foreground p-4 border-2 border-dashed rounded-lg">No partners in this stage.</div>
                             )}
                         </div>
