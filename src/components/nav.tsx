@@ -130,10 +130,15 @@ export function AppSidebar() {
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
     if (!allowedSections.includes(sectionName)) return null;
     
-    const navItems = navConfig[sectionName].filter(item => {
-        if (item.href === '/management/programs' && sectionName === 'management') return false; // Hide generic management link
+    let navItems = navConfig[sectionName];
+
+    // Special handling for management to add Partnerships as a top-level item later
+    if (sectionName === 'management') {
+        navItems = navItems.filter(item => item.href !== '/management/partnerships');
+    }
+
+    navItems = navItems.filter(item => {
         if ('roles' in item) {
-            // Check if user has one of the required roles
             return (item.roles as string[]).includes(effectiveRole || '');
         }
         return true;
@@ -158,6 +163,20 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          {/* Add Partnerships link specifically under Oversight */}
+          {sectionName === 'management' && (
+             <SidebarMenuItem>
+              <SidebarMenuButton
+                href="/management/partnerships"
+                isActive={isActive("/management/partnerships")}
+                tooltip="Partnerships"
+                onClick={handleLinkClick}
+              >
+                <Handshake />
+                <span>Partnerships</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarGroup>
     );
