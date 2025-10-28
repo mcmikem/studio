@@ -189,7 +189,12 @@ function TeamWorkplanForm({
             responsible: p.responsible,
           };
           if (p.deadline) {
-            priority.deadline = Timestamp.fromDate(new Date(p.deadline));
+            try {
+               priority.deadline = Timestamp.fromDate(new Date(p.deadline));
+            } catch (e) {
+                console.error("Invalid deadline date format", p.deadline, e);
+                // Handle invalid date gracefully, maybe skip it or show an error
+            }
           }
           return priority;
         }),
@@ -374,11 +379,13 @@ export default function TeamWorkplansPage() {
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
     startOfSelectedWeek.setHours(0, 0, 0, 0); // Normalize to midnight
-    const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
+    const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
+    endOfSelectedWeek.setHours(23, 59, 59, 999);
 
     const q = query(
       collection(firestore, 'team-workplans'),
-      where('weekOf', '==', weekStartTimestamp),
+      where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
+      where('weekOf', '<=', Timestamp.fromDate(endOfSelectedWeek)),
       limit(1)
     );
 

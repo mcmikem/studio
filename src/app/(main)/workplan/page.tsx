@@ -169,13 +169,15 @@ export default function WorkplanPage() {
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
     startOfSelectedWeek.setHours(0, 0, 0, 0); // Normalize to midnight
-    const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
+    const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
+    endOfSelectedWeek.setHours(23, 59, 59, 999);
 
     try {
       // 1. Fetch the published team plan for the week.
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
-        where('weekOf', '==', weekStartTimestamp),
+        where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
+        where('weekOf', '<=', Timestamp.fromDate(endOfSelectedWeek)),
         where('status', '==', 'Published'),
         limit(1)
       );
