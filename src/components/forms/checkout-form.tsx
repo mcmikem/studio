@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -51,6 +52,7 @@ const checkoutTaskSchema = z.object({
 const checkoutSchema = z.object({
   tasks: z.array(checkoutTaskSchema).min(1, 'Please review your tasks.'),
   learning: z.string().optional(),
+  tomorrowPlan: z.string().min(5, "Please set a priority for tomorrow.").optional(),
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
@@ -77,6 +79,7 @@ export function CheckoutForm() {
     defaultValues: {
       tasks: [],
       learning: '',
+      tomorrowPlan: '',
     },
   });
   
@@ -115,7 +118,7 @@ export function CheckoutForm() {
             status: 'Done' as 'Done' | 'Not Done',
             reason: '',
         }));
-        reset({ tasks: tasksFromCheckin, learning: '' });
+        reset({ tasks: tasksFromCheckin, learning: '', tomorrowPlan: '' });
 
       } else {
         setDailyCheckin(null);
@@ -149,6 +152,7 @@ export function CheckoutForm() {
       avatar: user.photoURL || '',
       tasks: data.tasks,
       learning: data.learning || "",
+      tomorrowPlan: data.tomorrowPlan || "",
       timestamp: serverTimestamp(),
       userId: user.uid,
     };
@@ -260,6 +264,23 @@ export function CheckoutForm() {
             className="min-h-[80px]"
             {...register('learning')}
           />
+        </div>
+
+        <div className="space-y-4">
+          <Label htmlFor="tomorrowPlan" className="text-base font-semibold">
+            What is your #1 priority for tomorrow?
+          </Label>
+          <Textarea
+            id="tomorrowPlan"
+            placeholder="e.g., Complete the draft proposal for UNICEF."
+            className="min-h-[80px]"
+            {...register('tomorrowPlan')}
+          />
+           {errors.tomorrowPlan && (
+                <p className="text-sm text-destructive mt-2">
+                    {`${errors.tomorrowPlan.message}`}
+                </p>
+            )}
         </div>
 
         <Button
