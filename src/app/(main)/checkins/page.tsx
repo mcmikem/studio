@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { LogIn, Calendar, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit } from 'lucide-react';
+import { LogIn, Calendar, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit, Check, X } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Checkin } from '@/lib/types';
@@ -36,31 +36,30 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                     <h3 className="font-semibold flex items-center gap-2"><TargetIcon className="h-5 w-5 text-primary" /> Today's Primary Mission</h3>
                     <p className="text-muted-foreground mt-1">{checkin.primaryMission}</p>
                 </div>
+
+                <div className="space-y-3">
+                    <h4 className="font-semibold text-sm flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Connections</h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                        {checkin.details.multiWinConnections.map((connection, index) => (
+                            <li key={index}>{connection}</li>
+                        ))}
+                    </ul>
+                </div>
+                
+                <div className="space-y-3">
+                    <h4 className="font-semibold text-sm flex items-center gap-2"><BrainCircuit className="h-4 w-4" /> AI Best Practice Tip</h4>
+                     <p className="text-sm text-muted-foreground italic">"{checkin.details.bestPractice}"</p>
+                </div>
                 
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="item-1">
-                        <AccordionTrigger>View Detailed AI-Generated Plan</AccordionTrigger>
-                        <AccordionContent className="space-y-4 pt-2">
-                             <div>
-                                <h4 className="font-semibold mb-2 flex items-center gap-2"><Clock className="h-4 w-4" /> Time Blocks</h4>
-                                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                                    {checkin.details.timeBlocks.map((block, index) => (
-                                        <li key={index}><strong>{block.startTime} - {block.endTime}:</strong> {block.description}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                             <div>
-                                <h4 className="font-semibold mb-2 flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Connections</h4>
-                                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                    {checkin.details.multiWinConnections.map((connection, index) => (
-                                        <li key={index}>{connection}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                             <div>
-                                <h4 className="font-semibold mb-2 flex items-center gap-2"><BrainCircuit className="h-4 w-4" /> AI Best Practice Tip</h4>
-                                <p className="text-sm text-muted-foreground italic">"{checkin.details.bestPractice}"</p>
-                            </div>
+                        <AccordionTrigger>View Detailed Time Blocks</AccordionTrigger>
+                        <AccordionContent className="space-y-2 pt-2">
+                            <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                                {checkin.details.timeBlocks.map((block, index) => (
+                                    <li key={index}><strong>{block.startTime} - {block.endTime}:</strong> {block.description}</li>
+                                ))}
+                            </ul>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>

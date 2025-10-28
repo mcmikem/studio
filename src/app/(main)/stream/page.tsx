@@ -9,7 +9,7 @@ import {
   CardDescription,
   CardFooter
 } from '@/components/ui/card';
-import { Rss, LogOut, BookOpen, Lightbulb } from 'lucide-react';
+import { Rss, LogOut, BookOpen, Lightbulb, Check, X } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
@@ -22,7 +22,12 @@ import { tagColors } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
 
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
-    const tags = checkout.task?.match(/#\w+/g) || [];
+    
+    // The 'tasks' field might be an array or a single string for older documents.
+    const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [{ description: checkout.tasks, status: 'Done' }];
+
+    const completedTasks = tasksArray.filter(t => t.status === 'Done');
+    const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
 
     return (
         <Card>
@@ -37,32 +42,43 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">
-                 <div>
-                    <p className="text-muted-foreground text-sm">{checkout.task}</p>
+                <div>
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">Task Completion</h4>
+                  <div className="space-y-3">
+                    {completedTasks.map((task, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                            <Check className="h-4 w-4 mt-1 text-green-500 flex-shrink-0" />
+                            <p className="text-sm text-muted-foreground">{task.description}</p>
+                        </div>
+                    ))}
+                    {notCompletedTasks.map((task, index) => (
+                         <div key={index} className="flex items-start gap-3">
+                            <X className="h-4 w-4 mt-1 text-red-500 flex-shrink-0" />
+                            <div>
+                                <p className="text-sm text-muted-foreground line-through">{task.description}</p>
+                                {task.reason && <p className="text-xs text-red-500 italic pl-2">Reason: {task.reason}</p>}
+                            </div>
+                        </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                    {tags.map(tag => <Badge key={tag} variant="outline" className={tagColors[tag as keyof typeof tagColors] || tagColors['#Update']}>{tag}</Badge>)}
-                </div>
+
+                {(checkout.learning || checkout.tomorrowPlan) && <Separator />}
+
+                 {checkout.learning && (
+                    <div>
+                         <h4 className="font-semibold mb-1 flex items-center gap-2"><Lightbulb /> Key Learning</h4>
+                        <p className="text-muted-foreground text-sm">{checkout.learning}</p>
+                    </div>
+                )}
+                
+                {checkout.tomorrowPlan && (
+                    <div>
+                        <h4 className="font-semibold mb-1 flex items-center gap-2"><BookOpen /> Tomorrow's Priority</h4>
+                        <p className="text-muted-foreground text-sm">{checkout.tomorrowPlan}</p>
+                    </div>
+                )}
             </CardContent>
-            {(checkout.learning || checkout.tomorrowPlan) && (
-                <>
-                <Separator />
-                <CardFooter className="flex-col items-start gap-4 text-sm pt-6">
-                    {checkout.learning && (
-                        <div>
-                             <h4 className="font-semibold mb-1 flex items-center gap-2"><Lightbulb /> Key Learning</h4>
-                            <p className="text-muted-foreground">{checkout.learning}</p>
-                        </div>
-                    )}
-                    {checkout.tomorrowPlan && (
-                        <div>
-                            <h4 className="font-semibold mb-1 flex items-center gap-2"><BookOpen /> Tomorrow's Priority</h4>
-                            <p className="text-muted-foreground">{checkout.tomorrowPlan}</p>
-                        </div>
-                    )}
-                </CardFooter>
-                </>
-            )}
         </Card>
     )
 }
