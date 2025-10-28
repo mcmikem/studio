@@ -165,26 +165,28 @@ export default function WorkplanPage() {
     setIsLoading(true);
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
-    const weekStartTimestamp = Timestamp.fromDate(startOfSelectedWeek);
+    const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
 
     try {
-      // Fetch the team's plan for the week
+      // Fetch the team's plan for the week using a range query
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
-        where('weekOf', '==', weekStartTimestamp),
+        where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
+        where('weekOf', '<=', Timestamp.fromDate(endOfSelectedWeek)),
         where('status', '==', 'Published'),
         limit(1)
       );
       const teamPlanSnapshot = await getDocs(teamPlanQuery);
       if (!teamPlanSnapshot.empty) {
-        const doc = teamPlanSnapshot.docs[0];
-        setTeamPlan({ id: doc.id, ...doc.data() } as TeamWeeklyPlan);
+        const teamPlanDoc = teamPlanSnapshot.docs[0];
+        const fetchedTeamPlan = { id: teamPlanDoc.id, ...teamPlanDoc.data() } as TeamWeeklyPlan;
+        setTeamPlan(fetchedTeamPlan);
 
          // Fetch the user's finalized plan for the week using the team plan's exact timestamp
         const userPlanQuery = query(
             collection(firestore, 'workplans'),
             where('userId', '==', user.uid),
-            where('weekOf', '==', doc.data().weekOf), // Use exact timestamp from team plan
+            where('weekOf', '==', fetchedTeamPlan.weekOf), // Use exact timestamp from the found team plan
             limit(1)
         );
         const userPlanSnapshot = await getDocs(userPlanQuery);
@@ -206,6 +208,7 @@ export default function WorkplanPage() {
       setIsLoading(false);
     }
   }, [user, firestore, currentDate]);
+
 
   useEffect(() => {
     fetchPlans();
@@ -368,3 +371,4 @@ export default function WorkplanPage() {
     </div>
   );
 }
+
