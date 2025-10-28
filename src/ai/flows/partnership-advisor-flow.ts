@@ -40,13 +40,13 @@ const advisorPrompt = ai.definePrompt({
   output: {
     schema: PartnershipAdvisorOutputSchema,
   },
+  prompt: `Analyze our current partnership pipeline using the 'getPartnerships' tool and provide your top 3 strategic recommendations. Today's date is ${new Date().toDateString()}.`,
 });
 
 export async function partnershipAdvisor(input: PartnershipAdvisorInput): Promise<PartnershipAdvisorOutput> {
   const llmResponse = await ai.generate({
     model: 'googleai/gemini-2.5-flash',
-    tools: [advisorPrompt],
-    prompt: `Analyze our current partnership pipeline using the 'getPartnerships' tool and provide your top 3 strategic recommendations. Today's date is ${new Date().toDateString()}.`,
+    prompt: advisorPrompt,
   });
 
   const output = llmResponse.output;
