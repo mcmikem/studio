@@ -5,56 +5,54 @@
 
 @layer base {
   :root {
-    /* Omuto Website Palette - Light Theme */
-    --background: 48 83% 97%; /* #F9F7F0 - Off-white from website */
-    --foreground: 222 47% 11%; /* #111827 - Dark Blue/Black for text */
+    /* Omuto Website Palette - Modern & Youthful */
+    --background: 0 0% 94.1%; /* #F0F0F0 - Clean Light Grey */
+    --foreground: 222 47% 11%;
 
-    --card: 0 0% 100%; /* White cards */
+    --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
  
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
  
-    --primary: 0 84% 60%; /* #F23B3B - Bright Red from website */
+    --primary: 16 100% 60%; /* #FF6B35 - Vibrant Red-Orange */
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 45 93% 47%; /* #E6B30B - Yellow from website */
+    --secondary: 45 93% 47%;
     --secondary-foreground: 222 47% 11%;
  
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
  
-    --accent: 240 5% 90%; 
-    --accent-foreground: 240 10% 3.9%;
+    --accent: 213 100% 60%; /* #3591FF - Complementary Blue */
+    --accent-foreground: 0 0% 100%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
+    --border: 240 6% 80%; /* Slightly darker border for better contrast on grey */
     --input: 240 6% 90%;
-    --ring: 0 84% 60%;
+    --ring: 213 100% 60%; /* Ring matches accent color */
  
     --radius: 0.75rem;
 
-    --chart-1: 0 84% 60%;
+    --chart-1: 16 100% 60%;
     --chart-2: 213 100% 60%;
-    --chart-3: 173 58% 39%;
-    --chart-4: 43 74% 66%;
+    --chart-3: 45 93% 47%;
+    --chart-4: 173 58% 39%;
     --chart-5: 27 87% 67%;
     
-    /* Sidebar remains dark for contrast, matching website header */
-    --sidebar-background: 222 47% 11%; /* #111827 */
+    --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 84% 60%;
+    --sidebar-primary: 16 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 0 84% 60%;
+    --sidebar-ring: 16 100% 60%;
   }
 
   .dark {
-    /* Keeping dark theme consistent with sidebar for now */
     --background: 222 47% 11%;
     --foreground: 0 0% 100%;
 
@@ -64,7 +62,7 @@
     --popover: 222 47% 11%;
     --popover-foreground: 0 0% 100%;
  
-    --primary: 0 84% 60%;
+    --primary: 16 100% 60%;
     --primary-foreground: 0 0% 100%;
  
     --secondary: 45 93% 47%;
@@ -73,7 +71,7 @@
     --muted: 222 47% 15%;
     --muted-foreground: 240 4% 46%;
  
-    --accent: 222 47% 20%;
+    --accent: 213 100% 60%;
     --accent-foreground: 0 0% 100%;
  
     --destructive: 0 63% 31%;
@@ -81,16 +79,16 @@
 
     --border: 222 47% 20%;
     --input: 222 47% 20%;
-    --ring: 0 84% 60%;
+    --ring: 213 100% 60%;
  
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 84% 60%;
+    --sidebar-primary: 16 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 0 84% 60%;
+    --sidebar-ring: 16 100% 60%;
   }
 }
 
@@ -101,14 +99,19 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Modern focus ring for inputs */
+  .form-input:focus-visible {
+    @apply outline-none ring-2 ring-ring/50 ring-offset-2 ring-offset-background;
+  }
 }
 
 @layer components {
+  /* Subtle dot pattern for cards to add texture */
   .card {
-    background-image: radial-gradient(hsl(var(--border)) 1px, transparent 0);
-    background-size: 10px 10px;
+    background-image: radial-gradient(hsl(var(--border) / 0.5) 1px, transparent 0);
+    background-size: 15px 15px;
   }
   .dark .card {
-     background-image: radial-gradient(hsl(var(--border) / 0.5) 1px, transparent 0);
+     background-image: radial-gradient(hsl(var(--border) / 0.3) 1px, transparent 0);
   }
 }
