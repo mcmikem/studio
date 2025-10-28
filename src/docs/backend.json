@@ -227,7 +227,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Checkout",
       "type": "object",
-      "description": "Represents a user's end-of-day checkout update.",
+      "description": "Represents a user's end-of-day checkout update, linking back to their check-in.",
       "properties": {
         "userId": {
           "type": "string",
@@ -239,23 +239,28 @@
         },
         "role": {
           "type": "string",
-          "description": "The role of the user (e.g., ED, PPM, OPM)."
+          "description": "The role of the user."
         },
         "avatar": {
           "type": "string",
           "description": "URL to the user's avatar image."
         },
-        "task": {
-          "type": "string",
-          "description": "The primary checkout message or task update summary."
+        "tasks": {
+          "type": "array",
+          "description": "A list of tasks from the daily check-in with their completion status.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "status": { "type": "string", "enum": ["Done", "Not Done"] },
+              "reason": { "type": "string", "description": "Reason if the task was not done." }
+            },
+            "required": ["description", "status"]
+          }
         },
         "learning": {
             "type": "string",
             "description": "Key learnings or what to do differently next time."
-        },
-        "tomorrowPlan": {
-            "type": "string",
-            "description": "The user's stated priority for the next day."
         },
         "timestamp": {
           "type": "string",
@@ -267,7 +272,7 @@
         "userId",
         "name",
         "role",
-        "task",
+        "tasks",
         "timestamp"
       ]
     },
@@ -305,7 +310,7 @@
         },
         "timestamp": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "name", "primaryMission", "details", "timestamp", "mood"]
+      "required": ["userId", "name", "primaryMission", "details", "timestamp"]
     },
     "Task": {
       "$schema": "http://json-schema.org/draft-07/schema#",

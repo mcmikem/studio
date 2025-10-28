@@ -11,10 +11,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Loader2, LogOut, Send, Wand } from 'lucide-react';
-import { Separator } from '../ui/separator';
-import { useForm } from 'react-hook-form';
+import { Loader2, LogOut } from 'lucide-react';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
@@ -22,22 +20,37 @@ import {
   useUser,
   useFirestore,
   addDocumentNonBlocking,
+  useMemoFirebase,
 } from '@/firebase';
 import {
   collection,
   serverTimestamp,
+  query,
+  where,
+  orderBy,
+  limit,
+  Timestamp,
+  getDocs
 } from 'firebase/firestore';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { startOfDay, endOfDay } from 'date-fns';
+import { Skeleton } from '../ui/skeleton';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import type { Checkin } from '@/lib/types';
+import { AlertTriangle } from 'lucide-react';
+
+const checkoutTaskSchema = z.object({
+  description: z.string(),
+  status: z.enum(['Done', 'Not Done']),
+  reason: z.string().optional(),
+});
 
 const checkoutSchema = z.object({
-  task: z
-    .string()
-    .min(10, 'Please provide a meaningful summary of what you accomplished.'),
+  tasks: z.array(checkoutTaskSchema).min(1, 'Please review your tasks.'),
   learning: z.string().optional(),
-  tomorrowPlan: z.string().optional(),
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
@@ -48,15 +61,77 @@ export function CheckoutForm() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const router = useRouter();
+  
+  const [dailyCheckin, setDailyCheckin] = useState<Checkin | null>(null);
+  const [isLoadingCheckin, setIsLoadingCheckin] = useState(true);
 
   const {
-    register,
+    control,
     handleSubmit,
+    register,
+    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      tasks: [],
+      learning: '',
+    },
   });
+  
+  const { fields } = useFieldArray({
+    control,
+    name: "tasks",
+  });
+
+  const fetchCheckin = useCallback(async () => {
+    if (!user || !firestore) {
+      setIsLoadingCheckin(false);
+      return;
+    }
+    
+    const todayStart = startOfDay(new Date());
+    const todayEnd = endOfDay(new Date());
+
+    const q = query(
+      collection(firestore, 'checkins'),
+      where('userId', '==', user.uid),
+      where('timestamp', '>=', Timestamp.fromDate(todayStart)),
+      where('timestamp', '<=', Timestamp.fromDate(todayEnd)),
+      orderBy('timestamp', 'desc'),
+      limit(1)
+    );
+
+    try {
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const checkinData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Checkin;
+        setDailyCheckin(checkinData);
+        
+        // Populate the form with tasks from the check-in
+        const tasksFromCheckin = checkinData.details.timeBlocks.map(block => ({
+            description: block.description,
+            status: 'Done' as 'Done' | 'Not Done',
+            reason: '',
+        }));
+        reset({ tasks: tasksFromCheckin, learning: '' });
+
+      } else {
+        setDailyCheckin(null);
+      }
+    } catch (e) {
+      console.error("Error fetching check-in:", e);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not load your daily plan.' });
+    } finally {
+      setIsLoadingCheckin(false);
+    }
+  }, [user, firestore, reset, toast]);
+
+  useEffect(() => {
+    fetchCheckin();
+  }, [fetchCheckin]);
+
 
   const onSubmit = (data: CheckoutFormData) => {
     if (!firestore || !user || !profile) {
@@ -72,9 +147,8 @@ export function CheckoutForm() {
       name: profile.name,
       role: profile.role,
       avatar: user.photoURL || '',
-      task: data.task,
+      tasks: data.tasks,
       learning: data.learning || "",
-      tomorrowPlan: data.tomorrowPlan || "",
       timestamp: serverTimestamp(),
       userId: user.uid,
     };
@@ -88,40 +162,93 @@ export function CheckoutForm() {
           description: 'Your impact report has been saved to the Team Stream.',
         });
         reset();
-        router.push('/stream'); // Redirect to the stream to see the update
+        router.push('/stream');
       })
       .catch((e: any) => {
         console.error("Failed to submit checkout", e)
       });
   };
   
+  if (isLoadingCheckin) {
+      return (
+          <div className="space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+          </div>
+      )
+  }
+
+  if (!dailyCheckin) {
+      return (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>No Check-in Found</AlertTitle>
+            <AlertDescription>
+                You must have a check-in for today to submit a checkout report. Please complete your daily plan first.
+            </AlertDescription>
+         </Alert>
+      )
+  }
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-8">
-        <div className="space-y-4">
-          <Label
-            htmlFor="mission-accomplished"
-            className="text-base font-semibold"
-          >
-            What was your main accomplishment today?
-          </Label>
-          <Textarea
-            id="mission-accomplished"
-            placeholder={
-              'e.g., Finalized RED Campaign report and submitted to GlobalGiving. Use #hashtags to categorize!'
-            }
-            className="min-h-[120px]"
-            {...register('task')}
-          />
-          {errors.task && (
-            <p className="text-sm text-destructive">
-              {`${errors.task.message}`}
-            </p>
-          )}
+        <div>
+            <Label className="text-base font-semibold">
+                Review Today's Planned Tasks
+            </Label>
+            <p className="text-sm text-muted-foreground mb-4">Mark each task from your daily plan as 'Done' or 'Not Done'.</p>
+
+            <div className="space-y-4">
+                {fields.map((field, index) => {
+                    const taskStatus = watch(`tasks.${index}.status`);
+                    return (
+                        <Card key={field.id} className="p-4">
+                             <p className="font-medium mb-2">{field.description}</p>
+                            <Controller
+                                control={control}
+                                name={`tasks.${index}.status`}
+                                render={({ field: controllerField }) => (
+                                    <RadioGroup
+                                    onValueChange={controllerField.onChange}
+                                    defaultValue={controllerField.value}
+                                    className="flex gap-4"
+                                    >
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Done" id={`done-${index}`} />
+                                        <Label htmlFor={`done-${index}`}>Done</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Not Done" id={`not-done-${index}`} />
+                                        <Label htmlFor={`not-done-${index}`}>Not Done</Label>
+                                    </div>
+                                    </RadioGroup>
+                                )}
+                            />
+                            {taskStatus === 'Not Done' && (
+                                <div className="mt-2 space-y-1">
+                                    <Label htmlFor={`reason-${index}`} className="text-xs">Reason (optional)</Label>
+                                     <Textarea
+                                        id={`reason-${index}`}
+                                        placeholder="e.g., Ran out of time, waiting for partner feedback..."
+                                        className="min-h-[60px]"
+                                        {...register(`tasks.${index}.reason`)}
+                                    />
+                                </div>
+                            )}
+                        </Card>
+                    )
+                })}
+            </div>
+             {errors.tasks && (
+                <p className="text-sm text-destructive mt-2">
+                    {`${errors.tasks.message}`}
+                </p>
+            )}
         </div>
 
-        <Separator />
 
         <div className="space-y-4">
           <Label htmlFor="learning" className="text-base font-semibold">
@@ -135,18 +262,6 @@ export function CheckoutForm() {
           />
         </div>
 
-        <Separator />
-
-        <div className="space-y-4">
-          <Label htmlFor="tomorrow-plan" className="text-base font-semibold">
-            What is your top priority for tomorrow?
-          </Label>
-          <Input
-            id="tomorrow-plan"
-            placeholder="Optional: Tomorrow's priority will be..."
-            {...register('tomorrowPlan')}
-          />
-        </div>
         <Button
             size="lg"
             className="w-full"
