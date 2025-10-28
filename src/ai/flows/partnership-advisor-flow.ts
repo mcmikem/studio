@@ -49,7 +49,7 @@ export async function partnershipAdvisor(input: PartnershipAdvisorInput): Promis
     prompt: `Analyze our current partnership pipeline using the 'getPartnerships' tool and provide your top 3 strategic recommendations. Today's date is ${new Date().toDateString()}.`,
   });
 
-  const output = llmResponse.output();
+  const output = llmResponse.output;
   if (!output) {
     throw new Error("The AI failed to generate partnership advice.");
   }
