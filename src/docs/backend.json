@@ -281,6 +281,7 @@
         "userId": { "type": "string" },
         "name": { "type": "string" },
         "primaryMission": { "type": "string" },
+        "mood": { "type": "string", "description": "The user's self-reported mood for the day." },
         "details": {
           "type": "object",
            "properties": {
@@ -304,7 +305,7 @@
         },
         "timestamp": { "type": "string", "format": "date-time" }
       },
-      "required": ["userId", "name", "primaryMission", "details", "timestamp"]
+      "required": ["userId", "name", "primaryMission", "details", "timestamp", "mood"]
     },
     "Task": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -645,7 +646,7 @@
         "partnerId": { "type": "string" },
         "partnerName": { "type": "string" },
         "date": { "type": "string", "format": "date-time" },
-        "attendees": { "type": "array", "items": { "type": "string" } },
+        "attendees": { "type": "string" },
         "type": { "type": "string", "enum": ["Exploration", "Proposal", "Progress", "Problem", "Renewal"] },
         "decisions": { "type": "string" },
         "actionItems": { "type": "array", "items": { "type": "string" } },
@@ -671,9 +672,10 @@
         "issues": { "type": "string", "description": "Summary of issues or concerns." },
         "recommendation": { "type": "string", "enum": ["Continue", "Improve", "Pause", "Terminate"] },
         "nextReviewDate": { "type": "string", "format": "date" },
-        "checkedBy": { "type": "string", "description": "Name of the staff member who did the check." }
+        "checkedBy": { "type": "string", "description": "Name of the staff member who did the check." },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["partnerId", "checkDate", "communication", "delivery", "alignment", "value", "recommendation", "nextReviewDate", "checkedBy"]
+      "required": ["partnerId", "checkDate", "communication", "delivery", "alignment", "value", "recommendation", "nextReviewDate", "checkedBy", "createdAt"]
     }
   },
   "auth": {
@@ -789,7 +791,8 @@
       "schema": {
         "$ref": "#/entities/TeamWeeklyPlan"
       },
-      "description": "Stores manager-created team-wide weekly plans."
+      "description": "Stores manager-created team-wide weekly plans.",
+      "rules": "allow read, write: if request.auth != null && (request.auth.uid == resource.data.authorId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager']);"
     },
     "/workplans/{workplanId}": {
       "schema": {

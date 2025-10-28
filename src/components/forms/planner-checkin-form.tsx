@@ -30,15 +30,18 @@ import { Separator } from '../ui/separator';
 import { Textarea } from '../ui/textarea';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
+  mood: z.string().min(1, 'Please select your current mood.'),
 });
 
 type PlanFormData = z.infer<typeof planSchema>;
 
 const finalCheckinSchema = z.object({
     primaryMission: z.string(),
+    mood: z.string(),
     timeBlocks: z.array(z.object({
         startTime: z.string(),
         endTime: z.string(),
@@ -110,14 +113,18 @@ function PlannerCheckinFormComponent() {
   const { data: taskTemplates } = useCollection<TaskTemplate>(templatesQuery);
   // --- End Data Fetching ---
 
-  const { register: registerMission, handleSubmit: handleMissionSubmit, setValue: setMissionValue, formState: { errors: missionErrors } } = useForm<PlanFormData>({
+  const { register: registerMission, handleSubmit: handleMissionSubmit, setValue: setMissionValue, control: missionControl, formState: { errors: missionErrors } } = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
+     defaultValues: {
+      mood: 'energized'
+    }
   });
 
   const { register, handleSubmit, control, watch, setValue, formState: { errors: checkinErrors, isSubmitting } } = useForm({
     resolver: zodResolver(finalCheckinSchema),
     defaultValues: {
         primaryMission: "",
+        mood: "",
         timeBlocks: [],
         multiWinConnections: [],
         materials: "",
@@ -161,6 +168,7 @@ function PlannerCheckinFormComponent() {
       });
       setAiOutput(output);
       setValue('primaryMission', data.primaryMission);
+      setValue('mood', data.mood);
       setValue('timeBlocks', output.timeBlocks);
       setValue('multiWinConnections', output.multiWinConnections.map(c => ({ value: c })));
       setValue('materials', output.materials);
@@ -201,6 +209,7 @@ function PlannerCheckinFormComponent() {
 
     const planData = {
       primaryMission: data.primaryMission,
+      mood: data.mood,
       details: details,
     };
 
@@ -266,6 +275,41 @@ function PlannerCheckinFormComponent() {
                             />
                             {missionErrors.primaryMission && (
                                 <p className="text-sm text-destructive">{missionErrors.primaryMission.message}</p>
+                            )}
+                        </div>
+
+                         <div className="space-y-3">
+                            <Label className="text-lg">How are you feeling today?</Label>
+                            <Controller
+                                name="mood"
+                                control={missionControl}
+                                render={({ field }) => (
+                                    <RadioGroup
+                                    onValueChange={field.onChange}
+                                    defaultValue={field.value}
+                                    className="flex flex-wrap gap-4"
+                                    >
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="energized" id="energized" />
+                                        <Label htmlFor="energized" className="cursor-pointer">⚡️ Energized & Ready</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="focused" id="focused" />
+                                        <Label htmlFor="focused" className="cursor-pointer">🎯 Focused</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="calm" id="calm" />
+                                        <Label htmlFor="calm" className="cursor-pointer">🧘‍♀️ Calm & Steady</Label>
+                                    </div>
+                                     <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="overwhelmed" id="overwhelmed" />
+                                        <Label htmlFor="overwhelmed" className="cursor-pointer">🥵 A Bit Overwhelmed</Label>
+                                    </div>
+                                    </RadioGroup>
+                                )}
+                            />
+                             {missionErrors.mood && (
+                                <p className="text-sm text-destructive">{missionErrors.mood.message}</p>
                             )}
                         </div>
                         
