@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -130,14 +129,17 @@ function ExpensesContent() {
     }
   }, [highlightedExpenseId, expenses]);
 
-  const managementRoles = [
+  const approvalRoles = [
     'Executive Director',
     'Programs & Partnerships Manager',
     'Operations & Field Manager',
     'Media & Finance Lead'
   ];
+  
+  const financeRoles = ['Executive Director', 'Media & Finance Lead'];
 
-  const canManage = profile && managementRoles.includes(profile.role);
+  const canApprove = profile && approvalRoles.includes(profile.role);
+  const canManageFinances = profile && financeRoles.includes(profile.role);
 
 
   const handleStatusUpdate = async (expense: Expense, status: Expense['status']) => {
@@ -150,7 +152,6 @@ function ExpensesContent() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        // Notify user of approval or rejection
         if (expense.userId !== currentUser.uid && (status === 'Approved' || status === 'Rejected' || status === 'Disbursed')) {
             let message = '';
             if (status === 'Approved') {
@@ -256,24 +257,24 @@ function ExpensesContent() {
                             </TableCell>
                              <TableCell className="text-right">
                                 <div className="flex justify-end items-center gap-1">
-                                    {canManage && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                                    {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
                                       <div className="flex gap-1">
                                           <Button variant="ghost" size="icon" className="text-primary hover:text-primary h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
                                           <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
                                       </div>
                                     )}
-                                    {canManage && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                                    {canApprove && (expense.status === 'Approved' || expense.status === 'Rejected') && (
                                       <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
                                         <Undo2 className="mr-2 h-4 w-4" /> Reverse
                                       </Button>
                                     )}
-                                    {canManage && expense.status === 'Approved' && currentUser?.role !== 'Field Coordinator' && (
+                                    {canManageFinances && expense.status === 'Approved' && (
                                          <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
                                     )}
                                     {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
                                          <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge Receipt</Button>
                                     )}
-                                    {canManage && (
+                                    {canManageFinances && (
                                         <>
                                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}><Edit className="h-4 w-4" /></Button>
                                             <AlertDialog>
@@ -372,4 +373,3 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
-
