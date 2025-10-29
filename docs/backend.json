@@ -203,6 +203,10 @@
         "teachers_attended": {
             "type": "number",
             "description": "Number of teachers reached in a RED Campaign session."
+        },
+        "trees_planted": {
+            "type": "number",
+            "description": "Number of trees planted during a GreenSchools activity."
         }
       },
       "required": [
@@ -227,7 +231,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Checkout",
       "type": "object",
-      "description": "Represents a user's end-of-day checkout update.",
+      "description": "Represents a user's end-of-day checkout update, linking back to their check-in.",
       "properties": {
         "userId": {
           "type": "string",
@@ -239,15 +243,24 @@
         },
         "role": {
           "type": "string",
-          "description": "The role of the user (e.g., ED, PPM, OPM)."
+          "description": "The role of the user."
         },
         "avatar": {
           "type": "string",
           "description": "URL to the user's avatar image."
         },
-        "task": {
-          "type": "string",
-          "description": "The primary checkout message or task update summary."
+        "tasks": {
+          "type": "array",
+          "description": "A list of tasks from the daily check-in with their completion status.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "status": { "type": "string", "enum": ["Done", "Not Done"] },
+              "reason": { "type": "string", "description": "Reason if the task was not done." }
+            },
+            "required": ["description", "status"]
+          }
         },
         "learning": {
             "type": "string",
@@ -267,7 +280,7 @@
         "userId",
         "name",
         "role",
-        "task",
+        "tasks",
         "timestamp"
       ]
     },
@@ -573,6 +586,7 @@
     "Equipment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Equipment",
+      "type": "object",
       "description": "Represents a piece of physical equipment or an asset.",
       "properties": {
         "id": { "type": "string" },
@@ -791,8 +805,7 @@
       "schema": {
         "$ref": "#/entities/TeamWeeklyPlan"
       },
-      "description": "Stores manager-created team-wide weekly plans.",
-      "rules": "allow read, write: if request.auth != null && (request.auth.uid == resource.data.authorId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager']);"
+      "description": "Stores manager-created team-wide weekly plans."
     },
     "/workplans/{workplanId}": {
       "schema": {
@@ -817,6 +830,12 @@
             "$ref": "#/entities/Message"
         },
         "description": "Stores team chat messages."
+    },
+    "/users/{userId}/ai-chats/{chatId}": {
+        "schema": {
+            "$ref": "#/entities/Message"
+        },
+        "description": "Stores private AI chat messages for a specific user."
     },
     "/testimonies/{testimonyId}": {
       "schema": {
