@@ -75,15 +75,15 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
   // Morning Mode (before 12 PM) and user hasn't checked in yet
   if (hour < 12 && !checkin) {
      return (
-        <Card className="bg-primary/10 border-primary/20">
+        <Card className="bg-primary/10 border-primary/20 animated-glowing-border">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Sparkles className="text-primary"/> It's a New Day!</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-2xl"><Sparkles className="text-primary"/> It's a New Day!</CardTitle>
                 <CardDescription>
                 Start your day with intention. Let's create a strategic plan with your AI coach.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Button asChild size="lg" className="w-full">
+                <Button asChild size="lg" className="w-full text-lg h-12">
                 <Link href="/daily-plan">
                     <LogIn className="mr-2 h-5 w-5" />
                     Plan My Day
@@ -97,15 +97,15 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
   // Evening Mode (5 PM or later)
   if (hour >= 17) {
     return (
-        <Card className="bg-blue-500/10 border-blue-500/20">
+        <Card className="bg-accent/10 border-accent/20">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><LogOut className="text-blue-500"/> Wrap Up Your Day</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-2xl"><LogOut className="text-accent"/> Wrap Up Your Day</CardTitle>
                 <CardDescription>
                 Report your impact, share your learnings, and submit your checkout report.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Button asChild size="lg" variant="secondary" className="w-full bg-blue-500/80 hover:bg-blue-500 text-white">
+                <Button asChild size="lg" variant="default" className="w-full text-lg h-12 bg-accent hover:bg-accent/90 text-accent-foreground">
                 <Link href="/forms/check-out">
                     <LogOut className="mr-2 h-5 w-5" />
                     Daily Check-out
@@ -120,26 +120,21 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
   if (checkin) {
     if (currentTask) {
         return (
-            <div className="p-4 rounded-lg bg-primary/10 border-2 border-primary/20 flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                    <div className="flex-shrink-0 bg-primary text-primary-foreground h-12 w-12 rounded-lg flex items-center justify-center">
-                        <TargetIcon className="h-7 w-7" />
-                    </div>
-                    <div>
-                        <p className="text-sm text-primary font-bold tracking-wider">CURRENT FOCUS</p>
-                        <p className="text-xl font-bold leading-tight">{currentTask}</p>
+            <Card className="p-6 rounded-2xl bg-primary/10 border-2 border-primary/20 animated-glowing-border flex flex-col gap-4">
+                <div className="flex items-start justify-between">
+                    <p className="text-sm text-primary font-bold tracking-wider">CURRENT FOCUS</p>
+                     <div className="flex items-center gap-2 text-primary font-mono">
+                        <Clock className="h-5 w-5" />
+                        <p className="text-2xl font-semibold">{formatDuration(timeRemaining)}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 w-full">
-                    <div className="flex-grow">
-                        <Progress value={progress} className="h-2"/>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <p className="font-mono text-lg font-semibold">{formatDuration(timeRemaining)}</p>
-                    </div>
+                <div>
+                    <p className="text-3xl font-bold leading-tight font-headline">{currentTask}</p>
                 </div>
-            </div>
+                <div className="flex-grow flex flex-col justify-end pt-4">
+                    <Progress value={progress} className="h-2"/>
+                </div>
+            </Card>
         );
     } else {
         // Checked in, but not in a scheduled block

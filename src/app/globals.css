@@ -6,7 +6,7 @@
 @layer base {
   :root {
     /* Omuto Website Palette - Modern & Youthful */
-    --background: 0 0% 94.1%; /* #F0F0F0 - Clean Light Grey */
+    --background: 220 20% 97%; /* Lighter, cleaner grey */
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -15,41 +15,41 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
  
-    --primary: 16 100% 60%; /* #FF6B35 - Vibrant Red-Orange */
+    --primary: 16 100% 55%; /* #FF5722 - A slightly deeper red-orange for accessibility */
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 45 93% 47%;
+    --secondary: 220 15% 90%; /* Neutral secondary */
     --secondary-foreground: 222 47% 11%;
  
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 40%;
  
-    --accent: 213 100% 60%; /* #3591FF - Complementary Blue */
+    --accent: 213 94% 57%; /* #358BFF - A vibrant, clear blue */
     --accent-foreground: 0 0% 100%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 80%; /* Slightly darker border for better contrast on grey */
-    --input: 240 6% 90%;
-    --ring: 213 100% 60%; /* Ring matches accent color */
+    --border: 220 15% 88%;
+    --input: 220 15% 92%;
+    --ring: 213 94% 57%;
  
     --radius: 0.75rem;
 
-    --chart-1: 16 100% 60%;
-    --chart-2: 213 100% 60%;
+    --chart-1: 16 100% 55%;
+    --chart-2: 213 94% 57%;
     --chart-3: 45 93% 47%;
     --chart-4: 173 58% 39%;
     --chart-5: 27 87% 67%;
     
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 60%;
+    --sidebar-primary: 16 100% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 16 100% 60%;
+    --sidebar-ring: 16 100% 55%;
   }
 
   .dark {
@@ -62,33 +62,33 @@
     --popover: 222 47% 11%;
     --popover-foreground: 0 0% 100%;
  
-    --primary: 16 100% 60%;
+    --primary: 16 100% 55%;
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 45 93% 47%;
-    --secondary-foreground: 222 47% 11%;
+    --secondary: 222 47% 20%;
+    --secondary-foreground: 0 0% 100%;
  
-    --muted: 222 47% 15%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 222 47% 18%;
+    --muted-foreground: 220 10% 60%;
  
-    --accent: 213 100% 60%;
+    --accent: 213 94% 57%;
     --accent-foreground: 0 0% 100%;
  
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 47% 20%;
-    --input: 222 47% 20%;
-    --ring: 213 100% 60%;
+    --border: 222 47% 25%;
+    --input: 222 47% 25%;
+    --ring: 213 94% 57%;
  
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 60%;
+    --sidebar-primary: 16 100% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 16 100% 60%;
+    --sidebar-ring: 16 100% 55%;
   }
 }
 
@@ -99,19 +99,19 @@
   body {
     @apply bg-background text-foreground;
   }
-  /* Modern focus ring for inputs */
-  .form-input:focus-visible {
-    @apply outline-none ring-2 ring-ring/50 ring-offset-2 ring-offset-background;
-  }
 }
 
-@layer components {
-  /* Subtle dot pattern for cards to add texture */
-  .card {
-    background-image: radial-gradient(hsl(var(--border) / 0.5) 1px, transparent 0);
-    background-size: 15px 15px;
+@layer utilities {
+  .animated-glowing-border {
+    animation: glowing 3s ease-in-out infinite;
   }
-  .dark .card {
-     background-image: radial-gradient(hsl(var(--border) / 0.3) 1px, transparent 0);
+
+  @keyframes glowing {
+    0%, 100% {
+      box-shadow: 0 0 5px hsl(var(--primary) / 0.5), 0 0 10px hsl(var(--primary) / 0.3);
+    }
+    50% {
+       box-shadow: 0 0 15px hsl(var(--primary) / 0.8), 0 0 25px hsl(var(--primary) / 0.5);
+    }
   }
 }
