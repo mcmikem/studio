@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -188,7 +189,7 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const financeRoles = ['Executive Director', 'Media & Finance Lead'];
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
   const canSubmitForOthers = profile && financeRoles.includes(profile.role);
 
 
