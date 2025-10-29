@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -27,6 +26,7 @@ import {
   Users,
   CheckCircle,
   TrendingUp,
+  Receipt,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -39,6 +39,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   useSidebar,
+  SidebarMenuSkeleton,
 } from '@/components/ui/sidebar';
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -125,10 +126,30 @@ const roleSpecificNav: Record<string, { href: string; icon: React.ElementType; l
 export function AppSidebar() {
   const pathname = usePathname();
   const { user } = useUser();
-  const { profile: realProfile } = useUserProfile(user);
+  const { profile: realProfile, isLoading: isProfileLoading } = useUserProfile(user);
   const { isMobile, setOpenMobile } = useSidebar();
   const { viewAsRole } = useViewAs();
   
+  if (isProfileLoading) {
+    return (
+        <>
+            <SidebarHeader>
+                <OmutoLogo />
+            </SidebarHeader>
+            <SidebarContent>
+                 <div className="flex flex-col gap-4 p-2">
+                    <SidebarMenuSkeleton showIcon />
+                    <SidebarMenuSkeleton showIcon />
+                    <Separator className="my-2" />
+                    <SidebarMenuSkeleton showIcon />
+                    <SidebarMenuSkeleton showIcon />
+                    <SidebarMenuSkeleton showIcon />
+                </div>
+            </SidebarContent>
+        </>
+    )
+  }
+
   const effectiveRole = viewAsRole || realProfile?.role || 'default';
 
 
