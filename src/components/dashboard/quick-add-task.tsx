@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Loader2 } from 'lucide-react';
@@ -51,25 +50,17 @@ export function QuickAddTask() {
   };
 
   return (
-    <Card className="bg-primary/10 border-primary/20">
-      <CardHeader>
-        <CardTitle className="text-primary">Quick Add Task</CardTitle>
-        <CardDescription>Jot down a to-do item for later.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleAddTask} className="flex items-center gap-2">
-          <Input
-            placeholder="e.g., Follow up with Jane from UNICEF"
-            value={taskTitle}
-            onChange={(e) => setTaskTitle(e.target.value)}
-            disabled={isLoading}
-            className="bg-background"
-          />
-          <Button type="submit" size="icon" disabled={isLoading || !taskTitle.trim()}>
-            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+    <form onSubmit={handleAddTask} className="flex w-full items-center space-x-2">
+      <Input
+        type="text"
+        placeholder="Add a to-do item..."
+        value={taskTitle}
+        onChange={(e) => setTaskTitle(e.target.value)}
+        disabled={isLoading}
+      />
+      <Button type="submit" size="icon" disabled={isLoading || !taskTitle.trim()}>
+         {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}
+      </Button>
+    </form>
   );
 }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -11,8 +10,10 @@ import {
   useUser,
   addDocumentNonBlocking,
   updateDocumentNonBlocking,
+  useCollection,
+  useMemoFirebase,
 } from '@/firebase';
-import { collection, serverTimestamp, doc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, query, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -29,7 +30,7 @@ import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { createAlert } from '@/ai/flows/create-alert-flow';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
-import type { Expense } from '@/lib/types';
+import type { Expense, User } from '@/lib/types';
 
 
 const expenseItemSchema = z.object({
@@ -44,6 +45,17 @@ const expenseSchema = z.object({
   date: z.string().min(1, 'Date is required.'),
   items: z.array(expenseItemSchema).min(1, 'Please add at least one expense item.'),
   totalAmount: z.number().min(1, 'Total amount must be greater than zero.'),
+  // New fields for submitting on behalf of others
+  submittedFor: z.string().optional(),
+  otherUserName: z.string().optional(),
+}).refine(data => {
+    if ((data.submittedFor === 'Volunteer' || data.submittedFor === 'Intern') && !data.otherUserName) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Please specify the name for the selected role.",
+    path: ["otherUserName"],
 });
 
 type ExpenseFormData = z.infer<typeof expenseSchema>;
@@ -59,7 +71,12 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   const { user } = useUser();
   const { profile } = useUserProfile(user);
 
+  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
+
   const isEditMode = !!expense;
+  const financeRoles = ['Executive Director', 'Media & Finance Lead'];
+  const canSubmitForOthers = profile && financeRoles.includes(profile.role);
 
   const {
     register,
@@ -73,12 +90,14 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
     defaultValues: isEditMode ? {
         ...expense,
         date: formatDateSafe(expense.date, 'iso'),
+        submittedFor: expense.userId
     } : {
       type: 'Reimbursement',
       date: format(new Date(), 'yyyy-MM-dd'),
       title: '',
       items: [{ description: '', category: 'Transport', amount: 0 }],
       totalAmount: 0,
+      submittedFor: user?.uid
     },
   });
 
@@ -88,6 +107,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   });
 
   const watchedItems = useWatch({ control, name: 'items' });
+  const submittedForSelection = useWatch({ control, name: 'submittedFor' });
   
   const totalAmount = React.useMemo(() => {
     return watchedItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
@@ -120,10 +140,31 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
     const finalTotal = finalItems.reduce((sum, item) => sum + item.amount, 0);
 
+    let expenseUserId = user.uid;
+    let expenseUserName = profile.name;
+
+    if (canSubmitForOthers && data.submittedFor) {
+        if (data.submittedFor === 'Volunteer' || data.submittedFor === 'Intern') {
+            expenseUserId = data.submittedFor.toLowerCase(); // e.g. 'volunteer'
+            expenseUserName = data.otherUserName || `${data.submittedFor} (unnamed)`;
+        } else {
+            const selectedUser = users?.find(u => u.id === data.submittedFor);
+            if (selectedUser) {
+                expenseUserId = selectedUser.id;
+                expenseUserName = selectedUser.name;
+            }
+        }
+    }
+
+
     const expenseData = {
-      ...data,
+      title: data.title,
+      type: data.type,
+      date: data.date,
       items: finalItems,
       totalAmount: finalTotal,
+      userId: expenseUserId,
+      userName: expenseUserName,
     };
 
     try {
@@ -137,8 +178,6 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
         } else {
             const newExpenseData = {
                 ...expenseData,
-                userId: user.uid,
-                userName: profile.name,
                 status: 'Pending' as const,
                 createdAt: serverTimestamp(),
             };
@@ -150,13 +189,15 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             });
 
             // Create an alert for management
-            await createAlert({
-                type: 'Urgent',
-                message: `${profile.name} submitted an expense report for ${formatCurrency(finalTotal)}.`,
-                priority: 'High',
-                action: `/management/expenses?highlight=${docRef.id}`,
-                creatorId: user.uid,
-            });
+            if (profile.role === 'Executive Director' || profile.role === 'Media & Finance Lead') {
+                 await createAlert({
+                    type: 'Urgent',
+                    message: `${expenseUserName} submitted an expense report for ${formatCurrency(finalTotal)}.`,
+                    priority: 'High',
+                    action: `/management/expenses?highlight=${docRef.id}`,
+                    creatorId: user.uid,
+                });
+            }
         }
         
         if (onSuccess) {
@@ -168,6 +209,8 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                 title: '',
                 items: [{ description: '', category: 'Transport', amount: 0 }],
                 totalAmount: 0,
+                submittedFor: user.uid,
+                otherUserName: '',
             });
         }
 
@@ -217,6 +260,37 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                 {errors.date && <p className="text-sm text-destructive">{`${errors.date.message}`}</p>}
             </div>
           </div>
+          
+           {canSubmitForOthers && (
+            <div className="space-y-2">
+                <Label htmlFor="submittedFor">Submitted For</Label>
+                 <Controller
+                    name="submittedFor"
+                    control={control}
+                    render={({ field }) => (
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <SelectTrigger id="submittedFor">
+                            <SelectValue placeholder="Select user..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                             {users?.map(u => (
+                                <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                            ))}
+                            <SelectItem value="Volunteer">Volunteer</SelectItem>
+                            <SelectItem value="Intern">Intern</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    )}
+                />
+                 {(submittedForSelection === 'Volunteer' || submittedForSelection === 'Intern') && (
+                     <div className="mt-2 space-y-1 animate-in fade-in">
+                        <Label htmlFor="otherUserName" className="text-xs">{submittedForSelection} Name</Label>
+                        <Input id="otherUserName" {...register('otherUserName')} placeholder={`Enter ${submittedForSelection}'s name`} />
+                        {errors.otherUserName && <p className="text-sm text-destructive">{`${errors.otherUserName.message}`}</p>}
+                    </div>
+                )}
+            </div>
+          )}
           
           <Separator />
 
