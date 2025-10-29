@@ -89,7 +89,7 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
   "info@omuto.org": { name: "Omuto General", role: "Administrator" },
 }
 
-const isEmailApproved = (email: string | null): boolean => {
+export const isEmailApproved = (email: string | null): boolean => {
   if (!email) return false
   return Object.keys(approvedUsers).includes(email.toLowerCase())
 }
@@ -211,10 +211,6 @@ export function initiateEmailSignUp(
 ) {
   const db = getFirestore(authInstance.app)
   
-  if (!isEmailApproved(email)) {
-      throw new Error("This email address is not authorized to sign up.");
-  }
-
   return createUserWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db))
     .catch((error) => {

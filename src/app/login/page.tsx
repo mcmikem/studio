@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/firebase';
-import { initiateEmailSignIn, initiateEmailSignUp, initiateGoogleSignIn } from '@/firebase/non-blocking-login';
+import { initiateEmailSignIn, initiateEmailSignUp, initiateGoogleSignIn, isEmailApproved } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -102,6 +102,12 @@ export default function LoginPage() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
+
+    if (!isEmailApproved(email)) {
+      handleAuthError(new Error("This email address is not authorized to sign up."));
+      return;
+    }
+
     setLoading('email');
     try {
         await initiateEmailSignUp(auth, email, password);
