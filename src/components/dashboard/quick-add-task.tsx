@@ -51,9 +51,9 @@ export function QuickAddTask() {
   };
 
   return (
-    <Card>
+    <Card className="bg-primary/10 border-primary/20">
       <CardHeader>
-        <CardTitle>Quick Add Task</CardTitle>
+        <CardTitle className="text-primary">Quick Add Task</CardTitle>
         <CardDescription>Jot down a to-do item for later.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -63,6 +63,7 @@ export function QuickAddTask() {
             value={taskTitle}
             onChange={(e) => setTaskTitle(e.target.value)}
             disabled={isLoading}
+            className="bg-background"
           />
           <Button type="submit" size="icon" disabled={isLoading || !taskTitle.trim()}>
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlusCircle className="h-4 w-4" />}

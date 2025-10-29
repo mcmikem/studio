@@ -17,9 +17,9 @@ import { Button } from "../ui/button"
 
 export function TeamPulse({ checkouts }: { checkouts: Checkout[] | null }) {
   return (
-    <Card className="hover:bg-card/90 transition-colors group/card">
+    <Card className="hover:bg-muted/50 transition-colors group/card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Rss /> Team Pulse</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-accent"><Rss /> Team Pulse</CardTitle>
           <CardDescription>
             Live activity and updates from the team check-outs.
           </CardDescription>
@@ -28,7 +28,7 @@ export function TeamPulse({ checkouts }: { checkouts: Checkout[] | null }) {
           <RecentCheckouts checkouts={checkouts} />
         </CardContent>
         <CardFooter>
-            <Button asChild variant="ghost" className="text-sm text-primary group-hover/card:underline flex items-center justify-end w-full">
+            <Button asChild variant="ghost" className="text-sm text-accent group-hover/card:underline flex items-center justify-end w-full">
                 <Link href="/stream">
                     View full stream <ArrowRight className="ml-1 h-4 w-4" />
                 </Link>

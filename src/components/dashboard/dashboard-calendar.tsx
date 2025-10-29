@@ -139,7 +139,7 @@ export function DashboardCalendar() {
        <CardHeader>
         <div className="flex items-center justify-between">
             <div>
-                 <CardTitle className="flex items-center gap-2"><CalendarIcon /> Team Calendar</CardTitle>
+                 <CardTitle className="flex items-center gap-2 text-accent"><CalendarIcon /> Team Calendar</CardTitle>
                  <CardDescription>
                     Key events, deadlines, and activities.
                 </CardDescription>
@@ -201,7 +201,7 @@ export function DashboardCalendar() {
       </CardContent>
       <CardFooter>
           <Button asChild className="w-full" variant="ghost">
-              <Link href="/calendar" className="text-sm text-primary group-hover/card:underline flex items-center justify-end w-full">
+              <Link href="/calendar" className="text-sm text-accent group-hover/card:underline flex items-center justify-end w-full">
                   View full calendar <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
           </Button>
@@ -209,5 +209,3 @@ export function DashboardCalendar() {
     </Card>
   );
 }
-
-    

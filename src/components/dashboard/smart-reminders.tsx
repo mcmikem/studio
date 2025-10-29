@@ -124,7 +124,7 @@ export function SmartReminders({ profile }: { profile: User }) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Lightbulb className="text-yellow-400" /> Smart Reminders</CardTitle>
+                <CardTitle className="flex items-center gap-2"><Lightbulb className="text-yellow-400" /> AI Coach</CardTitle>
             </CardHeader>
             <CardContent>
                 {renderContent()}
