@@ -130,7 +130,7 @@ export function AppSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
   const { viewAsRole } = useViewAs();
   
-  if (isProfileLoading) {
+  if (isProfileLoading || !realProfile) {
     return (
         <>
             <SidebarHeader>
