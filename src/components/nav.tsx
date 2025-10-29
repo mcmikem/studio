@@ -7,7 +7,6 @@ import {
   Sparkles,
   Briefcase,
   AreaChart,
-  MessageSquare,
   Bell,
   User as UserIcon,
   Handshake,
@@ -16,10 +15,7 @@ import {
   Wand,
   Rss,
   CalendarCheck,
-  Newspaper,
-  CalendarClock,
   LogIn,
-  Megaphone,
   Calendar as CalendarIcon,
   ListChecks,
   Video,
@@ -29,8 +25,11 @@ import {
   Wallet,
   LayoutDashboard,
   Users,
-  Camera,
   Receipt,
+  Tasks,
+  Columns,
+  CheckCircle,
+  TrendingUp,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -59,52 +58,55 @@ const OmutoLogo = () => (
 );
 
 const navConfig = {
-  all: [
+  home: [
     { href: '/chat', icon: Sparkles, label: 'AI Coach' },
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/profile', icon: UserIcon, label: 'My Profile' },
   ],
-  field: [
+  myDay: [
+     { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
+     { href: '/workplan', icon: CalendarCheck, label: 'Weekly Workplan' },
+     { href: '/profile?tab=tasks', icon: CheckCircle, label: 'My Tasks' },
+     { href: '/my-finances', icon: Wallet, label: 'My Finances' },
+  ],
+  teamHub: [
+    { href: '/team-space', icon: Users, label: 'Team Space' },
     { href: '/checkins', icon: LogIn, label: 'Check-in Stream' },
     { href: '/stream', icon: Rss, label: 'Check-out Stream' },
-    { href: '/forms', icon: ClipboardEdit, label: 'Forms' },
-    { href: '/my-finances', icon: Wallet, label: 'My Finances' },
-    { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
+    { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
+    { href: '/notifications', icon: Bell, label: 'Notifications' },
   ],
-  planning: [
-     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
-     { href: '/workplan', icon: CalendarCheck, label: 'Weekly Workplan' },
-     { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
-     { href: '/plan', icon: ClipboardList, label: 'Operational Plan' },
+  dataReporting: [
+     { href: '/forms', icon: ClipboardEdit, label: 'Forms Hub' },
+     { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
+     { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
+     { href: '/testimonies', icon: Video, label: 'Testimony Library' },
   ],
   management: [
-    { href: '/management/programs', icon: Briefcase, label: 'Management' },
+    { href: '/management/programs', icon: Briefcase, label: 'Programs' },
+    { href: '/management/projects', icon: Columns, label: 'Projects' },
     { href: '/management/partnerships', icon: Handshake, label: 'Partnerships' },
-    { href: '/management/users', icon: UserIcon, label: 'Users' },
+    { href: '/management/finance', icon: DollarSign, label: 'Finance' },
+    { href: '/management/expenses', icon: Receipt, label: 'Expenses' },
+    { href: '/management/metrics', icon: TrendingUp, label: 'Metrics (KPIs)' },
+    { href: '/management/workplans', icon: CalendarCheck, label: 'Team Workplans' },
+    { href: '/management/equipment', icon: Box, label: 'Equipment' },
+    { href: '/management/templates', icon: ListChecks, label: 'Checklists' },
+    { href: '/management/users', icon: UserIcon, label: 'User Roles' },
   ],
-  financeMedia: [
-    { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead'] },
-    { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead'] },
-    { href: '/impact-story', icon: Wand, label: 'Story Generator' },
-    { href: '/testimonies', icon: Video, label: 'Testimonies' },
-  ],
-  communication: [
-    { href: '/team-space', icon: Users, label: 'Team Space' },
-    { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
-    { href: '/notifications', icon: Bell, label: 'Notifications' },
-  ]
 };
 
 const roleNavConfig = {
-  'Administrator': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
-  'Executive Director': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
-  'Programs & Partnerships Manager': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
-  'Resource Mobilization Lead': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
-  'Operations & Field Manager': ['all', 'field', 'planning', 'management'],
-  'Media & Finance Lead': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
-  'Field Coordinator': ['all', 'field', 'planning', 'communication'],
-  'Media & Communications Lead': ['all', 'field', 'communication', 'financeMedia'],
-  'default': ['all', 'field', 'planning'],
+  'Administrator': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
+  'Executive Director': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
+  'Programs & Partnerships Manager': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
+  'Resource Mobilization Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
+  'Operations & Field Manager': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
+  'Media & Finance Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
+  'Field Coordinator': ['home', 'myDay', 'teamHub', 'dataReporting'],
+  'Media & Communications Lead': ['home', 'myDay', 'teamHub', 'dataReporting'],
+  'Intern': ['home', 'myDay', 'teamHub', 'dataReporting'],
+  'Volunteer': ['home', 'myDay', 'teamHub', 'dataReporting'],
+  'default': ['home', 'myDay', 'teamHub', 'dataReporting'],
 };
 
 
@@ -125,8 +127,9 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => {
-    if (path === '/' && (pathname === '/' || pathname === '/chat')) return true;
-    if (path !== '/' && pathname.startsWith(path)) return true;
+    if (path === '/chat' && pathname === '/chat') return true;
+    if (path === '/' && pathname === '/') return true;
+    if (path !== '/' && path !== '/chat' && pathname.startsWith(path)) return true;
     return false;
   }
   
@@ -138,14 +141,7 @@ export function AppSidebar() {
     
     let navItems = navConfig[sectionName];
 
-    navItems = navItems.filter(item => {
-        if ('roles' in item) {
-            return (item.roles as string[]).includes(effectiveRole || '');
-        }
-        return true;
-    });
-
-    if (navItems.length === 0) return null;
+    if (!navItems || navItems.length === 0) return null;
 
     return (
       <SidebarGroup data-mobile={isMobile}>
@@ -175,12 +171,11 @@ export function AppSidebar() {
         <OmutoLogo />
       </SidebarHeader>
       <SidebarContent data-mobile={isMobile}>
-        {renderNavSection('all', 'Home')}
-        {renderNavSection('planning', 'Planning')}
-        {renderNavSection('field', 'Execution')}
-        {renderNavSection('management', 'Oversight')}
-        {renderNavSection('financeMedia', 'Finance & Media')}
-        {renderNavSection('communication', 'Intelligence')}
+        {renderNavSection('home', 'Home')}
+        {renderNavSection('myDay', 'My Day')}
+        {renderNavSection('teamHub', 'Team Hub')}
+        {renderNavSection('dataReporting', 'Data & Reporting')}
+        {renderNavSection('management', 'Management')}
       </SidebarContent>
       <SidebarFooter>
         <Separator className="my-2" />
