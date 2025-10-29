@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -41,10 +42,10 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import type { Income, Expense } from '@/lib/types';
-import { format } from 'date-fns';
-import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2 } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
+import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, formatCurrency } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
@@ -262,32 +263,54 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 export default function FinancePage() {
   const [isNewIncomeDialogOpen, setIsNewIncomeDialogOpen] = useState(false);
   const [isNewExpenseDialogOpen, setIsNewExpenseDialogOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+
   const firestore = useFirestore();
 
   const incomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc')) : null, [firestore]);
   const expensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('date', 'desc')) : null, [firestore]);
 
-  const { data: income, isLoading: isLoadingIncome } = useCollection<Income>(incomeQuery);
-  const { data: expenses, isLoading: isLoadingExpenses } = useCollection<Expense>(expensesQuery);
+  const { data: allIncome, isLoading: isLoadingIncome } = useCollection<Income>(incomeQuery);
+  const { data: allExpenses, isLoading: isLoadingExpenses } = useCollection<Expense>(expensesQuery);
 
-  const transactions = useMemo(() => {
-    const combined = [
-      ...(income || []).map(i => ({ ...i, transactionType: 'income' as const, date: i.dateReceived, description: `Income from ${i.source}` })),
-      ...(expenses || []).map(e => ({ ...e, transactionType: 'expense' as const, date: e.date, description: e.title, amount: e.totalAmount })),
-    ];
-    return combined.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [income, expenses]);
+  const monthlyData = useMemo(() => {
+    const monthStart = startOfMonth(selectedMonth);
+    const monthEnd = endOfMonth(selectedMonth);
 
-  const cashBalance = useMemo(() => {
-      const totalIncome = income?.reduce((sum, i) => sum + i.amount, 0) || 0;
-      const totalDisbursedExpenses = expenses?.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged').reduce((sum, e) => sum + e.totalAmount, 0) || 0;
-      return totalIncome - totalDisbursedExpenses;
-  }, [income, expenses]);
+    // Calculate Balance Brought Forward
+    const incomeBefore = allIncome?.filter(i => new Date(i.dateReceived) < monthStart).reduce((sum, i) => sum + i.amount, 0) || 0;
+    const expensesBefore = allExpenses?.filter(e => (e.status === 'Disbursed' || e.status === 'Acknowledged') && new Date(e.date) < monthStart).reduce((sum, e) => sum + e.totalAmount, 0) || 0;
+    const balanceBroughtForward = incomeBefore - expensesBefore;
+    
+    // Filter transactions for the selected month
+    const monthlyIncome = allIncome?.filter(i => new Date(i.dateReceived) >= monthStart && new Date(i.dateReceived) <= monthEnd) || [];
+    const monthlyExpenses = allExpenses?.filter(e => new Date(e.date) >= monthStart && new Date(e.date) <= monthEnd) || [];
+    const monthlyAcknowledgedExpenses = monthlyExpenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
+
+    const totalMonthlyIncome = monthlyIncome.reduce((sum, i) => sum + i.amount, 0);
+    const totalMonthlyExpenses = monthlyAcknowledgedExpenses.reduce((sum, e) => sum + e.totalAmount, 0);
+
+    const closingBalance = balanceBroughtForward + totalMonthlyIncome - totalMonthlyExpenses;
+
+    const combinedTransactions = [
+        ...monthlyIncome.map(i => ({ ...i, transactionType: 'income' as const, date: i.dateReceived, description: `Income: ${i.source}` })),
+        ...monthlyExpenses.map(e => ({ ...e, transactionType: 'expense' as const, date: e.date, description: e.title, amount: e.totalAmount })),
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return {
+      balanceBroughtForward,
+      totalMonthlyIncome,
+      totalMonthlyExpenses,
+      closingBalance,
+      transactions: combinedTransactions
+    };
+
+  }, [selectedMonth, allIncome, allExpenses]);
   
   const chartData = useMemo(() => {
-    if (!expenses) return [];
+    if (!allExpenses) return [];
     
-    const relevantExpenses = expenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
+    const relevantExpenses = allExpenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
     
     const categoryTotals = relevantExpenses.reduce((acc, expense) => {
         if (expense.items && Array.isArray(expense.items)) {
@@ -305,7 +328,7 @@ export default function FinancePage() {
       name,
       total,
     }));
-  }, [expenses]);
+  }, [allExpenses]);
   
   const chartConfig = {
     total: {
@@ -316,102 +339,127 @@ export default function FinancePage() {
 
   const isLoading = isLoadingIncome || isLoadingExpenses;
 
+  const handlePrevMonth = () => setSelectedMonth(subMonths(selectedMonth, 1));
+  const handleNextMonth = () => setSelectedMonth(addMonths(selectedMonth, 1));
+
+
   return (
     <div className="space-y-6">
-    <Card>
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <CardTitle>Financial Ledger (Cashbook)</CardTitle>
-          <CardDescription>A complete log of all income and expense transactions.</CardDescription>
-        </div>
-        <div className="flex gap-2">
-            <Card className="p-3">
-                <p className="text-sm font-medium text-muted-foreground">Cash Balance</p>
-                <p className="text-2xl font-bold">{formatCurrency(cashBalance)}</p>
-            </Card>
-             <Dialog open={isNewExpenseDialogOpen} onOpenChange={setIsNewExpenseDialogOpen}>
-              <DialogTrigger asChild>
-                  <Button variant="destructive" className="h-full">
-                    <ArrowDownCircle className="mr-2 h-4 w-4" />
-                    Log Expense
-                  </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-lg">
-                  <DialogHeader>
-                  <DialogTitle>Log Direct Expense</DialogTitle>
-                  <DialogDescription>
-                      Record an expense that doesn't require a report (e.g., rent, utilities).
-                  </DialogDescription>
-                  </DialogHeader>
-                  <ExpenseForm onFormSubmit={() => setIsNewExpenseDialogOpen(false)} />
-              </DialogContent>
-            </Dialog>
-            <Dialog open={isNewIncomeDialogOpen} onOpenChange={setIsNewIncomeDialogOpen}>
-            <DialogTrigger asChild>
-                <Button className="h-full">
-                <ArrowUpCircle className="mr-2 h-4 w-4" />
-                Log Income
-                </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                <DialogTitle>Log New Income</DialogTitle>
-                <DialogDescription>
-                    Record a new grant, donation, or other revenue.
-                </DialogDescription>
-                </DialogHeader>
-                <IncomeForm onFormSubmit={() => setIsNewIncomeDialogOpen(false)} />
-            </DialogContent>
-            </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading && Array.from({ length: 5 }).map((_, i) => (
-              <TableRow key={i}>
-                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
-              </TableRow>
-            ))}
-            {transactions.map((t, index) => (
-              <TableRow key={`${t.transactionType}-${t.id}-${index}`}>
-                <TableCell>{formatDateSafe(t.date, 'dateOnly')}</TableCell>
-                <TableCell className="font-medium">{t.description}</TableCell>
-                <TableCell>
-                  {t.transactionType === 'income' ? (
-                     <span className="flex items-center text-green-600"><ArrowUpCircle className="mr-2 h-4 w-4" /> Income</span>
-                  ) : (
-                     <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
-                  )}
-                </TableCell>
-                <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatCurrency(t.amount)}
-                </TableCell>
-              </TableRow>
-            ))}
-            {!isLoading && transactions.length === 0 && (
-                <TableRow>
-                    <TableCell colSpan={4} className="h-48 text-center">No transactions recorded yet.</TableCell>
-                </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
       <Card>
         <CardHeader>
-            <CardTitle>Spending by Category</CardTitle>
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle>Financial Ledger (Cashbook)</CardTitle>
+                  <CardDescription>A complete log of all income and expense transactions.</CardDescription>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" onClick={handlePrevMonth}><ChevronLeft className="h-4 w-4" /></Button>
+                    <Input type="month" className="w-auto" value={format(selectedMonth, 'yyyy-MM')} onChange={e => setSelectedMonth(new Date(e.target.value))} />
+                    <Button variant="outline" size="icon" onClick={handleNextMonth}><ChevronRight className="h-4 w-4" /></Button>
+                </div>
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="p-4">
+                    <p className="text-sm font-medium text-muted-foreground">Opening Balance</p>
+                    <p className="text-xl font-bold">{formatCurrency(monthlyData.balanceBroughtForward)}</p>
+                </Card>
+                 <Card className="p-4">
+                    <p className="text-sm font-medium text-muted-foreground">Monthly Income</p>
+                    <p className="text-xl font-bold text-green-600">{formatCurrency(monthlyData.totalMonthlyIncome)}</p>
+                </Card>
+                <Card className="p-4">
+                    <p className="text-sm font-medium text-muted-foreground">Monthly Expenses</p>
+                    <p className="text-xl font-bold text-red-600">{formatCurrency(monthlyData.totalMonthlyExpenses)}</p>
+                </Card>
+                <Card className="p-4 bg-muted">
+                    <p className="text-sm font-medium text-muted-foreground">Closing Balance</p>
+                    <p className="text-xl font-bold">{formatCurrency(monthlyData.closingBalance)}</p>
+                </Card>
+            </div>
+             <div className="flex gap-2 justify-end">
+                <Dialog open={isNewExpenseDialogOpen} onOpenChange={setIsNewExpenseDialogOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="destructive" className="h-full">
+                        <ArrowDownCircle className="mr-2 h-4 w-4" />
+                        Log Expense
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                    <DialogTitle>Log Direct Expense</DialogTitle>
+                    <DialogDescription>
+                        Record an expense that doesn't require a report (e.g., rent, utilities).
+                    </DialogDescription>
+                    </DialogHeader>
+                    <ExpenseForm onFormSubmit={() => setIsNewExpenseDialogOpen(false)} />
+                </DialogContent>
+                </Dialog>
+                <Dialog open={isNewIncomeDialogOpen} onOpenChange={setIsNewIncomeDialogOpen}>
+                <DialogTrigger asChild>
+                    <Button className="h-full">
+                    <ArrowUpCircle className="mr-2 h-4 w-4" />
+                    Log Income
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                    <DialogTitle>Log New Income</DialogTitle>
+                    <DialogDescription>
+                        Record a new grant, donation, or other revenue.
+                    </DialogDescription>
+                    </DialogHeader>
+                    <IncomeForm onFormSubmit={() => setIsNewIncomeDialogOpen(false)} />
+                </DialogContent>
+                </Dialog>
+            </div>
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                    <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
+                </TableRow>
+                ))}
+                {monthlyData.transactions.map((t, index) => (
+                <TableRow key={`${t.transactionType}-${t.id}-${index}`}>
+                    <TableCell>{formatDateSafe(t.date, 'dateOnly')}</TableCell>
+                    <TableCell className="font-medium">{t.description}</TableCell>
+                    <TableCell>
+                    {t.transactionType === 'income' ? (
+                        <span className="flex items-center text-green-600"><ArrowUpCircle className="mr-2 h-4 w-4" /> Income</span>
+                    ) : (
+                        <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
+                    )}
+                    </TableCell>
+                    <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : (t.status === 'Disbursed' || t.status === 'Acknowledged' ? 'text-red-600' : 'text-muted-foreground')}`}>
+                    {t.transactionType === 'expense' && t.status !== 'Disbursed' && t.status !== 'Acknowledged' ? `(${formatCurrency(t.amount)})` : formatCurrency(t.amount)}
+                    </TableCell>
+                </TableRow>
+                ))}
+                {!isLoading && monthlyData.transactions.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={4} className="h-48 text-center">No transactions recorded for {format(selectedMonth, 'MMMM yyyy')}.</TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+            </Table>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+            <CardTitle>Spending by Category (All Time)</CardTitle>
             <CardDescription>Based on all 'Disbursed' and 'Acknowledged' expenses.</CardDescription>
         </CardHeader>
         <CardContent>
