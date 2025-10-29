@@ -20,6 +20,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -40,11 +51,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, serverTimestamp, Timestamp, doc } from 'firebase/firestore';
 import type { Income, Expense, User } from '@/lib/types';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
-import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, formatCurrency } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
@@ -89,9 +100,11 @@ const directExpenseSchema = z.object({
 type DirectExpenseFormData = z.infer<typeof directExpenseSchema>;
 
 
-function IncomeForm({ onFormSubmit }: { onFormSubmit: () => void }) {
+function IncomeForm({ income, onFormSubmit }: { income?: Income | null; onFormSubmit: () => void }) {
   const { toast } = useToast();
   const firestore = useFirestore();
+  const isEditMode = !!income;
+
   const {
     register,
     handleSubmit,
@@ -100,7 +113,10 @@ function IncomeForm({ onFormSubmit }: { onFormSubmit: () => void }) {
     formState: { errors, isSubmitting },
   } = useForm<IncomeFormData>({
     resolver: zodResolver(incomeSchema),
-    defaultValues: {
+    defaultValues: isEditMode ? {
+        ...income,
+        dateReceived: formatDateSafe(income.dateReceived, 'iso')
+    } : {
       type: 'Grants',
       dateReceived: format(new Date(), 'yyyy-MM-dd'),
     },
@@ -109,16 +125,16 @@ function IncomeForm({ onFormSubmit }: { onFormSubmit: () => void }) {
   const onSubmit = (data: IncomeFormData) => {
     if (!firestore) return;
 
-    const newIncome = {
-      ...data,
-      createdAt: serverTimestamp(),
-    };
-
-    addDocumentNonBlocking(collection(firestore, 'income'), newIncome);
-    toast({
-      title: 'Income Logged!',
-      description: `${formatCurrency(data.amount)} from ${data.source} has been recorded.`,
-    });
+    if (isEditMode && income) {
+        const docRef = doc(firestore, 'income', income.id);
+        updateDocumentNonBlocking(docRef, data);
+        toast({ title: "Income Updated!", description: `${formatCurrency(data.amount)} from ${data.source} has been updated.`});
+    } else {
+        const newIncome = { ...data, createdAt: serverTimestamp() };
+        addDocumentNonBlocking(collection(firestore, 'income'), newIncome);
+        toast({ title: 'Income Logged!', description: `${formatCurrency(data.amount)} from ${data.source} has been recorded.` });
+    }
+    
     reset();
     onFormSubmit();
   };
@@ -173,22 +189,24 @@ function IncomeForm({ onFormSubmit }: { onFormSubmit: () => void }) {
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Log Income
+          {isEditMode ? 'Save Changes' : 'Log Income'}
         </Button>
       </DialogFooter>
     </form>
   );
 }
 
-function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
+function ExpenseForm({ expense, onFormSubmit }: { expense?: Expense | null, onFormSubmit: () => void }) {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const { toast } = useToast();
   const firestore = useFirestore();
+  const isEditMode = !!expense;
+
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead', 'Programs & Partnerships Manager'];
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator'];
   const canSubmitForOthers = profile && financeRoles.includes(profile.role);
 
 
@@ -201,7 +219,13 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
     watch,
   } = useForm<DirectExpenseFormData>({
     resolver: zodResolver(directExpenseSchema),
-    defaultValues: {
+    defaultValues: isEditMode ? {
+        title: expense.title,
+        amount: expense.totalAmount,
+        date: formatDateSafe(expense.date, 'iso'),
+        category: expense.items[0]?.category || 'Transport',
+        submittedFor: expense.userId
+    } : {
       category: 'Rent',
       date: format(new Date(), 'yyyy-MM-dd'),
       submittedFor: user?.uid,
@@ -218,7 +242,7 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 
     if (canSubmitForOthers && data.submittedFor) {
         if (data.submittedFor === 'Volunteer' || data.submittedFor === 'Intern') {
-            expenseUserId = data.submittedFor.toLowerCase(); // e.g. 'volunteer'
+            expenseUserId = data.submittedFor.toLowerCase();
             expenseUserName = data.otherUserName || `${data.submittedFor} (unnamed)`;
         } else {
             const selectedUser = users?.find(u => u.id === data.submittedFor);
@@ -228,25 +252,31 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
             }
         }
     }
-
-
+    
     const expenseData = {
       userId: expenseUserId,
       userName: expenseUserName,
       title: data.title,
       date: data.date,
-      type: 'Reimbursement' as const, // Treat direct entry as a pre-acknowledged reimbursement
-      status: 'Acknowledged' as const,
       items: [{ description: data.title, category: data.category, amount: data.amount }],
       totalAmount: data.amount,
-      createdAt: serverTimestamp(),
     };
+    
+    if (isEditMode && expense) {
+        const docRef = doc(firestore, 'expenses', expense.id);
+        updateDocumentNonBlocking(docRef, expenseData);
+        toast({ title: 'Expense Updated!', description: `${formatCurrency(data.amount)} for ${data.title} has been updated.`});
+    } else {
+        const newExpenseData = {
+          ...expenseData,
+          type: 'Reimbursement' as const,
+          status: 'Acknowledged' as const,
+          createdAt: serverTimestamp(),
+        };
+        addDocumentNonBlocking(collection(firestore, 'expenses'), newExpenseData);
+        toast({ title: 'Expense Logged!', description: `${formatCurrency(data.amount)} for ${data.title} has been recorded.`});
+    }
 
-    addDocumentNonBlocking(collection(firestore, 'expenses'), expenseData);
-    toast({
-      title: 'Expense Logged!',
-      description: `${formatCurrency(data.amount)} for ${data.title} has been recorded.`,
-    });
     reset();
     onFormSubmit();
   };
@@ -319,7 +349,7 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Log Expense
+          {isEditMode ? 'Save Changes' : 'Log Expense'}
         </Button>
       </DialogFooter>
     </form>
@@ -330,9 +360,18 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 export default function FinancePage() {
   const [isNewIncomeDialogOpen, setIsNewIncomeDialogOpen] = useState(false);
   const [isNewExpenseDialogOpen, setIsNewExpenseDialogOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Income | Expense | null>(null);
+  const [transactionTypeToEdit, setTransactionTypeToEdit] = useState<'income' | 'expense' | null>(null);
+
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
+  const { toast } = useToast();
   const firestore = useFirestore();
+
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator'];
+  const canManageFinances = profile && financeRoles.includes(profile.role);
 
   const incomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc')) : null, [firestore]);
   const expensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('date', 'desc')) : null, [firestore]);
@@ -344,12 +383,10 @@ export default function FinancePage() {
     const monthStart = startOfMonth(selectedMonth);
     const monthEnd = endOfMonth(selectedMonth);
 
-    // Calculate Balance Brought Forward
     const incomeBefore = allIncome?.filter(i => new Date(i.dateReceived) < monthStart).reduce((sum, i) => sum + i.amount, 0) || 0;
     const expensesBefore = allExpenses?.filter(e => (e.status === 'Disbursed' || e.status === 'Acknowledged') && new Date(e.date) < monthStart).reduce((sum, e) => sum + e.totalAmount, 0) || 0;
     const balanceBroughtForward = incomeBefore - expensesBefore;
     
-    // Filter transactions for the selected month
     const monthlyIncome = allIncome?.filter(i => new Date(i.dateReceived) >= monthStart && new Date(i.dateReceived) <= monthEnd) || [];
     const monthlyExpenses = allExpenses?.filter(e => new Date(e.date) >= monthStart && new Date(e.date) <= monthEnd) || [];
     const monthlyAcknowledgedExpenses = monthlyExpenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
@@ -360,7 +397,7 @@ export default function FinancePage() {
     const closingBalance = balanceBroughtForward + totalMonthlyIncome - totalMonthlyExpenses;
 
     const combinedTransactions = [
-        ...monthlyIncome.map(i => ({ ...i, transactionType: 'income' as const, date: i.dateReceived, description: `Income: ${i.source}` })),
+        ...monthlyIncome.map(i => ({ ...i, transactionType: 'income' as const, date: i.dateReceived, description: `Income: ${i.source}`, amount: i.amount })),
         ...monthlyExpenses.map(e => ({ ...e, transactionType: 'expense' as const, date: e.date, description: e.title, amount: e.totalAmount })),
     ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
@@ -408,7 +445,23 @@ export default function FinancePage() {
 
   const handlePrevMonth = () => setSelectedMonth(subMonths(selectedMonth, 1));
   const handleNextMonth = () => setSelectedMonth(addMonths(selectedMonth, 1));
+  
+  const handleEdit = (transaction: Income | Expense, type: 'income' | 'expense') => {
+      setEditingTransaction(transaction);
+      setTransactionTypeToEdit(type);
+  }
 
+  const handleDelete = (transaction: Income | Expense, type: 'income' | 'expense') => {
+    if (!firestore) return;
+    const docRef = doc(firestore, type === 'income' ? 'income' : 'expenses', transaction.id);
+    deleteDocumentNonBlocking(docRef);
+    toast({ title: 'Transaction Deleted', description: 'The entry has been removed from the ledger.'});
+  };
+
+  const closeEditDialog = () => {
+    setEditingTransaction(null);
+    setTransactionTypeToEdit(null);
+  }
 
   return (
     <div className="space-y-6">
@@ -488,6 +541,7 @@ export default function FinancePage() {
                 <TableHead>Description</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                {canManageFinances && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -497,10 +551,11 @@ export default function FinancePage() {
                     <TableCell><Skeleton className="h-5 w-48" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
+                    {canManageFinances && <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>}
                 </TableRow>
                 ))}
                 {monthlyData.transactions.map((t, index) => (
-                <TableRow key={`${t.transactionType}-${t.id}-${index}`}>
+                <TableRow key={`${t.id}-${index}`}>
                     <TableCell>{formatDateSafe(t.date, 'dateOnly')}</TableCell>
                     <TableCell className="font-medium">{t.description}</TableCell>
                     <TableCell>
@@ -510,14 +565,40 @@ export default function FinancePage() {
                         <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
                     )}
                     </TableCell>
-                    <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : (t.status === 'Disbursed' || t.status === 'Acknowledged' ? 'text-red-600' : 'text-muted-foreground')}`}>
-                    {t.transactionType === 'expense' && t.status !== 'Disbursed' && t.status !== 'Acknowledged' ? `(${formatCurrency(t.amount)})` : formatCurrency(t.amount)}
+                    <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : (t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged' ? 'text-red-600' : 'text-muted-foreground'}`}>
+                    {t.transactionType === 'expense' && (t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged' ? `(${(formatCurrency(t.amount))})` : formatCurrency(t.amount)}
                     </TableCell>
+                    {canManageFinances && (
+                        <TableCell className="text-right">
+                           <div className="flex justify-end gap-1">
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(t, t.transactionType)}>
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>This will permanently delete this transaction. This action cannot be undone.</AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDelete(t, t.transactionType)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                           </div>
+                        </TableCell>
+                    )}
                 </TableRow>
                 ))}
                 {!isLoading && monthlyData.transactions.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={4} className="h-48 text-center">No transactions recorded for {format(selectedMonth, 'MMMM yyyy')}.</TableCell>
+                        <TableCell colSpan={canManageFinances ? 5 : 4} className="h-48 text-center">No transactions recorded for {format(selectedMonth, 'MMMM yyyy')}.</TableCell>
                     </TableRow>
                 )}
             </TableBody>
@@ -552,6 +633,19 @@ export default function FinancePage() {
             )}
         </CardContent>
     </Card>
+     <Dialog open={!!editingTransaction} onOpenChange={(open) => !open && closeEditDialog()}>
+        <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+                <DialogTitle>Edit Transaction</DialogTitle>
+            </DialogHeader>
+            {transactionTypeToEdit === 'income' && (
+                <IncomeForm income={editingTransaction as Income} onFormSubmit={closeEditDialog} />
+            )}
+            {transactionTypeToEdit === 'expense' && (
+                 <ExpenseForm expense={editingTransaction as Expense} onFormSubmit={closeEditDialog} />
+            )}
+        </DialogContent>
+    </Dialog>
     </div>
   );
 }
