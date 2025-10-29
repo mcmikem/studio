@@ -17,6 +17,8 @@ import { Progress } from '../ui/progress';
 import { useState, useEffect, useMemo } from 'react';
 import { isWithinInterval, parse, startOfDay, differenceInMilliseconds } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { BrainCircuit } from 'lucide-react';
 
 
 function formatDuration(ms: number) {
@@ -35,6 +37,7 @@ interface DailyActionsProps {
 
 export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsProps) {
     const [currentTime, setCurrentTime] = useState(new Date());
+    const { toast } = useToast();
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -67,6 +70,13 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
         }
         return { currentTask: null, timeRemaining: 0, progress: 0 };
     }, [checkin, currentTime]);
+    
+    const handleStuck = () => {
+        toast({
+            title: "Let's get you unstuck!",
+            description: "Redirecting you to the AI Coach for assistance.",
+        });
+    }
   
   if (isLoadingCheckin) {
       return <Skeleton className="h-48 w-full" />
@@ -131,8 +141,18 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
                 <div>
                     <p className="text-3xl font-bold leading-tight font-headline">{currentTask}</p>
                 </div>
-                <div className="flex-grow flex flex-col justify-end pt-4">
+                 <div className="pt-2">
                     <Progress value={progress} className="h-2"/>
+                </div>
+                <div className="flex items-center gap-4 pt-4">
+                    <Button className="flex-1" size="lg">
+                        <Check className="mr-2 h-5 w-5" /> Mark Complete
+                    </Button>
+                    <Button variant="outline" className="flex-1" size="lg" asChild onClick={handleStuck}>
+                        <Link href="/chat">
+                             <BrainCircuit className="mr-2 h-5 w-5" /> I'm Stuck?
+                        </Link>
+                    </Button>
                 </div>
             </Card>
         );
