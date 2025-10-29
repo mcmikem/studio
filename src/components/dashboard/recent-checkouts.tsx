@@ -79,4 +79,3 @@ export function RecentCheckouts({ checkouts }: { checkouts: RecentCheckout[] | n
       </div>
   );
 }
-

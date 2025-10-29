@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -12,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, MessageSquare, Users } from 'lucide-react';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, orderBy, serverTimestamp, addDoc } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, addDoc, limit } from 'firebase/firestore';
 import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
@@ -65,7 +66,7 @@ export default function TeamSpacePage() {
   }, [firestore]);
 
   const { data: messages, isLoading: isLoadingMessages } = useCollection<Message>(messagesQuery);
-  const reversedMessages = messages ? [...messages].reverse() : [];
+  const reversedMessages = useMemo(() => (messages ? [...messages].reverse() : []), [messages]);
 
 
   useEffect(() => {
