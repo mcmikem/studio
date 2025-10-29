@@ -368,17 +368,11 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <BudgetHealth expenses={allExpenses} income={allIncome} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Finance Hub</CardTitle>
-                </CardHeader>
-                <CardContent>
-                     <FinancialQueue allExpenses={allExpenses} />
-                </CardContent>
-            </Card>
+            <FinancialQueue allExpenses={allExpenses} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
-             <Card>
+            <ManagementQuickLinks />
+            <Card>
                 <CardHeader>
                     <CardTitle>Media Hub</CardTitle>
                 </CardHeader>
