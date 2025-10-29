@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -29,6 +30,7 @@ import {
   LayoutDashboard,
   Users,
   Camera,
+  Receipt,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
