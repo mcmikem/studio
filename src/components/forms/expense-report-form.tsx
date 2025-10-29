@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -8,9 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useFirestore,
   useUser,
-  addDocumentNonBlocking
+  addDocumentNonBlocking,
+  updateDocumentNonBlocking,
 } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -26,7 +28,9 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { createAlert } from '@/ai/flows/create-alert-flow';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDateSafe } from '@/lib/utils';
+import type { Expense } from '@/lib/types';
+
 
 const expenseItemSchema = z.object({
   description: z.string().min(3, 'Item description is required.'),
@@ -44,11 +48,18 @@ const expenseSchema = z.object({
 
 type ExpenseFormData = z.infer<typeof expenseSchema>;
 
-export function ExpenseReportForm() {
+interface ExpenseReportFormProps {
+    expense?: Expense | null;
+    onSuccess?: () => void;
+}
+
+export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { user } = useUser();
   const { profile } = useUserProfile(user);
+
+  const isEditMode = !!expense;
 
   const {
     register,
@@ -59,7 +70,10 @@ export function ExpenseReportForm() {
     reset,
   } = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: {
+    defaultValues: isEditMode ? {
+        ...expense,
+        date: formatDateSafe(expense.date, 'iso'),
+    } : {
       type: 'Reimbursement',
       date: format(new Date(), 'yyyy-MM-dd'),
       title: '',
@@ -110,38 +124,53 @@ export function ExpenseReportForm() {
       ...data,
       items: finalItems,
       totalAmount: finalTotal,
-      userId: user.uid,
-      userName: profile.name,
-      status: 'Pending' as const,
-      createdAt: serverTimestamp(),
     };
 
-    const expensesCollection = collection(firestore, 'expenses');
-
     try {
-        const docRef = await addDocumentNonBlocking(expensesCollection, expenseData);
+        if (isEditMode) {
+            const docRef = doc(firestore, 'expenses', expense.id);
+            await updateDocumentNonBlocking(docRef, expenseData);
+            toast({
+                title: 'Expense Report Updated!',
+                description: `Your report has been successfully modified.`,
+            });
+        } else {
+            const newExpenseData = {
+                ...expenseData,
+                userId: user.uid,
+                userName: profile.name,
+                status: 'Pending' as const,
+                createdAt: serverTimestamp(),
+            };
+            const docRef = await addDocumentNonBlocking(collection(firestore, 'expenses'), newExpenseData);
+            
+            toast({
+                title: 'Expense Report Submitted!',
+                description: `Your report has been sent for approval.`,
+            });
+
+            // Create an alert for management
+            await createAlert({
+                type: 'Urgent',
+                message: `${profile.name} submitted an expense report for ${formatCurrency(finalTotal)}.`,
+                priority: 'High',
+                action: `/management/expenses?highlight=${docRef.id}`,
+                creatorId: user.uid,
+            });
+        }
         
-        toast({
-            title: 'Expense Report Submitted!',
-            description: `Your report has been sent for approval.`,
-        });
+        if (onSuccess) {
+            onSuccess();
+        } else {
+            reset({
+                type: 'Reimbursement',
+                date: format(new Date(), 'yyyy-MM-dd'),
+                title: '',
+                items: [{ description: '', category: 'Transport', amount: 0 }],
+                totalAmount: 0,
+            });
+        }
 
-        // Create an alert for management
-        await createAlert({
-            type: 'Urgent',
-            message: `${profile.name} submitted an expense report for ${formatCurrency(finalTotal)}.`,
-            priority: 'High',
-            action: `/management/expenses?highlight=${docRef.id}`,
-            creatorId: user.uid,
-        });
-
-        reset({
-            type: 'Reimbursement',
-            date: format(new Date(), 'yyyy-MM-dd'),
-            title: '',
-            items: [{ description: '', category: 'Transport', amount: 0 }],
-            totalAmount: 0,
-        });
     } catch(e) {
         console.error(e);
         toast({
@@ -266,7 +295,7 @@ export function ExpenseReportForm() {
                 ) : (
                 <FilePlus2 className="mr-2 h-5 w-5" />
                 )}
-                Submit for Approval
+                {isEditMode ? 'Save Changes' : 'Submit for Approval'}
             </Button>
         </div>
       </form>

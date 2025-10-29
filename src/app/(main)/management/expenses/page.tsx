@@ -18,15 +18,33 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, doc, where } from 'firebase/firestore';
 import type { Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, Receipt, CheckCheck, Undo2 } from 'lucide-react';
-import { useMemo, useEffect, Suspense } from 'react';
+import { Check, X, Receipt, CheckCheck, Undo2, Edit, Trash2 } from 'lucide-react';
+import { useMemo, useEffect, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
 import {
@@ -37,6 +55,7 @@ import {
 import { formatDateSafe, cn, formatCurrency } from '@/lib/utils';
 import { createAlert } from '@/ai/flows/create-alert-flow';
 import { useUserProfile } from '@/hooks/use-user-profile';
+import { ExpenseReportForm } from '@/components/forms/expense-report-form';
 
 
 const statusColors: { [key: string]: string } = {
@@ -59,6 +78,8 @@ function ExpensesContent() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const highlightedExpenseId = searchParams.get('highlight');
+  
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   const expensesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -161,10 +182,25 @@ function ExpensesContent() {
         });
     }
   };
+
+   const handleDelete = (expense: Expense) => {
+    if (!firestore) return;
+    const expenseRef = doc(firestore, 'expenses', expense.id);
+    deleteDocumentNonBlocking(expenseRef).then(() => {
+        toast({
+            title: "Expense Deleted",
+            description: `The expense report "${expense.title}" has been deleted.`,
+        });
+    }).catch(err => {
+        console.error("Delete failed: ", err);
+        toast({ variant: 'destructive', title: "Delete Failed" });
+    })
+  };
   
   const highlightClass = "ring-2 ring-primary bg-primary/5";
 
   return (
+    <>
     <div className="flex flex-col gap-6">
       <header>
         <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -219,23 +255,45 @@ function ExpensesContent() {
                                 </Badge>
                             </TableCell>
                              <TableCell className="text-right">
-                                {canManage && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
-                                  <div className="flex justify-end gap-2">
-                                      <Button variant="ghost" size="icon" className="text-primary hover:text-primary" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
-                                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
-                                  </div>
-                                )}
-                                {canManage && (expense.status === 'Approved' || expense.status === 'Rejected') && (
-                                  <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
-                                    <Undo2 className="mr-2 h-4 w-4" /> Reverse
-                                  </Button>
-                                )}
-                                {canManage && expense.status === 'Approved' && currentUser?.role !== 'Field Coordinator' && (
-                                     <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
-                                )}
-                                {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
-                                     <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge Receipt</Button>
-                                )}
+                                <div className="flex justify-end items-center gap-1">
+                                    {canManage && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                                      <div className="flex gap-1">
+                                          <Button variant="ghost" size="icon" className="text-primary hover:text-primary h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
+                                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
+                                      </div>
+                                    )}
+                                    {canManage && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                                      <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
+                                        <Undo2 className="mr-2 h-4 w-4" /> Reverse
+                                      </Button>
+                                    )}
+                                    {canManage && expense.status === 'Approved' && currentUser?.role !== 'Field Coordinator' && (
+                                         <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
+                                    )}
+                                    {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
+                                         <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge Receipt</Button>
+                                    )}
+                                    {canManage && (
+                                        <>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}><Edit className="h-4 w-4" /></Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>This action cannot be undone. This will permanently delete the expense report "{expense.title}".</AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(expense)}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </>
+                                    )}
+                                </div>
                             </TableCell>
                             </TableRow>
                         ))
@@ -289,6 +347,21 @@ function ExpensesContent() {
         </div>
     </div>
     </div>
+    <Dialog open={!!editingExpense} onOpenChange={(open) => !open && setEditingExpense(null)}>
+        <DialogContent className="max-w-2xl">
+            <DialogHeader>
+                <DialogTitle>Edit Expense Report</DialogTitle>
+                <DialogDescription>
+                    Update the details for "{editingExpense?.title}".
+                </DialogDescription>
+            </DialogHeader>
+            <ExpenseReportForm
+                expense={editingExpense}
+                onSuccess={() => setEditingExpense(null)}
+            />
+        </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
