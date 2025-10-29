@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User, Expense, Activity, ImpactMetric, Income, Checkout, Checkin, Testimony } from "@/lib/types"
@@ -43,6 +44,7 @@ import { doc, collection, query, where, orderBy, Timestamp, limit } from "fireba
 import { startOfDay, startOfMonth } from "date-fns"
 import { Skeleton } from "../ui/skeleton"
 import { QuickAddTask } from "./quick-add-task"
+import { TeamDeployment } from "./team-deployment"
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -360,6 +362,12 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   }, [firestore]);
   const { data: testimonies, isLoading: isLoadingTestimonies } = useCollection<Testimony>(testimoniesQuery);
 
+  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
+
+  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
+  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
+
 
   return (
     <>
@@ -369,6 +377,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <FinancialQueue allExpenses={allExpenses} />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <ManagementQuickLinks />
