@@ -406,4 +406,3 @@ export type HealthCheck = {
     createdAt: Timestamp;
 };
     
-
