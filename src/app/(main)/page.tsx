@@ -13,7 +13,6 @@ import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
 import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
 import { startOfDay } from 'date-fns';
 import { useMemo, useState, useEffect } from 'react';
-import { TodaysFocus } from '@/components/dashboard/todays-focus';
 import { DailyActions } from '@/components/dashboard/daily-actions';
 
 
@@ -49,6 +48,7 @@ const roleToDashboard: { [key: string]: { component: React.FC<any>, title: strin
   'Operations & Field Manager': { component: ProgramManagerDashboard, title: 'Operations Dashboard' }, // Using Program Manager for now
   'Field Coordinator': { component: FieldStaffDashboard, title: 'Field Operations' },
   'Media & Communications Lead': { component: MediaFinanceDashboard, title: 'Media & Finance Hub' },
+  'Media & Finance Lead': { component: MediaFinanceDashboard, title: 'Media & Finance Hub' },
   'Resource Mobilization Lead': { component: ProgramManagerDashboard, title: 'Resource Mobilization' }, // Using Program Manager for now
   'default': { component: DefaultDashboard, title: 'Welcome to Omuto Central' },
 };
@@ -91,8 +91,6 @@ export default function DashboardPage() {
     return userCheckins[0];
   }, [userCheckins]);
 
-  const showDailyActions = (currentHour !== null && latestCheckin === null && currentHour < 17) || (currentHour !== null && currentHour >= 17);
-
   if (isLoadingProfile || !user || currentHour === null) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -116,10 +114,8 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} title={dashboardTitle} />
-
-        {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />}
         
-        {showDailyActions && <DailyActions hour={currentHour} hasCheckedIn={!!latestCheckin} />}
+        <DailyActions hour={currentHour} checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
         
         <QuickStatsSummary metrics={metrics} />
         
