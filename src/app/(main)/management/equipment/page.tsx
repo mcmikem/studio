@@ -323,8 +323,8 @@ export default function EquipmentPage() {
                     >
                         <EmptyState 
                             icon={Box}
-                            title="No Equipment Found"
-                            description="Your inventory is empty. Add an asset to get started."
+                            title="No Equipment Here!"
+                            description="Your inventory is empty. Add your first asset to get started tracking."
                             className="min-h-0"
                         />
                     </TableCell>

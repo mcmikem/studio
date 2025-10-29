@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -30,6 +29,7 @@ import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { formatDateSafe } from '@/lib/utils';
 import { serverTimestamp } from 'firebase/firestore';
+import confetti from 'canvas-confetti';
 
 const taskSchema = z.object({
   title: z.string().min(3, 'Task title must be at least 3 characters.'),
@@ -103,6 +103,14 @@ export function UserTasks() {
     if (!user || !firestore) return;
     const taskRef = doc(firestore, 'users', user.uid, 'tasks', taskId);
     updateDocumentNonBlocking(taskRef, { completed: completed });
+    
+    if (completed) {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
   };
 
   // Client-side filtering

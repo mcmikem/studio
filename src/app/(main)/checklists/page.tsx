@@ -14,6 +14,8 @@ import type { TaskTemplate } from '@/lib/types';
 import { ListChecks } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function ChecklistsPage() {
   const firestore = useFirestore();
@@ -79,8 +81,10 @@ export default function ChecklistsPage() {
             <EmptyState 
               icon={ListChecks}
               title="No Checklists Found"
-              description="Management can create reusable task templates in the 'Management > Templates' section."
-            />
+              description="Management can create reusable task templates in the 'Templates' section."
+            >
+                <Button asChild className="mt-4"><Link href="/management/templates">Create a Template</Link></Button>
+            </EmptyState>
           </CardContent>
         )}
       </Card>

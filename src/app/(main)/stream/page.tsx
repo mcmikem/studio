@@ -18,6 +18,8 @@ import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
     
@@ -105,10 +107,12 @@ function CheckoutStream() {
                  !isLoading && (
                     <EmptyState
                         icon={Wind}
-                        title="Quiet day so far!"
-                        description="No check-outs have been submitted yet. Be the first to report your progress."
+                        title="Quiet day so far..."
+                        description="No one has checked out yet. Be the first to share your progress!"
                         className="min-h-[400px]"
-                    />
+                    >
+                         <Button asChild className="mt-4"><Link href="/forms/check-out">Check Out Now</Link></Button>
+                    </EmptyState>
                 )
             )}
         </div>

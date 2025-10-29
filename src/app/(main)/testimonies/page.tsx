@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -141,11 +140,11 @@ export default function TestimoniesPage() {
             <CardContent className="pt-6">
               <EmptyState
                 icon={Mic}
-                title="No Testimonies Yet"
-                description="Your library is empty. Go capture a story from the field!"
+                title="Your Testimony Library is Empty"
+                description="Use the 'Record Testimony' form to capture your first success story from the field."
               >
                  <Button asChild className="mt-4">
-                    <Link href="/record-testimony">Capture First Testimony</Link>
+                    <Link href="/record-testimony">Capture a Story</Link>
                 </Button>
               </EmptyState>
             </CardContent>

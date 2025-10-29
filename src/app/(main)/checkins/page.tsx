@@ -18,6 +18,8 @@ import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { EmptyState } from '@/components/ui/empty-state';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 function CheckinCard({ checkin }: { checkin: Checkin }) {
     return (
@@ -87,10 +89,12 @@ function CheckinStream() {
                  !isLoading && (
                     <EmptyState
                         icon={LogIn}
-                        title="No Check-ins Found"
-                        description="Team members' daily plans will appear here once they use the AI Daily Planner."
+                        title="No Check-ins Yet!"
+                        description="Be the first to create a daily plan with the AI Daily Planner."
                         className="min-h-[400px]"
-                    />
+                    >
+                        <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
+                    </EmptyState>
                 )
             )}
         </div>

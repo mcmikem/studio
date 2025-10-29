@@ -239,7 +239,7 @@ export default function TemplatesPage() {
                     <EmptyState 
                         icon={ListChecks}
                         title="No Templates Found"
-                        description="Create your first task template to get started."
+                        description="Be the first to create a reusable checklist for your team!"
                     />
                 )
             )}
