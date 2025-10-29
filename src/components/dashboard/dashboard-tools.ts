@@ -13,7 +13,7 @@ import {
 } from 'firebase/firestore';
 import { format } from 'date-fns';
 
-export async function getUpcomingEvents(firestore: Firestore) {
+export async function getUpcomingEvents(firestore: Firestore, userId: string) {
   const today = new Date();
   const sevenDaysFromNow = new Date();
   sevenDaysFromNow.setDate(today.getDate() + 7);
@@ -22,6 +22,7 @@ export async function getUpcomingEvents(firestore: Firestore) {
     collection(firestore, 'events'),
     where('date', '>=', Timestamp.fromDate(today)),
     where('date', '<=', Timestamp.fromDate(sevenDaysFromNow)),
+    // In a real app with many users, you'd filter by user involvement
     orderBy('date', 'asc')
   );
 

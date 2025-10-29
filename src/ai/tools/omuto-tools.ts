@@ -9,6 +9,7 @@ import { initializeFirebase } from '@/firebase/server';
 import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { z } from 'zod';
 import { PartnershipSchema, SearchResultItemSchema } from '@/lib/types';
+import { format } from 'date-fns';
 
 
 export const findGrantOpportunities = ai.defineTool(
@@ -370,4 +371,67 @@ export const getRecentCheckins = ai.defineTool(
         });
     }
 );
-    
+
+export const getUpcomingEventsForUser = ai.defineTool(
+    {
+        name: 'getUpcomingEventsForUser',
+        description: 'Retrieves the upcoming events for a specific user for the next 7 days.',
+        inputSchema: z.object({
+             userId: z.string().describe('The ID of the user.'),
+        }),
+        outputSchema: z.array(z.any()),
+    },
+    async ({ userId }) => {
+        const { firestore } = await initializeFirebase();
+        const today = new Date();
+        const sevenDaysFromNow = new Date();
+        sevenDaysFromNow.setDate(today.getDate() + 7);
+
+        const eventsQuery = query(
+            collection(firestore, 'events'),
+            where('date', '>=', Timestamp.fromDate(today)),
+            where('date', '<=', Timestamp.fromDate(sevenDaysFromNow)),
+            orderBy('date', 'asc')
+        );
+
+        const snapshot = await getDocs(eventsQuery);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+            title: data.title,
+            date: format(data.date.toDate(), 'eeee, MMM d'),
+            category: data.category,
+            responsible: data.responsible,
+            };
+        });
+    }
+);
+
+export const getPendingTasksForUser = ai.defineTool(
+    {
+        name: 'getPendingTasksForUser',
+        description: 'Retrieves the top 5 pending tasks for a specific user.',
+        inputSchema: z.object({
+             userId: z.string().describe('The ID of the user.'),
+        }),
+        outputSchema: z.array(z.any()),
+    },
+    async ({ userId }) => {
+        const { firestore } = await initializeFirebase();
+        const tasksQuery = query(
+            collection(firestore, 'users', userId, 'tasks'),
+            where('completed', '==', false),
+            orderBy('createdAt', 'desc'),
+            limit(5)
+        );
+
+        const snapshot = await getDocs(tasksQuery);
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+            title: data.title,
+            dueDate: data.dueDate ? format(new Date(data.dueDate), 'eeee, MMM d') : undefined,
+            };
+        });
+    }
+);

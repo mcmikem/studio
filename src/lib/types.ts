@@ -348,8 +348,7 @@ export type Checklist = {
 export const SmartRemindersInputSchema = z.object({
   userName: z.string(),
   userRole: z.string(),
-  upcomingEvents: z.array(z.any()),
-  pendingTasks: z.array(z.any()),
+  userId: z.string(),
 });
 export type SmartRemindersInput = z.infer<typeof SmartRemindersInputSchema>;
 
