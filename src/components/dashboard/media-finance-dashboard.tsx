@@ -1,7 +1,6 @@
-
 "use client"
 
-import type { User, Expense, Activity, ImpactMetric, Income, Checkout, Checkin } from "@/lib/types"
+import type { User, Expense, Activity, ImpactMetric, Income, Checkout, Checkin, Testimony } from "@/lib/types"
 import {
   ArrowRight,
   Check,
@@ -12,6 +11,7 @@ import {
   X,
   Rss,
   Users,
+  Video,
 } from "lucide-react"
 import {
   Card,
@@ -19,6 +19,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "../ui/card"
 import { useCollection, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
 import { useMemo } from "react"
@@ -42,8 +43,6 @@ import { doc, collection, query, where, orderBy, Timestamp, limit } from "fireba
 import { startOfDay, startOfMonth } from "date-fns"
 import { Skeleton } from "../ui/skeleton"
 import { QuickAddTask } from "./quick-add-task"
-import { TeamPulse } from "./team-activity-feed"
-import { TeamDeployment } from "./team-deployment"
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -66,10 +65,6 @@ const formatCurrency = (value: number) => {
 function MediaOpportunities({ activities, isLoading }: { activities: Activity[] | null, isLoading: boolean }) {
     const opportunities = useMemo(() => {
         if (!activities) return [];
-        // The value for "Capturing content for fundraising" is 50000.
-        // We can check if indirectValue is not zero, but for a more robust check,
-        // it would be better if the selected multipliers were stored.
-        // For now, we'll assume any activity with indirect value has media potential.
         return activities.filter(act => act.indirectValue && act.indirectValue > 0);
     }, [activities]);
 
@@ -84,7 +79,7 @@ function MediaOpportunities({ activities, isLoading }: { activities: Activity[] 
             <CardContent>
                 <div className="space-y-3">
                     {isLoading && (
-                        Array.from({ length: 3 }).map((_, i) => (
+                        Array.from({ length: 2 }).map((_, i) => (
                              <div key={i} className="flex items-center justify-between p-3 rounded-md bg-muted">
                                 <div className="space-y-1">
                                     <Skeleton className="h-5 w-48" />
@@ -111,10 +106,10 @@ function MediaOpportunities({ activities, isLoading }: { activities: Activity[] 
                         ))
                     ) : (
                         !isLoading && (
-                             <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full min-h-48">
-                                <Camera className="h-12 w-12 text-muted-foreground mb-4" />
-                                <h3 className="font-semibold text-lg">No Media Opportunities</h3>
-                                <p className="text-muted-foreground text-sm max-w-sm">
+                             <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full min-h-32">
+                                <Camera className="h-10 w-10 text-muted-foreground mb-2" />
+                                <h3 className="font-semibold">No Media Opportunities</h3>
+                                <p className="text-muted-foreground text-sm">
                                     No recent activities were logged with the "Capture Content" multiplier.
                                 </p>
                             </div>
@@ -122,6 +117,58 @@ function MediaOpportunities({ activities, isLoading }: { activities: Activity[] 
                     )}
                 </div>
             </CardContent>
+        </Card>
+    );
+}
+
+function LatestTestimonies({ testimonies, isLoading }: { testimonies: Testimony[] | null, isLoading: boolean }) {
+     return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Video /> Latest Testimonies</CardTitle>
+                <CardDescription>
+                    Recently captured stories from the field.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <div className="space-y-3">
+                    {isLoading && (
+                        Array.from({ length: 2 }).map((_, i) => (
+                            <Skeleton key={i} className="h-12 w-full" />
+                        ))
+                    )}
+                    {!isLoading && testimonies && testimonies.length > 0 ? (
+                        testimonies.map(t => (
+                            <div key={t.id} className="flex items-center justify-between p-3 rounded-md bg-muted">
+                                <div>
+                                    <p className="font-semibold">{t.title}</p>
+                                    <p className="text-xs text-muted-foreground">Captured by {t.userName}</p>
+                                </div>
+                                <Button asChild size="sm" variant="secondary">
+                                    <Link href="/testimonies">
+                                        View
+                                    </Link>
+                                </Button>
+                            </div>
+                        ))
+                    ) : (
+                        !isLoading && (
+                             <div className="flex flex-col items-center justify-center text-center p-4 border-2 border-dashed rounded-lg h-full min-h-32">
+                                <Video className="h-10 w-10 text-muted-foreground mb-2" />
+                                <h3 className="font-semibold">No Testimonies</h3>
+                                <p className="text-muted-foreground text-sm">
+                                    Go to "Record Testimony" to capture the first story.
+                                </p>
+                            </div>
+                        )
+                    )}
+                </div>
+            </CardContent>
+             <CardFooter>
+                 <Button asChild className="w-full" variant="outline">
+                    <Link href="/testimonies">View All Testimonies <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
+            </CardFooter>
         </Card>
     );
 }
@@ -294,7 +341,6 @@ interface DashboardProps {
 
 export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
-  const { user } = useUser();
 
   const allExpensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: allExpenses } = useCollection<Expense>(allExpensesQuery);
@@ -308,14 +354,12 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   }, [firestore]);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
   
-  const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
-  const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
+  const testimoniesQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'), limit(5));
+  }, [firestore]);
+  const { data: testimonies, isLoading: isLoadingTestimonies } = useCollection<Testimony>(testimoniesQuery);
 
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
-
-  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
     <>
@@ -324,14 +368,25 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <BudgetHealth expenses={allExpenses} income={allIncome} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <FinancialQueue allExpenses={allExpenses} />
-            <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
-            <TeamPulse checkouts={checkouts} />
+            <Card>
+                <CardHeader>
+                    <CardTitle>Finance Hub</CardTitle>
+                </CardHeader>
+                <CardContent>
+                     <FinancialQueue allExpenses={allExpenses} />
+                </CardContent>
+            </Card>
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
-            <QuickAddTask />
-            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-            <ManagementQuickLinks />
+             <Card>
+                <CardHeader>
+                    <CardTitle>Media Hub</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
+                    <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
+                </CardContent>
+            </Card>
         </div>
       </DashboardGrid>
     </>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -29,6 +28,7 @@ import {
   Wallet,
   LayoutDashboard,
   Users,
+  Camera,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -78,27 +78,30 @@ const navConfig = {
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Management' },
     { href: '/management/partnerships', icon: Handshake, label: 'Partnerships' },
-    { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead'] },
     { href: '/management/users', icon: UserIcon, label: 'Users' },
+  ],
+  financeMedia: [
+    { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead'] },
+    { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead'] },
+    { href: '/impact-story', icon: Wand, label: 'Story Generator' },
+    { href: '/testimonies', icon: Video, label: 'Testimonies' },
   ],
   communication: [
     { href: '/team-space', icon: Users, label: 'Team Space' },
     { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
-    { href: '/impact-story', icon: Wand, label: 'Story Generator' },
-    { href: '/testimonies', icon: Video, label: 'Testimonies' },
   ]
 };
 
 const roleNavConfig = {
-  'Administrator': ['all', 'field', 'planning', 'management', 'communication'],
-  'Executive Director': ['all', 'field', 'planning', 'management', 'communication'],
-  'Programs & Partnerships Manager': ['all', 'field', 'planning', 'management', 'communication'],
-  'Resource Mobilization Lead': ['all', 'field', 'planning', 'management', 'communication'],
+  'Administrator': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
+  'Executive Director': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
+  'Programs & Partnerships Manager': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
+  'Resource Mobilization Lead': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
   'Operations & Field Manager': ['all', 'field', 'planning', 'management'],
-  'Media & Finance Lead': ['all', 'field', 'planning', 'management', 'communication'],
+  'Media & Finance Lead': ['all', 'field', 'planning', 'management', 'communication', 'financeMedia'],
   'Field Coordinator': ['all', 'field', 'planning', 'communication'],
-  'Media & Communications Lead': ['all', 'field', 'communication'],
+  'Media & Communications Lead': ['all', 'field', 'communication', 'financeMedia'],
   'default': ['all', 'field', 'planning'],
 };
 
@@ -133,11 +136,6 @@ export function AppSidebar() {
     
     let navItems = navConfig[sectionName];
 
-    // Special handling for management to add Partnerships as a top-level item later
-    if (sectionName === 'management') {
-        navItems = navItems.filter(item => item.href !== '/management/partnerships');
-    }
-
     navItems = navItems.filter(item => {
         if ('roles' in item) {
             return (item.roles as string[]).includes(effectiveRole || '');
@@ -164,20 +162,6 @@ export function AppSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
-          {/* Add Partnerships link specifically under Oversight */}
-          {sectionName === 'management' && (
-             <SidebarMenuItem>
-              <SidebarMenuButton
-                href="/management/partnerships"
-                isActive={isActive("/management/partnerships")}
-                tooltip="Partnerships"
-                onClick={handleLinkClick}
-              >
-                <Handshake />
-                <span>Partnerships</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
         </SidebarMenu>
       </SidebarGroup>
     );
@@ -193,6 +177,7 @@ export function AppSidebar() {
         {renderNavSection('planning', 'Planning')}
         {renderNavSection('field', 'Execution')}
         {renderNavSection('management', 'Oversight')}
+        {renderNavSection('financeMedia', 'Finance & Media')}
         {renderNavSection('communication', 'Intelligence')}
       </SidebarContent>
       <SidebarFooter>
