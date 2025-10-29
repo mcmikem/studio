@@ -32,7 +32,6 @@ import {
 } from "../ui/table"
 import { Button } from "../ui/button"
 import Link from "next/link"
-import { DailyActions } from "./daily-actions"
 import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
 import { useToast } from "@/hooks/use-toast"
@@ -43,7 +42,6 @@ import { doc, collection, query, where, orderBy, Timestamp, limit } from "fireba
 import { startOfDay, startOfMonth } from "date-fns"
 import { Skeleton } from "../ui/skeleton"
 import { QuickAddTask } from "./quick-add-task"
-import { SmartReminders } from "./smart-reminders"
 import { TeamPulse } from "./team-activity-feed"
 import { TeamDeployment } from "./team-deployment"
 
@@ -331,9 +329,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <TeamPulse checkouts={checkouts} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
-            <DailyActions />
             <QuickAddTask />
-            <SmartReminders profile={profile} />
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             <ManagementQuickLinks />
         </div>

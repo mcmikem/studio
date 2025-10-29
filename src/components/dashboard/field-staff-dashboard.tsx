@@ -12,7 +12,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
 import { Camera, Receipt, Target } from 'lucide-react';
 import Link from 'next/link';
-import { SmartReminders } from './smart-reminders';
 import { Loader2 } from 'lucide-react';
 import { DashboardCalendar } from './dashboard-calendar';
 import { QuickAddTask } from './quick-add-task';
@@ -39,8 +38,6 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
     <>
         <DashboardGrid className="mt-6 lg:grid-cols-2">
             <div className="flex flex-col gap-6">
-                <DailyActions />
-                <SmartReminders profile={profile} />
                 <TeamPulse checkouts={checkouts} />
             </div>
             <div className="flex flex-col gap-6">

@@ -17,7 +17,6 @@ import Link from "next/link"
 import { Globe, TrendingUp } from "lucide-react"
 import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
-import { SmartReminders } from "./smart-reminders"
 import { formatCurrency } from "@/lib/utils"
 import { MyWeeklyPlan } from "./my-weekly-plan"
 
@@ -170,7 +169,6 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-1 flex flex-col gap-6">
             <QuickAddTask />
             <MyWeeklyPlan />
-            <SmartReminders profile={profile} />
             <TeamEffectiveness activities={activities} />
             <ManagementQuickLinks />
             <Alerts />

@@ -27,6 +27,7 @@ import {
   Box,
   BarChart3,
   Wallet,
+  LayoutDashboard,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -56,7 +57,8 @@ const OmutoLogo = () => (
 
 const navConfig = {
   all: [
-    { href: '/', icon: Home, label: 'Dashboard' },
+    { href: '/chat', icon: MessageSquare, label: 'AI Chat' },
+    { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/profile', icon: UserIcon, label: 'My Profile' },
   ],
   field: [
@@ -83,7 +85,6 @@ const navConfig = {
     { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/impact-story', icon: Wand, label: 'Story Generator' },
     { href: '/testimonies', icon: Video, label: 'Testimonies' },
-    { href: '/chat', icon: MessageSquare, label: 'Chat & Team Space' },
   ]
 };
 
@@ -117,7 +118,8 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => {
-    if (path === '/') return pathname === path;
+    if (path === '/' && pathname !== '/chat') return pathname === path;
+    if (path === '/chat') return pathname === path;
     // For management, we need to check if the path starts with /management
     if (path.startsWith('/management')) return pathname.startsWith('/management');
     if (path.startsWith('/reports')) return pathname.startsWith('/reports');

@@ -4,26 +4,22 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, MessageSquare, Wand } from 'lucide-react';
-import { useCollection, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb } from 'lucide-react';
+import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, orderBy, serverTimestamp, addDoc } from 'firebase/firestore';
 import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatDateSafe } from '@/lib/utils';
+import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
 import { omutoAIFlow } from '@/ai/flows/omuto-ai-flow';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-
+import { SmartReminders } from '@/components/dashboard/smart-reminders';
 
 function MessageItem({ message }: { message: Message }) {
   const { user } = useUser();
@@ -88,8 +84,8 @@ export default function ChatPage() {
     }
   }, [messages]);
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendMessage = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!newMessage.trim() || !user || !profile || !firestore) return;
 
     setIsSending(true);
@@ -107,7 +103,7 @@ export default function ChatPage() {
     };
     
     // Add user's message to Firestore immediately.
-    addDocumentNonBlocking(messagesCollection, userMessageData);
+    addDoc(messagesCollection, userMessageData);
 
     // If message starts with @omuto, it's a query for the AI
     if (text.startsWith('@omuto')) {
@@ -132,7 +128,7 @@ export default function ChatPage() {
               userAvatar: '', // AI has no avatar
               createdAt: serverTimestamp(),
             };
-            addDocumentNonBlocking(messagesCollection, aiMessageData);
+            addDoc(messagesCollection, aiMessageData);
         }
 
       } catch (error) {
@@ -144,31 +140,35 @@ export default function ChatPage() {
             userAvatar: '',
             createdAt: serverTimestamp(),
         };
-        addDocumentNonBlocking(messagesCollection, errorMessageData);
+        addDoc(messagesCollection, errorMessageData);
       }
     }
 
     setIsSending(false);
   };
+  
+  const handleQuickAction = (command: string) => {
+      setNewMessage(command);
+  }
 
   const isSendDisabled = !newMessage.trim() || isSending || isLoadingProfile || !profile;
 
   return (
     <div className="flex flex-col h-full">
-      <header className="mb-6">
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-          <MessageSquare className="h-8 w-8" />
-          Chat & Team Space
-        </h1>
-        <p className="text-muted-foreground">
-          Real-time communication and collaboration for the Omuto team.
-        </p>
-      </header>
-
       <Card className="flex-1 flex flex-col">
         <CardContent className="flex-1 flex flex-col p-0">
           <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
             <div className="space-y-6">
+              <div className='text-center space-y-2 py-8'>
+                <div className='inline-flex items-center justify-center'>
+                    <Wand className="h-6 w-6 mr-2 text-primary" />
+                    <h1 className="font-headline text-3xl font-bold tracking-tight">
+                        Hello, {profile?.name.split(' ')[0]}!
+                    </h1>
+                </div>
+                <p className="text-muted-foreground">What can I help you accomplish today?</p>
+              </div>
+
               {isLoadingMessages && (
                 <>
                   <Skeleton className="h-16 w-3/4" />
@@ -182,19 +182,28 @@ export default function ChatPage() {
             </div>
           </ScrollArea>
           
-          <div className="p-4 border-t space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-primary/50 text-primary">
-                <Wand className="h-3 w-3 mr-1.5"/>
-                Start with <span className="font-bold mx-1">@omuto</span> to ask the AI
-              </Badge>
+          <div className="p-4 border-t space-y-4">
+            {profile && <SmartReminders profile={profile} />}
+            <div className='flex items-center gap-2 overflow-x-auto pb-2'>
+                 <Button variant="outline" size="sm" onClick={() => handleQuickAction('@omuto plan my day')}>
+                    <CalendarCheck className="h-4 w-4 mr-2" /> Plan My Day
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleQuickAction('@omuto log an activity')}>
+                    <BarChart3 className="h-4 w-4 mr-2" /> Log Activity
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleQuickAction('@omuto check out')}>
+                    <MessageSquare className="h-4 w-4 mr-2" /> Check Out
+                </Button>
+                 <Button variant="outline" size="sm" onClick={() => handleQuickAction('@omuto search for ')}>
+                    <Lightbulb className="h-4 w-4 mr-2" /> Quick Find
+                </Button>
             </div>
             <form onSubmit={handleSendMessage} className="flex items-center gap-2">
               <Textarea
                 placeholder={
                     isLoadingProfile ? "Loading profile..." : 
                     !user ? "You must be logged in to chat." : 
-                    "Type your message or ask @omuto..."
+                    "Ask Omuto AI a question, or type a message to the team..."
                 }
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -211,6 +220,9 @@ export default function ChatPage() {
                 <Send className="h-5 w-5" />
               </Button>
             </form>
+            <p className="text-xs text-muted-foreground text-center">
+                Start your message with <Badge variant="outline" className="px-1.5 py-0.5 text-xs">@omuto</Badge> to talk to the AI. Otherwise, your message will be sent to the team.
+            </p>
           </div>
         </CardContent>
       </Card>

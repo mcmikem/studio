@@ -13,7 +13,6 @@ import { DailyActions } from "./daily-actions"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
-import { SmartReminders } from "./smart-reminders"
 import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { startOfDay } from "date-fns"
@@ -59,9 +58,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
     <>
        <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-1 flex flex-col gap-6">
-            <DailyActions />
             <QuickAddTask />
-            <SmartReminders profile={profile} />
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             <DashboardCalendar />
             <ManagementQuickLinks />

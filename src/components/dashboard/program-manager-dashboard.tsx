@@ -14,7 +14,6 @@ import { QuickInsights } from "./program-manager/quick-insights"
 import { TeamDeployment } from "./team-deployment"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { QuickAddTask } from "./quick-add-task"
-import { SmartReminders } from "./smart-reminders"
 import { useMemo } from "react"
 import { MyWeeklyPlan } from "./my-weekly-plan"
 
@@ -61,10 +60,8 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins}/>
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
-            <DailyActions />
             <QuickAddTask />
             <MyWeeklyPlan />
-            <SmartReminders profile={profile} />
             <DashboardCalendar />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
             <QuickInsights activities={activities} />
