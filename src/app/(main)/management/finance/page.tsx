@@ -206,7 +206,7 @@ function ExpenseForm({ expense, onFormSubmit }: { expense?: Expense | null, onFo
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator'];
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
   const canSubmitForOthers = profile && financeRoles.includes(profile.role);
 
 
