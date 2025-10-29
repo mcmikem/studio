@@ -26,7 +26,6 @@ import {
   LayoutDashboard,
   Users,
   Receipt,
-  Tasks,
   Columns,
   CheckCircle,
   TrendingUp,
@@ -85,8 +84,8 @@ const navConfig = {
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },
     { href: '/management/projects', icon: Columns, label: 'Projects' },
     { href: '/management/partnerships', icon: Handshake, label: 'Partnerships' },
-    { href: '/management/finance', icon: DollarSign, label: 'Finance' },
-    { href: '/management/expenses', icon: Receipt, label: 'Expenses' },
+    { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead'] },
+    { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead'] },
     { href: '/management/metrics', icon: TrendingUp, label: 'Metrics (KPIs)' },
     { href: '/management/workplans', icon: CalendarCheck, label: 'Team Workplans' },
     { href: '/management/equipment', icon: Box, label: 'Equipment' },
@@ -95,7 +94,7 @@ const navConfig = {
   ],
 };
 
-const roleNavConfig = {
+const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
   'Administrator': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
   'Executive Director': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
   'Programs & Partnerships Manager': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
@@ -117,7 +116,7 @@ export function AppSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
   const { viewAsRole } = useViewAs();
   
-  const effectiveRole = viewAsRole || realProfile?.role;
+  const effectiveRole = viewAsRole || realProfile?.role || 'default';
 
 
   const handleLinkClick = () => {
@@ -133,13 +132,20 @@ export function AppSidebar() {
     return false;
   }
   
-  const userRole = effectiveRole as keyof typeof roleNavConfig || 'default';
+  const userRole = effectiveRole as keyof typeof roleNavConfig;
   const allowedSections = roleNavConfig[userRole] || roleNavConfig['default'];
 
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
     if (!allowedSections.includes(sectionName)) return null;
     
     let navItems = navConfig[sectionName];
+
+    if (sectionName === 'management') {
+      navItems = navItems.filter(item => {
+        if (!item.roles) return true; // if no roles are specified, it's public for management
+        return item.roles.includes(userRole);
+      });
+    }
 
     if (!navItems || navItems.length === 0) return null;
 
