@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -43,7 +43,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
-import type { Income, Expense } from '@/lib/types';
+import type { Income, Expense, User } from '@/lib/types';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
 import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -74,7 +74,18 @@ const directExpenseSchema = z.object({
   amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
   date: z.string().min(1, 'Date is required.'),
   category: z.enum(expenseItemCategories),
+  submittedFor: z.string().optional(),
+  otherUserName: z.string().optional(),
+}).refine(data => {
+    if ((data.submittedFor === 'Volunteer' || data.submittedFor === 'Intern') && !data.otherUserName) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Please specify the name for the selected role.",
+    path: ["otherUserName"],
 });
+
 
 type DirectExpenseFormData = z.infer<typeof directExpenseSchema>;
 
@@ -175,6 +186,12 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
   const { profile } = useUserProfile(user);
   const { toast } = useToast();
   const firestore = useFirestore();
+  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
+
+  const financeRoles = ['Executive Director', 'Media & Finance Lead'];
+  const canSubmitForOthers = profile && financeRoles.includes(profile.role);
+
 
   const {
     register,
@@ -182,20 +199,41 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
     control,
     reset,
     formState: { errors, isSubmitting },
+    watch,
   } = useForm<DirectExpenseFormData>({
     resolver: zodResolver(directExpenseSchema),
     defaultValues: {
       category: 'Rent',
       date: format(new Date(), 'yyyy-MM-dd'),
+      submittedFor: user?.uid,
     },
   });
+
+  const submittedForSelection = watch('submittedFor');
 
   const onSubmit = (data: DirectExpenseFormData) => {
     if (!firestore || !user || !profile) return;
 
+    let expenseUserId = user.uid;
+    let expenseUserName = profile.name;
+
+    if (canSubmitForOthers && data.submittedFor) {
+        if (data.submittedFor === 'Volunteer' || data.submittedFor === 'Intern') {
+            expenseUserId = data.submittedFor.toLowerCase(); // e.g. 'volunteer'
+            expenseUserName = data.otherUserName || `${data.submittedFor} (unnamed)`;
+        } else {
+            const selectedUser = users?.find(u => u.id === data.submittedFor);
+            if (selectedUser) {
+                expenseUserId = selectedUser.id;
+                expenseUserName = selectedUser.name;
+            }
+        }
+    }
+
+
     const expenseData = {
-      userId: user.uid,
-      userName: profile.name,
+      userId: expenseUserId,
+      userName: expenseUserName,
       title: data.title,
       date: data.date,
       type: 'Reimbursement' as const, // Treat direct entry as a pre-acknowledged reimbursement
@@ -221,6 +259,36 @@ function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
         <Input id="title" {...register('title')} placeholder="e.g., Office Rent (Q4)" />
         {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
       </div>
+       {canSubmitForOthers && (
+            <div className="space-y-2">
+                <Label htmlFor="submittedFor">Submitted For</Label>
+                 <Controller
+                    name="submittedFor"
+                    control={control}
+                    render={({ field }) => (
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <SelectTrigger id="submittedFor">
+                            <SelectValue placeholder="Select user..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                             {users?.map(u => (
+                                <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>
+                            ))}
+                            <SelectItem value="Volunteer">Volunteer</SelectItem>
+                            <SelectItem value="Intern">Intern</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    )}
+                />
+                 {(submittedForSelection === 'Volunteer' || submittedForSelection === 'Intern') && (
+                     <div className="mt-2 space-y-1 animate-in fade-in">
+                        <Label htmlFor="otherUserName" className="text-xs">{submittedForSelection} Name</Label>
+                        <Input id="otherUserName" {...register('otherUserName')} placeholder={`Enter ${submittedForSelection}'s name`} />
+                        {errors.otherUserName && <p className="text-sm text-destructive">{`${errors.otherUserName.message}`}</p>}
+                    </div>
+                )}
+            </div>
+          )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
          <div className="space-y-2">
           <Label htmlFor="amount">Amount (UGX)</Label>
