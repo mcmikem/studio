@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info, CheckCircle, Eye, Search } from 'lucide-react';
+import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser, useCollection, useMemoFirebase, useFirestore, updateDocumentNonBlocking } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -48,9 +48,21 @@ function QuickAddMenu() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuLabel>Quick Add</DropdownMenuLabel>
+                <DropdownMenuLabel>Quick Access</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                        <Link href="/daily-plan">
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            <span>AI Daily Planner</span>
+                        </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/forms/activity">
+                            <BarChart3 className="mr-2 h-4 w-4" />
+                            <span>Log Activity (ROI)</span>
+                        </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                         <Link href="/forms/expense">
                             <Receipt className="mr-2 h-4 w-4" />
@@ -58,9 +70,15 @@ function QuickAddMenu() {
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                        <Link href="/management/programs">
+                        <Link href="/management/partnerships">
+                             <Handshake className="mr-2 h-4 w-4" />
+                            <span>New Partnership</span>
+                        </Link>
+                    </DropdownMenuItem>
+                     <DropdownMenuItem asChild>
+                        <Link href="/management/resources">
                             <FolderKanban className="mr-2 h-4 w-4" />
-                            <span>New Program</span>
+                            <span>New Proposal</span>
                         </Link>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
