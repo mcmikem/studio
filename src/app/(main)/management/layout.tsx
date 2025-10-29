@@ -28,7 +28,7 @@ export default function ManagementLayout({
       'Executive Director', 
       'Programs & Partnerships Manager', 
       'Operations & Field Manager',
-      'Media & Finance Lead', // CORRECTLY ADDED THE ROLE HERE
+      'Media & Finance Lead',
   ];
 
   if (!managementRoles.includes(effectiveRole || '')) {
