@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -100,8 +101,8 @@ const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
   'Resource Mobilization Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
   'Operations & Field Manager': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
   'Media & Finance Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
+  'Media & Communications Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
   'Field Coordinator': ['home', 'myDay', 'teamHub', 'dataReporting'],
-  'Media & Communications Lead': ['home', 'myDay', 'teamHub', 'dataReporting'],
   'Intern': ['home', 'myDay', 'teamHub', 'dataReporting'],
   'Volunteer': ['home', 'myDay', 'teamHub', 'dataReporting'],
   'default': ['home', 'myDay', 'teamHub', 'dataReporting'],
@@ -109,6 +110,10 @@ const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
 
 const roleSpecificNav: Record<string, { href: string; icon: React.ElementType; label: string }[]> = {
   'Media & Finance Lead': [
+    { href: '/management/finance', icon: DollarSign, label: 'Financial Ledger' },
+    { href: '/management/expenses', icon: Receipt, label: 'Expense Approval' },
+  ],
+  'Media & Communications Lead': [
     { href: '/management/finance', icon: DollarSign, label: 'Financial Ledger' },
     { href: '/management/expenses', icon: Receipt, label: 'Expense Approval' },
   ],

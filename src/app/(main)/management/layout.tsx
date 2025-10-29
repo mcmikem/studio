@@ -30,6 +30,7 @@ export default function ManagementLayout({
       'Programs & Partnerships Manager', 
       'Operations & Field Manager',
       'Media & Finance Lead',
+      'Media & Communications Lead', // Added this role
   ];
 
   if (!managementRoles.includes(effectiveRole || '')) {
