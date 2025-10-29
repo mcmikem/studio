@@ -28,6 +28,7 @@ import {
   BarChart3,
   Wallet,
   LayoutDashboard,
+  Users,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -57,7 +58,7 @@ const OmutoLogo = () => (
 
 const navConfig = {
   all: [
-    { href: '/chat', icon: MessageSquare, label: 'AI Chat' },
+    { href: '/chat', icon: Sparkles, label: 'AI Coach' },
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/profile', icon: UserIcon, label: 'My Profile' },
   ],
@@ -81,6 +82,7 @@ const navConfig = {
     { href: '/management/users', icon: UserIcon, label: 'Users' },
   ],
   communication: [
+    { href: '/team-space', icon: Users, label: 'Team Space' },
     { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/impact-story', icon: Wand, label: 'Story Generator' },
@@ -95,7 +97,7 @@ const roleNavConfig = {
   'Resource Mobilization Lead': ['all', 'field', 'planning', 'management', 'communication'],
   'Operations & Field Manager': ['all', 'field', 'planning', 'management'],
   'Media & Finance Lead': ['all', 'field', 'planning', 'management', 'communication'],
-  'Field Coordinator': ['all', 'field', 'planning'],
+  'Field Coordinator': ['all', 'field', 'planning', 'communication'],
   'Media & Communications Lead': ['all', 'field', 'communication'],
   'default': ['all', 'field', 'planning'],
 };
@@ -118,12 +120,9 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => {
-    if (path === '/' && pathname !== '/chat') return pathname === path;
-    if (path === '/chat') return pathname === path;
-    // For management, we need to check if the path starts with /management
-    if (path.startsWith('/management')) return pathname.startsWith('/management');
-    if (path.startsWith('/reports')) return pathname.startsWith('/reports');
-    return pathname.startsWith(path);
+    if (path === '/' && (pathname === '/' || pathname === '/chat')) return true;
+    if (path !== '/' && pathname.startsWith(path)) return true;
+    return false;
   }
   
   const userRole = effectiveRole as keyof typeof roleNavConfig || 'default';

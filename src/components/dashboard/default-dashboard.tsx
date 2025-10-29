@@ -4,7 +4,6 @@
 import type { User, Checkout, ImpactMetric, Checkin } from "@/lib/types"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
-import { DailyActions } from "./daily-actions"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { Alerts } from "./alerts"
 import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"

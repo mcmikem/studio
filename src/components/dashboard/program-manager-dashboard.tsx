@@ -2,7 +2,6 @@
 "use client"
 
 import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
-import { DailyActions } from "./daily-actions"
 import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { KeyResultsTracker } from "../plan/key-results-tracker"

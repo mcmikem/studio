@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb } from 'lucide-react';
+import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb, User } from 'lucide-react';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, orderBy, serverTimestamp, addDoc } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, addDoc, limit } from 'firebase/firestore';
 import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
@@ -71,10 +71,11 @@ export default function ChatPage() {
   const [isSending, setIsSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  // Use a user-specific sub-collection for AI chats
   const messagesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'messages'), orderBy('createdAt', 'asc'));
-  }, [firestore]);
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'users', user.uid, 'ai-chats'), orderBy('createdAt', 'asc'), limit(50));
+  }, [firestore, user]);
 
   const { data: messages, isLoading: isLoadingMessages } = useCollection<Message>(messagesQuery);
 
@@ -92,7 +93,8 @@ export default function ChatPage() {
     const text = newMessage;
     setNewMessage('');
     
-    const messagesCollection = collection(firestore, 'messages');
+    // AI chats are now stored in a user-specific subcollection
+    const aiChatsCollection = collection(firestore, 'users', user.uid, 'ai-chats');
     
     const userMessageData = {
       text: text,
@@ -102,46 +104,39 @@ export default function ChatPage() {
       createdAt: serverTimestamp(),
     };
     
-    // Add user's message to Firestore immediately.
-    addDoc(messagesCollection, userMessageData);
+    addDoc(aiChatsCollection, userMessageData);
 
-    // If message starts with @omuto, it's a query for the AI
-    if (text.startsWith('@omuto')) {
-      try {
-        const question = text.replace('@omuto', '').trim();
-        
-        // Construct history for AI, ensuring it matches the expected schema
-        const aiHistory = messages
-          ?.filter(m => m.userId === user.uid || m.userId === 'omuto-ai')
-          .map(m => ({
-            role: m.userId === 'omuto-ai' ? 'model' as const : 'user' as const,
-            content: [{ text: m.text }]
-          })) || [];
+    try {
+      // Construct history for AI from the private chat history
+      const aiHistory = messages
+        ?.map(m => ({
+          role: m.userId === 'omuto-ai' ? 'model' as const : 'user' as const,
+          content: [{ text: m.text }]
+        })) || [];
 
-        const aiResponse = await omutoAIFlow({ question, history: aiHistory, userId: user.uid });
-        
-        if(aiResponse.answer) {
-            const aiMessageData = {
-              text: aiResponse.answer,
-              userId: 'omuto-ai',
-              userName: 'Omuto AI',
-              userAvatar: '', // AI has no avatar
-              createdAt: serverTimestamp(),
-            };
-            addDoc(messagesCollection, aiMessageData);
-        }
-
-      } catch (error) {
-        console.error('Error with Omuto AI:', error);
-        const errorMessageData = {
-            text: "Sorry, I encountered an error and couldn't process your request.",
+      const aiResponse = await omutoAIFlow({ question: text, history: aiHistory, userId: user.uid });
+      
+      if(aiResponse.answer) {
+          const aiMessageData = {
+            text: aiResponse.answer,
             userId: 'omuto-ai',
             userName: 'Omuto AI',
-            userAvatar: '',
+            userAvatar: '', // AI has no avatar
             createdAt: serverTimestamp(),
-        };
-        addDoc(messagesCollection, errorMessageData);
+          };
+          addDoc(aiChatsCollection, aiMessageData);
       }
+
+    } catch (error) {
+      console.error('Error with Omuto AI:', error);
+      const errorMessageData = {
+          text: "Sorry, I encountered an error and couldn't process your request.",
+          userId: 'omuto-ai',
+          userName: 'Omuto AI',
+          userAvatar: '',
+          createdAt: serverTimestamp(),
+      };
+      addDoc(aiChatsCollection, errorMessageData);
     }
 
     setIsSending(false);
@@ -185,16 +180,16 @@ export default function ChatPage() {
           <div className="p-4 border-t space-y-4">
             {profile && <SmartReminders profile={profile} />}
             <div className='flex items-center gap-2 overflow-x-auto pb-2'>
-                 <Button variant="outline" size="sm" onClick={() => handleQuickAction('@omuto plan my day')}>
+                 <Button variant="outline" size="sm" onClick={() => handleQuickAction('Plan my day')}>
                     <CalendarCheck className="h-4 w-4 mr-2" /> Plan My Day
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => handleQuickAction('@omuto log an activity')}>
+                <Button variant="outline" size="sm" onClick={() => handleQuickAction('Log an activity')}>
                     <BarChart3 className="h-4 w-4 mr-2" /> Log Activity
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => handleQuickAction('@omuto check out')}>
+                <Button variant="outline" size="sm" onClick={() => handleQuickAction('Check out')}>
                     <MessageSquare className="h-4 w-4 mr-2" /> Check Out
                 </Button>
-                 <Button variant="outline" size="sm" onClick={() => handleQuickAction('@omuto search for ')}>
+                 <Button variant="outline" size="sm" onClick={() => handleQuickAction('Search for ')}>
                     <Lightbulb className="h-4 w-4 mr-2" /> Quick Find
                 </Button>
             </div>
@@ -203,7 +198,7 @@ export default function ChatPage() {
                 placeholder={
                     isLoadingProfile ? "Loading profile..." : 
                     !user ? "You must be logged in to chat." : 
-                    "Ask Omuto AI a question, or type a message to the team..."
+                    "Ask Omuto AI a question..."
                 }
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -220,9 +215,9 @@ export default function ChatPage() {
                 <Send className="h-5 w-5" />
               </Button>
             </form>
-            <p className="text-xs text-muted-foreground text-center">
-                Start your message with <Badge variant="outline" className="px-1.5 py-0.5 text-xs">@omuto</Badge> to talk to the AI. Otherwise, your message will be sent to the team.
-            </p>
+            <div className="text-xs text-muted-foreground text-center">
+                This is your private workspace with Omuto AI. Your conversations here are not shared with the team.
+            </div>
           </div>
         </CardContent>
       </Card>
