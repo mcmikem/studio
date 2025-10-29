@@ -45,7 +45,8 @@ export function TodaysFocus({ checkin, isLoading }: TodaysFocusProps) {
         if (isWithinInterval(now, { start: startTime, end: endTime })) {
           const remaining = differenceInMilliseconds(endTime, now);
           const totalDuration = differenceInMilliseconds(endTime, startTime);
-          const currentProgress = totalDuration > 0 ? (remaining / totalDuration) * 100 : 0;
+          const elapsed = totalDuration - remaining;
+          const currentProgress = totalDuration > 0 ? (elapsed / totalDuration) * 100 : 0;
           return { currentTask: block.description, timeRemaining: remaining, progress: currentProgress };
         }
       } catch (e) {
@@ -57,27 +58,30 @@ export function TodaysFocus({ checkin, isLoading }: TodaysFocusProps) {
   }, [checkin, currentTime]);
   
   if (isLoading) {
-    return <Skeleton className="h-16 w-full" />;
+    return <Skeleton className="h-24 w-full" />;
   }
 
   if (!checkin || !currentTask) {
     return (
-       <div className="mt-6 p-4 text-center rounded-lg bg-muted/50 border-dashed border">
-          <p className="text-sm text-muted-foreground">You're in a free block! Plan your next move or take a well-deserved break.</p>
+       <div className="mt-6 p-6 text-center rounded-lg bg-muted/50 border-dashed border">
+          <p className="font-semibold">You're in a free block!</p>
+          <p className="text-sm text-muted-foreground">Plan your next move or take a well-deserved break.</p>
        </div>
     );
   }
 
   return (
-    <div className="mt-6 p-4 rounded-lg bg-background border border-border flex flex-col md:flex-row items-center gap-4">
-      <div className="flex items-center gap-3 flex-grow w-full">
-        <Target className="h-6 w-6 text-primary flex-shrink-0" />
-        <div>
-          <p className="text-xs text-primary font-semibold">NOW</p>
-          <p className="font-semibold leading-tight">{currentTask}</p>
+    <div className="mt-6 p-4 rounded-lg bg-primary/10 border-2 border-primary/20 flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+             <div className="flex-shrink-0 bg-primary text-primary-foreground h-10 w-10 rounded-lg flex items-center justify-center">
+                <Target className="h-6 w-6" />
+            </div>
+            <div>
+                <p className="text-xs text-primary font-bold tracking-wider">CURRENT FOCUS</p>
+                <p className="text-lg font-bold leading-tight">{currentTask}</p>
+            </div>
         </div>
-      </div>
-      <div className="flex items-center gap-3 w-full md:w-auto md:max-w-xs flex-shrink-0">
+      <div className="flex items-center gap-3 w-full">
          <div className="flex-grow">
           <Progress value={progress} className="h-2"/>
         </div>
