@@ -79,12 +79,18 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
       }
     );
 
-    // Initial check in case onAuthStateChanged is not immediate
-    if (auth.currentUser !== userAuthState.user) {
-        setUserAuthState({ user: auth.currentUser, isUserLoading: false, userError: null });
-    } else if (userAuthState.isUserLoading) {
-        setUserAuthState(prev => ({...prev, isUserLoading: false}));
+    // This handles the case where the user is already authenticated on initial load
+    // before the onAuthStateChanged listener fires.
+    if (userAuthState.isUserLoading) {
+      if(auth.currentUser) {
+         setUserAuthState({ user: auth.currentUser, isUserLoading: false, userError: null });
+      } else {
+        // If no user is found synchronously, we still need to stop loading.
+        // The listener above will catch any async user state changes.
+        setUserAuthState(prev => ({ ...prev, isUserLoading: false }));
+      }
     }
+
 
     return () => unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
