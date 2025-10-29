@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -29,14 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-UG', {
-    style: 'currency',
-    currency: 'UGX',
-    minimumFractionDigits: 0,
-  }).format(value);
-};
+import { formatCurrency } from '@/lib/utils';
 
 const multipliers = [
   { id: 'combine', label: 'Combining with another activity', value: 15000 },
@@ -51,6 +43,7 @@ export function ActivityReportForm() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [currentTab, setCurrentTab] = useState("planning");
 
   const [activityName, setActivityName] = useState('');
   const [ecosystemPhase, setEcosystemPhase] = useState<"Identify & Inspire" | "Equip & Empower" | "Activate & Sustain">('Identify & Inspire');
@@ -210,6 +203,7 @@ export function ActivityReportForm() {
         setMemorableMoment('');
         setChallengesLearned('');
         setBeneficiaryQuote('');
+        setCurrentTab("planning");
 
     } catch(e) {
         console.error(e);
@@ -277,288 +271,172 @@ export function ActivityReportForm() {
     }
     return null;
   }
-
-  const preActivityContent = (
-    <div className="space-y-6">
-      <CardHeader className="px-0">
-        <CardTitle>1. Pre-Activity ROI Assessment</CardTitle>
-        <CardDescription>
-          Plan your activity to maximize its impact before you even go.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6 px-0">
-        <div className="space-y-2">
-          <Label htmlFor="activityName">Activity Name</Label>
-          <Input
-            id="activityName"
-            placeholder="e.g., Tree Planting @ Greenhill"
-            value={activityName}
-            onChange={(e) => setActivityName(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-            <Label htmlFor="ecosystemPhase">Ecosystem Phase</Label>
-             <Select onValueChange={(value: "Identify & Inspire" | "Equip & Empower" | "Activate & Sustain") => setEcosystemPhase(value)} value={ecosystemPhase}>
-                <SelectTrigger id="ecosystemPhase">
-                    <SelectValue placeholder="Select phase..." />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="Identify & Inspire">Identify & Inspire</SelectItem>
-                    <SelectItem value="Equip & Empower">Equip & Empower</SelectItem>
-                    <SelectItem value="Activate & Sustain">Activate & Sustain</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
-
-        <Separator />
-        <h3 className="font-semibold text-lg">Primary Goal</h3>
-        <div className="space-y-2">
-          <Label htmlFor="goal-type">Goal Type</Label>
-          <Select
-            onValueChange={(value: 'Metric' | 'Program') => setGoalType(value)}
-            value={goalType}
-          >
-            <SelectTrigger id="goal-type">
-              <SelectValue placeholder="Select goal type..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Metric">KPI Metric</SelectItem>
-              <SelectItem value="Program">Program Objective</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {renderGoalSelectors()}
-
-        {selectedProgram?.title === 'RED Campaign' && (
-            <div className="grid grid-cols-2 gap-4 mt-4 p-4 border rounded-md">
-                 <div className="space-y-2">
-                    <Label htmlFor="parents-attended">Parents Attended</Label>
-                    <Input id="parents-attended" type="number" placeholder="e.g., 25" value={parentsAttended} onChange={e => setParentsAttended(Number(e.target.value))} />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="teachers-attended">Teachers Attended</Label>
-                    <Input id="teachers-attended" type="number" placeholder="e.g., 5" value={teachersAttended} onChange={e => setTeachersAttended(Number(e.target.value))} />
-                </div>
-            </div>
-        )}
-        
-        {selectedProgram?.title === 'GreenSchools Campaign' && (
-            <div className="mt-4 p-4 border rounded-md">
-                 <div className="space-y-2">
-                    <Label htmlFor="trees-planted">Trees Planted</Label>
-                    <Input id="trees-planted" type="number" placeholder="e.g., 150" value={treesPlanted} onChange={e => setTreesPlanted(Number(e.target.value))} />
-                </div>
-            </div>
-        )}
-
-        <p className="text-sm text-muted-foreground">
-          The "Direct Value" of your activity is now automatically calculated
-          based on the selected goal's value.
-        </p>
-
-        <h3 className="font-semibold text-lg">Estimated Costs</h3>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="transportCost">Transport Cost</Label>
-            <Input
-              id="transportCost"
-              type="number"
-              step="1000"
-              value={transportCost}
-              onChange={(e) => setTransportCost(Number(e.target.value))}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="staffTimeCost">Staff Time Cost</Label>
-            <Input
-              id="staffTimeCost"
-              type="number"
-              step="1000"
-              value={staffTimeCost}
-              onChange={(e) => setStaffTimeCost(Number(e.target.value))}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="materialsCost">Materials Cost</Label>
-            <Input
-              id="materialsCost"
-              type="number"
-              step="1000"
-              value={materialsCost}
-              onChange={(e) => setMaterialsCost(Number(e.target.value))}
-            />
-          </div>
-        </div>
-        <div className="text-right font-bold text-lg p-2 bg-muted rounded-md">
-          Total Estimated Cost: {formatCurrency(preActivityCost)}
-        </div>
-
-        <Separator />
-
-        <h3 className="font-semibold text-lg">Value Multipliers</h3>
-        <CardDescription>
-          Select actions you'll take to add value beyond the primary goal.
-        </CardDescription>
-        <div className="space-y-3 pt-2">
-          {multipliers.map((m) => (
-            <div key={m.id} className="flex items-center space-x-3">
-              <Checkbox
-                id={m.id}
-                onCheckedChange={(checked) =>
-                  handleMultiplierChange(m.id, !!checked)
-                }
-                checked={selectedMultipliers.includes(m.id)}
-              />
-              <Label htmlFor={m.id} className="flex-1 cursor-pointer">
-                {m.label}{' '}
-                <span className="text-muted-foreground text-xs">
-                  ({formatCurrency(m.value)})
-                </span>
-              </Label>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </div>
-  );
-
-  const postActivityContent = (
-    <div className="space-y-6">
-       <CardHeader className="px-0">
-        <CardTitle>2. ROI Calculation & Logging</CardTitle>
-        <CardDescription>
-          Enter the final numbers and save your report.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6 px-0">
-        <div className="space-y-4 pt-2 bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg">
-          <div className="flex justify-between items-center text-md">
-            <span className="text-muted-foreground">
-              Direct Value (Primary Goal):
-            </span>
-            <span className="font-bold">{formatCurrency(directValue)}</span>
-          </div>
-          <div className="flex justify-between items-center text-md">
-            <span className="text-muted-foreground">
-              Indirect Value (Multipliers):
-            </span>
-            <span className="font-bold">{formatCurrency(indirectValue)}</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between items-center text-lg">
-            <span className="text-muted-foreground">Total Estimated Value:</span>
-            <span className="font-bold">{formatCurrency(totalValue)}</span>
-          </div>
-          <div className="flex justify-between items-center text-2xl">
-            <span className="font-headline">Estimated ROI:</span>
-            <span
-              className={`font-bold font-headline ${
-                estimatedRoi >= 0 ? 'text-green-500' : 'text-red-500'
-              }`}
-            >
-              {estimatedRoi.toFixed(0)}%
-            </span>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="actualCost">Actual Final Cost</Label>
-          <Input
-            id="actualCost"
-            type="number"
-            value={actualCost}
-            onChange={(e) => setActualCost(Number(e.target.value))}
-            placeholder="e.g., 42000"
-          />
-        </div>
-
-        <Separator />
-        
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">Post-Activity Debrief & Story</h3>
-          <CardDescription>This information will help the media team create impact stories.</CardDescription>
-          <div className="space-y-2">
-            <Label htmlFor="memorableMoment">Memorable Moment</Label>
-            <Textarea
-              id="memorableMoment"
-              placeholder="Describe a specific, powerful interaction or observation."
-              value={memorableMoment}
-              onChange={(e) => setMemorableMoment(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="challengesLearned">Challenges & Lessons Learned</Label>
-            <Textarea
-              id="challengesLearned"
-              placeholder="What was a surprising challenge and how did you overcome it?"
-              value={challengesLearned}
-              onChange={(e) => setChallengesLearned(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="beneficiaryQuote">Quote from a Beneficiary</Label>
-            <Textarea
-              id="beneficiaryQuote"
-              placeholder='e.g., "I never knew I could make my own pads before today!" - Jane'
-              value={beneficiaryQuote}
-              onChange={(e) => setBeneficiaryQuote(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-4 pt-2 bg-green-50 dark:bg-green-900/10 p-4 rounded-lg">
-           <div className="flex justify-between items-center text-2xl pt-4">
-            <span className="font-headline">Final ROI:</span>
-            <span
-              className={`font-bold font-headline ${
-                finalRoi >= 0 ? 'text-green-500' : 'text-red-500'
-              }`}
-            >
-              {finalRoi.toFixed(0)}%
-            </span>
-          </div>
-        </div>
-        <Button
-          className="w-full"
-          size="lg"
-          onClick={handleLogActivity}
-          disabled={loading || !activityName.trim()}
-        >
-          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Log this Activity & ROI
-        </Button>
-      </CardContent>
-    </div>
-  )
   
   return (
-    <>
-      {/* Desktop View */}
-      <div className="hidden md:grid md:grid-cols-2 gap-8 items-start">
-        {preActivityContent}
-        <div className="sticky top-6">
-          {postActivityContent}
-        </div>
-      </div>
-       {/* Mobile View */}
-       <div className="md:hidden">
-          <Tabs defaultValue="planning">
-              <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="planning">1. Planning</TabsTrigger>
-                  <TabsTrigger value="logging">2. Logging</TabsTrigger>
-              </TabsList>
-              <TabsContent value="planning" className="pt-4">
-                  {preActivityContent}
-              </TabsContent>
-              <TabsContent value="logging" className="pt-4">
-                  {postActivityContent}
-              </TabsContent>
-          </Tabs>
-       </div>
-    </>
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="planning">1. Planning</TabsTrigger>
+              <TabsTrigger value="execution">2. Execution</TabsTrigger>
+              <TabsTrigger value="logging">3. Logging</TabsTrigger>
+          </TabsList>
+          <TabsContent value="planning" className="pt-6">
+               <CardHeader className="px-0">
+                <CardTitle>What are you doing?</CardTitle>
+                <CardDescription>
+                  Define the activity and its primary goal.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 px-0">
+                <div className="space-y-2">
+                  <Label htmlFor="activityName">Activity Name</Label>
+                  <Input
+                    id="activityName"
+                    placeholder="e.g., Tree Planting @ Greenhill"
+                    value={activityName}
+                    onChange={(e) => setActivityName(e.target.value)}
+                  />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="ecosystemPhase">Ecosystem Phase</Label>
+                    <Select onValueChange={(value: "Identify & Inspire" | "Equip & Empower" | "Activate & Sustain") => setEcosystemPhase(value)} value={ecosystemPhase}>
+                        <SelectTrigger id="ecosystemPhase">
+                            <SelectValue placeholder="Select phase..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Identify & Inspire">Identify & Inspire</SelectItem>
+                            <SelectItem value="Equip & Empower">Equip & Empower</SelectItem>
+                            <SelectItem value="Activate & Sustain">Activate & Sustain</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <Separator />
+                <h3 className="font-semibold">Primary Goal</h3>
+                <div className="space-y-2">
+                    <Label htmlFor="goal-type">What type of goal is this?</Label>
+                    <Select onValueChange={(value: 'Metric' | 'Program') => setGoalType(value)} value={goalType}>
+                        <SelectTrigger id="goal-type"><SelectValue placeholder="Select goal type..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Metric">KPI Metric (e.g., # of students)</SelectItem>
+                            <SelectItem value="Program">Program Objective (e.g., 1 RED session)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {renderGoalSelectors()}
+                
+                {selectedProgram?.title === 'RED Campaign' && (
+                    <div className="grid grid-cols-2 gap-4 mt-4 p-4 border rounded-md">
+                        <div className="space-y-2">
+                            <Label htmlFor="parents-attended">Parents Attended</Label>
+                            <Input id="parents-attended" type="number" placeholder="e.g., 25" value={parentsAttended} onChange={e => setParentsAttended(Number(e.target.value))} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="teachers-attended">Teachers Attended</Label>
+                            <Input id="teachers-attended" type="number" placeholder="e.g., 5" value={teachersAttended} onChange={e => setTeachersAttended(Number(e.target.value))} />
+                        </div>
+                    </div>
+                )}
+                
+                {selectedProgram?.title === 'GreenSchools Campaign' && (
+                    <div className="mt-4 p-4 border rounded-md">
+                        <div className="space-y-2">
+                            <Label htmlFor="trees-planted">Trees Planted</Label>
+                            <Input id="trees-planted" type="number" placeholder="e.g., 150" value={treesPlanted} onChange={e => setTreesPlanted(Number(e.target.value))} />
+                        </div>
+                    </div>
+                )}
+                
+                 <div className="p-4 bg-muted rounded-lg">
+                    <div className="flex justify-between items-center text-md">
+                        <span className="text-muted-foreground">Direct Value (from Goal):</span>
+                        <span className="font-bold">{formatCurrency(directValue)}</span>
+                    </div>
+                 </div>
+
+                <Button onClick={() => setCurrentTab("execution")} className="w-full">Next: Plan Execution</Button>
+              </CardContent>
+          </TabsContent>
+           <TabsContent value="execution" className="pt-6">
+                <CardHeader className="px-0">
+                    <CardTitle>How will you execute?</CardTitle>
+                    <CardDescription>
+                    Estimate your costs and find ways to create multiple wins.
+                    </CardDescription>
+                </CardHeader>
+                 <CardContent className="space-y-6 px-0">
+                    <h3 className="font-semibold text-lg">Estimated Costs</h3>
+                    <div className="space-y-4">
+                        <div className="space-y-2"><Label htmlFor="transportCost">Transport</Label><Input id="transportCost" type="number" step="1000" value={transportCost} onChange={(e) => setTransportCost(Number(e.target.value))} /></div>
+                        <div className="space-y-2"><Label htmlFor="staffTimeCost">Staff Time</Label><Input id="staffTimeCost" type="number" step="1000" value={staffTimeCost} onChange={(e) => setStaffTimeCost(Number(e.target.value))} /></div>
+                        <div className="space-y-2"><Label htmlFor="materialsCost">Materials</Label><Input id="materialsCost" type="number" step="1000" value={materialsCost} onChange={(e) => setMaterialsCost(Number(e.target.value))} /></div>
+                    </div>
+                    <div className="text-right font-bold text-lg p-2 bg-muted rounded-md">Total Estimated Cost: {formatCurrency(preActivityCost)}</div>
+                    <Separator />
+                    <h3 className="font-semibold text-lg">Value Multipliers (Multiple Wins)</h3>
+                    <div className="space-y-3 pt-2">
+                        {multipliers.map((m) => (
+                            <div key={m.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50">
+                            <Checkbox id={m.id} onCheckedChange={(checked) => handleMultiplierChange(m.id, !!checked)} checked={selectedMultipliers.includes(m.id)} />
+                            <Label htmlFor={m.id} className="flex-1 cursor-pointer">{m.label} <span className="text-muted-foreground text-xs">({formatCurrency(m.value)})</span></Label>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="p-4 bg-muted rounded-lg">
+                        <div className="flex justify-between items-center text-md">
+                            <span className="text-muted-foreground">Indirect Value (from Multipliers):</span>
+                            <span className="font-bold">{formatCurrency(indirectValue)}</span>
+                        </div>
+                    </div>
+                     <Button onClick={() => setCurrentTab("logging")} className="w-full">Next: Log Results</Button>
+                </CardContent>
+          </TabsContent>
+          <TabsContent value="logging" className="pt-6">
+               <CardHeader className="px-0">
+                <CardTitle>How did it go?</CardTitle>
+                <CardDescription>
+                  Enter the final numbers and debrief to log your report.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 px-0">
+                <div className="space-y-4 pt-2 bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg">
+                  <div className="flex justify-between items-center text-lg">
+                    <span className="text-muted-foreground">Total Estimated Value:</span>
+                    <span className="font-bold">{formatCurrency(totalValue)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-2xl">
+                    <span className="font-headline">Estimated ROI:</span>
+                    <span className={`font-bold font-headline ${estimatedRoi >= 0 ? 'text-green-500' : 'text-red-500'}`}>{estimatedRoi.toFixed(0)}%</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="actualCost">Actual Final Cost</Label>
+                  <Input id="actualCost" type="number" value={actualCost} onChange={(e) => setActualCost(Number(e.target.value))} placeholder="e.g., 42000"/>
+                </div>
+
+                <Separator />
+                
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-lg">Post-Activity Debrief & Story</h3>
+                  <div className="space-y-2"><Label htmlFor="memorableMoment">Memorable Moment</Label><Textarea id="memorableMoment" placeholder="Describe a specific, powerful interaction or observation." value={memorableMoment} onChange={(e) => setMemorableMoment(e.target.value)}/></div>
+                  <div className="space-y-2"><Label htmlFor="challengesLearned">Challenges & Lessons Learned</Label><Textarea id="challengesLearned" placeholder="What was a surprising challenge and how did you overcome it?" value={challengesLearned} onChange={(e) => setChallengesLearned(e.target.value)}/></div>
+                  <div className="space-y-2"><Label htmlFor="beneficiaryQuote">Quote from a Beneficiary</Label><Textarea id="beneficiaryQuote" placeholder='e.g., "I never knew I could make my own pads before today!" - Jane' value={beneficiaryQuote} onChange={(e) => setBeneficiaryQuote(e.target.value)}/></div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4 pt-2 bg-green-50 dark:bg-green-900/10 p-4 rounded-lg">
+                   <div className="flex justify-between items-center text-2xl pt-4">
+                    <span className="font-headline">Final ROI:</span>
+                    <span className={`font-bold font-headline ${finalRoi >= 0 ? 'text-green-500' : 'text-red-500'}`}>{finalRoi.toFixed(0)}%</span>
+                  </div>
+                </div>
+                <Button className="w-full" size="lg" onClick={handleLogActivity} disabled={loading || !activityName.trim()}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Log this Activity &amp; ROI
+                </Button>
+              </CardContent>
+          </TabsContent>
+      </Tabs>
   );
 }
-
