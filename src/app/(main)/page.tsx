@@ -12,8 +12,9 @@ import type { User, ImpactMetric, Checkin } from '@/lib/types';
 import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
 import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
 import { startOfDay } from 'date-fns';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { TodaysFocus } from '@/components/dashboard/todays-focus';
+import { DailyActions } from '@/components/dashboard/daily-actions';
 
 
 // Define a loading component for dynamic imports
@@ -58,6 +59,11 @@ export default function DashboardPage() {
   const { profile: realProfile, isLoading: isLoadingProfile } = useUserProfile(user);
   const { viewAsRole } = useViewAs();
   const firestore = useFirestore();
+  const [currentHour, setCurrentHour] = useState<number | null>(null);
+
+  useEffect(() => {
+    setCurrentHour(new Date().getHours());
+  }, []);
 
   const effectiveRole = viewAsRole || realProfile?.role;
 
@@ -85,8 +91,9 @@ export default function DashboardPage() {
     return userCheckins[0];
   }, [userCheckins]);
 
+  const showDailyActions = (currentHour !== null && latestCheckin === null && currentHour < 17) || (currentHour !== null && currentHour >= 17);
 
-  if (isLoadingProfile || !user) {
+  if (isLoadingProfile || !user || currentHour === null) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -109,8 +116,13 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} title={dashboardTitle} />
-        <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />
+
+        {latestCheckin && <TodaysFocus checkin={latestCheckin} isLoading={isLoadingUserCheckin} />}
+        
+        {showDailyActions && <DailyActions hour={currentHour} hasCheckedIn={!!latestCheckin} />}
+        
         <QuickStatsSummary metrics={metrics} />
+        
         <div className="flex-1">
             <DashboardComponent profile={profile} />
         </div>

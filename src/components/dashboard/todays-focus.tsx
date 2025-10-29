@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Target, Clock } from 'lucide-react';
+import { Target, Clock, Check } from 'lucide-react';
 import type { Checkin } from '@/lib/types';
 import { isWithinInterval, parse, startOfDay, differenceInMilliseconds } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
@@ -58,27 +58,33 @@ export function TodaysFocus({ checkin, isLoading }: TodaysFocusProps) {
   }, [checkin, currentTime]);
   
   if (isLoading) {
-    return <Skeleton className="h-24 w-full" />;
+    return <Skeleton className="h-32 w-full" />;
   }
 
-  if (!checkin || !currentTask) {
+  // If checked in but not currently in a scheduled block
+  if (checkin && !currentTask) {
     return (
-       <div className="mt-6 p-6 text-center rounded-lg bg-muted/50 border-dashed border">
-          <p className="font-semibold">You're in a free block!</p>
-          <p className="text-sm text-muted-foreground">Plan your next move or take a well-deserved break.</p>
+       <div className="mt-2 p-6 text-center rounded-lg bg-muted/50 border-dashed border">
+          <p className="font-semibold text-lg flex items-center justify-center gap-2"><Check className="text-green-500"/> You're in a free block!</p>
+          <p className="text-sm text-muted-foreground">Plan your next move, take a break, or get ahead on your next task.</p>
        </div>
     );
   }
 
+  // If not checked in, we show nothing (the DailyActions card will handle the prompt)
+  if (!checkin) {
+      return null;
+  }
+
   return (
-    <div className="mt-6 p-4 rounded-lg bg-primary/10 border-2 border-primary/20 flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-             <div className="flex-shrink-0 bg-primary text-primary-foreground h-10 w-10 rounded-lg flex items-center justify-center">
-                <Target className="h-6 w-6" />
+    <div className="mt-2 p-4 rounded-lg bg-primary/10 border-2 border-primary/20 flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+             <div className="flex-shrink-0 bg-primary text-primary-foreground h-12 w-12 rounded-lg flex items-center justify-center">
+                <Target className="h-7 w-7" />
             </div>
             <div>
-                <p className="text-xs text-primary font-bold tracking-wider">CURRENT FOCUS</p>
-                <p className="text-lg font-bold leading-tight">{currentTask}</p>
+                <p className="text-sm text-primary font-bold tracking-wider">CURRENT FOCUS</p>
+                <p className="text-xl font-bold leading-tight">{currentTask}</p>
             </div>
         </div>
       <div className="flex items-center gap-3 w-full">
@@ -87,7 +93,7 @@ export function TodaysFocus({ checkin, isLoading }: TodaysFocusProps) {
         </div>
         <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
-            <p className="font-mono text-sm font-semibold">{formatDuration(timeRemaining)}</p>
+            <p className="font-mono text-lg font-semibold">{formatDuration(timeRemaining)}</p>
         </div>
       </div>
     </div>

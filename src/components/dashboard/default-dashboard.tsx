@@ -25,7 +25,6 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   return (
       <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-1 flex flex-col gap-6">
-          <DailyActions />
           <QuickAddTask />
           <DashboardCalendar />
         </div>
