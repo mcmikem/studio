@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -26,8 +25,6 @@ import {
   Wallet,
   LayoutDashboard,
   Users,
-  Receipt,
-  Columns,
   CheckCircle,
   TrendingUp,
 } from 'lucide-react';
@@ -83,7 +80,7 @@ const navConfig = {
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },
-    { href: '/management/projects', icon: Columns, label: 'Projects' },
+    { href: '/management/projects', icon: Briefcase, label: 'Projects' },
     { href: '/management/partnerships', icon: Handshake, label: 'Partnerships' },
     { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead'] },
     { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead'] },
@@ -107,6 +104,21 @@ const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
   'Intern': ['home', 'myDay', 'teamHub', 'dataReporting'],
   'Volunteer': ['home', 'myDay', 'teamHub', 'dataReporting'],
   'default': ['home', 'myDay', 'teamHub', 'dataReporting'],
+};
+
+const roleSpecificNav: Record<string, { href: string; icon: React.ElementType; label: string }[]> = {
+  'Media & Finance Lead': [
+    { href: '/management/finance', icon: DollarSign, label: 'Financial Ledger' },
+    { href: '/management/expenses', icon: Receipt, label: 'Expense Approval' },
+  ],
+  'Programs & Partnerships Manager': [
+    { href: '/management/programs', icon: Briefcase, label: 'Program Tracker' },
+    { href: '/management/partnerships', icon: Handshake, label: 'Partnership Pipeline' },
+  ],
+   'Executive Director': [
+    { href: '/management/users', icon: Users, label: 'User Management' },
+    { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
+  ],
 };
 
 
@@ -135,6 +147,7 @@ export function AppSidebar() {
   
   const userRole = effectiveRole as keyof typeof roleNavConfig;
   const allowedSections = roleNavConfig[userRole] || roleNavConfig['default'];
+  const specificNavItems = roleSpecificNav[userRole] || [];
 
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
     if (!allowedSections.includes(sectionName)) return null;
@@ -179,6 +192,28 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent data-mobile={isMobile}>
         {renderNavSection('home', 'Home')}
+        
+        {specificNavItems.length > 0 && (
+          <SidebarGroup data-mobile={isMobile}>
+            <SidebarGroupLabel data-mobile={isMobile}>My Workspace</SidebarGroupLabel>
+            <SidebarMenu>
+              {specificNavItems.map(item => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    href={item.href}
+                    isActive={isActive(item.href)}
+                    tooltip={item.label}
+                    onClick={handleLinkClick}
+                  >
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
+
         {renderNavSection('myDay', 'My Day')}
         {renderNavSection('teamHub', 'Team Hub')}
         {renderNavSection('dataReporting', 'Data & Reporting')}
