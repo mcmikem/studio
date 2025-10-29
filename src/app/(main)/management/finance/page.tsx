@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -55,6 +54,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { useUserProfile } from '@/hooks/use-user-profile';
 
 const incomeSchema = z.object({
   source: z.string().min(3, 'Source is required.'),
@@ -65,6 +65,18 @@ const incomeSchema = z.object({
 });
 
 type IncomeFormData = z.infer<typeof incomeSchema>;
+
+const expenseItemCategories = ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"] as const;
+
+const directExpenseSchema = z.object({
+  title: z.string().min(3, 'A title for the expense is required.'),
+  amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
+  date: z.string().min(1, 'Date is required.'),
+  category: z.enum(expenseItemCategories),
+});
+
+type DirectExpenseFormData = z.infer<typeof directExpenseSchema>;
+
 
 function IncomeForm({ onFormSubmit }: { onFormSubmit: () => void }) {
   const { toast } = useToast();
@@ -157,8 +169,99 @@ function IncomeForm({ onFormSubmit }: { onFormSubmit: () => void }) {
   );
 }
 
+function ExpenseForm({ onFormSubmit }: { onFormSubmit: () => void }) {
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
+  const { toast } = useToast();
+  const firestore = useFirestore();
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<DirectExpenseFormData>({
+    resolver: zodResolver(directExpenseSchema),
+    defaultValues: {
+      category: 'Rent',
+      date: format(new Date(), 'yyyy-MM-dd'),
+    },
+  });
+
+  const onSubmit = (data: DirectExpenseFormData) => {
+    if (!firestore || !user || !profile) return;
+
+    const expenseData = {
+      userId: user.uid,
+      userName: profile.name,
+      title: data.title,
+      date: data.date,
+      type: 'Reimbursement' as const, // Treat direct entry as a pre-acknowledged reimbursement
+      status: 'Acknowledged' as const,
+      items: [{ description: data.title, category: data.category, amount: data.amount }],
+      totalAmount: data.amount,
+      createdAt: serverTimestamp(),
+    };
+
+    addDocumentNonBlocking(collection(firestore, 'expenses'), expenseData);
+    toast({
+      title: 'Expense Logged!',
+      description: `${formatCurrency(data.amount)} for ${data.title} has been recorded.`,
+    });
+    reset();
+    onFormSubmit();
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+       <div className="space-y-2">
+        <Label htmlFor="title">Expense Description</Label>
+        <Input id="title" {...register('title')} placeholder="e.g., Office Rent (Q4)" />
+        {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+         <div className="space-y-2">
+          <Label htmlFor="amount">Amount (UGX)</Label>
+          <Input id="amount" type="number" {...register('amount')} placeholder="e.g., 750000" />
+          {errors.amount && <p className="text-sm text-destructive">{errors.amount.message}</p>}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="date">Date</Label>
+          <Input id="date" type="date" {...register('date')} />
+          {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="category">Category</Label>
+        <Controller
+          name="category"
+          control={control}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+              <SelectContent>
+                {expenseItemCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.category && <p className="text-sm text-destructive">{errors.category.message}</p>}
+      </div>
+      <DialogFooter>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Log Expense
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
+
+
 export default function FinancePage() {
   const [isNewIncomeDialogOpen, setIsNewIncomeDialogOpen] = useState(false);
+  const [isNewExpenseDialogOpen, setIsNewExpenseDialogOpen] = useState(false);
   const firestore = useFirestore();
 
   const incomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc')) : null, [firestore]);
@@ -226,10 +329,27 @@ export default function FinancePage() {
                 <p className="text-sm font-medium text-muted-foreground">Cash Balance</p>
                 <p className="text-2xl font-bold">{formatCurrency(cashBalance)}</p>
             </Card>
+             <Dialog open={isNewExpenseDialogOpen} onOpenChange={setIsNewExpenseDialogOpen}>
+              <DialogTrigger asChild>
+                  <Button variant="destructive" className="h-full">
+                    <ArrowDownCircle className="mr-2 h-4 w-4" />
+                    Log Expense
+                  </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                  <DialogTitle>Log Direct Expense</DialogTitle>
+                  <DialogDescription>
+                      Record an expense that doesn't require a report (e.g., rent, utilities).
+                  </DialogDescription>
+                  </DialogHeader>
+                  <ExpenseForm onFormSubmit={() => setIsNewExpenseDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
             <Dialog open={isNewIncomeDialogOpen} onOpenChange={setIsNewIncomeDialogOpen}>
             <DialogTrigger asChild>
-                <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
+                <Button className="h-full">
+                <ArrowUpCircle className="mr-2 h-4 w-4" />
                 Log Income
                 </Button>
             </DialogTrigger>
