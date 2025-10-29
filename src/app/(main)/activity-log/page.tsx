@@ -23,6 +23,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { History, User, Calendar, DollarSign, AreaChart } from 'lucide-react';
 import type { Activity } from '@/lib/types';
 import { formatDateSafe } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
@@ -111,11 +114,15 @@ export default function ActivityLogPage() {
                 ))
             ) : (
                  !isLoading && (
-                  <div className="flex flex-col items-center justify-center h-full min-h-[300px] rounded-lg border-2 border-dashed border-border text-center p-8">
-                      <History className="h-16 w-16 text-muted-foreground" />
-                      <p className="mt-4 text-lg font-semibold">No Activities Logged</p>
-                      <p className="mt-1 text-sm text-muted-foreground">Use the 'Forms Hub' to log a new activity and it will appear here.</p>
-                  </div>
+                  <EmptyState 
+                    icon={History}
+                    title="No Activities Logged"
+                    description="Activities logged via the ROI Calculator in the 'Forms Hub' will appear here."
+                  >
+                     <Button asChild className="mt-4">
+                        <Link href="/forms/activity">Log First Activity</Link>
+                    </Button>
+                  </EmptyState>
                 )
             )}
           </div>
@@ -176,11 +183,16 @@ export default function ActivityLogPage() {
                         colSpan={6}
                         className="h-48 text-center text-muted-foreground"
                       >
-                          <div className="flex flex-col items-center justify-center gap-2">
-                              <History className="h-12 w-12" />
-                              <span className="text-lg font-semibold">No Activities Logged</span>
-                              <p className="text-sm">Use the 'Forms Hub' to log a new activity and it will appear here.</p>
-                          </div>
+                          <EmptyState
+                            icon={History}
+                            title="No Activities Logged"
+                            description="Activities logged via the ROI Calculator in the 'Forms Hub' will appear here."
+                            className="min-h-0"
+                          >
+                            <Button asChild className="mt-4" variant="outline">
+                                <Link href="/forms/activity">Log First Activity</Link>
+                            </Button>
+                          </EmptyState>
                       </TableCell>
                     </TableRow>
                   )

@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { Rss, LogOut, BookOpen, Lightbulb, Check, X } from 'lucide-react';
+import { Rss, LogOut, BookOpen, Lightbulb, Check, X, Wind } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
@@ -17,6 +17,7 @@ import { Suspense } from 'react';
 import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { EmptyState } from '@/components/ui/empty-state';
 
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
     
@@ -102,11 +103,12 @@ function CheckoutStream() {
                 checkouts.map(checkout => <CheckoutCard key={checkout.id} checkout={checkout} />)
             ) : (
                  !isLoading && (
-                    <div className="flex flex-col items-center justify-center h-full min-h-[400px] rounded-lg border-2 border-dashed border-border text-center p-8">
-                        <LogOut className="h-16 w-16 text-muted-foreground" />
-                        <p className="mt-4 text-lg font-semibold">No Check-outs Found</p>
-                        <p className="mt-1 text-sm text-muted-foreground">Team members' end-of-day reports will appear here.</p>
-                    </div>
+                    <EmptyState
+                        icon={Wind}
+                        title="Quiet day so far!"
+                        description="No check-outs have been submitted yet. Be the first to report your progress."
+                        className="min-h-[400px]"
+                    />
                 )
             )}
         </div>

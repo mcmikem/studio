@@ -17,6 +17,7 @@ import { Suspense } from 'react';
 import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { EmptyState } from '@/components/ui/empty-state';
 
 function CheckinCard({ checkin }: { checkin: Checkin }) {
     return (
@@ -84,11 +85,12 @@ function CheckinStream() {
                 checkins.map(checkin => <CheckinCard key={checkin.id} checkin={checkin} />)
             ) : (
                  !isLoading && (
-                    <div className="flex flex-col items-center justify-center h-full min-h-[400px] rounded-lg border-2 border-dashed border-border text-center p-8">
-                        <LogIn className="h-16 w-16 text-muted-foreground" />
-                        <p className="mt-4 text-lg font-semibold">No Check-ins Found</p>
-                        <p className="mt-1 text-sm text-muted-foreground">Team members' daily plans will appear here once they check in.</p>
-                    </div>
+                    <EmptyState
+                        icon={LogIn}
+                        title="No Check-ins Found"
+                        description="Team members' daily plans will appear here once they use the AI Daily Planner."
+                        className="min-h-[400px]"
+                    />
                 )
             )}
         </div>
