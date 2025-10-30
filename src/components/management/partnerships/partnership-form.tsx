@@ -13,7 +13,7 @@ import { z } from 'zod';
 import { useFirestore } from '@/firebase/provider';
 import { useToast } from '@/hooks/use-toast';
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc, serverTimestamp } from "firebase/firestore";
+import { collection, doc, serverTimestamp, Timestamp } from "firebase/firestore";
 import type { Partnership } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -94,7 +94,7 @@ export function PartnershipForm({
   const onSubmit = async (data: z.infer<typeof partnershipSchema>) => {
     if (!firestore) return;
 
-    const partnershipData: Partial<Partnership> = { ...data, lastContacted: serverTimestamp() as any, };
+    const partnershipData: Partial<Partnership> = { ...data, lastContacted: serverTimestamp() as Timestamp, };
 
     if (partnership) {
         const partnershipRef = doc(firestore, 'partnerships', partnership.id);
@@ -105,7 +105,7 @@ export function PartnershipForm({
         });
     } else {
         const partnershipsCollection = collection(firestore, 'partnerships');
-        partnershipData.createdAt = serverTimestamp() as any;
+        partnershipData.createdAt = serverTimestamp() as Timestamp;
         partnershipData.health = "Strong"; // Default health for new partners
         addDocumentNonBlocking(partnershipsCollection, partnershipData);
         toast({

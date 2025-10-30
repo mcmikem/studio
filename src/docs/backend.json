@@ -121,7 +121,7 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of when the partnership was created." },
         "lastContacted": { "type": "string", "format": "date-time", "description": "Server timestamp of the last interaction with the partner." }
       },
-      "required": ["name", "type", "contactPerson", "contactEmail", "status", "nextStep"]
+      "required": ["name", "type", "contactPerson", "contactEmail", "status", "nextStep", "createdAt", "lastContacted"]
     },
     "Activity": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -853,4 +853,3 @@
 }
 
     
-

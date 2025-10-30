@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -565,8 +566,8 @@ export default function FinancePage() {
                         <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
                     )}
                     </TableCell>
-                    <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : (t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged' ? 'text-red-600' : 'text-muted-foreground'}`}>
-                    {t.transactionType === 'expense' && (t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged' ? `(${(formatCurrency(t.amount))})` : formatCurrency(t.amount)}
+                    <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : ((t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged') ? 'text-red-600' : 'text-muted-foreground'}`}>
+                      {t.transactionType === 'expense' && ((t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged') ? `(${formatCurrency(t.amount)}) (Pending)` : formatCurrency(t.amount)}
                     </TableCell>
                     {canManageFinances && (
                         <TableCell className="text-right">
