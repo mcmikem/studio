@@ -431,6 +431,11 @@
             "type": "array",
             "items": { "type": "string" },
             "description": "A list of user IDs who have read the alert."
+        },
+        "targetUserIds": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "A list of user IDs this alert is specifically for. If empty, it's a broadcast."
         }
       },
       "required": ["type", "message", "priority", "action", "creatorId", "createdAt"]
@@ -775,6 +780,8 @@
         "schema": {
             "$ref": "#/entities/Alert"
         },
+        "read": "request.auth.uid in resource.data.targetUserIds || resource.data.targetUserIds.size() == 0",
+        "list": "request.auth.uid in resource.data.targetUserIds || resource.data.targetUserIds.size() == 0",
         "description": "Stores system-wide alerts and notifications."
     },
     "/key-results/{keyResultId}": {
@@ -787,6 +794,8 @@
       "schema": {
         "$ref": "#/entities/Expense"
       },
+      "read": "request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Finance Lead' || resource.data.userId == request.auth.uid)",
+      "list": "request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Finance Lead')",
       "description": "Stores expense reports submitted by users."
     },
     "/income/{incomeId}": {
@@ -851,5 +860,6 @@
     }
   }
 }
-
     
+    
+
