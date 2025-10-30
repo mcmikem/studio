@@ -482,6 +482,11 @@ export default function PartnerProfilePage() {
                     </div>
                     
                 </CardContent>
+                 <CardFooter>
+                    <p className="text-xs text-muted-foreground">
+                        Last Contacted: {formatDateSafe(partner.lastContacted)}
+                    </p>
+                </CardFooter>
             </Card>
         </div>
         <div className="lg:col-span-1">

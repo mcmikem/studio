@@ -20,7 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, serverTimestamp } from 'firebase/firestore';
-import type { Partnership, Proposal } from '@/lib/types';
+import type { Proposal } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Handshake, Goal, Building, PlusCircle, Edit, Trash2, Search, Loader2, Wand } from 'lucide-react';
 import { useState } from 'react';
@@ -40,6 +40,7 @@ import { format } from 'date-fns';
 import { findGrants, type GrantFinderOutput } from '@/ai/flows/grant-finder-flow';
 import { Textarea } from '@/components/ui/textarea';
 import { writeConceptNote } from '@/ai/flows/grant-writer-flow';
+import { PartnershipForm } from '@/components/management/partnerships/partnership-form';
 
 
 const formatCurrency = (value: number) => {
@@ -568,16 +569,7 @@ export default function ResourcesPage() {
 
       <GrantDiscovery />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-            <FundingPipeline />
-        </div>
-        <div>
-            <DonorDirectory />
-        </div>
-      </div>
-      
-       <ProposalTracker />
+      <ProposalTracker />
     </div>
   );
 }

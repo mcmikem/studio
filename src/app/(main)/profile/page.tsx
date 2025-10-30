@@ -81,7 +81,7 @@ function RecentUserCheckouts() {
               key={checkout.id}
               className="flex flex-col border-b pb-3 last:border-b-0"
             >
-              <p className="text-sm text-muted-foreground">{checkout.task}</p>
+              <p className="text-sm text-muted-foreground">{checkout.tasks[0]?.description || 'No task description'}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {formatDateSafe(checkout.timestamp)}
               </p>
