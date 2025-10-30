@@ -44,11 +44,11 @@ const grantFinderPrompt = ai.definePrompt(
 export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOutput> {
     const llmResponse = await ai.generate({
         model: 'googleai/gemini-2.5-flash',
-        tools: [grantFinderPrompt],
         prompt: `Please find grant opportunities related to the following query: "${input.query}"`,
         config: {
             temperature: 0.2, // Be more factual and less creative
         },
+        tools: [findGrantOpportunities],
     });
 
     const { output } = llmResponse;
