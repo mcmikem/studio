@@ -20,7 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, serverTimestamp } from 'firebase/firestore';
-import type { Proposal } from '@/lib/types';
+import type { Partnership, Proposal } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Handshake, Goal, Building, PlusCircle, Edit, Trash2, Search, Loader2, Wand } from 'lucide-react';
 import { useState } from 'react';
@@ -302,7 +302,7 @@ function FundingPipeline() {
     if (!firestore) return null;
     return query(
       collection(firestore, 'partnerships'),
-      where('status', '==', 'Potential'),
+      where('status', '==', 'Prospecting'),
       orderBy('name')
     );
   }, [firestore]);
@@ -569,7 +569,16 @@ export default function ResourcesPage() {
 
       <GrantDiscovery />
 
-      <ProposalTracker />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+            <FundingPipeline />
+        </div>
+        <div>
+            <DonorDirectory />
+        </div>
+      </div>
+      
+       <ProposalTracker />
     </div>
   );
 }

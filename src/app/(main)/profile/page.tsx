@@ -241,7 +241,7 @@ function UserProfileCard() {
                         <DropdownMenuLabel>Change My Role</DropdownMenuLabel>
                         <DropdownMenuGroup>
                           {userRoles.map(role => (
-                              <DropdownMenuItem key={role} onSelect={() => handleRoleChange(role)}>
+                              <DropdownMenuItem key={role} onSelect={() => handleRoleChange(role)} disabled={role === profile.role}>
                                   {role}
                               </DropdownMenuItem>
                           ))}
