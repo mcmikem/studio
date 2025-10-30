@@ -252,9 +252,9 @@ export function CheckoutForm() {
                               />
                               {taskStatus === 'Not Done' && (
                                   <div className="mt-3 space-y-1 animate-in fade-in">
-                                      <Label htmlFor={`reason-${index}`} className="text-xs">Reason (optional)</Label>
+                                      <Label htmlFor={`tasks.${index}.reason`} className="text-xs">Reason (optional)</Label>
                                       <Textarea
-                                          id={`reason-${index}`}
+                                          id={`tasks.${index}.reason`}
                                           placeholder="e.g., Ran out of time, waiting for partner feedback..."
                                           className="min-h-[60px]"
                                           {...register(`tasks.${index}.reason`)}
