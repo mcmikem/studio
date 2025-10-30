@@ -76,7 +76,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const isEditMode = !!expense;
-  const financeRoles = ['Executive Director', 'Media & Finance Lead'];
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator'];
   const canSubmitForOthers = profile && financeRoles.includes(profile.role);
 
   const {
@@ -190,15 +190,13 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             });
 
             // Create an alert for management
-            if (profile.role === 'Executive Director' || profile.role === 'Media & Finance Lead') {
-                 await createAlert({
-                    type: 'Urgent',
-                    message: `${expenseUserName} submitted an expense report for ${formatCurrency(finalTotal)}.`,
-                    priority: 'High',
-                    action: `/management/expenses?highlight=${docRef.id}`,
-                    creatorId: user.uid,
-                });
-            }
+            await createAlert({
+                type: 'Urgent',
+                message: `${expenseUserName} submitted an expense report for ${formatCurrency(finalTotal)}.`,
+                priority: 'High',
+                action: `/management/expenses?highlight=${docRef.id}`,
+                creatorId: user.uid,
+            });
         }
         
         if (onSuccess) {

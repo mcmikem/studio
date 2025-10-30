@@ -152,7 +152,7 @@ function ExpensesContent() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        if (expense.userId !== currentUser.uid && (status === 'Approved' || status === 'Rejected' || status === 'Disbursed')) {
+        if (expense.userId !== currentUser.uid) {
             let message = '';
             if (status === 'Approved') {
                 message = `Your expense report for "${expense.title}" has been approved and is awaiting disbursement.`;
