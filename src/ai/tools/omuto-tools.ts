@@ -1,4 +1,5 @@
 
+'use server';
 
 /**
  * @fileOverview A collection of Genkit tools for accessing Omuto Foundation data.

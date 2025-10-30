@@ -29,10 +29,6 @@ if (fs.existsSync(serviceAccountPath)) {
 
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
-import { defineGcpAuth } from '@genkit-ai/google-genai/auth';
-import {v2} from '@google-cloud/translate';
-import {google} from 'googleapis';
-import wav from 'wav';
 import { initializeFirebase } from '@/firebase/server';
 
 // Initialize Firebase Admin SDK first
@@ -46,17 +42,17 @@ genkit({
 
 // Make sure all flows are exported from here.
 // Note: We only export the functions themselves, not the Genkit flow objects.
-export { createAlert } from './flows/create-alert-flow';
-export { dailyPlannerAI } from './flows/daily-planner-flow';
-export { generateImpactStory } from './flows/impact-story-generator';
-export { omutoAIFlow } from './flows/omuto-ai-flow';
-export { generateSmartReminders } from './flows/smart-reminders-flow';
-export { findGrants } from './flows/grant-finder-flow';
-export { writeConceptNote } from './flows/grant-writer-flow';
-export { searchOmuto } from './flows/global-search-flow';
-export { parseWorkplan } from './flows/parse-workplan-flow';
-export { processTestimony } from './flows/testimony-processor-flow';
-export { analyzeProgramQualitativeData } from './flows/qualitative-analysis-flow';
+export * from './flows/create-alert-flow';
+export * from './flows/daily-planner-flow';
+export * from './flows/impact-story-generator';
+export * from './flows/omuto-ai-flow';
+export * from './flows/smart-reminders-flow';
+export * from './flows/grant-finder-flow';
+export * from './flows/grant-writer-flow';
+export * from './flows/global-search-flow';
+export * from './flows/parse-workplan-flow';
+export * from './flows/testimony-processor-flow';
+export * from './flows/qualitative-analysis-flow';
 
 
 // NOTE: omuto-tools now only contains server-side safe tools.
