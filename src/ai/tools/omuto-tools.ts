@@ -12,6 +12,7 @@ import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc
 import { z } from 'zod';
 import { PartnershipSchema, SearchResultItemSchema } from '@/lib/types';
 import { format } from 'date-fns';
+import { createAlert } from '../flows/create-alert-flow';
 
 
 export const findGrantOpportunities = ai.defineTool(
@@ -238,6 +239,15 @@ export const createCheckout = ai.defineTool(
             };
 
             await addDoc(collection(firestore, 'checkouts'), checkoutData);
+
+            // Create an alert for management
+            await createAlert({
+                type: 'Info',
+                priority: 'Low',
+                message: `${userProfile.name} has submitted their end-of-day report.`,
+                action: '/stream',
+                creatorId: userId,
+            });
 
             return { success: true, message: `Successfully submitted the checkout report for ${userProfile.name}.` };
         } catch (error: any) {
