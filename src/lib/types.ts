@@ -176,6 +176,7 @@ export type Alert = {
     creatorId: string;
     createdAt?: Timestamp;
     readBy?: string[];
+    targetUserIds?: string[];
 }
 
 export type Task = {

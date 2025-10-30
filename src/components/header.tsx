@@ -15,27 +15,18 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useAuth, useUser, useCollection, useMemoFirebase, useFirestore, updateDocumentNonBlocking } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { Badge } from './ui/badge';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
-import { collection, query, limit, orderBy, where, Timestamp, arrayUnion, writeBatch, doc } from 'firebase/firestore';
-import type { Alert as AlertType } from '@/lib/types';
-import { formatDateSafe } from '@/lib/utils';
-import { Skeleton } from './ui/skeleton';
-import { useState, useEffect, useMemo } from 'react';
+import { NotificationsList } from './notifications/notifications-list';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useViewAs } from '@/hooks/use-view-as';
-import { format, subDays } from 'date-fns';
+import { format } from 'date-fns';
 import { useCommandState } from '@/hooks/use-command-state';
-
-const alertIcons: { [key: string]: React.ReactNode } = {
-    Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
-    Reminder: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
-    Info: <Info className="h-5 w-5 text-blue-500" />,
-};
 
 
 function QuickAddMenu() {
@@ -88,57 +79,14 @@ function QuickAddMenu() {
 }
 
 function NotificationsMenu() {
-    const firestore = useFirestore();
     const { user } = useUser();
-    
-    const alertsQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
-        const threeDaysAgo = subDays(new Date(), 3);
-        return query(
-            collection(firestore, 'alerts'), 
-            where('createdAt', '>=', Timestamp.fromDate(threeDaysAgo)),
-            orderBy('createdAt', 'desc'), 
-            limit(15) // Fetch a bit more to find unread ones
-        );
-    }, [user, firestore]);
-
-    const { data: alerts, isLoading } = useCollection<AlertType>(alertsQuery);
-
-    const hasUnread = useMemo(() => {
-        if (!alerts || !user) return false;
-        return alerts.some(alert => !alert.readBy?.includes(user.uid));
-    }, [alerts, user]);
-
-    const handleOpenChange = async (open: boolean) => {
-        if (open || !alerts || !user || !firestore) return;
-        
-        const unreadAlerts = alerts.filter(alert => !alert.readBy?.includes(user.uid));
-        if (unreadAlerts.length === 0) return;
-
-        // Mark these alerts as read
-        const batch = writeBatch(firestore);
-        unreadAlerts.forEach(alert => {
-            const alertRef = doc(firestore, 'alerts', alert.id);
-            batch.update(alertRef, {
-                readBy: arrayUnion(user.uid)
-            });
-        });
-        
-        try {
-            await batch.commit();
-        } catch (error) {
-            console.error("Failed to mark notifications as read:", error);
-        }
-    };
+    const [hasUnread, setHasUnread] = useState(false);
 
     return (
-        <DropdownMenu onOpenChange={handleOpenChange}>
+        <DropdownMenu>
             <DropdownMenuTrigger asChild>
                  <Button variant="ghost" size="icon" className="relative text-foreground hover:bg-muted/50">
                     <Bell className="h-5 w-5" />
-                    {!hasUnread && !isLoading && alerts && alerts.length > 0 && (
-                        <CheckCircle className="absolute top-1 right-1 h-3 w-3 text-green-400" />
-                    )}
                     {hasUnread && (
                         <span className="absolute top-1.5 right-1.5 flex h-2.5 w-2.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -148,43 +96,8 @@ function NotificationsMenu() {
                     <span className="sr-only">Notifications</span>
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80" align="end">
-                <DropdownMenuLabel>
-                    <div className="flex items-center justify-between">
-                        <span>Recent Notifications</span>
-                        {alerts && alerts.length > 0 && <Badge>{alerts.filter(a => !a.readBy?.includes(user?.uid || '')).length}</Badge>}
-                    </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                    {isLoading && (
-                        <div className="p-2 space-y-3">
-                            <Skeleton className="h-12 w-full" />
-                            <Skeleton className="h-12 w-full" />
-                        </div>
-                    )}
-                    {alerts && alerts.length > 0 ? (
-                        alerts.slice(0, 5).map(alert => (
-                            <DropdownMenuItem key={alert.id} asChild className={cn("h-auto items-start", !(alert.readBy || []).includes(user?.uid || '') && 'bg-accent/50')}>
-                                <Link href={alert.action} className="flex gap-3 py-2">
-                                     <div className="mt-1">{alertIcons[alert.type]}</div>
-                                     <div>
-                                        <p className="text-sm font-medium leading-snug whitespace-normal">{alert.message}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">{formatDateSafe(alert.createdAt)}</p>
-                                     </div>
-                                </Link>
-                            </DropdownMenuItem>
-                        ))
-                    ) : (
-                        !isLoading && <p className="p-4 text-sm text-center text-muted-foreground">No new notifications.</p>
-                    )}
-                </DropdownMenuGroup>
-                 <DropdownMenuSeparator />
-                 <DropdownMenuItem asChild>
-                    <Link href="/notifications" className="justify-center">
-                        View all notifications
-                    </Link>
-                </DropdownMenuItem>
+            <DropdownMenuContent className="w-96" align="end">
+                <NotificationsList onUnreadStatusChange={setHasUnread} />
             </DropdownMenuContent>
         </DropdownMenu>
     )

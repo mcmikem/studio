@@ -16,7 +16,7 @@ export default function NotificationsPage() {
           A complete history of all your alerts and updates.
         </p>
       </header>
-      <NotificationsList />
+      <NotificationsList isPage />
     </div>
   );
 }

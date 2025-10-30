@@ -37,8 +37,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, doc, where } from 'firebase/firestore';
-import type { Expense } from '@/lib/types';
+import { collection, query, orderBy, doc, where, getDocs } from 'firebase/firestore';
+import type { Expense, User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -90,6 +90,13 @@ function ExpensesContent() {
   
   const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery);
   
+  // Query for users who can manage finances to target notifications
+  const financeUsersQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'users'), where('role', 'in', ['Executive Director', 'Media & Finance Lead']));
+  }, [firestore]);
+  const { data: financeUsers } = useCollection<User>(financeUsersQuery);
+
   const chartData = useMemo(() => {
     if (!expenses) return [];
     
@@ -153,37 +160,46 @@ function ExpensesContent() {
         });
 
         // --- Notification Logic ---
+        let messageToUser = '';
+        let targetUserIds: string[] | undefined;
+        let priority: 'High' | 'Medium' | 'Low' = 'Medium';
+        let action = '/my-finances';
 
         // 1. Notify the original user about the status change.
         if (expense.userId !== currentUser.uid) {
-            let messageToUser = '';
+            targetUserIds = [expense.userId];
             if (status === 'Approved') {
                 messageToUser = `Your expense report for "${expense.title}" has been approved and is awaiting disbursement.`;
             } else if (status === 'Rejected') {
                 messageToUser = `Your expense report for "${expense.title}" has been rejected.`;
+                priority = 'High';
             } else if (status === 'Disbursed') {
                 messageToUser = `Funds for "${expense.title}" have been disbursed. Please go to "My Finances" to acknowledge receipt.`;
+                priority = 'High';
             }
 
             if (messageToUser) {
               await createAlert({
                   type: status === 'Rejected' ? 'Urgent' : 'Info',
                   message: messageToUser,
-                  priority: status === 'Rejected' ? 'High' : 'Medium',
-                  action: `/my-finances`, 
+                  priority: priority,
+                  action: action, 
                   creatorId: currentUser.uid,
+                  targetUserIds: targetUserIds,
               });
             }
         }
 
         // 2. If approved, notify the finance team to disburse funds.
-        if (status === 'Approved') {
+        if (status === 'Approved' && financeUsers) {
+            const financeTeamIds = financeUsers.map(u => u.id);
             await createAlert({
                 type: 'Reminder',
                 priority: 'High',
                 message: `An expense report for ${expense.userName} (${formatCurrency(expense.totalAmount)}) is approved and needs disbursement.`,
                 action: `/management/expenses?highlight=${expense.id}`,
                 creatorId: currentUser.uid,
+                targetUserIds: financeTeamIds,
             });
         }
 

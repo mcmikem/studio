@@ -16,6 +16,7 @@ const AlertInputSchema = z.object({
   priority: z.enum(['High', 'Medium', 'Low']),
   action: z.string(),
   creatorId: z.string().describe("The ID of the user creating the alert."),
+  targetUserIds: z.array(z.string()).optional().describe("An array of user IDs to target with this notification. If empty, it's a broadcast."),
 });
 
 export type AlertInput = z.infer<typeof AlertInputSchema>;
@@ -39,6 +40,7 @@ const createAlertFlow = ai.defineFlow(
         ...alertData,
         createdAt: serverTimestamp(),
         readBy: [],
+        targetUserIds: alertData.targetUserIds || [], // Ensure the field exists
       };
 
       const docRef = await alertsCollection.add(newAlert);
