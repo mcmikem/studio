@@ -787,6 +787,8 @@
       "schema": {
         "$ref": "#/entities/Expense"
       },
+      "read": "request.auth != null &amp;&amp; (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media &amp; Finance Lead')",
+      "list": "request.auth != null &amp;&amp; (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media &amp; Finance Lead')",
       "description": "Stores expense reports submitted by users."
     },
     "/income/{incomeId}": {
@@ -851,4 +853,5 @@
     }
   }
 }
+    
     
