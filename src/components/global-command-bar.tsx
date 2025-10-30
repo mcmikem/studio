@@ -12,7 +12,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { useCommandState } from '@/hooks/use-command-state';
-import { searchOmuto } from '@/ai/flows/global-search-flow';
+import { searchOmuto } from '@/ai/tools/omuto-tools';
 import { Loader2, User, FileText, FolderKanban } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useDebounce } from 'use-debounce';
@@ -34,7 +34,7 @@ export function GlobalCommandBar() {
       setIsLoading(true);
       try {
         const res = await searchOmuto({ query: debouncedQuery });
-        setResults(res.results || []);
+        setResults(res || []);
       } catch (error) {
         console.error('Search failed:', error);
       } finally {

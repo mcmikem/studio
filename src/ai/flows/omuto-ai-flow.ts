@@ -1,4 +1,5 @@
 
+
 'use server';
 
 /**
@@ -12,6 +13,7 @@ import { z } from 'genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { createCheckout, getRecentCheckins, getRecentCheckouts, searchOmuto } from '../tools/omuto-tools';
 import type { SearchResultItemSchema } from '@/lib/types';
+import { format } from 'date-fns';
 
 // Define the structure of a single message in the chat history
 const HistoryMessageSchema = z.object({
@@ -56,18 +58,35 @@ Your knowledge is not just static; you can learn about the team's current activi
             }
         });
         
-        const toolResponse = llmResponse.toolRequest?.responses[0];
-        let answer = toolResponse
-          ? String(toolResponse.response)
-          : llmResponse.text;
+        const toolRequest = llmResponse.toolRequest;
+        let answer = llmResponse.text;
 
-        // A special handler to format search results nicely
-        if (llmResponse.toolRequest?.name === 'searchOmuto' && Array.isArray(toolResponse?.response)) {
-            const searchResults = toolResponse.response as z.infer<typeof SearchResultItemSchema>[];
-            if (searchResults.length > 0) {
-                answer = "I found the following information:\n" + searchResults.map(r => `- **[${r.title}](${r.url})** - Type: ${r.type}`).join('\n');
+        if (toolRequest) {
+            const toolResponse = toolRequest.responses[0];
+            const toolOutput = toolResponse?.response;
+
+            // A special handler to format search results nicely
+            if (toolRequest.name === 'searchOmuto' && Array.isArray(toolOutput)) {
+                const searchResults = toolOutput as z.infer<typeof SearchResultItemSchema>[];
+                if (searchResults.length > 0) {
+                    answer = "I found the following information:\n" + searchResults.map(r => `- **[${r.title}](${r.url})** - Type: ${r.type}`).join('\n');
+                } else {
+                    answer = "I couldn't find any information matching your query.";
+                }
+            } else if (toolRequest.name === 'getRecentCheckins' && Array.isArray(toolOutput)) {
+                if (toolOutput.length > 0) {
+                    answer = `Here are today's check-ins:\n` + toolOutput.map((c: any) => `- **${c.name}** is focusing on: *${c.primaryMission}*`).join('\n');
+                } else {
+                    answer = "No one has checked in yet today.";
+                }
+            } else if (toolRequest.name === 'getRecentCheckouts' && Array.isArray(toolOutput)) {
+                 if (toolOutput.length > 0) {
+                    answer = `Here are the latest check-outs from the team:\n` + toolOutput.map((c: any) => `- **${c.name}**: Completed *${c.tasks[0]?.description || 'their tasks'}*. Their key learning was "${c.learning || 'N/A'}".`).join('\n');
+                } else {
+                    answer = "There are no recent check-outs to display.";
+                }
             } else {
-                answer = "I couldn't find any information matching your query.";
+                answer = String(toolOutput);
             }
         }
 

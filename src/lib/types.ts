@@ -47,7 +47,6 @@ export type Checkout = {
       status: 'Done' | 'Not Done';
       reason?: string;
   }[];
-  task: string; // Keep for fallback compatibility
   time?: string;
   timestamp?: Timestamp;
   learning?: string;

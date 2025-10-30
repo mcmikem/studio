@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -17,9 +17,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc, addDoc } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc } from 'firebase/firestore';
 import type { TeamWeeklyPlan, User, PriorityItem } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2, Wand } from 'lucide-react';
@@ -328,7 +328,7 @@ function TeamWorkplanForm({
                  <div className="space-y-2">
                     <Label htmlFor="message" className="text-lg font-semibold">Weekly Message/Focus</Label>
                     <Textarea id="message" {...register('message')} placeholder="e.g., 'This week is all about finalizing our Q3 reports and preparing for the partner visits...'" />
-                    {errors.message && <p className="text-sm text-destructive">{`${errors.message.message}`}</p>}
+                    {errors.message && <p className="text-sm text-destructive">{errors.message.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="status" className="text-lg font-semibold">Status</Label>
@@ -366,47 +366,43 @@ export default function TeamWorkplansPage() {
   const [isLoadingPlan, setIsLoadingPlan] = useState(true);
 
   const firestore = useFirestore();
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(
-    useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore])
-  );
+  const usersQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'users'), orderBy('name')) : null), [firestore]);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const weekStartDate = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEndDate = endOfWeek(currentDate, { weekStartsOn: 1 });
 
-  const fetchTeamPlan = useCallback(async () => {
-    if (!firestore) return;
-    setIsLoadingPlan(true);
-
+  const teamPlanQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
-    startOfSelectedWeek.setHours(0, 0, 0, 0); // Normalize to midnight
+    startOfSelectedWeek.setHours(0, 0, 0, 0);
     const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
     endOfSelectedWeek.setHours(23, 59, 59, 999);
-
-    const q = query(
+    
+    return query(
       collection(firestore, 'team-workplans'),
       where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
       where('weekOf', '<=', Timestamp.fromDate(endOfSelectedWeek)),
       limit(1)
     );
-
-    try {
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        setCurrentPlan({ id: doc.id, ...doc.data() } as TeamWeeklyPlan);
-      } else {
-        setCurrentPlan(null);
-      }
-    } catch (e) {
-      console.error("Error fetching team workplan:", e);
-    } finally {
-      setIsLoadingPlan(false);
-    }
   }, [firestore, currentDate]);
 
+  const { data: teamPlans, isLoading: isLoadingTeamPlans } = useCollection<TeamWeeklyPlan>(teamPlanQuery);
+  
   useEffect(() => {
-    fetchTeamPlan();
-  }, [fetchTeamPlan]);
+    if (!isLoadingTeamPlans) {
+      setCurrentPlan(teamPlans?.[0] || null);
+      setIsLoadingPlan(false);
+    } else {
+      setIsLoadingPlan(true);
+    }
+  }, [teamPlans, isLoadingTeamPlans]);
+
+
+  const fetchTeamPlan = useCallback(() => {
+    // This function can be used to manually refetch if the useCollection doesn't update automatically after a save.
+    // For now, useCollection should handle it.
+  }, []);
 
   const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
   const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));

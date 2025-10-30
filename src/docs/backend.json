@@ -121,7 +121,7 @@
         "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of when the partnership was created." },
         "lastContacted": { "type": "string", "format": "date-time", "description": "Server timestamp of the last interaction with the partner." }
       },
-      "required": ["name", "type", "contactPerson", "contactEmail", "status", "nextStep", "createdAt", "lastContacted"]
+      "required": ["name", "type", "contactPerson", "contactEmail", "status", "nextStep"]
     },
     "Activity": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -830,6 +830,12 @@
             "$ref": "#/entities/Message"
         },
         "description": "Stores team chat messages."
+    },
+    "/users/{userId}/ai-chats/{chatId}": {
+        "schema": {
+            "$ref": "#/entities/Message"
+        },
+        "description": "Stores private AI chat messages for a specific user."
     },
     "/testimonies/{testimonyId}": {
       "schema": {

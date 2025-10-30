@@ -9,7 +9,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server';
 import { serverTimestamp } from 'firebase/firestore';
-import { addDocumentNonBlocking } from '@/firebase';
 
 const AlertInputSchema = z.object({
   type: z.enum(['Urgent', 'Reminder', 'Info']),

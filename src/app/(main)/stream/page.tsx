@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -27,7 +28,7 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
     // This provides backward compatibility.
     const tasksArray = Array.isArray(checkout.tasks) 
         ? checkout.tasks 
-        : [{ description: checkout.task, status: 'Done' as const }];
+        : [];
 
     const completedTasks = tasksArray.filter(t => t.status === 'Done');
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');

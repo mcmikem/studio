@@ -1,4 +1,5 @@
 
+
 /**
  * @fileOverview A collection of Genkit tools for accessing Omuto Foundation data.
  * IMPORTANT: These tools may use the Admin SDK and should only be used in server-side flows.
@@ -226,7 +227,7 @@ export const createCheckout = ai.defineTool(
 
             const checkoutData = {
                 userId,
-                task,
+                tasks: [{ description: task, status: 'Done' }],
                 learning: learning || "",
                 tomorrowPlan: tomorrowPlan || "",
                 name: userProfile.name,
@@ -296,7 +297,7 @@ export const getRecentCheckouts = ai.defineTool(
         outputSchema: z.array(
             z.object({
                 name: z.string(),
-                task: z.string(),
+                tasks: z.array(z.object({ description: z.string(), status: z.string() })),
                 learning: z.string().optional(),
                 tomorrowPlan: z.string().optional(),
             })
@@ -320,7 +321,7 @@ export const getRecentCheckouts = ai.defineTool(
             const data = doc.data();
             return {
                 name: data.name,
-                task: data.task,
+                tasks: Array.isArray(data.tasks) ? data.tasks : [{ description: data.task, status: 'Done'}],
                 learning: data.learning,
                 tomorrowPlan: data.tomorrowPlan,
             };
