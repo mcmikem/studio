@@ -50,7 +50,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
-import { isPast, subDays, startOfMonth } from 'date-fns';
+import { isPast, subDays, startOfMonth, isAfter } from 'date-fns';
 import { formatCurrency } from '@/lib/utils';
 import { PartnershipForm } from '@/components/management/partnerships/partnership-form';
 
@@ -68,30 +68,35 @@ const healthColors: { [key: string]: string } = {
     "At Risk": "border-red-500 bg-red-500/10 text-red-500",
 };
 
-function UrgentActions({ partnerships }: { partnerships: Partnership[] | null }) {
+function UrgentActions({ partnerships, isLoading }: { partnerships: Partnership[] | null, isLoading: boolean }) {
     const actions = useMemo(() => {
-        if (!partnerships) return { overdue: [], atRisk: [], recent: [] };
+        if (!partnerships) return { overdue: [], upcoming: [], recent: [] };
         
         const overdue: Partnership[] = [];
-        const atRisk: Partnership[] = [];
-        const thirtyDaysAgo = subDays(new Date(), 30);
+        const upcoming: Partnership[] = [];
         const sevenDaysAgo = subDays(new Date(), 7);
+        const today = new Date();
 
-        partnerships.forEach(p => {
-             // A very basic check for overdue items. This could be improved with a dedicated due date field.
-            if (p.nextStep?.toLowerCase().includes("due") || p.nextStep?.toLowerCase().includes("deadline")) {
+        const activeOrNegotiating = partnerships.filter(p => p.status === 'Active' || p.status === 'Negotiation');
+
+        activeOrNegotiating.forEach(p => {
+            const nextStepLower = p.nextStep.toLowerCase();
+            if (nextStepLower.includes("due") || nextStepLower.includes("deadline")) {
                  overdue.push(p);
             }
-             // Check for stale partnerships
-            if (p.lastContacted && p.lastContacted.toDate && isPast(subDays(p.lastContacted.toDate(), -30)) && p.status !== 'Stalled' && p.status !== 'Active') {
-                atRisk.push(p);
+            if (nextStepLower.includes("meeting") || nextStepLower.includes("call") || nextStepLower.includes("review")) {
+                 upcoming.push(p);
             }
         });
+        
+        const recent = partnerships.filter(p => p.createdAt && p.createdAt.toDate && isAfter(p.createdAt.toDate(), sevenDaysAgo));
 
-        const recent = partnerships.filter(p => p.createdAt && p.createdAt.toDate() && isPast(subDays(p.createdAt.toDate(), -7)));
-
-        return { overdue, atRisk, recent };
+        return { overdue, upcoming, recent };
     }, [partnerships]);
+    
+    if (isLoading) {
+        return <Skeleton className="h-48 w-full" />;
+    }
 
     return (
         <Card>
@@ -110,12 +115,12 @@ function UrgentActions({ partnerships }: { partnerships: Partnership[] | null })
                         ))}
                     </div>
                 )}
-                 {actions.atRisk.length > 0 && (
+                 {actions.upcoming.length > 0 && (
                     <div className="space-y-2">
-                        <h4 className="font-semibold text-sm flex items-center gap-2 text-yellow-500"><Clock /> At Risk (Stale)</h4>
-                        {actions.atRisk.map(p => (
+                        <h4 className="font-semibold text-sm flex items-center gap-2 text-yellow-500"><Clock /> Upcoming</h4>
+                        {actions.upcoming.map(p => (
                              <Link key={p.id} href={`/management/partnerships/${p.id}`} className="block p-2 bg-yellow-500/10 rounded-md hover:bg-yellow-500/20 text-sm">
-                                No contact with <strong>{p.name}</strong> in over 30 days.
+                                 <strong>{p.name}:</strong> {p.nextStep}
                             </Link>
                         ))}
                     </div>
@@ -130,7 +135,7 @@ function UrgentActions({ partnerships }: { partnerships: Partnership[] | null })
                         ))}
                     </div>
                 )}
-                {actions.overdue.length === 0 && actions.atRisk.length === 0 && actions.recent.length === 0 && (
+                {actions.overdue.length === 0 && actions.upcoming.length === 0 && actions.recent.length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-4">No urgent actions or recent wins.</p>
                 )}
             </CardContent>
@@ -266,7 +271,7 @@ export default function PartnershipsPage() {
                     <PartnershipStats partnerships={partnerships} isLoading={isLoading} />
                 </div>
                 <div>
-                     <UrgentActions partnerships={partnerships} />
+                     <UrgentActions partnerships={partnerships} isLoading={isLoading} />
                 </div>
             </div>
 
