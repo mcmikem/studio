@@ -19,6 +19,7 @@ import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { formatCurrency } from "@/lib/utils"
 import { MyWeeklyPlan } from "./my-weekly-plan"
+import { ApprovalQueue } from "./approval-queue"
 
 
 function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
@@ -167,6 +168,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
              <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
+            <ApprovalQueue />
             <QuickAddTask />
             <MyWeeklyPlan />
             <TeamEffectiveness activities={activities} />
