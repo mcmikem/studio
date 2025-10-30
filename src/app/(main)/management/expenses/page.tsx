@@ -93,7 +93,7 @@ function ExpensesContent() {
   // Query for users who can manage finances to target notifications
   const financeUsersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'users'), where('role', 'in', ['Executive Director', 'Media & Finance Lead']));
+    return query(collection(firestore, 'users'), where('role', 'in', ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead']));
   }, [firestore]);
   const { data: financeUsers } = useCollection<User>(financeUsersQuery);
 
@@ -143,7 +143,7 @@ function ExpensesContent() {
     'Media & Finance Lead'
   ];
   
-  const financeRoles = ['Executive Director', 'Media & Finance Lead'];
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'];
 
   const canApprove = profile && approvalRoles.includes(profile.role);
   const canManageFinances = profile && financeRoles.includes(profile.role);
@@ -402,3 +402,5 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
+
+    
