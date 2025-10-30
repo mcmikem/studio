@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { generateSmartReminders, type SmartRemindersOutput } from '@/ai/flows/smart-reminders-flow';
 import type { User } from '@/lib/types';
 import { Loader2, Wand } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export function SmartReminders({ profile }: { profile: User }) {
   const [reminders, setReminders] = useState<SmartRemindersOutput | null>(null);
