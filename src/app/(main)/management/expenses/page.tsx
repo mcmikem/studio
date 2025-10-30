@@ -152,28 +152,41 @@ function ExpensesContent() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
+        // --- Notification Logic ---
+
+        // 1. Notify the original user about the status change.
         if (expense.userId !== currentUser.uid) {
-            let message = '';
+            let messageToUser = '';
             if (status === 'Approved') {
-                message = `Your expense report for "${expense.title}" has been approved and is awaiting disbursement.`;
+                messageToUser = `Your expense report for "${expense.title}" has been approved and is awaiting disbursement.`;
             } else if (status === 'Rejected') {
-                message = `Your expense report for "${expense.title}" has been rejected.`;
+                messageToUser = `Your expense report for "${expense.title}" has been rejected.`;
             } else if (status === 'Disbursed') {
-                message = `Funds for "${expense.title}" have been disbursed. Please go to "My Finances" to acknowledge receipt.`;
-            } else if (status === 'Pending') {
-                message = `The decision on your expense report for "${expense.title}" was reversed. It is now pending review again.`;
+                messageToUser = `Funds for "${expense.title}" have been disbursed. Please go to "My Finances" to acknowledge receipt.`;
             }
 
-            if (message) {
+            if (messageToUser) {
               await createAlert({
                   type: status === 'Rejected' ? 'Urgent' : 'Info',
-                  message: message,
+                  message: messageToUser,
                   priority: status === 'Rejected' ? 'High' : 'Medium',
                   action: `/my-finances`, 
                   creatorId: currentUser.uid,
               });
             }
         }
+
+        // 2. If approved, notify the finance team to disburse funds.
+        if (status === 'Approved') {
+            await createAlert({
+                type: 'Reminder',
+                priority: 'High',
+                message: `An expense report for ${expense.userName} (${formatCurrency(expense.totalAmount)}) is approved and needs disbursement.`,
+                action: `/management/expenses?highlight=${expense.id}`,
+                creatorId: currentUser.uid,
+            });
+        }
+
 
     } catch (error) {
          toast({
