@@ -37,15 +37,8 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange }: Noti
   const firestore = useFirestore();
   const { user } = useUser();
 
-  // Corrected Query: This now fetches alerts targeted to the user OR broadcast alerts.
-  const alertsQuery = useMemoFirebase(() => {
+  const targetedAlertsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    
-    // This query is now more specific and secure.
-    // It fetches alerts where the current user's ID is in the target list.
-    // Firestore security rules will allow this.
-    // Broadcast alerts (where targetUserIds is empty) are handled by a separate query if needed,
-    // but for this immediate bug fix, targeted alerts are the priority.
     return query(
       collection(firestore, 'alerts'),
       where('targetUserIds', 'array-contains', user.uid),
@@ -54,23 +47,23 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange }: Noti
     );
   }, [user, firestore, isPage]);
 
-  // A separate query for broadcast messages. We can merge them later.
-   const broadcastQuery = useMemoFirebase(() => {
+   const broadcastAlertsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
+     const threeDaysAgo = subDays(new Date(), 3);
      return query(
       collection(firestore, 'alerts'),
       where('targetUserIds', '==', []),
+      where('createdAt', '>=', Timestamp.fromDate(threeDaysAgo)),
       orderBy('createdAt', 'desc'),
       limit(isPage ? 20 : 5)
     );
   }, [user, firestore, isPage]);
 
-  const { data: targetedAlerts, isLoading: isLoadingTargeted } = useCollection<AlertType>(alertsQuery);
-  const { data: broadcastAlerts, isLoading: isLoadingBroadcasts } = useCollection<AlertType>(broadcastQuery);
+  const { data: targetedAlerts, isLoading: isLoadingTargeted } = useCollection<AlertType>(targetedAlertsQuery);
+  const { data: broadcastAlerts, isLoading: isLoadingBroadcasts } = useCollection<AlertType>(broadcastAlertsQuery);
 
   const alerts = useMemo(() => {
     const all = [...(targetedAlerts || []), ...(broadcastAlerts || [])];
-    // De-duplicate and sort
     const uniqueAlerts = Array.from(new Map(all.map(item => [item.id, item])).values());
     return uniqueAlerts.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
   }, [targetedAlerts, broadcastAlerts]);
