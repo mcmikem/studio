@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -139,8 +138,7 @@ function ExpensesContent() {
   const approvalRoles = [
     'Executive Director',
     'Programs & Partnerships Manager',
-    'Operations & Field Manager',
-    'Media & Finance Lead'
+    'Operations & Field Manager'
   ];
   
   const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'];
@@ -402,5 +400,3 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
-
-    

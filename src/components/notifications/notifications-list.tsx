@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useEffect } from 'react';
@@ -37,39 +36,26 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange }: Noti
   const firestore = useFirestore();
   const { user } = useUser();
 
-  const targetedAlertsQuery = useMemoFirebase(() => {
+  const alertsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return query(
       collection(firestore, 'alerts'),
-      where('targetUserIds', 'array-contains', user.uid),
       orderBy('createdAt', 'desc'),
       limit(isPage ? 50 : 15)
     );
   }, [user, firestore, isPage]);
 
-   const broadcastAlertsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-     const threeDaysAgo = subDays(new Date(), 3);
-     return query(
-      collection(firestore, 'alerts'),
-      where('targetUserIds', '==', []),
-      where('createdAt', '>=', Timestamp.fromDate(threeDaysAgo)),
-      orderBy('createdAt', 'desc'),
-      limit(isPage ? 20 : 5)
-    );
-  }, [user, firestore, isPage]);
-
-  const { data: targetedAlerts, isLoading: isLoadingTargeted } = useCollection<AlertType>(targetedAlertsQuery);
-  const { data: broadcastAlerts, isLoading: isLoadingBroadcasts } = useCollection<AlertType>(broadcastAlertsQuery);
+  const { data: allAlerts, isLoading } = useCollection<AlertType>(alertsQuery);
 
   const alerts = useMemo(() => {
-    const all = [...(targetedAlerts || []), ...(broadcastAlerts || [])];
-    const uniqueAlerts = Array.from(new Map(all.map(item => [item.id, item])).values());
-    return uniqueAlerts.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
-  }, [targetedAlerts, broadcastAlerts]);
-
-  const isLoading = isLoadingTargeted || isLoadingBroadcasts;
-
+    if (!allAlerts || !user) return [];
+    return allAlerts.filter(alert => {
+      // It's for the user if it's a broadcast (targetUserIds is empty) OR it specifically includes their ID.
+      const isBroadcast = !alert.targetUserIds || alert.targetUserIds.length === 0;
+      const isTargeted = alert.targetUserIds?.includes(user.uid);
+      return isBroadcast || isTargeted;
+    });
+  }, [allAlerts, user]);
 
   const unreadCount = useMemo(() => {
     if (!alerts || !user) return 0;

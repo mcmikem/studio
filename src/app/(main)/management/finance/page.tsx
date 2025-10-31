@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -371,7 +370,7 @@ export default function FinancePage() {
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator'];
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
   const canManageFinances = profile && financeRoles.includes(profile.role);
 
   const incomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc')) : null, [firestore]);
