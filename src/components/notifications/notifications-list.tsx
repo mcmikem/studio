@@ -7,7 +7,7 @@ import { Button } from '../ui/button';
 import { AlertTriangle, Info, BellRing } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useFirestore, useUser } from '@/firebase';
-import { collection, query, orderBy, where, Timestamp, limit, writeBatch, doc, arrayUnion, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, Timestamp, limit, writeBatch, doc, arrayUnion, onSnapshot } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import Link from 'next/link';
 import { formatDateSafe } from '@/lib/utils';
@@ -47,14 +47,14 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange }: Noti
     setIsLoading(true);
 
     const threeDaysAgo = Timestamp.fromDate(subDays(new Date(), 3));
-    const lim = isPage ? 50 : 7;
+    const lim = isPage ? 50 : 15;
 
     // Query 1: Alerts targeted specifically to the user
+    // REMOVED orderBy to prevent needing a composite index. Sorting will be done on the client.
     const targetedQuery = query(
       collection(firestore, 'alerts'),
       where('targetUserIds', 'array-contains', user.uid),
       where('createdAt', '>=', threeDaysAgo),
-      orderBy('createdAt', 'desc'),
       limit(lim)
     );
 
@@ -63,35 +63,45 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange }: Noti
       collection(firestore, 'alerts'),
       where('targetUserIds', '==', []),
       where('createdAt', '>=', threeDaysAgo),
-      orderBy('createdAt', 'desc'),
       limit(lim)
     );
 
-    const unsubTargeted = onSnapshot(targetedQuery, (snapshot) => {
-        const targetedAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
+    const handleSnapshots = (newAlerts: AlertType[], isTargeted: boolean) => {
         setAlerts(prev => {
-            const combined = [...targetedAlerts, ...prev.filter(p => !p.targetUserIds?.includes(user.uid))];
+            const otherAlerts = isTargeted 
+                ? prev.filter(p => !p.targetUserIds || p.targetUserIds.length === 0)
+                : prev.filter(p => p.targetUserIds && p.targetUserIds.length > 0);
+            
+            const combined = [...newAlerts, ...otherAlerts];
             const unique = Array.from(new Map(combined.map(a => [a.id, a])).values());
-            return unique.sort((a,b) => b.createdAt!.toMillis() - a.createdAt!.toMillis());
+            
+            // Sort on the client side
+            return unique.sort((a,b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
         });
         setIsLoading(false);
-    }, (error) => {
-        console.error("Error fetching targeted notifications:", error);
-        setIsLoading(false);
-    });
+    };
 
-    const unsubBroadcast = onSnapshot(broadcastQuery, (snapshot) => {
-        const broadcastAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
-        setAlerts(prev => {
-            const combined = [...broadcastAlerts, ...prev.filter(p => p.targetUserIds && p.targetUserIds.length > 0)];
-            const unique = Array.from(new Map(combined.map(a => [a.id, a])).values());
-            return unique.sort((a,b) => b.createdAt!.toMillis() - a.createdAt!.toMillis());
-        });
-         setIsLoading(false);
-    }, (error) => {
-        console.error("Error fetching broadcast notifications:", error);
-        setIsLoading(false);
-    });
+    const unsubTargeted = onSnapshot(targetedQuery, 
+        (snapshot) => {
+            const targetedAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
+            handleSnapshots(targetedAlerts, true);
+        }, 
+        (error) => {
+            console.error("Error fetching targeted notifications:", error);
+            setIsLoading(false);
+        }
+    );
+
+    const unsubBroadcast = onSnapshot(broadcastQuery, 
+        (snapshot) => {
+            const broadcastAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
+            handleSnapshots(broadcastAlerts, false);
+        }, 
+        (error) => {
+            console.error("Error fetching broadcast notifications:", error);
+            setIsLoading(false);
+        }
+    );
     
 
     return () => {
