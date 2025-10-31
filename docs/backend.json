@@ -781,7 +781,6 @@
             "$ref": "#/entities/Alert"
         },
         "read": "request.auth.uid in resource.data.targetUserIds || resource.data.targetUserIds.size() == 0",
-        "list": "request.auth.uid in resource.data.targetUserIds || resource.data.targetUserIds.size() == 0",
         "description": "Stores system-wide alerts and notifications."
     },
     "/key-results/{keyResultId}": {
@@ -794,8 +793,8 @@
       "schema": {
         "$ref": "#/entities/Expense"
       },
-      "read": "request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Finance Lead' || resource.data.userId == request.auth.uid)",
-      "list": "request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Finance Lead')",
+      "read": "request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Finance Lead' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Communications Lead' || resource.data.userId == request.auth.uid)",
+      "list": "request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Finance Lead' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Communications Lead')",
       "description": "Stores expense reports submitted by users."
     },
     "/income/{incomeId}": {
@@ -862,4 +861,3 @@
 }
     
     
-
