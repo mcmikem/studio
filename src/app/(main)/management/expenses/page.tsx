@@ -290,7 +290,7 @@ function ExpensesContent() {
                                           <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
                                       </div>
                                     )}
-                                    {canApprove && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                                    {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
                                       <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
                                         <Undo2 className="mr-2 h-4 w-4" /> Reverse
                                       </Button>

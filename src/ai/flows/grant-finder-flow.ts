@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -35,23 +34,18 @@ const grantFinderPrompt = ai.definePrompt(
     system: "You are an expert at summarizing grant opportunities. The user will provide a query, and you will receive a list of potential grants from a search tool. Your job is to analyze the tool's output and present the most relevant opportunities in a clear, structured format. Do not add any grants that are not from the tool output.",
     tools: [findGrantOpportunities],
     output: {
-      schema: GrantFinderOutputSchema,
+      schema: z.object({
+          opportunities: z.array(GrantOpportunitySchema).describe('A list of potential grant opportunities found.'),
+      })
     },
   }
 );
 
 
 export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOutput> {
-    const llmResponse = await ai.generate({
-        model: 'googleai/gemini-2.5-flash',
+    const { output } = await grantFinderPrompt({
         prompt: `Please find grant opportunities related to the following query: "${input.query}"`,
-        config: {
-            temperature: 0.2, // Be more factual and less creative
-        },
-        tools: [findGrantOpportunities],
     });
-
-    const { output } = llmResponse;
     if (!output) {
       throw new Error('AI failed to generate a response for grant opportunities.');
     }

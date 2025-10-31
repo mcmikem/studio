@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -35,27 +35,71 @@ interface NotificationsListProps {
 export function NotificationsList({ isPage = false, onUnreadStatusChange }: NotificationsListProps) {
   const firestore = useFirestore();
   const { user } = useUser();
+  const [alerts, setAlerts] = useState<AlertType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const alertsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return query(
+  useEffect(() => {
+    if (!user || !firestore) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+
+    const threeDaysAgo = Timestamp.fromDate(subDays(new Date(), 3));
+    const lim = isPage ? 50 : 7;
+
+    // Query 1: Alerts targeted specifically to the user
+    const targetedQuery = query(
       collection(firestore, 'alerts'),
+      where('targetUserIds', 'array-contains', user.uid),
+      where('createdAt', '>=', threeDaysAgo),
       orderBy('createdAt', 'desc'),
-      limit(isPage ? 50 : 15)
+      limit(lim)
     );
+
+    // Query 2: Broadcast alerts (no target)
+    const broadcastQuery = query(
+      collection(firestore, 'alerts'),
+      where('targetUserIds', '==', []),
+      where('createdAt', '>=', threeDaysAgo),
+      orderBy('createdAt', 'desc'),
+      limit(lim)
+    );
+
+    const unsubTargeted = onSnapshot(targetedQuery, (snapshot) => {
+        const targetedAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
+        setAlerts(prev => {
+            const combined = [...targetedAlerts, ...prev.filter(p => !p.targetUserIds?.includes(user.uid))];
+            const unique = Array.from(new Map(combined.map(a => [a.id, a])).values());
+            return unique.sort((a,b) => b.createdAt!.toMillis() - a.createdAt!.toMillis());
+        });
+        setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching targeted notifications:", error);
+        setIsLoading(false);
+    });
+
+    const unsubBroadcast = onSnapshot(broadcastQuery, (snapshot) => {
+        const broadcastAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
+        setAlerts(prev => {
+            const combined = [...broadcastAlerts, ...prev.filter(p => p.targetUserIds && p.targetUserIds.length > 0)];
+            const unique = Array.from(new Map(combined.map(a => [a.id, a])).values());
+            return unique.sort((a,b) => b.createdAt!.toMillis() - a.createdAt!.toMillis());
+        });
+         setIsLoading(false);
+    }, (error) => {
+        console.error("Error fetching broadcast notifications:", error);
+        setIsLoading(false);
+    });
+    
+
+    return () => {
+        unsubTargeted();
+        unsubBroadcast();
+    }
   }, [user, firestore, isPage]);
 
-  const { data: allAlerts, isLoading } = useCollection<AlertType>(alertsQuery);
-
-  const alerts = useMemo(() => {
-    if (!allAlerts || !user) return [];
-    return allAlerts.filter(alert => {
-      // It's for the user if it's a broadcast (targetUserIds is empty) OR it specifically includes their ID.
-      const isBroadcast = !alert.targetUserIds || alert.targetUserIds.length === 0;
-      const isTargeted = alert.targetUserIds?.includes(user.uid);
-      return isBroadcast || isTargeted;
-    });
-  }, [allAlerts, user]);
 
   const unreadCount = useMemo(() => {
     if (!alerts || !user) return 0;

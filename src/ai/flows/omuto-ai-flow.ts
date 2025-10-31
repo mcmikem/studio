@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -61,8 +60,7 @@ Your knowledge is not just static; you can learn about the team's current activi
         let answer = llmResponse.text;
 
         if (toolRequest) {
-            const toolResponse = toolRequest.responses[0];
-            const toolOutput = toolResponse?.response;
+            const toolOutput = llmResponse.toolRequest.output;
 
             // A special handler to format search results nicely
             if (toolRequest.name === 'searchOmuto' && Array.isArray(toolOutput)) {
@@ -85,7 +83,11 @@ Your knowledge is not just static; you can learn about the team's current activi
                     answer = "There are no recent check-outs to display.";
                 }
             } else {
-                answer = String(toolOutput);
+                 if(toolOutput && typeof toolOutput === 'object' && 'message' in toolOutput) {
+                   answer = String((toolOutput as any).message);
+                 } else {
+                   answer = String(toolOutput);
+                 }
             }
         }
 
@@ -101,4 +103,3 @@ Your knowledge is not just static; you can learn about the team's current activi
         return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. The technical details are: ${error.message}` };
     }
 }
-    
