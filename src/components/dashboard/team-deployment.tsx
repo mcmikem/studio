@@ -56,7 +56,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
   }, []);
 
   const teamStatus = useMemo(() => {
-    // Guard against running this logic before data is loaded.
+    // Guard against running this logic before data is loaded or on the server.
     if (!users || !checkins || !currentTime) {
       return null;
     }
