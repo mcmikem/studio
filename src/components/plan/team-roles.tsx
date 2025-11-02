@@ -32,6 +32,14 @@ export function TeamRoles() {
   }, [firestore]);
 
   const { data: users, isLoading } = useCollection<User>(usersQuery);
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
+        return parts[0][0] + parts[parts.length - 1][0];
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
 
   return (
     <Card>
@@ -59,9 +67,9 @@ export function TeamRoles() {
             users.map((user) => (
               <Card key={user.id}>
                 <CardContent className="pt-6 flex items-center gap-4">
-                   <Avatar className="h-10 w-10">
+                   <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
                       {user.photoURL && <AvatarImage src={user.photoURL} alt={user.name} />}
-                      <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
                   <div>
                     <p className="font-semibold">{user.name}</p>
@@ -137,3 +145,5 @@ export function TeamRoles() {
     </Card>
   );
 }
+
+    

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -498,10 +499,10 @@ export default function FinancePage() {
                     <p className="text-xl font-bold">{formatCurrency(monthlyData.closingBalance)}</p>
                 </Card>
             </div>
-             <div className="flex gap-2 justify-end">
+             <div className="flex flex-col sm:flex-row gap-2 justify-end">
                 <Dialog open={isNewExpenseDialogOpen} onOpenChange={setIsNewExpenseDialogOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="destructive" className="h-full">
+                    <Button variant="destructive" className="w-full sm:w-auto">
                         <ArrowDownCircle className="mr-2 h-4 w-4" />
                         Log Expense
                     </Button>
@@ -518,7 +519,7 @@ export default function FinancePage() {
                 </Dialog>
                 <Dialog open={isNewIncomeDialogOpen} onOpenChange={setIsNewIncomeDialogOpen}>
                 <DialogTrigger asChild>
-                    <Button className="h-full">
+                    <Button className="w-full sm:w-auto">
                     <ArrowUpCircle className="mr-2 h-4 w-4" />
                     Log Income
                     </Button>
@@ -534,75 +535,125 @@ export default function FinancePage() {
                 </DialogContent>
                 </Dialog>
             </div>
-            <Table>
-            <TableHeader>
-                <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                {canManageFinances && <TableHead className="text-right">Actions</TableHead>}
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {isLoading && Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
-                    {canManageFinances && <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>}
-                </TableRow>
-                ))}
-                {monthlyData.transactions.map((t, index) => (
-                <TableRow key={`${t.id}-${index}`}>
-                    <TableCell>{formatDateSafe(t.date, 'dateOnly')}</TableCell>
-                    <TableCell className="font-medium">{t.description}</TableCell>
-                    <TableCell>
-                    {t.transactionType === 'income' ? (
-                        <span className="flex items-center text-green-600"><ArrowUpCircle className="mr-2 h-4 w-4" /> Income</span>
-                    ) : (
-                        <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
-                    )}
-                    </TableCell>
-                    <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : ((t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged') ? 'text-red-600' : 'text-muted-foreground'}`}>
-                      {t.transactionType === 'expense' && ((t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged') ? `(${formatCurrency(t.amount)}) (Pending)` : formatCurrency(t.amount)}
-                    </TableCell>
-                    {canManageFinances && (
-                        <TableCell className="text-right">
-                           <div className="flex justify-end gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(t, t.transactionType)}>
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                            <AlertDialogDescription>This will permanently delete this transaction. This action cannot be undone.</AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDelete(t, t.transactionType)}>Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                           </div>
-                        </TableCell>
-                    )}
-                </TableRow>
-                ))}
-                {!isLoading && monthlyData.transactions.length === 0 && (
+            <div className="hidden sm:block">
+                <Table>
+                <TableHeader>
                     <TableRow>
-                        <TableCell colSpan={canManageFinances ? 5 : 4} className="h-48 text-center">No transactions recorded for {format(selectedMonth, 'MMMM yyyy')}.</TableCell>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    {canManageFinances && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
-                )}
-            </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                    {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
+                        {canManageFinances && <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>}
+                    </TableRow>
+                    ))}
+                    {monthlyData.transactions.map((t, index) => (
+                    <TableRow key={`${t.id}-${index}`}>
+                        <TableCell>{formatDateSafe(t.date, 'dateOnly')}</TableCell>
+                        <TableCell className="font-medium">{t.description}</TableCell>
+                        <TableCell>
+                        {t.transactionType === 'income' ? (
+                            <span className="flex items-center text-green-600"><ArrowUpCircle className="mr-2 h-4 w-4" /> Income</span>
+                        ) : (
+                            <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
+                        )}
+                        </TableCell>
+                        <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : ((t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged') ? 'text-red-600' : 'text-muted-foreground'}`}>
+                          {t.transactionType === 'expense' && ((t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged') ? `(${formatCurrency(t.amount)}) (Pending)` : formatCurrency(t.amount)}
+                        </TableCell>
+                        {canManageFinances && (
+                            <TableCell className="text-right">
+                               <div className="flex justify-end gap-1">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(t, t.transactionType)}>
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>This will permanently delete this transaction. This action cannot be undone.</AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(t, t.transactionType)}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                               </div>
+                            </TableCell>
+                        )}
+                    </TableRow>
+                    ))}
+                    {!isLoading && monthlyData.transactions.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={canManageFinances ? 5 : 4} className="h-48 text-center">No transactions recorded for {format(selectedMonth, 'MMMM yyyy')}.</TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+                </Table>
+            </div>
+            <div className="sm:hidden space-y-4">
+                {monthlyData.transactions.map((t, index) => (
+                    <Card key={`mobile-${t.id}-${index}`}>
+                        <CardHeader>
+                            <CardTitle>{t.description}</CardTitle>
+                            <CardDescription>{formatDateSafe(t.date, 'dateOnly')}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <div className="flex justify-between items-center">
+                                {t.transactionType === 'income' ? (
+                                    <span className="flex items-center text-green-600"><ArrowUpCircle className="mr-2 h-4 w-4" /> Income</span>
+                                ) : (
+                                    <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
+                                )}
+                                <span className={`text-right font-bold text-lg ${t.transactionType === 'income' ? 'text-green-600' : ((t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged') ? 'text-red-600' : 'text-muted-foreground'}`}>
+                                    {t.transactionType === 'expense' && ((t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged') ? `(${formatCurrency(t.amount)}) (Pending)` : formatCurrency(t.amount)}
+                                </span>
+                             </div>
+                        </CardContent>
+                        {canManageFinances && (
+                            <CardFooter className="justify-end">
+                                <div className="flex justify-end gap-1">
+                                    <Button variant="outline" size="sm" onClick={() => handleEdit(t, t.transactionType)}>
+                                        <Edit className="mr-2 h-4 w-4" /> Edit
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                             <Button variant="destructive" size="sm">
+                                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                <AlertDialogDescription>This will permanently delete this transaction. This action cannot be undone.</AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(t, t.transactionType)}>Delete</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                               </div>
+                            </CardFooter>
+                        )}
+                    </Card>
+                ))}
+            </div>
         </CardContent>
       </Card>
       <Card>
@@ -649,3 +700,5 @@ export default function FinancePage() {
     </div>
   );
 }
+
+    

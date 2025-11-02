@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -136,12 +137,12 @@ function ExpensesContent() {
   }, [highlightedExpenseId, expenses]);
 
   const approvalRoles = [
-    'Executive Director',
-    'Programs & Partnerships Manager',
-    'Operations & Field Manager'
+      'Executive Director',
+      'Programs & Partnerships Manager',
+      'Operations & Field Manager'
   ];
   
-  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'];
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
 
   const canApprove = profile && approvalRoles.includes(profile.role);
   const canManageFinances = profile && financeRoles.includes(profile.role);
@@ -247,99 +248,136 @@ function ExpensesContent() {
                   <CardDescription>This view shows all reports, including 'Pending', 'Approved', 'Disbursed', and 'Acknowledged'.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                    <TableHeader>
-                        <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading &&
-                        Array.from({ length: 5 }).map((_, i) => (
-                            <TableRow key={i}>
-                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
-                            </TableRow>
-                        ))}
-                        {expenses && expenses.length > 0 ? (
-                        expenses.map((expense) => (
-                            <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
-                            <TableCell className="font-medium">{expense.userName}</TableCell>
-                            <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
-                            <TableCell>{expense.title}</TableCell>
-                            <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
-                            <TableCell>
-                                <Badge variant="outline" className={statusColors[expense.status]}>
-                                    {expense.status}
-                                </Badge>
-                            </TableCell>
-                             <TableCell className="text-right">
-                                <div className="flex justify-end items-center gap-1">
-                                    {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
-                                      <div className="flex gap-1">
-                                          <Button variant="ghost" size="icon" className="text-primary hover:text-primary h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
-                                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
-                                      </div>
-                                    )}
-                                    {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
-                                      <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
-                                        <Undo2 className="mr-2 h-4 w-4" /> Reverse
-                                      </Button>
-                                    )}
-                                    {canManageFinances && expense.status === 'Approved' && (
-                                         <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
-                                    )}
-                                    {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
-                                         <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge Receipt</Button>
-                                    )}
-                                    {canManageFinances && (
-                                        <>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}><Edit className="h-4 w-4" /></Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>This action cannot be undone. This will permanently delete the expense report "{expense.title}".</AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(expense)}>Delete</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </>
-                                    )}
-                                </div>
-                            </TableCell>
-                            </TableRow>
-                        ))
-                        ) : (
-                        !isLoading && (
+                    <div className="hidden sm:block">
+                        <Table>
+                        <TableHeader>
                             <TableRow>
-                            <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
-                                <div className="flex flex-col items-center justify-center gap-2">
-                                <Receipt className="h-12 w-12" />
-                                <span className="text-lg font-semibold">No Expenses Found</span>
-                                <p className="text-sm">No reports have been submitted yet.</p>
-                                </div>
-                            </TableCell>
+                            <TableHead>User</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        )
-                        )}
-                    </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading &&
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i}>
+                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
+                                </TableRow>
+                            ))}
+                            {expenses && expenses.length > 0 ? (
+                            expenses.map((expense) => (
+                                <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
+                                <TableCell className="font-medium">{expense.userName}</TableCell>
+                                <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
+                                <TableCell>{expense.title}</TableCell>
+                                <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
+                                <TableCell>
+                                    <Badge variant="outline" className={statusColors[expense.status]}>
+                                        {expense.status}
+                                    </Badge>
+                                </TableCell>
+                                 <TableCell className="text-right">
+                                    <div className="flex justify-end items-center gap-1">
+                                        {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                                          <div className="flex gap-1">
+                                              <Button variant="ghost" size="icon" className="text-primary hover:text-primary h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
+                                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
+                                          </div>
+                                        )}
+                                        {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                                          <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
+                                            <Undo2 className="mr-2 h-4 w-4" /> Reverse
+                                          </Button>
+                                        )}
+                                        {canManageFinances && expense.status === 'Approved' && (
+                                             <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
+                                        )}
+                                        {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
+                                             <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge Receipt</Button>
+                                        )}
+                                        {canManageFinances && (
+                                            <>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}><Edit className="h-4 w-4" /></Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>This action cannot be undone. This will permanently delete the expense report "{expense.title}".</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDelete(expense)}>Delete</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </>
+                                        )}
+                                    </div>
+                                </TableCell>
+                                </TableRow>
+                            ))
+                            ) : (
+                            !isLoading && (
+                                <TableRow>
+                                <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                                    <div className="flex flex-col items-center justify-center gap-2">
+                                    <Receipt className="h-12 w-12" />
+                                    <span className="text-lg font-semibold">No Expenses Found</span>
+                                    <p className="text-sm">No reports have been submitted yet.</p>
+                                    </div>
+                                </TableCell>
+                                </TableRow>
+                            )
+                            )}
+                        </TableBody>
+                        </Table>
+                    </div>
+                    <div className="sm:hidden space-y-4">
+                        {expenses?.map(expense => (
+                            <Card key={`mobile-${expense.id}`} id={`mobile-expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
+                                <CardHeader>
+                                    <CardTitle>{expense.title}</CardTitle>
+                                    <CardDescription>{expense.userName} - {formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                     <div className="flex justify-between items-center">
+                                        <span className="text-2xl font-bold">{formatCurrency(expense.totalAmount)}</span>
+                                        <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
+                                    </div>
+                                     <div className="flex justify-end items-center gap-1">
+                                        {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                                          <div className="flex gap-1">
+                                              <Button variant="ghost" size="icon" className="text-primary hover:text-primary h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
+                                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
+                                          </div>
+                                        )}
+                                        {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                                          <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
+                                            <Undo2 className="mr-2 h-4 w-4" /> Reverse
+                                          </Button>
+                                        )}
+                                        {canManageFinances && expense.status === 'Approved' && (
+                                             <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
+                                        )}
+                                        {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
+                                             <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge</Button>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -400,3 +438,5 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
+
+    
