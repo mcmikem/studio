@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -49,11 +48,14 @@ const teamWorkplanSchema = z.object({
 
 type TeamWorkplanFormData = z.infer<typeof teamWorkplanSchema>;
 
-const formatDateForInput = (date: Timestamp | string | undefined): string => {
+const formatDateForInput = (date: Timestamp | string | Date | undefined): string => {
     if (!date) return '';
     try {
-        const d = (date as Timestamp).toDate ? (date as Timestamp).toDate() : new Date(date as string);
-        return format(d, 'yyyy-MM-dd');
+        const d = (date as Timestamp)?.toDate ? (date as Timestamp).toDate() : new Date(date as string | Date);
+        if(isValid(d)) {
+          return format(d, 'yyyy-MM-dd');
+        }
+        return '';
     } catch {
         return '';
     }
@@ -93,7 +95,7 @@ function TeamWorkplanForm({
               activity: p.activity,
               priority: p.priority || 'Medium',
               responsible: Array.isArray(p.responsible) ? p.responsible : [p.responsible],
-              deadline: p.deadline ? formatDateForInput(p.deadline) : '',
+              deadline: formatDateForInput(p.deadline),
           }))
         }
       : {
@@ -112,7 +114,7 @@ function TeamWorkplanForm({
               activity: p.activity,
               priority: p.priority || 'Medium',
               responsible: Array.isArray(p.responsible) ? p.responsible : [p.responsible],
-              deadline: p.deadline ? formatDateForInput(p.deadline) : '',
+              deadline: formatDateForInput(p.deadline),
           }))
         }
       : {
@@ -145,11 +147,14 @@ function TeamWorkplanForm({
         try {
             const parsedData = await parseWorkplan({ textPlan: pastedText });
             
-            // Map responsible strings to valid options, defaulting to 'All Members' if not found
             const validPriorities = parsedData.keyPriorities.map(p => {
-                const validResponsible = p.responsible.filter(r => responsibleOptions.some(option => option.value === r));
+                const validResponsible = Array.isArray(p.responsible)
+                    ? p.responsible.filter(r => responsibleOptions.some(option => option.value === r))
+                    : [];
+
                 return {
-                    ...p,
+                    activity: p.activity,
+                    priority: p.priority,
                     responsible: validResponsible.length > 0 ? validResponsible : ['All Members'],
                     deadline: p.deadline || ''
                 };
@@ -158,7 +163,7 @@ function TeamWorkplanForm({
             reset({
                 message: parsedData.message,
                 keyPriorities: validPriorities,
-                status: 'Draft' // Default to draft after parsing
+                status: 'Draft'
             });
 
             toast({ title: 'Plan Parsed!', description: 'The AI has filled out the form for you. Please review and save.' });
@@ -185,7 +190,7 @@ function TeamWorkplanForm({
           const priority: Partial<PriorityItem> = {
             activity: p.activity,
             priority: p.priority,
-            responsible: Array.isArray(p.responsible) ? p.responsible : [p.responsible],
+            responsible: Array.isArray(p.responsible) ? p.responsible : [],
           };
           if (p.deadline) {
             try {
@@ -307,7 +312,7 @@ function TeamWorkplanForm({
                                         />
                                     )}
                                 />
-                                    {errors.keyPriorities?.[index]?.responsible && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.responsible?.message}</p>}
+                                    {errors.keyPriorities?.[index]?.responsible && <p className="text-sm text-destructive">{typeof errors.keyPriorities[index]?.responsible === 'string' ? errors.keyPriorities[index]?.responsible : errors.keyPriorities[index]?.responsible?.message}</p>}
                             </div>
                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)} disabled={fields.length <= 1}>
                                 <Trash2 className="h-4 w-4" />
@@ -374,13 +379,10 @@ export default function TeamWorkplansPage() {
 
     const startOfSelectedWeek = startOfWeek(date, { weekStartsOn: 1 });
     startOfSelectedWeek.setHours(0, 0, 0, 0);
-    const endOfSelectedWeek = endOfWeek(date, { weekStartsOn: 1 });
-    endOfSelectedWeek.setHours(23, 59, 59, 999);
     
     const q = query(
       collection(firestore, 'team-workplans'),
-      where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
-      where('weekOf', '<=', Timestamp.fromDate(endOfSelectedWeek)),
+      where('weekOf', '==', Timestamp.fromDate(startOfSelectedWeek)),
       limit(1)
     );
 

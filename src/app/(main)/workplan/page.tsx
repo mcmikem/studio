@@ -20,7 +20,7 @@ import { useUser, useFirestore, addDocumentNonBlocking, useMemoFirebase } from '
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { WeeklyWorkplan, TeamWeeklyPlan } from '@/lib/types';
-import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
+import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks, isValid } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarCheck, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
@@ -168,14 +168,11 @@ export default function WorkplanPage() {
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
     startOfSelectedWeek.setHours(0, 0, 0, 0);
-    const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
-    endOfSelectedWeek.setHours(23, 59, 59, 999);
-
+    
     try {
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
-        where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
-        where('weekOf', '<=', Timestamp.fromDate(endOfSelectedWeek)),
+        where('weekOf', '==', Timestamp.fromDate(startOfSelectedWeek)),
         where('status', '==', 'Published'),
         limit(1)
       );
@@ -221,17 +218,13 @@ export default function WorkplanPage() {
   
   const formatDeadline = (deadline: any) => {
     if (!deadline) return '-';
+    let date;
     if (deadline.toDate) {
-      return format(deadline.toDate(), 'MMM dd');
+      date = deadline.toDate();
+    } else {
+      date = new Date(deadline);
     }
-    try {
-        const parsedDate = new Date(deadline);
-        if(!isNaN(parsedDate.getTime())) {
-            return format(parsedDate, 'MMM dd');
-        }
-    } catch (e) {
-    }
-    return String(deadline);
+    return isValid(date) ? format(date, 'MMM dd') : String(deadline);
   };
 
   const renderContent = () => {
@@ -353,7 +346,7 @@ export default function WorkplanPage() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>
-              Week {getWeek(currentDate)}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
+              Week {getWeek(currentDate, { weekStartsOn: 1})}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
             </CardTitle>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
