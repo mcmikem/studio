@@ -176,9 +176,8 @@ function TeamWorkplanForm({
       return;
     }
     
-    // ** FIX: Normalize the timestamp to the start of the week **
     const weekStartDate = startOfWeek(weekOf, { weekStartsOn: 1 });
-    weekStartDate.setHours(0, 0, 0, 0); // Set to midnight
+    weekStartDate.setHours(0, 0, 0, 0);
 
     const planData = {
         weekOf: Timestamp.fromDate(weekStartDate),
@@ -186,14 +185,13 @@ function TeamWorkplanForm({
           const priority: Partial<PriorityItem> = {
             activity: p.activity,
             priority: p.priority,
-            responsible: p.responsible,
+            responsible: Array.isArray(p.responsible) ? p.responsible : [p.responsible],
           };
           if (p.deadline) {
             try {
                priority.deadline = Timestamp.fromDate(new Date(p.deadline));
             } catch (e) {
                 console.error("Invalid deadline date format", p.deadline, e);
-                // Handle invalid date gracefully, maybe skip it or show an error
             }
           }
           return priority;
@@ -211,19 +209,18 @@ function TeamWorkplanForm({
             const planRef = doc(firestore, 'team-workplans', existingPlan.id);
             await updateDocumentNonBlocking(planRef, {
                 ...planData,
-                keyPriorities: planData.keyPriorities as PriorityItem[], // Ensure correct type
+                keyPriorities: planData.keyPriorities as PriorityItem[],
             });
             toast({ title: 'Plan Updated!', description: `The plan for the week has been updated.` });
 
         } else {
-             await addDoc(collection(firestore, 'team-workplans'), {
+             await addDocumentNonBlocking(collection(firestore, 'team-workplans'), {
                 ...planData,
                 createdAt: Timestamp.now(),
             });
             toast({ title: 'Plan Saved!', description: `The team plan for the week has been saved as a ${data.status}.` });
         }
 
-        // If the plan is being published for the first time
         if (data.status === 'Published' && wasPreviouslyDraft) {
             await createAlert({
                 type: 'Info',
@@ -264,7 +261,6 @@ function TeamWorkplanForm({
             </Button>
              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-6 border-t">
                 
-                {/* Priorities Field Array */}
                 <div className="space-y-4">
                     <Label className="text-lg font-semibold">Key Team Priorities</Label>
                     {fields.map((field, index) => (
@@ -372,37 +368,42 @@ export default function TeamWorkplansPage() {
   const weekStartDate = startOfWeek(currentDate, { weekStartsOn: 1 });
   const weekEndDate = endOfWeek(currentDate, { weekStartsOn: 1 });
 
-  const teamPlanQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
+  const fetchPlanForWeek = useCallback(async (date: Date) => {
+    if (!firestore) return;
+    setIsLoadingPlan(true);
+
+    const startOfSelectedWeek = startOfWeek(date, { weekStartsOn: 1 });
     startOfSelectedWeek.setHours(0, 0, 0, 0);
-    const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
+    const endOfSelectedWeek = endOfWeek(date, { weekStartsOn: 1 });
     endOfSelectedWeek.setHours(23, 59, 59, 999);
     
-    return query(
+    const q = query(
       collection(firestore, 'team-workplans'),
       where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
       where('weekOf', '<=', Timestamp.fromDate(endOfSelectedWeek)),
       limit(1)
     );
-  }, [firestore, currentDate]);
 
-  const { data: teamPlans, isLoading: isLoadingTeamPlans } = useCollection<TeamWeeklyPlan>(teamPlanQuery);
+    try {
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            const doc = snapshot.docs[0];
+            setCurrentPlan({ id: doc.id, ...doc.data() } as TeamWeeklyPlan);
+        } else {
+            setCurrentPlan(null);
+        }
+    } catch(e) {
+        console.error("Error fetching team plan:", e);
+        setCurrentPlan(null);
+    } finally {
+        setIsLoadingPlan(false);
+    }
+  }, [firestore]);
   
   useEffect(() => {
-    if (!isLoadingTeamPlans) {
-      setCurrentPlan(teamPlans?.[0] || null);
-      setIsLoadingPlan(false);
-    } else {
-      setIsLoadingPlan(true);
-    }
-  }, [teamPlans, isLoadingTeamPlans]);
+    fetchPlanForWeek(currentDate);
+  }, [currentDate, fetchPlanForWeek]);
 
-
-  const fetchTeamPlan = useCallback(() => {
-    // This function can be used to manually refetch if the useCollection doesn't update automatically after a save.
-    // For now, useCollection should handle it.
-  }, []);
 
   const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
   const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
@@ -440,7 +441,7 @@ export default function TeamWorkplansPage() {
           {isLoading ? (
             <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin"/></div>
           ) : (
-             <TeamWorkplanForm weekOf={currentDate} existingPlan={currentPlan} onPlanSaved={fetchTeamPlan} users={users || []} />
+             <TeamWorkplanForm weekOf={currentDate} existingPlan={currentPlan} onPlanSaved={() => fetchPlanForWeek(currentDate)} users={users || []} />
           )}
         </CardContent>
       </Card>

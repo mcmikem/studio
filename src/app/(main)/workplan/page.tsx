@@ -79,7 +79,6 @@ function FinalizeWorkplanForm({
     const newPlan: Omit<WeeklyWorkplan, 'id'> = {
       userId: user.uid,
       userName: profile.name,
-      // ** FIX: Use the exact timestamp from the team plan **
       weekOf: teamPlan.weekOf,
       teamPlanId: teamPlan.id,
       teamPriorities: teamPlan.keyPriorities,
@@ -99,7 +98,7 @@ function FinalizeWorkplanForm({
       type: 'Info',
       priority: 'Low',
       message: `${profile.name} has finalized their workplan for the week.`,
-      action: '/management/workplans', // A link for managers to see all plans maybe?
+      action: '/management/workplans',
       creatorId: user.uid,
     });
     
@@ -168,12 +167,11 @@ export default function WorkplanPage() {
     setUserPlan(null);
 
     const startOfSelectedWeek = startOfWeek(currentDate, { weekStartsOn: 1 });
-    startOfSelectedWeek.setHours(0, 0, 0, 0); // Normalize to midnight
+    startOfSelectedWeek.setHours(0, 0, 0, 0);
     const endOfSelectedWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
     endOfSelectedWeek.setHours(23, 59, 59, 999);
 
     try {
-      // 1. Fetch the published team plan for the week.
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
         where('weekOf', '>=', Timestamp.fromDate(startOfSelectedWeek)),
@@ -188,7 +186,6 @@ export default function WorkplanPage() {
         const fetchedTeamPlan = { id: teamPlanDoc.id, ...teamPlanDoc.data() } as TeamWeeklyPlan;
         setTeamPlan(fetchedTeamPlan);
 
-        // 2. Once we have a team plan, check if the current user has already submitted their individual plan.
         const userPlanQuery = query(
             collection(firestore, 'workplans'),
             where('userId', '==', user.uid),
@@ -224,7 +221,7 @@ export default function WorkplanPage() {
   
   const formatDeadline = (deadline: any) => {
     if (!deadline) return '-';
-    if (deadline.toDate) { // It's a Firestore Timestamp
+    if (deadline.toDate) {
       return format(deadline.toDate(), 'MMM dd');
     }
     try {
@@ -233,7 +230,6 @@ export default function WorkplanPage() {
             return format(parsedDate, 'MMM dd');
         }
     } catch (e) {
-        // Fallback for different formats if needed
     }
     return String(deadline);
   };

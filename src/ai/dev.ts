@@ -53,8 +53,8 @@ export * from './flows/global-search-flow';
 export * from './flows/parse-workplan-flow';
 export * from './flows/testimony-processor-flow';
 export * from './flows/qualitative-analysis-flow';
+export * from './flows/parse-operational-plan-flow';
 
 
 // NOTE: omuto-tools now only contains server-side safe tools.
 export * from './tools/omuto-tools';
-    

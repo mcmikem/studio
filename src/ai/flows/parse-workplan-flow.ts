@@ -35,7 +35,7 @@ const workplanParserPrompt = ai.definePrompt({
   **Instructions:**
   1.  **Extract Key Priorities:** Identify each distinct task or activity.
   2.  **Assign Priority:** Based on keywords (e.g., "must do", "urgent", "critical" -> High; "should do", "important" -> Medium; "if time", "nice to have" -> Low), assign a priority. If no keyword is present, default to 'Medium'.
-  3.  **Identify Responsible Parties:** Look for names (e.g., "Dianah", "McMike", "Alex") or roles ("All Members", "Volunteers") associated with each task.
+  3.  **Identify Responsible Parties:** Look for names (e.g., "Dianah", "McMike", "Alex", "Kasirye", "Bwire", "John Paul") or roles ("All Members", "Volunteers", "Interns"). Always return an array of strings, even if it's just one person.
   4.  **Extract Deadlines:** If a specific date is mentioned, format it as YYYY-MM-DD.
   5.  **Summarize:** Create a concise one or two-sentence summary of the main goal for the week to use as the 'message'.`,
   prompt: `Please parse the following weekly plan text into a structured format.
