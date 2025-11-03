@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -172,7 +173,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
       <CardHeader>
         <CardTitle>{title || "Success Dashboard: Key Results"}</CardTitle>
         <CardDescription>
-          {description || "Live progress against the October Operational Plan's Key Results."}
+          {description || "Live progress against the operational plan's Key Results."}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
