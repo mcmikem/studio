@@ -187,19 +187,19 @@ function TeamWorkplanForm({
     const planData = {
         weekOf: Timestamp.fromDate(weekStartDate),
         keyPriorities: data.keyPriorities.map(p => {
-          const priority: Partial<PriorityItem> = {
-            activity: p.activity,
-            priority: p.priority,
-            responsible: Array.isArray(p.responsible) ? p.responsible : [],
-          };
-          if (p.deadline) {
-            try {
-               priority.deadline = Timestamp.fromDate(new Date(p.deadline));
-            } catch (e) {
-                console.error("Invalid deadline date format", p.deadline, e);
+            const priority: PriorityItem = {
+                activity: p.activity,
+                priority: p.priority,
+                responsible: Array.isArray(p.responsible) ? p.responsible : [],
+            };
+            if (p.deadline) {
+                try {
+                   priority.deadline = Timestamp.fromDate(new Date(p.deadline));
+                } catch (e) {
+                    console.error("Invalid deadline date format", p.deadline, e);
+                }
             }
-          }
-          return priority;
+            return priority;
         }),
         message: data.message,
         authorId: user.uid,
@@ -213,8 +213,7 @@ function TeamWorkplanForm({
         if(existingPlan) {
             const planRef = doc(firestore, 'team-workplans', existingPlan.id);
             await updateDocumentNonBlocking(planRef, {
-                ...planData,
-                keyPriorities: planData.keyPriorities as PriorityItem[],
+                ...planData
             });
             toast({ title: 'Plan Updated!', description: `The plan for the week has been updated.` });
 
