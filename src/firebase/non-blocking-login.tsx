@@ -1,3 +1,4 @@
+
 "use client"
 import {
   Auth,
@@ -25,7 +26,6 @@ import { FirestorePermissionError } from "./errors"
 import {
   samplePrograms,
   samplePartnerships,
-  sampleKeyResults,
   sampleProjects,
   sampleImpactMetrics,
   sampleAlerts,
@@ -103,7 +103,6 @@ async function seedInitialData(db: Firestore, userId: string) {
   const collectionsToSeed = [
     { name: "programs", data: samplePrograms },
     { name: "partnerships", data: samplePartnerships },
-    { name: "key-results", data: sampleKeyResults },
     { name: "projects", data: sampleProjects },
     { name: "impact-metrics", data: sampleImpactMetrics },
     { name: "alerts", data: sampleAlerts },

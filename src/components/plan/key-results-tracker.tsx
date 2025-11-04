@@ -16,7 +16,7 @@ import type { KeyResult, Activity, ImpactMetric, Partnership } from '@/lib/types
 import { Target, Flag, AlertTriangle } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { Progress } from '../ui/progress';
-import { isPast, parseISO, differenceInDays } from 'date-fns';
+import { isPast, parseISO, differenceInDays, isValid, startOfDay, subDays } from 'date-fns';
 import { cn, formatDateSafe } from '@/lib/utils';
 import { useMemo } from 'react';
 import { ProgressRing } from '../ui/progress-ring';
@@ -44,107 +44,55 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
 
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'activities'));
-  }, [firestore]);
-
-  const metricsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'impact-metrics'));
-  }, [firestore]);
-  
-  const partnershipsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'partnerships'), orderBy('createdAt'));
-  }, [firestore]);
-
-
   const { data: keyResults, isLoading: isLoadingKR } = useCollection<KeyResult>(keyResultsQuery);
-  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
-  const { data: metrics, isLoading: isLoadingMetrics } = useCollection<ImpactMetric>(metricsQuery);
-  const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
-
+  
+  const isLoading = isLoadingKR;
 
   const processedKeyResults = useMemo(() => {
-    if (!keyResults || !activities || !metrics || !partnerships) return null;
+    if (!keyResults) return [];
 
-    // De-duplicate Key Results based on title
-    const uniqueKeyResults = Array.from(new Map(keyResults.map(item => [item.title, item])).values());
-
-
-    const cycleOfDignityMetric = metrics.find(m => m.metric === 'Cycle of Dignity Fundraising');
-
-    return uniqueKeyResults.map(kr => {
-      let liveProgress = kr.currentProgress;
+    return keyResults.map(kr => {
       let link = '/management/projects'; // Default link
-
-      // KR1: Fundraising Growth
-      if (kr.title === 'OCT-KR1' && cycleOfDignityMetric) {
-        liveProgress = cycleOfDignityMetric.current;
-        link = '/management/metrics';
-      }
+      if (kr.title?.includes('KR1')) link = '/management/finance';
+      if (kr.title?.includes('KR2')) link = '/activity-log';
+      if (kr.title?.includes('KR3')) link = '/activity-log';
+      if (kr.title?.includes('KR4')) link = '/management/partnerships';
+      if (kr.title?.includes('KR5')) link = '/management/projects';
+      if (kr.title?.includes('KR6')) link = '/management/templates';
+      if (kr.title?.includes('KR7')) link = '/reports';
+      if (kr.title?.includes('KR8')) link = '/management/equipment';
       
-      // KR2: Tree Planting
-      if (kr.title === 'OCT-KR2') {
-        liveProgress = activities.reduce((sum, act) => {
-            return sum + (act.trees_planted || 0);
-        }, 0);
-        link = '/activity-log';
-      }
-
-      // KR3: RED Campaign
-      if (kr.title === 'OCT-KR3') {
-        liveProgress = activities.reduce((sum, act) => {
-            return sum + (act.parents_attended || 0) + (act.teachers_attended || 0);
-        }, 0);
-        link = '/activity-log';
-      }
-      
-      // KR4: New Partnerships
-      if (kr.title === 'OCT-KR4') {
-        liveProgress = partnerships.filter(p => {
-            if (!p.createdAt) return false;
-            const creationDate = p.createdAt.toDate();
-            // Assuming the plan is for October 2025
-            return creationDate.getFullYear() === 2025 && creationDate.getMonth() === 9; // 9 is October (0-indexed)
-        }).length;
-        link = '/management/partnerships';
-      }
-      
-      // KR5-KR8: These are based on percentage completion or manual milestones.
-      // The `currentProgress` from the database will be used directly.
-      // Future logic for checklist-based progress would go here.
-      if (kr.title === 'OCT-KR5') { /* ... complex checklist logic ... */ link = '/management/projects'; }
-      if (kr.title === 'OCT-KR6') { /* ... document upload logic ... */ link = '/management/templates'; }
-      if (kr.title === 'OCT-KR7') { /* ... data system logic ... */ link = '/reports'; }
-      if (kr.title === 'OCT-KR8') { /* ... prototype logic ... */ link = '/management/equipment'; }
-
-      return { ...kr, currentProgress: liveProgress, link };
-    })
-
-  }, [keyResults, activities, metrics, partnerships]);
+      return { ...kr, link };
+    });
+  }, [keyResults]);
 
   const atRiskKr = useMemo(() => {
     if (!processedKeyResults) return null;
-    const today = new Date();
+    const today = startOfDay(new Date());
     
     return processedKeyResults.map(kr => {
-        const startDate = new Date('2025-10-01');
-        const deadline = parseISO(kr.deadline);
-        const totalDays = differenceInDays(deadline, startDate);
-        const daysPassed = differenceInDays(today, startDate);
+        let deadline = new Date();
+        try {
+          if (kr.deadline && typeof kr.deadline === 'string') {
+            deadline = parseISO(kr.deadline);
+          } else if (kr.deadline) {
+            deadline = new Date(kr.deadline);
+          }
+          if(!isValid(deadline)) return {...kr, alertStatus: 'on-track'};
+        } catch(e) {
+          return {...kr, alertStatus: 'on-track'};
+        }
+
         const daysRemaining = differenceInDays(deadline, today);
         const progressPercent = kr.target > 0 ? (kr.currentProgress / kr.target) * 100 : 0;
 
         let status: 'on-track' | 'at-risk' | 'critical' = 'on-track';
 
         if (progressPercent < 100) {
-           const requiredPace = (daysPassed / totalDays) * 100;
-            if (daysRemaining < 7 && progressPercent < requiredPace) {
-                status = 'critical';
-            } else if (daysPassed / totalDays > 0.7 && progressPercent < 70) {
-                status = 'at-risk';
+            if (daysRemaining < 0) {
+                status = 'critical'; // Past deadline
+            } else if (daysRemaining < 7) {
+                status = 'at-risk'; // Nearing deadline
             }
         }
         
@@ -155,18 +103,16 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
 
 
   const formatTarget = (kr: KeyResult) => {
-    if (kr.title === 'OCT-KR1') return `${(kr.target / 1000000).toFixed(1)}M UGX`;
-    if (kr.target === 100 && (kr.title === 'OCT-KR5' || kr.title === 'OCT-KR6' || kr.title === 'OCT-KR7')) return `${kr.target}%`;
+    if (kr.title?.includes('KR1')) return `${((kr.target || 0) / 1000000).toFixed(1)}M UGX`;
+    if (kr.target === 100 && (kr.title?.includes('KR5') || kr.title?.includes('KR6') || kr.title?.includes('KR7'))) return `${kr.target}%`;
     return kr.target.toLocaleString();
   }
 
   const formatProgress = (kr: KeyResult) => {
-    if (kr.title === 'OCT-KR1') return `${(kr.currentProgress / 1000000).toFixed(1)}M`;
-    if (kr.target === 100 && (kr.title === 'OCT-KR5' || kr.title === 'OCT-KR6' || kr.title === 'OCT-KR7')) return `${kr.currentProgress}%`;
+    if (kr.title?.includes('KR1')) return `${((kr.currentProgress || 0) / 1000000).toFixed(1)}M`;
+    if (kr.target === 100 && (kr.title?.includes('KR5') || kr.title?.includes('KR6') || kr.title?.includes('KR7'))) return `${kr.currentProgress}%`;
     return kr.currentProgress.toLocaleString();
   }
-  
-  const isLoading = isLoadingKR || isLoadingActivities || isLoadingMetrics || isLoadingPartnerships;
 
   return (
     <Card>
@@ -187,8 +133,8 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
                 </AlertTitle>
                 <AlertDescription>
                     {atRiskKr[0].alertStatus === 'critical' 
-                        ? `${atRiskKr[0].title} is critically behind schedule and requires immediate action.` 
-                        : `${atRiskKr[0].title} is behind schedule. Consider reallocating resources.`
+                        ? `${atRiskKr[0].title} is past its deadline and is not yet complete.` 
+                        : `${atRiskKr[0].title} is nearing its deadline. Action may be required.`
                     }
                     {atRiskKr.length > 1 && ` (+${atRiskKr.length - 1} more)`}
                 </AlertDescription>
@@ -205,8 +151,13 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
         {processedKeyResults && processedKeyResults.length > 0 ? (
           processedKeyResults.map((kr) => {
              const progressPercentage = kr.target > 0 ? (kr.currentProgress / kr.target) * 100 : 0;
-             const deadlineDate = parseISO(kr.deadline);
-             const isDeadlinePast = isPast(deadlineDate) && progressPercentage < 100;
+             let deadlineDate;
+             try {
+                deadlineDate = kr.deadline ? parseISO(kr.deadline) : new Date();
+             } catch(e) {
+                deadlineDate = new Date();
+             }
+             const isDeadlinePast = isValid(deadlineDate) ? isPast(deadlineDate) && progressPercentage < 100 : false;
              
             return (
                 <Link href={kr.link} key={kr.id} className="block p-4 rounded-lg -m-4 hover:bg-muted/50 transition-colors">
@@ -240,7 +191,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
                 No Key Results Found
               </h2>
               <p className="mt-2 max-w-md text-muted-foreground">
-                Key Results for the operational plan have not been loaded yet.
+                Go to the <Link href="/management/operational-plan" className="text-primary underline">Operational Plan</Link> page to set your new Key Results.
               </p>
             </div>
           )

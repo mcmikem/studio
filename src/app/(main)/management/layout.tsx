@@ -5,7 +5,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks, DollarSign, Users } from 'lucide-react';
+import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks, DollarSign, Users, FileSignature } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
 import { useViewAs } from '@/hooks/use-view-as';
@@ -46,8 +46,9 @@ export default function ManagementLayout({
     { name: 'Programs', href: '/management/programs', icon: FolderKanban },
     { name: 'Projects', href: '/management/projects', icon: Briefcase },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
-    { name: 'Finance', href: '/management/finance', icon: DollarSign, roles: ['Executive Director', 'Media & Finance Lead'] },
-    { name: 'Expenses', href: '/management/expenses', icon: Receipt, roles: ['Executive Director', 'Media & Finance Lead'] },
+    { name: 'Operational Plan', href: '/management/operational-plan', icon: FileSignature, roles: ['Executive Director', 'Programs & Partnerships Manager'] },
+    { name: 'Finance', href: '/management/finance', icon: DollarSign, roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'] },
+    { name: 'Expenses', href: '/management/expenses', icon: Receipt, roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'] },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
     { name: 'Workplans', href: '/management/workplans', icon: CalendarClock },
     { name: 'Equipment', href: '/management/equipment', icon: Box },
@@ -56,18 +57,8 @@ export default function ManagementLayout({
   ];
 
   const tabs = allTabs.filter(tab => {
-    // Then, we check which specific tabs within the section they can see.
-    if (tab.roles) {
-      return tab.roles.includes(effectiveRole || '');
-    }
-    // If a tab has no specific roles, it's visible to all management roles.
-    const generalManagementRoles = [
-      'Administrator', 
-      'Executive Director', 
-      'Programs & Partnerships Manager', 
-      'Operations & Field Manager',
-    ];
-    return generalManagementRoles.includes(effectiveRole || '');
+    if (!tab.roles) return true;
+    return tab.roles.includes(effectiveRole || '');
   });
 
   return (

@@ -131,7 +131,7 @@ export const samplePartnerships: Omit<Partnership, 'id' | 'createdAt'>[] = [
     { name: 'Spouts of Water', contactPerson: 'Daniel Yin', contactEmail: 'daniel@spouts.org', status: 'Active', nextStep: 'Co-design PureWater Initiative Phase 2' },
     { name: 'MHAMIA Foundation', contactPerson: 'Sarah Nakka', contactEmail: 'sarah.n@mhamia.org', status: 'Active', nextStep: 'Joint training session at Mpigi Secondary' },
     { name: 'Mpigi District Local Government', contactPerson: 'Mr. Bwekembe', contactEmail: 'cao.mpigi@lg.go.ug', status: 'Active', nextStep: 'Align on Q4 youth programs' },
-    { name: 'GlobalGiving', contactPerson: 'Regional Manager', contactEmail: 'africa@globalgiving.org', status: 'Potential', nextStep: 'Submit final report for Cycle of Dignity' },
+    { name: 'GlobalGiving', contactPerson: 'Regional Manager', contactEmail: 'africa@globalgiving.org', status: 'Prospecting', nextStep: 'Submit final report for Cycle of Dignity' },
 ];
 
 export const sampleProjects: Omit<Project, 'id' | 'createdAt'>[] = [
@@ -149,74 +149,6 @@ export const sampleImpactMetrics: Omit<ImpactMetric, 'id'>[] = [
 export const sampleAlerts: Omit<Alert, 'id' | 'createdAt'>[] = [];
 
 export const sampleCalendarEvents: Omit<CalendarEvent, 'id' | 'createdAt'>[] = [];
-
-
-export const sampleKeyResults: Omit<KeyResult, 'id'>[] = [
-    {
-        title: 'OCT-KR1',
-        description: 'Increase Cycle of Dignity funding',
-        currentProgress: 800000,
-        target: 2000000,
-        deadline: '2025-10-31',
-        priority: 'High',
-    },
-    {
-        title: 'OCT-KR2',
-        description: 'Plant remaining 510 trees',
-        currentProgress: 0,
-        target: 510,
-        deadline: '2025-10-25',
-        priority: 'High',
-    },
-     {
-        title: 'OCT-KR3',
-        description: 'Deliver RED Campaign sessions to parents/teachers',
-        currentProgress: 0,
-        target: 250,
-        deadline: '2025-10-31',
-        priority: 'High',
-    },
-    {
-        title: 'OCT-KR4',
-        description: 'Secure new partnership commitments',
-        currentProgress: 0,
-        target: 6,
-        deadline: '2025-10-31',
-        priority: 'Medium',
-    },
-    {
-        title: 'OCT-KR5',
-        description: 'Finalize Football Gala framework',
-        currentProgress: 25,
-        target: 100,
-        deadline: '2025-10-28',
-        priority: 'Medium',
-    },
-    {
-        title: 'OCT-KR6',
-        description: 'Standardize YAP Chapter SOPs',
-        currentProgress: 10,
-        target: 100,
-        deadline: '2025-10-25',
-        priority: 'Low',
-    },
-     {
-        title: 'OCT-KR7',
-        description: 'Implement digital field tracking system',
-        currentProgress: 50,
-        target: 100,
-        deadline: '2025-10-31',
-        priority: 'Medium',
-    },
-    {
-        title: 'OCT-KR8',
-        description: 'Develop 10 Dignity Pad prototypes',
-        currentProgress: 0,
-        target: 10,
-        deadline: '2025-10-21',
-        priority: 'High',
-    },
-];
 
 
 export const sampleTeamWeeklyPlans: Omit<TeamWeeklyPlan, 'id' | 'createdAt'>[] = [
