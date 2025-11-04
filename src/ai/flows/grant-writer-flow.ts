@@ -12,6 +12,7 @@ import { KNOWLEDGE_BASE } from '@/lib/data';
 const GrantWriterInputSchema = z.object({
   partnerName: z.string().describe("The name of the potential funder or partner."),
   amountRequested: z.number().describe("The amount of funding being requested in UGX."),
+  proposalTitle: z.string().describe("The title of the proposal project."),
 });
 export type GrantWriterInput = z.infer<typeof GrantWriterInputSchema>;
 
@@ -34,7 +35,7 @@ const grantWriterPrompt = ai.definePrompt({
   - Structure the note with the following sections: ### Introduction, ### Problem Statement, ### Our Proven Solution, ### Budget Overview.
   - Keep it concise and impactful.`,
   prompt: `
-Draft a concept note for a proposal to **{{partnerName}}**.
+Draft a concept note for a proposal titled "**{{proposalTitle}}**" to be sent to **{{partnerName}}**.
 
 The amount we are requesting is **{{amountRequested}} UGX**.
 

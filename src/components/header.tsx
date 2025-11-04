@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FolderKanban, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake } from 'lucide-react';
+import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FileSignature, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -67,8 +67,8 @@ function QuickAddMenu() {
                         </Link>
                     </DropdownMenuItem>
                      <DropdownMenuItem asChild>
-                        <Link href="/management/resources">
-                            <FolderKanban className="mr-2 h-4 w-4" />
+                        <Link href="/management/finance">
+                            <FileSignature className="mr-2 h-4 w-4" />
                             <span>New Proposal</span>
                         </Link>
                     </DropdownMenuItem>

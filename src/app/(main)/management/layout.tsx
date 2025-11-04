@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -30,7 +29,7 @@ export default function ManagementLayout({
       'Programs & Partnerships Manager', 
       'Operations & Field Manager',
       'Media & Finance Lead',
-      'Media & Communications Lead', // Added this role
+      'Media & Communications Lead',
   ];
 
   if (!managementRoles.includes(effectiveRole || '')) {

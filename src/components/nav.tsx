@@ -28,6 +28,7 @@ import {
   CheckCircle,
   TrendingUp,
   Receipt,
+  FileSignature,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -84,8 +85,9 @@ const navConfig = {
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },
     { href: '/management/projects', icon: Briefcase, label: 'Projects' },
     { href: '/management/partnerships', icon: Handshake, label: 'Partnerships' },
-    { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead'] },
-    { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead'] },
+    { href: '/management/operational-plan', icon: FileSignature, label: 'Operational Plan', roles: ['Executive Director', 'Programs & Partnerships Manager'] },
+    { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'] },
+    { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'] },
     { href: '/management/metrics', icon: TrendingUp, label: 'Metrics (KPIs)' },
     { href: '/management/workplans', icon: CalendarCheck, label: 'Team Workplans' },
     { href: '/management/equipment', icon: Box, label: 'Equipment' },
