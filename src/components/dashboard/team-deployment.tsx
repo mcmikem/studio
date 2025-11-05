@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -72,7 +71,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
       
       if (userCheckin) {
         checkinTime = format(userCheckin.timestamp.toDate(), 'p');
-        if (userCheckin.details.timeBlocks) {
+        if (userCheckin.details?.timeBlocks) {
           for (const block of userCheckin.details.timeBlocks) {
             try {
               const now = currentTime;
