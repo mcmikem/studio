@@ -36,11 +36,14 @@ export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
 // The main flow function that orchestrates the AI's response
 export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     try {
+        // IMPORTANT: Reverse history so the most recent messages are last.
+        const history = input.history ? [...input.history].reverse() : [];
+
         // Call the Gemini model with the prepared prompt and history
         const llmResponse = await ai.generate({
             model: 'googleai/gemini-2.5-flash',
             prompt: `UserId: ${input.userId}. User's message: "${input.question}"`,
-            history: input.history,
+            history: history,
             system: `${KNOWLEDGE_BASE}
             
 ## Tool Usage Instructions & Dynamic Knowledge

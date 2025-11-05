@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -99,7 +98,7 @@ function NewEventForm({ onFormSubmit, defaultDate }: { onFormSubmit: () => void,
                 />
                 {errors.category && <p className="text-sm text-destructive">{`${errors.category.message}`}</p>}
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
                     <Input id="location" {...register("location")} placeholder="e.g., Youth Centre" />

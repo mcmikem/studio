@@ -38,7 +38,9 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                 </Avatar>
                 <div>
                     <div className="flex items-center gap-2">
-                        <CardTitle>{checkin.name}'s Daily Plan</CardTitle>
+                        <Link href={`/profile?userId=${checkin.userId}`} className="hover:underline">
+                            <CardTitle>{checkin.name}'s Daily Plan</CardTitle>
+                        </Link>
                         {checkin.mood && (
                             <span title={`Feeling: ${checkin.mood}`} className="text-xl">{moodIcons[checkin.mood]}</span>
                         )}

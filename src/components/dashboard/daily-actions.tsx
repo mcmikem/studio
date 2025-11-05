@@ -49,7 +49,7 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
     }, []);
 
     const { currentTask, timeRemaining, progress } = useMemo(() => {
-        if (!checkin?.details.timeBlocks || !currentTime) {
+        if (!checkin?.details?.timeBlocks || !currentTime) {
           return { currentTask: null, timeRemaining: 0, progress: 0 };
         }
     
