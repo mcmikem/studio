@@ -43,7 +43,7 @@ import { PlusCircle, Edit, Trash2, ListChecks, Loader2, Wand } from 'lucide-reac
 import type { TaskTemplate } from '@/lib/types';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Textarea } from '../ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 import { generateTemplate } from '@/ai/flows/generate-template-flow';
 
 const templateSchema = z.object({
