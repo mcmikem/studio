@@ -100,10 +100,11 @@ function ImpactStoryGeneratorContent() {
             challengesLearned: selectedActivity.challengesLearned,
         };
     } else if (selectedCheckout) {
+        const primaryTask = selectedCheckout.tasks[0]?.description || 'daily activities';
         const quote = selectedCheckout.learning || (selectedCheckout.tomorrowPlan ? `Tomorrow's focus: ${selectedCheckout.tomorrowPlan}` : "Reflecting on another impactful day.");
         input = {
             activityName: `Daily update from ${selectedCheckout.name}`,
-            activityDescription: selectedCheckout.task,
+            activityDescription: primaryTask,
             activityImpact: `A daily report from our ${selectedCheckout.role}.`,
             userName: selectedCheckout.name,
             userQuote: quote,
@@ -196,7 +197,7 @@ function ImpactStoryGeneratorContent() {
                  <CardContent className="text-sm pt-4 space-y-1">
                     {isCheckout ? (
                        <>
-                        <p><strong>Task:</strong> {(dataToDisplay as Checkout).task}</p>
+                        <p><strong>Task:</strong> {(dataToDisplay as Checkout).tasks[0]?.description}</p>
                         <p><strong>Learning:</strong> {(dataToDisplay as Checkout).learning}</p>
                        </>
                     ) : (

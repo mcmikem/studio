@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -100,7 +99,7 @@ function ProposalForm({ proposal, onFormSubmit }: { proposal?: Partial<Proposal>
         }
         setIsGeneratingNote(true);
         try {
-            const result = await writeConceptNote({ partnerName, amountRequested });
+            const result = await writeConceptNote({ partnerName, amountRequested, proposalTitle: watch('title') });
             setValue('conceptNote', result.conceptNote);
             toast({ title: 'Concept Note Generated!', description: 'The AI has drafted a concept note for you.' });
         } catch (err) {

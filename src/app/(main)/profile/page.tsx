@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { useUser, useFirestore, useMemoFirebase, useCollection, updateDocumentNonBlocking } from '@/firebase';
 import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown, LogOut as LogOutIcon, Settings, ChevronsUpDown, Eye } from 'lucide-react';
 import { collection, query, where, orderBy, limit, doc } from 'firebase/firestore';
-import type { RecentCheckout } from '@/lib/types';
+import type { Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserTasks } from '@/components/profile/user-tasks';
@@ -56,7 +56,7 @@ function RecentUserCheckouts() {
   }, [user, firestore]); 
 
   const { data: checkouts, isLoading } =
-    useCollection<RecentCheckout>(checkoutsQuery);
+    useCollection<Checkout>(checkoutsQuery);
 
   return (
     <Card>

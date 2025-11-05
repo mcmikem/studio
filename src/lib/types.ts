@@ -17,6 +17,7 @@ export type WeeklyActivity = {
   'PTA Meeting': number;
 };
 
+// This is now deprecated and replaced by the full Checkout type.
 export type RecentCheckout = {
   id?: string;
   name: string;

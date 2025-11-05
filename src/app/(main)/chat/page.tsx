@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -19,6 +20,7 @@ import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
 import { omutoAIFlow } from '@/ai/flows/omuto-ai-flow';
 import { Badge } from '@/components/ui/badge';
+import { SmartReminders } from '@/components/dashboard/smart-reminders';
 
 function MessageItem({ message }: { message: Message }) {
   const { user } = useUser();
@@ -177,6 +179,7 @@ export default function ChatPage() {
           </ScrollArea>
           
           <div className="p-4 border-t space-y-4">
+            {profile && <SmartReminders profile={profile} />}
             <div className='flex items-center gap-2 overflow-x-auto pb-2'>
                  <Button variant="outline" size="sm" onClick={() => handleQuickAction('Plan my day')}>
                     <CalendarCheck className="h-4 w-4 mr-2" /> Plan My Day
