@@ -53,14 +53,10 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
 
     return keyResults.map(kr => {
       let link = '/management/projects'; // Default link
-      if (kr.title?.includes('KR1')) link = '/management/finance';
-      if (kr.title?.includes('KR2')) link = '/activity-log';
-      if (kr.title?.includes('KR3')) link = '/activity-log';
-      if (kr.title?.includes('KR4')) link = '/management/partnerships';
-      if (kr.title?.includes('KR5')) link = '/management/projects';
-      if (kr.title?.includes('KR6')) link = '/management/templates';
-      if (kr.title?.includes('KR7')) link = '/reports';
-      if (kr.title?.includes('KR8')) link = '/management/equipment';
+      if (kr.title?.includes('KR1')) link = '/plan';
+      if (kr.title?.includes('KR2')) link = '/plan';
+      if (kr.title?.includes('KR3')) link = '/management/partnerships';
+      if (kr.title?.includes('KR4')) link = '/plan';
       
       return { ...kr, link };
     });
@@ -103,14 +99,18 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
 
 
   const formatTarget = (kr: KeyResult) => {
-    if (kr.title?.includes('KR1')) return `${((kr.target || 0) / 1000000).toFixed(1)}M UGX`;
-    if (kr.target === 100 && (kr.title?.includes('KR5') || kr.title?.includes('KR6') || kr.title?.includes('KR7'))) return `${kr.target}%`;
+    if (kr.title?.includes('KR1')) return `${kr.target}%`; // Backlog is a %
+    if (kr.title?.includes('KR2')) return `${kr.target} Units`;
+    if (kr.title?.includes('KR3')) return `${kr.target} MOUs`;
+    if (kr.title?.includes('KR4')) return `${kr.target}%`;
     return kr.target.toLocaleString();
   }
 
   const formatProgress = (kr: KeyResult) => {
-    if (kr.title?.includes('KR1')) return `${((kr.currentProgress || 0) / 1000000).toFixed(1)}M`;
-    if (kr.target === 100 && (kr.title?.includes('KR5') || kr.title?.includes('KR6') || kr.title?.includes('KR7'))) return `${kr.currentProgress}%`;
+    if (kr.title?.includes('KR1')) return `${kr.currentProgress}%`;
+    if (kr.title?.includes('KR2')) return `${kr.currentProgress} Units`;
+    if (kr.title?.includes('KR3')) return `${kr.currentProgress} MOUs`;
+    if (kr.title?.includes('KR4')) return `${kr.currentProgress}%`;
     return kr.currentProgress.toLocaleString();
   }
 

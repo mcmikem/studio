@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin } from "@/lib/types"
+import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin, Expense } from "@/lib/types"
 import { Alerts } from "./alerts"
 import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
@@ -164,7 +164,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
             <EcosystemPulse activities={activities} />
-            <KeyResultsTracker title="October Plan - Strategic Overview" description="Live progress on the October 2025 plan vs. funds and time." />
+            <KeyResultsTracker title="November Plan - Strategic Overview" description="Live progress on the November 2025 plan vs. funds and time." />
              <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">

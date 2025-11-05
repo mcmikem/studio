@@ -15,6 +15,7 @@ import { DashboardCalendar } from "./dashboard-calendar"
 import { QuickAddTask } from "./quick-add-task"
 import { useMemo } from "react"
 import { MyWeeklyPlan } from "./my-weekly-plan"
+import { ApprovalQueue } from "./approval-queue"
 
 
 interface DashboardProps {
@@ -55,10 +56,11 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
     <>
      <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <KeyResultsTracker showAtRisk />
+            <KeyResultsTracker showAtRisk title="November Plan - Key Results"/>
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins}/>
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
+            <ApprovalQueue />
             <QuickAddTask />
             <MyWeeklyPlan />
             <DashboardCalendar />
