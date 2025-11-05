@@ -82,6 +82,7 @@ const navConfig = {
      { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
      { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
      { href: '/testimonies', icon: Video, label: 'Testimony Library' },
+     { href: '/checklists', icon: ListChecks, label: 'Checklists' },
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },
@@ -93,7 +94,7 @@ const navConfig = {
     { href: '/management/metrics', icon: TrendingUp, label: 'Metrics (KPIs)' },
     { href: '/management/workplans', icon: CalendarCheck, label: 'Team Workplans' },
     { href: '/management/equipment', icon: Box, label: 'Equipment' },
-    { href: '/management/templates', icon: ListChecks, label: 'Checklists' },
+    { href: '/management/templates', icon: ListChecks, label: 'Templates' },
     { href: '/management/users', icon: UserIcon, label: 'User Roles' },
   ],
 };
