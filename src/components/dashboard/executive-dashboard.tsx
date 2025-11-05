@@ -22,10 +22,10 @@ import { MyWeeklyPlan } from "./my-weekly-plan"
 import { ApprovalQueue } from "./approval-queue"
 
 
-function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
+function EcosystemPulse({ activities, programs }: { activities: Activity[] | null, programs: Program[] | null }) {
 
     const { inspire, empower, sustain } = useMemo(() => {
-        if (!activities) {
+        if (!activities || !programs) {
             return { inspire: 0, empower: 0, sustain: 0 };
         }
 
@@ -36,15 +36,20 @@ function EcosystemPulse({ activities }: { activities: Activity[] | null }) {
             return isAfter(act.loggedAt.toDate(), thirtyDaysAgo)
         });
 
-        const inspireCount = recentActivities.filter(a => (a as any).ecosystem_phase === 'Identify & Inspire').length;
-        const empowerCount = recentActivities.filter(a => (a as any).ecosystem_phase === 'Equip & Empower').length;
+        // Inspire = Number of active programs
+        const inspireCount = programs.filter(p => p.status === 'On Track').length;
+
+        // Empower = Number of YoSkills activities
+        const empowerCount = recentActivities.filter(a => a.ecosystem_phase === 'Equip & Empower').length;
+        
+        // Sustain = Revenue from "Activate & Sustain" activities
         const sustainRevenue = recentActivities
-            .filter(a => (a as any).ecosystem_phase === 'Activate & Sustain')
+            .filter(a => a.ecosystem_phase === 'Activate & Sustain')
             .reduce((sum, act) => sum + act.totalValue, 0);
 
         return { inspire: inspireCount, empower: empowerCount, sustain: sustainRevenue };
 
-    }, [activities]);
+    }, [activities, programs]);
 
     return (
         <Card className="hover:bg-card/90 transition-colors">
@@ -159,12 +164,15 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
     const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
+    const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs')) : null, [firestore]);
+    const { data: programs } = useCollection<Program>(programsQuery);
+
   return (
     <>
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <EcosystemPulse activities={activities} />
-            <KeyResultsTracker title="November Plan - Strategic Overview" description="Live progress on the November 2025 plan vs. funds and time." />
+            <EcosystemPulse activities={activities} programs={programs} />
+            <KeyResultsTracker showAtRisk title="November Plan - Strategic Overview" description="Live progress on the November 2025 plan vs. funds and time." />
              <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
