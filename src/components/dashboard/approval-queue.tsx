@@ -48,6 +48,7 @@ export function ApprovalQueue() {
                     priority: 'Medium',
                     action: `/my-finances`,
                     creatorId: currentUser.uid,
+                    targetUserIds: [expense.userId]
                 });
             }
         } catch (error) {
