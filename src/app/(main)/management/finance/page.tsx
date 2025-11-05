@@ -114,7 +114,7 @@ function IncomeForm({ income, onFormSubmit }: { income?: Income | null; onFormSu
     formState: { errors, isSubmitting },
   } = useForm<IncomeFormData>({
     resolver: zodResolver(incomeSchema),
-    defaultValues: isEditMode ? {
+    defaultValues: isEditMode && income ? {
         ...income,
         dateReceived: formatDateSafe(income.dateReceived, 'iso')
     } : {
@@ -126,12 +126,14 @@ function IncomeForm({ income, onFormSubmit }: { income?: Income | null; onFormSu
   const onSubmit = (data: IncomeFormData) => {
     if (!firestore) return;
 
+    const incomeData = { ...data, dateReceived: data.dateReceived };
+
     if (isEditMode && income) {
         const docRef = doc(firestore, 'income', income.id);
-        updateDocumentNonBlocking(docRef, data);
+        updateDocumentNonBlocking(docRef, incomeData);
         toast({ title: "Income Updated!", description: `${formatCurrency(data.amount)} from ${data.source} has been updated.`});
     } else {
-        const newIncome = { ...data, createdAt: serverTimestamp() };
+        const newIncome = { ...incomeData, createdAt: serverTimestamp() };
         addDocumentNonBlocking(collection(firestore, 'income'), newIncome);
         toast({ title: 'Income Logged!', description: `${formatCurrency(data.amount)} from ${data.source} has been recorded.` });
     }
@@ -220,7 +222,7 @@ function ExpenseForm({ expense, onFormSubmit }: { expense?: Expense | null, onFo
     watch,
   } = useForm<DirectExpenseFormData>({
     resolver: zodResolver(directExpenseSchema),
-    defaultValues: isEditMode ? {
+    defaultValues: isEditMode && expense ? {
         title: expense.title,
         amount: expense.totalAmount,
         date: formatDateSafe(expense.date, 'iso'),
@@ -700,5 +702,3 @@ export default function FinancePage() {
     </div>
   );
 }
-
-    
