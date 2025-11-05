@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { collection, writeBatch, getDocs } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
 import { Loader2, Wand, FileSignature, AlertTriangle, CheckCircle } from 'lucide-react';
 import { parseOperationalPlan } from '@/ai/flows/parse-operational-plan-flow';
