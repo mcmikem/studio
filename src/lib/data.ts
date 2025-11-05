@@ -1,6 +1,6 @@
 
 
-import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert, TeamWeeklyPlan, Expense, Income } from './types';
+import { PlanGoal, TeamMemberRole, SuccessMetric, CalendarEvent, StatCard, KeyResult, User, Program, Partnership, Project, ImpactMetric, Alert, TeamWeeklyPlan, Expense, Income, TaskTemplate } from './types';
 import { AlertTriangle, Info } from 'lucide-react';
 import { startOfWeek, setDate } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
@@ -302,6 +302,32 @@ export const sampleHistoricalExpenses: Omit<Expense, 'id' | 'createdAt'>[] = [
   { userId: 'system', userName: 'System Seed', date: '2025-08-20', title: 'Butambala Field Visit', type: 'Reimbursement', items: [{ description: 'Transport for field coordinator', category: 'Transport', amount: 150000 }], totalAmount: 150000, status: 'Acknowledged' },
   { userId: 'system', userName: 'System Seed', date: '2025-09-10', title: 'Media Team Content Day', type: 'Requisition', items: [{ description: 'Fuel and subject facilitation', category: 'Media', amount: 200000 }], totalAmount: 200000, status: 'Acknowledged' },
 ];
+
+export const sampleTaskTemplates: Omit<TaskTemplate, 'id' | 'createdAt'>[] = [
+  {
+    title: 'Field Visit Preparation',
+    checklistItems: [
+      'Confirm appointment with school/community',
+      'Prepare materials and equipment (e.g., posters, sign-in sheets)',
+      'Check and confirm transport arrangements',
+      'Brief volunteers/interns on their roles and responsibilities',
+      'Charge all necessary devices (phones, cameras)',
+      'Review field visit objectives and talking points',
+    ],
+  },
+  {
+    title: 'New Partnership Outreach',
+    checklistItems: [
+      'Research potential partner and identify alignment',
+      'Identify the correct contact person',
+      'Draft a personalized outreach email or message',
+      'Prepare a one-page summary of Omuto Foundation\'s work',
+      'Schedule a discovery call or meeting',
+      'Log the new partner in the CRM with status "Prospecting"',
+      'Set a follow-up reminder',
+    ],
+  },
+];
     
 
     
@@ -312,3 +338,4 @@ export const sampleHistoricalExpenses: Omit<Expense, 'id' | 'createdAt'>[] = [
 
 
     
+

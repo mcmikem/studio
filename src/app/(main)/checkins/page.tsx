@@ -21,6 +21,13 @@ import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
+const moodIcons: { [key: string]: string } = {
+  energized: '⚡️',
+  focused: '🎯',
+  calm: '🧘‍♀️',
+  overwhelmed: '🥵',
+};
+
 function CheckinCard({ checkin }: { checkin: Checkin }) {
     return (
         <Card>
@@ -30,7 +37,12 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                      <AvatarFallback>{checkin.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle>{checkin.name}'s Daily Plan</CardTitle>
+                    <div className="flex items-center gap-2">
+                        <CardTitle>{checkin.name}'s Daily Plan</CardTitle>
+                        {checkin.mood && (
+                            <span title={`Feeling: ${checkin.mood}`} className="text-xl">{moodIcons[checkin.mood]}</span>
+                        )}
+                    </div>
                     <CardDescription>{formatDateSafe(checkin.timestamp)}</CardDescription>
                 </div>
             </CardHeader>
