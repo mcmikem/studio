@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { collection, writeBatch, getDocs, doc } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
-import { Loader2, Wand, FileSignature, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Loader2, Wand, FileSignature, CheckCircle } from 'lucide-react';
 import { parseOperationalPlan } from '@/ai/flows/parse-operational-plan-flow';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import {
@@ -83,8 +83,8 @@ export default function OperationalPlanPage() {
     try {
       // Step 1: Delete all existing key results
       const existingDocsSnapshot = await getDocs(krCollection);
-      existingDocsSnapshot.forEach(doc => {
-        batch.delete(doc.ref);
+      existingDocsSnapshot.forEach(docSnapshot => {
+        batch.delete(docSnapshot.ref);
       });
 
       // Step 2: Add all new key results

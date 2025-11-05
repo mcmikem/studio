@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '../ui/button';
-import { ArrowRight, LogIn, LogOut, Sparkles, Check, Clock, Target as TargetIcon } from 'lucide-react';
+import { LogIn, LogOut, Sparkles, Check, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { Checkin } from '@/lib/types';
@@ -19,6 +19,7 @@ import { isWithinInterval, parse, startOfDay, differenceInMilliseconds, isValid 
 import { Skeleton } from '../ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { BrainCircuit } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 
 function formatDuration(ms: number) {
@@ -38,6 +39,7 @@ interface DailyActionsProps {
 export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsProps) {
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const { toast } = useToast();
+    const router = useRouter();
 
     useEffect(() => {
         // This ensures the Date object is only created on the client side
@@ -86,6 +88,7 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
             title: "Let's get you unstuck!",
             description: "Redirecting you to the AI Coach for assistance.",
         });
+        router.push('/chat');
     }
   
   if (isLoadingCheckin || !currentTime) {
@@ -155,13 +158,11 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
                     <Progress value={progress} className="h-2"/>
                 </div>
                 <div className="flex items-center gap-4 pt-4">
-                    <Button className="flex-1" size="lg">
+                    <Button className="flex-1" size="lg" onClick={() => toast({ title: 'Task Marked Complete!', description: `Great job on finishing: "${currentTask}"`})}>
                         <Check className="mr-2 h-5 w-5" /> Mark Complete
                     </Button>
-                    <Button variant="outline" className="flex-1" size="lg" asChild onClick={handleStuck}>
-                        <Link href="/chat">
-                             <BrainCircuit className="mr-2 h-5 w-5" /> I'm Stuck?
-                        </Link>
+                    <Button variant="outline" className="flex-1" size="lg" onClick={handleStuck}>
+                         <BrainCircuit className="mr-2 h-5 w-5" /> I'm Stuck?
                     </Button>
                 </div>
             </Card>

@@ -22,14 +22,10 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, User, Calendar, DollarSign, AreaChart } from 'lucide-react';
 import type { Activity } from '@/lib/types';
-import { formatDateSafe } from '@/lib/utils';
+import { formatDateSafe, formatCurrency } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', minimumFractionDigits: 0 }).format(value);
-};
 
 
 export default function ActivityLogPage() {
@@ -76,13 +72,10 @@ export default function ActivityLogPage() {
                   <Card key={activity.id}>
                     <CardHeader>
                       <CardTitle>{activity.title}</CardTitle>
+                      <CardDescription>by {activity.userName}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4 text-sm">
-                      <div className="flex items-center text-muted-foreground">
-                        <User className="h-4 w-4 mr-2" />
-                        <span>Logged by {activity.userName}</span>
-                      </div>
-                      <div className="flex items-center text-muted-foreground">
+                       <div className="flex items-center text-muted-foreground">
                          <Calendar className="h-4 w-4 mr-2" />
                          <span>{formatDateSafe(activity.loggedAt)}</span>
                       </div>
