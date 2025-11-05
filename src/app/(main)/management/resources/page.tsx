@@ -22,7 +22,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, orderBy, doc, serverTimestamp } from 'firebase/firestore';
 import type { Partnership, Proposal } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, Goal, Building, PlusCircle, Edit, Trash2, Search, Loader2, Wand } from 'lucide-react';
+import { Handshake, Goal, Building, PlusCircle, Edit, Trash2, Search, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -38,9 +38,6 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { formatDateSafe } from '@/lib/utils';
 import { format } from 'date-fns';
 import { findGrants, type GrantFinderOutput } from '@/ai/flows/grant-finder-flow';
-import { Textarea } from '@/components/ui/textarea';
-import { writeConceptNote } from '@/ai/flows/grant-writer-flow';
-import { PartnershipForm } from '@/components/management/partnerships/partnership-form';
 
 
 const formatCurrency = (value: number) => {
@@ -58,7 +55,6 @@ const proposalSchema = z.object({
     status: z.enum(['Draft', 'Submitted', 'In Review', 'Approved', 'Rejected']),
     submissionDate: z.string().min(1, "Submission date is required."),
     decisionDate: z.string().optional(),
-    conceptNote: z.string().optional(),
 });
 
 type ProposalFormData = z.infer<typeof proposalSchema>;
@@ -75,8 +71,7 @@ const formatDateForInput = (date: string | Date | undefined): string => {
 function ProposalForm({ proposal, onFormSubmit }: { proposal?: Partial<Proposal>; onFormSubmit: () => void }) {
     const firestore = useFirestore();
     const { toast } = useToast();
-    const [isGeneratingNote, setIsGeneratingNote] = useState(false);
-    const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset, watch, setValue } = useForm<ProposalFormData>({
+    const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = useForm<ProposalFormData>({
         resolver: zodResolver(proposalSchema),
         defaultValues: {
             title: proposal?.title || '',
@@ -85,29 +80,8 @@ function ProposalForm({ proposal, onFormSubmit }: { proposal?: Partial<Proposal>
             status: proposal?.status || 'Draft',
             submissionDate: formatDateForInput(proposal?.submissionDate),
             decisionDate: formatDateForInput(proposal?.decisionDate),
-            conceptNote: proposal?.conceptNote || '',
         }
     });
-
-    const partnerName = watch('partnerName');
-    const amountRequested = watch('amountRequested');
-
-    const handleGenerateConceptNote = async () => {
-        if (!partnerName || !amountRequested) {
-            toast({ variant: 'destructive', title: 'Missing Information', description: 'Please enter a partner name and requested amount first.'});
-            return;
-        }
-        setIsGeneratingNote(true);
-        try {
-            const result = await writeConceptNote({ partnerName, amountRequested, proposalTitle: watch('title') });
-            setValue('conceptNote', result.conceptNote);
-            toast({ title: 'Concept Note Generated!', description: 'The AI has drafted a concept note for you.' });
-        } catch (err) {
-            toast({ variant: 'destructive', title: 'AI Error', description: 'Failed to generate concept note.' });
-        } finally {
-            setIsGeneratingNote(false);
-        }
-    };
 
     const onSubmit = (data: ProposalFormData) => {
         if (!firestore) return;
@@ -148,16 +122,6 @@ function ProposalForm({ proposal, onFormSubmit }: { proposal?: Partial<Proposal>
                     <Input id="amountRequested" type="number" {...register('amountRequested')} />
                     {errors.amountRequested && <p className="text-sm text-destructive">{`${errors.amountRequested.message}`}</p>}
                 </div>
-            </div>
-             <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                    <Label htmlFor="conceptNote">Concept Note</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateConceptNote} disabled={isGeneratingNote}>
-                        {isGeneratingNote ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Wand className="h-4 w-4 mr-2" />}
-                        Write with AI
-                    </Button>
-                </div>
-                <Textarea id="conceptNote" {...register('conceptNote')} placeholder="A brief summary of the project proposal..." className="min-h-[150px]" />
             </div>
             <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-2">
@@ -283,7 +247,7 @@ function GrantDiscovery() {
       </CardContent>
     </Card>
      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-xl">
+        <DialogContent>
             <DialogHeader>
                 <DialogTitle>Add New Proposal</DialogTitle>
                 <DialogDescription>Review and save the discovered opportunity to your tracker.</DialogDescription>
@@ -461,7 +425,7 @@ function ProposalTracker() {
                     <DialogTrigger asChild>
                         <Button><PlusCircle className="mr-2 h-4 w-4" /> New Proposal</Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-xl">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Add New Proposal</DialogTitle>
                             <DialogDescription>Enter the details for a new funding proposal.</DialogDescription>
@@ -541,7 +505,7 @@ function ProposalTracker() {
             </CardContent>
              {editingProposal && (
                 <Dialog open={!!editingProposal} onOpenChange={(open) => !open && setEditingProposal(null)}>
-                    <DialogContent className="max-w-xl">
+                    <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Edit Proposal</DialogTitle>
                             <DialogDescription>Update the details for "{editingProposal.title}".</DialogDescription>

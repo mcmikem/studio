@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import type { Checkin } from '@/lib/types';
 import { Progress } from '../ui/progress';
 import { useState, useEffect, useMemo } from 'react';
-import { isWithinInterval, parse, startOfDay, differenceInMilliseconds } from 'date-fns';
+import { isWithinInterval, parse, startOfDay, differenceInMilliseconds, isValid } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { BrainCircuit } from 'lucide-react';
@@ -36,16 +36,18 @@ interface DailyActionsProps {
 }
 
 export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsProps) {
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const { toast } = useToast();
 
     useEffect(() => {
+        // This ensures the Date object is only created on the client side
+        setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
     const { currentTask, timeRemaining, progress } = useMemo(() => {
-        if (!checkin?.details.timeBlocks) {
+        if (!checkin?.details.timeBlocks || !currentTime) {
           return { currentTask: null, timeRemaining: 0, progress: 0 };
         }
     
@@ -54,9 +56,17 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
     
         for (const block of checkin.details.timeBlocks) {
           try {
+            // Add defensive checks for time format
+            if (!block.startTime || !block.endTime) continue;
+
             const startTime = parse(block.startTime, 'hh:mm a', baseDate);
             const endTime = parse(block.endTime, 'hh:mm a', baseDate);
     
+             if (!isValid(startTime) || !isValid(endTime)) {
+                console.error("Invalid time format in time block:", block);
+                continue;
+            }
+
             if (isWithinInterval(now, { start: startTime, end: endTime })) {
               const remaining = differenceInMilliseconds(endTime, now);
               const totalDuration = differenceInMilliseconds(endTime, startTime);
@@ -78,7 +88,7 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
         });
     }
   
-  if (isLoadingCheckin) {
+  if (isLoadingCheckin || !currentTime) {
       return <Skeleton className="h-48 w-full" />
   }
 

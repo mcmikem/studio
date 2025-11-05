@@ -55,11 +55,15 @@ function NewTaskForm() {
     if (!user || !firestore) return;
 
     const tasksCollection = collection(firestore, 'users', user.uid, 'tasks');
-    const newTask = {
-      ...data,
+    const newTask: Partial<Task> = {
+      title: data.title,
       completed: false,
       createdAt: serverTimestamp(),
     };
+    if (data.dueDate) {
+        newTask.dueDate = data.dueDate;
+    }
+    
     addDocumentNonBlocking(tasksCollection, newTask);
     toast({
       title: 'Task Added!',
@@ -91,7 +95,6 @@ export function UserTasks() {
 
   const tasksQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    // Simplified query: Only order by creation date. Filtering will be done on the client.
     return query(
       collection(firestore, 'users', user.uid, 'tasks'),
       orderBy('createdAt', 'desc')
@@ -114,7 +117,6 @@ export function UserTasks() {
     }
   };
 
-  // Client-side filtering
   const { pendingTasks, completedTasks } = useMemo(() => {
     const pending: Task[] = [];
     const completed: Task[] = [];

@@ -73,10 +73,14 @@ function PlannerCheckinFormComponent() {
   const [isLoadingWeeklyPlan, setIsLoadingWeeklyPlan] = useState(true);
 
   const fetchWeeklyPlan = useCallback(async () => {
-    if (!user || !firestore) return;
+    if (!user || !firestore) {
+        setIsLoadingWeeklyPlan(false);
+        return;
+    }
     setIsLoadingWeeklyPlan(true);
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
+    start.setHours(0,0,0,0);
     const weekStartTimestamp = Timestamp.fromDate(start);
 
     const q = query(

@@ -27,6 +27,7 @@ export function MyWeeklyPlan() {
 
     const today = new Date();
     const start = startOfWeek(today, { weekStartsOn: 1 });
+    start.setHours(0,0,0,0);
     const weekStartTimestamp = Timestamp.fromDate(start);
 
     const q = query(

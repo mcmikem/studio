@@ -2,19 +2,20 @@
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { RecentCheckout } from '@/lib/types';
+import type { RecentCheckout, Checkout } from '@/lib/types';
 import { Skeleton } from '../ui/skeleton';
 import { Badge } from '../ui/badge';
 import { tagColors } from '@/lib/data';
 import { formatDateSafe } from '@/lib/utils';
-import { MessageSquareText } from 'lucide-react';
+import { MessageSquareText, Check, X } from 'lucide-react';
 import { EmptyState } from '../ui/empty-state';
 
-function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
+function CheckoutItem({ checkout }: { checkout: Checkout }) {
   const timeAgo = formatDateSafe(checkout.timestamp);
 
   // Extract all hashtags from the task
-  const tags = checkout.task?.match(/#\w+/g) || [];
+  const completedTasks = checkout.tasks?.filter(t => t.status === 'Done') || [];
+  const notCompletedTasks = checkout.tasks?.filter(t => t.status === 'Not Done') || [];
   
   const getInitials = (name?: string) => {
     if (!name) return 'U';
@@ -31,28 +32,32 @@ function CheckoutItem({ checkout }: { checkout: RecentCheckout }) {
         <AvatarImage src={checkout.avatar} alt={checkout.name} />
         <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
       </Avatar>
-      <div className="grid gap-1 flex-1">
+      <div className="grid gap-2 flex-1">
         <div className="flex items-center justify-between">
             <p className="text-sm font-medium leading-none">{checkout.name}</p>
             <div className="text-xs text-muted-foreground whitespace-nowrap">{timeAgo}</div>
         </div>
-        <p className="text-sm text-muted-foreground">{checkout.task}</p>
-         {tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 pt-1">
-                {tags.map(tag => (
-                    <Badge key={tag} variant="outline" className={tagColors[tag as keyof typeof tagColors] || tagColors['#Update']}>
-                        {tag}
-                    </Badge>
-                ))}
-            </div>
-        )}
+        <div className="text-sm text-muted-foreground space-y-2">
+            {completedTasks.map((task, i) => (
+                <div key={`done-${i}`} className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span>{task.description}</span>
+                </div>
+            ))}
+            {notCompletedTasks.map((task, i) => (
+                <div key={`not-done-${i}`} className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                    <span className="line-through">{task.description}</span>
+                </div>
+            ))}
+        </div>
       </div>
     </div>
   );
 }
 
 
-export function RecentCheckouts({ checkouts }: { checkouts: RecentCheckout[] | null }) {
+export function RecentCheckouts({ checkouts }: { checkouts: Checkout[] | null }) {
 
   return (
       <div className="space-y-4">
