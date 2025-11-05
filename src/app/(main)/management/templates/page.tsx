@@ -39,10 +39,12 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, ListChecks, Loader2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ListChecks, Loader2, Wand } from 'lucide-react';
 import type { TaskTemplate } from '@/lib/types';
 import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Textarea } from '../ui/textarea';
+import { generateTemplate } from '@/ai/flows/generate-template-flow';
 
 const templateSchema = z.object({
   title: z.string().min(3, 'Template title is required.'),
@@ -54,9 +56,11 @@ type TemplateFormData = z.infer<typeof templateSchema>;
 function TemplateForm({
   template,
   onFormSubmit,
+  initialData,
 }: {
   template?: TaskTemplate;
   onFormSubmit: () => void;
+  initialData?: Partial<TemplateFormData>;
 }) {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -68,9 +72,9 @@ function TemplateForm({
     reset,
   } = useForm<TemplateFormData>({
     resolver: zodResolver(templateSchema),
-    defaultValues: template
+    defaultValues: initialData || (template
       ? { title: template.title, checklistItems: template.checklistItems.map(item => ({ value: item })) }
-      : { title: '', checklistItems: [{ value: '' }] },
+      : { title: '', checklistItems: [{ value: '' }] }),
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -137,8 +141,82 @@ function TemplateForm({
   );
 }
 
+function NewTemplateDialog() {
+    const [isOpen, setIsOpen] = useState(false);
+    const [description, setDescription] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { toast } = useToast();
+    const [aiGeneratedData, setAiGeneratedData] = useState<Partial<TemplateFormData> | null>(null);
+
+    const handleGenerate = async () => {
+        if (!description.trim()) {
+            toast({ variant: 'destructive', title: 'Description is empty', description: 'Please describe the template you want to create.' });
+            return;
+        }
+        setIsLoading(true);
+        try {
+            const result = await generateTemplate({ description });
+            setAiGeneratedData({
+                title: result.title,
+                checklistItems: result.checklistItems.map(item => ({ value: item }))
+            });
+        } catch (error) {
+            console.error("AI template generation error:", error);
+            toast({ variant: 'destructive', title: 'AI Error', description: 'Could not generate template. Please try again.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleOpenChange = (open: boolean) => {
+        setIsOpen(open);
+        if (!open) {
+            setDescription('');
+            setAiGeneratedData(null);
+        }
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+            <DialogTrigger asChild>
+                <Button>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    New Template
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Create New Task Template</DialogTitle>
+                    <DialogDescription>
+                        {aiGeneratedData ? "Review and edit the AI-generated template below." : "Describe the checklist you want to create, and AI will build it for you."}
+                    </DialogDescription>
+                </DialogHeader>
+                {!aiGeneratedData ? (
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Template Description</Label>
+                            <Textarea
+                                id="description"
+                                placeholder="e.g., A checklist for onboarding a new volunteer, including paperwork, system setup, and initial tasks."
+                                value={description}
+                                onChange={e => setDescription(e.target.value)}
+                                className="min-h-[120px]"
+                            />
+                        </div>
+                        <Button onClick={handleGenerate} disabled={isLoading} className="w-full">
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
+                            Generate with AI
+                        </Button>
+                    </div>
+                ) : (
+                    <TemplateForm onFormSubmit={() => handleOpenChange(false)} initialData={aiGeneratedData} />
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 export default function TemplatesPage() {
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | null>(null);
   const { toast } = useToast();
   
@@ -170,23 +248,7 @@ export default function TemplatesPage() {
               Create and manage reusable checklists for common tasks.
             </CardDescription>
           </div>
-          <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                New Template
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Create New Task Template</DialogTitle>
-                <DialogDescription>
-                  Define a new reusable checklist for your team.
-                </DialogDescription>
-              </DialogHeader>
-              <TemplateForm onFormSubmit={() => setIsNewDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          <NewTemplateDialog />
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
