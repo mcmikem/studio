@@ -6,62 +6,162 @@ import { startOfWeek, setDate } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 
 
-export const KNOWLEDGE_BASE = `You are an expert AI assistant for the Omuto Foundation, a youth-led nonprofit in Mpigi, Uganda. Your role is to provide accurate, helpful, and concise information to team members, acting as a professional guide for planning, reporting, data analysis, and M&E. You must ensure all guidance aligns with Omuto's operational standards and philosophy.
+export const KNOWLEDGE_BASE = `# **OMUTO FOUNDATION - NOVEMBER 2025 REALITY-BASED LOGICAL FRAMEWORK**
+**"Complete, Launch, Prepare"**
 
-You have access to live data about the organization through your tools. Use them whenever possible to provide real-time information.
+---
 
-This is your knowledge base. It is the complete operational DNA of Omuto Foundation.
+## **1. STRATEGIC OBJECTIVES MATRIX**
 
-## CORE IDENTITY & BELIEF SYSTEM
-- **Organization**: Omuto Foundation
-- **Motto**: "Empowering Youth, Transforming Communities"
-- **Founded**: 2019
-- **Location**: Mpigi District, Uganda
-- **Core Belief**: "We do not run six separate programs. We manage a single, integrated ecosystem that transforms a young person into a self-reliant community leader."
-- **Single Goal**: To create a self-sustaining cycle of youth-led development.
+| Hierarchy | Description | Key Results & Indicators | Means of Verification | Critical Assumptions |
+|-----------|-------------|--------------------------|---------------------|---------------------|
+| **Goal** | **Foundation Building** - Complete October backlogs, launch sustainable initiatives, and prepare for December scale | • 100% October backlog clearance<br>• 2 new initiatives successfully launched<br>• Team coordination score 4.0+<br>• December ready with proven systems | • Backlog completion reports<br>• Launch success metrics<br>• Weekly coordination surveys<br>• December detailed plan | • Team can focus on completion vs new initiatives<br>• Quality standards can be maintained<br>• Market responds positively to products |
+| **Strategic Objectives** | **1. Clear October Backlogs** - Complete all carry-over tasks with quality<br>**2. Launch Omuto Essentials** - Establish product business with market validation<br>**3. Secure OFA Foundation** - Build partnership base for December launch<br>**4. Achieve Operational Basics** - 100% Omuto Central adoption + team coordination | **KR1:** Tree planting completed + documentary finished + data documented<br>**KR2:** 50+ products sold with 85% customer satisfaction<br>**KR3:** 3 partnership commitments with signed MOUs<br>**KR4:** 100% app adoption + coordination score 4.0+ | • Tree planting reports + final video<br>• Sales records + customer feedback<br>• Partnership database + MOUs<br>• App analytics + team surveys | • Backlogs can be completed in Week 1<br>• Products meet quality standards<br>• Partners see mutual value proposition<br>• Team adapts to new systems |
 
-## THE OMUTO ECOSYSTEM MODEL
-### Three Phases of Youth Journey:
-- **PHASE 1: IDENTIFY & INSPIRE**: Entry points are the Student Leaders Forum (SLF) in schools (training RED Brigades for health and Green Teams for environment) and the Football Alliance in the community. The bridge is Interschool Debates.
-- **PHASE 2: EQUIP & EMPOWER**: The Youth Innovation Summit provides entrepreneurship training. YAP Chapters (village-based youth groups) design community projects with Omuto's mentorship and support.
-- **PHASE 3: ACTIVATE & SUSTAIN**: YoSkills Circles offer vocational training (computing, baking, tailoring, soap-making). Omuto Essentials is the social enterprise producing soap and sanitary pads. Community Mobilization happens through the Omuto Cup and advocacy events.
+---
 
-### Three Supporting Pillars:
-- **Omuto Pulse**: The media arm, acting as the ecosystem's nervous system and megaphone.
-- **Talent Pipeline**: Nsamizi Internships leading to the Change Makers Academy, our leadership factory.
-- **Youth Centre**: The physical hub for all ecosystem activities.
+## **2. INTEGRATED ACTIVITY FRAMEWORK**
 
-## CURRENT TEAM STRUCTURE (October 2025)
-- **McMike Mutumba (Executive Director)**: Strategic leadership, partnerships, vision.
-- **Nansikombi Dianah (Programs & Partnerships Manager)**: Oversees all programs, partnership development, reporting.
-- **Kasirye Constantine (Operations & Field Manager)**: Field ops, logistics, volunteer coordination.
-- **Alex Nsereko (Media & Comms Lead + Finance)**: Omuto Pulse, social media, storytelling, financial accountability. Works with Jimmy (Videographer/Photographer).
-- **Bwire Bashir (Field Coordinator, Butambala)**: School visits, youth clubs, RED & GreenSchools campaigns, field reporting.
-- **Mr. Jon Paul Akera (Consultant, Resource Mobilisation Lead)**: Donor engagement, funding strategy, proposal writing.
+### **WEEK 1 (Nov 3-7): BACKLOG CLEARANCE & FOUNDATION**
+*Theme: "Finish What We Started"*
 
-## ACTIVE PROGRAMS & CAMPAIGNS
-- **Omuto Youth Project (OYP)**: Includes SLF, RED Campaign (Menstrual Health), GreenSchools Campaign, PureWater Initiative, YoSkills, and YAP.
-- **Omuto Talents Project (OTP)**: Includes Omuto Football Alliance (OFA), Omuto Cup.
-- **Omuto Pulse**: Media platform.
-- **Omuto Essentials**: Social enterprise for soap (8 outlets, new Watermelon wash) and Dignity Pads (in development).
+| Priority | Activities | Responsible | Key Outputs | Success Verification |
+|----------|------------|-------------|-------------|---------------------|
+| **Backlog Clearance** | • Complete 510 tree planting<br>• Finalize Dignity Pads production<br>• Install sewing machine at COD site | Kasirye (70%)<br>Zam (production)<br>Diana (coordination) | • Trees planted with survival plan<br>• 100 pads produced, quality tested<br>• Machine operational with trained users | • Photos + report in Omuto Central<br>• Quality test results<br>• Training completion records |
+| **Documentary Completion** | • Finalize RED Campaign filming<br>• Complete editing<br>• Publish final video | Alex + Jimmy (100% focus) | • 3-min documentary ready<br>• Social media promotion<br>• Impact stories captured | • Video file in Omuto Central<br>• Publishing metrics<br>• Beneficiary consent forms |
+| **App Adoption Launch** | • Train all team on Omuto Central<br>• Migrate all reporting to app<br>• Establish check-in protocol | McMike (enforcement)<br>All Team (compliance) | • 100% team using app<br>• All check-ins via app<br>• Finance tracking active | • App usage reports<br>• Check-in compliance data<br>• Financial records accuracy |
 
-## OCTOBER 2025 IMPLEMENTATION PLAN (Key Results)
-- **KR1 (Fundraising)**: Increase Cycle of Dignity funding from 800K to 2M UGX by Oct 31.
-- **KR2 (GreenSchools)**: Plant remaining 510 trees (of 700) by Oct 25.
-- **KR3 (RED Campaign)**: Deliver sessions to 200 parents & 50 teachers by Oct 31.
-- **KR4 (Partnerships)**: Secure 6 new partnership commitments by Oct 31.
-- "KR5 (Football Gala)": Complete framework (venue, budget, etc.) by Oct 28.
-- **KR6 (YAP Chapters)**: Standardize SOPs for volunteers by Oct 25.
-- **KR7 (Data)**: Implement field mapping and digital tracking system by Oct 31.
-- **KR8 (Dignity Pads)**: Create 10 sample units of 5 prototype types by Oct 21.
+### **WEEK 2 (Nov 10-14): PRODUCT LAUNCH & PARTNERSHIP START**
+*Theme: "Market Entry & Relationship Building"*
 
-## OPERATIONAL PHILOSOPHY & APPROACHES
-- **Community-Led Execution**: Shift from staff-doing to community-owning. Use local volunteers and campus ambassadors.
-- **Multiple Wins Framework**: Every activity must serve multiple purposes (e.g., combine trips, capture content, identify volunteers).
-- **Template-Driven Efficiency**: Use standardized forms and SOPs for consistency.
-- **Daily Operating Rhythm**: 9 AM WhatsApp check-in, 5 PM checkout, Friday reviews, Sunday "Omuto This Week" publication.
-- **Innovation & Sustainability**: Focus on models like commission-based production for Dignity Pads and non-financial motivation for volunteers.
-- **Data-Driven Adaptation**: Use real-time data to track progress, monitor health, and mitigate risks.
+| Priority | Activities | Responsible | Key Outputs | Success Verification |
+|----------|------------|-------------|-------------|---------------------|
+| **Omuto Essentials Launch** | • Establish 3 sales channels<br>• Launch marketing campaign<br>• Collect customer feedback | Kasirye (60%)<br>Alex (marketing support)<br>All Team (promotion) | • Products in market<br>• Initial sales achieved<br>• Customer feedback system | • Sales records in app<br>• Channel agreements<br>• Customer testimonials |
+| **OFA Partnership Outreach** | • Identify 15 potential partners<br>• Develop partnership package<br>• Conduct 3 exploratory meetings | Diana (80%)<br>McMike (high-level meetings) | • Qualified partner list<br>• Customized proposals<br>• Meeting commitments | • Outreach logs in app<br>• Proposal documents<br>• Meeting minutes |
+| **Team Coordination** | • Implement daily check-in system<br>• Weekly priority alignment<br>• Blocker resolution | All Team (compliance)<br>McMike (facilitation) | • Smooth coordination<br>• Clear weekly priorities<br>• Quick problem-solving | • Coordination score 4.0+<br>• Weekly goal achievement<br>• Reduced misunderstandings |
+
+### **WEEK 3 (Nov 17-21): MOMENTUM & VALIDATION**
+*Theme: "Proof of Concept"*
+
+| Priority | Activities | Responsible | Key Outputs | Success Verification |
+|----------|------------|-------------|-------------|---------------------|
+| **Product Business Validation** | • Analyze sales data<br>• Optimize production<br>• Scale successful channels | Kasirye (70%)<br>Diana (customer feedback) | • Sales trends identified<br>• Production improvements<br>• Channel performance data | • Sales analysis report<br>• Process improvements<br>• Revenue projections |
+| **Partnership Commitment** | • Finalize MOU drafts<br>• Secure 3 commitments<br>• Plan December activation | Diana (80%)<br>McMike (approvals) | • Signed MOUs<br>• Resource commitments<br>• Launch timeline | • MOU copies in app<br>• Partner confirmations<br>• Activation plan |
+| **Communications Maintenance** | • Social media consistency<br>• Documentary promotion<br>• Impact storytelling | Alex + Jimmy (30% time) | • Steady audience engagement<br>• Documentary views<br>• Program awareness | • Engagement metrics<br>• Viewership numbers<br>• Community feedback |
+
+### **WEEK 4 (Nov 24-28): CONSOLIDATION & DECEMBER PREP**
+*Theme: "Learning and Scaling"*
+
+| Priority | Activities | Responsible | Key Outputs | Success Verification |
+|----------|------------|-------------|-------------|---------------------|
+| **Monthly Review & Learning** | • Analyze November performance<br>• Document successes/failures<br>• Identify improvements | All Team (input)<br>McMike (synthesis) | • November success report<br>• Lessons learned document<br>• Process improvements | • Monthly report in app<br>• Improvement initiatives<br>• Team feedback |
+| **December Planning** | • Detailed OFA launch plan<br>• Product scaling strategy<br>• Resource allocation | Diana (OFA plan)<br>Kasirye (production plan)<br>McMike (integration) | • Actionable December plan<br>• Clear targets and timelines<br>• Budget and resources aligned | • December plan document<br>• Role assignments<br>• Budget approval |
+| **Systems Reinforcement** | • App usage optimization<br>• Coordination protocol refinement<br>• Capacity assessment | McMike (systems)<br>All Team (feedback) | • Efficient workflows<br>• Reduced friction<br>• Realistic capacity planning | • System efficiency metrics<br>• Team satisfaction<br>• December capacity model |
+
+---
+
+## **3. INDIVIDUAL ACCOUNTABILITY & CAPACITY**
+
+### **Kasirye (Operations Manager)**
+**Primary Focus (70%):** Product Business & Backlog Clearance
+- Week 1: Tree planting + pads production + machine installation
+- Week 2: Product launch + sales channel setup
+- Week 3: Sales optimization + production scaling
+- Week 4: Business analysis + December planning
+
+**Secondary (30%):** Field operations + data collection in Omuto Central
+
+### **Diana (Programs Manager)**
+**Primary Focus (70%):** Partnerships & Backlog Coordination
+- Week 1: Backlog coordination + sewing machine setup
+- Week 2: Partner identification + outreach
+- Week 3: MOU development + commitment securing
+- Week 4: December OFA launch planning
+
+**Secondary (30%):** Customer feedback + communications support
+
+### **Alex (Media Lead)**
+**Primary Focus (60%):** Documentary Completion & Communications
+- Week 1: Documentary finalization and publishing
+- Week 2-4: Maintenance mode - consistent social media presence
+
+**Secondary (40%):** Product marketing support + impact storytelling
+
+### **Jimmy (Media Officer)**
+**Primary Focus (80%):** Production Quality & Technical Support
+- Week 1: Documentary editing and finishing
+- Week 2-4: Technical support + content creation
+
+**Secondary (20%):** Equipment management + platform optimization
+
+### **McMike (Executive Director)**
+**Primary Focus:** Priority Protection & Quality Assurance
+- Week 1: App adoption enforcement + backlog completion
+- Week 2: Partnership high-level meetings + product quality
+- Week 3: Strategic decisions + coordination oversight
+- Week 4: Monthly synthesis + December strategy
+
+---
+
+## **4. SUCCESS METRICS & PROGRESS TRACKING**
+
+### **Weekly Health Dashboard**
+| Metric | Week 1 Target | Week 2 Target | Week 3 Target | Week 4 Target |
+|--------|---------------|---------------|---------------|---------------|
+| **Backlog Completion** | 100% | N/A | N/A | N/A |
+| **Product Sales** | N/A | 15 units | 30 units | 50+ units |
+| **Partnership Progress** | N/A | 3 meetings | 2 commitments | 3 commitments |
+| **App Adoption** | 100% | 100% | 100% | 100% |
+| **Team Coordination** | 4.0+ | 4.0+ | 4.0+ | 4.5+ |
+
+### **Quality Gates (Must Pass to Proceed)**
+- **Week 1 Gate:** All backlogs cleared + app adoption achieved
+- **Week 2 Gate:** Products launched + partner outreach completed
+- **Week 3 Gate:** Sales momentum + partnership commitments
+- **Week 4 Gate:** December plan ready + team energized
+
+---
+
+## **5. RISK MANAGEMENT & CONTINGENCY**
+
+| Risk Scenario | Mitigation Strategy | Trigger for Action | Contingency Plan |
+|---------------|---------------------|-------------------|------------------|
+| **Backlogs not cleared Week 1** | Daily progress tracking, reallocate resources | Day 3 behind schedule | Extend to Day 5, protect Week 2 priorities |
+| **Product quality issues** | Batch testing, customer feedback loops | Any quality complaints | Immediate production halt, root cause analysis |
+| **Low partner response** | Diverse outreach, existing network leverage | Week 2: <2 meetings | Expand prospect list, adjust value proposition |
+| **Team coordination breakdown** | Daily check-ins, clear priorities, quick conflict resolution | Coordination score <4.0 | Emergency team meeting, simplify processes |
+| **App adoption resistance** | Training, leadership modeling, technical support | Day 2: <80% compliance | One-on-one coaching, simplify requirements |
+
+---
+
+## **6. RESOURCE ALLOCATION & BUDGET**
+
+| Category | Allocation (UGX) | Specific Use | Accountability |
+|----------|------------------|-------------|---------------|
+| **Backlog Completion** | 200,000 | Tree planting materials, sewing machine setup, documentary finishing | Kasirye + Diana |
+| **Product Launch** | 400,000 | Production materials, packaging, marketing, sales channels | Kasirye |
+| **Partnership Development** | 250,000 | Meeting costs, materials development, communication | Diana |
+| **Operational Systems** | 100,000 | App support, training materials, coordination tools | McMike |
+| **Contingency** | 50,000 | Unexpected opportunities, emergency needs | McMike |
+| **TOTAL** | **1,000,000** | | |
+
+---
+
+## **7. DEFINITION OF SUCCESS**
+
+**November 2025 is successful when:**
+- ✅ October backlogs are 100% completed with quality
+- ✅ Omuto Essentials is generating revenue with happy customers
+- ✅ OFA has committed partners ready for December launch
+- ✅ Team works cohesively using Omuto Central consistently
+- ✅ December plan is detailed and achievable
+
+**November is NOT successful if:**
+- ❌ We start December with new backlogs
+- ❌ Product quality is compromised for speed
+- ❌ Partnerships are rushed and unsustainable
+- ❌ Team is burned out and coordination is poor
+- ❌ December planning is vague and unrealistic
 `;
 
 
@@ -88,27 +188,24 @@ export const quickStats: Omit<StatCard, 'icon'>[] = [
 
 export const nonNegotiableGoals: PlanGoal[] = [
     {
-        title: "Girl Child Day (Oct 11)",
-        description: "Our flagship public event that builds visibility, recruits future leaders, and raises crucial funds.",
-        details: "Success: 150+ students engaged, 300K raised, campus ambassadors recruited."
+        title: "Clear October Backlogs",
+        description: "Complete all carry-over tasks with quality.",
+        details: "Tree planting, documentary finishing, data documentation."
     },
     {
-        title: "Fundraising Target (1.5M by Oct 31)",
-        description: "Resources that enable everything else we do.",
-        details: "Success: 60% from new donors, clear pipeline for November."
+        title: "Launch Omuto Essentials",
+        description: "Establish product business with market validation.",
+        details: "50+ products sold with 85% customer satisfaction."
     },
-    {
-        title: "RED Campaign Documentary (Oct 26)",
-        description: "Professional storytelling that drives future fundraising and awareness.",
-        details: "Success: High-quality video used in donor meetings and social media."
+     {
+        title: "Secure OFA Foundation",
+        description: "Build partnership base for December launch.",
+        details: "3 partnership commitments with signed MOUs."
     },
 ];
 
 export const flexibleTargets: PlanGoal[] = [
-    { title: "PTA Meetings (3 schools)", description: "Build relationships and gather feedback.", details: "" },
-    { title: "Tree Planting (510 trees with 85% survival)", description: "Environmental impact and community engagement.", details: "" },
-    { title: "Dignity Pads (5 prototype types)", description: "Develop our social enterprise.", details: "" },
-    { title: "Newsletter (2 Sunday editions)", description: "Keep our community informed and engaged.", details: "" },
+    { title: "Achieve Operational Basics", description: "100% Omuto Central adoption + team coordination.", details: "" },
 ];
 
 export const sampleUsers: Omit<User, 'id'>[] = [

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -61,6 +62,7 @@ const navConfig = {
   home: [
     { href: '/chat', icon: Sparkles, label: 'AI Coach' },
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/plan', icon: FileSignature, label: 'Operational Plan' },
   ],
   myDay: [
      { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
