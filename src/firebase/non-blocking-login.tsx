@@ -93,6 +93,14 @@ export const isEmailApproved = (email: string | null): boolean => {
   return Object.keys(approvedUsers).includes(email.toLowerCase())
 }
 
+const sampleKeyResults = [
+    { title: 'NOV-KR1', description: 'Clear October Backlogs (tree planting, documentary, data)', currentProgress: 0, target: 100, deadline: '2025-11-07', priority: 'High' },
+    { title: 'NOV-KR2', description: 'Launch Omuto Essentials & Sell 50+ Products', currentProgress: 0, target: 50, deadline: '2025-11-28', priority: 'High' },
+    { title: 'NOV-KR3', description: 'Secure 3 OFA Partnership Commitments (MOUs)', currentProgress: 0, target: 3, deadline: '2025-11-21', priority: 'High' },
+    { title: 'NOV-KR4', description: 'Achieve 100% Omuto Central Adoption & Coordination', currentProgress: 0, target: 100, deadline: '2025-11-28', priority: 'Medium' },
+];
+
+
 async function seedInitialData(db: Firestore, userId: string) {
   console.log("Checking if initial data seeding is needed...")
   
@@ -103,6 +111,7 @@ async function seedInitialData(db: Firestore, userId: string) {
   const collectionsToSeed = [
     { name: "programs", data: samplePrograms },
     { name: "partnerships", data: samplePartnerships },
+    { name: "key-results", data: sampleKeyResults },
     { name: "projects", data: sampleProjects },
     { name: "impact-metrics", data: sampleImpactMetrics },
     { name: "alerts", data: sampleAlerts },
@@ -137,7 +146,7 @@ async function seedUserTasks(db: Firestore, userId: string) {
     const userTasksCollection = collection(db, "users", userId, "tasks");
     const initialTasks = [
       { title: "Complete your profile information", completed: false, createdAt: serverTimestamp() },
-      { title: "Review the October Operational Plan", completed: false, createdAt: serverTimestamp() },
+      { title: "Review the November Operational Plan", completed: false, createdAt: serverTimestamp() },
       { title: "Explore your new dashboard", completed: false, createdAt: serverTimestamp() },
     ];
     const userBatch = writeBatch(db);
