@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -779,7 +780,6 @@
             "$ref": "#/entities/Alert"
         },
         "read": "request.auth.uid in resource.data.targetUserIds || resource.data.targetUserIds.size() == 0",
-        "list": "request.auth != null",
         "description": "Stores system-wide alerts and notifications."
     },
     "/key-results/{keyResultId}": {
