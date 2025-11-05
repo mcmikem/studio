@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -262,67 +261,57 @@ function PlannerCheckinFormComponent() {
       
       {profile ? (
         <>
-            { !weeklyPlan ? (
-                <CardContent className="text-center py-12">
-                    <p className="text-muted-foreground">You must set your weekly workplan before creating a daily plan.</p>
-                    <Button asChild className="mt-4">
-                        <Link href="/workplan">
-                            Set Weekly Workplan
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                    </Button>
-                </CardContent>
-            ) : (
-                <form onSubmit={handleMissionSubmit(onPlanGenerate)}>
-                    <CardContent className="space-y-6 pt-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="primaryMission" className="text-lg">What is your main focus for today?</Label>
-                            <Textarea
-                                id="primaryMission"
-                                placeholder="e.g., Finalize RED Campaign report and meet new partners. Also need to follow up with the tech team on the website updates."
-                                {...registerMission('primaryMission')}
-                                className="min-h-[100px]"
-                            />
-                            {missionErrors.primaryMission && (
-                                <p className="text-sm text-destructive">{missionErrors.primaryMission.message}</p>
-                            )}
-                        </div>
+            <form onSubmit={handleMissionSubmit(onPlanGenerate)}>
+                <CardContent className="space-y-6 pt-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="primaryMission" className="text-lg">What is your main focus for the day?</Label>
+                        <Textarea
+                            id="primaryMission"
+                            placeholder="e.g., Finalize RED Campaign report and meet new partners. Also need to follow up with the tech team on the website updates."
+                            {...registerMission('primaryMission')}
+                            className="min-h-[100px]"
+                        />
+                        {missionErrors.primaryMission && (
+                            <p className="text-sm text-destructive">{missionErrors.primaryMission.message}</p>
+                        )}
+                    </div>
 
-                         <div className="space-y-3">
-                            <Label className="text-lg">How are you feeling today?</Label>
-                            <Controller
-                                name="mood"
-                                control={missionControl}
-                                render={({ field }) => (
-                                    <RadioGroup
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                    className="flex flex-wrap gap-4"
-                                    >
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="energized" id="energized" />
-                                        <Label htmlFor="energized" className="cursor-pointer">⚡️ Energized & Ready</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="focused" id="focused" />
-                                        <Label htmlFor="focused" className="cursor-pointer">🎯 Focused</Label>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="calm" id="calm" />
-                                        <Label htmlFor="calm" className="cursor-pointer">🧘‍♀️ Calm & Steady</Label>
-                                    </div>
-                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="overwhelmed" id="overwhelmed" />
-                                        <Label htmlFor="overwhelmed" className="cursor-pointer">🥵 A Bit Overwhelmed</Label>
-                                    </div>
-                                    </RadioGroup>
-                                )}
-                            />
-                             {missionErrors.mood && (
-                                <p className="text-sm text-destructive">{missionErrors.mood.message}</p>
+                      <div className="space-y-3">
+                        <Label className="text-lg">How are you feeling today?</Label>
+                        <Controller
+                            name="mood"
+                            control={missionControl}
+                            render={({ field }) => (
+                                <RadioGroup
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                                className="flex flex-wrap gap-4"
+                                >
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="energized" id="energized" />
+                                    <Label htmlFor="energized" className="cursor-pointer">⚡️ Energized & Ready</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="focused" id="focused" />
+                                    <Label htmlFor="focused" className="cursor-pointer">🎯 Focused</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="calm" id="calm" />
+                                    <Label htmlFor="calm" className="cursor-pointer">🧘‍♀️ Calm & Steady</Label>
+                                </div>
+                                  <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="overwhelmed" id="overwhelmed" />
+                                    <Label htmlFor="overwhelmed" className="cursor-pointer">🥵 A Bit Overwhelmed</Label>
+                                </div>
+                                </RadioGroup>
                             )}
-                        </div>
-                        
+                        />
+                          {missionErrors.mood && (
+                            <p className="text-sm text-destructive">{missionErrors.mood.message}</p>
+                        )}
+                    </div>
+                    
+                    {weeklyPlan && (
                         <Alert variant="default" className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
                             <AlertTitle>Your Personal Priorities This Week</AlertTitle>
                             <AlertDescription>
@@ -331,34 +320,34 @@ function PlannerCheckinFormComponent() {
                             </ul>
                             </AlertDescription>
                         </Alert>
-                    </CardContent>
-                    <CardFooter className="flex-wrap gap-4">
-                        <Button type="submit" disabled={isGeneratingPlan} size="lg">
-                            {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                            {generationStatus === 'loading' ? 'Generating...' : generationStatus === 'retrying' ? 'Retrying...' : 'Brainstorm My Daily Plan'}
-                        </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="lg">
-                                    <ListChecks className="mr-2 h-4 w-4" />
-                                    Use a Template
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                {taskTemplates && taskTemplates.length > 0 ? (
-                                    taskTemplates.map(template => (
-                                        <DropdownMenuItem key={template.id} onClick={() => applyTemplate(template)}>
-                                            {template.title}
-                                        </DropdownMenuItem>
-                                    ))
-                                ) : (
-                                    <DropdownMenuItem disabled>No templates found.</DropdownMenuItem>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </CardFooter>
-                </form>
-            )}
+                    )}
+                </CardContent>
+                <CardFooter className="flex-wrap gap-4">
+                    <Button type="submit" disabled={isGeneratingPlan} size="lg">
+                        {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        {generationStatus === 'loading' ? 'Generating...' : generationStatus === 'retrying' ? 'Retrying...' : 'Brainstorm My Daily Plan'}
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="lg">
+                                <ListChecks className="mr-2 h-4 w-4" />
+                                Use a Template
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            {taskTemplates && taskTemplates.length > 0 ? (
+                                taskTemplates.map(template => (
+                                    <DropdownMenuItem key={template.id} onClick={() => applyTemplate(template)}>
+                                        {template.title}
+                                    </DropdownMenuItem>
+                                ))
+                            ) : (
+                                <DropdownMenuItem disabled>No templates found.</DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </CardFooter>
+            </form>
           
           {isGeneratingPlan && (
               <div className="flex flex-col items-center justify-center p-10 space-y-2">
@@ -481,5 +470,3 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
-
-    
