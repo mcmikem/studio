@@ -1,7 +1,8 @@
 
+
 "use client"
 
-import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin, Expense } from "@/lib/types"
+import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin, Expense, Partnership } from "@/lib/types"
 import { Alerts } from "./alerts"
 import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
@@ -53,7 +54,7 @@ function EcosystemPulse({ activities, programs }: { activities: Activity[] | nul
 
     return (
         <Card className="hover:bg-card/90 transition-colors">
-            <Link href="/activity-log">
+            <Link href="/meal">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Globe className="h-6 w-6" /> Ecosystem Pulse</CardTitle>
                     <CardDescription>A high-level view of the Omuto Ecosystem's health in the last 30 days.</CardDescription>
@@ -143,13 +144,10 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
     const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
     
-    // Query for last 60 days of activities for pulse and effectiveness calcs
-    const sixtyDaysAgo = subDays(new Date(), 60);
     const activitiesQuery = useMemoFirebase(() => {
         if (!firestore) return null;
         return query(
             collection(firestore, 'activities'), 
-            where('loggedAt', '>=', Timestamp.fromDate(sixtyDaysAgo)),
             orderBy('loggedAt', 'desc')
         );
     }, [firestore]);

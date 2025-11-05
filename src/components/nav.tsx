@@ -79,8 +79,8 @@ const navConfig = {
   ],
   dataReporting: [
      { href: '/forms', icon: ClipboardEdit, label: 'Forms Hub' },
+     { href: '/meal', icon: BarChart3, label: 'MEAL Hub' },
      { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
-     { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
      { href: '/record-testimony', icon: Video, label: 'Record Testimony' },
      { href: '/testimonies', icon: FileText, label: 'Testimony Library' },
   ],
