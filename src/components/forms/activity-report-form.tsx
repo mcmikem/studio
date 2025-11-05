@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,7 @@ export function ActivityReportForm() {
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [goalQuantity, setGoalQuantity] = useState(0);
 
+  // New state for program-specific fields
   const [parentsAttended, setParentsAttended] = useState(0);
   const [teachersAttended, setTeachersAttended] = useState(0);
   const [treesPlanted, setTreesPlanted] = useState(0);
