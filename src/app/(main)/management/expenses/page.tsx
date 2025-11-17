@@ -7,7 +7,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -37,12 +36,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, doc, where, getDocs } from 'firebase/firestore';
-import type { Expense, User } from '@/lib/types';
+import { collection, query, orderBy, doc, where } from 'firebase/firestore';
+import type { Expense, User, ExpenseItem } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, Receipt, CheckCheck, Undo2, Edit, Trash2 } from 'lucide-react';
+import { Check, X, Receipt, CheckCheck, Undo2, Edit, Trash2, Eye } from 'lucide-react';
 import { useMemo, useEffect, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
@@ -70,6 +69,47 @@ const typeColors: { [key: string]: string } = {
     Reimbursement: 'border-purple-500 bg-purple-500/10 text-purple-500',
 };
 
+
+function ExpenseDetailsDialog({ expense, isOpen, onOpenChange }: { expense: Expense, isOpen: boolean, onOpenChange: (open: boolean) => void }) {
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>{expense.title}</DialogTitle>
+                    <DialogDescription>
+                        Expense report from {expense.userName} on {formatDateSafe(expense.date, 'dateOnly')}.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Item</TableHead>
+                                <TableHead>Category</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {expense.items.map((item, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>{item.description}</TableCell>
+                                    <TableCell>{item.category}</TableCell>
+                                    <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                                </TableRow>
+                            ))}
+                             <TableRow className="font-bold bg-muted/50">
+                                <TableCell colSpan={2}>Total Amount</TableCell>
+                                <TableCell className="text-right">{formatCurrency(expense.totalAmount)}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+
 function ExpensesContent() {
   const firestore = useFirestore();
   const { user: currentUser } = useUser();
@@ -79,6 +119,7 @@ function ExpensesContent() {
   const highlightedExpenseId = searchParams.get('highlight');
   
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [viewingExpense, setViewingExpense] = useState<Expense | null>(null);
 
   const expensesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -158,13 +199,11 @@ function ExpensesContent() {
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
 
-        // --- Notification Logic ---
         let messageToUser = '';
         let targetUserIds: string[] | undefined;
         let priority: 'High' | 'Medium' | 'Low' = 'Medium';
         let action = '/my-finances';
 
-        // 1. Notify the original user about the status change.
         if (expense.userId !== currentUser.uid) {
             targetUserIds = [expense.userId];
             if (status === 'Approved') {
@@ -189,17 +228,18 @@ function ExpensesContent() {
             }
         }
 
-        // 2. If approved, notify the finance team to disburse funds.
         if (status === 'Approved' && financeUsers) {
-            const financeTeamIds = financeUsers.map(u => u.id);
-            await createAlert({
-                type: 'Reminder',
-                priority: 'High',
-                message: `An expense report for ${expense.userName} (${formatCurrency(expense.totalAmount)}) is approved and needs disbursement.`,
-                action: `/management/expenses?highlight=${expense.id}`,
-                creatorId: currentUser.uid,
-                targetUserIds: financeTeamIds,
-            });
+            const financeTeamIds = financeUsers.map(u => u.id).filter(id => id !== currentUser.uid);
+            if (financeTeamIds.length > 0) {
+              await createAlert({
+                  type: 'Reminder',
+                  priority: 'High',
+                  message: `An expense report for ${expense.userName} (${formatCurrency(expense.totalAmount)}) is approved and needs disbursement.`,
+                  action: `/management/expenses?highlight=${expense.id}`,
+                  creatorId: currentUser.uid,
+                  targetUserIds: financeTeamIds,
+              });
+            }
         }
 
 
@@ -214,8 +254,7 @@ function ExpensesContent() {
 
    const handleDelete = (expense: Expense) => {
     if (!firestore) return;
-    const expenseRef = doc(firestore, 'expenses', expense.id);
-    deleteDocumentNonBlocking(expenseRef).then(() => {
+    deleteDocumentNonBlocking(doc(firestore, 'expenses', expense.id)).then(() => {
         toast({
             title: "Expense Deleted",
             description: `The expense report "${expense.title}" has been deleted.`,
@@ -286,6 +325,7 @@ function ExpensesContent() {
                                 </TableCell>
                                  <TableCell className="text-right">
                                     <div className="flex justify-end items-center gap-1">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewingExpense(expense)}><Eye className="h-4 w-4" /></Button>
                                         {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
                                           <div className="flex gap-1">
                                               <Button variant="ghost" size="icon" className="text-primary hover:text-primary h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
@@ -355,11 +395,12 @@ function ExpensesContent() {
                                         <span className="text-2xl font-bold">{formatCurrency(expense.totalAmount)}</span>
                                         <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
                                     </div>
-                                     <div className="flex justify-end items-center gap-1">
+                                     <div className="flex justify-end items-center gap-1 flex-wrap">
+                                        <Button variant="outline" size="sm" onClick={() => setViewingExpense(expense)}><Eye className="mr-2 h-4 w-4"/>View Details</Button>
                                         {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
                                           <div className="flex gap-1">
-                                              <Button variant="ghost" size="icon" className="text-primary hover:text-primary h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
-                                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
+                                              <Button size="sm" className="bg-green-500 hover:bg-green-600" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4 mr-1" />Approve</Button>
+                                              <Button size="sm" variant="destructive" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4 mr-1" />Reject</Button>
                                           </div>
                                         )}
                                         {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
@@ -421,12 +462,20 @@ function ExpensesContent() {
                     Update the details for "{editingExpense?.title}".
                 </DialogDescription>
             </DialogHeader>
-            <ExpenseReportForm
+            {editingExpense && <ExpenseReportForm
                 expense={editingExpense}
                 onSuccess={() => setEditingExpense(null)}
-            />
+            />}
         </DialogContent>
     </Dialog>
+
+    {viewingExpense && (
+        <ExpenseDetailsDialog 
+            expense={viewingExpense} 
+            isOpen={!!viewingExpense}
+            onOpenChange={() => setViewingExpense(null)}
+        />
+    )}
     </>
   );
 }

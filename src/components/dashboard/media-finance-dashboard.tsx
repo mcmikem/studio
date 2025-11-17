@@ -40,7 +40,7 @@ import { useToast } from "@/hooks/use-toast"
 import { createAlert } from "@/ai/flows/create-alert-flow"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { Badge } from "../ui/badge"
-import { doc, collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
+import { doc, collection, query, where, orderBy, Timestamp, limit, getDocs } from "firebase/firestore"
 import { startOfDay, startOfMonth } from "date-fns"
 import { Skeleton } from "../ui/skeleton"
 import { QuickAddTask } from "./quick-add-task"
@@ -232,6 +232,13 @@ function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
   const { user: currentUser } = useUser();
   const { profile } = useUserProfile(currentUser);
 
+  const approvalRoles = [
+      'Executive Director',
+      'Programs & Partnerships Manager',
+      'Operations & Field Manager'
+  ];
+  const canApprove = profile && approvalRoles.includes(profile.role);
+
   const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
   const canManageFinances = profile && financeRoles.includes(profile.role);
 
@@ -259,7 +266,7 @@ function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
           message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been ${status.toLowerCase()}.`,
           priority: 'Medium',
           action: `/management/expenses?highlight=${expense.id}`,
-          creatorId: user.uid,
+          creatorId: currentUser.uid,
           targetUserIds: [expense.userId],
         });
       }
@@ -291,7 +298,7 @@ function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
               </TableCell>
               <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
               <TableCell className="text-right">
-                {type === 'pending' && (
+                {type === 'pending' && canApprove && (
                   <div className="flex gap-2 justify-end">
                     <Button size="icon" variant="ghost" className="text-green-500 hover:text-green-600" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
                     <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>

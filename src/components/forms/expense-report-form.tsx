@@ -76,7 +76,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const isEditMode = !!expense;
-  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator'];
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
   const canSubmitForOthers = profile && financeRoles.includes(profile.role);
 
   const {
@@ -88,7 +88,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
     reset,
   } = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: isEditMode ? {
+    defaultValues: isEditMode && expense ? {
         ...expense,
         date: formatDateSafe(expense.date, 'iso'),
         submittedFor: expense.userId
@@ -189,14 +189,20 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                 description: `Your report has been sent for approval.`,
             });
 
-            // Create an alert for management
-            await createAlert({
-                type: 'Urgent',
-                message: `${expenseUserName} submitted an expense report for ${formatCurrency(finalTotal)}.`,
-                priority: 'High',
-                action: `/management/expenses?highlight=${docRef.id}`,
-                creatorId: user.uid,
-            });
+            const managementUsersQuery = query(collection(firestore, 'users'), where('role', 'in', ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager']));
+            const managementSnapshot = await getDocs(managementUsersQuery);
+            const managerIds = managementSnapshot.docs.map(d => d.id).filter(id => id !== user.uid);
+
+            if (managerIds.length > 0) {
+                 await createAlert({
+                    type: 'Urgent',
+                    message: `${expenseUserName} submitted an expense report for ${formatCurrency(finalTotal)}.`,
+                    priority: 'High',
+                    action: `/management/expenses?highlight=${docRef.id}`,
+                    creatorId: user.uid,
+                    targetUserIds: managerIds,
+                });
+            }
         }
         
         if (onSuccess) {
@@ -302,13 +308,13 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute top-1 right-1 h-6 w-6 sm:self-end"
+                            className="absolute top-1 right-1 h-6 w-6 sm:hidden"
                             onClick={() => remove(index)}
                         >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Remove Item</span>
                         </Button>
-                        <div className="space-y-2 sm:col-span-1">
+                        <div className="space-y-2 sm:col-span-2">
                             <Label htmlFor={`items.${index}.description`}>Description</Label>
                             <Input id={`items.${index}.description`} placeholder="e.g., Boda to Nindye SS" {...register(`items.${index}.description`)} />
                             {errors.items?.[index]?.description && <p className="text-sm text-destructive">{`${errors.items?.[index]?.description?.message}`}</p>}
@@ -334,10 +340,22 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                               )}
                             />
                         </div>
-                         <div className="space-y-2">
-                            <Label htmlFor={`items.${index}.amount`}>Amount</Label>
-                            <Input id={`items.${index}.amount`} type="number" placeholder="10000" {...register(`items.${index}.amount`)} />
-                             {errors.items?.[index]?.amount && <p className="text-sm text-destructive">{`${errors.items?.[index]?.amount?.message}`}</p>}
+                         <div className="flex items-end gap-2">
+                            <div className="space-y-2 flex-grow">
+                                <Label htmlFor={`items.${index}.amount`}>Amount</Label>
+                                <Input id={`items.${index}.amount`} type="number" placeholder="10000" {...register(`items.${index}.amount`)} />
+                                {errors.items?.[index]?.amount && <p className="text-sm text-destructive">{`${errors.items?.[index]?.amount?.message}`}</p>}
+                            </div>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-9 w-9 hidden sm:flex"
+                                onClick={() => remove(index)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Remove Item</span>
+                            </Button>
                         </div>
                     </div>
                 ))}

@@ -21,17 +21,17 @@ export const formatDateSafe = (
       // Handles Firestore Timestamps
       date = (dateValue as Timestamp).toDate();
     } else if (typeof dateValue === "string") {
-       // Handles ISO strings
-      date = parseISO(dateValue);
+      date = new Date(dateValue); // More robust for various string formats
+      if (!isValid(date)) {
+        date = parseISO(dateValue); // Fallback for strict ISO strings
+      }
     } else {
       // Handles native Date objects
       date = dateValue as Date;
     }
 
     if (!isValid(date)) {
-      // Fallback for non-standard date strings that parseISO fails on but new Date might handle
-      date = new Date(dateValue as string);
-      if (!isValid(date)) return "Invalid Date";
+      return "Invalid Date";
     }
 
     if (formatType === "distance") {

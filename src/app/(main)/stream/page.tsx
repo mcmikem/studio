@@ -23,11 +23,7 @@ import Link from 'next/link';
 
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
     
-    // The 'tasks' field might be an array or a single string for older documents.
-    // This provides backward compatibility.
-    const tasksArray = Array.isArray(checkout.tasks) 
-        ? checkout.tasks 
-        : (((checkout as any).task && typeof (checkout as any).task === 'string') ? [{ description: (checkout as any).task, status: 'Done'}] : []);
+    const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [];
 
     const completedTasks = tasksArray.filter(t => t.status === 'Done');
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
