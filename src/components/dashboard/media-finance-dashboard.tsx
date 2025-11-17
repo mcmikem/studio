@@ -45,6 +45,7 @@ import { startOfDay, startOfMonth } from "date-fns"
 import { Skeleton } from "../ui/skeleton"
 import { QuickAddTask } from "./quick-add-task"
 import { TeamDeployment } from "./team-deployment"
+import { useUserProfile } from "@/hooks/use-user-profile"
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -226,9 +227,14 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
 }
 
 function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
-  const firestore = useFirestore()
-  const { toast } = useToast()
-  
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const { user: currentUser } = useUser();
+  const { profile } = useUserProfile(currentUser);
+
+  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
+  const canManageFinances = profile && financeRoles.includes(profile.role);
+
   const { pendingExpenses, approvedExpenses } = useMemo(() => {
     if (!allExpenses) return { pendingExpenses: [], approvedExpenses: [] };
     return {
@@ -237,8 +243,6 @@ function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
     }
   }, [allExpenses]);
   
-  const { user: currentUser } = useUser();
-
   const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected' | 'Disbursed') => {
     if (!firestore || !currentUser) return;
     const expenseRef = doc(firestore, 'expenses', expense.id);
@@ -255,7 +259,8 @@ function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
           message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been ${status.toLowerCase()}.`,
           priority: 'Medium',
           action: `/management/expenses?highlight=${expense.id}`,
-          creatorId: currentUser.uid,
+          creatorId: user.uid,
+          targetUserIds: [expense.userId],
         });
       }
     } catch (error) {
@@ -292,7 +297,7 @@ function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
                     <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
                   </div>
                 )}
-                {type === 'approved' && (
+                {type === 'approved' && canManageFinances && (
                   <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>
                     <CheckCheck className="mr-2 h-4 w-4" />
                     Mark Disbursed

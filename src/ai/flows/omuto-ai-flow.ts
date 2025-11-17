@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -36,8 +37,8 @@ export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
 // The main flow function that orchestrates the AI's response
 export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     try {
-        // IMPORTANT: Reverse history so the most recent messages are last.
-        const history = input.history ? [...input.history].reverse() : [];
+        // IMPORTANT: Ensure history is ordered from oldest to newest for the model.
+        const history = input.history || [];
 
         // Call the Gemini model with the prepared prompt and history
         const llmResponse = await ai.generate({

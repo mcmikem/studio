@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -79,6 +79,7 @@ export default function ChatPage() {
   }, [firestore, user]);
 
   const { data: messages, isLoading: isLoadingMessages } = useCollection<Message>(messagesQuery);
+  const reversedMessages = useMemo(() => (messages ? [...messages].reverse() : []), [messages]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {

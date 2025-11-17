@@ -64,11 +64,13 @@ function NewTaskForm() {
         newTask.dueDate = data.dueDate;
     }
     
-    addDocumentNonBlocking(tasksCollection, newTask);
-    toast({
-      title: 'Task Added!',
+    addDocumentNonBlocking(tasksCollection, newTask)
+    .then(() => {
+        toast({
+        title: 'Task Added!',
+        });
+        reset({ title: '', dueDate: '' });
     });
-    reset({ title: '', dueDate: '' });
   };
 
   return (
