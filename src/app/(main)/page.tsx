@@ -39,6 +39,7 @@ const ExecutiveDashboard = dynamic(() => import('@/components/dashboard/executiv
 const ProgramManagerDashboard = dynamic(() => import('@/components/dashboard/program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardLoading /> });
 const FieldStaffDashboard = dynamic(() => import('@/components/dashboard/field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardLoading /> });
 const MediaFinanceDashboard = dynamic(() => import('@/components/dashboard/media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardLoading /> });
+const InternVolunteerDashboard = dynamic(() => import('@/components/dashboard/intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardLoading /> });
 
 
 const roleToDashboard: { [key: string]: { component: React.FC<any>, title: string } } = {
@@ -50,6 +51,8 @@ const roleToDashboard: { [key: string]: { component: React.FC<any>, title: strin
   'Media & Communications Lead': { component: MediaFinanceDashboard, title: 'Media & Finance Hub' },
   'Media & Finance Lead': { component: MediaFinanceDashboard, title: 'Media & Finance Hub' },
   'Resource Mobilization Lead': { component: ProgramManagerDashboard, title: 'Resource Mobilization' }, // Using Program Manager for now
+  'Intern': { component: InternVolunteerDashboard, title: 'Intern Hub'},
+  'Volunteer': { component: InternVolunteerDashboard, title: 'Volunteer Hub'},
   'default': { component: DefaultDashboard, title: 'Welcome to Omuto Central' },
 };
 
