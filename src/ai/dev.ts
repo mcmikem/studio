@@ -47,17 +47,7 @@ export * from './flows/daily-planner-flow';
 export * from './flows/impact-story-generator';
 export * from './flows/omuto-ai-flow';
 export * from './flows/smart-reminders-flow';
-export * from './flows/grant-finder-flow';
-export * from './flows/grant-writer-flow';
-export * from './flows/global-search-flow';
-export * from './flows/parse-workplan-flow';
-export * from './flows/testimony-processor-flow';
-export * from './flows/qualitative-analysis-flow';
-export * from './flows/parse-operational-plan-flow';
-export * from './flows/generate-template-flow';
 
 
 // NOTE: omuto-tools now only contains server-side safe tools.
 export * from './tools/omuto-tools';
-
-
