@@ -1,5 +1,3 @@
-
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -405,4 +403,3 @@ export type HealthCheck = {
     checkedBy: string;
     createdAt: Timestamp;
 };
-    

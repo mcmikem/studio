@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -19,7 +18,7 @@ import { useUser, useFirestore, addDocumentNonBlocking, useMemoFirebase } from '
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import type { WeeklyWorkplan, TeamWeeklyPlan, PriorityItem } from '@/lib/types';
-import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks, isValid } from 'date-fns';
+import { getWeek, startOfWeek, endOfWeek, format, isValid } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarCheck, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
@@ -223,9 +222,6 @@ export default function WorkplanPage() {
     fetchPlans();
   }, [fetchPlans]);
 
-  const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
-  const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
-  
   const formatDeadline = (deadline: any) => {
     if (!deadline) return '-';
     let date;
@@ -364,14 +360,6 @@ export default function WorkplanPage() {
             <CardTitle>
               Week {getWeek(currentDate, { weekStartsOn: 1})}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={goToPreviousWeek}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={goToNextWeek}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
           </div>
         </CardHeader>
         <CardContent>
