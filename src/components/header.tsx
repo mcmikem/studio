@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -25,7 +24,6 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useViewAs } from '@/hooks/use-view-as';
-import { format } from 'date-fns';
 import { useCommandState } from '@/hooks/use-command-state';
 
 
@@ -64,12 +62,6 @@ function QuickAddMenu() {
                         <Link href="/management/partnerships">
                              <Handshake className="mr-2 h-4 w-4" />
                             <span>New Partnership</span>
-                        </Link>
-                    </DropdownMenuItem>
-                     <DropdownMenuItem asChild>
-                        <Link href="/management/finance">
-                            <FileSignature className="mr-2 h-4 w-4" />
-                            <span>New Proposal</span>
                         </Link>
                     </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -136,21 +128,6 @@ function ViewAsMenu() {
     )
 }
 
-function LiveClock() {
-    const [time, setTime] = useState(new Date());
-
-    useEffect(() => {
-        const timer = setInterval(() => setTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
-
-    return (
-        <div className="hidden sm:flex items-center gap-2 text-sm">
-             <span className="font-semibold">{format(time, 'p')}</span>
-             <span className="text-muted-foreground hidden lg:inline-block">{format(time, 'eeee, MMM d')}</span>
-        </div>
-    )
-}
 
 export function AppHeader() {
   const pathname = usePathname();

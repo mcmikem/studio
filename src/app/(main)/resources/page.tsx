@@ -266,7 +266,7 @@ function FundingPipeline() {
     if (!firestore) return null;
     return query(
       collection(firestore, 'partnerships'),
-      where('status', '==', 'Potential'),
+      where('status', '==', 'Prospecting'),
       orderBy('name')
     );
   }, [firestore]);
