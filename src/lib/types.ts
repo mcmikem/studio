@@ -272,8 +272,8 @@ export type WeeklyWorkplan = {
   userId: string;
   userName: string;
   weekOf: Timestamp;
-  teamPlanId: string;
-  teamPriorities: PriorityItem[];
+  teamPlanId?: string;
+  teamPriorities?: PriorityItem[];
   individualTasks: string[];
   createdAt: Timestamp;
 };

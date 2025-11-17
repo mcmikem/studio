@@ -43,7 +43,7 @@ function FinalizeWorkplanForm({
   teamPlan,
   onPlanCreated,
 }: {
-  teamPlan: TeamWeeklyPlan;
+  teamPlan: TeamWeeklyPlan | null; // Can be null now
   onPlanCreated: () => void;
 }) {
   const { user } = useUser();
@@ -75,14 +75,20 @@ function FinalizeWorkplanForm({
       return;
     }
 
-    const newPlan: Omit<WeeklyWorkplan, 'id'> = {
+    const weekStartDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+    weekStartDate.setHours(0, 0, 0, 0);
+
+    const newPlan: Partial<WeeklyWorkplan> = {
       userId: user.uid,
       userName: profile.name,
-      weekOf: teamPlan.weekOf,
-      teamPlanId: teamPlan.id,
-      teamPriorities: teamPlan.keyPriorities,
+      weekOf: Timestamp.fromDate(weekStartDate),
       individualTasks: data.individualTasks.map(t => t.value),
       createdAt: Timestamp.now(),
+      // Conditionally add team plan info
+      ...(teamPlan && {
+        teamPlanId: teamPlan.id,
+        teamPriorities: teamPlan.keyPriorities,
+      }),
     };
 
     const workplansCollection = collection(firestore, 'workplans');
@@ -104,18 +110,22 @@ function FinalizeWorkplanForm({
     reset();
     onPlanCreated();
   };
+  
+  const formTitle = teamPlan ? "Step 2: Add Your Role-Specific Tasks" : "Create Your Weekly Plan";
+  const formDescription = teamPlan ? "Add your personal tasks that contribute to the team priorities for this week." : "Since there's no team-wide plan published yet, define your own key priorities for the week.";
+
 
   return (
     <div className="mt-6 space-y-4">
       <Separator />
-      <h3 className="text-lg font-semibold">Step 2: Add Your Role-Specific Tasks</h3>
-      <p className="text-sm text-muted-foreground">Add your personal tasks that contribute to the team priorities for this week.</p>
+      <h3 className="text-lg font-semibold">{formTitle}</h3>
+      <p className="text-sm text-muted-foreground">{formDescription}</p>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {fields.map((field, index) => (
           <div key={field.id} className="flex items-center gap-2">
             <Input
               {...register(`individualTasks.${index}.value`)}
-              placeholder={`Your Task #${index + 1}`}
+              placeholder={`Your Priority Task #${index + 1}`}
             />
             <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
               <Trash2 className="h-4 w-4" />
@@ -169,6 +179,23 @@ export default function WorkplanPage() {
     startOfSelectedWeek.setHours(0, 0, 0, 0);
     
     try {
+      // First, check if the user has already submitted a plan for this week
+      const userPlanQuery = query(
+            collection(firestore, 'workplans'),
+            where('userId', '==', user.uid),
+            where('weekOf', '==', Timestamp.fromDate(startOfSelectedWeek)),
+            limit(1)
+        );
+      const userPlanSnapshot = await getDocs(userPlanQuery);
+
+      if (!userPlanSnapshot.empty) {
+         const userDoc = userPlanSnapshot.docs[0];
+         setUserPlan({ id: userDoc.id, ...userDoc.data() } as WeeklyWorkplan);
+         setIsLoading(false);
+         return; // Found user plan, no need to look for team plan for creation
+      }
+
+      // If no user plan, check for a published team plan
       const teamPlanQuery = query(
         collection(firestore, 'team-workplans'),
         where('weekOf', '==', Timestamp.fromDate(startOfSelectedWeek)),
@@ -179,25 +206,9 @@ export default function WorkplanPage() {
       
       if (!teamPlanSnapshot.empty) {
         const teamPlanDoc = teamPlanSnapshot.docs[0];
-        const fetchedTeamPlan = { id: teamPlanDoc.id, ...teamPlanDoc.data() } as TeamWeeklyPlan;
-        setTeamPlan(fetchedTeamPlan);
-
-        const userPlanQuery = query(
-            collection(firestore, 'workplans'),
-            where('userId', '==', user.uid),
-            where('teamPlanId', '==', fetchedTeamPlan.id),
-            limit(1)
-        );
-        const userPlanSnapshot = await getDocs(userPlanQuery);
-        if (!userPlanSnapshot.empty) {
-            const userDoc = userPlanSnapshot.docs[0];
-            setUserPlan({ id: userDoc.id, ...userDoc.data() } as WeeklyWorkplan);
-        } else {
-            setUserPlan(null);
-        }
+        setTeamPlan({ id: teamPlanDoc.id, ...teamPlanDoc.data() } as TeamWeeklyPlan);
       } else {
         setTeamPlan(null);
-        setUserPlan(null);
       }
 
     } catch (e) {
@@ -246,31 +257,33 @@ export default function WorkplanPage() {
                    Your daily check-in form will now be populated based on this finalized plan. Go to the <Link href="/daily-plan" className="font-bold underline">AI Daily Planner</Link> to start your day.
                 </AlertDescription>
             </Alert>
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Team Priorities</h3>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Activity</TableHead>
-                        <TableHead>Priority</TableHead>
-                        <TableHead>Responsible</TableHead>
-                        <TableHead>Deadline</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {userPlan.teamPriorities.map((priority, index) => (
-                        <TableRow key={index}>
-                            <TableCell className="font-medium">{priority.activity}</TableCell>
-                            <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
-                            <TableCell>{(Array.isArray(priority.responsible) ? priority.responsible.join(', ') : priority.responsible)}</TableCell>
-                            <TableCell>{formatDeadline(priority.deadline)}</TableCell>
+            {userPlan.teamPriorities && userPlan.teamPriorities.length > 0 && (
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg">Team Priorities</h3>
+                    <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Activity</TableHead>
+                            <TableHead>Priority</TableHead>
+                            <TableHead>Responsible</TableHead>
+                            <TableHead>Deadline</TableHead>
                         </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {userPlan.teamPriorities.map((priority, index) => (
+                            <TableRow key={index}>
+                                <TableCell className="font-medium">{priority.activity}</TableCell>
+                                <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
+                                <TableCell>{(Array.isArray(priority.responsible) ? priority.responsible.join(', ') : priority.responsible)}</TableCell>
+                                <TableCell>{formatDeadline(priority.deadline)}</TableCell>
+                            </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    </div>
                 </div>
-            </div>
+            )}
             <Separator />
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg">My Individual Tasks</h3>
@@ -284,7 +297,8 @@ export default function WorkplanPage() {
       );
     }
     
-    if (teamPlan) {
+    // This part is now the "Create" view, which is shown if userPlan is null
+    if (teamPlan) { // A manager plan exists
         return (
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Step 1: Review Team Priorities <Badge variant="secondary">{teamPlan.status}</Badge></h3>
@@ -320,12 +334,15 @@ export default function WorkplanPage() {
         )
     }
 
+    // No user plan, and NO team plan exists. Allow standalone creation.
     return (
-      <div className="text-center py-10">
-        <p className="text-muted-foreground">
-          A team workplan has not been published by management for this week yet.
-        </p>
-      </div>
+        <div>
+            <Alert>
+                <AlertTitle>No Team Plan Published</AlertTitle>
+                <AlertDescription>A team-wide plan hasn't been published by management for this week yet. You can create your own standalone plan in the meantime.</AlertDescription>
+            </Alert>
+            <FinalizeWorkplanForm teamPlan={null} onPlanCreated={fetchPlans} />
+        </div>
     );
   };
 
