@@ -36,7 +36,9 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
                      <AvatarFallback>{checkout.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                 </Avatar>
                 <div>
-                    <CardTitle>{checkout.name}'s Report</CardTitle>
+                    <Link href={`/profile?userId=${checkout.userId}`} className="hover:underline">
+                        <CardTitle>{checkout.name}'s Report</CardTitle>
+                    </Link>
                     <CardDescription>{formatDateSafe(checkout.timestamp)}</CardDescription>
                 </div>
             </CardHeader>

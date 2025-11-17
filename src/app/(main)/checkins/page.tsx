@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -28,13 +29,22 @@ const moodIcons: { [key: string]: string } = {
   overwhelmed: '🥵',
 };
 
+const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
+        return parts[0][0] + parts[parts.length - 1][0];
+    }
+    return name.substring(0, 2).toUpperCase();
+};
+
 function CheckinCard({ checkin }: { checkin: Checkin }) {
     return (
         <Card>
              <CardHeader className="flex flex-row items-start gap-4">
                 <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
                      {/* Checkin doesn't have avatar, so we use fallback */}
-                     <AvatarFallback>{checkin.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                     <AvatarFallback>{getInitials(checkin.name)}</AvatarFallback>
                 </Avatar>
                 <div>
                     <div className="flex items-center gap-2">
