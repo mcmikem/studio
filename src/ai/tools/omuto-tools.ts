@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -264,21 +263,17 @@ export const getActivitiesForProgram = ai.defineTool(
         description: 'Retrieves all activity reports for a specific program within a given date range.',
         inputSchema: z.object({
             programId: z.string().describe('The ID of the program to fetch activities for.'),
-            startDate: z.string().describe('The start date of the range (YYYY-MM-DD).'),
-            endDate: z.string().describe('The end date of the range (YYYY-MM-DD).'),
         }),
         outputSchema: z.array(z.any()), // We can be more specific, but 'any' is fine for the tool
     },
-    async ({ programId, startDate, endDate }) => {
+    async ({ programId }) => {
         const { firestore } = await initializeFirebase();
         
         const activitiesRef = collection(firestore, 'activities');
         const q = query(
             activitiesRef,
             where('primaryGoalType', '==', 'Program'),
-            where('primaryGoalId', '==', programId),
-            where('loggedAt', '>=', Timestamp.fromDate(new Date(startDate))),
-            where('loggedAt', '<=', Timestamp.fromDate(new Date(endDate)))
+            where('primaryGoalId', '==', programId)
         );
 
         const snapshot = await getDocs(q);

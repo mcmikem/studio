@@ -37,7 +37,7 @@ export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
 export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     try {
         // IMPORTANT: Ensure history is ordered from oldest to newest for the model.
-        const history = input.history || [];
+        const history = input.history ? [...input.history].reverse() : [];
 
         // Call the Gemini model with the prepared prompt and history
         const llmResponse = await ai.generate({
