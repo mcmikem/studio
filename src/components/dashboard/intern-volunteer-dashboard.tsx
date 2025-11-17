@@ -72,7 +72,7 @@ function QuickActionsCard() {
                 </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
-                <Link href="/forms/check-out">
+                <Link href="/forms/volunteer-note">
                      <MessageCircle className="mr-2 h-4 w-4" /> Submit End-of-Day Note
                 </Link>
             </Button>
