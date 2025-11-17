@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -59,7 +58,7 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
         for (const block of checkin.details.timeBlocks) {
           try {
             // Add defensive checks for time format
-            if (!block.startTime || !block.endTime) continue;
+            if (!block.startTime || !block.endTime || !block.startTime.includes(':') || !block.endTime.includes(':')) continue;
 
             const startTime = parse(block.startTime, 'hh:mm a', baseDate);
             const endTime = parse(block.endTime, 'hh:mm a', baseDate);

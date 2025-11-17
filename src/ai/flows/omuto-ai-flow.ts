@@ -37,7 +37,7 @@ export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
 export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     try {
         // IMPORTANT: Ensure history is ordered from oldest to newest for the model.
-        const history = input.history ? [...input.history].reverse() : [];
+        const history = input.history || [];
 
         // Call the Gemini model with the prepared prompt and history
         const llmResponse = await ai.generate({
@@ -103,7 +103,7 @@ Your knowledge is not just static; you can learn about the team's current activi
         return { answer };
     } catch (error: any) {
         console.error("[omutoAIFlow] Critical error during AI generation:", error);
-        // Provide a user-facing error message that is helpful but doesn't expose internal details.
+        // Provide a user-facing error message that doesn't expose internal details.
         return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. The technical details are: ${error.message}` };
     }
 }
