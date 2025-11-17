@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -60,11 +59,12 @@ Your knowledge is not just static; you can learn about the team's current activi
             }
         });
         
-        const toolRequest = llmResponse.toolRequest;
-        let answer = llmResponse.text;
+        let answer = llmResponse.text();
 
-        if (toolRequest) {
-            const toolOutput = llmResponse.toolRequest.output;
+        // Handle tool requests if any
+        if (llmResponse.hasToolRequest()) {
+            const toolRequest = llmResponse.toolRequest();
+            const toolOutput = await toolRequest.run();
 
             // A special handler to format search results nicely
             if (toolRequest.name === 'searchOmuto' && Array.isArray(toolOutput)) {
