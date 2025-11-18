@@ -54,7 +54,7 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         tools: [getActivitiesForProgram],
     });
 
-    const output = llmResponse.output();
+    const output = llmResponse.output;
 
     if (!output) {
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");
