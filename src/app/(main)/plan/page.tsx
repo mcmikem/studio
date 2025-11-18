@@ -52,6 +52,12 @@ export default function PlanPage() {
         </p>
       </header>
 
+       <div className="grid grid-cols-1 gap-6">
+        <div className="col-span-1">
+            <KeyResultsTracker />
+        </div>
+      </div>
+
        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -110,12 +116,6 @@ export default function PlanPage() {
                 </Table>
             </CardContent>
         </Card>
-      </div>
-
-       <div className="grid grid-cols-1 gap-6">
-        <div className="col-span-1">
-            <KeyResultsTracker />
-        </div>
       </div>
       
        <Card>

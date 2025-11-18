@@ -80,7 +80,7 @@ function EcosystemPulse({ activities, programs, isLoading }: { activities: Activ
             <CardContent className="space-y-4">
                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
                     <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-sm font-semibold">Phase 1: Identify</p>
+                        <p className="text-sm font-semibold">Phase 1: Inspire</p>
                         <p className="text-2xl font-bold">{inspire.count} <span className="text-sm font-normal text-muted-foreground">schools</span></p>
                         <p className="text-xs text-muted-foreground">{inspire.engagement}% engagement</p>
                     </div>
