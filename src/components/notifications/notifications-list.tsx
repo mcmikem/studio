@@ -8,7 +8,7 @@ import { Button } from '../ui/button';
 import { AlertTriangle, Info, BellRing } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useFirestore, useUser, useCollection } from '@/firebase';
-import { collection, query, where, Timestamp, limit, writeBatch, doc, arrayUnion, orderBy, or } from 'firebase/firestore';
+import { collection, query, where, Timestamp, limit, writeBatch, doc, arrayUnion, orderBy, or, and } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import Link from 'next/link';
 import { formatDateSafe } from '@/lib/utils';
@@ -45,11 +45,13 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange }: Noti
     
     return query(
         collection(firestore, 'alerts'),
-        or(
-            where('targetUserIds', 'array-contains', user.uid),
-            where('targetUserIds', '==', [])
+        and(
+            or(
+                where('targetUserIds', 'array-contains', user.uid),
+                where('targetUserIds', '==', [])
+            ),
+            where('createdAt', '>=', threeDaysAgo)
         ),
-        where('createdAt', '>=', threeDaysAgo),
         orderBy('createdAt', 'desc'),
         limit(lim)
     );
