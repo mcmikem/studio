@@ -1,0 +1,74 @@
+# Welcome to Omuto Central: Your Intern & Volunteer Guide
+
+Welcome to the Omuto Foundation family! We are thrilled to have you on board. This guide will help you get started with Omuto Central, our all-in-one application designed to make your work impactful, efficient, and connected to the rest of the team.
+
+---
+
+## 1. Your Dashboard: Your Mission Control
+
+When you log in, you'll land on your personal dashboard. Think of this as your daily mission control.
+
+![Your Dashboard](https://i.imgur.com/AuhF19l.jpeg)
+
+Here you will find:
+*   **A Warm Welcome:** A greeting to get your day started.
+*   **Smart Reminders:** Your AI Coach will analyze your pending tasks and calendar events to give you smart, actionable reminders for the day. This helps you stay on track and focus on what matters most.
+*   **Quick Actions:** A set of buttons for the most common tasks you'll perform.
+
+---
+
+## 2. Your Daily Rhythm: Logging Hours & Submitting Notes
+
+Your most important daily tasks will be to log your work and share your progress.
+
+### Logging Your Hours (Activity Form)
+This is how you record the work you've done. You can access this from the "Quick Actions" on your dashboard or via the "Forms Hub".
+
+*   **How:** Click "Log My Hours" and fill out the simple form about the activity you participated in.
+*   **Why:** This helps us understand where our team's effort is going and is crucial for reporting to our partners and funders.
+
+### Submitting Your End-of-Day Note
+At the end of your day, it's essential to submit a quick note. This is how your supervisor and the rest of the team see your progress and learnings.
+
+*   **How:** Click "Submit End-of-Day Note." Briefly describe what you accomplished and one new thing you learned.
+*   **Why:** This keeps everyone in sync and helps us celebrate your contributions and growth! It's a key part of our culture of learning.
+
+---
+
+## 3. Your AI Coach: Your Personal Assistant
+
+You have a powerful AI assistant available 24/7. Use it for anything and everything!
+
+*   **How to Access:** Click on the **AI Coach** link in the sidebar.
+*   **What to Ask:**
+    *   "Can you explain what the RED Campaign is?"
+    *   "Who is the lead for the GreenSchools program?"
+    *   "Summarize the team's activity from yesterday."
+    *   "Help me brainstorm ideas for a social media post about our recent field visit."
+
+Your conversations with the AI Coach are **private**. Don't hesitate to use it to get up to speed on projects, understand terminology, or even help you draft messages.
+
+---
+
+## 4. Your Profile & Tasks: Staying Organized
+
+Your profile is your personal space within Omuto Central.
+
+*   **How to Access:** Click on your avatar in the top-right corner and select "Profile," or use the "Profile" link in the navigation.
+*   **Features:**
+    *   **Update Your Picture:** Click on your avatar to upload a new profile picture.
+    *   **Manage Your Tasks:** Switch to the "Task Management" tab to see your personal to-do list. You can add new tasks to keep yourself organized. As you complete them, check them off!
+
+---
+
+## 5. The Team Hub: Staying Connected
+
+Even when working remotely, it's important to stay connected. The Team Hub section is where this happens.
+
+*   **Team Space:** A group chat for all team members. Share quick updates, ask questions, and celebrate wins together.
+*   **Team Calendar:** A shared calendar showing all upcoming events, meetings, and important deadlines. Check this regularly to know what's happening.
+*   **Check-in & Check-out Streams:** These are live feeds of the daily plans (check-ins) and end-of-day reports (check-outs) from the entire team. It's a great way to see what everyone is working on and learn from their progress.
+
+---
+
+We are so excited to see the amazing contributions you will make. If you ever feel stuck, your first point of contact should be your supervisor, and your second should be your AI Coach! Welcome aboard.
