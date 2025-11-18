@@ -12,7 +12,7 @@ import { collection, query, orderBy, limit, where, Timestamp } from "firebase/fi
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useMemo } from "react"
-import { subDays, startOfWeek, isAfter, subMonths, startOfDay } from "date-fns"
+import { subDays, startOfWeek, isAfter, subMonths, startOfDay, subWeeks } from "date-fns"
 import Link from "next/link"
 import { Globe, TrendingUp } from "lucide-react"
 import { TeamDeployment } from "./team-deployment"
