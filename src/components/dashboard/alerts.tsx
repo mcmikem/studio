@@ -1,15 +1,23 @@
 
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { AlertTriangle, Info, CheckCircle, BellRing } from 'lucide-react';
+import { AlertTriangle, Info, BellRing, ArrowRight } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import Link from 'next/link';
+import { formatDateSafe } from '@/lib/utils';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-4 w-4 text-red-500" />,
@@ -35,10 +43,10 @@ export function Alerts() {
 
 
   return (
-    <Card>
+    <Card className="hover:bg-muted/50 transition-colors group/card">
       <CardHeader>
-        <CardTitle>Alerts & Notifications</CardTitle>
-        <CardDescription>Urgent issues and important reminders.</CardDescription>
+        <CardTitle className="flex items-center gap-2"><BellRing /> Recent Alerts</CardTitle>
+        <CardDescription>The latest urgent issues and important reminders.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {isLoading && (
@@ -49,7 +57,6 @@ export function Alerts() {
                         <Skeleton className="h-4 w-full" />
                         <Skeleton className="h-5 w-24" />
                     </div>
-                    <Skeleton className="h-8 w-16 self-center" />
                 </div>
             ))
         )}
@@ -59,11 +66,8 @@ export function Alerts() {
                     <div className="mt-1">{alertIcons[alert.type]}</div>
                     <div className="flex-1">
                         <p className="text-sm font-medium">{alert.message}</p>
-                         <Badge variant="outline" className={`mt-2 ${alertColors[alert.priority]}`}>{alert.priority} Priority</Badge>
+                         <p className="text-xs text-muted-foreground">{formatDateSafe(alert.createdAt)}</p>
                     </div>
-                    <Button asChild variant="secondary" size="sm" className="self-center">
-                        <Link href={alert.action}>View</Link>
-                    </Button>
                 </div>
             ))
         ) : (
@@ -76,6 +80,13 @@ export function Alerts() {
             )
         )}
       </CardContent>
+      <CardFooter>
+            <Button asChild variant="ghost" className="w-full justify-end text-sm text-primary group-hover/card:underline">
+                <Link href="/notifications">
+                    View All Notifications <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+        </CardFooter>
     </Card>
   );
 }
