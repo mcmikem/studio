@@ -1,11 +1,10 @@
 
-
 'use client';
 
 import { useState, useMemo } from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, subDays } from 'date-fns';
@@ -149,12 +148,18 @@ export default function ProgramDeepDivePage() {
               <div className="md:col-span-1 space-y-2">
                 <Label htmlFor="programId">Program</Label>
                 {isLoadingPrograms ? <Skeleton className="h-10 w-full" /> : (
-                  <Select name="programId" onValueChange={(value) => control._fields.programId._f.onChange(value)}>
-                    <SelectTrigger><SelectValue placeholder="Select a program..." /></SelectTrigger>
-                    <SelectContent>
-                      {programs?.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Controller
+                    name="programId"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger id="programId"><SelectValue placeholder="Select a program..." /></SelectTrigger>
+                        <SelectContent>
+                          {programs?.map(p => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 )}
                 {errors.programId && <p className="text-sm text-destructive">{errors.programId.message}</p>}
               </div>
