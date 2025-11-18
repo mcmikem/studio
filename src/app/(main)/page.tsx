@@ -66,6 +66,7 @@ export default function DashboardPage() {
   const [currentHour, setCurrentHour] = useState<number | null>(null);
 
   useEffect(() => {
+    // This effect runs only on the client, ensuring `new Date()` is safe.
     setCurrentHour(new Date().getHours());
   }, []);
 

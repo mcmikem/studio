@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -30,7 +31,7 @@ function formatDuration(ms: number) {
 }
 
 interface DailyActionsProps {
-    hour: number;
+    hour: number | null;
     checkin: Checkin | null;
     isLoadingCheckin: boolean;
 }
@@ -90,7 +91,7 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
         router.push('/chat');
     }
   
-  if (isLoadingCheckin || !currentTime) {
+  if (isLoadingCheckin || hour === null) {
       return <Skeleton className="h-48 w-full" />
   }
 
