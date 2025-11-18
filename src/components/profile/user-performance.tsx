@@ -9,6 +9,7 @@ import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
+import { startOfMonth } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
 
 interface UserPerformanceProps {

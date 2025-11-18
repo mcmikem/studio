@@ -35,7 +35,7 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
     }
     
     const monthStart = startOfMonth(new Date());
-    const monthlyActivities = activities.filter(a => a.loggedAt.toDate() >= monthStart);
+    const monthlyActivities = activities.filter(a => a.loggedAt && a.loggedAt.toDate() >= monthStart);
 
     const userPerformance = users.map(user => {
       const userActivities = monthlyActivities.filter(a => a.userId === user.id);

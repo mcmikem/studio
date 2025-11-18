@@ -11,6 +11,7 @@ import { collection, query, orderBy, limit, where, Timestamp } from "firebase/fi
 import { QuickAddTask } from "./quick-add-task"
 import { TeamDeployment } from "./team-deployment"
 import { startOfDay } from "date-fns"
+import { MyWeeklyPlan } from "./my-weekly-plan"
 
 interface DashboardProps {
   profile: User;
@@ -20,7 +21,7 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const { user } = useUser();
 
-  const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
+  const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)) : null, [firestore]);
   const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
   
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
@@ -30,15 +31,15 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
-      <DashboardGrid className="mt-6 lg:grid-cols-3">
-         <div className="lg:col-span-1 flex flex-col gap-6">
+      <DashboardGrid className="mt-6 lg:grid-cols-2">
+         <div className="flex flex-col gap-6">
           <QuickAddTask />
           <DashboardCalendar />
+          <MyWeeklyPlan />
         </div>
-        <div className="lg:col-span-2 flex flex-col gap-6">
-           <Alerts />
+        <div className="flex flex-col gap-6">
            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-          <TeamPulse checkouts={checkouts} />
+           <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>
   )
