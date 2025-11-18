@@ -2,19 +2,19 @@
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin, Expense, Partnership } from "@/lib/types"
-import { Alerts } from "./alerts"
+import { NotificationsList } from "../notifications/notifications-list"
 import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../ui/card"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useMemo } from "react"
 import { subDays, startOfWeek, isAfter, subMonths, startOfDay, subWeeks } from "date-fns"
 import Link from "next/link"
-import { Globe, TrendingUp } from "lucide-react"
+import { Globe, TrendingUp, BellRing, ArrowRight } from "lucide-react"
 import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { formatCurrency } from "@/lib/utils"
@@ -22,6 +22,7 @@ import { MyWeeklyPlan } from "./my-weekly-plan"
 import { ApprovalQueue } from "./approval-queue"
 import { TeamPerformanceLeaderboard } from "./team-performance-leaderboard"
 import { MyPerformance } from "./my-performance"
+import { Button } from "../ui/button"
 
 
 function EcosystemPulse({ activities, programs }: { activities: Activity[] | null, programs: Program[] | null }) {
@@ -180,7 +181,22 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
             <QuickAddTask />
             <TeamEffectiveness activities={activities} />
             <ManagementQuickLinks />
-            <Alerts />
+            <Card className="group/card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><BellRing /> Recent Alerts</CardTitle>
+                <CardDescription>The latest urgent issues and important reminders.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <NotificationsList />
+              </CardContent>
+               <CardFooter>
+                  <Button asChild variant="ghost" className="w-full justify-end text-sm text-primary group-hover/card:underline">
+                      <Link href="/notifications">
+                          View All Notifications <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                  </Button>
+              </CardFooter>
+            </Card>
             <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>

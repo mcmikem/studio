@@ -2,7 +2,7 @@
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, Partnership, Checkin, Expense } from "@/lib/types"
-import { Alerts } from "./alerts"
+import { NotificationsList } from "../notifications/notifications-list"
 import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
@@ -61,7 +61,22 @@ export function AdminDashboard({ profile }: DashboardProps) {
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             <DashboardCalendar />
             <ManagementQuickLinks />
-            <Alerts />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><BellRing /> Recent Alerts</CardTitle>
+                <CardDescription>The latest urgent issues and important reminders.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                <NotificationsList />
+              </CardContent>
+               <CardFooter>
+                  <Button asChild variant="ghost" className="w-full justify-end text-sm text-primary group-hover/card:underline">
+                      <Link href="/notifications">
+                          View All Notifications <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                  </Button>
+              </CardFooter>
+            </Card>
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker showAtRisk />
