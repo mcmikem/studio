@@ -48,13 +48,27 @@ const analysisPrompt = ai.definePrompt({
 
 export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput): Promise<QualitativeAnalysisOutput> {
     
-    const llmResponse = await ai.generate({
+    const initialResponse = await ai.generate({
         model: 'googleai/gemini-2.5-flash',
         prompt: `Analyze the qualitative data for the '${input.programName}' program from ${input.startDate} to ${input.endDate}. Use the 'getActivitiesForProgram' tool with programId '${input.programId}'.`,
         tools: [getActivitiesForProgram],
     });
 
-    const output = llmResponse.output;
+    if (!initialResponse.hasToolRequest()) {
+        throw new Error("The AI did not request the necessary tool to fetch program data.");
+    }
+    
+    const toolRequest = initialResponse.toolRequest();
+    const toolOutput = await toolRequest.run();
+
+    const finalResponse = await ai.generate({
+        model: 'googleai/gemini-2.5-flash',
+        prompt: `Analyze the qualitative data for the '${input.programName}' program from ${input.startDate} to ${input.endDate}. Use the 'getActivitiesForProgram' tool with programId '${input.programId}'.`,
+        history: [initialResponse, toolRequest.output(toolOutput)],
+        tools: [getActivitiesForProgram],
+    });
+
+    const output = finalResponse.output;
 
     if (!output) {
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");

@@ -60,45 +60,44 @@ Your knowledge is not just static; you can learn about the team's current activi
             }
         });
         
-        let answer = llmResponse.text();
-
-        // Handle tool requests if any
-        if (llmResponse.hasToolRequest()) {
-            const toolRequest = llmResponse.toolRequest();
-            const toolOutput = await toolRequest.run();
-
-            // A special handler to format search results nicely
-            if (toolRequest.name === 'searchOmuto' && Array.isArray(toolOutput)) {
-                const searchResults = toolOutput as z.infer<typeof SearchResultItemSchema>[];
-                if (searchResults.length > 0) {
-                    answer = "I found the following information:\n" + searchResults.map(r => `- **[${r.title}](${r.url})** - Type: ${r.type}`).join('\n');
-                } else {
-                    answer = "I couldn't find any information matching your query.";
-                }
-            } else if (toolRequest.name === 'getRecentCheckins' && Array.isArray(toolOutput)) {
-                if (toolOutput.length > 0) {
-                    answer = `Here are today's check-ins:\n` + toolOutput.map((c: any) => `- **${c.name}** is focusing on: *${c.primaryMission}*`).join('\n');
-                } else {
-                    answer = "No one has checked in yet today.";
-                }
-            } else if (toolRequest.name === 'getRecentCheckouts' && Array.isArray(toolOutput)) {
-                 if (toolOutput.length > 0) {
-                    answer = `Here are the latest check-outs from the team:\n` + toolOutput.map((c: any) => `- **${c.name}**: Completed *${c.tasks[0]?.description || 'their tasks'}*. Their key learning was "${c.learning || 'N/A'}".`).join('\n');
-                } else {
-                    answer = "There are no recent check-outs to display.";
-                }
-            } else {
-                 if(toolOutput && typeof toolOutput === 'object' && 'message' in toolOutput) {
-                   answer = String((toolOutput as any).message);
-                 } else {
-                   answer = String(toolOutput);
-                 }
+        if (!llmResponse.hasToolRequest()) {
+            const answer = llmResponse.text();
+            if (!answer) {
+                 console.error("AI did not return a text or tool response.", llmResponse);
+                 return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
             }
+            return { answer };
         }
 
+        // Handle the tool request
+        const toolRequest = llmResponse.toolRequest();
+        const toolOutput = await toolRequest.run();
+
+        // Send the tool output back to the model to get the final answer
+        const finalResponse = await ai.generate({
+            model: 'googleai/gemini-2.5-flash',
+            prompt: `UserId: ${input.userId}. User's message: "${input.question}"`,
+            history: [...history, llmResponse, toolRequest.output(toolOutput)],
+            tools: [searchOmuto, createCheckout, getRecentCheckins, getRecentCheckouts],
+        });
+
+        let answer = finalResponse.text();
+
+        // This is a simple fallback. A more robust implementation might format the toolOutput directly.
         if (!answer) {
-          console.error("AI did not return a text or tool response.", llmResponse);
-          answer = "I'm sorry, but I wasn't able to generate a response. Please try again.";
+            if (typeof toolOutput === 'object' && toolOutput !== null && 'message' in toolOutput) {
+                answer = String((toolOutput as any).message);
+            } else if (Array.isArray(toolOutput) && toolOutput.length > 0) {
+                 if (toolRequest.name === 'searchOmuto') {
+                    const searchResults = toolOutput as z.infer<typeof SearchResultItemSchema>[];
+                    answer = "I found the following information:\n" + searchResults.map(r => `- **[${r.title}](${r.url})** - Type: ${r.type}`).join('\n');
+                 } else {
+                    answer = "I've completed the action using my tools."
+                 }
+            }
+            else {
+                answer = String(toolOutput) || "I've processed your request.";
+            }
         }
 
         return { answer };
