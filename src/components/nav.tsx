@@ -75,6 +75,7 @@ const navConfig = {
     { href: '/checkins', icon: LogIn, label: 'Check-in Stream' },
     { href: '/stream', icon: Rss, label: 'Check-out Stream' },
     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
+    { href: '/checklists', icon: ListChecks, label: 'Operational Checklists' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   dataReporting: [
