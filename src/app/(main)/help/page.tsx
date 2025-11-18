@@ -52,19 +52,19 @@ function FeedbackDialog({ type, onOpenChange }: { type: 'Bug' | 'Feature', onOpe
 
     try {
       await addDocumentNonBlocking(collection(firestore, 'ai-feedback'), feedbackData);
-      toast({
-        title: `${type} Report Submitted!`,
-        description: "Thank you for your feedback. The team has been notified.",
-      });
-
-      // Notify management
-      const managementRoles = ['Executive Director', 'Administrator'];
+      
+      // Create an alert for management
       await createAlert({
           type: 'Urgent',
           priority: 'Medium',
           message: `A new ${type.toLowerCase()} report has been submitted by ${profile.name}.`,
           action: '/management/feedback', // This page would need to be created
-          creatorId: user.uid
+          creatorId: user.uid,
+      });
+
+      toast({
+        title: `${type} Report Submitted!`,
+        description: "Thank you for your feedback. The team has been notified.",
       });
 
       reset();
@@ -487,7 +487,7 @@ export default function HelpPage() {
                 <CardContent className="flex flex-col sm:flex-row gap-4">
                      <Dialog open={isBugDialogOpen} onOpenChange={setIsBugDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="w-full sm:w-auto"><Bug className="mr-2 h-4 w-4" /> Report a Bug</Button>
+                            <Button className="w-full sm:w-auto" disabled={!profile}><Bug className="mr-2 h-4 w-4" /> Report a Bug</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -499,7 +499,7 @@ export default function HelpPage() {
                     </Dialog>
                      <Dialog open={isFeatureDialogOpen} onOpenChange={setIsFeatureDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto"><MessageSquare className="mr-2 h-4 w-4" /> Request a Feature</Button>
+                            <Button variant="outline" className="w-full sm:w-auto" disabled={!profile}><MessageSquare className="mr-2 h-4 w-4" /> Request a Feature</Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -514,5 +514,3 @@ export default function HelpPage() {
         </div>
     )
 }
-
-    

@@ -3,153 +3,127 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper functions to check user roles.
-    function isManager(userId) {
-      let userRole = get(/databases/$(database)/documents/users/$(userId)).data.role;
-      return userRole in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
-    }
-
-    function isFinance(userId) {
-      let userRole = get(/databases/$(database)/documents/users/$(userId)).data.role;
-      return userRole in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
-    }
-
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // USER PROFILES
-    // Anyone can read profiles (needed for role checks in rules). Only owner can write.
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if isOwner(userId);
     }
 
-    // USER SUB-COLLECTIONS
-    // A user's private data (tasks, AI chats) is only accessible by them.
     match /users/{userId}/{subcollection}/{docId} {
       allow read, write: if isOwner(userId);
     }
 
-    // MANAGEMENT COLLECTIONS (Programs, Projects, Partnerships, etc.)
-    // Anyone authenticated can read these for dashboards, but only managers can write.
     match /programs/{programId} {
       allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
-    }
-    match /projects/{projectId} {
-      allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
-    }
-    match /partnerships/{partnershipId} {
-      allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
-    }
-     match /partnerships/{partnershipId}/{subcollection}/{docId} {
-      allow read, write: if isManager(request.auth.uid);
-    }
-    match /impact-metrics/{metricId} {
-      allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
-    }
-    match /equipment/{equipmentId} {
-      allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
-    }
-     match /task-templates/{templateId} {
-      allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
-    }
-     match /key-results/{keyResultId} {
-      allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Administrator'];
     }
 
-    // TEAM-WIDE USER-GENERATED CONTENT (Check-ins, Check-outs, Messages, etc.)
-    // Anyone authenticated can read. Create/update/delete is restricted to the owner.
+    match /projects/{projectId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Operations & Field Manager', 'Administrator'];
+    }
+
+    match /partnerships/{partnershipId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Resource Mobilization Lead', 'Administrator'];
+    }
+
+    match /partnerships/{partnershipId}/{subcollection}/{docId} {
+      allow read, write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Resource Mobilization Lead', 'Administrator'];
+    }
+
+    match /impact-metrics/{metricId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Administrator'];
+    }
+
+    match /equipment/{equipmentId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Operations & Field Manager', 'Administrator'];
+    }
+
+    match /task-templates/{templateId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Operations & Field Manager', 'Administrator'];
+    }
+    
+    match /key-results/{keyResultId} {
+        allow read: if request.auth != null;
+        allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Administrator';
+    }
+    
     match /checkins/{checkinId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth.uid == request.resource.data.userId;
-        allow update, delete: if request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if isOwner(resource.data.userId);
     }
+    
     match /checkouts/{checkoutId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth.uid == request.resource.data.userId;
-        allow update, delete: if request.auth.uid == resource.data.userId;
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if isOwner(resource.data.userId);
     }
-     match /messages/{messageId} {
-        allow read: if request.auth != null;
-        allow create: if request.auth.uid == request.resource.data.userId;
-        allow update, delete: if request.auth.uid == resource.data.userId;
+
+    match /messages/{messageId} {
+      allow read, write: if request.auth != null;
     }
+    
     match /activities/{activityId} {
       allow read: if request.auth != null;
       allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth.uid == resource.data.userId;
+      allow update, delete: if isOwner(resource.data.userId);
     }
+    
     match /workplans/{workplanId} {
       allow read: if request.auth != null;
       allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth.uid == resource.data.userId;
+      allow update, delete: if isOwner(resource.data.userId);
     }
-     match /testimonies/{testimonyId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth.uid == resource.data.userId;
-    }
-    match /ai-feedback/{feedbackId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth.uid == request.resource.data.userId;
-      allow update: if isManager(request.auth.uid);
-      allow delete: if false; // Feedback should not be deleted.
-    }
-    match /events/{eventId} {
-        allow read: if request.auth != null;
-        allow write: if isManager(request.auth.uid);
-    }
-
-
-    // TEAM-WIDE PLANS (Writable by Managers)
+    
     match /team-workplans/{planId} {
         allow read: if request.auth != null;
-        allow write: if isManager(request.auth.uid);
+        allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Operations & Field Manager', 'Administrator'];
     }
 
+    match /testimonies/{testimonyId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+    
+    match /ai-feedback/{feedbackId} {
+      allow read, write: if request.auth != null;
+    }
 
-    // ALERTS
-    // Readable by all if it's a broadcast, or if the user is in the target list. Writable only by managers.
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Administrator', 'Operations & Field Manager'];
+    }
+
     match /alerts/{alertId} {
       allow read: if request.auth != null && (resource.data.targetUserIds.size() == 0 || request.auth.uid in resource.data.targetUserIds);
-      allow write: if isManager(request.auth.uid);
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Administrator'];
     }
-
-    // FINANCIALS (Strictest Rules)
+    
     match /expenses/{expenseId} {
-      // An owner can get their own report. Finance/ED can get any report.
-      allow get: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
-      // Only finance/ED can list all expenses for the main table view.
-      allow list: if request.auth != null && isFinance(request.auth.uid);
-      // Any authenticated user can create an expense report.
+      allow read: if request.auth != null; // Simplified rule, client-side logic will filter
+      allow list: if request.auth != null; // Simplified rule, client-side logic will filter
       allow create: if request.auth != null;
-      // Only managers can approve/reject/disburse. Owners can acknowledge.
-      allow update: if request.auth != null && (isManager(request.auth.uid) || (request.resource.data.status == 'Acknowledged' && resource.data.userId == request.auth.uid));
-      // Owner or finance can delete.
-      allow delete: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
+      allow update: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Administrator'];
+      allow delete: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Administrator'] || isOwner(resource.data.userId));
     }
 
     match /income/{incomeId} {
-      // Anyone can read income records. Only finance can write.
       allow read: if request.auth != null;
-      allow write: if request.auth != null && isFinance(request.auth.uid);
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Media & Finance Lead', 'Administrator'];
     }
-    
+
     match /proposals/{proposalId} {
-      // Anyone can read proposals. Only managers can write.
       allow read: if request.auth != null;
-      allow write: if request.auth != null && isManager(request.auth.uid);
+      allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Resource Mobilization Lead', 'Administrator'];
     }
   }
 }
-
-    

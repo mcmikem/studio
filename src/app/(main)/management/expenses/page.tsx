@@ -41,7 +41,7 @@ import type { Expense, User, ExpenseItem } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, Receipt, CheckCheck, Undo2, Edit, Trash2, Eye } from 'lucide-react';
+import { Check, X, Receipt, CheckCheck, Undo2, Edit, Trash2, Eye, AlertTriangle } from 'lucide-react';
 import { useMemo, useEffect, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
@@ -129,9 +129,8 @@ function ExpensesContent() {
     );
   }, [firestore]);
   
-  const { data: expenses, isLoading } = useCollection<Expense>(expensesQuery);
+  const { data: expenses, isLoading, error } = useCollection<Expense>(expensesQuery);
   
-  // Query for users who can manage finances to target notifications
   const financeUsersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'users'), where('role', 'in', ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead']));
@@ -266,6 +265,20 @@ function ExpensesContent() {
   };
   
   const highlightClass = "ring-2 ring-primary bg-primary/5";
+
+  if (error) {
+      return (
+           <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-destructive"><AlertTriangle/>Permission Denied</CardTitle>
+                <CardDescription>Your current role does not have permission to view all expense reports.</CardDescription>
+            </CardHeader>
+             <CardContent>
+                <p className="text-sm">Please contact an administrator if you believe this is an error.</p>
+            </CardContent>
+        </Card>
+      )
+  }
 
   return (
     <>
@@ -487,5 +500,3 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
-
-    
