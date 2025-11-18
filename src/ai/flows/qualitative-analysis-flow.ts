@@ -54,11 +54,11 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         tools: [getActivitiesForProgram],
     });
 
-    if (!initialResponse.hasToolRequest()) {
+    const toolRequest = initialResponse.toolRequest();
+    if (!toolRequest) {
         throw new Error("The AI did not request the necessary tool to fetch program data.");
     }
     
-    const toolRequest = initialResponse.toolRequest();
     const toolOutput = await toolRequest.run();
 
     const finalResponse = await ai.generate({

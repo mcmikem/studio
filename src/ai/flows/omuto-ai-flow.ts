@@ -60,8 +60,10 @@ Your knowledge is not just static; you can learn about the team's current activi
             }
         });
         
-        if (!llmResponse.hasToolRequest()) {
-            const answer = llmResponse.text();
+        const toolRequest = llmResponse.toolRequest();
+        
+        if (!toolRequest) {
+            const answer = llmResponse.text;
             if (!answer) {
                  console.error("AI did not return a text or tool response.", llmResponse);
                  return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
@@ -70,7 +72,6 @@ Your knowledge is not just static; you can learn about the team's current activi
         }
 
         // Handle the tool request
-        const toolRequest = llmResponse.toolRequest();
         const toolOutput = await toolRequest.run();
 
         // Send the tool output back to the model to get the final answer
@@ -81,7 +82,7 @@ Your knowledge is not just static; you can learn about the team's current activi
             tools: [searchOmuto, createCheckout, getRecentCheckins, getRecentCheckouts],
         });
 
-        let answer = finalResponse.text();
+        let answer = finalResponse.text;
 
         // This is a simple fallback. A more robust implementation might format the toolOutput directly.
         if (!answer) {
