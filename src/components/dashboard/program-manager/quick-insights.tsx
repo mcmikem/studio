@@ -6,7 +6,7 @@ import { TrendingUp, BarChart } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { Activity } from "@/lib/types";
 import { useMemo } from "react";
-import { subWeeks, startOfWeek, isAfter } from "date-fns";
+import { subWeeks, startOfWeek, isAfter, getWeek } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function QuickInsights({ activities }: { activities: Activity[] | null }) {
@@ -17,7 +17,7 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
         }
 
         const now = new Date();
-        const sixWeeksAgo = startOfWeek(subWeeks(now, 5)); // Include current week + 5 past weeks
+        const sixWeeksAgo = startOfWeek(subWeeks(now, 5));
         const lastWeekStart = startOfWeek(subWeeks(now, 1));
         
         const recentActivities = activities.filter(act => 
@@ -25,20 +25,24 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
         );
 
         // Group by week
-        const weeklyCounts = recentActivities.reduce((acc, act) => {
+        const weeklyCounts: Record<string, number> = {};
+        for (let i = 0; i < 6; i++) {
+            const weekStart = startOfWeek(subWeeks(now, i));
+            weeklyCounts[weekStart.toISOString().split('T')[0]] = 0;
+        }
+
+        recentActivities.forEach(act => {
             const weekStart = startOfWeek(act.loggedAt.toDate()).toISOString().split('T')[0];
-            if (!acc[weekStart]) {
-                acc[weekStart] = 0;
+            if (weeklyCounts[weekStart] !== undefined) {
+              weeklyCounts[weekStart]++;
             }
-            acc[weekStart]++;
-            return acc;
-        }, {} as Record<string, number>);
+        });
 
         const sortedWeeks = Object.keys(weeklyCounts).sort();
 
-        const chartData = sortedWeeks.map((week, index) => ({
-            week: `W${index + 1}`,
-            activities: weeklyCounts[week],
+        const chartData = sortedWeeks.map((weekISO, index) => ({
+            week: `W${getWeek(new Date(weekISO))}`,
+            activities: weeklyCounts[weekISO],
         }));
 
         const thisWeekCount = weeklyCounts[startOfWeek(now).toISOString().split('T')[0]] || 0;
@@ -84,7 +88,7 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
                                         fontSize: '12px',
                                         padding: '2px 8px',
                                     }}
-                                    labelFormatter={(label) => `Week ${chartData[label as number]?.week}`}
+                                    labelFormatter={(label) => `${label}`}
                                 />
                                 <Area 
                                     type="monotone" 

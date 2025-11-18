@@ -45,8 +45,8 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   
   const activitiesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    const fourteenDaysAgo = startOfDay(subDays(new Date(), 14));
-    return query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(fourteenDaysAgo)), orderBy('loggedAt', 'desc'))
+    const sixWeeksAgo = startOfDay(subDays(new Date(), 42));
+    return query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgo)), orderBy('loggedAt', 'desc'))
   }, [firestore]);
 
   const { data: activities } = useCollection<Activity>(activitiesQuery);
