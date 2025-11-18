@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
@@ -120,9 +121,14 @@ function NewEventForm({ onFormSubmit, defaultDate }: { onFormSubmit: () => void,
 }
 
 export default function CalendarPage() {
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const firestore = useFirestore();
+
+    useEffect(() => {
+        // Safe to set the date on the client side after mount
+        setSelectedDate(new Date());
+    }, []);
 
     const eventsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
@@ -132,9 +138,18 @@ export default function CalendarPage() {
     const { data: events, isLoading } = useCollection<EventType>(eventsQuery);
 
     const selectedDayEvents = useMemo(() => {
-        return events?.filter(event => isSameDay(event.date.toDate(), selectedDate)) || [];
+        if (!events || !selectedDate) return [];
+        return events.filter(event => isSameDay(event.date.toDate(), selectedDate));
     }, [events, selectedDate]);
-
+    
+    if (!selectedDate) {
+        return (
+            <div className="flex flex-col gap-6 h-full">
+                <header><Skeleton className="h-20 w-full" /></header>
+                <Card className="flex-grow"><CardContent><Skeleton className="h-full w-full" /></CardContent></Card>
+            </div>
+        )
+    }
 
   return (
     <div className="flex flex-col gap-6 h-full">

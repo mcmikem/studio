@@ -366,7 +366,12 @@ export default function FinancePage() {
   const [editingTransaction, setEditingTransaction] = useState<Income | Expense | null>(null);
   const [transactionTypeToEdit, setTransactionTypeToEdit] = useState<'income' | 'expense' | null>(null);
 
-  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
+
+  useEffect(() => {
+    // Safe to set client-side state after mount
+    setSelectedMonth(new Date());
+  }, []);
 
   const { user } = useUser();
   const { profile } = useUserProfile(user);
@@ -383,6 +388,7 @@ export default function FinancePage() {
   const { data: allExpenses, isLoading: isLoadingExpenses } = useCollection<Expense>(expensesQuery);
 
   const monthlyData = useMemo(() => {
+    if (!selectedMonth) return null;
     const monthStart = startOfMonth(selectedMonth);
     const monthEnd = endOfMonth(selectedMonth);
 
@@ -444,10 +450,10 @@ export default function FinancePage() {
     },
   };
 
-  const isLoading = isLoadingIncome || isLoadingExpenses;
+  const isLoading = isLoadingIncome || isLoadingExpenses || !selectedMonth || !monthlyData;
 
-  const handlePrevMonth = () => setSelectedMonth(subMonths(selectedMonth, 1));
-  const handleNextMonth = () => setSelectedMonth(addMonths(selectedMonth, 1));
+  const handlePrevMonth = () => setSelectedMonth(prev => prev ? subMonths(prev, 1) : new Date());
+  const handleNextMonth = () => setSelectedMonth(prev => prev ? addMonths(prev, 1) : new Date());
   
   const handleEdit = (transaction: Income | Expense, type: 'income' | 'expense') => {
       setEditingTransaction(transaction);
@@ -477,7 +483,7 @@ export default function FinancePage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="outline" size="icon" onClick={handlePrevMonth}><ChevronLeft className="h-4 w-4" /></Button>
-                    <Input type="month" className="w-auto" value={format(selectedMonth, 'yyyy-MM')} onChange={e => setSelectedMonth(new Date(e.target.value))} />
+                    {selectedMonth && <Input type="month" className="w-auto" value={format(selectedMonth, 'yyyy-MM')} onChange={e => setSelectedMonth(new Date(e.target.value))} />}
                     <Button variant="outline" size="icon" onClick={handleNextMonth}><ChevronRight className="h-4 w-4" /></Button>
                 </div>
             </div>
@@ -486,19 +492,19 @@ export default function FinancePage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="p-4">
                     <p className="text-sm font-medium text-muted-foreground">Opening Balance</p>
-                    <p className="text-xl font-bold">{formatCurrency(monthlyData.balanceBroughtForward)}</p>
+                    <p className="text-xl font-bold">{isLoading ? <Skeleton className="h-7 w-32"/> : formatCurrency(monthlyData.balanceBroughtForward)}</p>
                 </Card>
                  <Card className="p-4">
                     <p className="text-sm font-medium text-muted-foreground">Monthly Income</p>
-                    <p className="text-xl font-bold text-green-600">{formatCurrency(monthlyData.totalMonthlyIncome)}</p>
+                    <p className="text-xl font-bold text-green-600">{isLoading ? <Skeleton className="h-7 w-32"/> : formatCurrency(monthlyData.totalMonthlyIncome)}</p>
                 </Card>
                 <Card className="p-4">
                     <p className="text-sm font-medium text-muted-foreground">Monthly Expenses</p>
-                    <p className="text-xl font-bold text-red-600">{formatCurrency(monthlyData.totalMonthlyExpenses)}</p>
+                    <p className="text-xl font-bold text-red-600">{isLoading ? <Skeleton className="h-7 w-32"/> : formatCurrency(monthlyData.totalMonthlyExpenses)}</p>
                 </Card>
                 <Card className="p-4 bg-muted">
                     <p className="text-sm font-medium text-muted-foreground">Closing Balance</p>
-                    <p className="text-xl font-bold">{formatCurrency(monthlyData.closingBalance)}</p>
+                    <p className="text-xl font-bold">{isLoading ? <Skeleton className="h-7 w-32"/> : formatCurrency(monthlyData.closingBalance)}</p>
                 </Card>
             </div>
              <div className="flex flex-col sm:flex-row gap-2 justify-end">
@@ -558,7 +564,7 @@ export default function FinancePage() {
                         {canManageFinances && <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>}
                     </TableRow>
                     ))}
-                    {monthlyData.transactions.map((t, index) => (
+                    {!isLoading && monthlyData.transactions.map((t, index) => (
                     <TableRow key={`${t.id}-${index}`}>
                         <TableCell>{formatDateSafe(t.date, 'dateOnly')}</TableCell>
                         <TableCell className="font-medium">{t.description}</TableCell>
@@ -602,14 +608,14 @@ export default function FinancePage() {
                     ))}
                     {!isLoading && monthlyData.transactions.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={canManageFinances ? 5 : 4} className="h-48 text-center">No transactions recorded for {format(selectedMonth, 'MMMM yyyy')}.</TableCell>
+                            <TableCell colSpan={canManageFinances ? 5 : 4} className="h-48 text-center">No transactions recorded for {selectedMonth ? format(selectedMonth, 'MMMM yyyy') : ''}.</TableCell>
                         </TableRow>
                     )}
                 </TableBody>
                 </Table>
             </div>
             <div className="sm:hidden space-y-4">
-                {monthlyData.transactions.map((t, index) => (
+                {monthlyData && monthlyData.transactions.map((t, index) => (
                     <Card key={`mobile-${t.id}-${index}`}>
                         <CardHeader>
                             <CardTitle>{t.description}</CardTitle>
@@ -664,8 +670,8 @@ export default function FinancePage() {
             <CardDescription>Based on all 'Disbursed' and 'Acknowledged' expenses.</CardDescription>
         </CardHeader>
         <CardContent>
-             {isLoading && <Skeleton className="w-full h-96" />}
-             {!isLoading && chartData.length > 0 && (
+             {(isLoadingIncome || isLoadingExpenses) && <Skeleton className="w-full h-96" />}
+             {!(isLoadingIncome || isLoadingExpenses) && chartData.length > 0 && (
                 <ChartContainer config={chartConfig} className="w-full h-96">
                     <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 120 }}>
                         <XAxis type="number" hide />
@@ -678,7 +684,7 @@ export default function FinancePage() {
                     </BarChart>
                 </ChartContainer>
             )}
-            {!isLoading && chartData.length === 0 && (
+            {!(isLoadingIncome || isLoadingExpenses) && chartData.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
                     <DollarSign className="h-12 w-12" />
                     <p className="mt-4 font-semibold">No spending data to show.</p>

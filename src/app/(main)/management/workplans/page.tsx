@@ -20,7 +20,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBl
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc } from 'firebase/firestore';
 import type { TeamWeeklyPlan, User, PriorityItem } from '@/lib/types';
-import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns';
+import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks, isValid } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2, Wand } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -361,16 +361,20 @@ function TeamWorkplanForm({
 
 
 export default function TeamWorkplansPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [currentPlan, setCurrentPlan] = useState<TeamWeeklyPlan | null>(null);
   const [isLoadingPlan, setIsLoadingPlan] = useState(true);
+
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
 
   const firestore = useFirestore();
   const usersQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'users'), orderBy('name')) : null), [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const weekStartDate = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekEndDate = endOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekStartDate = currentDate ? startOfWeek(currentDate, { weekStartsOn: 1 }) : new Date();
+  const weekEndDate = currentDate ? endOfWeek(currentDate, { weekStartsOn: 1 }) : new Date();
 
   const fetchPlanForWeek = useCallback(async (date: Date) => {
     if (!firestore) return;
@@ -402,12 +406,14 @@ export default function TeamWorkplansPage() {
   }, [firestore]);
   
   useEffect(() => {
-    fetchPlanForWeek(currentDate);
+    if (currentDate) {
+        fetchPlanForWeek(currentDate);
+    }
   }, [currentDate, fetchPlanForWeek]);
 
 
-  const goToPreviousWeek = () => setCurrentDate(subWeeks(currentDate, 1));
-  const goToNextWeek = () => setCurrentDate(addWeeks(currentDate, 1));
+  const goToPreviousWeek = () => setCurrentDate(prev => prev ? subWeeks(prev, 1) : new Date());
+  const goToNextWeek = () => setCurrentDate(prev => prev ? addWeeks(prev, 1) : new Date());
   
   const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -415,7 +421,7 @@ export default function TeamWorkplansPage() {
     Low: "border-blue-500 bg-blue-500/10 text-blue-500",
   };
   
-  const isLoading = isLoadingPlan || isLoadingUsers;
+  const isLoading = isLoadingPlan || isLoadingUsers || !currentDate;
 
   return (
     <div className="flex flex-col gap-6">
@@ -425,7 +431,7 @@ export default function TeamWorkplansPage() {
              <div>
                 <CardTitle>Team Weekly Plans</CardTitle>
                 <CardDescription>
-                Week {getWeek(currentDate, { weekStartsOn: 1 })}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
+                  {currentDate ? `Week ${getWeek(currentDate, { weekStartsOn: 1 })}: ${format(weekStartDate, 'MMMM d')} - ${format(weekEndDate, 'd, yyyy')}` : "Loading..."}
                 </CardDescription>
              </div>
             <div className="flex items-center gap-2">
