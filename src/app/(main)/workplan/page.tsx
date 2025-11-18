@@ -151,16 +151,20 @@ function FinalizeWorkplanForm({
 }
 
 export default function WorkplanPage() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [teamPlan, setTeamPlan] = useState<TeamWeeklyPlan | null>(null);
   const [userPlan, setUserPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
+
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const weekStartDate = startOfWeek(currentDate, { weekStartsOn: 1 });
-  const weekEndDate = endOfWeek(currentDate, { weekStartsOn: 1 });
+  const weekStartDate = currentDate ? startOfWeek(currentDate, { weekStartsOn: 1 }) : new Date();
+  const weekEndDate = currentDate ? endOfWeek(currentDate, { weekStartsOn: 1 }) : new Date();
 
   const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -169,7 +173,7 @@ export default function WorkplanPage() {
   };
 
   const fetchPlans = useCallback(async () => {
-    if (!user || !firestore) return;
+    if (!user || !firestore || !currentDate) return;
     setIsLoading(true);
     setTeamPlan(null);
     setUserPlan(null);
@@ -219,8 +223,10 @@ export default function WorkplanPage() {
 
 
   useEffect(() => {
-    fetchPlans();
-  }, [fetchPlans]);
+    if (currentDate) {
+        fetchPlans();
+    }
+  }, [fetchPlans, currentDate]);
 
   const formatDeadline = (deadline: any) => {
     if (!deadline) return '-';
@@ -234,7 +240,7 @@ export default function WorkplanPage() {
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isLoading || !currentDate) {
       return (
         <div className="space-y-4">
           <Skeleton className="h-8 w-3/4" />
@@ -353,19 +359,21 @@ export default function WorkplanPage() {
           Align your tasks with the team's weekly priorities set by management.
         </p>
       </header>
-
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>
-              Week {getWeek(currentDate, { weekStartsOn: 1})}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-            {renderContent()}
-        </CardContent>
-      </Card>
+      
+      {currentDate && (
+        <Card>
+            <CardHeader>
+            <div className="flex justify-between items-center">
+                <CardTitle>
+                Week {getWeek(currentDate, { weekStartsOn: 1})}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
+                </CardTitle>
+            </div>
+            </CardHeader>
+            <CardContent>
+                {renderContent()}
+            </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
