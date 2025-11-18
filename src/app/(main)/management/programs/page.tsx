@@ -9,7 +9,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, AlertTriangle, Clock, Briefcase, PlusCircle, Edit } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock, Briefcase, PlusCircle, Edit, ArrowRight } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc, Timestamp } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
@@ -37,6 +37,7 @@ import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/no
 import { format, parseISO, isValid, isPast } from 'date-fns';
 import { cn, formatDateSafe } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
+import Link from 'next/link';
 
 
 const statusIcons: { [key: string]: React.ReactNode } = {
@@ -211,7 +212,7 @@ export default function ProgramsPage() {
     const isDeadlinePast = isPast(deadlineDate) && program.status !== 'Completed';
 
     return (
-      <Card key={program.id} className="flex flex-col">
+      <Card key={program.id} className="flex flex-col group">
         <CardHeader>
           <div className="flex items-start justify-between">
             <CardTitle className="text-xl pr-4">{program.title}</CardTitle>
@@ -231,21 +232,26 @@ export default function ProgramsPage() {
           <div>
             <h4 className="font-semibold text-sm mb-2">Key Objectives:</h4>
             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-              {program.objectives.map((obj, index) => (
+              {program.objectives.slice(0, 3).map((obj, index) => (
                 <li key={index}>{obj}</li>
               ))}
+              {program.objectives.length > 3 && <li>...and {program.objectives.length - 3} more.</li>}
             </ul>
           </div>
-          <div className="mt-4 pt-4 border-t">
-            <div className="text-xs text-muted-foreground">
+        </CardContent>
+         <CardFooter className="flex-col items-start gap-4">
+             <div className="text-xs text-muted-foreground w-full">
               <p><strong>Lead:</strong> {program.lead}</p>
               <p className={cn("font-medium", isDeadlinePast && "text-destructive")}>
                 <strong>Deadline:</strong> {format(deadlineDate, "dd MMM, yyyy")}
               </p>
-              {program.valuePerObjective && <p><strong>Value/Objective:</strong> {(program.valuePerObjective).toLocaleString()} UGX</p>}
             </div>
-          </div>
-        </CardContent>
+             <Button asChild variant="secondary" className="w-full">
+              <Link href={`/management/programs/${program.id}`}>
+                View Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+        </CardFooter>
       </Card>
     );
   };

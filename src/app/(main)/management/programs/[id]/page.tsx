@@ -1,0 +1,144 @@
+'use client';
+
+import { useParams } from 'next/navigation';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { Program } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FolderKanban, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { formatDateSafe } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
+
+const statusColors: { [key: string]: string } = {
+  "On Track": "border-green-500 bg-green-500/10 text-green-500",
+  "At Risk": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
+  "Delayed": "border-red-500 bg-red-500/10 text-red-500",
+  "Completed": "border-primary bg-primary/10 text-primary",
+};
+
+function ProgramDashboard() {
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const firestore = useFirestore();
+
+  const programDocRef = useMemoFirebase(() => {
+    if (!firestore || !id) return null;
+    return doc(firestore, 'programs', id);
+  }, [firestore, id]);
+
+  const { data: program, isLoading: isLoadingProgram } = useDoc<Program>(programDocRef);
+  
+  const isLoading = isLoadingProgram;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!program) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Program Not Found</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>The requested program could not be found.</p>
+          <Button asChild variant="outline" className="mt-4">
+            <Link href="/management/programs"><ArrowLeft className="mr-2 h-4 w-4" />Back to Programs</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <header>
+         <Button asChild variant="outline" className="mb-4">
+            <Link href="/management/programs"><ArrowLeft className="mr-2 h-4 w-4" />Back to All Programs</Link>
+          </Button>
+        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-3">
+          <FolderKanban className="h-8 w-8" />
+          {program.title}
+        </h1>
+        <p className="text-muted-foreground">
+          A detailed dashboard for the {program.title} program.
+        </p>
+      </header>
+
+       <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <CardTitle>Program Snapshot</CardTitle>
+            <Badge variant="outline" className={statusColors[program.status]}>
+              {program.status}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+           <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Program Lead</p>
+            <p className="font-semibold">{program.lead}</p>
+          </div>
+           <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Deadline</p>
+            <p className="font-semibold">{formatDateSafe(program.deadline, 'dateOnly')}</p>
+          </div>
+          <div className="md:col-span-3 space-y-2">
+            <h4 className="text-sm font-semibold">Key Objectives</h4>
+            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                {program.objectives.map((obj, i) => <li key={i}>{obj}</li>)}
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+            <CardHeader>
+                <CardTitle>Linked Projects</CardTitle>
+                <CardDescription>All projects contributing to this program.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <p className="text-center text-muted-foreground py-12">Project linking coming soon.</p>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Program KPIs</CardTitle>
+                <CardDescription>Key performance indicators for this program.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <p className="text-center text-muted-foreground py-12">KPI linking for programs is coming soon.</p>
+            </CardContent>
+        </Card>
+      </div>
+      <Card>
+            <CardHeader>
+                <CardTitle>Financial Summary</CardTitle>
+                <CardDescription>Financial health of the {program.title} program.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <p className="text-center text-muted-foreground py-12">Program-level financial tracking is coming soon.</p>
+            </CardContent>
+        </Card>
+    </div>
+  );
+}
+
+export default function ProgramPage() {
+    return <ProgramDashboard />;
+}
