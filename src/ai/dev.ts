@@ -49,6 +49,7 @@ export * from './flows/omuto-ai-flow';
 export * from './flows/smart-reminders-flow';
 export * from './flows/qualitative-analysis-flow';
 export * from './flows/generate-template-flow';
+export * from './flows/testimony-processor-flow';
 
 
 // NOTE: omuto-tools now only contains server-side safe tools.
