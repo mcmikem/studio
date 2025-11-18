@@ -1,327 +1,159 @@
 /**
  * @file Omuto Central Firestore Security Rules
- * @core_philosophy This ruleset prioritizes rapid prototyping by relaxing data shape validation
- * while enforcing authentication and authorization.
- * @data_structure Top-level collections store various entities like users, programs, activities,
- * and more.  User-specific data is nested under /users/{userId}.
- * @key_security_decisions Listing of users is disallowed. Most collections default to owner-only
- * write access unless explicitly made public.  Schema validation is minimal to allow for flexible
- * data changes during prototyping.
- * @denormalization None explicitly used.
- * @structural_segregation No explicit segregation.
+ * @core_philosophy This ruleset enforces role-based access control (RBAC) and document ownership.
+ * It prioritizes security and data integrity over the initial open-prototyping rules.
+ * @data_structure Top-level collections store various entities. User-specific data is nested under /users/{userId}.
+ * @key_security_decisions
+ *   - User profiles are only writable by their owner.
+ *   - Management collections (programs, projects, etc.) are only writable by users with management roles.
+ *   - Financial data (expenses) has strict read/write access controls based on ownership and finance roles.
+ *   - Most collections are world-readable for authenticated users to power dashboards, but writes are restricted.
  */
 rules_version = '2';
+
+function isManager(userId) {
+  let userRole = get(/databases/$(database)/documents/users/$(userId)).data.role;
+  return userRole in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
+}
+
+function isFinance(userId) {
+  let userRole = get(/databases/$(database)/documents/users/$(userId)).data.role;
+  return userRole in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
+}
+
+function isOwner(userId) {
+  return request.auth.uid == userId;
+}
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows read/write access to user profile information for the owner.
-     * @path /users/{userId}
-     * @allow (create, update, delete) - User with ID 'user123' can create/update/delete their own profile at /users/user123.
-     * @allow (get, list) - Any authenticated user can read the user profile
-     * @deny (create, update, delete) - User with ID 'user456' cannot create/update/delete the profile at /users/user123.
-     * @principle Enforces document ownership for writes and public read access.
+     * @description User profiles. A user can only write to their own profile. Anyone can read.
      */
     match /users/{userId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId && resource != null;
-      allow delete: if request.auth != null && request.auth.uid == userId && resource != null;
+      allow read: if request.auth != null;
+      allow write: if isOwner(userId);
     }
 
     /**
-     * @description Allows read/write access to tasks for a specific user.
-     * @path /users/{userId}/tasks/{taskId}
-     * @allow (create, update, delete) - User with ID 'user123' can create/update/delete tasks under their profile.
-     * @allow (list, get) - User with ID 'user123' can list and get tasks under their profile.
-     * @deny (create, update, delete) - User with ID 'user456' cannot create/update/delete tasks under /users/user123.
-     * @principle Restricts access to a user's own task list.
+     * @description User-specific sub-collections (tasks, ai-chats). Only the owner can access.
      */
-    match /users/{userId}/tasks/{taskId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId && resource != null;
-      allow delete: if request.auth != null && request.auth.uid == userId && resource != null;
+    match /users/{userId}/{subcollection}/{docId} {
+      allow read, write: if isOwner(userId);
     }
 
     /**
-     * @description Allows read/write access to daily check-in plans for team members.
-     * @path /checkins/{checkinId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any checkin
-     * @allow (get, list) - Any authenticated user can read any checkin
-     * @principle Allows any authenticated user to create, read, update, and delete checkins.
-     */
-    match /checkins/{checkinId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to daily checkout updates for team members.
-     * @path /checkouts/{checkoutId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any checkout
-     * @allow (get, list) - Any authenticated user can read any checkout
-     * @principle Allows any authenticated user to create, read, update, and delete checkouts.
-     */
-    match /checkouts/{checkoutId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to logged activities from the ROI Calculator.
-     * @path /activities/{activityId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any activity
-     * @allow (get, list) - Any authenticated user can read any activity
-     * @principle Allows any authenticated user to create, read, update, and delete activities.
-     */
-    match /activities/{activityId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to Omuto's core programs and initiatives.
-     * @path /programs/{programId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any program
-     * @allow (get, list) - Any authenticated user can read any program
-     * @principle Allows any authenticated user to create, read, update, and delete programs.
+     * @description Public read, but restricted writes to managers for core operational data.
      */
     match /programs/{programId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
     }
-
-    /**
-     * @description Allows read/write access to information about partner organizations.
-     * @path /partnerships/{partnershipId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any partnership
-     * @allow (get, list) - Any authenticated user can read any partnership
-     * @principle Allows any authenticated user to create, read, update, and delete partnerships.
-     */
-    match /partnerships/{partnershipId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to key performance indicators (KPIs) for the organization.
-     * @path /impact-metrics/{metricId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any impact metric
-     * @allow (get, list) - Any authenticated user can read any impact metric
-     * @principle Allows any authenticated user to create, read, update, and delete impact metrics.
-     */
-    match /impact-metrics/{metricId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to high-level projects and their associated metrics.
-     * @path /projects/{projectId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any project
-     * @allow (get, list) - Any authenticated user can read any project
-     * @principle Allows any authenticated user to create, read, update, and delete projects.
-     */
     match /projects/{projectId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+    match /partnerships/{partnershipId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+     match /partnerships/{partnershipId}/{subcollection}/{docId} {
+      allow read, write: if isManager(request.auth.uid);
+    }
+    match /impact-metrics/{metricId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+    match /equipment/{equipmentId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+     match /task-templates/{templateId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
     }
 
     /**
-     * @description Allows read/write access to organizational calendar events.
-     * @path /events/{eventId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any event
-     * @allow (get, list) - Any authenticated user can read any event
-     * @principle Allows any authenticated user to create, read, update, and delete events.
+     * @description Team-wide communication streams. Anyone can read, but only the owner can create/modify their own entries.
      */
-    match /events/{eventId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+    match /checkins/{checkinId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth.uid == request.resource.data.userId;
+    }
+    match /checkouts/{checkoutId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth.uid == request.resource.data.userId;
+    }
+     match /messages/{messageId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth.uid == request.resource.data.userId;
+        allow update, delete: if request.auth.uid == resource.data.userId;
+    }
+    match /activities/{activityId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth.uid == resource.data.userId;
+    }
+    match /workplans/{workplanId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth.uid == resource.data.userId;
+    }
+     match /testimonies/{testimonyId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth.uid == resource.data.userId;
+    }
+    match /ai-feedback/{feedbackId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth.uid == resource.data.userId;
     }
 
+
     /**
-     * @description Allows read/write access to system-wide alerts and notifications.
-     * @path /alerts/{alertId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any alert
-     * @allow (get, list) - Any authenticated user can read any alert
-     * @principle Allows any authenticated user to create, read, update, and delete alerts.
+     * @description Team-wide plans are readable by all, but only writable by managers.
+     */
+    match /team-workplans/{planId} {
+        allow read: if request.auth != null;
+        allow write: if isManager(request.auth.uid);
+    }
+
+
+    /**
+     * @description Alerts are readable if they are broadcast (targetUserIds is empty) or if the user is in the target list.
+     * Only managers can create alerts.
      */
     match /alerts/{alertId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+      allow read: if request.auth != null && (resource.data.targetUserIds.size() == 0 || request.auth.uid in resource.data.targetUserIds);
+      allow write: if isManager(request.auth.uid);
     }
 
     /**
-     * @description Allows read/write access to the key results for the October Operational Plan.
-     * @path /key-results/{keyResultId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any key result
-     * @allow (get, list) - Any authenticated user can read any key result
-     * @principle Allows any authenticated user to create, read, update, and delete key results.
-     */
-    match /key-results/{keyResultId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to expense reports submitted by users.
-     * @path /expenses/{expenseId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any expense
-     * @allow (get, list) - Any authenticated user can read any expense
-     * @principle Allows any authenticated user to create, read, update, and delete expenses.
+     * @description Financial data has the strictest rules.
      */
     match /expenses/{expenseId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+      allow get: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
+      allow list: if request.auth != null && isFinance(request.auth.uid);
+      allow create: if request.auth != null; // Anyone can create, but logic should set userId to their own uid
+      allow update: if request.auth != null && isManager(request.auth.uid); // Only managers can approve/reject
+      allow delete: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
     }
 
-    /**
-     * @description Allows read/write access to all income and revenue transactions.
-     * @path /income/{incomeId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any income
-     * @allow (get, list) - Any authenticated user can read any income
-     * @principle Allows any authenticated user to create, read, update, and delete income.
-     */
     match /income/{incomeId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isFinance(request.auth.uid);
     }
-
-    /**
-     * @description Allows read/write access to grant proposals and funding applications.
-     * @path /proposals/{proposalId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any proposal
-     * @allow (get, list) - Any authenticated user can read any proposal
-     * @principle Allows any authenticated user to create, read, update, and delete proposals.
-     */
+    
     match /proposals/{proposalId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isManager(request.auth.uid);
     }
-
-    /**
-     * @description Allows read/write access to manager-created team-wide weekly plans.
-     * @path /team-workplans/{teamWorkplanId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any team workplan
-     * @allow (get, list) - Any authenticated user can read any team workplan
-     * @principle Allows any authenticated user to create, read, update, and delete team workplans.
-     */
-    match /team-workplans/{teamWorkplanId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to individuals' finalized weekly workplans.
-     * @path /workplans/{workplanId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any workplan
-     * @allow (get, list) - Any authenticated user can read any workplan
-     * @principle Allows any authenticated user to create, read, update, and delete workplans.
-     */
-    match /workplans/{workplanId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to the inventory of physical equipment.
-     * @path /equipment/{equipmentId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any equipment
-     * @allow (get, list) - Any authenticated user can read any equipment
-     * @principle Allows any authenticated user to create, read, update, and delete equipment.
-     */
-    match /equipment/{equipmentId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to reusable task templates and checklists.
-     * @path /task-templates/{templateId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any task template
-     * @allow (get, list) - Any authenticated user can read any task template
-     * @principle Allows any authenticated user to create, read, update, and delete task templates.
-     */
-    match /task-templates/{templateId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to team chat messages.
-     * @path /messages/{messageId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any message
-     * @allow (get, list) - Any authenticated user can read any message
-     * @principle Allows any authenticated user to create, read, update, and delete messages.
-     */
-    match /messages/{messageId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-     /**
-     * @description Allows read/write access to recorded audio, video, or text testimonies.
-     * @path /testimonies/{testimonyId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any testimony
-     * @allow (get, list) - Any authenticated user can read any testimony
-     * @principle Allows any authenticated user to create, read, update, and delete testimonies.
-     */
-    match /testimonies/{testimonyId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
-    }
-
-    /**
-     * @description Allows read/write access to user feedback on AI-generated content.
-     * @path /ai-feedback/{feedbackId}
-     * @allow (create, update, delete) - Any authenticated user can create/update/delete any AI Feedback
-     * @allow (get, list) - Any authenticated user can read any AI Feedback
-     * @principle Allows any authenticated user to create, read, update, and delete AI Feedback.
-     */
-    match /ai-feedback/{feedbackId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      allow update: if request.auth != null && resource != null;
-      allow delete: if request.auth != null && resource != null;
+    
+    // Default deny for any collections not explicitly matched
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

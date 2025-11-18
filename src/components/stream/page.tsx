@@ -24,6 +24,7 @@ import Link from 'next/link';
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
     
     const tasksArray = checkout.tasks || [];
+
     const completedTasks = tasksArray.filter(t => t.status === 'Done');
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
     
