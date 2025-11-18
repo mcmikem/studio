@@ -4,7 +4,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import type { Expense } from "@/lib/types"
 import { useCollection, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
-import { collection, query, where, orderBy, doc, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, doc, getDocs, onSnapshot } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Button } from "../ui/button";

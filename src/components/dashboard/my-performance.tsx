@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
@@ -14,9 +14,14 @@ import { startOfMonth } from 'date-fns';
 export function MyPerformance() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
+    if (!firestore || !user || !isClient) return null;
 
     const monthStart = startOfMonth(new Date());
 
@@ -26,7 +31,7 @@ export function MyPerformance() {
       where('loggedAt', '>=', Timestamp.fromDate(monthStart)),
       orderBy('loggedAt', 'desc')
     );
-  }, [firestore, user]);
+  }, [firestore, user, isClient]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
@@ -49,7 +54,7 @@ export function MyPerformance() {
     };
   }, [activities]);
 
-  if (isLoading) {
+  if (isLoading || !isClient) {
     return <Skeleton className="h-48" />;
   }
 

@@ -40,9 +40,11 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const { toast } = useToast();
     const router = useRouter();
+    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         // This ensures the Date object is only created on the client side
+        setIsClient(true);
         setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
@@ -91,7 +93,7 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
         router.push('/chat');
     }
   
-  if (isLoadingCheckin || hour === null) {
+  if (isLoadingCheckin || hour === null || !isClient) {
       return <Skeleton className="h-48 w-full" />
   }
 
