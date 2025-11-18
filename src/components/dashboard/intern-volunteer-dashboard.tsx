@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User } from '@/lib/types';
@@ -13,15 +12,11 @@ function QuickActionsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
+        <CardTitle>Your Daily Tasks</CardTitle>
+        <CardDescription>Log your work and share your progress with the team.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <Button size="lg" asChild>
-          <Link href="/forms/activity">
-            <Clock className="mr-2 h-4 w-4" /> Log My Hours
-          </Link>
-        </Button>
-        <Button size="lg" variant="outline" asChild>
           <Link href="/forms/volunteer-note">
             <MessageCircle className="mr-2 h-4 w-4" /> Submit End-of-Day Note
           </Link>
