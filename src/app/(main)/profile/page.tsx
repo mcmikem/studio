@@ -12,7 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useUser, useFirestore, useMemoFirebase, useCollection, updateDocumentNonBlocking } from '@/firebase';
-import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown, LogOut as LogOutIcon, Settings, ChevronsUpDown, Eye } from 'lucide-react';
+import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown, LogOut as LogOutIcon, Settings, ChevronsUpDown, Eye, BarChart3 } from 'lucide-react';
 import { collection, query, where, orderBy, limit, doc } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,6 +28,7 @@ import { uploadImageAndUpdateProfile } from '@/firebase/storage';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuGroup } from '@/components/ui/dropdown-menu';
+import { UserPerformance } from '@/components/profile/user-performance';
 
 const userRoles = [
     'Executive Director',
@@ -276,6 +277,11 @@ function UserProfileCard() {
 function ProfilePageContent() {
     const searchParams = useSearchParams();
     const tab = searchParams.get('tab') || 'profile';
+    const { user } = useUser();
+
+    if (!user) {
+        return <Loader2 className="h-8 w-8 animate-spin" />
+    }
 
     return (
         <div className="flex flex-col gap-6">
@@ -284,13 +290,14 @@ function ProfilePageContent() {
             My Profile & Tasks
             </h1>
             <p className="text-muted-foreground">
-            Your personal information, tasks, and recent activity.
+            Your personal information, tasks, and activity.
             </p>
         </header>
         <Tabs defaultValue={tab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="profile">Profile & Activity</TabsTrigger>
             <TabsTrigger value="tasks">Task Management</TabsTrigger>
+            <TabsTrigger value="performance">Performance</TabsTrigger>
             </TabsList>
             <TabsContent value="profile">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
@@ -304,6 +311,11 @@ function ProfilePageContent() {
             </TabsContent>
             <TabsContent value="tasks">
                 <UserTasks />
+            </TabsContent>
+            <TabsContent value="performance">
+                 <div className="mt-4">
+                    <UserPerformance userId={user.uid} />
+                 </div>
             </TabsContent>
         </Tabs>
         </div>

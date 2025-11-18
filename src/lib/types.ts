@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -136,6 +137,7 @@ export type Activity = {
     primaryGoalType?: 'Metric' | 'Program';
     primaryGoalId?: string;
     primaryGoalQuantity?: number;
+    keyResultId?: string;
     indirectValue?: number;
     trees_planted?: number;
     parents_attended?: number;

@@ -21,6 +21,8 @@ import { QuickAddTask } from "./quick-add-task"
 import { formatCurrency } from "@/lib/utils"
 import { MyWeeklyPlan } from "./my-weekly-plan"
 import { ApprovalQueue } from "./approval-queue"
+import { TeamPerformanceLeaderboard } from "./team-performance-leaderboard"
+import { MyPerformance } from "./my-performance"
 
 
 function EcosystemPulse({ activities, programs }: { activities: Activity[] | null, programs: Program[] | null }) {
@@ -151,7 +153,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
             orderBy('loggedAt', 'desc')
         );
     }, [firestore]);
-    const { data: activities } = useCollection<Activity>(activitiesQuery);
+    const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
     
     const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
     const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
@@ -169,9 +171,11 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     <>
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
+            <MyPerformance />
+            <TeamPerformanceLeaderboard activities={activities} users={users} isLoading={isLoadingActivities || isLoadingUsers}/>
             <EcosystemPulse activities={activities} programs={programs} />
             <KeyResultsTracker showAtRisk title="November Plan - Strategic Overview" description="Live progress on the November 2025 plan vs. funds and time." />
-             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <ApprovalQueue />

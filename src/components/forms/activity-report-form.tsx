@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { ImpactMetric, Program } from '@/lib/types';
+import type { ImpactMetric, Program, KeyResult } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
@@ -57,6 +57,8 @@ export function ActivityReportForm() {
   const [goalType, setGoalType] = useState<'Metric' | 'Program'>('Metric');
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [goalQuantity, setGoalQuantity] = useState(0);
+  const [keyResultId, setKeyResultId] = useState<string | null>(null);
+
 
   // New state for program-specific fields
   const [parentsAttended, setParentsAttended] = useState(0);
@@ -79,6 +81,13 @@ export function ActivityReportForm() {
     return query(collection(firestore, 'programs'), orderBy('title'));
   }, [firestore]);
   const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery);
+
+  const keyResultsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'key-results'), orderBy('title'));
+  }, [firestore]);
+  const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
+
 
   const selectedMetric = useMemo(() => {
     if (goalType !== 'Metric') return null;
@@ -146,11 +155,11 @@ export function ActivityReportForm() {
   };
 
   const handleLogActivity = async () => {
-    if (!activityName.trim() || !user || !firestore || !selectedGoalId || !profile) {
+    if (!activityName.trim() || !user || !firestore || !selectedGoalId || !profile || !keyResultId) {
       toast({
         variant: 'destructive',
         title: 'Missing Information',
-        description: 'Please provide an activity name, select a primary goal, and be logged in to save.',
+        description: 'Please provide an activity name, select a primary goal, link to a Key Result, and be logged in to save.',
       });
       return;
     }
@@ -172,6 +181,7 @@ export function ActivityReportForm() {
       primaryGoalType: goalType,
       primaryGoalId: selectedGoalId,
       primaryGoalQuantity: goalQuantity,
+      keyResultId: keyResultId,
       memorableMoment: memorableMoment,
       challengesLearned: challengesLearned,
       beneficiaryQuote: beneficiaryQuote,
@@ -198,6 +208,7 @@ export function ActivityReportForm() {
         setActivityName('');
         setSelectedMultipliers([]);
         setSelectedGoalId(null);
+        setKeyResultId(null);
         setGoalQuantity(0);
         setParentsAttended(0);
         setTeachersAttended(0);
@@ -409,6 +420,22 @@ export function ActivityReportForm() {
                     <span className="font-headline">Estimated ROI:</span>
                     <span className={`font-bold font-headline ${estimatedRoi >= 0 ? 'text-green-500' : 'text-red-500'}`}>{estimatedRoi.toFixed(0)}%</span>
                   </div>
+                </div>
+
+                 <div className="space-y-2">
+                    <Label htmlFor="key-result">Link to Key Result</Label>
+                    {isLoadingKeyResults ? <Skeleton className="h-10 w-full" /> : (
+                        <Select onValueChange={setKeyResultId} value={keyResultId || undefined}>
+                            <SelectTrigger id="key-result">
+                                <SelectValue placeholder="Select a Key Result..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {keyResults?.map(kr => (
+                                    <SelectItem key={kr.id} value={kr.id}>{kr.title}: {kr.description}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    )}
                 </div>
                 
                 <div className="space-y-2">

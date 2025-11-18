@@ -14,6 +14,7 @@ import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/fi
 import { startOfDay } from 'date-fns';
 import { useMemo, useState, useEffect } from 'react';
 import { DailyActions } from '@/components/dashboard/daily-actions';
+import { MyPerformance } from '@/components/dashboard/my-performance';
 
 
 // Define a loading component for dynamic imports
@@ -119,6 +120,8 @@ export default function DashboardPage() {
         <DashboardHeader profile={profile} title={dashboardTitle} />
         
         <DailyActions hour={currentHour} checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
+        
+        {effectiveRole !== 'Executive Director' && <MyPerformance />}
         
         <QuickStatsSummary metrics={metrics} />
         

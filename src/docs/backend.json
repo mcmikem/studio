@@ -1,4 +1,5 @@
 
+
 {
   "entities": {
     "User": {
@@ -162,6 +163,10 @@
           "type": "number",
           "description": "The quantity achieved for the primary goal (e.g., number of students, number of objectives)."
         },
+         "keyResultId": {
+            "type": "string",
+            "description": "The ID of the strategic Key Result this activity contributes to."
+        },
         "estimatedCost": {
           "type": "number",
           "description": "The pre-activity estimated cost."
@@ -216,6 +221,7 @@
         "primaryGoalId",
         "primaryGoalType",
         "primaryGoalQuantity",
+        "keyResultId",
         "estimatedCost",
         "actualCost",
         "directValue",
@@ -858,3 +864,7 @@
     }
   }
 }
+    
+    
+
+
