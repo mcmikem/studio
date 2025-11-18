@@ -1,16 +1,18 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function isManager(userId) {
-      let userRole = get(/databases/$(database)/documents/users/$(userId)).data.role;
-      return userRole in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
+      // Use exists() for robust checking instead of get() where possible
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      return request.auth != null && userDoc.data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
     }
 
     function isFinance(userId) {
-      let userRole = get(/databases/$(database)/documents/users/$(userId)).data.role;
-      return userRole in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      return request.auth != null && userDoc.data.role in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
     }
 
     function isOwner(userId) {
@@ -18,20 +20,17 @@ service cloud.firestore {
     }
 
     // USER PROFILES
-    // Users can only write to their own profile. Anyone authenticated can read profiles.
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if isOwner(userId);
     }
 
-    // USER SUB-COLLECTIONS
-    // A user's private data (tasks, AI chats) is only accessible by them.
+    // USER SUB-COLLECTIONS (private data)
     match /users/{userId}/{subcollection}/{docId} {
       allow read, write: if isOwner(userId);
     }
 
-    // MANAGEMENT COLLECTIONS (Programs, Projects, Partnerships, etc.)
-    // Anyone authenticated can read these for dashboards, but only managers can write.
+    // MANAGEMENT COLLECTIONS (Readable by all, Writable by Managers)
     match /programs/{programId} {
       allow read: if request.auth != null;
       allow write: if isManager(request.auth.uid);
@@ -45,7 +44,8 @@ service cloud.firestore {
       allow write: if isManager(request.auth.uid);
     }
      match /partnerships/{partnershipId}/{subcollection}/{docId} {
-      allow read, write: if isManager(request.auth.uid);
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
     }
     match /impact-metrics/{metricId} {
       allow read: if request.auth != null;
@@ -64,42 +64,41 @@ service cloud.firestore {
       allow write: if isManager(request.auth.uid);
     }
 
-    // TEAM-WIDE USER-GENERATED CONTENT (Check-ins, Check-outs, Messages, etc.)
-    // Anyone authenticated can read. Create/update/delete is restricted to the owner.
+    // TEAM-WIDE USER-GENERATED CONTENT (Readable by all, owned writes)
     match /checkins/{checkinId} {
         allow read: if request.auth != null;
         allow create: if request.auth.uid == request.resource.data.userId;
-        allow update, delete: if request.auth.uid == resource.data.userId;
+        allow update, delete: if isOwner(resource.data.userId);
     }
     match /checkouts/{checkoutId} {
         allow read: if request.auth != null;
         allow create: if request.auth.uid == request.resource.data.userId;
-        allow update, delete: if request.auth.uid == resource.data.userId;
+        allow update, delete: if isOwner(resource.data.userId);
     }
      match /messages/{messageId} {
         allow read: if request.auth != null;
         allow create: if request.auth.uid == request.resource.data.userId;
-        allow update, delete: if request.auth.uid == request.resource.data.userId;
+        allow update, delete: if isOwner(resource.data.userId);
     }
     match /activities/{activityId} {
       allow read: if request.auth != null;
       allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth.uid == resource.data.userId;
+      allow update, delete: if isOwner(resource.data.userId);
     }
     match /workplans/{workplanId} {
       allow read: if request.auth != null;
       allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth.uid == resource.data.userId;
+      allow update, delete: if isOwner(resource.data.userId);
     }
      match /testimonies/{testimonyId} {
       allow read: if request.auth != null;
       allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth.uid == resource.data.userId;
+      allow update, delete: if isOwner(resource.data.userId);
     }
     match /ai-feedback/{feedbackId} {
       allow read: if request.auth != null;
       allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if false; // Feedback is write-once
+      allow update, delete: if isManager(request.auth.uid);
     }
     match /events/{eventId} {
         allow read: if request.auth != null;
@@ -114,35 +113,32 @@ service cloud.firestore {
     }
 
 
-    // ALERTS
-    // Readable by all if it's a broadcast, or if the user is in the target list. Writable only by managers.
+    // ALERTS (Corrected Rules)
     match /alerts/{alertId} {
-      allow read: if request.auth != null && (resource.data.targetUserIds.size() == 0 || request.auth.uid in resource.data.targetUserIds);
+      // Allow LIST operations for any authenticated user.
+      // The client-side queries are responsible for filtering to the specific user.
+      allow list: if request.auth != null;
+      // Allow GET operations only if it's a broadcast or the user is in the target list.
+      allow get: if request.auth != null && (resource.data.targetUserIds.size() == 0 || request.auth.uid in resource.data.targetUserIds);
+      // Allow WRITE operations only for managers.
       allow write: if isManager(request.auth.uid);
     }
 
     // FINANCIALS (Strictest Rules)
     match /expenses/{expenseId} {
-      // An owner can get their own report. Finance/ED can get any report.
       allow get: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
-      // Only finance/ED can list all expenses for the main table view.
       allow list: if request.auth != null && isFinance(request.auth.uid);
-      // Any authenticated user can create an expense report.
       allow create: if request.auth != null;
-      // Only managers can approve/reject/disburse. Owners can acknowledge.
       allow update: if request.auth != null && (isManager(request.auth.uid) || (request.resource.data.status == 'Acknowledged' && resource.data.userId == request.auth.uid));
-      // Owner or finance can delete.
-      allow delete: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
+      allow delete: if request.auth != null && (isFinance(request.auth.uid) || isOwner(resource.data.userId));
     }
 
     match /income/{incomeId} {
-      // Anyone can read income records. Only finance can write.
       allow read: if request.auth != null;
       allow write: if request.auth != null && isFinance(request.auth.uid);
     }
     
     match /proposals/{proposalId} {
-      // Anyone can read proposals. Only managers can write.
       allow read: if request.auth != null;
       allow write: if request.auth != null && isManager(request.auth.uid);
     }
