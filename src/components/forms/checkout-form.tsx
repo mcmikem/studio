@@ -43,6 +43,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import type { Checkin } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
 import { Progress } from '../ui/progress';
+import { createAlert } from '@/ai/flows/create-alert-flow';
 
 const checkoutTaskSchema = z.object({
   description: z.string(),
@@ -139,7 +140,7 @@ export function CheckoutForm() {
   }, [fetchCheckin]);
 
 
-  const onSubmit = (data: CheckoutFormData) => {
+  const onSubmit = async (data: CheckoutFormData) => {
     if (!firestore || !user || !profile) {
       toast({
         variant: 'destructive',
@@ -162,18 +163,26 @@ export function CheckoutForm() {
 
     const checkoutsCollection = collection(firestore, 'checkouts');
     
-    addDocumentNonBlocking(checkoutsCollection, checkoutData)
-      .then((docRef) => {
+    try {
+        await addDocumentNonBlocking(checkoutsCollection, checkoutData)
+        
+        await createAlert({
+            type: 'Info',
+            priority: 'Low',
+            message: `${profile.name} has submitted their end-of-day report.`,
+            action: '/stream',
+            creatorId: user.uid,
+        });
+
         toast({
-          title: 'Check-out Submitted!',
-          description: 'Your impact report has been saved to the Team Stream.',
+            title: 'Check-out Submitted!',
+            description: 'Your impact report has been saved to the Team Stream.',
         });
         reset();
         router.push('/stream');
-      })
-      .catch((e: any) => {
+    } catch(e) {
         console.error("Failed to submit checkout", e)
-      });
+    }
   };
   
   if (isLoadingCheckin) {
