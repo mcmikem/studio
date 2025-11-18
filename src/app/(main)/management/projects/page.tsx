@@ -49,14 +49,14 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ArrowRight } from 'lucide-react';
 import type { Project } from '@/lib/types';
 import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Briefcase } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
-import { ProgressRing } from '@/components/ui/progress-ring';
+import Link from 'next/link';
 
 
 const statusColors: { [key: string]: string } = {
@@ -213,36 +213,49 @@ function ProjectCard({ project, onEdit, onDelete }: { project: Project, onEdit: 
                 </div>
                 <CardDescription>Managed by {project.manager}</CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow flex flex-col items-center justify-center text-center gap-4">
-                 <ProgressRing progress={project.completion} size={100} strokeWidth={8} />
-                 <div>
+            <CardContent className="flex-grow">
+                 <div className="space-y-1">
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                        <span>Progress</span>
+                        <span>{project.completion}%</span>
+                    </div>
+                    <Progress value={project.completion} />
+                 </div>
+                 <div className="mt-4">
                     <p className="text-sm font-semibold">Next Milestone</p>
                     <p className="text-sm text-muted-foreground">{project.nextMilestone}</p>
                  </div>
             </CardContent>
-            <CardFooter className="justify-end gap-2">
-                <Button variant="ghost" size="icon" onClick={onEdit}>
-                    <Edit className="h-4 w-4" />
+            <CardFooter className="justify-between">
+                <Button variant="outline" asChild size="sm">
+                    <Link href={`/management/projects/${project.id}`}>
+                        View Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
                 </Button>
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                        This will permanently delete the project "{project.name}".
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}>
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                            This will permanently delete the project "{project.name}".
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
             </CardFooter>
         </Card>
     )
