@@ -30,6 +30,7 @@ import {
   TrendingUp,
   Receipt,
   FileSignature,
+  LifeBuoy,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -77,6 +78,7 @@ const navConfig = {
     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
     { href: '/checklists', icon: ListChecks, label: 'Operational Checklists' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
+    { href: '/help', icon: LifeBuoy, label: 'Help & Support' },
   ],
   dataReporting: [
      { href: '/forms', icon: ClipboardEdit, label: 'Forms Hub' },
