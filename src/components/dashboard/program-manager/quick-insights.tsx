@@ -5,14 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { TrendingUp, BarChart } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { Activity } from "@/lib/types";
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import { subWeeks, startOfWeek, isAfter, getWeek } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function QuickInsights({ activities }: { activities: Activity[] | null }) {
-    
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     const { chartData, weeklyTotal, trend } = useMemo(() => {
-        if (!activities) {
+        if (!activities || !isClient) {
             return { chartData: [], weeklyTotal: 0, trend: 0 };
         }
 
@@ -21,7 +26,7 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
         const lastWeekStart = startOfWeek(subWeeks(now, 1));
         
         const recentActivities = activities.filter(act => 
-            act.loggedAt && isAfter(act.loggedAt.toDate(), sixWeeksAgo)
+            act.loggedAt && act.loggedAt.toDate && isAfter(act.loggedAt.toDate(), sixWeeksAgo)
         );
 
         // Group by week
@@ -52,7 +57,7 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
 
         return { chartData, weeklyTotal: thisWeekCount, trend };
 
-    }, [activities]);
+    }, [activities, isClient]);
 
     return (
         <Card>
@@ -61,7 +66,7 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
                 <CardDescription>Key performance indicators at a glance.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-                {!activities ? <Skeleton className="h-24 w-full" /> : (
+                {!activities || !isClient ? <Skeleton className="h-24 w-full" /> : (
                 <>
                     <div className="space-y-1">
                         <p className="text-sm text-muted-foreground">Field Activity Trend</p>

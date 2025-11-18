@@ -36,16 +36,19 @@ interface NotificationsListProps {
 export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnreadCountChange }: NotificationsListProps) {
   const firestore = useFirestore();
   const { user } = useUser();
-  
-  const alertsQuery = useMemo(() => {
-    // CRITICAL FIX: Do not attempt to build the query if the user or firestore is not yet available.
-    // This prevents a server-side crash when `user.uid` is accessed on a null object.
-    if (!user || !firestore) return null;
+  const [alerts, setAlerts] = useState<AlertType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || !firestore) {
+      if (!user) setIsLoading(false);
+      return;
+    }
 
     const threeDaysAgo = Timestamp.fromDate(subDays(new Date(), 3));
     const lim = isPage ? 50 : 5;
     
-    return query(
+    const q = query(
         collection(firestore, 'alerts'),
         and(
             or(
@@ -57,9 +60,31 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
         orderBy('createdAt', 'desc'),
         limit(lim)
     );
-  }, [user, firestore, isPage]);
 
-  const { data: alerts, isLoading } = useCollection<AlertType>(alertsQuery);
+    const unsubscribe = onUnreadStatusChange
+      ? onSnapshot(q, (snapshot) => {
+          const fetchedAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
+          setAlerts(fetchedAlerts);
+          setIsLoading(false);
+        }, (error) => {
+          console.error("Failed to subscribe to alerts:", error);
+          setIsLoading(false);
+        })
+      : () => {};
+
+      if (!onUnreadStatusChange) {
+        getDocs(q).then(snapshot => {
+             const fetchedAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
+             setAlerts(fetchedAlerts);
+             setIsLoading(false);
+        }).catch(error => {
+             console.error("Failed to fetch alerts:", error);
+             setIsLoading(false);
+        });
+      }
+
+    return () => onUnreadStatusChange && unsubscribe();
+  }, [user, firestore, isPage, onUnreadStatusChange]);
 
   const unreadCount = useMemo(() => {
     if (!alerts || !user) return 0;
@@ -76,7 +101,6 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
 
     const alertRef = doc(firestore, 'alerts', alertId);
     try {
-      // Using updateDocumentNonBlocking to avoid blocking UI thread.
       await updateDocumentNonBlocking(alertRef, {
         readBy: arrayUnion(user.uid)
       });

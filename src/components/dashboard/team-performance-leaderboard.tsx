@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { Activity, User } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Trophy, Users as UsersIcon } from 'lucide-react';
@@ -28,9 +28,14 @@ const getInitials = (name?: string) => {
 };
 
 export function TeamPerformanceLeaderboard({ activities, users, isLoading }: TeamPerformanceLeaderboardProps) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   const leaderboardData = useMemo(() => {
-    if (!activities || !users) {
+    if (!activities || !users || !isClient) {
       return [];
     }
     
@@ -59,7 +64,7 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
       progress: maxValue > 0 ? (p.totalValue / maxValue) * 100 : 0,
     }));
 
-  }, [activities, users]);
+  }, [activities, users, isClient]);
 
   return (
     <Card>

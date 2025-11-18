@@ -96,7 +96,9 @@ function NotificationsMenu() {
                     </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <NotificationsList onUnreadStatusChange={setHasUnread} onUnreadCountChange={setUnreadCount} />
+                <DropdownMenuGroup>
+                  <NotificationsList onUnreadStatusChange={setHasUnread} onUnreadCountChange={setUnreadCount} />
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                     <Link href="/notifications" className="justify-center">

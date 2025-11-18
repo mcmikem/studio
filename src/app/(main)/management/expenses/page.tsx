@@ -122,12 +122,20 @@ function ExpensesContent() {
   const [viewingExpense, setViewingExpense] = useState<Expense | null>(null);
 
   const expensesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(
+    if (!firestore || !profile) return null;
+    // Finance roles can see all expenses. Others see only their own.
+    if (['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'].includes(profile.role)) {
+       return query(
         collection(firestore, 'expenses'), 
         orderBy('createdAt', 'desc')
+      );
+    }
+    return query(
+        collection(firestore, 'expenses'), 
+        where('userId', '==', currentUser?.uid),
+        orderBy('createdAt', 'desc')
     );
-  }, [firestore]);
+  }, [firestore, profile, currentUser?.uid]);
   
   const { data: expenses, isLoading, error } = useCollection<Expense>(expensesQuery);
   

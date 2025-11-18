@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -49,6 +50,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
 
   // Set current time only on the client-side after mount.
   useEffect(() => {
+    // This effect ensures this component only computes state on the client
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
     return () => clearInterval(timer);

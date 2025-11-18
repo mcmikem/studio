@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import type { Expense } from "@/lib/types"
 import { useCollection, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
-import { collection, query, where, orderBy, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, doc, getDocs } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Button } from "../ui/button";
@@ -19,17 +19,33 @@ export function ApprovalQueue() {
     const firestore = useFirestore();
     const { user: currentUser } = useUser();
     const { toast } = useToast();
+    const [pendingExpenses, setPendingExpenses] = useState<Expense[] | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const pendingExpensesQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return query(
+    useEffect(() => {
+        if (!firestore) return;
+
+        const q = query(
             collection(firestore, 'expenses'),
             where('status', '==', 'Pending'),
             orderBy('createdAt', 'desc')
         );
+
+        const unsubscribe = onSnapshot(q, 
+            (snapshot) => {
+                const expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Expense));
+                setPendingExpenses(expenses);
+                setIsLoading(false);
+            },
+            (error) => {
+                console.error("Error fetching pending expenses:", error);
+                setIsLoading(false);
+            }
+        );
+
+        return () => unsubscribe();
     }, [firestore]);
 
-    const { data: pendingExpenses, isLoading } = useCollection<Expense>(pendingExpensesQuery);
 
     const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected') => {
         if (!firestore || !currentUser) return;

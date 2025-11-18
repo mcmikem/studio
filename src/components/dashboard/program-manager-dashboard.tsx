@@ -31,17 +31,12 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
-
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0,0,0,0);
-  const expensesQuery = useMemoFirebase(() => {
-      if (!firestore) return null;
-      return query(collection(firestore, 'expenses'), where('createdAt', '>=', Timestamp.fromDate(startOfMonth)))
+  const checkinsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    const startOfToday = startOfDay(new Date());
+    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
   }, [firestore]);
-  const { data: expenses } = useCollection<Expense>(expensesQuery);
+  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
   
   const activitiesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
