@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
@@ -6,13 +7,12 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { AlertTriangle, Info, BellRing, Check } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
-import { useFirestore, useUser, useCollection } from '@/firebase';
+import { useFirestore, useUser, useCollection, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, where, Timestamp, limit, writeBatch, doc, arrayUnion, orderBy, and, or } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import Link from 'next/link';
 import { formatDateSafe } from '@/lib/utils';
 import { subDays } from 'date-fns';
-import { DropdownMenuGroup, DropdownMenuItem } from '../ui/dropdown-menu';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -38,6 +38,8 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
   const { user } = useUser();
   
   const alertsQuery = useMemo(() => {
+    // CRITICAL FIX: Do not attempt to build the query if the user or firestore is not yet available.
+    // This prevents a server-side crash when `user.uid` is accessed on a null object.
     if (!user || !firestore) return null;
 
     const threeDaysAgo = Timestamp.fromDate(subDays(new Date(), 3));
@@ -74,7 +76,8 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
 
     const alertRef = doc(firestore, 'alerts', alertId);
     try {
-      await updateDoc(alertRef, {
+      // Using updateDocumentNonBlocking to avoid blocking UI thread.
+      await updateDocumentNonBlocking(alertRef, {
         readBy: arrayUnion(user.uid)
       });
     } catch (error) {
@@ -135,7 +138,7 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
 
   // Dropdown view or dashboard widget view
   return (
-    <DropdownMenuGroup>
+    <div className="p-1">
         {isLoading && (
             <div className="p-2 space-y-3">
                 <Skeleton className="h-12 w-full" />
@@ -146,13 +149,13 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
             alerts.map(alert => {
                 const isUnread = user ? !alert.readBy?.includes(user.uid) : false;
                 return (
-                    <DropdownMenuItem key={alert.id} asChild className="h-auto items-start focus:bg-transparent">
-                        <div className="flex gap-3 py-2 px-2 rounded-md hover:bg-accent/50 w-full">
-                            <div className="mt-1">{alertIcons[alert.type]}</div>
-                            <div className="flex-1">
-                                <p className="text-sm font-medium leading-snug whitespace-normal">{alert.message}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{formatDateSafe(alert.createdAt)}</p>
-                            </div>
+                     <div key={alert.id} className="flex gap-3 py-2 px-2 rounded-md hover:bg-accent/50 w-full items-start">
+                        <div className="mt-1">{alertIcons[alert.type]}</div>
+                        <div className="flex-1">
+                            <p className="text-sm font-medium leading-snug whitespace-normal">{alert.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{formatDateSafe(alert.createdAt)}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
                              {isUnread && (
                                 <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleMarkAsRead(alert.id); }}>
                                     <Check className="h-4 w-4" />
@@ -162,12 +165,12 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
                                 <Link href={alert.action}>View</Link>
                             </Button>
                         </div>
-                    </DropdownMenuItem>
+                    </div>
                 )
             })
         ) : (
             !isLoading && <p className="p-4 text-sm text-center text-muted-foreground">No new notifications.</p>
         )}
-    </DropdownMenuGroup>
+    </div>
   );
 }
