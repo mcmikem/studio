@@ -84,6 +84,7 @@ const navConfig = {
      { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
      { href: '/record-testimony', icon: Video, label: 'Record Testimony' },
      { href: '/testimonies', icon: FileText, label: 'Testimony Library' },
+     { href: '/reports', icon: BarChart3, label: 'Reports' },
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },
