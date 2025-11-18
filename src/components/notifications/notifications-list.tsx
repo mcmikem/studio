@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
@@ -8,7 +7,7 @@ import { Button } from '../ui/button';
 import { AlertTriangle, Info, BellRing, Check } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useFirestore, useUser, useCollection, updateDocumentNonBlocking } from '@/firebase';
-import { collection, query, where, Timestamp, limit, writeBatch, doc, arrayUnion, orderBy, and, or } from 'firebase/firestore';
+import { collection, query, where, Timestamp, limit, writeBatch, doc, arrayUnion, orderBy, and, or, getDocs, onSnapshot } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import Link from 'next/link';
 import { formatDateSafe } from '@/lib/utils';
@@ -160,7 +159,7 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
     );
   }
 
-  // Dropdown view or dashboard widget view
+  // Dropdown view
   return (
     <div className="p-1">
         {isLoading && (
