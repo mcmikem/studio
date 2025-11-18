@@ -648,17 +648,21 @@
     "AIFeedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "AI Feedback",
-      "description": "Stores user feedback on the performance of AI-generated content.",
+      "description": "Stores user feedback on the performance of AI-generated content or bug/feature reports.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "flow": { "type": "string", "description": "The name of the AI flow being rated (e.g., dailyPlannerAIFlow)." },
+        "type": { "type": "string", "enum": ["ai", "bug", "feature"], "description": "The type of feedback being provided." },
+        "flow": { "type": "string", "description": "The name of the AI flow being rated (e.g., dailyPlannerAIFlow). Only for 'ai' type." },
+        "description": { "type": "string", "description": "The detailed user description of the bug or feature." },
         "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "status": { "type": "string", "enum": ["New", "In Progress", "Done", "Rejected"], "default": "New"},
         "wasHelpful": { "type": "boolean" },
         "comment": { "type": "string" },
         "timestamp": { "type": "string", "format": "date-time" }
       },
-      "required": ["flow", "userId", "wasHelpful", "timestamp"]
+      "required": ["type", "description", "userId", "userName", "status", "timestamp"]
     },
     "Meeting": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -860,7 +864,7 @@
       "schema": {
         "$ref": "#/entities/AIFeedback"
       },
-      "description": "Stores user feedback on AI-generated content."
+      "description": "Stores user feedback on AI features, bugs, and feature requests."
     }
   }
 }
@@ -868,3 +872,5 @@
     
 
 
+
+    

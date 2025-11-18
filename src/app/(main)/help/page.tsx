@@ -2,12 +2,102 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LifeBuoy, Mail, Bug } from "lucide-react";
+import { LifeBuoy, Mail, Bug, MessageSquare, Loader2 } from "lucide-react";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import { useUser } from "@/firebase";
+import { useUser, addDocumentNonBlocking } from "@/firebase";
 import { useViewAs } from "@/hooks/use-view-as";
 import { Button } from "@/components/ui/button";
 import Image from 'next/image';
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { collection, serverTimestamp } from "firebase/firestore";
+import { useFirestore } from "@/firebase";
+import { createAlert } from "@/ai/flows/create-alert-flow";
+
+const feedbackSchema = z.object({
+  description: z.string().min(15, { message: "Please provide a detailed description." }),
+});
+type FeedbackFormData = z.infer<typeof feedbackSchema>;
+
+function FeedbackDialog({ type, onOpenChange }: { type: 'Bug' | 'Feature', onOpenChange: (open: boolean) => void }) {
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FeedbackFormData>({
+    resolver: zodResolver(feedbackSchema),
+  });
+
+  const onSubmit = async (data: FeedbackFormData) => {
+    if (!user || !profile || !firestore) {
+      toast({ variant: 'destructive', title: 'Not Logged In' });
+      return;
+    }
+
+    const feedbackData = {
+      type: type.toLowerCase() as 'bug' | 'feature',
+      description: data.description,
+      userId: user.uid,
+      userName: profile.name,
+      status: 'New',
+      timestamp: serverTimestamp(),
+    };
+
+    try {
+      await addDocumentNonBlocking(collection(firestore, 'ai-feedback'), feedbackData);
+      toast({
+        title: `${type} Report Submitted!`,
+        description: "Thank you for your feedback. The team has been notified.",
+      });
+
+      // Notify management
+      const managementRoles = ['Executive Director', 'Administrator'];
+      await createAlert({
+          type: 'Urgent',
+          priority: 'Medium',
+          message: `A new ${type.toLowerCase()} report has been submitted by ${profile.name}.`,
+          action: '/management/feedback', // This page would need to be created
+          creatorId: user.uid
+      });
+
+      reset();
+      onOpenChange(false);
+    } catch (e: any) {
+      console.error(`Failed to submit ${type} report`, e);
+      toast({
+        variant: 'destructive',
+        title: 'Submission Failed',
+        description: e.message || `Could not save your ${type.toLowerCase()} report.`,
+      });
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="description">Please describe the {type.toLowerCase()} in detail:</Label>
+        <Textarea
+          id="description"
+          placeholder={type === 'Bug' ? 'e.g., "When I click the save button on the expenses page, nothing happens..."' : 'e.g., "It would be great if the dashboard showed a summary of..."'}
+          className="min-h-[150px]"
+          {...register('description')}
+        />
+        {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
+      </div>
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        Submit {type} Report
+      </Button>
+    </form>
+  )
+}
 
 const ExecutiveDirectorManual = () => (
     <div className="prose dark:prose-invert max-w-full">
@@ -335,6 +425,9 @@ export default function HelpPage() {
     const { user } = useUser();
     const { profile } = useUserProfile(user);
     const { viewAsRole } = useViewAs();
+    const [isBugDialogOpen, setIsBugDialogOpen] = useState(false);
+    const [isFeatureDialogOpen, setIsFeatureDialogOpen] = useState(false);
+
 
     const effectiveRole = viewAsRole || profile?.role;
 
@@ -392,18 +485,34 @@ export default function HelpPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row gap-4">
-                    <Button asChild className="w-full sm:w-auto">
-                        <a href="mailto:support@omuto.org?subject=Omuto%20Central%20-%20Bug%20Report">
-                            <Bug className="mr-2 h-4 w-4" /> Report a Bug
-                        </a>
-                    </Button>
-                     <Button asChild variant="outline" className="w-full sm:w-auto">
-                        <a href="mailto:support@omuto.org?subject=Omuto%20Central%20-%20Feature%20Request">
-                            <Mail className="mr-2 h-4 w-4" /> Request a Feature
-                        </a>
-                    </Button>
+                     <Dialog open={isBugDialogOpen} onOpenChange={setIsBugDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="w-full sm:w-auto"><Bug className="mr-2 h-4 w-4" /> Report a Bug</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Report a Bug</DialogTitle>
+                                <DialogDescription>Describe the issue you're encountering. The more detail, the better!</DialogDescription>
+                            </DialogHeader>
+                            <FeedbackDialog type="Bug" onOpenChange={setIsBugDialogOpen} />
+                        </DialogContent>
+                    </Dialog>
+                     <Dialog open={isFeatureDialogOpen} onOpenChange={setIsFeatureDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="w-full sm:w-auto"><MessageSquare className="mr-2 h-4 w-4" /> Request a Feature</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Request a New Feature</DialogTitle>
+                                <DialogDescription>Have an idea to make Omuto Central better? We'd love to hear it.</DialogDescription>
+                            </DialogHeader>
+                             <FeedbackDialog type="Feature" onOpenChange={setIsFeatureDialogOpen} />
+                        </DialogContent>
+                    </Dialog>
                 </CardContent>
             </Card>
         </div>
     )
 }
+
+    
