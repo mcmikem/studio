@@ -46,12 +46,14 @@ export function SmartReminders({ profile }: { profile: User }) {
   }
 
   if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    )
+    // Fail silently in production, but you could show an error if desired
+    // return (
+    //   <Alert variant="destructive">
+    //     <AlertTitle>Error</AlertTitle>
+    //     <AlertDescription>{error}</AlertDescription>
+    //   </Alert>
+    // )
+    return null;
   }
 
   if (!reminders || reminders.reminders.length === 0) {

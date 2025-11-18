@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -79,7 +79,7 @@ export default function ChatPage() {
   }, [firestore, user]);
 
   const { data: messages, isLoading: isLoadingMessages } = useCollection<Message>(messagesQuery);
-  
+
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
@@ -131,7 +131,7 @@ export default function ChatPage() {
     } catch (error) {
       console.error('Error with Omuto AI:', error);
       const errorMessageData = {
-          text: "Sorry, I encountered an error and couldn't process your request.",
+          text: "I'm sorry, but I seem to be having trouble connecting to my brain right now. Please try again in a moment.",
           userId: 'omuto-ai',
           userName: 'Omuto AI',
           userAvatar: '',
