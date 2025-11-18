@@ -1,12 +1,10 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useUser } from '@/firebase';
 import { createAlert as createAlertFlow, type AlertInput } from '@/ai/flows/create-alert-flow';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -49,7 +47,7 @@ export function CreateAlertForm() {
     },
   });
 
-  const onSubmit = (data: AlertFormData) => {
+  const onSubmit = async (data: AlertFormData) => {
     if (!user) {
       toast({
         variant: 'destructive',
@@ -64,22 +62,21 @@ export function CreateAlertForm() {
       creatorId: user.uid,
     };
 
-    createAlertFlow(alertInput)
-      .then(() => {
-        toast({
-          title: 'Alert Sent!',
-          description: 'Your announcement has been broadcast to the team.',
-        });
-        reset();
-      })
-      .catch((e: any) => {
-        console.error(e);
-        toast({
-          variant: 'destructive',
-          title: 'Failed to Send Alert',
-          description: e.message || 'There was an error sending the alert. Please try again.',
-        });
+    try {
+      await createAlertFlow(alertInput);
+      toast({
+        title: 'Alert Sent!',
+        description: 'Your announcement has been broadcast to the team.',
       });
+      reset();
+    } catch (e: any) {
+      console.error(e);
+      toast({
+        variant: 'destructive',
+        title: 'Failed to Send Alert',
+        description: e.message || 'There was an error sending the alert. Please try again.',
+      });
+    }
   };
 
   return (
@@ -143,7 +140,7 @@ export function CreateAlertForm() {
           placeholder="e.g., /management/expenses"
           {...register('action')}
         />
-         {errors.action && <p className="text-sm text-destructive">{errors.action.message}</p>}
+         {errors.action && <p className="text-sm text-destructive">{`${errors.action.message}`}</p>}
         <p className="text-xs text-muted-foreground">The page users will be sent to when they click 'View'.</p>
       </div>
 

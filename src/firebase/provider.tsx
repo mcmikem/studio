@@ -2,46 +2,18 @@
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
-import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getFirestore, type Firestore, enableIndexedDbPersistence, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
-import { getAuth, type Auth, onAuthStateChanged, type User } from 'firebase/auth';
-import { firebaseConfig } from './config';
+import { type FirebaseApp } from 'firebase/app';
+import { type Firestore } from 'firebase/firestore';
+import { type Auth, onAuthStateChanged, type User } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
-
-// --- Stable, Singleton Initialization ---
-// This ensures Firebase is initialized only ONCE per application lifecycle.
-let firebaseApp: FirebaseApp;
-if (!getApps().length) {
-  firebaseApp = initializeApp(firebaseConfig);
-} else {
-  firebaseApp = getApp();
-}
-
-const auth: Auth = getAuth(firebaseApp);
-const firestore: Firestore = getFirestore(firebaseApp);
-
-// Enable offline persistence only once
-try {
-    enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED });
-} catch (err: any) {
-    if (err.code === 'failed-precondition') {
-      console.warn(
-        'Firestore offline persistence failed: Multiple tabs open. Persistence will be enabled in one tab only.'
-      );
-    } else if (err.code === 'unimplemented') {
-      console.warn(
-        'Firestore offline persistence failed: The current browser does not support all of the features required.'
-      );
-    }
-}
-
+import { initializeFirebase } from '@/firebase/index';
 
 // --- Context and State Definitions ---
 
 interface FirebaseContextState {
-  firebaseApp: FirebaseApp;
-  firestore: Firestore;
-  auth: Auth;
+  firebaseApp: FirebaseApp | null;
+  firestore: Firestore | null;
+  auth: Auth | null;
   user: User | null;
   isUserLoading: boolean;
   userError: Error | null;
@@ -56,18 +28,28 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
+  const [services, setServices] = useState<{
+    firebaseApp: FirebaseApp;
+    auth: Auth;
+    firestore: Firestore;
+  } | null>(null);
+
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null;
     isUserLoading: boolean;
     userError: Error | null;
   }>({
-    user: auth.currentUser, // Initialize with current user if available
+    user: null, 
     isUserLoading: true,
     userError: null,
   });
 
-  // --- Effect for Auth State Subscription ---
   useEffect(() => {
+    // This effect runs only once on the client to initialize Firebase services.
+    const { firebaseApp, auth, firestore } = initializeFirebase();
+    setServices({ firebaseApp, auth, firestore });
+
+    // Set up the auth state listener
     const unsubscribe = onAuthStateChanged(
       auth,
       (firebaseUser) => {
@@ -79,34 +61,19 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
       }
     );
 
-    // This handles the case where the user is already authenticated on initial load
-    // before the onAuthStateChanged listener fires.
-    if (userAuthState.isUserLoading) {
-      if(auth.currentUser) {
-         setUserAuthState({ user: auth.currentUser, isUserLoading: false, userError: null });
-      } else {
-        // If no user is found synchronously, we still need to stop loading.
-        // The listener above will catch any async user state changes.
-        setUserAuthState(prev => ({ ...prev, isUserLoading: false }));
-      }
-    }
-
-
     return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const contextValue = useMemo((): FirebaseContextState => {
     return {
-      firebaseApp,
-      firestore,
-      auth,
+      firebaseApp: services?.firebaseApp || null,
+      firestore: services?.firestore || null,
+      auth: services?.auth || null,
       user: userAuthState.user,
-      isUserLoading: userAuthState.isUserLoading,
+      isUserLoading: userAuthState.isUserLoading || !services, // Loading if user or services are not ready
       userError: userAuthState.userError,
     };
-    // The userAuthState object is the only dependency that should trigger a re-render
-  }, [userAuthState]);
+  }, [services, userAuthState]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
@@ -119,30 +86,32 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
 
 // --- Hooks ---
 
-const useStableFirebase = () => {
-    return { firebaseApp, firestore, auth };
-};
-
-
 export const useFirebaseServices = () => {
   const context = useContext(FirebaseContext);
   if (context === undefined) {
     throw new Error('useFirebaseServices must be used within a FirebaseProvider.');
   }
-  // Return the stable singleton instances directly
-  return useStableFirebase();
+  const { firebaseApp, firestore, auth } = context;
+   if (!firebaseApp || !firestore || !auth) {
+    throw new Error('Firebase services are not yet available.');
+  }
+  return { firebaseApp, firestore, auth };
 };
 
 export const useAuth = (): Auth => {
-  return useStableFirebase().auth;
+  return useFirebaseServices().auth;
 };
 
-export const useFirestore = (): Firestore => {
-  return useStableFirebase().firestore;
+export const useFirestore = (): Firestore | null => {
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    throw new Error('useFirestore must be used within a FirebaseProvider.');
+  }
+  return context.firestore;
 };
 
 export const useFirebaseApp = (): FirebaseApp => {
-  return useStableFirebase().firebaseApp;
+  return useFirebaseServices().firebaseApp;
 };
 
 export const useUser = () => {

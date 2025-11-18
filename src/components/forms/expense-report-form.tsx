@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -8,10 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import {
   useFirestore,
   useUser,
-  addDocumentNonBlocking,
-  updateDocumentNonBlocking,
   useCollection,
   useMemoFirebase,
+  addDocumentNonBlocking, 
+  updateDocumentNonBlocking
 } from '@/firebase';
 import { collection, serverTimestamp, doc, query, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -176,7 +177,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
     };
 
     try {
-        if (isEditMode) {
+        if (isEditMode && expense) {
             const docRef = doc(firestore, 'expenses', expense.id);
             await updateDocumentNonBlocking(docRef, expenseData);
             toast({
@@ -189,7 +190,8 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                 status: 'Pending' as const,
                 createdAt: serverTimestamp(),
             };
-            const docRef = await addDocumentNonBlocking(collection(firestore, 'expenses'), newExpenseData);
+            const expensesCollection = collection(firestore, 'expenses');
+            const docRef = await addDocumentNonBlocking(expensesCollection, newExpenseData);
             
             toast({
                 title: 'Expense Report Submitted!',

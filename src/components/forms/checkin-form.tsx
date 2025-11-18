@@ -65,7 +65,7 @@ function CheckinFormComponent() {
     const submittedPlan = watch('details') as DailyPlannerAIOutput | null;
     const primaryMission = watch('primaryMission');
 
-    const onSubmit = (data: any) => {
+    const onSubmit = async (data: any) => {
         if (!firestore || !user || !profile) {
             toast({
                 variant: 'destructive',
@@ -86,7 +86,7 @@ function CheckinFormComponent() {
 
         const checkinsCollection = collection(firestore, 'checkins');
         
-        addDocumentNonBlocking(checkinsCollection, checkinData)
+        await addDocumentNonBlocking(checkinsCollection, checkinData)
           .then(() => {
             toast({
                 title: 'Check-in Submitted!',
@@ -177,5 +177,3 @@ export function CheckinForm() {
         </Suspense>
     )
 }
-
-    

@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { format, isSameDay, addDays, subDays } from 'date-fns';
@@ -119,9 +118,14 @@ function NewEventForm({ onFormSubmit }: { onFormSubmit: () => void }) {
 }
 
 export function DashboardCalendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const firestore = useFirestore();
+  
+  useEffect(() => {
+    // Safe to set client-side state after mount
+    setCurrentDate(new Date());
+  }, []);
 
   const eventsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -131,6 +135,7 @@ export function DashboardCalendar() {
   const { data: events, isLoading } = useCollection<EventType>(eventsQuery);
 
   const selectedDayEvents = useMemo(() => {
+    if (!currentDate) return [];
     return events?.filter(event => isSameDay(event.date.toDate(), currentDate)) || [];
   }, [events, currentDate]);
 
@@ -163,25 +168,27 @@ export function DashboardCalendar() {
         </div>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(subDays(currentDate, 1)); }}>
-                  <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <h3 className="font-headline text-lg font-semibold text-center">
-                  {format(currentDate, "eeee, MMMM d")}
-              </h3>
-              <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(addDays(currentDate, 1)); }}>
-                  <ChevronRight className="h-4 w-4" />
-              </Button>
-          </div>
+          {currentDate && (
+              <div className="flex items-center justify-between mb-4">
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(subDays(currentDate, 1)); }}>
+                    <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <h3 className="font-headline text-lg font-semibold text-center">
+                    {format(currentDate, "eeee, MMMM d")}
+                </h3>
+                <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(addDays(currentDate, 1)); }}>
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+          )}
           <div className="space-y-3 flex-grow">
-              {isLoading && Array.from({length: 2}).map((_, i) => (
+              {(isLoading || !currentDate) && Array.from({length: 2}).map((_, i) => (
                   <div key={i} className='p-3 bg-muted rounded-lg space-y-2'>
                       <Skeleton className='h-4 w-3/4' />
                       <Skeleton className='h-4 w-1/2' />
                   </div>
               ))}
-              {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
+              {currentDate && !isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
                   selectedDayEvents.map((event) => (
                       <div key={event.id} className="p-3 bg-muted rounded-lg">
                           <div className="flex items-start justify-between">
@@ -196,7 +203,7 @@ export function DashboardCalendar() {
                       </div>
                   ))
               ) : (
-                  !isLoading && <div className="flex items-center justify-center h-full text-sm text-muted-foreground pt-8">No events scheduled for this day.</div>
+                  currentDate && !isLoading && <div className="flex items-center justify-center h-full text-sm text-muted-foreground pt-8">No events scheduled for this day.</div>
               )}
           </div>
       </CardContent>

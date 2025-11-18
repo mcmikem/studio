@@ -10,11 +10,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 export function SmartReminders({ profile }: { profile: User }) {
   const [reminders, setReminders] = useState<SmartRemindersOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function fetchReminders() {
       if (!profile) return;
       setIsLoading(true);
+      setError(null);
       try {
         const result = await generateSmartReminders({
           userName: profile.name,
@@ -22,8 +25,9 @@ export function SmartReminders({ profile }: { profile: User }) {
           userId: profile.id,
         });
         setReminders(result);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch smart reminders:', error);
+        setError("Could not load AI reminders at this time.");
         setReminders(null); // Clear reminders on error
       } finally {
         setIsLoading(false);
@@ -39,6 +43,15 @@ export function SmartReminders({ profile }: { profile: User }) {
         AI is generating your reminders...
       </div>
     );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    )
   }
 
   if (!reminders || reminders.reminders.length === 0) {

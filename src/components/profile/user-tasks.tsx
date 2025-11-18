@@ -8,6 +8,7 @@ import {
   query,
   orderBy,
   doc,
+  serverTimestamp,
 } from 'firebase/firestore';
 import type { Task } from '@/lib/types';
 import {
@@ -29,7 +30,6 @@ import { Loader2, PlusCircle } from 'lucide-react';
 import { Separator } from '../ui/separator';
 import { Badge } from '../ui/badge';
 import { formatDateSafe } from '@/lib/utils';
-import { serverTimestamp } from 'firebase/firestore';
 import confetti from 'canvas-confetti';
 
 const taskSchema = z.object({
@@ -51,7 +51,7 @@ function NewTaskForm() {
     resolver: zodResolver(taskSchema),
   });
 
-  const onSubmit = (data: z.infer<typeof taskSchema>) => {
+  const onSubmit = async (data: z.infer<typeof taskSchema>) => {
     if (!user || !firestore) return;
 
     const tasksCollection = collection(firestore, 'users', user.uid, 'tasks');
@@ -64,7 +64,7 @@ function NewTaskForm() {
         newTask.dueDate = data.dueDate;
     }
     
-    addDocumentNonBlocking(tasksCollection, newTask)
+    await addDocumentNonBlocking(tasksCollection, newTask)
     .then(() => {
         toast({
         title: 'Task Added!',

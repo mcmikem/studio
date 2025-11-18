@@ -16,14 +16,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc } from 'firebase/firestore';
 import type { TeamWeeklyPlan, User, PriorityItem } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, addWeeks, subWeeks, isValid } from 'date-fns';
 import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarClock, Loader2, Wand } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -209,16 +208,18 @@ function TeamWorkplanForm({
 
     try {
         const wasPreviouslyDraft = existingPlan?.status === 'Draft' || !existingPlan;
+        
+        const teamPlansCollection = collection(firestore, 'team-workplans');
 
         if(existingPlan) {
-            const planRef = doc(firestore, 'team-workplans', existingPlan.id);
+            const planRef = doc(teamPlansCollection, existingPlan.id);
             await updateDocumentNonBlocking(planRef, {
                 ...planData
             });
             toast({ title: 'Plan Updated!', description: `The plan for the week has been updated.` });
 
         } else {
-             await addDocumentNonBlocking(collection(firestore, 'team-workplans'), {
+             await addDocumentNonBlocking(teamPlansCollection, {
                 ...planData,
                 createdAt: Timestamp.now(),
             });
