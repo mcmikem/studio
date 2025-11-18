@@ -1,19 +1,18 @@
-
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { AlertTriangle, Info, BellRing } from 'lucide-react';
+import { AlertTriangle, Info, BellRing, Check } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { useFirestore, useUser, useCollection } from '@/firebase';
-import { collection, query, where, Timestamp, limit, writeBatch, doc, arrayUnion, orderBy, or, and } from 'firebase/firestore';
+import { collection, query, where, Timestamp, limit, writeBatch, doc, arrayUnion, orderBy, and, or } from 'firebase/firestore';
 import type { Alert as AlertType } from '@/lib/types';
 import Link from 'next/link';
 import { formatDateSafe } from '@/lib/utils';
 import { subDays } from 'date-fns';
-import { DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator } from '../ui/dropdown-menu';
+import { DropdownMenuGroup, DropdownMenuItem } from '../ui/dropdown-menu';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
     Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
@@ -31,9 +30,10 @@ const alertColors: { [key: string]: string } = {
 interface NotificationsListProps {
   isPage?: boolean;
   onUnreadStatusChange?: (hasUnread: boolean) => void;
+  onUnreadCountChange?: (count: number) => void;
 }
 
-export function NotificationsList({ isPage = false, onUnreadStatusChange }: NotificationsListProps) {
+export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnreadCountChange }: NotificationsListProps) {
   const firestore = useFirestore();
   const { user } = useUser();
   
@@ -66,24 +66,19 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange }: Noti
 
   useEffect(() => {
     onUnreadStatusChange?.(unreadCount > 0);
-  }, [unreadCount, onUnreadStatusChange]);
+    onUnreadCountChange?.(unreadCount);
+  }, [unreadCount, onUnreadStatusChange, onUnreadCountChange]);
   
-  const handleMarkAsRead = async () => {
-    if (!alerts || !user || !firestore || unreadCount === 0) return;
+  const handleMarkAsRead = async (alertId: string) => {
+    if (!user || !firestore) return;
 
-    const unreadAlerts = alerts.filter(alert => !alert.readBy?.includes(user.uid));
-    const batch = writeBatch(firestore);
-    unreadAlerts.forEach(alert => {
-      const alertRef = doc(firestore, 'alerts', alert.id);
-      batch.update(alertRef, {
+    const alertRef = doc(firestore, 'alerts', alertId);
+    try {
+      await updateDoc(alertRef, {
         readBy: arrayUnion(user.uid)
       });
-    });
-
-    try {
-      await batch.commit();
     } catch (error) {
-      console.error("Failed to mark notifications as read:", error);
+      console.error("Failed to mark notification as read:", error);
     }
   };
 
@@ -140,48 +135,39 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange }: Noti
 
   // Dropdown view or dashboard widget view
   return (
-    <>
-        <DropdownMenuLabel>
-            <div className="flex items-center justify-between">
-                <span>Recent Notifications</span>
-                {unreadCount > 0 && <Badge>{unreadCount}</Badge>}
+    <DropdownMenuGroup>
+        {isLoading && (
+            <div className="p-2 space-y-3">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
             </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-            {isLoading && (
-                <div className="p-2 space-y-3">
-                    <Skeleton className="h-12 w-full" />
-                    <Skeleton className="h-12 w-full" />
-                </div>
-            )}
-            {alerts && alerts.length > 0 ? (
-                alerts.map(alert => (
-                    <DropdownMenuItem key={alert.id} asChild className="h-auto items-start">
-                        <Link href={alert.action} className="flex gap-3 py-2">
+        )}
+        {alerts && alerts.length > 0 ? (
+            alerts.map(alert => {
+                const isUnread = user ? !alert.readBy?.includes(user.uid) : false;
+                return (
+                    <DropdownMenuItem key={alert.id} asChild className="h-auto items-start focus:bg-transparent">
+                        <div className="flex gap-3 py-2 px-2 rounded-md hover:bg-accent/50 w-full">
                             <div className="mt-1">{alertIcons[alert.type]}</div>
-                            <div>
+                            <div className="flex-1">
                                 <p className="text-sm font-medium leading-snug whitespace-normal">{alert.message}</p>
                                 <p className="text-xs text-muted-foreground mt-1">{formatDateSafe(alert.createdAt)}</p>
                             </div>
-                        </Link>
+                             {isUnread && (
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleMarkAsRead(alert.id); }}>
+                                    <Check className="h-4 w-4" />
+                                </Button>
+                            )}
+                            <Button asChild variant="secondary" size="sm">
+                                <Link href={alert.action}>View</Link>
+                            </Button>
+                        </div>
                     </DropdownMenuItem>
-                ))
-            ) : (
-                !isLoading && <p className="p-4 text-sm text-center text-muted-foreground">No new notifications.</p>
-            )}
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-            <Link href="/notifications" className="justify-center">
-                View all notifications
-            </Link>
-        </DropdownMenuItem>
-         {unreadCount > 0 && (
-             <DropdownMenuItem onClick={handleMarkAsRead} className="justify-center focus:bg-primary/10">
-                Mark all as read
-            </DropdownMenuItem>
-         )}
-    </>
+                )
+            })
+        ) : (
+            !isLoading && <p className="p-4 text-sm text-center text-muted-foreground">No new notifications.</p>
+        )}
+    </DropdownMenuGroup>
   );
 }

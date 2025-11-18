@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FileSignature, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake } from 'lucide-react';
+import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FileSignature, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake, ArrowRight } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -70,8 +70,8 @@ function QuickAddMenu() {
 }
 
 function NotificationsMenu() {
-    const { user } = useUser();
     const [hasUnread, setHasUnread] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     return (
         <DropdownMenu>
@@ -88,7 +88,20 @@ function NotificationsMenu() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-96" align="end">
-                <NotificationsList onUnreadStatusChange={setHasUnread} />
+                 <DropdownMenuLabel>
+                    <div className="flex items-center justify-between">
+                        <span>Recent Notifications</span>
+                        {unreadCount > 0 && <Badge>{unreadCount}</Badge>}
+                    </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <NotificationsList onUnreadStatusChange={setHasUnread} onUnreadCountChange={setUnreadCount} />
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/notifications" className="justify-center">
+                        View all notifications
+                    </Link>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
     )
