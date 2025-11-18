@@ -200,8 +200,9 @@ function PlannerCheckinFormComponent() {
   };
   
   const applyTemplate = (template: TaskTemplate) => {
+    // This is the corrected implementation
     const checklistText = template.checklistItems.map(item => `- ${item}`).join('\n');
-    const newMissionText = `Task: ${template.title}\n\nChecklist:\n${checklistText}`;
+    const newMissionText = `My focus is completing the '${template.title}' task. The steps are:\n${checklistText}`;
     setMissionValue('primaryMission', newMissionText);
     toast({ title: "Template Applied!", description: `"${template.title}" checklist has been added to your mission.` });
   };
@@ -292,7 +293,7 @@ function PlannerCheckinFormComponent() {
                                 >
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="energized" id="energized" />
-                                    <Label htmlFor="energized" className="cursor-pointer">⚡️ Energized & Ready</Label>
+                                    <Label htmlFor="energized" className="cursor-pointer">⚡️ Energized &amp; Ready</Label>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="focused" id="focused" />
@@ -300,7 +301,7 @@ function PlannerCheckinFormComponent() {
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="calm" id="calm" />
-                                    <Label htmlFor="calm" className="cursor-pointer">🧘‍♀️ Calm & Steady</Label>
+                                    <Label htmlFor="calm" className="cursor-pointer">🧘‍♀️ Calm &amp; Steady</Label>
                                 </div>
                                   <div className="flex items-center space-x-2">
                                     <RadioGroupItem value="overwhelmed" id="overwhelmed" />

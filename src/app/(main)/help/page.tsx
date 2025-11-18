@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +36,7 @@ function FeedbackDialog({ type, onOpenChange }: { type: 'Bug' | 'Feature', onOpe
 
   const onSubmit = async (data: FeedbackFormData) => {
     if (!user || !profile || !firestore) {
-      toast({ variant: 'destructive', title: 'Not Logged In' });
+      toast({ variant: 'destructive', title: 'Not Logged In', description: 'You must be logged in to submit feedback.' });
       return;
     }
 
@@ -51,6 +50,7 @@ function FeedbackDialog({ type, onOpenChange }: { type: 'Bug' | 'Feature', onOpe
     };
 
     try {
+      // In a real app, this would likely go to a 'feedback' collection
       await addDocumentNonBlocking(collection(firestore, 'ai-feedback'), feedbackData);
       
       // Create an alert for management
@@ -125,7 +125,7 @@ const ExecutiveDirectorManual = () => (
         <h4>Operational Plan Updater (/management/operational-plan)</h4>
         <p>This is one of the most powerful tools at your disposal. At the beginning of a new month or quarter, you can paste the entire text of a new operational plan into this tool. The AI will read it, extract all the Key Results (KRs), and automatically update the goals for the entire application. This instantly re-aligns all dashboards and reporting. <strong>Use this tool to set the direction for the entire team in minutes.</strong></p>
 
-        <h4>Finance & Expenses (/management/finance, /management/expenses)</h4>
+        <h4>Finance &amp; Expenses (/management/finance, /management/expenses)</h4>
         <p>Go here for a complete financial overview. The <strong>Finance</strong> page provides a full cashbook (income vs. expense), while the <strong>Expenses</strong> page allows you to review the entire history of all expense reports, see their status, and take action.</p>
         
         <h4>User Management (/management/users)</h4>
@@ -197,7 +197,7 @@ const InternVolunteerManual = () => (
 
         <hr />
 
-        <h3>4. Your Profile & Tasks: Staying Organized</h3>
+        <h3>4. Your Profile &amp; Tasks: Staying Organized</h3>
         <p>Your profile is your personal space within Omuto Central.</p>
         <ul>
             <li><strong>How to Access:</strong> Click on your avatar in the top-right corner and select "Profile," or use the "Profile" link in the navigation.</li>
@@ -216,7 +216,7 @@ const InternVolunteerManual = () => (
         <ul>
             <li><strong>Team Space:</strong> A group chat for all team members. Share quick updates, ask questions, and celebrate wins together.</li>
             <li><strong>Team Calendar:</strong> A shared calendar showing all upcoming events, meetings, and important deadlines. Check this regularly to know what's happening.</li>
-            <li><strong>Check-in & Check-out Streams:</strong> These are live feeds of the daily plans (check-ins) and end-of-day reports (check-outs) from the entire team. It's a great way to see what everyone is working on and learn from their progress.</li>
+            <li><strong>Check-in &amp; Check-out Streams:</strong> These are live feeds of the daily plans (check-ins) and end-of-day reports (check-outs) from the entire team. It's a great way to see what everyone is working on and learn from their progress.</li>
         </ul>
 
         <hr />
@@ -227,10 +227,10 @@ const InternVolunteerManual = () => (
 
 const ProgramManagerManual = () => (
     <div className="prose dark:prose-invert max-w-full">
-        <h2>Program & Partnerships Manager Guide</h2>
-        <p>As a Program & Partnerships Manager, your role is to oversee the health of our programs and cultivate strong relationships. Omuto Central is designed to give you the tools for strategic oversight.</p>
+        <h2>Program &amp; Partnerships Manager Guide</h2>
+        <p>As a Program &amp; Partnerships Manager, your role is to oversee the health of our programs and cultivate strong relationships. Omuto Central is designed to give you the tools for strategic oversight.</p>
         <hr />
-        <h3>1. Your Dashboard: Program & Pipeline Health</h3>
+        <h3>1. Your Dashboard: Program &amp; Pipeline Health</h3>
         <ul>
             <li><strong>Key Results Tracker:</strong> Monitor progress against strategic objectives. Use this to ensure your programs are aligned with our quarterly goals.</li>
             <li><strong>Team Deployment:</strong> See which team members have checked in and what their focus is for the day. This helps you understand team capacity and allocation.</li>
@@ -258,10 +258,10 @@ const ProgramManagerManual = () => (
 
 const OperationsManagerManual = () => (
     <div className="prose dark:prose-invert max-w-full">
-        <h2>Operations & Field Manager Guide</h2>
-        <p>As the Operations & Field Manager, your focus is on execution, logistics, and team efficiency. Omuto Central helps you keep the engine of the foundation running smoothly.</p>
+        <h2>Operations &amp; Field Manager Guide</h2>
+        <p>As the Operations &amp; Field Manager, your focus is on execution, logistics, and team efficiency. Omuto Central helps you keep the engine of the foundation running smoothly.</p>
         <hr />
-        <h3>1. Your Dashboard: Field & Team Oversight</h3>
+        <h3>1. Your Dashboard: Field &amp; Team Oversight</h3>
         <ul>
             <li><strong>Team Deployment:</strong> Your most important tool. See exactly who is on the ground, what their mission is, and what they are currently working on.</li>
             <li><strong>Quick Insights:</strong> Monitor the velocity of field activities to ensure the team is maintaining operational tempo.</li>
@@ -289,10 +289,10 @@ const OperationsManagerManual = () => (
 
 const MediaFinanceManual = () => (
     <div className="prose dark:prose-invert max-w-full">
-        <h2>Media & Finance Lead Guide</h2>
+        <h2>Media &amp; Finance Lead Guide</h2>
         <p>Your role bridges storytelling and financial stewardship. Omuto Central provides specialized tools to manage both sides of this crucial function.</p>
         <hr />
-        <h3>1. Your Dashboard: The Media & Finance Hub</h3>
+        <h3>1. Your Dashboard: The Media &amp; Finance Hub</h3>
         <ul>
             <li><strong>Budget Health:</strong> A real-time view of your cash balance, monthly income, and monthly expenses. This is your primary financial snapshot.</li>
             <li><strong>Financial Queue:</strong> Your action center. This shows reports 'Pending Approval' (which you can approve if you are also a manager) and, more importantly, reports 'Awaiting Disbursement'. This is your to-do list for sending out money.</li>
@@ -305,10 +305,10 @@ const MediaFinanceManual = () => (
         <p>This is your complete cashbook. Log all incoming funds (grants, donations) and directly log operational expenses (like rent or utilities) that don't require a full report. It provides a full historical ledger.</p>
         <h4>Expense Management (/management/expenses)</h4>
         <p>Review, approve, and disburse all expense reports from the team. Filter by status to see what's pending, what's been approved, and what needs to be paid out.</p>
-        <h4>Testimony Library & Impact Story (/testimonies, /impact-story)</h4>
+        <h4>Testimony Library &amp; Impact Story (/testimonies, /impact-story)</h4>
         <p>This is your content engine. In the library, you can review all submitted testimonies. The AI automatically provides transcriptions, summaries, and key quotes. Use the Impact Story generator to turn raw activity data into compelling narratives for social media or reports.</p>
         <hr />
-        <h3>3. AI Coach for Content & Analysis</h3>
+        <h3>3. AI Coach for Content &amp; Analysis</h3>
         <p>Your AI coach is a powerful assistant for both finance and media:</p>
         <ul>
             <li><strong>"What was our biggest expense category last month?"</strong></li>
@@ -328,7 +328,7 @@ const ResourceMobilizationManual = () => (
         <p>This is your starting point for finding new funding. Enter keywords (e.g., "youth empowerment uganda", "environmental grants africa") and the AI will search for relevant opportunities. You can then add promising grants directly to your Proposal Tracker with one click.</p>
         <h4>Proposal Tracker (/resources)</h4>
         <p>This table tracks every grant proposal you are working on. Update the status from 'Draft' to 'Submitted' to 'Approved' to maintain a clear view of your funding pipeline.</p>
-        <h4>Donor Directory & Partnership Pipeline (/management/partnerships)</h4>
+        <h4>Donor Directory &amp; Partnership Pipeline (/management/partnerships)</h4>
         <p>Your central CRM. Manage relationships with active donors in the Directory and track potential new funders in the Pipeline. Log meetings and health checks to maintain strong relationships.</p>
         <hr />
         <h3>2. AI-Powered Proposal Writing</h3>
@@ -461,7 +461,7 @@ export default function HelpPage() {
             <header>
                 <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
                     <LifeBuoy className="h-8 w-8" />
-                    Help & Support
+                    Help &amp; Support
                 </h1>
                 <p className="text-muted-foreground">
                     Your guide to making the most of Omuto Central.
@@ -487,7 +487,9 @@ export default function HelpPage() {
                 <CardContent className="flex flex-col sm:flex-row gap-4">
                      <Dialog open={isBugDialogOpen} onOpenChange={setIsBugDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="w-full sm:w-auto" disabled={!profile}><Bug className="mr-2 h-4 w-4" /> Report a Bug</Button>
+                            <Button className="w-full sm:w-auto" disabled={!profile}>
+                                <Bug className="mr-2 h-4 w-4" /> Report a Bug
+                            </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
@@ -499,7 +501,9 @@ export default function HelpPage() {
                     </Dialog>
                      <Dialog open={isFeatureDialogOpen} onOpenChange={setIsFeatureDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto" disabled={!profile}><MessageSquare className="mr-2 h-4 w-4" /> Request a Feature</Button>
+                            <Button variant="outline" className="w-full sm:w-auto" disabled={!profile}>
+                                <MessageSquare className="mr-2 h-4 w-4" /> Request a Feature
+                            </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
