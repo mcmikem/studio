@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -11,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Rss, LogOut, BookOpen, Lightbulb, Check, X, Wind } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
@@ -27,13 +26,22 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
     const tasksArray = checkout.tasks || [];
     const completedTasks = tasksArray.filter(t => t.status === 'Done');
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
+    
+     const getInitials = (name?: string) => {
+        if (!name) return 'U';
+        const parts = name.split(' ');
+        if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
+            return parts[0][0] + parts[parts.length - 1][0];
+        }
+        return name.substring(0, 2).toUpperCase();
+    };
 
     return (
         <Card>
              <CardHeader className="flex flex-row items-start gap-4">
                 <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
                      <AvatarImage src={checkout.avatar} />
-                     <AvatarFallback>{checkout.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                     <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
                 </Avatar>
                 <div>
                     <Link href={`/profile?userId=${checkout.userId}`} className="hover:underline">
@@ -91,7 +99,7 @@ function CheckoutStream() {
     const firestore = useFirestore();
      const checkoutsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'));
+        return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(50));
     }, [firestore]);
 
     const { data: checkouts, isLoading } = useCollection<Checkout>(checkoutsQuery);

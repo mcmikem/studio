@@ -79,8 +79,7 @@ export default function ChatPage() {
   }, [firestore, user]);
 
   const { data: messages, isLoading: isLoadingMessages } = useCollection<Message>(messagesQuery);
-  const reversedMessages = useMemo(() => (messages ? [...messages].reverse() : []), [messages]);
-
+  
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });

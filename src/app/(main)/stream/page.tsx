@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -9,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Rss, LogOut, BookOpen, Lightbulb, Check, X, Wind } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
@@ -99,7 +100,7 @@ function CheckoutStream() {
     const firestore = useFirestore();
      const checkoutsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'));
+        return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(50));
     }, [firestore]);
 
     const { data: checkouts, isLoading } = useCollection<Checkout>(checkoutsQuery);
