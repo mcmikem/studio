@@ -170,7 +170,6 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     <>
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <MyPerformance />
             <TeamPerformanceLeaderboard activities={activities} users={users} isLoading={isLoadingActivities || isLoadingUsers}/>
             <EcosystemPulse activities={activities} programs={programs} />
             <KeyResultsTracker showAtRisk title="November Plan - Strategic Overview" description="Live progress on the November 2025 plan vs. funds and time." />
@@ -179,7 +178,6 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         <div className="lg:col-span-1 flex flex-col gap-6">
             <ApprovalQueue />
             <QuickAddTask />
-            <MyWeeklyPlan />
             <TeamEffectiveness activities={activities} />
             <ManagementQuickLinks />
             <Alerts />

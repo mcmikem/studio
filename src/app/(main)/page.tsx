@@ -121,7 +121,7 @@ export default function DashboardPage() {
         
         <DailyActions hour={currentHour} checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
         
-        {effectiveRole !== 'Executive Director' && <MyPerformance />}
+        <MyPerformance />
         
         <QuickStatsSummary metrics={metrics} />
         
