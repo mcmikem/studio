@@ -6,12 +6,12 @@ service cloud.firestore {
 
     // Helper functions to check user roles.
     function isManager(userId) {
-      let userRole = get(/databases/$(database)/documents/$(userId)).data.role;
+      let userRole = get(/databases/$(database)/documents/users/$(userId)).data.role;
       return userRole in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
     }
 
     function isFinance(userId) {
-      let userRole = get(/databases/$(database)/documents/$(userId)).data.role;
+      let userRole = get(/databases/$(database)/documents/users/$(userId)).data.role;
       return userRole in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
     }
 
@@ -134,7 +134,7 @@ service cloud.firestore {
       // Any authenticated user can create an expense report.
       allow create: if request.auth != null;
       // Only managers can approve/reject/disburse. Owners can acknowledge.
-      allow update: if request.auth != null && (isManager(request.auth.uid) || request.resource.data.status == 'Acknowledged' && resource.data.userId == request.auth.uid);
+      allow update: if request.auth != null && (isManager(request.auth.uid) || (request.resource.data.status == 'Acknowledged' && resource.data.userId == request.auth.uid));
       // Owner or finance can delete.
       allow delete: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
     }
