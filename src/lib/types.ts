@@ -222,6 +222,8 @@ export type Expense = {
     status: "Pending" | "Approved" | "Rejected" | "Disbursed" | "Acknowledged";
     createdAt?: Timestamp;
     title: string;
+    projectId?: string;
+    projectName?: string;
 };
 
 export type Income = {

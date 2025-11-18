@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -31,7 +30,7 @@ import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { createAlert } from '@/ai/flows/create-alert-flow';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
-import type { Expense, User } from '@/lib/types';
+import type { Expense, User, Project } from '@/lib/types';
 
 
 const expenseItemSchema = z.object({
@@ -44,6 +43,7 @@ const expenseSchema = z.object({
   title: z.string().min(3, 'Please provide a title for the report.'),
   type: z.enum(["Requisition", "Reimbursement"]),
   date: z.string().min(1, 'Date is required.'),
+  projectId: z.string().optional(),
   items: z.array(expenseItemSchema).min(1, 'Please add at least one expense item.'),
   totalAmount: z.number().min(1, 'Total amount must be greater than zero.'),
   // New fields for submitting on behalf of others
@@ -74,6 +74,9 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
+
+  const projectsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'projects'), orderBy('name')) : null, [firestore]);
+  const { data: projects, isLoading: isLoadingProjects } = useCollection<Project>(projectsQuery);
 
   const isEditMode = !!expense;
   const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
@@ -156,12 +159,16 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             }
         }
     }
+    
+    const selectedProject = projects?.find(p => p.id === data.projectId);
 
 
     const expenseData = {
       title: data.title,
       type: data.type,
       date: data.date,
+      projectId: data.projectId || null,
+      projectName: selectedProject?.name || null,
       items: finalItems,
       totalAmount: finalTotal,
       userId: expenseUserId,
@@ -296,6 +303,26 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                 )}
             </div>
           )}
+
+          <div className="space-y-2">
+              <Label htmlFor="projectId">Link to Project (Optional)</Label>
+               <Controller
+                name="projectId"
+                control={control}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger id="projectId">
+                      <SelectValue placeholder="Select a project..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {projects?.map(p => (
+                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+          </div>
           
           <Separator />
 

@@ -2,16 +2,18 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import type { Project } from '@/lib/types';
+import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, doc, query, where, orderBy } from 'firebase/firestore';
+import type { Project, Expense } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft } from 'lucide-react';
+import { Briefcase, ArrowLeft, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { formatCurrency, formatDateSafe } from '@/lib/utils';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const statusColors: { [key: string]: string } = {
   Active: 'border-green-500 bg-green-500/10 text-green-500',
@@ -31,7 +33,25 @@ function ProjectDashboard() {
     return doc(firestore, 'projects', id);
   }, [firestore, id]);
 
-  const { data: project, isLoading } = useDoc<Project>(projectDocRef);
+  const { data: project, isLoading: isLoadingProject } = useDoc<Project>(projectDocRef);
+
+  const expensesQuery = useMemoFirebase(() => {
+    if (!firestore || !id) return null;
+    return query(
+        collection(firestore, 'expenses'),
+        where('projectId', '==', id),
+        orderBy('date', 'desc')
+    );
+  }, [firestore, id]);
+
+  const { data: expenses, isLoading: isLoadingExpenses } = useCollection<Expense>(expensesQuery);
+  
+  const totalSpent = expenses?.reduce((acc, exp) => acc + exp.totalAmount, 0) || 0;
+  const budget = 5000000; // Placeholder budget
+  const remainingBudget = budget - totalSpent;
+  const burnRate = budget > 0 ? (totalSpent / budget) * 100 : 0;
+
+  const isLoading = isLoadingProject || isLoadingExpenses;
 
   if (isLoading) {
     return (
@@ -113,11 +133,33 @@ function ProjectDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
             <CardHeader>
-                <CardTitle>Financials</CardTitle>
+                <CardTitle className="flex items-center gap-2"><DollarSign /> Financials</CardTitle>
                 <CardDescription>Budget vs. Actuals for this project.</CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-center text-muted-foreground py-12">Financial tracking for projects is coming soon.</p>
+                <div className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="p-2 bg-muted rounded-md">
+                            <p className="text-xs text-muted-foreground">Budget</p>
+                            <p className="text-lg font-bold">{formatCurrency(budget)}</p>
+                        </div>
+                        <div className="p-2 bg-muted rounded-md">
+                            <p className="text-xs text-muted-foreground">Spent</p>
+                            <p className="text-lg font-bold text-red-500">{formatCurrency(totalSpent)}</p>
+                        </div>
+                        <div className="p-2 bg-muted rounded-md">
+                            <p className="text-xs text-muted-foreground">Remaining</p>
+                            <p className="text-lg font-bold text-green-500">{formatCurrency(remainingBudget)}</p>
+                        </div>
+                    </div>
+                     <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">Budget Burn Rate</p>
+                        <div className="flex items-center gap-4">
+                            <Progress value={burnRate} className="h-2" />
+                            <span className="font-bold text-sm">{burnRate.toFixed(0)}%</span>
+                        </div>
+                    </div>
+                </div>
             </CardContent>
         </Card>
         <Card>
@@ -132,11 +174,38 @@ function ProjectDashboard() {
       </div>
       <Card>
             <CardHeader>
-                <CardTitle>Activity Stream</CardTitle>
-                <CardDescription>Recent check-ins and reports related to this project.</CardDescription>
+                <CardTitle>Expense Stream</CardTitle>
+                <CardDescription>All expenses logged for this project.</CardDescription>
             </CardHeader>
             <CardContent>
-                <p className="text-center text-muted-foreground py-12">Project-specific activity stream is coming soon.</p>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Submitted By</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {expenses && expenses.length > 0 ? (
+                            expenses.map(exp => (
+                                <TableRow key={exp.id}>
+                                    <TableCell>{formatDateSafe(exp.date, 'dateOnly')}</TableCell>
+                                    <TableCell className="font-medium">{exp.title}</TableCell>
+                                    <TableCell>{exp.userName}</TableCell>
+                                    <TableCell className="text-right font-mono">{formatCurrency(exp.totalAmount)}</TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center">
+                                    No expenses have been logged for this project yet.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </CardContent>
         </Card>
     </div>

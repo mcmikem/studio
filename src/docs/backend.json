@@ -470,6 +470,8 @@
             "enum": ["Requisition", "Reimbursement"],
             "description": "The type of expense report (pre-spending or post-spending)."
         },
+        "projectId": { "type": "string", "description": "The ID of the project this expense is associated with." },
+        "projectName": { "type": "string", "description": "The name of the project this expense is associated with." },
         "items": {
           "type": "array",
           "description": "A list of individual expense items.",
