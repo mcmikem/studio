@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,10 +51,8 @@ function FeedbackDialog({ type, onOpenChange }: { type: 'Bug' | 'Feature', onOpe
     };
 
     try {
-      // In a real app, this would likely go to a 'feedback' collection
-      await addDocumentNonBlocking(collection(firestore, 'ai-feedback'), feedbackData);
+      await addDocumentNonBlocking(collection(firestore, 'feedback'), feedbackData);
       
-      // Create an alert for management
       await createAlert({
           type: 'Urgent',
           priority: 'Medium',

@@ -36,13 +36,12 @@ Analyze the user's upcoming events and pending tasks from the provided tool outp
 
 
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
-    const llmResponse = await ai.generate({
+    const { output } = await ai.generate({
         model: 'googleai/gemini-2.5-flash',
         prompt: `Generate a short list of 3-4 smart, actionable reminders for ${input.userName} (Role: ${input.userRole}). Use the getUpcomingEventsForUser and getPendingTasksForUser tools with userId '${input.userId}' to get the necessary data.`,
         tools: [getUpcomingEventsForUser, getPendingTasksForUser],
     });
     
-    const { output } = llmResponse;
     if (!output) {
       throw new Error('AI failed to generate reminders.');
     }

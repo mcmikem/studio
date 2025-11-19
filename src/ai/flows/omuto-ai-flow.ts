@@ -41,6 +41,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         const history = input.history || [];
 
         // Call the Gemini model with the prepared prompt and history
+        // The Genkit framework will automatically handle tool execution.
         const llmResponse = await ai.generate({
             model: 'googleai/gemini-2.5-flash',
             prompt: `UserId: ${input.userId}. User's message: "${input.question}"`,
@@ -60,48 +61,19 @@ Your knowledge is not just static; you can learn about the team's current activi
             }
         });
         
-        const toolRequest = llmResponse.toolRequest();
+        const answer = llmResponse.text;
         
-        if (!toolRequest) {
-            const answer = llmResponse.text;
-            if (!answer) {
-                 console.error("AI did not return a text or tool response.", llmResponse);
-                 return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
-            }
-            return { answer };
-        }
-
-        // Handle the tool request
-        const toolOutput = await toolRequest.run();
-
-        // Send the tool output back to the model to get the final answer
-        const finalResponse = await ai.generate({
-            model: 'googleai/gemini-2.5-flash',
-            prompt: `UserId: ${input.userId}. User's message: "${input.question}"`,
-            history: [...history, llmResponse, toolRequest.output(toolOutput)],
-            tools: [searchOmuto, createCheckout, getRecentCheckins, getRecentCheckouts],
-        });
-
-        let answer = finalResponse.text;
-
-        // This is a simple fallback. A more robust implementation might format the toolOutput directly.
         if (!answer) {
-            if (typeof toolOutput === 'object' && toolOutput !== null && 'message' in toolOutput) {
-                answer = String((toolOutput as any).message);
-            } else if (Array.isArray(toolOutput) && toolOutput.length > 0) {
-                 if (toolRequest.name === 'searchOmuto') {
-                    const searchResults = toolOutput as z.infer<typeof SearchResultItemSchema>[];
-                    answer = "I found the following information:\n" + searchResults.map(r => `- **[${r.title}](${r.url})** - Type: ${r.type}`).join('\n');
-                 } else {
-                    answer = "I've completed the action using my tools."
-                 }
+            console.error("AI did not return a text response, even after potential tool use.", llmResponse);
+            // This condition is now more of a fallback, as Genkit's `generate` with tools should still result in a text response.
+            if (llmResponse.toolRequest()) {
+              return { answer: "I've processed your request using my tools, but I don't have a final text summary to provide." };
             }
-            else {
-                answer = String(toolOutput) || "I've processed your request.";
-            }
+            return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
         }
-
+        
         return { answer };
+
     } catch (error: any) {
         console.error("[omutoAIFlow] Critical error during AI generation:", error);
         // Provide a user-facing error message that doesn't expose internal details.
