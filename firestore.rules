@@ -95,9 +95,9 @@ service cloud.firestore {
     }
     match /feedback/{feedbackId} {
       allow read: if isManager(request.auth.uid);
-      allow create: if request.auth.uid == request.resource.data.userId;
+      allow create: if isOwner(request.resource.data.userId);
       allow update: if isManager(request.auth.uid);
-      allow delete: if false;
+      allow delete: if isManager(request.auth.uid);
     }
     match /events/{eventId} {
         allow read: if request.auth != null;

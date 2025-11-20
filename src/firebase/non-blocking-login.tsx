@@ -39,54 +39,13 @@ import { setDocumentNonBlocking } from "@/firebase";
 
 // This maps specific emails to roles and names within the Omuto organization.
 const approvedUsers: Record<string, { name: string; role: string }> = {
-  // Executive
   "mcmike@omuto.org": { name: "McMike Mutumba", role: "Executive Director" },
-  "1mark2mike@gmail.com": { name: "McMike Mutumba", role: "Executive Director" },
-
-
-  // Programs & Partnerships
-  "programs@omuto.org": {
-    name: "Dianah Nansikombi",
-    role: "Programs & Partnerships Manager",
-  },
-  
-  // Operations & Field
-  "operations@omuto.org": {
-    name: "Kasirye Constantine",
-    role: "Operations & Field Manager",
-  },
-  "kasirye.connie@gmail.com": {
-    name: "Kasirye Constantine",
-    role: "Operations & Field Manager",
-  },
-  "bashir@omuto.org": { name: "Bwire Bashir", role: "Field Coordinator" },
-
-  // Media, Comms & Finance
-  "communications@omuto.org": {
-    name: "Nsereko Alex",
-    role: "Media & Communications Lead",
-  },
-  "alex@omuto.org": {
-    name: "Nsereko Alex",
-    role: "Media & Finance Lead",
-  },
-
-  // Resource Mobilization
-  "partnerships@omuto.org": {
-    name: "John Paul Akera",
-    role: "Resource Mobilization Lead",
-  },
-  "akera@omuto.org": {
-    name: "John Paul Akera",
-    role: "Resource Mobilization Lead",
-  },
-  "akerajonpaul@gmail.com": {
-    name: "John Paul Akera",
-    role: "Resource Mobilization Lead",
-  },
-
-  // General
-  "info@omuto.org": { name: "Omuto General", role: "Administrator" },
+  "programs@omuto.org": { name: "Dianah Nansikombi", role: "Programs & Partnerships Manager" },
+  "operations@omuto.org": { name: "Kasirye Constantine", role: "Operations & Field Manager" },
+  "communications@omuto.org": { name: "Nsereko Alex", role: "Media & Finance Lead" },
+  "partnerships@omuto.org": { name: "John Paul Akera", role: "Resource Mobilization Lead" },
+  "volunteer@omuto.org": { name: "Volunteer User", role: "Volunteer" },
+  "intern@omuto.org": { name: "Intern User", role: "Intern" },
 }
 
 export const isEmailApproved = (email: string | null): boolean => {

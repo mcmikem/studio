@@ -163,10 +163,6 @@
           "type": "number",
           "description": "The quantity achieved for the primary goal (e.g., number of students, number of objectives)."
         },
-         "keyResultId": {
-            "type": "string",
-            "description": "The ID of the strategic Key Result this activity contributes to."
-        },
         "estimatedCost": {
           "type": "number",
           "description": "The pre-activity estimated cost."
@@ -221,7 +217,6 @@
         "primaryGoalId",
         "primaryGoalType",
         "primaryGoalQuantity",
-        "keyResultId",
         "estimatedCost",
         "actualCost",
         "directValue",
@@ -645,24 +640,24 @@
         },
         "required": ["title", "userId", "userName", "createdAt"]
     },
-    "AIFeedback": {
+    "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "AI Feedback",
-      "description": "Stores user feedback on the performance of AI-generated content or bug/feature reports.",
+      "title": "Feedback",
+      "description": "Stores user feedback on AI performance, bugs, or features.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "type": { "type": "string", "enum": ["ai", "bug", "feature"], "description": "The type of feedback being provided." },
-        "flow": { "type": "string", "description": "The name of the AI flow being rated (e.g., dailyPlannerAIFlow). Only for 'ai' type." },
-        "description": { "type": "string", "description": "The detailed user description of the bug or feature." },
+        "type": { "type": "string", "enum": ["ai", "bug", "feature"] },
+        "flow": { "type": "string", "description": "For 'ai' type, the name of the AI flow (e.g., dailyPlannerAIFlow)." },
+        "description": { "type": "string", "description": "For 'bug' or 'feature' type, the user's detailed report." },
         "userId": { "type": "string" },
         "userName": { "type": "string" },
-        "status": { "type": "string", "enum": ["New", "In Progress", "Done", "Rejected"], "default": "New"},
-        "wasHelpful": { "type": "boolean" },
-        "comment": { "type": "string" },
+        "status": { "type": "string", "enum": ["New", "In Progress", "Done", "Rejected"], "default": "New" },
+        "wasHelpful": { "type": "boolean", "description": "For 'ai' type, whether the output was helpful." },
+        "comment": { "type": "string", "description": "For 'ai' type, an optional comment." },
         "timestamp": { "type": "string", "format": "date-time" }
       },
-      "required": ["type", "description", "userId", "userName", "status", "timestamp"]
+      "required": ["type", "userId", "userName", "status", "timestamp"]
     },
     "Meeting": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -789,7 +784,6 @@
         "schema": {
             "$ref": "#/entities/Alert"
         },
-        "read": "request.auth.uid in resource.data.targetUserIds || resource.data.targetUserIds.size() == 0",
         "description": "Stores system-wide alerts and notifications."
     },
     "/key-results/{keyResultId}": {
@@ -802,8 +796,6 @@
       "schema": {
         "$ref": "#/entities/Expense"
       },
-      "read": "request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Finance Lead' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Communications Lead' || resource.data.userId == request.auth.uid)",
-      "list": "request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Executive Director' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Finance Lead' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Media & Communications Lead')",
       "description": "Stores expense reports submitted by users."
     },
     "/income/{incomeId}": {
@@ -860,9 +852,9 @@
       },
       "description": "Stores recorded audio, video, or text testimonies."
     },
-    "/ai-feedback/{feedbackId}": {
+    "/feedback/{feedbackId}": {
       "schema": {
-        "$ref": "#/entities/AIFeedback"
+        "$ref": "#/entities/Feedback"
       },
       "description": "Stores user feedback on AI features, bugs, and feature requests."
     }
@@ -874,3 +866,4 @@
 
 
     
+

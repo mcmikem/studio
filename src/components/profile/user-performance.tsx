@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
@@ -18,9 +18,14 @@ interface UserPerformanceProps {
 
 export function UserPerformance({ userId }: UserPerformanceProps) {
   const firestore = useFirestore();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore || !userId) return null;
+    if (!firestore || !userId || !isClient) return null;
 
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
@@ -31,7 +36,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
       where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo)),
       orderBy('loggedAt', 'desc')
     );
-  }, [firestore, userId]);
+  }, [firestore, userId, isClient]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
@@ -54,7 +59,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     };
   }, [activities]);
 
-  if (isLoading) {
+  if (isLoading || !isClient) {
     return <Skeleton className="h-48" />;
   }
 

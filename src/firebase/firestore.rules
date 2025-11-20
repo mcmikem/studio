@@ -1,10 +1,140 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Open rules for development. Allows any authenticated user to read/write.
-    // WARNING: Not secure for production.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+
+    function isManager(userId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      return request.auth != null && userDoc.data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
+    }
+
+    function isFinance(userId) {
+      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+      return request.auth != null && userDoc.data.role in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // USER PROFILES
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if isOwner(userId);
+    }
+
+    // USER SUB-COLLECTIONS (private data)
+    match /users/{userId}/{subcollection}/{docId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // MANAGEMENT COLLECTIONS (Readable by all, Writable by Managers)
+    match /programs/{programId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+    match /projects/{projectId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+    match /partnerships/{partnershipId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+     match /partnerships/{partnershipId}/{subcollection}/{docId} {
+      allow read, write: if isManager(request.auth.uid);
+    }
+    match /impact-metrics/{metricId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+    match /equipment/{equipmentId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+     match /task-templates/{templateId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+     match /key-results/{keyResultId} {
+      allow read: if request.auth != null;
+      allow write: if isManager(request.auth.uid);
+    }
+
+    // TEAM-WIDE USER-GENERATED CONTENT (Readable by all, owned writes)
+    match /checkins/{checkinId} {
+        allow read: if request.auth != null;
+        allow create: if isOwner(request.resource.data.userId);
+        allow update, delete: if isOwner(resource.data.userId);
+    }
+    match /checkouts/{checkoutId} {
+        allow read: if request.auth != null;
+        allow create: if isOwner(request.resource.data.userId);
+        allow update, delete: if isOwner(resource.data.userId);
+    }
+     match /messages/{messageId} {
+        allow read: if request.auth != null;
+        allow create: if isOwner(request.resource.data.userId);
+        allow update, delete: if isOwner(resource.data.userId);
+    }
+    match /activities/{activityId} {
+      allow read: if request.auth != null;
+      allow create: if isOwner(request.resource.data.userId);
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+    match /workplans/{workplanId} {
+      allow read: if request.auth != null;
+      allow create: if isOwner(request.resource.data.userId);
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+     match /testimonies/{testimonyId} {
+      allow read: if request.auth != null;
+      allow create: if isOwner(request.resource.data.userId);
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+    match /feedback/{feedbackId} {
+      allow read: if isManager(request.auth.uid);
+      allow create: if isOwner(request.resource.data.userId);
+      allow update: if isManager(request.auth.uid);
+      allow delete: if isManager(request.auth.uid);
+    }
+    match /events/{eventId} {
+        allow read: if request.auth != null;
+        allow write: if isManager(request.auth.uid);
+    }
+
+
+    // TEAM-WIDE PLANS (Writable by Managers)
+    match /team-workplans/{planId} {
+        allow read: if request.auth != null;
+        allow write: if isManager(request.auth.uid);
+    }
+
+
+    // ALERTS (Corrected Rules)
+    match /alerts/{alertId} {
+      allow list: if request.auth != null;
+      allow get: if request.auth != null && (resource.data.targetUserIds.size() == 0 || request.auth.uid in resource.data.targetUserIds);
+      allow write: if isManager(request.auth.uid);
+    }
+
+    // FINANCIALS (Strictest Rules)
+    match /expenses/{expenseId} {
+      allow get: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
+      allow list: if request.auth != null && isFinance(request.auth.uid);
+      allow create: if request.auth != null;
+      allow update: if request.auth != null && (isManager(request.auth.uid) || (request.resource.data.status == 'Acknowledged' && resource.data.userId == request.auth.uid));
+      allow delete: if request.auth != null && (isFinance(request.auth.uid) || isOwner(resource.data.userId));
+    }
+
+    match /income/{incomeId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isFinance(request.auth.uid);
+    }
+    
+    match /proposals/{proposalId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isManager(request.auth.uid);
     }
   }
 }
