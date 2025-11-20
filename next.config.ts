@@ -53,6 +53,7 @@ const nextConfig: NextConfig = {
         "async_hooks": false,
         "child_process": false,
         "fs": false,
+        "path": false,
         "net": false,
         "tls": false,
         "http2": false,
