@@ -4,28 +4,10 @@
  *
  * This file is not intended to be modified.
  */
-import * as fs from 'fs';
-import * as path from 'path';
 
 // Must be the first import
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
-
-// Manually load the service account key and set it as an environment variable
-const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
-if (fs.existsSync(serviceAccountPath)) {
-  try {
-    const serviceAccount = fs.readFileSync(serviceAccountPath, 'utf-8');
-    process.env.FIREBASE_SERVICE_ACCOUNT = serviceAccount;
-    console.log('Firebase service account loaded successfully.');
-  } catch (error) {
-    console.error('Failed to read service account key:', error);
-    process.exit(1);
-  }
-} else {
-    console.warn('Service account key not found at secrets/serviceAccountKey.json. Server-side flows may fail.');
-}
-
 
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
