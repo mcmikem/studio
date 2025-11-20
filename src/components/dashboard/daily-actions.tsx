@@ -31,21 +31,20 @@ function formatDuration(ms: number) {
 }
 
 interface DailyActionsProps {
-    hour: number | null;
     checkin: Checkin | null;
     isLoadingCheckin: boolean;
 }
 
-export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsProps) {
+export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const { toast } = useToast();
     const router = useRouter();
-    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         // This ensures the Date object is only created on the client side
-        setIsClient(true);
-        setCurrentTime(new Date());
+        // and that we have a reliable local time.
+        const now = new Date();
+        setCurrentTime(now);
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
@@ -93,9 +92,12 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
         router.push('/chat');
     }
   
-  if (isLoadingCheckin || hour === null || !isClient) {
+  // Render skeleton while waiting for client-side time or checkin data
+  if (isLoadingCheckin || !currentTime) {
       return <Skeleton className="h-48 w-full" />
   }
+
+  const hour = currentTime.getHours();
 
   // Morning Mode (before 12 PM) and user hasn't checked in yet FOR TODAY
   if (hour < 12 && !checkin) {

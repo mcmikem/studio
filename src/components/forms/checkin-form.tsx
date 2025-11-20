@@ -106,11 +106,11 @@ function CheckinFormComponent() {
                 <CardHeader>
                     <CardTitle>Daily Check-in</CardTitle>
                     <CardDescription>
-                        Finalize and submit your AI-assisted plan for the day.
+                        First, generate a daily plan with the AI coach.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center py-12">
-                    <p className="text-muted-foreground">You don't have a plan ready to submit.</p>
+                    <p className="text-muted-foreground">It looks like you haven't generated a plan yet.</p>
                     <Button asChild className="mt-4">
                         <Link href="/daily-plan">
                             Go to AI Daily Planner
