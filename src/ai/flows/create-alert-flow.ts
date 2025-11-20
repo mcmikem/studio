@@ -8,7 +8,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { initializeFirebase } from '@/firebase/server';
-import { serverTimestamp } from 'firebase/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const AlertInputSchema = z.object({
   type: z.enum(['Urgent', 'Reminder', 'Info']),
@@ -38,7 +38,7 @@ const createAlertFlow = ai.defineFlow(
       
       const newAlert = {
         ...alertData,
-        createdAt: serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
         readBy: [],
         targetUserIds: alertData.targetUserIds || [], // Ensure the field exists
       };
