@@ -69,7 +69,7 @@ function EcosystemPulse({ activities, programs }: { activities: Activity[] | nul
                             <p className="text-xs text-muted-foreground">Active Programs</p>
                         </div>
                         <div className="p-3 bg-muted rounded-lg">
-                            <p className="text-sm font-semibold">Phase 2: Empower</p>
+                            <p className="text-sm font-semibold">Phase 2: Equip</p>
                             <p className="text-2xl font-bold">{empower}</p>
                             <p className="text-xs text-muted-foreground">YAP Activities</p>
                         </div>
@@ -148,6 +148,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     
     const activitiesQuery = useMemoFirebase(() => {
         if (!firestore) return null;
+        // Fetch all activities, ordered by date. Filtering will happen in components.
         return query(
             collection(firestore, 'activities'), 
             orderBy('loggedAt', 'desc')
