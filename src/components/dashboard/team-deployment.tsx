@@ -48,21 +48,18 @@ interface TeamDeploymentProps {
 export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentProps) {
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
-  // Set current time only on the client-side after mount.
   useEffect(() => {
-    // This effect ensures this component only computes state on the client
-    setCurrentTime(new Date());
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // Update every minute
+    const now = new Date();
+    setCurrentTime(now);
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000); 
     return () => clearInterval(timer);
   }, []);
 
   const teamStatus = useMemo(() => {
-    // Guard against running this logic before data is loaded or on the server.
     if (!users || !checkins || !currentTime) {
       return null;
     }
     
-    // De-duplicate users based on ID to prevent rendering issues from bad data.
     const uniqueUsers = Array.from(new Map(users.map(user => [user.id, user])).values());
     const checkinMap = new Map(checkins.map(c => [c.userId, c]));
     
@@ -78,12 +75,13 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
             try {
               const now = currentTime;
               const baseDate = startOfDay(now);
+              if (!block.startTime || !block.endTime) continue; // Skip blocks with invalid times
               const startTime = parse(block.startTime, 'hh:mm a', baseDate);
               const endTime = parse(block.endTime, 'hh:mm a', baseDate);
               
               if (!isValid(startTime) || !isValid(endTime)) {
                 console.error("Invalid time format in time block:", block);
-                continue; // Skip this block if time is invalid
+                continue;
               }
               
               if (isWithinInterval(now, { start: startTime, end: endTime })) {
@@ -115,7 +113,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading || !teamStatus ? (
+        {(isLoading || !teamStatus) ? (
           <div className="space-y-2">
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
@@ -124,7 +122,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         ) : teamStatus.length > 0 ? (
            <Accordion type="single" collapsible className="w-full">
             {teamStatus.map(status => {
-                if (!status.user?.id) return null; // Added safe-guard
+                if (!status.user?.id) return null;
                 return (
                     <AccordionItem value={status.user.id} key={status.user.id}>
                         <AccordionTrigger>

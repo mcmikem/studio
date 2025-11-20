@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui
 import { Skeleton } from '../ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
 import { startOfMonth } from 'date-fns';
+import { EmptyState } from '../ui/empty-state';
 
 export function MyPerformance() {
   const { user } = useUser();
@@ -17,10 +18,12 @@ export function MyPerformance() {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // This effect runs only on the client, after the initial render.
     setIsClient(true);
   }, []);
 
   const activitiesQuery = useMemoFirebase(() => {
+    // Defer query creation until we are on the client AND have a user.
     if (!firestore || !user || !isClient) return null;
 
     const monthStart = startOfMonth(new Date());

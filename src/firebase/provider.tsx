@@ -28,11 +28,14 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  const [services, setServices] = useState<{
-    firebaseApp: FirebaseApp;
-    auth: Auth;
-    firestore: Firestore;
-  } | null>(null);
+  // Memoize the Firebase services to ensure they are initialized only once.
+  const services = useMemo(() => {
+    // This check is important to prevent re-initialization on every render.
+    if (typeof window !== 'undefined') {
+      return initializeFirebase();
+    }
+    return null;
+  }, []);
 
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null;
@@ -45,13 +48,11 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   });
 
   useEffect(() => {
-    // This effect runs only once on the client to initialize Firebase services.
-    const { firebaseApp, auth, firestore } = initializeFirebase();
-    setServices({ firebaseApp, auth, firestore });
+    if (!services) return; // Don't run auth listener if services are not initialized
 
     // Set up the auth state listener
     const unsubscribe = onAuthStateChanged(
-      auth,
+      services.auth,
       (firebaseUser) => {
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
@@ -62,7 +63,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [services]); // This effect depends only on the stable `services` object.
 
   const contextValue = useMemo((): FirebaseContextState => {
     return {
@@ -70,7 +71,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
       firestore: services?.firestore || null,
       auth: services?.auth || null,
       user: userAuthState.user,
-      isUserLoading: userAuthState.isUserLoading || !services, // Loading if user or services are not ready
+      isUserLoading: userAuthState.isUserLoading || !services,
       userError: userAuthState.userError,
     };
   }, [services, userAuthState]);
@@ -92,14 +93,23 @@ export const useFirebaseServices = () => {
     throw new Error('useFirebaseServices must be used within a FirebaseProvider.');
   }
   const { firebaseApp, firestore, auth } = context;
-   if (!firebaseApp || !firestore || !auth) {
-    throw new Error('Firebase services are not yet available.');
+   // We throw an error only if the context is available but services are not yet initialized.
+   // This helps catch race conditions during development.
+  if (!firebaseApp || !firestore || !auth) {
+    // In a server component context, this might be expected. In client components, it's an issue.
+    if (typeof window !== 'undefined') {
+        throw new Error('Firebase services are not yet available. This may be a race condition or an initialization error.');
+    }
   }
   return { firebaseApp, firestore, auth };
 };
 
-export const useAuth = (): Auth => {
-  return useFirebaseServices().auth;
+export const useAuth = (): Auth | null => {
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within a FirebaseProvider.');
+  }
+  return context.auth;
 };
 
 export const useFirestore = (): Firestore | null => {
@@ -110,8 +120,12 @@ export const useFirestore = (): Firestore | null => {
   return context.firestore;
 };
 
-export const useFirebaseApp = (): FirebaseApp => {
-  return useFirebaseServices().firebaseApp;
+export const useFirebaseApp = (): FirebaseApp | null => {
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    throw new Error('useFirebaseApp must be used within a FirebaseProvider.');
+  }
+  return context.firebaseApp;
 };
 
 export const useUser = () => {

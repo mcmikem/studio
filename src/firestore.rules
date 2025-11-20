@@ -5,7 +5,6 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isManager(userId) {
-      // Use exists() for robust checking instead of get() where possible
       let userDoc = get(/databases/$(database)/documents/users/$(userId));
       return request.auth != null && userDoc.data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
     }
@@ -66,38 +65,39 @@ service cloud.firestore {
     // TEAM-WIDE USER-GENERATED CONTENT (Readable by all, owned writes)
     match /checkins/{checkinId} {
         allow read: if request.auth != null;
-        allow create: if request.auth.uid == request.resource.data.userId;
+        allow create: if isOwner(request.resource.data.userId);
         allow update, delete: if isOwner(resource.data.userId);
     }
     match /checkouts/{checkoutId} {
         allow read: if request.auth != null;
-        allow create: if request.auth.uid == request.resource.data.userId;
+        allow create: if isOwner(request.resource.data.userId);
         allow update, delete: if isOwner(resource.data.userId);
     }
      match /messages/{messageId} {
         allow read: if request.auth != null;
-        allow create: if request.auth.uid == request.resource.data.userId;
+        allow create: if isOwner(request.resource.data.userId);
         allow update, delete: if isOwner(resource.data.userId);
     }
     match /activities/{activityId} {
       allow read: if request.auth != null;
-      allow create: if request.auth.uid == request.resource.data.userId;
+      allow create: if isOwner(request.resource.data.userId);
       allow update, delete: if isOwner(resource.data.userId);
     }
     match /workplans/{workplanId} {
       allow read: if request.auth != null;
-      allow create: if request.auth.uid == request.resource.data.userId;
+      allow create: if isOwner(request.resource.data.userId);
       allow update, delete: if isOwner(resource.data.userId);
     }
      match /testimonies/{testimonyId} {
       allow read: if request.auth != null;
-      allow create: if request.auth.uid == request.resource.data.userId;
+      allow create: if isOwner(request.resource.data.userId);
       allow update, delete: if isOwner(resource.data.userId);
     }
-    match /ai-feedback/{feedbackId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if isManager(request.auth.uid);
+    match /feedback/{feedbackId} {
+      allow read: if isManager(request.auth.uid);
+      allow create: if isOwner(request.resource.data.userId);
+      allow update: if isManager(request.auth.uid);
+      allow delete: if isManager(request.auth.uid);
     }
     match /events/{eventId} {
         allow read: if request.auth != null;
@@ -114,12 +114,8 @@ service cloud.firestore {
 
     // ALERTS (Corrected Rules)
     match /alerts/{alertId} {
-      // Allow LIST operations for any authenticated user.
-      // The client-side queries are responsible for filtering to the specific user.
       allow list: if request.auth != null;
-      // Allow GET operations only if it's a broadcast or the user is in the target list.
       allow get: if request.auth != null && (resource.data.targetUserIds.size() == 0 || request.auth.uid in resource.data.targetUserIds);
-      // Allow WRITE operations only for managers.
       allow write: if isManager(request.auth.uid);
     }
 
