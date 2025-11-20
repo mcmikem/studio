@@ -234,14 +234,17 @@ function PlannerCheckinFormComponent() {
     if (!firestore || !user) return;
     
     const feedbackData = {
+      type: 'ai',
       flow: 'dailyPlannerAIFlow',
       userId: user.uid,
+      userName: profile?.name || 'Unknown',
+      status: 'New',
       wasHelpful,
       comment: feedbackComment,
       timestamp: serverTimestamp(),
     };
 
-    await addDocumentNonBlocking(collection(firestore, 'ai-feedback'), feedbackData);
+    await addDocumentNonBlocking(collection(firestore, 'feedback'), feedbackData);
     
     toast({ title: "Feedback submitted!", description: "Thank you for helping us improve." });
     setFeedbackSubmitted(true);

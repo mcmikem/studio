@@ -97,7 +97,7 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
       return <Skeleton className="h-48 w-full" />
   }
 
-  // Morning Mode (before 12 PM) and user hasn't checked in yet
+  // Morning Mode (before 12 PM) and user hasn't checked in yet FOR TODAY
   if (hour < 12 && !checkin) {
      return (
         <Card className="bg-primary/10 border-primary/20 animated-glowing-border">
@@ -119,8 +119,8 @@ export function DailyActions({ hour, checkin, isLoadingCheckin }: DailyActionsPr
     );
   }
 
-  // Evening Mode (5 PM or later)
-  if (hour >= 17) {
+  // Evening Mode (4 PM or later)
+  if (hour >= 16) {
     return (
         <Card className="bg-accent/10 border-accent/20">
             <CardHeader>

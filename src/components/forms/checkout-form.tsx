@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -57,6 +58,64 @@ const checkoutSchema = z.object({
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
+
+function GeneralCheckoutForm({
+  onSubmit,
+  isSubmitting,
+}: {
+  onSubmit: (data: any) => void,
+  isSubmitting: boolean,
+}) {
+  const { register, handleSubmit: handleGeneralSubmit, formState: { errors: generalErrors } } = useForm({
+    defaultValues: {
+      accomplishment: '',
+      learning: '',
+      tomorrowPlan: '',
+    },
+  });
+
+  const onGeneralSubmit = (data: any) => {
+    // Adapt the general form data to the structure expected by the main onSubmit function
+    const adaptedData = {
+      tasks: [{ description: data.accomplishment, status: 'Done' as const }],
+      learning: data.learning,
+      tomorrowPlan: data.tomorrowPlan,
+    };
+    onSubmit(adaptedData);
+  };
+  
+  return (
+    <form onSubmit={handleGeneralSubmit(onGeneralSubmit)} className="space-y-6">
+        <div className="space-y-2">
+            <Label htmlFor="accomplishment" className="text-base font-semibold">What was your main accomplishment today?</Label>
+            <Textarea id="accomplishment" {...register('accomplishment', { required: 'This field is required.'})} placeholder="e.g., I finalized the partnership MoU with Spouts of Water." className="min-h-[100px]"/>
+            {generalErrors.accomplishment && <p className="text-sm text-destructive">{generalErrors.accomplishment.message}</p>}
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="learning" className="text-base font-semibold">What was your key learning or adaptation?</Label>
+            <Textarea id="learning" placeholder="Optional: What should we do differently next time? What surprised you?" className="min-h-[100px]" {...register('learning')} />
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="tomorrowPlan" className="text-base font-semibold">What is your #1 priority for tomorrow?</Label>
+            <Textarea id="tomorrowPlan" placeholder="e.g., Begin outreach to 5 new potential partners." className="min-h-[100px]" {...register('tomorrowPlan', { required: 'Please set a priority for tomorrow.'})} />
+             {generalErrors.tomorrowPlan && <p className="text-sm text-destructive">{generalErrors.tomorrowPlan.message}</p>}
+        </div>
+         <Button
+            size="lg"
+            className="w-full"
+            type="submit"
+            disabled={isSubmitting}
+        >
+            {isSubmitting ? (
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+            <LogOut className="mr-2 h-5 w-5" />
+            )}
+            Submit General Checkout
+        </Button>
+    </form>
+  )
+}
 
 export function CheckoutForm() {
   const { toast } = useToast();
@@ -125,7 +184,6 @@ export function CheckoutForm() {
 
       } else {
         setDailyCheckin(null);
-        reset({tasks: [{description: 'General daily tasks', status: 'Done', reason: ''}], learning: '', tomorrowPlan: ''})
       }
     } catch (e) {
       console.error("Error fetching check-in:", e);
@@ -200,9 +258,12 @@ export function CheckoutForm() {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>No Check-in Found For Today</AlertTitle>
-            <AlertDescription>
-                You can still submit a general checkout report.
+            <AlertDescription className="mt-4">
+                You can submit a general checkout report below.
             </AlertDescription>
+            <div className="mt-6">
+                <GeneralCheckoutForm onSubmit={onSubmit} isSubmitting={isSubmitting} />
+            </div>
          </Alert>
       )
   }

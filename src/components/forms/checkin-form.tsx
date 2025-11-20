@@ -1,5 +1,4 @@
 
-
 'use client';
 import {
   Card,
@@ -58,9 +57,10 @@ function CheckinFormComponent() {
                     title: "Error",
                     description: "Could not load the plan data. Please try again."
                 });
+                router.push('/daily-plan');
             }
         }
-    }, [planDataString, setValue, toast]);
+    }, [planDataString, setValue, toast, router]);
     
     const submittedPlan = watch('details') as DailyPlannerAIOutput | null;
     const primaryMission = watch('primaryMission');
