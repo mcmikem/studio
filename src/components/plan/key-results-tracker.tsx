@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -8,18 +9,25 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
-import type { KeyResult, Activity, ImpactMetric, Partnership } from '@/lib/types';
-import { Target, Flag, AlertTriangle } from 'lucide-react';
+import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, where, doc } from 'firebase/firestore';
+import type { KeyResult } from '@/lib/types';
+import { Target, Flag, AlertTriangle, Edit, Loader2 } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import { Progress } from '../ui/progress';
-import { isPast, parseISO, differenceInDays, isValid, startOfDay, subDays } from 'date-fns';
+import { isPast, parseISO, differenceInDays, isValid, startOfDay } from 'date-fns';
 import { cn, formatDateSafe } from '@/lib/utils';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ProgressRing } from '../ui/progress-ring';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import Link from 'next/link';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { useViewAs } from '@/hooks/use-view-as';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { useToast } from '@/hooks/use-toast';
+
 
 const priorityColors: { [key: string]: string } = {
     High: "border-red-500 bg-red-500/10 text-red-500",
@@ -33,9 +41,64 @@ interface KeyResultsTrackerProps {
     showAtRisk?: boolean;
 }
 
+function EditKeyResultForm({ kr, onFinished }: { kr: KeyResult, onFinished: () => void }) {
+    const [progress, setProgress] = useState(kr.currentProgress);
+    const [isLoading, setIsLoading] = useState(false);
+    const firestore = useFirestore();
+    const { toast } = useToast();
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!firestore) return;
+
+        setIsLoading(true);
+        const krRef = doc(firestore, 'key-results', kr.id);
+        try {
+            await updateDocumentNonBlocking(krRef, { currentProgress: Number(progress) });
+            toast({ title: "Progress Updated!", description: `${kr.title} has been updated.` });
+            onFinished();
+        } catch (error) {
+            console.error("Failed to update KR:", error);
+            toast({ variant: 'destructive', title: 'Update Failed' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+                <Label htmlFor="currentProgress">Current Progress</Label>
+                <Input
+                    id="currentProgress"
+                    type="number"
+                    value={progress}
+                    onChange={(e) => setProgress(Number(e.target.value))}
+                    max={kr.target}
+                    min="0"
+                />
+            </div>
+            <DialogFooter>
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Progress
+                </Button>
+            </DialogFooter>
+        </form>
+    );
+}
+
 
 export function KeyResultsTracker({ title, description, showAtRisk }: KeyResultsTrackerProps) {
   const firestore = useFirestore();
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
+  const { viewAsRole } = useViewAs();
+  const [editingKr, setEditingKr] = useState<KeyResult | null>(null);
+
+  const effectiveRole = viewAsRole || profile?.role;
+  const managementRoles = ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Administrator'];
+  const canEdit = effectiveRole && managementRoles.includes(effectiveRole);
   
   const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -155,27 +218,36 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
              const isDeadlinePast = isValid(deadlineDate) ? isPast(deadlineDate) && progressPercentage < 100 : false;
              
             return (
-                <Link href={kr.link} key={kr.id} className="block p-4 rounded-lg -m-4 hover:bg-muted/50 transition-colors">
+                <div key={kr.id} className="group p-4 rounded-lg -m-4 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-4">
-                        <ProgressRing progress={progressPercentage} size={60} strokeWidth={6} />
-                        <div className="flex-1 space-y-1">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="font-semibold">{kr.title}: {kr.description}</p>
-                                    <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
-                                        <Flag className="inline h-3 w-3 mr-1" />
-                                        Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
-                                    </p>
+                        <Link href={kr.link} className="flex-1">
+                            <div className="flex items-center gap-4">
+                                <ProgressRing progress={progressPercentage} size={60} strokeWidth={6} />
+                                <div className="flex-1 space-y-1">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="font-semibold">{kr.title}: {kr.description}</p>
+                                            <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
+                                                <Flag className="inline h-3 w-3 mr-1" />
+                                                Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
+                                            </p>
+                                        </div>
+                                        <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                        <span>{formatProgress(kr)}</span>
+                                        <span>Target: {formatTarget(kr)}</span>
+                                    </div>
                                 </div>
-                                <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>
                             </div>
-                            <div className="flex justify-between items-center text-xs text-muted-foreground">
-                                <span>{formatProgress(kr)}</span>
-                                <span>Target: {formatTarget(kr)}</span>
-                            </div>
-                        </div>
+                        </Link>
+                        {canEdit && (
+                             <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setEditingKr(kr)}>
+                                <Edit className="h-4 w-4" />
+                             </Button>
+                        )}
                     </div>
-                </Link>
+                </div>
             )
           })
         ) : (
@@ -192,6 +264,19 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
           )
         )}
       </CardContent>
+      {editingKr && (
+        <Dialog open={!!editingKr} onOpenChange={(open) => !open && setEditingKr(null)}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Update Progress: {editingKr.title}</DialogTitle>
+                    <DialogDescription>
+                        Set the new current progress for this Key Result. Target is {formatTarget(editingKr)}.
+                    </DialogDescription>
+                </DialogHeader>
+                <EditKeyResultForm kr={editingKr} onFinished={() => setEditingKr(null)} />
+            </DialogContent>
+        </Dialog>
+      )}
     </Card>
   );
 }
