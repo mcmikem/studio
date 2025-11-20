@@ -63,14 +63,14 @@ service cloud.firestore {
 
     // TEAM-WIDE USER-GENERATED CONTENT (Readable by all, owned writes)
     match /checkins/{checkinId} {
-        allow read: if request.auth != null;
-        allow create: if isOwner(request.resource.data.userId);
-        allow update, delete: if isOwner(resource.data.userId);
+      allow read: if request.auth != null;
+      allow create: if isOwner(request.resource.data.userId);
+      allow update, delete: if isOwner(resource.data.userId);
     }
     match /checkouts/{checkoutId} {
-        allow read: if request.auth != null;
-        allow create: if isOwner(request.resource.data.userId);
-        allow update, delete: if isOwner(resource.data.userId);
+      allow read: if request.auth != null;
+      allow create: if isOwner(request.resource.data.userId);
+      allow update, delete: if isOwner(resource.data.userId);
     }
      match /messages/{messageId} {
         allow read: if request.auth != null;
@@ -95,7 +95,7 @@ service cloud.firestore {
     match /feedback/{feedbackId} {
       allow read: if isManager(request.auth.uid);
       allow create: if isOwner(request.resource.data.userId);
-      allow update: if isManager(request.auth.uid);
+      allow update: if isManager(request.auth.uid); // Managers can update status
       allow delete: if isManager(request.auth.uid);
     }
     match /events/{eventId} {
@@ -103,13 +103,11 @@ service cloud.firestore {
         allow write: if isManager(request.auth.uid);
     }
 
-
     // TEAM-WIDE PLANS (Writable by Managers)
     match /team-workplans/{planId} {
         allow read: if request.auth != null;
         allow write: if isManager(request.auth.uid);
     }
-
 
     // ALERTS (Corrected Rules)
     match /alerts/{alertId} {

@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import {
@@ -52,11 +50,8 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     if (!keyResults) return [];
 
     return keyResults.map(kr => {
-      let link = '/management/projects'; // Default link
-      if (kr.title?.includes('KR1')) link = '/plan';
-      if (kr.title?.includes('KR2')) link = '/plan';
+      let link = '/plan'; // Default link
       if (kr.title?.includes('KR3')) link = '/management/partnerships';
-      if (kr.title?.includes('KR4')) link = '/plan';
       
       return { ...kr, link };
     });

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -126,6 +125,7 @@ export function CheckoutForm() {
 
       } else {
         setDailyCheckin(null);
+        reset({tasks: [{description: 'General daily tasks', status: 'Done', reason: ''}], learning: '', tomorrowPlan: ''})
       }
     } catch (e) {
       console.error("Error fetching check-in:", e);
@@ -178,7 +178,7 @@ export function CheckoutForm() {
             title: 'Check-out Submitted!',
             description: 'Your impact report has been saved to the Team Stream.',
         });
-        reset();
+        reset({tasks: [], learning: '', tomorrowPlan: ''}); // Clear form on success
         router.push('/stream');
     } catch(e) {
         console.error("Failed to submit checkout", e)
@@ -197,11 +197,11 @@ export function CheckoutForm() {
 
   if (!dailyCheckin) {
       return (
-          <Alert variant="destructive">
+          <Alert>
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>No Check-in Found</AlertTitle>
+            <AlertTitle>No Check-in Found For Today</AlertTitle>
             <AlertDescription>
-                You must have a check-in for today to submit a checkout report. Please complete your daily plan first.
+                You can still submit a general checkout report.
             </AlertDescription>
          </Alert>
       )

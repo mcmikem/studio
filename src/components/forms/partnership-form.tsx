@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -267,5 +266,3 @@ export function PartnershipForm({
     </form>
   );
 }
-
-    

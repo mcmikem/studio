@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -37,9 +36,11 @@ export function QuickInsights({ activities }: { activities: Activity[] | null })
         }
 
         recentActivities.forEach(act => {
-            const weekStart = startOfWeek(act.loggedAt.toDate()).toISOString().split('T')[0];
-            if (weeklyCounts[weekStart] !== undefined) {
-              weeklyCounts[weekStart]++;
+            if (act.loggedAt?.toDate) {
+                const weekStart = startOfWeek(act.loggedAt.toDate()).toISOString().split('T')[0];
+                if (weeklyCounts[weekStart] !== undefined) {
+                  weeklyCounts[weekStart]++;
+                }
             }
         });
 
