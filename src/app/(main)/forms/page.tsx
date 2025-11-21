@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -8,10 +7,17 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight } from 'lucide-react';
+import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight, School } from 'lucide-react';
 import Link from 'next/link';
 
 const formLinks = [
+   {
+    href: '/forms/school',
+    title: 'School Program Application',
+    description: 'For schools to apply for Omuto programs.',
+    icon: School,
+    tab: 'school'
+  },
   {
     href: '/forms/check-in',
     title: 'Daily Check-in',

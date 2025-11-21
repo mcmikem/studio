@@ -103,6 +103,13 @@ service cloud.firestore {
         allow read: if request.auth != null;
         allow write: if isManager(request.auth.uid);
     }
+    
+    // SCHOOL APPLICATIONS (Public write, Manager read)
+    match /school-applications/{applicationId} {
+        allow read: if isManager(request.auth.uid);
+        allow create: if true; // Allow anyone to create an application
+        allow update, delete: if isManager(request.auth.uid);
+    }
 
 
     // TEAM-WIDE PLANS (Writable by Managers)
