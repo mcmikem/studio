@@ -237,6 +237,44 @@
         "loggedAt"
       ]
     },
+    "SchoolVisit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "School Visit",
+      "type": "object",
+      "description": "Represents a specific M&E school visit for the RED Campaign.",
+      "properties": {
+        "id": { "type": "string" },
+        "programId": { "type": "string", "description": "The ID of the program (e.g., RED Campaign)." },
+        "schoolName": { "type": "string" },
+        "dateOfVisit": { "type": "string", "format": "date" },
+        "objectivesMet": { "type": "string", "description": "Which specific objectives of the visit were achieved." },
+        "challengesObserved": { "type": "string", "description": "Any challenges or blockers observed during the visit." },
+        "teacherFeedback": { "type": "string", "description": "Summary of feedback from teachers." },
+        "studentFeedback": { "type": "string", "description": "Summary of feedback from students." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string", "description": "ID of the user who submitted the report." },
+        "userName": { "type": "string" }
+      },
+      "required": ["programId", "schoolName", "dateOfVisit", "objectivesMet", "userId", "userName", "createdAt"]
+    },
+    "TreeSurvivalSurvey": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Tree Survival Survey",
+      "type": "object",
+      "description": "Represents a follow-up survey to track tree survival for GreenSchools.",
+      "properties": {
+        "id": { "type": "string" },
+        "originalPlantingActivityId": { "type": "string", "description": "The ID of the initial tree planting activity." },
+        "surveyDate": { "type": "string", "format": "date" },
+        "numberOfTreesSurvived": { "type": "number" },
+        "conditionOfTrees": { "type": "string", "enum": ["Good", "Fair", "Poor"] },
+        "notes": { "type": "string", "description": "Observations on why trees survived or did not." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string", "description": "ID of the user who submitted the survey." },
+        "userName": { "type": "string" }
+      },
+      "required": ["originalPlantingActivityId", "surveyDate", "numberOfTreesSurvived", "conditionOfTrees", "userId", "userName", "createdAt"]
+    },
     "Checkout": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Checkout",
@@ -903,6 +941,20 @@
         "$ref": "#/entities/SchoolApplication"
       },
       "description": "Stores program applications submitted by schools."
+    },
+    "/school-visits/{visitId}": {
+      "schema": {
+        "$ref": "#/entities/SchoolVisit"
+      },
+      "description": "Stores M&E data from school visits."
+    },
+    "/tree-surveys/{surveyId}": {
+      "schema": {
+        "$ref": "#/entities/TreeSurvivalSurvey"
+      },
+      "description": "Stores data from tree survival follow-up surveys."
     }
   }
 }
+
+    

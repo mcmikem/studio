@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -7,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { BarChart3, ArrowRight } from 'lucide-react';
+import { BarChart3, ArrowRight, Leaf, Heart, BookOpen, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where } from 'firebase/firestore';
@@ -17,18 +18,26 @@ import { Skeleton } from '@/components/ui/skeleton';
 const programForms = [
   {
     programTitle: 'RED Campaign',
-    href: '/meal/red-campaign',
-    description: 'Log M&E data for RED Campaign activities (MHM sessions, pad distribution, etc.).',
+    icon: Heart,
+    forms: [
+        { title: 'Log ROI Activity', href: '/meal/red-campaign', description: 'Log a general activity for ROI calculation.'},
+        { title: 'School Visit M&E Form', href: '/meal/red-campaign/school-visit', description: 'Record observations from a school visit.'},
+    ]
   },
   {
     programTitle: 'GreenSchools Campaign',
-    href: '/meal/greenschools',
-    description: 'Log M&E data for GreenSchools activities (tree planting, club sessions, etc.).',
+    icon: Leaf,
+    forms: [
+        { title: 'Log ROI Activity', href: '/meal/greenschools', description: 'Log a general activity for ROI calculation.'},
+        { title: 'Tree Survival Survey', href: '/meal/greenschools/tree-survey', description: 'Conduct a follow-up on previously planted trees.'},
+    ]
   },
   {
     programTitle: 'YoSkills Entrepreneurship',
-    href: '/meal/yoskills',
-    description: 'Log M&E data for YoSkills activities (trainings, business support, etc.).',
+    icon: BookOpen,
+    forms: [
+        { title: 'Log ROI Activity', href: '/meal/yoskills', description: 'Log a general activity for ROI calculation.'},
+    ]
   },
 ];
 
@@ -41,7 +50,7 @@ export default function MealPage() {
 
   const { data: activePrograms, isLoading } = useCollection<Program>(activeProgramsQuery);
 
-  const availableForms = programForms.filter(form => 
+  const availableProgramForms = programForms.filter(form => 
     activePrograms?.some(p => p.title === form.programTitle)
   );
 
@@ -57,30 +66,39 @@ export default function MealPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="space-y-8">
         {isLoading && (
           <>
             <Skeleton className="h-48" />
             <Skeleton className="h-48" />
-            <Skeleton className="h-48" />
           </>
         )}
-        {!isLoading && availableForms.map(form => {
-          const program = activePrograms?.find(p => p.title === form.programTitle);
-          return (
-            <Link href={`${form.href}?programId=${program?.id}`} key={form.href}>
-              <Card className="hover:bg-muted/50 hover:border-primary/50 transition-all h-full flex flex-col">
+        {!isLoading && availableProgramForms.map(program => {
+            const programData = activePrograms?.find(p => p.title === program.programTitle);
+            return (
+              <Card key={program.programTitle}>
                 <CardHeader>
-                  <CardTitle>{form.programTitle}</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><program.icon className="h-6 w-6 text-primary" /> {program.programTitle}</CardTitle>
+                    <CardDescription>Select a form to log data for this program.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex-grow">
-                  <CardDescription>{form.description}</CardDescription>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {program.forms.map(form => (
+                     <Link href={`${form.href}?programId=${programData?.id}`} key={form.href}>
+                       <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
+                           <div>
+                               <p className="font-semibold">{form.title}</p>
+                               <p className="text-sm text-muted-foreground">{form.description}</p>
+                           </div>
+                           <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                       </div>
+                    </Link>
+                  ))}
                 </CardContent>
               </Card>
-            </Link>
-          );
+            )
         })}
       </div>
+
        <Card>
         <CardHeader>
             <CardTitle>Other Forms</CardTitle>
@@ -100,3 +118,5 @@ export default function MealPage() {
     </div>
   );
 }
+
+    
