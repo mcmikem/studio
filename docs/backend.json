@@ -1,5 +1,3 @@
-
-
 {
   "entities": {
     "User": {
@@ -207,6 +205,18 @@
         "trees_planted": {
             "type": "number",
             "description": "Number of trees planted during a GreenSchools activity."
+        },
+         "memorableMoment": {
+          "type": "string",
+          "description": "A memorable moment from the activity."
+        },
+        "challengesLearned": {
+          "type": "string",
+          "description": "Challenges faced and lessons learned."
+        },
+        "beneficiaryQuote": {
+          "type": "string",
+          "description": "A direct quote from a beneficiary."
         }
       },
       "required": [
@@ -896,11 +906,3 @@
     }
   }
 }
-    
-    
-
-
-
-    
-
-
