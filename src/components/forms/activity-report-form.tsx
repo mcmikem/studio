@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, Suspense } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -30,6 +30,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
 import { formatCurrency } from '@/lib/utils';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const multipliers = [
   { id: 'combine', label: 'Combining with another activity', value: 15000 },
@@ -38,7 +39,12 @@ const multipliers = [
   { id: 'process', label: 'Testing new process for replication', value: 30000 },
 ];
 
-export function ActivityReportForm() {
+function ActivityReportFormComponent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const programIdFromUrl = searchParams.get('programId');
+  const programNameFromUrl = searchParams.get('programName');
+
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const firestore = useFirestore();
@@ -100,9 +106,18 @@ export function ActivityReportForm() {
   }, [programs, selectedGoalId, goalType]);
   
   useEffect(() => {
-    setSelectedGoalId(null);
+    if (programIdFromUrl) {
+      setGoalType('Program');
+      setSelectedGoalId(programIdFromUrl);
+    }
+  }, [programIdFromUrl]);
+
+  useEffect(() => {
+    if (goalType === 'Program' && !programIdFromUrl) {
+      setSelectedGoalId(null);
+    }
     setGoalQuantity(0);
-  }, [goalType]);
+  }, [goalType, programIdFromUrl]);
 
   const preActivityCost = useMemo(
     () => transportCost + staffTimeCost + materialsCost,
@@ -204,19 +219,23 @@ export function ActivityReportForm() {
           description: `${activityName} has been saved.`,
         });
 
-        // Reset all fields after logging
-        setActivityName('');
-        setSelectedMultipliers([]);
-        setSelectedGoalId(null);
-        setKeyResultId(null);
-        setGoalQuantity(0);
-        setParentsAttended(0);
-        setTeachersAttended(0);
-        setTreesPlanted(0);
-        setMemorableMoment('');
-        setChallengesLearned('');
-        setBeneficiaryQuote('');
-        setCurrentTab("planning");
+        if (programIdFromUrl) {
+            router.push(`/management/programs/${programIdFromUrl}`);
+        } else {
+             // Reset all fields after logging if not coming from a specific program
+            setActivityName('');
+            setSelectedMultipliers([]);
+            setSelectedGoalId(null);
+            setKeyResultId(null);
+            setGoalQuantity(0);
+            setParentsAttended(0);
+            setTeachersAttended(0);
+            setTreesPlanted(0);
+            setMemorableMoment('');
+            setChallengesLearned('');
+            setBeneficiaryQuote('');
+            setCurrentTab("planning");
+        }
 
     } catch(e) {
         console.error(e);
@@ -263,7 +282,7 @@ export function ActivityReportForm() {
                 <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="primary-program">Program</Label>
                     {isLoading ? <Skeleton className="h-10 w-full" /> : (
-                        <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
+                        <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined} disabled={!!programIdFromUrl}>
                             <SelectTrigger id="primary-program">
                                 <SelectValue placeholder="Select a program..." />
                             </SelectTrigger>
@@ -326,7 +345,7 @@ export function ActivityReportForm() {
                 <h3 className="font-semibold">Primary Goal</h3>
                 <div className="space-y-2">
                     <Label htmlFor="goal-type">What type of goal is this?</Label>
-                    <Select onValueChange={(value: 'Metric' | 'Program') => setGoalType(value)} value={goalType}>
+                    <Select onValueChange={(value: 'Metric' | 'Program') => setGoalType(value)} value={goalType} disabled={!!programIdFromUrl}>
                         <SelectTrigger id="goal-type"><SelectValue placeholder="Select goal type..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="Metric">KPI Metric (e.g., # of students)</SelectItem>
@@ -468,4 +487,12 @@ export function ActivityReportForm() {
           </TabsContent>
       </Tabs>
   );
+}
+
+export function ActivityReportForm() {
+    return (
+        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+            <ActivityReportFormComponent />
+        </Suspense>
+    )
 }

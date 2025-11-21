@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -14,9 +15,11 @@ import { collection, query, where, orderBy } from 'firebase/firestore';
 import type { Program, Activity } from '@/lib/types';
 import { useMemo } from 'react';
 import { subDays, isAfter } from 'date-fns';
-import { Globe, TrendingUp, TrendingDown } from 'lucide-react';
+import { Globe, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 function EcosystemPulse({ activities, programs, isLoading }: { activities: Activity[] | null, programs: Program[] | null, isLoading: boolean }) {
 
@@ -134,6 +137,22 @@ export default function MealPage() {
           Monitoring, Evaluation, Accountability & Learning at a glance.
         </p>
       </header>
+
+      <Card>
+        <CardHeader>
+            <CardTitle>Program-Centric Data Collection</CardTitle>
+            <CardDescription>Data collection is now handled within each program's specific dashboard to ensure context and accuracy.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">Select a program to view its dashboard and log relevant data.</p>
+            <Button asChild>
+                <Link href="/management/programs">
+                    Go to Program Dashboards <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+        </CardContent>
+      </Card>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">

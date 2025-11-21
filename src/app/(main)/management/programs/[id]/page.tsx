@@ -6,7 +6,7 @@ import { doc } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FolderKanban, ArrowLeft } from 'lucide-react';
+import { FolderKanban, ArrowLeft, BarChart3, ClipboardEdit } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +37,7 @@ function ProgramDashboard() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-48" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Skeleton className="h-32" />
             <Skeleton className="h-32" />
@@ -107,14 +107,22 @@ function ProgramDashboard() {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-            <CardHeader>
-                <CardTitle>Linked Projects</CardTitle>
-                <CardDescription>All projects contributing to this program.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <p className="text-center text-muted-foreground py-12">Project linking coming soon.</p>
-            </CardContent>
+         <Card>
+          <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ClipboardEdit /> Data Collection Forms</CardTitle>
+              <CardDescription>Use these forms to log data for the {program.title} program.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+              <Link href={`/forms/activity?programId=${program.id}&programName=${encodeURIComponent(program.title)}`} className="block">
+                  <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                      <BarChart3 className="h-8 w-8 text-primary" />
+                      <div>
+                          <p className="font-semibold">Log a New Activity (ROI)</p>
+                          <p className="text-sm text-muted-foreground">Report a field activity and calculate its return on investment for this program.</p>
+                      </div>
+                  </div>
+              </Link>
+          </CardContent>
         </Card>
         <Card>
             <CardHeader>
