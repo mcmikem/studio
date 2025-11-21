@@ -15,31 +15,24 @@ import { collection, query, where } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const programForms = [
-  {
-    programTitle: 'RED Campaign',
-    icon: Heart,
-    forms: [
-        { title: 'Log ROI Activity', href: '/meal/red-campaign', description: 'Log a general activity for ROI calculation.'},
-        { title: 'School Visit M&E Form', href: '/meal/red-campaign/school-visit', description: 'Record observations from a school visit.'},
-    ]
-  },
-  {
-    programTitle: 'GreenSchools Campaign',
-    icon: Leaf,
-    forms: [
-        { title: 'Log ROI Activity', href: '/meal/greenschools', description: 'Log a general activity for ROI calculation.'},
-        { title: 'Tree Survival Survey', href: '/meal/greenschools/tree-survey', description: 'Conduct a follow-up on previously planted trees.'},
-    ]
-  },
-  {
-    programTitle: 'YoSkills Entrepreneurship',
-    icon: BookOpen,
-    forms: [
-        { title: 'Log ROI Activity', href: '/meal/yoskills', description: 'Log a general activity for ROI calculation.'},
-    ]
-  },
-];
+// Define a mapping for icons, this can be expanded
+const programIcons: { [key: string]: React.ElementType } = {
+  'RED Campaign': Heart,
+  'GreenSchools Campaign': Leaf,
+  'YoSkills Entrepreneurship': BookOpen,
+  default: BarChart3,
+};
+
+// Define the specific M&E forms for each program
+const programSpecificForms: { [key: string]: { title: string; href: string; description: string }[] } = {
+  'RED Campaign': [
+    { title: 'School Visit M&E Form', href: '/meal/red-campaign/school-visit', description: 'Record observations from a school visit.'},
+  ],
+  'GreenSchools Campaign': [
+    { title: 'Tree Survival Survey', href: '/meal/greenschools/tree-survey', description: 'Conduct a follow-up on previously planted trees.'},
+  ],
+};
+
 
 export default function MealPage() {
   const firestore = useFirestore();
@@ -49,10 +42,6 @@ export default function MealPage() {
   }, [firestore]);
 
   const { data: activePrograms, isLoading } = useCollection<Program>(activeProgramsQuery);
-
-  const availableProgramForms = programForms.filter(form => 
-    activePrograms?.some(p => p.title === form.programTitle)
-  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -73,17 +62,25 @@ export default function MealPage() {
             <Skeleton className="h-48" />
           </>
         )}
-        {!isLoading && availableProgramForms.map(program => {
-            const programData = activePrograms?.find(p => p.title === program.programTitle);
+        {!isLoading && activePrograms?.map(program => {
+            const ProgramIcon = programIcons[program.title] || programIcons.default;
+            const specificForms = programSpecificForms[program.title] || [];
+            
+            // Every program gets a standard ROI activity form
+            const allForms = [
+              { title: 'Log ROI Activity', href: `/forms/activity?programId=${program.id}&programName=${encodeURIComponent(program.title)}`, description: 'Log a general activity for ROI calculation.'},
+              ...specificForms
+            ];
+
             return (
-              <Card key={program.programTitle}>
+              <Card key={program.id}>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><program.icon className="h-6 w-6 text-primary" /> {program.programTitle}</CardTitle>
-                    <CardDescription>Select a form to log data for this program.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><ProgramIcon className="h-6 w-6 text-primary" /> {program.title}</CardTitle>
+                    <CardDescription>Select a form to log M&E data for this program.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {program.forms.map(form => (
-                     <Link href={`${form.href}?programId=${programData?.id}`} key={form.href}>
+                  {allForms.map(form => (
+                     <Link href={form.href} key={form.href}>
                        <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                            <div>
                                <p className="font-semibold">{form.title}</p>
@@ -102,6 +99,7 @@ export default function MealPage() {
        <Card>
         <CardHeader>
             <CardTitle>Other Forms</CardTitle>
+            <CardDescription>General forms not tied to a specific active program.</CardDescription>
         </CardHeader>
         <CardContent>
             <Link href="/forms/school">
@@ -118,5 +116,3 @@ export default function MealPage() {
     </div>
   );
 }
-
-    
