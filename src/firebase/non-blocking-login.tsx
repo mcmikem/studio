@@ -194,12 +194,10 @@ export function initiateEmailSignIn(
   email: string,
   password: string
 ) {
-  const db = getFirestore(authInstance.app)
   if (!isEmailApproved(email)) {
       throw new Error("This email address is not authorized to use this application.");
   }
   return signInWithEmailAndPassword(authInstance, email, password)
-    .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
       console.error("Email sign-in error:", error)
       throw error
@@ -221,7 +219,13 @@ export function initiateGoogleSignIn(authInstance: Auth) {
           "This email address is not authorized to use this application."
         );
       }
-      return createUserProfile(userCredential, db);
+      // Check for profile existence and create if needed, but don't re-seed for existing users.
+      const userRef = doc(db, 'users', userCredential.user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        return createUserProfile(userCredential, db);
+      }
+      return userCredential;
     })
     .catch((error) => {
       console.error("Google sign-in error:", error)
