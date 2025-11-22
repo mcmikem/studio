@@ -1,11 +1,11 @@
-
 'use client';
 
 import { useState } from 'react';
 import { useAuth } from '@/firebase';
-import { initiateEmailSignIn, initiateEmailSignUp, initiateGoogleSignIn, isEmailApproved } from '@/firebase/non-blocking-login';
+import { initiateEmailSignIn, initiateEmailSignUp, initiateGoogleSignIn, isEmailApproved, initiatePasswordReset } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FirebaseError } from 'firebase/app';
+import Link from 'next/link';
 
 const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -35,6 +36,71 @@ const GoogleIcon = () => (
     </svg>
   );
 
+
+function ForgotPasswordDialog() {
+  const auth = useAuth();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth || !email) return;
+    setLoading(true);
+    try {
+      await initiatePasswordReset(auth, email);
+      toast({
+        title: 'Password Reset Email Sent',
+        description: 'Please check your inbox for instructions to reset your password.',
+      });
+      setIsDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error Sending Email',
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogTrigger asChild>
+        <Button variant="link" className="px-0 h-auto">Forgot Password?</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Reset Password</DialogTitle>
+          <DialogDescription>
+            Enter your email address and we'll send you a link to reset your password.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handlePasswordReset} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="reset-email">Email</Label>
+            <Input
+              id="reset-email"
+              type="email"
+              placeholder="m@example.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+              Send Reset Link
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -169,6 +235,9 @@ export default function LoginPage() {
                     <div className="space-y-2">
                         <Label htmlFor="password-signin">Password</Label>
                         <Input id="password-signin" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                    </div>
+                     <div className="flex items-center justify-between text-sm">
+                        <ForgotPasswordDialog />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading === 'email'}>
                         {loading === 'email' && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}

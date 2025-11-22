@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  sendPasswordResetEmail,
   UserCredential,
 } from "firebase/auth"
 import {
@@ -231,4 +232,13 @@ export function initiateGoogleSignIn(authInstance: Auth) {
       }
       throw error
     })
+}
+
+/** Sends a password reset email to the user. */
+export function initiatePasswordReset(authInstance: Auth, email: string) {
+  return sendPasswordResetEmail(authInstance, email)
+    .catch((error) => {
+      console.error("Password reset error:", error);
+      throw error;
+    });
 }
