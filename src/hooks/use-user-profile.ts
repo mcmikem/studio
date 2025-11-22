@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -15,6 +16,7 @@ export function useUserProfile(user: AuthUser | null) {
       return doc(firestore, 'users', user.uid);
     }
     return null;
+  // Make dependency explicit on the user's UID for stability.
   }, [user?.uid, firestore]);
 
   const { data: profile, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);

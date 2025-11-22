@@ -1,3 +1,4 @@
+
 'use client';
 
 // This file serves as a barrel file for exporting all necessary Firebase
@@ -10,28 +11,40 @@ import { firebaseConfig } from './config';
 
 // --- Stable, Singleton Initialization ---
 let firebaseApp: FirebaseApp;
-if (!getApps().length) {
-  firebaseApp = initializeApp(firebaseConfig);
+let firestore: Firestore;
+let auth: Auth;
+
+if (typeof window !== 'undefined') {
+  if (!getApps().length) {
+    firebaseApp = initializeApp(firebaseConfig);
+  } else {
+    firebaseApp = getApp();
+  }
+
+  auth = getAuth(firebaseApp);
+  firestore = getFirestore(firebaseApp);
+
+  // Correctly handle the asynchronous nature of enableIndexedDbPersistence
+  enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED })
+    .catch((err) => {
+      if (err.code === 'failed-precondition') {
+        console.warn(
+          'Firestore offline persistence failed: Multiple tabs open. Persistence will be enabled in one tab only.'
+        );
+      } else if (err.code === 'unimplemented') {
+        console.warn(
+          'Firestore offline persistence failed: The current browser does not support all of the features required.'
+        );
+      }
+    });
 } else {
-  firebaseApp = getApp();
+    // Provide null or mock initializations for server-side rendering if necessary
+    // This branch helps prevent errors during server-side builds.
+    firebaseApp = null as any;
+    firestore = null as any;
+    auth = null as any;
 }
 
-const auth = getAuth(firebaseApp);
-const firestore = getFirestore(firebaseApp);
-
-try {
-    enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED });
-} catch (err: any) {
-    if (err.code === 'failed-precondition') {
-      console.warn(
-        'Firestore offline persistence failed: Multiple tabs open. Persistence will be enabled in one tab only.'
-      );
-    } else if (err.code === 'unimplemented') {
-      console.warn(
-        'Firestore offline persistence failed: The current browser does not support all of the features required.'
-      );
-    }
-}
 
 export function initializeFirebase() {
     return { firebaseApp, auth, firestore };
