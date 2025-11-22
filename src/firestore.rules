@@ -103,6 +103,25 @@ service cloud.firestore {
         allow read: if request.auth != null;
         allow write: if isManager(request.auth.uid);
     }
+    
+    // NEW MEAL COLLECTIONS
+    match /school-visits/{visitId} {
+       allow read: if request.auth != null;
+       allow create: if isOwner(request.resource.data.userId);
+       allow update, delete: if isOwner(resource.data.userId);
+    }
+    match /tree-surveys/{surveyId} {
+       allow read: if request.auth != null;
+       allow create: if isOwner(request.resource.data.userId);
+       allow update, delete: if isOwner(resource.data.userId);
+    }
+    
+    // SCHOOL APPLICATIONS (Public write, Manager read)
+    match /school-applications/{applicationId} {
+        allow read: if isManager(request.auth.uid);
+        allow create: if true; // Allow anyone to create an application
+        allow update, delete: if isManager(request.auth.uid);
+    }
 
 
     // TEAM-WIDE PLANS (Writable by Managers)

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -128,10 +127,10 @@ export default function ChatPage() {
           addDoc(aiChatsCollection, aiMessageData);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error with Omuto AI:', error);
       const errorMessageData = {
-          text: "I'm sorry, but I seem to be having trouble connecting to my brain right now. Please try again in a moment.",
+          text: `I'm sorry, I encountered a server error and couldn't complete your request. The technical details are: ${error.message}`,
           userId: 'omuto-ai',
           userName: 'Omuto AI',
           userAvatar: '',
