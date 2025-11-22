@@ -17,7 +17,7 @@ const TestimonyOutputSchema = z.object({
   transcription: z.string().describe("The full transcription of the testimony."),
   summary: z.string().describe("A concise one-paragraph summary of the testimony."),
   quotes: z.array(z.string()).describe("A list of 2-3 powerful, impactful quotes from the testimony."),
-  hashtags: z.array(z.string()).describe("A list of 3-5 relevant hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
+  hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 
 export type TestimonyInput = z.infer<typeof TestimonyInputSchema>;
@@ -88,3 +88,5 @@ const processTestimonyFlow = ai.defineFlow(
 export async function processTestimony(input: TestimonyInput): Promise<TestimonyOutput> {
     return processTestimonyFlow(input);
 }
+
+    
