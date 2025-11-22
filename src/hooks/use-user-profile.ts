@@ -12,18 +12,20 @@ export function useUserProfile(user: AuthUser | null) {
   const firestore = useFirestore();
 
   const userDocRef = useMemo(() => {
+    // Ensure both user UID and firestore instance are available.
     if (user?.uid && firestore) {
       return doc(firestore, 'users', user.uid);
     }
     return null;
-  // Make dependency explicit on the user's UID for stability.
+  // Make dependency explicit on the user's UID and the firestore instance.
   }, [user?.uid, firestore]);
 
   const { data: profile, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
 
-  // An additional check for when the user object is present but the profile doc is still loading.
+  // A more robust loading state check.
   const isLoading = isDocLoading || (!!user && !profile && !error);
   
 
   return { profile, isLoading, error };
 }
+

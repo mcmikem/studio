@@ -9,22 +9,22 @@ import { getFirestore, type Firestore, enableIndexedDbPersistence, CACHE_SIZE_UN
 import { getAuth, type Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// --- Stable, Singleton Initialization ---
-let firebaseApp: FirebaseApp;
-let firestore: Firestore;
-let auth: Auth;
+// This function is now designed to be called safely from within a React component's effect.
+export function initializeFirebase() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
 
-if (typeof window !== 'undefined') {
+  let firebaseApp: FirebaseApp;
   if (!getApps().length) {
     firebaseApp = initializeApp(firebaseConfig);
   } else {
     firebaseApp = getApp();
   }
 
-  auth = getAuth(firebaseApp);
-  firestore = getFirestore(firebaseApp);
+  const auth = getAuth(firebaseApp);
+  const firestore = getFirestore(firebaseApp);
 
-  // Correctly handle the asynchronous nature of enableIndexedDbPersistence
   enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED })
     .catch((err) => {
       if (err.code === 'failed-precondition') {
@@ -37,16 +37,7 @@ if (typeof window !== 'undefined') {
         );
       }
     });
-} else {
-    // Provide null or mock initializations for server-side rendering if necessary
-    // This branch helps prevent errors during server-side builds.
-    firebaseApp = null as any;
-    firestore = null as any;
-    auth = null as any;
-}
 
-
-export function initializeFirebase() {
     return { firebaseApp, auth, firestore };
 }
 
@@ -59,3 +50,4 @@ export * from './non-blocking-writes';
 export * from './errors';
 export * from './error-emitter';
 export * from './storage';
+

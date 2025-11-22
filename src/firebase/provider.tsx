@@ -10,10 +10,14 @@ import { initializeFirebase } from '@/firebase/index';
 
 // --- Context and State Definitions ---
 
+interface FirebaseServices {
+    firebaseApp: FirebaseApp;
+    firestore: Firestore;
+    auth: Auth;
+}
+
 interface FirebaseContextState {
-  firebaseApp: FirebaseApp | null;
-  firestore: Firestore | null;
-  auth: Auth | null;
+  services: FirebaseServices | null;
   user: User | null;
   isUserLoading: boolean;
   userError: Error | null;
@@ -28,17 +32,10 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  // Memoize the Firebase services to ensure they are initialized only once.
-  const services = useMemo(() => {
-    // This check is important to prevent re-initialization on every render.
-    if (typeof window !== 'undefined') {
-      return initializeFirebase();
-    }
-    return null;
-  }, []);
+  const [services, setServices] = useState<FirebaseServices | null>(null);
 
   const [userAuthState, setUserAuthState] = useState<{
-    user: User | null;
+    user: User | null; 
     isUserLoading: boolean;
     userError: Error | null;
   }>({
@@ -47,10 +44,22 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: null,
   });
 
+  // Effect for initializing Firebase services safely on the client
+  useEffect(() => {
+    // This check ensures initialization only happens on the client, and only once.
+    if (typeof window !== 'undefined' && !services) {
+      const initializedServices = initializeFirebase();
+      if (initializedServices) {
+          setServices(initializedServices);
+      }
+    }
+  }, [services]);
+
+
+  // Effect for listening to authentication state changes
   useEffect(() => {
     if (!services) return; // Don't run auth listener if services are not initialized
 
-    // Set up the auth state listener
     const unsubscribe = onAuthStateChanged(
       services.auth,
       (firebaseUser) => {
@@ -63,13 +72,11 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     );
 
     return () => unsubscribe();
-  }, [services]); // This effect depends only on the stable `services` object.
+  }, [services]);
 
   const contextValue = useMemo((): FirebaseContextState => {
     return {
-      firebaseApp: services?.firebaseApp || null,
-      firestore: services?.firestore || null,
-      auth: services?.auth || null,
+      services,
       user: userAuthState.user,
       isUserLoading: userAuthState.isUserLoading || !services,
       userError: userAuthState.userError,
@@ -92,16 +99,13 @@ export const useFirebaseServices = () => {
   if (context === undefined) {
     throw new Error('useFirebaseServices must be used within a FirebaseProvider.');
   }
-  const { firebaseApp, firestore, auth } = context;
-   // We throw an error only if the context is available but services are not yet initialized.
-   // This helps catch race conditions during development.
-  if (!firebaseApp || !firestore || !auth) {
-    // In a server component context, this might be expected. In client components, it's an issue.
+   if (!context.services) {
     if (typeof window !== 'undefined') {
         throw new Error('Firebase services are not yet available. This may be a race condition or an initialization error.');
     }
+    return { firebaseApp: null, firestore: null, auth: null };
   }
-  return { firebaseApp, firestore, auth };
+  return context.services;
 };
 
 export const useAuth = (): Auth | null => {
@@ -109,7 +113,7 @@ export const useAuth = (): Auth | null => {
   if (context === undefined) {
     throw new Error('useAuth must be used within a FirebaseProvider.');
   }
-  return context.auth;
+  return context.services?.auth ?? null;
 };
 
 export const useFirestore = (): Firestore | null => {
@@ -117,7 +121,7 @@ export const useFirestore = (): Firestore | null => {
   if (context === undefined) {
     throw new Error('useFirestore must be used within a FirebaseProvider.');
   }
-  return context.firestore;
+  return context.services?.firestore ?? null;
 };
 
 export const useFirebaseApp = (): FirebaseApp | null => {
@@ -125,7 +129,7 @@ export const useFirebaseApp = (): FirebaseApp | null => {
   if (context === undefined) {
     throw new Error('useFirebaseApp must be used within a FirebaseProvider.');
   }
-  return context.firebaseApp;
+  return context.services?.firebaseApp ?? null;
 };
 
 export const useUser = () => {
@@ -147,3 +151,4 @@ export function useMemoFirebase<T>(factory: () => T, deps: React.DependencyList)
     // eslint-disable-next-line react-hooks/exhaustive-deps
     return useMemo(factory, deps);
 }
+
