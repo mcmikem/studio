@@ -1,5 +1,4 @@
 
-
 {
   "entities": {
     "User": {
@@ -238,6 +237,44 @@
         "finalRoi",
         "loggedAt"
       ]
+    },
+    "SchoolVisit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "School Visit",
+      "type": "object",
+      "description": "Represents a specific M&E school visit for the RED Campaign.",
+      "properties": {
+        "id": { "type": "string" },
+        "programId": { "type": "string", "description": "The ID of the program (e.g., RED Campaign)." },
+        "schoolName": { "type": "string" },
+        "dateOfVisit": { "type": "string", "format": "date" },
+        "objectivesMet": { "type": "string", "description": "Which specific objectives of the visit were achieved." },
+        "challengesObserved": { "type": "string", "description": "Any challenges or blockers observed during the visit." },
+        "teacherFeedback": { "type": "string", "description": "Summary of feedback from teachers." },
+        "studentFeedback": { "type": "string", "description": "Summary of feedback from students." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string", "description": "ID of the user who submitted the report." },
+        "userName": { "type": "string" }
+      },
+      "required": ["programId", "schoolName", "dateOfVisit", "objectivesMet", "userId", "userName", "createdAt"]
+    },
+    "TreeSurvivalSurvey": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Tree Survival Survey",
+      "type": "object",
+      "description": "Represents a follow-up survey to track tree survival for GreenSchools.",
+      "properties": {
+        "id": { "type": "string" },
+        "originalPlantingActivityId": { "type": "string", "description": "The ID of the initial tree planting activity." },
+        "surveyDate": { "type": "string", "format": "date" },
+        "numberOfTreesSurvived": { "type": "number" },
+        "conditionOfTrees": { "type": "string", "enum": ["Good", "Fair", "Poor"] },
+        "notes": { "type": "string", "description": "Observations on why trees survived or did not." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string", "description": "ID of the user who submitted the survey." },
+        "userName": { "type": "string" }
+      },
+      "required": ["originalPlantingActivityId", "surveyDate", "numberOfTreesSurvived", "conditionOfTrees", "userId", "userName", "createdAt"]
     },
     "Checkout": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -741,6 +778,192 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["email", "schoolName", "schoolLocation", "schoolType", "studentCount", "contactName", "contactEmail", "contactPhone", "interestedPrograms", "sustainabilityPlan", "teacherSupport", "createdAt"]
+    },
+    "Beneficiary": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Beneficiary",
+      "description": "Represents a single beneficiary of Omuto's programs.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "age": { "type": "number" },
+        "village": { "type": "string" },
+        "programEnrolled": { "type": "string" },
+        "school": { "type": "string" },
+        "phone": { "type": "string" },
+        "guardianContact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "age", "village", "programEnrolled", "createdAt"]
+    },
+    "AttendanceRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Attendance Record",
+      "description": "Represents a single attendance record for a participant at an event or session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "participantName": { "type": "string" },
+        "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+        "age": { "type": "number" },
+        "schoolOrCommunity": { "type": "string" },
+        "contact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["eventName", "date", "participantName", "gender", "age", "schoolOrCommunity", "createdAt"]
+    },
+    "PadsDistribution": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Pads Distribution",
+      "description": "Log for distributing sanitary pads.",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "school": { "type": "string" },
+        "numberOfPads": { "type": "number" },
+        "girlsReached": { "type": "number" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["date", "school", "numberOfPads", "girlsReached", "userId"]
+    },
+    "MhmTraining": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MHM Training",
+      "description": "Attendance for a Menstrual Health Management training session.",
+      "type": "object",
+      "properties": {
+        "session": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "participants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "age": { "type": "number" },
+              "class": { "type": "string" }
+            },
+            "required": ["name", "age"]
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["session", "date", "participants", "userId"]
+    },
+    "EnvironmentalClub": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Environmental Club",
+        "description": "Registration for a new GreenSchools environmental club.",
+        "type": "object",
+        "properties": {
+            "schoolName": { "type": "string" },
+            "clubName": { "type": "string" },
+            "membersCount": { "type": "number" },
+            "leaderName": { "type": "string" },
+            "leaderContact": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "userId": { "type": "string" }
+        },
+        "required": ["schoolName", "clubName", "membersCount", "leaderName", "userId"]
+    },
+    "WasteAudit": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Waste Audit",
+        "description": "A waste audit report for a school.",
+        "type": "object",
+        "properties": {
+            "schoolName": { "type": "string" },
+            "date": { "type": "string", "format": "date" },
+            "wasteSources": { "type": "string", "description": "Main sources of waste found." },
+            "disposalMethod": { "type": "string", "description": "Current method of waste disposal." },
+            "recommendations": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "userId": { "type": "string" }
+        },
+        "required": ["schoolName", "date", "wasteSources", "disposalMethod", "userId"]
+    },
+    "SLF_School": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "SLF School",
+        "description": "Registration for a school in the Student Leaders Forum.",
+        "type": "object",
+        "properties": {
+            "schoolName": { "type": "string" },
+            "contactTeacher": { "type": "string" },
+            "phone": { "type": "string" },
+            "enrollmentSize": { "type": "number" },
+            "location": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["schoolName", "contactTeacher", "enrollmentSize", "location"]
+    },
+    "SLF_Prefect": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "SLF Prefect",
+        "description": "Registration for a prefect in the Student Leaders Forum.",
+        "type": "object",
+        "properties": {
+            "schoolId": { "type": "string" },
+            "schoolName": { "type": "string" },
+            "name": { "type": "string" },
+            "position": { "type": "string" },
+            "class": { "type": "string" },
+            "age": { "type": "number" },
+            "gender": { "type": "string" },
+            "phone": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["schoolId", "name", "position", "age", "gender"]
+    },
+    "SLF_Training": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "SLF Training Attendance",
+        "description": "Attendance record for an SLF training session.",
+        "type": "object",
+        "properties": {
+            "schoolId": { "type": "string" },
+            "schoolName": { "type": "string" },
+            "session": { "type": "string" },
+            "date": { "type": "string", "format": "date" },
+            "attendees": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "prefectId": { "type": "string" },
+                        "prefectName": { "type": "string" },
+                        "attended": { "type": "boolean" }
+                    }
+                }
+            },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["schoolId", "session", "date", "attendees"]
+    },
+    "PrefectPerformance": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Prefect Performance",
+        "description": "Monthly performance tracking for a prefect.",
+        "type": "object",
+        "properties": {
+            "prefectId": { "type": "string" },
+            "prefectName": { "type": "string" },
+            "schoolId": { "type": "string" },
+            "month": { "type": "string", "description": "e.g., '2025-11'" },
+            "visibilityScore": { "type": "number", "description": "Rating 1-5" },
+            "disciplineScore": { "type": "number", "description": "Rating 1-5" },
+            "leadershipScore": { "type": "number", "description": "Rating 1-5" },
+            "achievements": { "type": "string" },
+            "teacherFeedback": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["prefectId", "month", "visibilityScore", "disciplineScore", "leadershipScore"]
     }
   },
   "auth": {
@@ -905,15 +1128,66 @@
         "$ref": "#/entities/SchoolApplication"
       },
       "description": "Stores program applications submitted by schools."
+    },
+    "/school-visits/{visitId}": {
+      "schema": {
+        "$ref": "#/entities/SchoolVisit"
+      },
+      "description": "Stores M&E data from school visits."
+    },
+    "/tree-surveys/{surveyId}": {
+      "schema": {
+        "$ref": "#/entities/TreeSurvivalSurvey"
+      },
+      "description": "Stores data from tree survival follow-up surveys."
+    },
+    "/beneficiaries/{beneficiaryId}": {
+      "schema": {
+        "$ref": "#/entities/Beneficiary"
+      },
+      "description": "Stores profiles of program beneficiaries."
+    },
+    "/attendance-records/{recordId}": {
+      "schema": {
+        "$ref": "#/entities/AttendanceRecord"
+      },
+      "description": "Stores attendance records for events and sessions."
+    },
+    "/pads-distributions/{distributionId}": {
+      "schema": {
+        "$ref": "#/entities/PadsDistribution"
+      },
+      "description": "Logs for sanitary pad distributions."
+    },
+    "/mhm-trainings/{trainingId}": {
+      "schema": {
+        "$ref": "#/entities/MhmTraining"
+      },
+      "description": "Attendance logs for MHM training sessions."
+    },
+    "/environmental-clubs/{clubId}": {
+        "schema": { "$ref": "#/entities/EnvironmentalClub" },
+        "description": "Registration for GreenSchools environmental clubs."
+    },
+    "/waste-audits/{auditId}": {
+        "schema": { "$ref": "#/entities/WasteAudit" },
+        "description": "Waste audit reports for schools."
+    },
+    "/slf-schools/{schoolId}": {
+        "schema": { "$ref": "#/entities/SLF_School" },
+        "description": "Schools registered for the Student Leaders Forum."
+    },
+    "/slf-prefects/{prefectId}": {
+        "schema": { "$ref": "#/entities/SLF_Prefect" },
+        "description": "Prefects registered for the Student Leaders Forum."
+    },
+    "/slf-trainings/{trainingId}": {
+        "schema": { "$ref": "#/entities/SLF_Training" },
+        "description": "Attendance for SLF training sessions."
+    },
+    "/prefect-performance/{performanceId}": {
+        "schema": { "$ref": "#/entities/PrefectPerformance" },
+        "description": "Monthly performance tracking for prefects."
     }
   }
 }
-    
-    
-
-
-
-    
-
-
-

@@ -456,3 +456,92 @@ export type AttendanceRecord = {
     contact?: string;
     createdAt: Timestamp;
 }
+
+export type PadsDistribution = {
+    id: string;
+    date: string;
+    school: string;
+    numberOfPads: number;
+    girlsReached: number;
+    notes?: string;
+    createdAt: Timestamp;
+    userId: string;
+}
+
+export type MhmTraining = {
+    id: string;
+    session: string;
+    date: string;
+    participants: { name: string; age: number; class?: string; }[];
+    createdAt: Timestamp;
+    userId: string;
+}
+
+export type EnvironmentalClub = {
+    id: string;
+    schoolName: string;
+    clubName: string;
+    membersCount: number;
+    leaderName: string;
+    leaderContact?: string;
+    createdAt: Timestamp;
+    userId: string;
+}
+
+export type WasteAudit = {
+    id: string;
+    schoolName: string;
+    date: string;
+    wasteSources: string;
+    disposalMethod: string;
+    recommendations?: string;
+    createdAt: Timestamp;
+    userId: string;
+}
+
+export type SLF_School = {
+    id: string;
+    schoolName: string;
+    contactTeacher: string;
+    phone: string;
+    enrollmentSize: number;
+    location: string;
+    createdAt: Timestamp;
+}
+
+export type SLF_Prefect = {
+    id: string;
+    schoolId: string;
+    schoolName: string;
+    name: string;
+    position: string;
+    class: string;
+    age: number;
+    gender: 'Male' | 'Female' | 'Other';
+    phone?: string;
+    createdAt: Timestamp;
+}
+
+export type SLF_Training = {
+    id: string;
+    schoolId: string;
+    schoolName: string;
+    session: string;
+    date: string;
+    attendees: { prefectId: string; prefectName: string; attended: boolean }[];
+    createdAt: Timestamp;
+}
+
+export type PrefectPerformance = {
+    id: string;
+    prefectId: string;
+    prefectName: string;
+    schoolId: string;
+    month: string;
+    visibilityScore: number;
+    disciplineScore: number;
+    leadershipScore: number;
+    achievements?: string;
+    teacherFeedback?: string;
+    createdAt: Timestamp;
+}
