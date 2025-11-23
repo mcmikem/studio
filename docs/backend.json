@@ -777,6 +777,42 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["email", "schoolName", "schoolLocation", "schoolType", "studentCount", "contactName", "contactEmail", "contactPhone", "interestedPrograms", "sustainabilityPlan", "teacherSupport", "createdAt"]
+    },
+    "Beneficiary": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Beneficiary",
+      "description": "Represents a single beneficiary of Omuto's programs.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "age": { "type": "number" },
+        "village": { "type": "string" },
+        "programEnrolled": { "type": "string" },
+        "school": { "type": "string" },
+        "phone": { "type": "string" },
+        "guardianContact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "age", "village", "programEnrolled", "createdAt"]
+    },
+    "AttendanceRecord": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Attendance Record",
+      "description": "Represents a single attendance record for a participant at an event or session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventName": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "participantName": { "type": "string" },
+        "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+        "age": { "type": "number" },
+        "schoolOrCommunity": { "type": "string" },
+        "contact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["eventName", "date", "participantName", "gender", "age", "schoolOrCommunity", "createdAt"]
     }
   },
   "auth": {
@@ -953,8 +989,18 @@
         "$ref": "#/entities/TreeSurvivalSurvey"
       },
       "description": "Stores data from tree survival follow-up surveys."
+    },
+    "/beneficiaries/{beneficiaryId}": {
+      "schema": {
+        "$ref": "#/entities/Beneficiary"
+      },
+      "description": "Stores profiles of program beneficiaries."
+    },
+    "/attendance-records/{recordId}": {
+      "schema": {
+        "$ref": "#/entities/AttendanceRecord"
+      },
+      "description": "Stores attendance records for events and sessions."
     }
   }
 }
-
-    

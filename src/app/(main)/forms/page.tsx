@@ -7,7 +7,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight, School } from 'lucide-react';
+import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight, School, UserPlus, Users } from 'lucide-react';
 import Link from 'next/link';
 
 const formLinks = [
@@ -17,6 +17,18 @@ const formLinks = [
     description: 'For schools to apply for Omuto programs.',
     icon: School,
     tab: 'school'
+  },
+  {
+    href: '/forms/attendance',
+    title: 'Session Attendance',
+    description: 'Track participants reached in any session or event.',
+    icon: Users,
+  },
+  {
+    href: '/forms/beneficiary-registration',
+    title: 'Beneficiary Registration',
+    description: 'Create a new profile for a program beneficiary.',
+    icon: UserPlus,
   },
   {
     href: '/forms/check-in',
@@ -31,13 +43,6 @@ const formLinks = [
     description: 'Report your impact and share key learnings.',
     icon: LogOut,
     tab: 'check-out'
-  },
-  {
-    href: '/forms/activity',
-    title: 'Activity Report (ROI)',
-    description: 'Log a field activity and calculate its return on investment.',
-    icon: BarChart3,
-    tab: 'activity'
   },
   {
     href: '/forms/expense',
