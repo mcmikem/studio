@@ -55,7 +55,7 @@ const processTestimonyFlow = ai.defineFlow(
     const llmResponse = await ai.generate({
         model: 'googleai/gemini-2.5-flash',
         prompt: `Please transcribe the following audio. The audio is a testimony from a beneficiary of an NGO in Uganda. Capture the speech as accurately as possible. If there is more than one speaker, try to differentiate them.
-        {{media url=mediaUri}}
+        {{media url=mediaUri type="video/webm"}}
         `,
         input: {
           mediaUri: input.mediaUri
@@ -87,3 +87,5 @@ const processTestimonyFlow = ai.defineFlow(
 export async function processTestimony(input: TestimonyInput): Promise<TestimonyOutput> {
     return processTestimonyFlow(input);
 }
+
+    

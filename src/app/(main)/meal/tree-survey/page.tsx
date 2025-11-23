@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -48,8 +49,6 @@ function TreeSurveyFormComponent() {
 
   const plantingActivitiesQuery = useMemoFirebase(() => {
       if (!firestore) return null;
-      // This logic is slightly flawed as it assumes the primaryGoalId is the program name, not ID.
-      // For now, we filter activities that have the 'trees_planted' field.
       return query(
           collection(firestore, 'activities'),
           where('trees_planted', '>', 0),
@@ -187,3 +186,5 @@ export default function TreeSurveyPage() {
         </Suspense>
     )
 }
+
+    

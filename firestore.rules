@@ -99,6 +99,9 @@ service cloud.firestore {
       allow update: if isManager(request.auth.uid);
       allow delete: if isManager(request.auth.uid);
     }
+    match /community-feedback/{feedbackId} {
+       allow read, write: if request.auth != null;
+    }
     match /events/{eventId} {
         allow read: if request.auth != null;
         allow write: if isManager(request.auth.uid);
