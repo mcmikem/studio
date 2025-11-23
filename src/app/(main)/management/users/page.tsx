@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -41,7 +40,6 @@ const userRoles = [
     'Operations & Field Manager',
     'Resource Mobilization Lead',
     'Media & Communications Lead',
-    'Media & Finance Lead',
     'Field Coordinator',
     'Administrator',
     'Intern',

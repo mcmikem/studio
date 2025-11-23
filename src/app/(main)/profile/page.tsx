@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -47,7 +46,7 @@ function RecentUserCheckouts() {
   const { user } = useUser();
 
   const checkoutsQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || !firestore) return null;
     return query(
       collection(firestore, 'checkouts'),
       where('userId', '==', user.uid),
