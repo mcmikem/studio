@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -934,7 +935,6 @@
         "properties": {
             "id": { "type": "string" },
             "schoolName": { "type": "string" },
-            "headTeacherName": { "type": "string" },
             "contactTeacher": { "type": "string" },
             "phone": { "type": "string" },
             "enrollmentSize": { "type": "number" },
@@ -1645,3 +1645,4 @@
   }
 }
 
+    
