@@ -145,3 +145,16 @@ function SchoolVisitFormComponent() {
 
 export default function RedSchoolVisitPage() {
     return (
+        <Suspense>
+            <div className="space-y-4">
+                <Button variant="outline" asChild>
+                    <Link href="/meal">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to MEAL Hub
+                    </Link>
+                </Button>
+                <SchoolVisitFormComponent />
+            </div>
+        </Suspense>
+    );
+}
