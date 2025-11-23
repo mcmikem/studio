@@ -49,10 +49,11 @@ function TreeSurveyFormComponent() {
 
   const plantingActivitiesQuery = useMemoFirebase(() => {
       if (!firestore) return null;
+      // Simplified query to avoid needing a composite index.
+      // We filter for activities with trees_planted and order by when they were logged.
       return query(
           collection(firestore, 'activities'),
           where('trees_planted', '>', 0),
-          orderBy('trees_planted', 'desc'),
           orderBy('loggedAt', 'desc')
       );
   }, [firestore]);
@@ -92,82 +93,90 @@ function TreeSurveyFormComponent() {
   };
 
   return (
-    <Card>
-        <CardHeader>
-            <div className="flex items-center gap-4">
-                <Leaf className="h-8 w-8 text-primary" />
-                <div>
-                    <CardTitle>GreenSchools Tree Survival Survey</CardTitle>
-                    <CardDescription>Log follow-up data on a previous tree planting activity.</CardDescription>
+    <div className="space-y-4">
+        <Button variant="outline" asChild>
+            <Link href="/meal">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to MEAL Hub
+            </Link>
+        </Button>
+        <Card>
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <Leaf className="h-8 w-8 text-primary" />
+                    <div>
+                        <CardTitle>GreenSchools Tree Survival Survey</CardTitle>
+                        <CardDescription>Log follow-up data on a previous tree planting activity.</CardDescription>
+                    </div>
                 </div>
-            </div>
-      </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-6">
-            <div className="space-y-2">
-                <Label htmlFor="originalPlantingActivityId">Original Planting Activity</Label>
-                {isLoading ? <Skeleton className="h-10" /> : (
-                <Controller
-                    name="originalPlantingActivityId"
-                    control={control}
-                    render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger><SelectValue placeholder="Select the planting activity..." /></SelectTrigger>
-                        <SelectContent>
-                            {plantingActivities?.map(act => (
-                                <SelectItem key={act.id} value={act.id}>
-                                    {act.title} ({formatDateSafe(act.loggedAt, 'dateOnly')})
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    )}
-                />
-                )}
-                {errors.originalPlantingActivityId && <p className="text-sm text-destructive">{errors.originalPlantingActivityId.message}</p>}
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          </CardHeader>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <CardContent className="space-y-6">
                 <div className="space-y-2">
-                    <Label htmlFor="numberOfTreesSurvived">Number of Trees Survived</Label>
-                    <Input id="numberOfTreesSurvived" type="number" {...register('numberOfTreesSurvived')} placeholder="e.g., 120" />
-                    {errors.numberOfTreesSurvived && <p className="text-sm text-destructive">{errors.numberOfTreesSurvived.message}</p>}
+                    <Label htmlFor="originalPlantingActivityId">Original Planting Activity</Label>
+                    {isLoading ? <Skeleton className="h-10" /> : (
+                    <Controller
+                        name="originalPlantingActivityId"
+                        control={control}
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger><SelectValue placeholder="Select the planting activity..." /></SelectTrigger>
+                            <SelectContent>
+                                {plantingActivities?.map(act => (
+                                    <SelectItem key={act.id} value={act.id}>
+                                        {act.title} ({formatDateSafe(act.loggedAt, 'dateOnly')})
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        )}
+                    />
+                    )}
+                    {errors.originalPlantingActivityId && <p className="text-sm text-destructive">{errors.originalPlantingActivityId.message}</p>}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="numberOfTreesSurvived">Number of Trees Survived</Label>
+                        <Input id="numberOfTreesSurvived" type="number" {...register('numberOfTreesSurvived')} placeholder="e.g., 120" />
+                        {errors.numberOfTreesSurvived && <p className="text-sm text-destructive">{errors.numberOfTreesSurvived.message}</p>}
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="surveyDate">Date of Survey</Label>
+                        <Input id="surveyDate" type="date" {...register('surveyDate')} />
+                        {errors.surveyDate && <p className="text-sm text-destructive">{errors.surveyDate.message}</p>}
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="conditionOfTrees">General Condition of Trees</Label>
+                    <Controller
+                        name="conditionOfTrees"
+                        control={control}
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger><SelectValue placeholder="Select condition..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Good">Good (Healthy and growing well)</SelectItem>
+                                <SelectItem value="Fair">Fair (Some signs of stress, but alive)</SelectItem>
+                                <SelectItem value="Poor">Poor (Unhealthy, unlikely to survive)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        )}
+                    />
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="surveyDate">Date of Survey</Label>
-                    <Input id="surveyDate" type="date" {...register('surveyDate')} />
-                    {errors.surveyDate && <p className="text-sm text-destructive">{errors.surveyDate.message}</p>}
+                    <Label htmlFor="notes">Notes / Observations</Label>
+                    <Textarea id="notes" {...register('notes')} placeholder="e.g., Some trees affected by drought, others are thriving. Local community has been watering them..." className="min-h-[100px]" />
                 </div>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="conditionOfTrees">General Condition of Trees</Label>
-                <Controller
-                    name="conditionOfTrees"
-                    control={control}
-                    render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger><SelectValue placeholder="Select condition..." /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Good">Good (Healthy and growing well)</SelectItem>
-                            <SelectItem value="Fair">Fair (Some signs of stress, but alive)</SelectItem>
-                            <SelectItem value="Poor">Poor (Unhealthy, unlikely to survive)</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    )}
-                />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="notes">Notes / Observations</Label>
-                <Textarea id="notes" {...register('notes')} placeholder="e.g., Some trees affected by drought, others are thriving. Local community has been watering them..." className="min-h-[100px]" />
-            </div>
-        </CardContent>
-        <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Survey Data
-            </Button>
-        </CardFooter>
-      </form>
-    </Card>
+            </CardContent>
+            <CardFooter>
+                <Button type="submit" disabled={isSubmitting} className="w-full">
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Survey Data
+                </Button>
+            </CardFooter>
+          </form>
+        </Card>
+    </div>
   );
 }
 
