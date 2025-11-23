@@ -178,5 +178,3 @@ export default function TreeSurveyPage() {
         </Suspense>
     )
 }
-
-    

@@ -40,7 +40,7 @@ type VisitFormData = z.infer<typeof schoolVisitSchema>;
 function SchoolVisitFormComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const programId = searchParams.get('programId');
+  const programId = "RED_CAMPAIGN_ID"; // Hardcoded for now
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const firestore = useFirestore();
@@ -150,5 +150,3 @@ export default function RedSchoolVisitPage() {
         </Suspense>
     )
 }
-
-    
