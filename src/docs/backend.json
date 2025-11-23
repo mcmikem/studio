@@ -821,6 +821,7 @@
       "description": "Log for distributing sanitary pads.",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "date": { "type": "string", "format": "date" },
         "school": { "type": "string" },
         "numberOfPads": { "type": "number" },
@@ -829,7 +830,7 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "userId": { "type": "string" }
       },
-      "required": ["date", "school", "numberOfPads", "girlsReached", "userId"]
+      "required": ["date", "school", "numberOfPads", "girlsReached", "userId", "createdAt"]
     },
     "MhmTraining": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -837,6 +838,7 @@
       "description": "Attendance for a Menstrual Health Management training session.",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "session": { "type": "string" },
         "date": { "type": "string", "format": "date" },
         "participants": {
@@ -854,7 +856,7 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "userId": { "type": "string" }
       },
-      "required": ["session", "date", "participants", "userId"]
+      "required": ["session", "date", "participants", "userId", "createdAt"]
     },
     "EnvironmentalClub": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -862,6 +864,7 @@
         "description": "Registration for a new GreenSchools environmental club.",
         "type": "object",
         "properties": {
+            "id": { "type": "string" },
             "schoolName": { "type": "string" },
             "clubName": { "type": "string" },
             "membersCount": { "type": "number" },
@@ -870,7 +873,7 @@
             "createdAt": { "type": "string", "format": "date-time" },
             "userId": { "type": "string" }
         },
-        "required": ["schoolName", "clubName", "membersCount", "leaderName", "userId"]
+        "required": ["schoolName", "clubName", "membersCount", "leaderName", "userId", "createdAt"]
     },
     "WasteAudit": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -878,6 +881,7 @@
         "description": "A waste audit report for a school.",
         "type": "object",
         "properties": {
+            "id": { "type": "string" },
             "schoolName": { "type": "string" },
             "date": { "type": "string", "format": "date" },
             "wasteSources": { "type": "string", "description": "Main sources of waste found." },
@@ -886,7 +890,7 @@
             "createdAt": { "type": "string", "format": "date-time" },
             "userId": { "type": "string" }
         },
-        "required": ["schoolName", "date", "wasteSources", "disposalMethod", "userId"]
+        "required": ["schoolName", "date", "wasteSources", "disposalMethod", "userId", "createdAt"]
     },
     "SLF_School": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -894,6 +898,7 @@
         "description": "Registration for a school in the Student Leaders Forum.",
         "type": "object",
         "properties": {
+            "id": { "type": "string" },
             "schoolName": { "type": "string" },
             "contactTeacher": { "type": "string" },
             "phone": { "type": "string" },
@@ -901,7 +906,7 @@
             "location": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["schoolName", "contactTeacher", "enrollmentSize", "location"]
+        "required": ["schoolName", "contactTeacher", "enrollmentSize", "location", "createdAt"]
     },
     "SLF_Prefect": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -909,6 +914,7 @@
         "description": "Registration for a prefect in the Student Leaders Forum.",
         "type": "object",
         "properties": {
+            "id": { "type": "string" },
             "schoolId": { "type": "string" },
             "schoolName": { "type": "string" },
             "name": { "type": "string" },
@@ -919,7 +925,7 @@
             "phone": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["schoolId", "name", "position", "age", "gender"]
+        "required": ["schoolId", "name", "position", "age", "gender", "createdAt"]
     },
     "SLF_Training": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -927,6 +933,7 @@
         "description": "Attendance record for an SLF training session.",
         "type": "object",
         "properties": {
+            "id": { "type": "string" },
             "schoolId": { "type": "string" },
             "schoolName": { "type": "string" },
             "session": { "type": "string" },
@@ -944,7 +951,7 @@
             },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["schoolId", "session", "date", "attendees"]
+        "required": ["schoolId", "session", "date", "attendees", "createdAt"]
     },
     "PrefectPerformance": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -952,6 +959,7 @@
         "description": "Monthly performance tracking for a prefect.",
         "type": "object",
         "properties": {
+            "id": { "type": "string" },
             "prefectId": { "type": "string" },
             "prefectName": { "type": "string" },
             "schoolId": { "type": "string" },
@@ -963,7 +971,102 @@
             "teacherFeedback": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["prefectId", "month", "visibilityScore", "disciplineScore", "leadershipScore"]
+        "required": ["prefectId", "month", "visibilityScore", "disciplineScore", "leadershipScore", "createdAt"]
+    },
+    "YoSkillsCircle": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YoSkills Circle",
+      "description": "An entrepreneurship circle under the YoSkills program.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "circleName": { "type": "string" },
+        "coach": { "type": "string" },
+        "location": { "type": "string" },
+        "membersCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["circleName", "coach", "location", "membersCount"]
+    },
+    "YoSkillsYouth": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YoSkills Youth",
+      "description": "A youth participant in the YoSkills program.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "circleId": { "type": "string" },
+        "name": { "type": "string" },
+        "age": { "type": "number" },
+        "phone": { "type": "string" },
+        "educationLevel": { "type": "string" },
+        "businessInterest": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["circleId", "name", "age", "businessInterest"]
+    },
+    "YoSkillsSession": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YoSkills Session",
+      "description": "Attendance for a YoSkills circle session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "circleId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "topic": { "type": "string" },
+        "membersPresent": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["circleId", "date", "topic", "membersPresent"]
+    },
+    "BusinessIdea": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Business Idea",
+      "description": "A business idea submitted by a YoSkills participant.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "youthId": { "type": "string" },
+        "businessName": { "type": "string" },
+        "problemSolved": { "type": "string" },
+        "targetCustomer": { "type": "string" },
+        "revenueIdea": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["youthId", "businessName", "problemSolved", "targetCustomer"]
+    },
+    "PitchScore": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Pitch Score",
+      "description": "Scores for a business idea pitch.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessIdeaId": { "type": "string" },
+        "ideaClarity": { "type": "number" },
+        "feasibility": { "type": "number" },
+        "communityBenefit": { "type": "number" },
+        "totalScore": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessIdeaId", "ideaClarity", "feasibility", "communityBenefit"]
+    },
+    "BusinessProgress": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Business Progress",
+      "description": "Monthly progress tracking for a YoSkills business.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessIdeaId": { "type": "string" },
+        "month": { "type": "string" },
+        "monthlySales": { "type": "number" },
+        "challenges": { "type": "string" },
+        "supportNeeded": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessIdeaId", "month", "monthlySales"]
     }
   },
   "auth": {
@@ -1188,6 +1291,30 @@
     "/prefect-performance/{performanceId}": {
         "schema": { "$ref": "#/entities/PrefectPerformance" },
         "description": "Monthly performance tracking for prefects."
+    },
+    "/yoskills-circles/{circleId}": {
+      "schema": { "$ref": "#/entities/YoSkillsCircle" },
+      "description": "Entrepreneurship circles in the YoSkills program."
+    },
+    "/yoskills-youth/{youthId}": {
+      "schema": { "$ref": "#/entities/YoSkillsYouth" },
+      "description": "Youth participants in the YoSkills program."
+    },
+    "/yoskills-sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/YoSkillsSession" },
+      "description": "Attendance records for YoSkills sessions."
+    },
+    "/business-ideas/{ideaId}": {
+      "schema": { "$ref": "#/entities/BusinessIdea" },
+      "description": "Business ideas submitted by YoSkills participants."
+    },
+    "/pitch-scores/{scoreId}": {
+      "schema": { "$ref": "#/entities/PitchScore" },
+      "description": "Scores for business idea pitches."
+    },
+    "/business-progress/{progressId}": {
+      "schema": { "$ref": "#/entities/BusinessProgress" },
+      "description": "Monthly progress reports for YoSkills businesses."
     }
   }
 }
