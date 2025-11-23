@@ -47,6 +47,7 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
   "partnerships@omuto.org": { name: "John Paul Akera", role: "Resource Mobilization Lead" },
   "volunteer@omuto.org": { name: "Volunteer User", role: "Volunteer" },
   "intern@omuto.org": { name: "Intern User", role: "Intern" },
+  "info@omuto.org": { name: "Omuto Admin", role: "Administrator" },
 }
 
 export const isEmailApproved = (email: string | null): boolean => {
@@ -246,3 +247,5 @@ export function initiatePasswordReset(authInstance: Auth, email: string) {
       throw error;
     });
 }
+
+    
