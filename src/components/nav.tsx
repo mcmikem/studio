@@ -31,6 +31,10 @@ import {
   Receipt,
   FileSignature,
   LifeBuoy,
+  Heart,
+  Swords,
+  Droplets,
+  Store,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -87,6 +91,9 @@ const navConfig = {
      { href: '/record-testimony', icon: Video, label: 'Record Testimony' },
      { href: '/testimonies', icon: FileText, label: 'Testimony Library' },
      { href: '/reports', icon: BarChart3, label: 'Reports' },
+     { href: '/talents', icon: Swords, label: 'Omuto Talents' },
+     { href: '/essentials', icon: Store, label: 'Omuto Essentials' },
+     { href: '/pulse', icon: Rss, label: 'Pulse Content' },
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },

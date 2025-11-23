@@ -676,18 +676,16 @@
         "type": "object",
         "properties": {
             "id": { "type": "string" },
-            "title": { "type": "string" },
-            "text": { "type": "string", "description": "Transcribed text of the testimony." },
-            "summary": { "type": "string", "description": "AI-generated summary of the testimony." },
-            "quotes": { "type": "array", "items": { "type": "string" }, "description": "AI-extracted key quotes." },
-            "hashtags": { "type": "array", "items": { "type": "string" }, "description": "AI-suggested social media hashtags." },
-            "userId": { "type": "string", "description": "ID of the user who recorded the testimony." },
-            "userName": { "type": "string", "description": "Name of the user who recorded the testimony." },
-            "videoUrl": { "type": "string", "format": "uri", "description": "URL to the recorded video file." },
-            "audioUrl": { "type": "string", "format": "uri", "description": "URL to the recorded audio file." },
+            "beneficiaryName": { "type": "string" },
+            "project": { "type": "string" },
+            "beforeSituation": { "type": "string" },
+            "afterSituation": { "type": "string" },
+            "quote": { "type": "string" },
+            "mediaUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+            "consentSigned": { "type": "boolean" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["title", "userId", "userName", "createdAt"]
+        "required": ["beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt"]
     },
     "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -787,15 +785,17 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "age": { "type": "number" },
+        "dob": { "type": "string", "format": "date", "description": "Date of Birth" },
+        "gender": { "type": "string", "enum": ["Male", "Female"] },
         "village": { "type": "string" },
         "programEnrolled": { "type": "string" },
         "school": { "type": "string" },
         "phone": { "type": "string" },
         "guardianContact": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "age", "village", "programEnrolled", "createdAt"]
+      "required": ["name", "dob", "gender", "village", "programEnrolled", "createdAt"]
     },
     "AttendanceRecord": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -811,9 +811,44 @@
         "age": { "type": "number" },
         "schoolOrCommunity": { "type": "string" },
         "contact": { "type": "string" },
+        "signature": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["eventName", "date", "participantName", "gender", "age", "schoolOrCommunity", "createdAt"]
+      "required": ["eventName", "date", "participantName", "gender", "age", "signature", "createdAt"]
+    },
+    "BaselineSurvey": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Baseline Survey",
+        "description": "Captures pre-program status of a beneficiary.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "beneficiaryId": { "type": "string" },
+            "surveyDate": { "type": "string", "format": "date" },
+            "skillLevel": { "type": "number", "description": "Rating from 1-10" },
+            "monthlyIncome": { "type": "number" },
+            "primaryChallenge": { "type": "string" },
+            "programGoals": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["beneficiaryId", "surveyDate", "skillLevel", "primaryChallenge", "programGoals", "createdAt"]
+    },
+    "EndlineSurvey": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Endline Survey",
+        "description": "Captures post-program status of a beneficiary.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "beneficiaryId": { "type": "string" },
+            "surveyDate": { "type": "string", "format": "date" },
+            "skillLevel": { "type": "number", "description": "Rating from 1-10" },
+            "monthlyIncome": { "type": "number" },
+            "changesNoticed": { "type": "string" },
+            "satisfaction": { "type": "number", "description": "Rating from 1-5" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["beneficiaryId", "surveyDate", "skillLevel", "changesNoticed", "satisfaction", "createdAt"]
     },
     "PadsDistribution": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1067,6 +1102,109 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["businessIdeaId", "month", "monthlySales"]
+    },
+    "OFAPlayer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Player",
+      "description": "A player registered in the Omuto Football Alliance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "team": { "type": "string" },
+        "dob": { "type": "string", "format": "date" },
+        "position": { "type": "string", "enum": ["GK", "DEF", "MID", "FWD"] },
+        "jerseyNumber": { "type": "number" },
+        "photoUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fullName", "team", "dob", "position"]
+    },
+    "OFAMatch": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Match",
+      "description": "A match report for the Omuto Football Alliance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "homeTeam": { "type": "string" },
+        "awayTeam": { "type": "string" },
+        "homeScore": { "type": "number" },
+        "awayScore": { "type": "number" },
+        "goalScorers": { "type": "string" },
+        "cards": { "type": "string" },
+        "referee": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "homeTeam", "awayTeam", "homeScore", "awayScore"]
+    },
+    "PulseContent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Omuto Pulse Content",
+      "description": "A content submission for Omuto Pulse.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "contentTitle": { "type": "string" },
+        "format": { "type": "string", "enum": ["Video", "Podcast", "Article", "Photo"] },
+        "link": { "type": "string", "format": "uri" },
+        "description": { "type": "string" },
+        "dateCreated": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["creatorName", "contentTitle", "format", "link", "dateCreated"]
+    },
+    "ProductionLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Production Log",
+      "description": "A log for Omuto Essentials production.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "batchNumber": { "type": "string" },
+        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
+        "date": { "type": "string", "format": "date" },
+        "quantity": { "type": "number" },
+        "materialsUsed": { "type": "string" },
+        "producedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["batchNumber", "product", "date", "quantity", "producedBy"]
+    },
+    "Sale": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Sale",
+      "description": "A sales record for Omuto Essentials.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "salesAgent": { "type": "string" },
+        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
+        "quantity": { "type": "number" },
+        "unitPrice": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["Cash", "Mobile Money"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "salesAgent", "product", "quantity", "unitPrice", "totalAmount"]
+    },
+    "InventoryCheck": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Inventory Check",
+      "description": "An inventory check for Omuto Essentials.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
+        "physicalCount": { "type": "number" },
+        "discrepancyReason": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "product", "physicalCount"]
     }
   },
   "auth": {
@@ -1256,6 +1394,14 @@
       },
       "description": "Stores attendance records for events and sessions."
     },
+    "/baseline-surveys/{surveyId}": {
+      "schema": { "$ref": "#/entities/BaselineSurvey" },
+      "description": "Stores pre-program baseline data for beneficiaries."
+    },
+    "/endline-surveys/{surveyId}": {
+        "schema": { "$ref": "#/entities/EndlineSurvey" },
+        "description": "Stores post-program endline data for beneficiaries."
+    },
     "/pads-distributions/{distributionId}": {
       "schema": {
         "$ref": "#/entities/PadsDistribution"
@@ -1315,6 +1461,30 @@
     "/business-progress/{progressId}": {
       "schema": { "$ref": "#/entities/BusinessProgress" },
       "description": "Monthly progress reports for YoSkills businesses."
+    },
+    "/ofa-players/{playerId}": {
+        "schema": { "$ref": "#/entities/OFAPlayer" },
+        "description": "Player registrations for Omuto Football Alliance."
+    },
+    "/ofa-matches/{matchId}": {
+        "schema": { "$ref": "#/entities/OFAMatch" },
+        "description": "Match reports for Omuto Football Alliance."
+    },
+    "/pulse-content/{contentId}": {
+        "schema": { "$ref": "#/entities/PulseContent" },
+        "description": "Content submissions for Omuto Pulse."
+    },
+    "/essentials-production/{logId}": {
+        "schema": { "$ref": "#/entities/ProductionLog" },
+        "description": "Production logs for Omuto Essentials."
+    },
+    "/essentials-sales/{saleId}": {
+        "schema": { "$ref": "#/entities/Sale" },
+        "description": "Sales records for Omuto Essentials."
+    },
+    "/essentials-inventory/{checkId}": {
+        "schema": { "$ref": "#/entities/InventoryCheck" },
+        "description": "Inventory checks for Omuto Essentials."
     }
   }
 }

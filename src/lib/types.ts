@@ -322,18 +322,17 @@ export type Message = {
 };
 
 export type Testimony = {
-    id: string;
-    title: string;
-    text?: string;
-    summary?: string;
-    quotes?: string[];
-    hashtags?: string[];
-    userId: string;
-    userName: string;
-    videoUrl?: string;
-    audioUrl?: string;
-    createdAt: Timestamp;
+  id: string;
+  beneficiaryName: string;
+  project: string;
+  beforeSituation: string;
+  afterSituation: string;
+  quote: string;
+  mediaUrls: string[];
+  consentSigned: boolean;
+  createdAt: Timestamp;
 };
+
 
 export type Checklist = {
   id: string;
@@ -436,12 +435,14 @@ export type TreeSurvivalSurvey = {
 export type Beneficiary = {
     id: string;
     name: string;
-    age: number;
+    dob: string;
+    gender: 'Male' | 'Female';
     village: string;
     programEnrolled: string;
     school?: string;
     phone?: string;
     guardianContact?: string;
+    photoURL?: string;
     createdAt: Timestamp;
 }
 
@@ -452,8 +453,31 @@ export type AttendanceRecord = {
     participantName: string;
     gender: 'Male' | 'Female' | 'Other';
     age: number;
-    schoolOrCommunity: string;
+    schoolOrCommunity?: string;
     contact?: string;
+    signature: boolean;
+    createdAt: Timestamp;
+}
+
+export type BaselineSurvey = {
+    id: string;
+    beneficiaryId: string;
+    surveyDate: string;
+    skillLevel: number;
+    monthlyIncome?: number;
+    primaryChallenge: string;
+    programGoals: string;
+    createdAt: Timestamp;
+}
+
+export type EndlineSurvey = {
+    id: string;
+    beneficiaryId: string;
+    surveyDate: string;
+    skillLevel: number;
+    monthlyIncome?: number;
+    changesNoticed: string;
+    satisfaction: number;
     createdAt: Timestamp;
 }
 
@@ -545,3 +569,129 @@ export type PrefectPerformance = {
     teacherFeedback?: string;
     createdAt: Timestamp;
 }
+
+export type YoSkillsCircle = {
+  id: string;
+  circleName: string;
+  coach: string;
+  location: string;
+  membersCount: number;
+  createdAt: Timestamp;
+}
+
+export type YoSkillsYouth = {
+  id: string;
+  circleId: string;
+  name: string;
+  age: number;
+  phone: string;
+  educationLevel: string;
+  businessInterest: string;
+  createdAt: Timestamp;
+}
+
+export type YoSkillsSession = {
+  id: string;
+  circleId: string;
+  date: string;
+  topic: string;
+  membersPresent: string[];
+  createdAt: Timestamp;
+}
+
+export type BusinessIdea = {
+  id: string;
+  youthId: string;
+  businessName: string;
+  problemSolved: string;
+  targetCustomer: string;
+  revenueIdea: string;
+  createdAt: Timestamp;
+}
+
+export type PitchScore = {
+  id: string;
+  businessIdeaId: string;
+  ideaClarity: number;
+  feasibility: number;
+  communityBenefit: number;
+  totalScore: number;
+  createdAt: Timestamp;
+}
+
+export type BusinessProgress = {
+  id: string;
+  businessIdeaId: string;
+  month: string;
+  monthlySales: number;
+  challenges: string;
+  supportNeeded: string;
+  createdAt: Timestamp;
+}
+
+export type OFAPlayer = {
+  id: string;
+  fullName: string;
+  team: string;
+  dob: string;
+  position: "GK" | "DEF" | "MID" | "FWD";
+  jerseyNumber: number;
+  photoUrl?: string;
+  createdAt: Timestamp;
+};
+
+export type OFAMatch = {
+  id: string;
+  date: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  goalScorers?: string;
+  cards?: string;
+  referee?: string;
+  createdAt: Timestamp;
+};
+
+export type PulseContent = {
+  id: string;
+  creatorName: string;
+  contentTitle: string;
+  format: "Video" | "Podcast" | "Article" | "Photo";
+  link: string;
+  description?: string;
+  dateCreated: string;
+  createdAt: Timestamp;
+};
+
+export type ProductionLog = {
+  id: string;
+  batchNumber: string;
+  product: "Liquid Soap" | "Aloe Wash" | "Other";
+  date: string;
+  quantity: number;
+  materialsUsed?: string;
+  producedBy: string;
+  createdAt: Timestamp;
+};
+
+export type Sale = {
+  id: string;
+  date: string;
+  salesAgent: string;
+  product: "Liquid Soap" | "Aloe Wash" | "Other";
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+  paymentMethod: "Cash" | "Mobile Money";
+  createdAt: Timestamp;
+};
+
+export type InventoryCheck = {
+  id: string;
+  date: string;
+  product: "Liquid Soap" | "Aloe Wash" | "Other";
+  physicalCount: number;
+  discrepancyReason?: string;
+  createdAt: Timestamp;
+};

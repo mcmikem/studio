@@ -104,7 +104,7 @@ service cloud.firestore {
         allow write: if isManager(request.auth.uid);
     }
     
-    // MEAL / DATA COLLECTION - Simplified for team access
+    // MEAL / DATA COLLECTION - Open access for any authenticated user
     match /school-visits/{visitId} {
        allow read, write: if request.auth != null;
     }
@@ -115,6 +115,12 @@ service cloud.firestore {
         allow read, write: if request.auth != null;
     }
      match /attendance-records/{recordId} {
+        allow read, write: if request.auth != null;
+    }
+     match /baseline-surveys/{surveyId} {
+        allow read, write: if request.auth != null;
+    }
+     match /endline-surveys/{surveyId} {
         allow read, write: if request.auth != null;
     }
     match /pads-distributions/{distributionId} {
@@ -141,11 +147,48 @@ service cloud.firestore {
     match /prefect-performance/{performanceId} {
        allow read, write: if request.auth != null;
     }
-    
+     match /yoskills-circles/{circleId} {
+      allow read, write: if request.auth != null;
+    }
+    match /yoskills-youth/{youthId} {
+      allow read, write: if request.auth != null;
+    }
+    match /yoskills-sessions/{sessionId} {
+      allow read, write: if request.auth != null;
+    }
+    match /business-ideas/{ideaId} {
+      allow read, write: if request.auth != null;
+    }
+    match /pitch-scores/{scoreId} {
+      allow read, write: if request.auth != null;
+    }
+    match /business-progress/{progressId} {
+      allow read, write: if request.auth != null;
+    }
+     match /ofa-players/{playerId} {
+      allow read, write: if request.auth != null;
+    }
+    match /ofa-matches/{matchId} {
+      allow read, write: if request.auth != null;
+    }
+    match /pulse-content/{contentId} {
+      allow read, write: if request.auth != null;
+    }
+    match /essentials-production/{logId} {
+      allow read, write: if request.auth != null;
+    }
+    match /essentials-sales/{saleId} {
+      allow read, write: if request.auth != null;
+    }
+    match /essentials-inventory/{checkId} {
+      allow read, write: if request.auth != null;
+    }
+
+
     // SCHOOL APPLICATIONS (Public write, Logged-in read)
     match /school-applications/{applicationId} {
-        allow read: if request.auth != null;
-        allow create: if true; // Allow anyone to create an application
+        allow read: if isManager(request.auth.uid);
+        allow create: if true;
         allow update, delete: if isManager(request.auth.uid);
     }
 
