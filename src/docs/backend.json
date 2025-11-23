@@ -670,35 +670,23 @@
         "required": ["text", "userId", "userName", "createdAt"]
     },
     "Testimony": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Testimony",
-      "description": "A recorded testimony, which can be text, audio, or video.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "beneficiaryName": { "type": "string" },
-        "project": { "type": "string" },
-        "beforeSituation": { "type": "string" },
-        "afterSituation": { "type": "string" },
-        "quote": { "type": "string" },
-        "mediaUrls": {
-          "type": "array",
-          "items": { "type": "string", "format": "uri" }
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Testimony",
+        "description": "A recorded testimony, which can be text, audio, or video.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "beneficiaryName": { "type": "string" },
+            "project": { "type": "string" },
+            "beforeSituation": { "type": "string" },
+            "afterSituation": { "type": "string" },
+            "quote": { "type": "string" },
+            "mediaUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+            "consentSigned": { "type": "boolean" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "userId": { "type": "string" }
         },
-        "consentSigned": { "type": "boolean" },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "userId": { "type": "string" }
-      },
-      "required": [
-        "beneficiaryName",
-        "project",
-        "beforeSituation",
-        "afterSituation",
-        "quote",
-        "consentSigned",
-        "createdAt",
-        "userId"
-      ]
+        "required": ["beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt", "userId"]
     },
     "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1657,7 +1645,3 @@
     }
   }
 }
-
-    
-
-    
