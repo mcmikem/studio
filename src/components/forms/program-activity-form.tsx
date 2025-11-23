@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect, Suspense } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, useDoc } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, ArrowLeft, BarChart3 } from 'lucide-react';
