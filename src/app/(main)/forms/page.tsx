@@ -3,9 +3,9 @@
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight, School, UserPlus, Users } from 'lucide-react';
 import Link from 'next/link';
@@ -64,34 +64,35 @@ const formLinks = [
 export default function FormsPage() {
 
   return (
-     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-          <ClipboardEdit className="h-8 w-8" />
+     
+      
+        
+          
           Forms Hub
-        </h1>
-        <p className="text-muted-foreground">
+        
+        
           Your central place for all daily reports, and logs.
-        </p>
-      </header>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+      
+      
         {formLinks.map(link => (
-          <Link href={link.href} key={link.href}>
-            <Card className="hover:bg-muted/50 hover:border-primary/50 transition-all h-full flex flex-col">
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                    <link.icon className="h-8 w-8 text-primary" />
-                    <CardTitle>{link.title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <CardDescription>{link.description}</CardDescription>
-              </CardContent>
-            </Card>
-          </Link>
+          
+            
+              
+                
+                    
+                    {link.title}
+                
+              
+              
+                {link.description}
+              
+            
+          
         ))}
-      </div>
-    </div>
+      
+    
   );
 }
+
+    

@@ -1,5 +1,3 @@
-
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -408,3 +406,53 @@ export type HealthCheck = {
     checkedBy: string;
     createdAt: Timestamp;
 };
+
+export type SchoolVisit = {
+    id: string;
+    programId: string;
+    schoolName: string;
+    dateOfVisit: string;
+    objectivesMet: string;
+    challengesObserved?: string;
+    teacherFeedback?: string;
+    studentFeedback?: string;
+    createdAt: Timestamp;
+    userId: string;
+    userName: string;
+};
+
+export type TreeSurvivalSurvey = {
+    id: string;
+    originalPlantingActivityId: string;
+    surveyDate: string;
+    numberOfTreesSurvived: number;
+    conditionOfTrees: "Good" | "Fair" | "Poor";
+    notes?: string;
+    createdAt: Timestamp;
+    userId: string;
+    userName: string;
+};
+
+export type Beneficiary = {
+    id: string;
+    name: string;
+    age: number;
+    village: string;
+    programEnrolled: string;
+    school?: string;
+    phone?: string;
+    guardianContact?: string;
+    createdAt: Timestamp;
+}
+
+export type AttendanceRecord = {
+    id: string;
+    eventName: string;
+    date: string;
+    participantName: string;
+    gender: 'Male' | 'Female' | 'Other';
+    age: number;
+    schoolOrCommunity: string;
+    contact?: string;
+    createdAt: Timestamp;
+}

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -49,15 +48,15 @@ function TreeSurveyFormComponent() {
 
   const plantingActivitiesQuery = useMemoFirebase(() => {
       if (!firestore) return null;
-      // Simplified query to avoid needing a composite index.
-      // We filter for activities with trees_planted and order by when they were logged.
       return query(
           collection(firestore, 'activities'),
-          where('trees_planted', '>', 0),
           orderBy('loggedAt', 'desc')
       );
   }, [firestore]);
-  const { data: plantingActivities, isLoading } = useCollection<Activity>(plantingActivitiesQuery);
+  
+  const { data: allActivities, isLoading } = useCollection<Activity>(plantingActivitiesQuery);
+
+  const plantingActivities = allActivities?.filter(act => act.trees_planted && act.trees_planted > 0);
 
   const { register, handleSubmit, control, formState: { errors, isSubmitting } } = useForm<SurveyFormData>({
     resolver: zodResolver(treeSurveySchema),

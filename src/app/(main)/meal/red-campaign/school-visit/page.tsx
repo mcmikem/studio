@@ -145,8 +145,3 @@ function SchoolVisitFormComponent() {
 
 export default function RedSchoolVisitPage() {
     return (
-        <Suspense>
-            <SchoolVisitFormComponent />
-        </Suspense>
-    )
-}
