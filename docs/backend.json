@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "User": {
@@ -849,6 +848,487 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["beneficiaryId", "surveyDate", "skillLevel", "changesNoticed", "satisfaction", "createdAt"]
+    },
+    "PadsDistribution": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Pads Distribution",
+      "description": "Log for distributing sanitary pads.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "school": { "type": "string" },
+        "numberOfPads": { "type": "number" },
+        "girlsReached": { "type": "number" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["date", "school", "numberOfPads", "girlsReached", "userId", "createdAt"]
+    },
+    "MhmTraining": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MHM Training",
+      "description": "Attendance for a Menstrual Health Management training session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "session": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "participants": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "age": { "type": "number" },
+              "class": { "type": "string" }
+            },
+            "required": ["name", "age"]
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["session", "date", "participants", "userId", "createdAt"]
+    },
+    "EnvironmentalClub": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Environmental Club",
+        "description": "Registration for a new GreenSchools environmental club.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "schoolName": { "type": "string" },
+            "clubName": { "type": "string" },
+            "membersCount": { "type": "number" },
+            "leaderName": { "type": "string" },
+            "leaderContact": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "userId": { "type": "string" }
+        },
+        "required": ["schoolName", "clubName", "membersCount", "leaderName", "userId", "createdAt"]
+    },
+    "WasteAudit": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Waste Audit",
+        "description": "A waste audit report for a school.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "schoolName": { "type": "string" },
+            "date": { "type": "string", "format": "date" },
+            "wasteSources": { "type": "string", "description": "Main sources of waste found." },
+            "disposalMethod": { "type": "string", "description": "Current method of waste disposal." },
+            "recommendations": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" },
+            "userId": { "type": "string" }
+        },
+        "required": ["schoolName", "date", "wasteSources", "disposalMethod", "userId", "createdAt"]
+    },
+    "SLF_School": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "SLF School",
+        "description": "Registration for a school in the Student Leaders Forum.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "schoolName": { "type": "string" },
+            "headTeacherName": { "type": "string" },
+            "contactTeacher": { "type": "string" },
+            "phone": { "type": "string" },
+            "enrollmentSize": { "type": "number" },
+            "location": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["schoolName", "contactTeacher", "enrollmentSize", "location", "createdAt"]
+    },
+    "SLF_Prefect": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "SLF Prefect",
+        "description": "Registration for a prefect in the Student Leaders Forum.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "schoolId": { "type": "string" },
+            "schoolName": { "type": "string" },
+            "name": { "type": "string" },
+            "position": { "type": "string" },
+            "class": { "type": "string" },
+            "age": { "type": "number" },
+            "gender": { "type": "string" },
+            "phone": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["schoolId", "name", "position", "age", "gender", "createdAt"]
+    },
+    "SLF_Training": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "SLF Training Attendance",
+        "description": "Attendance record for an SLF training session.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "schoolId": { "type": "string" },
+            "schoolName": { "type": "string" },
+            "session": { "type": "string" },
+            "date": { "type": "string", "format": "date" },
+            "attendees": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "prefectId": { "type": "string" },
+                        "prefectName": { "type": "string" },
+                        "attended": { "type": "boolean" }
+                    }
+                }
+            },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["schoolId", "session", "date", "attendees", "createdAt"]
+    },
+    "PrefectPerformance": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Prefect Performance",
+        "description": "Monthly performance tracking for a prefect.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "prefectId": { "type": "string" },
+            "prefectName": { "type": "string" },
+            "schoolId": { "type": "string" },
+            "month": { "type": "string", "description": "e.g., '2025-11'" },
+            "visibilityScore": { "type": "number", "description": "Rating 1-5" },
+            "disciplineScore": { "type": "number", "description": "Rating 1-5" },
+            "initiativeScore": { "type": "number", "description": "Rating 1-5" },
+            "teacherComments": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["prefectId", "month", "visibilityScore", "disciplineScore", "initiativeScore", "createdAt"]
+    },
+    "YoSkillsCircle": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YoSkills Circle",
+      "description": "An entrepreneurship circle under the YoSkills program.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "circleName": { "type": "string" },
+        "coach": { "type": "string" },
+        "location": { "type": "string" },
+        "membersCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["circleName", "coach", "location", "membersCount"]
+    },
+    "YoSkillsYouth": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YoSkills Youth",
+      "description": "A youth participant in the YoSkills program.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "circleId": { "type": "string" },
+        "name": { "type": "string" },
+        "age": { "type": "number" },
+        "phone": { "type": "string" },
+        "educationLevel": { "type": "string" },
+        "businessInterest": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["circleId", "name", "age", "businessInterest"]
+    },
+    "YoSkillsSession": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YoSkills Session",
+      "description": "Attendance for a YoSkills circle session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "circleId": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "topic": { "type": "string" },
+        "membersPresent": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["circleId", "date", "topic", "membersPresent"]
+    },
+    "BusinessIdea": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Business Idea",
+      "description": "A business idea submitted by a YoSkills participant.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "youthId": { "type": "string" },
+        "businessName": { "type": "string" },
+        "problemSolved": { "type": "string" },
+        "targetCustomer": { "type": "string" },
+        "startupCapitalNeeded": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["youthId", "businessName", "problemSolved", "targetCustomer", "startupCapitalNeeded"]
+    },
+    "PitchScore": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Pitch Score",
+      "description": "Scores for a business idea pitch.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessIdeaId": { "type": "string" },
+        "judgeName": { "type": "string" },
+        "innovation": { "type": "number" },
+        "feasibility": { "type": "number" },
+        "scalability": { "type": "number" },
+        "totalScore": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessIdeaId", "judgeName", "innovation", "feasibility", "scalability", "totalScore"]
+    },
+    "BusinessProgress": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Business Progress",
+      "description": "Monthly progress tracking for a YoSkills business.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "businessIdeaId": { "type": "string" },
+        "month": { "type": "string" },
+        "monthlySales": { "type": "number" },
+        "challenges": { "type": "string" },
+        "supportNeeded": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["businessIdeaId", "month", "monthlySales"]
+    },
+    "OFAPlayer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Player",
+      "description": "A player registered in the Omuto Football Alliance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "team": { "type": "string" },
+        "dob": { "type": "string", "format": "date" },
+        "position": { "type": "string", "enum": ["GK", "DEF", "MID", "FWD"] },
+        "jerseyNumber": { "type": "number" },
+        "photoUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fullName", "team", "dob", "position"]
+    },
+    "OFAMatch": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Match",
+      "description": "A match report for the Omuto Football Alliance.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "homeTeam": { "type": "string" },
+        "awayTeam": { "type": "string" },
+        "homeScore": { "type": "number" },
+        "awayScore": { "type": "number" },
+        "goalScorers": { "type": "string" },
+        "cards": { "type": "string" },
+        "referee": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "homeTeam", "awayTeam", "homeScore", "awayScore"]
+    },
+    "PulseContent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Omuto Pulse Content",
+      "description": "A content submission for Omuto Pulse.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "contentTitle": { "type": "string" },
+        "format": { "type": "string", "enum": ["Video", "Podcast", "Article", "Photo"] },
+        "link": { "type": "string", "format": "uri" },
+        "description": { "type": "string" },
+        "dateCreated": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["creatorName", "contentTitle", "format", "link", "dateCreated"]
+    },
+    "ProductionLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Production Log",
+      "description": "A log for Omuto Essentials production.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "batchNumber": { "type": "string" },
+        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
+        "date": { "type": "string", "format": "date" },
+        "quantity": { "type": "number" },
+        "materialsUsed": { "type": "string" },
+        "producedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["batchNumber", "product", "date", "quantity", "producedBy"]
+    },
+    "Sale": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Sale",
+      "description": "A sales record for Omuto Essentials.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "salesAgent": { "type": "string" },
+        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
+        "quantity": { "type": "number" },
+        "unitPrice": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["Cash", "Mobile Money"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "salesAgent", "product", "quantity", "unitPrice", "totalAmount"]
+    },
+    "InventoryCheck": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Inventory Check",
+      "description": "An inventory check for Omuto Essentials.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
+        "physicalCount": { "type": "number" },
+        "discrepancyReason": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "product", "physicalCount"]
+    },
+    "WaterSource": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Water Source",
+      "description": "A mapped water source for the PureWater Initiative.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sourceName": { "type": "string" },
+        "type": { "type": "string", "enum": ["Borehole", "Spring", "Tap", "Rainwater"] },
+        "gpsCoordinates": { "type": "string" },
+        "functional": { "type": "boolean" },
+        "photoUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["sourceName", "type", "functional", "createdAt"]
+    },
+    "WASH_Assessment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WASH Assessment",
+      "description": "A WASH assessment for a school.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "school": { "type": "string" },
+        "handwashingStations": { "type": "number" },
+        "soapAvailable": { "type": "boolean" },
+        "latrineCondition": { "type": "string", "enum": ["Good", "Fair", "Poor"] },
+        "assessorComments": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["school", "handwashingStations", "soapAvailable", "latrineCondition", "createdAt"]
+    },
+    "YAP_Chapter": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YAP Chapter",
+      "description": "A registered chapter in the Youth Action Pathway.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "chapterName": { "type": "string" },
+        "location": { "type": "string" },
+        "leader": { "type": "string" },
+        "membersCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chapterName", "location", "leader", "membersCount", "createdAt"]
+    },
+    "YAP_Report": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YAP Monthly Report",
+      "description": "A monthly report from a YAP chapter.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "chapterId": { "type": "string" },
+        "month": { "type": "string" },
+        "activities": { "type": "string" },
+        "attendance": { "type": "number" },
+        "outcomes": { "type": "string" },
+        "challenges": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chapterId", "month", "activities", "attendance", "outcomes", "createdAt"]
+    },
+    "SeedGrantApplication": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Seed Grant Application",
+      "description": "An application for a seed grant.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicantName": { "type": "string" },
+        "projectTitle": { "type": "string" },
+        "budgetSummaryUrl": { "type": "string", "format": "uri" },
+        "amountRequested": { "type": "number" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["applicantName", "projectTitle", "amountRequested", "startDate", "endDate", "createdAt"]
+    },
+    "SeedGrantAccountability": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Seed Grant Accountability",
+      "description": "Accountability report for a seed grant.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "grantId": { "type": "string" },
+        "totalSpent": { "type": "number" },
+        "receiptUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "outputDescription": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["grantId", "totalSpent", "receiptUrls", "outputDescription", "createdAt"]
+    },
+    "OFATournament": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Tournament",
+      "description": "A team registration for an Omuto Cup event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "teamName": { "type": "string" },
+        "category": { "type": "string" },
+        "contact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["teamName", "category", "contact", "createdAt"]
+    },
+    "OFAVolunteer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Volunteer",
+      "description": "A volunteer registration for an Omuto Cup event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "contact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "role", "contact", "createdAt"]
     }
   },
   "auth": {
@@ -1045,8 +1525,123 @@
     "/endline-surveys/{surveyId}": {
         "schema": { "$ref": "#/entities/EndlineSurvey" },
         "description": "Stores post-program endline data for beneficiaries."
+    },
+    "/pads-distributions/{distributionId}": {
+      "schema": {
+        "$ref": "#/entities/PadsDistribution"
+      },
+      "description": "Logs for sanitary pad distributions."
+    },
+    "/mhm-trainings/{trainingId}": {
+      "schema": {
+        "$ref": "#/entities/MhmTraining"
+      },
+      "description": "Attendance logs for MHM training sessions."
+    },
+    "/environmental-clubs/{clubId}": {
+        "schema": { "$ref": "#/entities/EnvironmentalClub" },
+        "description": "Registration for GreenSchools environmental clubs."
+    },
+    "/waste-audits/{auditId}": {
+        "schema": { "$ref": "#/entities/WasteAudit" },
+        "description": "Waste audit reports for schools."
+    },
+    "/slf-schools/{schoolId}": {
+        "schema": { "$ref": "#/entities/SLF_School" },
+        "description": "Schools registered for the Student Leaders Forum."
+    },
+    "/slf-prefects/{prefectId}": {
+        "schema": { "$ref": "#/entities/SLF_Prefect" },
+        "description": "Prefects registered for the Student Leaders Forum."
+    },
+    "/slf-trainings/{trainingId}": {
+        "schema": { "$ref": "#/entities/SLF_Training" },
+        "description": "Attendance for SLF training sessions."
+    },
+    "/prefect-performance/{performanceId}": {
+        "schema": { "$ref": "#/entities/PrefectPerformance" },
+        "description": "Monthly performance tracking for prefects."
+    },
+     "/yoskills-circles/{circleId}": {
+      "schema": { "$ref": "#/entities/YoSkillsCircle" },
+      "description": "Entrepreneurship circles in the YoSkills program."
+    },
+    "/yoskills-youth/{youthId}": {
+      "schema": { "$ref": "#/entities/YoSkillsYouth" },
+      "description": "Youth participants in the YoSkills program."
+    },
+    "/yoskills-sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/YoSkillsSession" },
+      "description": "Attendance records for YoSkills sessions."
+    },
+    "/business-ideas/{ideaId}": {
+      "schema": { "$ref": "#/entities/BusinessIdea" },
+      "description": "Business ideas submitted by YoSkills participants."
+    },
+    "/pitch-scores/{scoreId}": {
+      "schema": { "$ref": "#/entities/PitchScore" },
+      "description": "Scores for business idea pitches."
+    },
+    "/business-progress/{progressId}": {
+      "schema": { "$ref": "#/entities/BusinessProgress" },
+      "description": "Monthly progress reports for YoSkills businesses."
+    },
+     "/ofa-players/{playerId}": {
+        "schema": { "$ref": "#/entities/OFAPlayer" },
+        "description": "Player registrations for Omuto Football Alliance."
+    },
+    "/ofa-matches/{matchId}": {
+        "schema": { "$ref": "#/entities/OFAMatch" },
+        "description": "Match reports for Omuto Football Alliance."
+    },
+    "/pulse-content/{contentId}": {
+        "schema": { "$ref": "#/entities/PulseContent" },
+        "description": "Content submissions for Omuto Pulse."
+    },
+    "/essentials-production/{logId}": {
+        "schema": { "$ref": "#/entities/ProductionLog" },
+        "description": "Production logs for Omuto Essentials."
+    },
+    "/essentials-sales/{saleId}": {
+        "schema": { "$ref": "#/entities/Sale" },
+        "description": "Sales records for Omuto Essentials."
+    },
+    "/essentials-inventory/{checkId}": {
+        "schema": { "$ref": "#/entities/InventoryCheck" },
+        "description": "Inventory checks for Omuto Essentials."
+    },
+    "/water-sources/{sourceId}": {
+      "schema": { "$ref": "#/entities/WaterSource" },
+      "description": "Water sources for PureWater initiative."
+    },
+    "/wash-assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/WASH_Assessment" },
+      "description": "WASH assessments for schools."
+    },
+    "/yap-chapters/{chapterId}": {
+      "schema": { "$ref": "#/entities/YAP_Chapter" },
+      "description": "YAP chapter registrations."
+    },
+    "/yap-reports/{reportId}": {
+      "schema": { "$ref": "#/entities/YAP_Report" },
+      "description": "YAP monthly chapter reports."
+    },
+    "/seed-grant-applications/{applicationId}": {
+      "schema": { "$ref": "#/entities/SeedGrantApplication" },
+      "description": "Seed grant applications."
+    },
+    "/seed-grant-accountability/{reportId}": {
+      "schema": { "$ref": "#/entities/SeedGrantAccountability" },
+      "description": "Seed grant accountability reports."
+    },
+    "/ofa-tournaments/{registrationId}": {
+      "schema": { "$ref": "#/entities/OFATournament" },
+      "description": "Team registrations for Omuto Cup."
+    },
+    "/ofa-volunteers/{volunteerId}": {
+      "schema": { "$ref": "#/entities/OFAVolunteer" },
+      "description": "Volunteer registrations for Omuto Cup."
     }
   }
 }
 
-    

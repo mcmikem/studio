@@ -35,6 +35,8 @@ import {
   Swords,
   Droplets,
   Store,
+  Wind,
+  Trophy,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -87,13 +89,13 @@ const navConfig = {
   dataReporting: [
      { href: '/forms', icon: ClipboardEdit, label: 'Forms Hub' },
      { href: '/meal', icon: BarChart3, label: 'MEAL Hub' },
+     { href: '/talents', icon: Trophy, label: 'Omuto Talents' },
+     { href: '/essentials', icon: Store, label: 'Omuto Essentials' },
+     { href: '/pulse', icon: Wind, label: 'Omuto Pulse' },
      { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
      { href: '/record-testimony', icon: Video, label: 'Record Testimony' },
      { href: '/testimonies', icon: FileText, label: 'Testimony Library' },
      { href: '/reports', icon: BarChart3, label: 'Reports' },
-     { href: '/talents', icon: Swords, label: 'Omuto Talents' },
-     { href: '/essentials', icon: Store, label: 'Omuto Essentials' },
-     { href: '/pulse', icon: Rss, label: 'Pulse Content' },
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },
@@ -270,3 +272,4 @@ export function AppSidebar() {
     </>
   );
 }
+

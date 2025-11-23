@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -8,26 +9,38 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight, School, UserPlus, Users, Leaf, Heart, FileText } from 'lucide-react';
+import { ArrowRight, Droplets, Leaf, Heart, Zap, User, Trophy, Wind, Store } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
 
 const programForms: { [key: string]: { href: string; title: string; description: string; icon: React.ElementType }[] } = {
     'RED Campaign': [
-        { href: '/meal/red-campaign', title: 'Log RED Campaign Activity', description: 'Log a new ROI activity specifically for the RED Campaign.', icon: BarChart3 },
-        { href: '/meal/red-campaign/school-visit', title: 'School Visit M&E Form', description: 'Log observations and feedback from a school visit.', icon: Heart },
+        { href: '/meal/red-campaign', title: 'Log RED Campaign Activity', description: 'Log a new ROI activity specifically for the RED Campaign.', icon: Heart },
+        { href: '/meal/red-campaign/school-visit', title: 'School Visit M&E Form', description: 'Log observations and feedback from a school visit.', icon: User },
+        { href: '/meal/red-campaign/pads-distribution', title: 'Pads Distribution Log', description: 'Record the distribution of sanitary pads.', icon: Droplets },
     ],
     'GreenSchools Campaign': [
-         { href: '/meal/greenschools', title: 'Log GreenSchools Activity', description: 'Log a new ROI activity specifically for GreenSchools.', icon: BarChart3 },
+         { href: '/meal/greenschools', title: 'Log GreenSchools Activity', description: 'Log a new ROI activity specifically for GreenSchools.', icon: Leaf },
          { href: '/meal/greenschools/tree-survey', title: 'Tree Survival Survey', description: 'Log follow-up data on a previous tree planting activity.', icon: Leaf },
+         { href: '/meal/greenschools/environmental-club', title: 'Environmental Club Registration', description: 'Register a new environmental club.', icon: Users },
+         { href: '/meal/greenschools/waste-audit', title: 'Waste Audit Form', description: 'Conduct and log a waste audit for a school.', icon: Leaf },
     ],
      'YoSkills Entrepreneurship': [
-        { href: '/meal/yoskills', title: 'Log YoSkills Activity', description: 'Log a new ROI activity for the YoSkills program.', icon: BarChart3 },
+        { href: '/meal/yoskills', title: 'YoSkills Hub', description: 'Access all forms related to YoSkills circles and businesses.', icon: Zap },
     ],
+    'Student Leaders Forum': [
+        { href: '/meal/slf', title: 'Student Leaders Forum Hub', description: 'Manage schools, prefects, and performance for the SLF.', icon: Users },
+    ],
+     'PureWater Initiative': [
+        { href: '/meal/purewater', title: 'PureWater Hub', description: 'Forms for water source mapping and WASH assessments.', icon: Droplets },
+    ],
+    'Youth Action Pathway (YAP)': [
+        { href: '/meal/yap', title: 'YAP Hub', description: 'Manage YAP chapters and seed grant applications.', icon: User },
+    ]
 };
 
 const generalMneForms = [
@@ -35,13 +48,13 @@ const generalMneForms = [
         href: '/meal/baseline-survey',
         title: 'Baseline Survey',
         description: 'Capture "before the program" status for a beneficiary.',
-        icon: FileText,
+        icon: User,
     },
     {
         href: '/meal/endline-survey',
         title: 'Endline Survey',
         description: 'Capture "after the program" status to measure impact.',
-        icon: FileText,
+        icon: User,
     },
 ];
 
@@ -117,42 +130,10 @@ export default function MealPage() {
                                 </div>
                             </Link>
                         ))}
-                         {(!programForms[program.title] || programForms[program.title].length === 0) && (
-                            <Link href={`/forms/activity?programId=${program.id}&programName=${encodeURIComponent(program.title)}`} className="block">
-                                <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                                    <BarChart3 className="h-8 w-8 text-primary flex-shrink-0" />
-                                    <div>
-                                        <p className="font-semibold">Log General Activity (ROI)</p>
-                                        <p className="text-sm text-muted-foreground">Submit a standard ROI activity report for this program.</p>
-                                    </div>
-                                    <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                                </div>
-                            </Link>
-                        )}
                     </CardContent>
                 </Card>
             ))}
-
-             <Card>
-                <CardHeader>
-                    <CardTitle>General Forms</CardTitle>
-                    <CardDescription>Cross-cutting forms for general data entry.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Link href="/forms/activity" className="block">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <BarChart3 className="h-8 w-8 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="font-semibold">General Activity Log (ROI)</p>
-                                <p className="text-sm text-muted-foreground">Log an activity that is not tied to a specific program.</p>
-                            </div>
-                             <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                        </div>
-                    </Link>
-                </CardContent>
-            </Card>
         </div>
     );
 }
 
-    
