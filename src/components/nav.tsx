@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import {
@@ -37,6 +35,7 @@ import {
   Store,
   Wind,
   Trophy,
+  Bug,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -110,11 +109,14 @@ const navConfig = {
     { href: '/management/templates', icon: ListChecks, label: 'Templates' },
     { href: '/management/users', icon: UserIcon, label: 'User Roles' },
   ],
+  system: [
+    { href: '/system/feedback', icon: Bug, label: 'System Feedback'},
+  ]
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
-  'Executive Director': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
+  'Administrator': ['home', 'myDay', 'teamHub', 'dataReporting', 'management', 'system'],
+  'Executive Director': ['home', 'myDay', 'teamHub', 'dataReporting', 'management', 'system'],
   'Programs & Partnerships Manager': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
   'Resource Mobilization Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
   'Operations & Field Manager': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
@@ -262,6 +264,7 @@ export function AppSidebar() {
         {renderNavSection('teamHub', 'Team Hub')}
         {renderNavSection('dataReporting', 'Data & Reporting')}
         {renderNavSection('management', 'Management')}
+        {renderNavSection('system', 'System')}
       </SidebarContent>
       <SidebarFooter>
         <Separator className="my-2" />
@@ -272,5 +275,3 @@ export function AppSidebar() {
     </>
   );
 }
-
-    
