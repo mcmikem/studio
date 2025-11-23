@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -14,6 +15,8 @@ import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FirebaseError } from 'firebase/app';
 import Link from 'next/link';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 
 const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -119,7 +122,7 @@ export default function LoginPage() {
             case 'auth/wrong-password':
             case 'auth/user-not-found':
                 title = 'Invalid Credentials';
-                description = 'Please check your email and password and try again.';
+                description = 'Please check your email and password. If this is your first time signing in, please use the "Sign Up" tab instead.';
                 break;
             case 'auth/email-already-in-use':
                 title = 'Email Already in Use';
@@ -210,6 +213,13 @@ export default function LoginPage() {
                 <CardDescription>Enter your credentials to access the platform.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+                <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>First Time Signing In?</AlertTitle>
+                    <AlertDescription>
+                        If you have been given an approved email, please use the **Sign Up** tab first to create your account.
+                    </AlertDescription>
+                </Alert>
                 <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={!!loading}>
                     {loading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <GoogleIcon />}
                     Sign in with Google
