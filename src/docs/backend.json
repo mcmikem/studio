@@ -670,22 +670,35 @@
         "required": ["text", "userId", "userName", "createdAt"]
     },
     "Testimony": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Testimony",
-        "description": "A recorded testimony, which can be text, audio, or video.",
-        "type": "object",
-        "properties": {
-            "id": { "type": "string" },
-            "beneficiaryName": { "type": "string" },
-            "project": { "type": "string" },
-            "beforeSituation": { "type": "string" },
-            "afterSituation": { "type": "string" },
-            "quote": { "type": "string" },
-            "mediaUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
-            "consentSigned": { "type": "boolean" },
-            "createdAt": { "type": "string", "format": "date-time" }
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Testimony",
+      "description": "A recorded testimony, which can be text, audio, or video.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "beneficiaryName": { "type": "string" },
+        "project": { "type": "string" },
+        "beforeSituation": { "type": "string" },
+        "afterSituation": { "type": "string" },
+        "quote": { "type": "string" },
+        "mediaUrls": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
         },
-        "required": ["beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt"]
+        "consentSigned": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": [
+        "beneficiaryName",
+        "project",
+        "beforeSituation",
+        "afterSituation",
+        "quote",
+        "consentSigned",
+        "createdAt",
+        "userId"
+      ]
     },
     "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1001,12 +1014,11 @@
             "month": { "type": "string", "description": "e.g., '2025-11'" },
             "visibilityScore": { "type": "number", "description": "Rating 1-5" },
             "disciplineScore": { "type": "number", "description": "Rating 1-5" },
-            "leadershipScore": { "type": "number", "description": "Rating 1-5" },
-            "achievements": { "type": "string" },
-            "teacherFeedback": { "type": "string" },
+            "initiativeScore": { "type": "number", "description": "Rating 1-5" },
+            "teacherComments": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["prefectId", "month", "visibilityScore", "disciplineScore", "leadershipScore", "createdAt"]
+        "required": ["prefectId", "month", "visibilityScore", "disciplineScore", "initiativeScore", "createdAt"]
     },
     "YoSkillsCircle": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1066,10 +1078,10 @@
         "businessName": { "type": "string" },
         "problemSolved": { "type": "string" },
         "targetCustomer": { "type": "string" },
-        "revenueIdea": { "type": "string" },
+        "startupCapitalNeeded": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["youthId", "businessName", "problemSolved", "targetCustomer"]
+      "required": ["youthId", "businessName", "problemSolved", "targetCustomer", "startupCapitalNeeded"]
     },
     "PitchScore": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1079,13 +1091,14 @@
       "properties": {
         "id": { "type": "string" },
         "businessIdeaId": { "type": "string" },
-        "ideaClarity": { "type": "number" },
+        "judgeName": { "type": "string" },
+        "innovation": { "type": "number" },
         "feasibility": { "type": "number" },
-        "communityBenefit": { "type": "number" },
+        "scalability": { "type": "number" },
         "totalScore": { "type": "number" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["businessIdeaId", "ideaClarity", "feasibility", "communityBenefit"]
+      "required": ["businessIdeaId", "judgeName", "innovation", "feasibility", "scalability", "totalScore"]
     },
     "BusinessProgress": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1205,6 +1218,130 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["date", "product", "physicalCount"]
+    },
+    "WaterSource": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Water Source",
+      "description": "A mapped water source for the PureWater Initiative.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sourceName": { "type": "string" },
+        "type": { "type": "string", "enum": ["Borehole", "Spring", "Tap", "Rainwater"] },
+        "gpsCoordinates": { "type": "string" },
+        "functional": { "type": "boolean" },
+        "photoUrl": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["sourceName", "type", "functional", "createdAt"]
+    },
+    "WASH_Assessment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WASH Assessment",
+      "description": "A WASH assessment for a school.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "school": { "type": "string" },
+        "handwashingStations": { "type": "number" },
+        "soapAvailable": { "type": "boolean" },
+        "latrineCondition": { "type": "string", "enum": ["Good", "Fair", "Poor"] },
+        "assessorComments": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["school", "handwashingStations", "soapAvailable", "latrineCondition", "createdAt"]
+    },
+    "YAP_Chapter": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YAP Chapter",
+      "description": "A registered chapter in the Youth Action Pathway.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "chapterName": { "type": "string" },
+        "location": { "type": "string" },
+        "leader": { "type": "string" },
+        "membersCount": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chapterName", "location", "leader", "membersCount", "createdAt"]
+    },
+    "YAP_Report": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "YAP Monthly Report",
+      "description": "A monthly report from a YAP chapter.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "chapterId": { "type": "string" },
+        "month": { "type": "string" },
+        "activities": { "type": "string" },
+        "attendance": { "type": "number" },
+        "outcomes": { "type": "string" },
+        "challenges": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chapterId", "month", "activities", "attendance", "outcomes", "createdAt"]
+    },
+    "SeedGrantApplication": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Seed Grant Application",
+      "description": "An application for a seed grant.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicantName": { "type": "string" },
+        "projectTitle": { "type": "string" },
+        "budgetSummaryUrl": { "type": "string", "format": "uri" },
+        "amountRequested": { "type": "number" },
+        "startDate": { "type": "string", "format": "date" },
+        "endDate": { "type": "string", "format": "date" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["applicantName", "projectTitle", "amountRequested", "startDate", "endDate", "createdAt"]
+    },
+    "SeedGrantAccountability": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Seed Grant Accountability",
+      "description": "Accountability report for a seed grant.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "grantId": { "type": "string" },
+        "totalSpent": { "type": "number" },
+        "receiptUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+        "outputDescription": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["grantId", "totalSpent", "receiptUrls", "outputDescription", "createdAt"]
+    },
+    "OFATournament": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Tournament",
+      "description": "A team registration for an Omuto Cup event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "teamName": { "type": "string" },
+        "category": { "type": "string" },
+        "contact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["teamName", "category", "contact", "createdAt"]
+    },
+    "OFAVolunteer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Volunteer",
+      "description": "A volunteer registration for an Omuto Cup event.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "contact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "role", "contact", "createdAt"]
     }
   },
   "auth": {
@@ -1438,7 +1575,7 @@
         "schema": { "$ref": "#/entities/PrefectPerformance" },
         "description": "Monthly performance tracking for prefects."
     },
-    "/yoskills-circles/{circleId}": {
+     "/yoskills-circles/{circleId}": {
       "schema": { "$ref": "#/entities/YoSkillsCircle" },
       "description": "Entrepreneurship circles in the YoSkills program."
     },
@@ -1462,7 +1599,7 @@
       "schema": { "$ref": "#/entities/BusinessProgress" },
       "description": "Monthly progress reports for YoSkills businesses."
     },
-    "/ofa-players/{playerId}": {
+     "/ofa-players/{playerId}": {
         "schema": { "$ref": "#/entities/OFAPlayer" },
         "description": "Player registrations for Omuto Football Alliance."
     },
@@ -1485,6 +1622,42 @@
     "/essentials-inventory/{checkId}": {
         "schema": { "$ref": "#/entities/InventoryCheck" },
         "description": "Inventory checks for Omuto Essentials."
+    },
+    "/water-sources/{sourceId}": {
+      "schema": { "$ref": "#/entities/WaterSource" },
+      "description": "Water sources for PureWater initiative."
+    },
+    "/wash-assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/WASH_Assessment" },
+      "description": "WASH assessments for schools."
+    },
+    "/yap-chapters/{chapterId}": {
+      "schema": { "$ref": "#/entities/YAP_Chapter" },
+      "description": "YAP chapter registrations."
+    },
+    "/yap-reports/{reportId}": {
+      "schema": { "$ref": "#/entities/YAP_Report" },
+      "description": "YAP monthly chapter reports."
+    },
+    "/seed-grant-applications/{applicationId}": {
+      "schema": { "$ref": "#/entities/SeedGrantApplication" },
+      "description": "Seed grant applications."
+    },
+    "/seed-grant-accountability/{reportId}": {
+      "schema": { "$ref": "#/entities/SeedGrantAccountability" },
+      "description": "Seed grant accountability reports."
+    },
+    "/ofa-tournaments/{registrationId}": {
+      "schema": { "$ref": "#/entities/OFATournament" },
+      "description": "Team registrations for Omuto Cup."
+    },
+    "/ofa-volunteers/{volunteerId}": {
+      "schema": { "$ref": "#/entities/OFAVolunteer" },
+      "description": "Volunteer registrations for Omuto Cup."
     }
   }
 }
+
+    
+
+    
