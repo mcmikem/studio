@@ -18,9 +18,9 @@ function ActivityFormPageContent() {
   return (
     <div className='space-y-4'>
         <Button variant="outline" asChild>
-            <Link href="/meal">
+            <Link href="/forms">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to MEAL Hub
+                Back to Forms Hub
             </Link>
         </Button>
         <Card>

@@ -2,40 +2,40 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, Swords, Trophy } from 'lucide-react';
+import { Loader2, UserPlus, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const talentsForms = [
+const ofaForms = [
   {
-    href: '/forms/talents/ofa',
-    title: 'Omuto Football Alliance (OFA)',
-    description: 'Manage teams, players, and matches for the league.',
-    icon: Swords,
+    href: '/forms/talents/ofa/player-registration',
+    title: 'Player Registration',
+    description: 'Register a new player for a team in the alliance.',
+    icon: UserPlus,
   },
   {
-    href: '/forms/talents/omuto-cup',
-    title: 'Omuto Cup (Event)',
-    description: 'Manage tournament registrations, check-ins, and results.',
-    icon: Trophy,
+    href: '/forms/talents/ofa/match-report',
+    title: 'Match Report Form',
+    description: 'Log the results and details of a completed match.',
+    icon: FileText,
   },
 ];
 
-function TalentsHubPage() {
+function OFAHubPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Talents Project</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Football Alliance (OFA)</h1>
                 <p className="text-muted-foreground">
-                    Data collection and management forms for our sports programs.
+                    Manage teams, players, and matches for the league.
                 </p>
             </header>
              <Card>
                 <CardHeader>
-                    <CardTitle>Talents Programs</CardTitle>
+                    <CardTitle>OFA Forms</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {talentsForms.map(form => (
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {ofaForms.map(form => (
                          <Link key={form.href} href={form.href} className="block">
                             <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                                 <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
@@ -52,10 +52,10 @@ function TalentsHubPage() {
     )
 }
 
-export default function TalentsPage() {
+export default function OFAPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <TalentsHubPage />
+            <OFAHubPage />
         </Suspense>
     )
 }

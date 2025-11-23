@@ -2,40 +2,52 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, Swords, Trophy } from 'lucide-react';
+import { Loader2, Swords, UserPlus, FileText, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const talentsForms = [
+const omutoCupForms = [
   {
-    href: '/forms/talents/ofa',
-    title: 'Omuto Football Alliance (OFA)',
-    description: 'Manage teams, players, and matches for the league.',
+    href: '/forms/talents/omuto-cup/tournament-registration',
+    title: 'Tournament Registration',
+    description: 'Register a new team for the Omuto Cup tournament.',
     icon: Swords,
   },
   {
-    href: '/forms/talents/omuto-cup',
-    title: 'Omuto Cup (Event)',
-    description: 'Manage tournament registrations, check-ins, and results.',
-    icon: Trophy,
+    href: '/forms/talents/omuto-cup/volunteer-registration',
+    title: 'Volunteer Registration',
+    description: 'Register a new volunteer for the Omuto Cup event.',
+    icon: UserPlus,
+  },
+  {
+    href: '/forms/talents/omuto-cup/team-check-in',
+    title: 'Team Check-in',
+    description: 'Check in a team and its players before a match.',
+    icon: UserCheck,
+  },
+  {
+    href: '/forms/talents/omuto-cup/score-sheet',
+    title: 'Score Sheet',
+    description: 'Log the score and details of a completed match.',
+    icon: FileText,
   },
 ];
 
-function TalentsHubPage() {
+function OmutoCupHubPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Talents Project</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Cup (Event)</h1>
                 <p className="text-muted-foreground">
-                    Data collection and management forms for our sports programs.
+                    Data collection forms for managing the Omuto Cup tournament.
                 </p>
             </header>
              <Card>
                 <CardHeader>
-                    <CardTitle>Talents Programs</CardTitle>
+                    <CardTitle>Omuto Cup Forms</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {talentsForms.map(form => (
+                    {omutoCupForms.map(form => (
                          <Link key={form.href} href={form.href} className="block">
                             <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                                 <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
@@ -52,10 +64,10 @@ function TalentsHubPage() {
     )
 }
 
-export default function TalentsPage() {
+export default function OmutoCupPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <TalentsHubPage />
+            <OmutoCupHubPage />
         </Suspense>
     )
 }

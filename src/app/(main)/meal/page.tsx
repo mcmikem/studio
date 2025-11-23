@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -9,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, Droplets, Leaf, Heart, Zap, User, Users, Trophy, BarChart3 } from 'lucide-react';
+import { ArrowRight, Heart, Leaf, Zap, Users, Droplets, Trophy, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
@@ -19,28 +18,26 @@ import { useMemo } from 'react';
 
 const programForms: { [key: string]: { href: string; title: string; description: string; icon: React.ElementType }[] } = {
     'RED Campaign': [
-        { href: '/meal/red-campaign', title: 'Log RED Campaign Activity', description: 'Log a new ROI activity specifically for the RED Campaign.', icon: Heart },
-        { href: '/meal/red-campaign/school-visit', title: 'School Visit M&E Form', description: 'Log observations and feedback from a school visit.', icon: User },
-        { href: '/meal/red-campaign/pads-distribution', title: 'Pads Distribution Log', description: 'Record the distribution of sanitary pads.', icon: Droplets },
-        { href: '/meal/red-campaign/mhm-training', title: 'MHM Training Report', description: 'Log details from a Menstrual Health Management session.', icon: Users },
+        { href: '/forms/program-logs/red-campaign/school-visit', title: 'School Visit M&E Form', description: 'Log observations and feedback from a school visit.', icon: Users },
+        { href: '/forms/program-logs/red-campaign/pads-distribution', title: 'Pads Distribution Log', description: 'Record the distribution of sanitary pads.', icon: Droplets },
+        { href: '/forms/program-logs/red-campaign/mhm-training', title: 'MHM Training Report', description: 'Log details from a Menstrual Health Management session.', icon: Users },
     ],
     'GreenSchools Campaign': [
-         { href: '/meal/greenschools', title: 'Log GreenSchools Activity', description: 'Log a new ROI activity specifically for GreenSchools.', icon: Leaf },
-         { href: '/meal/greenschools/tree-survey', title: 'Tree Survival Survey', description: 'Log follow-up data on a previous tree planting activity.', icon: Leaf },
-         { href: '/meal/greenschools/environmental-club', title: 'Environmental Club Registration', description: 'Register a new environmental club.', icon: Users },
-         { href: '/meal/greenschools/waste-audit', title: 'Waste Audit Form', description: 'Conduct and log a waste audit for a school.', icon: Leaf },
+         { href: '/forms/program-logs/greenschools/tree-survey', title: 'Tree Survival Survey', description: 'Log follow-up data on a previous tree planting activity.', icon: Leaf },
+         { href: '/forms/program-logs/greenschools/environmental-club', title: 'Environmental Club Registration', description: 'Register a new environmental club.', icon: Users },
+         { href: '/forms/program-logs/greenschools/waste-audit', title: 'Waste Audit Form', description: 'Conduct and log a waste audit for a school.', icon: Leaf },
     ],
      'YoSkills Entrepreneurship': [
-        { href: '/meal/yoskills', title: 'YoSkills Hub', description: 'Access all forms related to YoSkills circles and businesses.', icon: Zap },
+        { href: '/forms/program-logs/yoskills', title: 'YoSkills Hub', description: 'Access all forms related to YoSkills circles and businesses.', icon: Zap },
     ],
     'Student Leaders Forum': [
-        { href: '/meal/slf', title: 'Student Leaders Forum Hub', description: 'Manage schools, prefects, and performance for the SLF.', icon: Users },
+        { href: '/forms/program-logs/slf', title: 'Student Leaders Forum Hub', description: 'Manage schools, prefects, and performance for the SLF.', icon: Users },
     ],
      'PureWater Initiative': [
-        { href: '/meal/purewater', title: 'PureWater Hub', description: 'Forms for water source mapping and WASH assessments.', icon: Droplets },
+        { href: '/forms/program-logs/purewater', title: 'PureWater Hub', description: 'Forms for water source mapping and WASH assessments.', icon: Droplets },
     ],
     'Youth Action Pathway (YAP)': [
-        { href: '/meal/yap', title: 'YAP Hub', description: 'Manage YAP chapters and seed grant applications.', icon: User },
+        { href: '/forms/program-logs/yap', title: 'YAP Hub', description: 'Manage YAP chapters and seed grant applications.', icon: Users },
     ]
 };
 
@@ -55,19 +52,19 @@ const generalMneForms = [
         href: '/forms/beneficiary-registration',
         title: 'Beneficiary Registration',
         description: 'Create a new profile for a program beneficiary.',
-        icon: User,
+        icon: UserPlus,
     },
     {
-        href: '/meal/baseline-survey',
+        href: '/forms/surveys/baseline-survey',
         title: 'Baseline Survey',
         description: 'Capture "before the program" status for a beneficiary.',
-        icon: User,
+        icon: Users,
     },
     {
-        href: '/meal/endline-survey',
+        href: '/forms/surveys/endline-survey',
         title: 'Endline Survey',
         description: 'Capture "after the program" status to measure impact.',
-        icon: User,
+        icon: Users,
     },
     {
         href: '/record-testimony',
@@ -133,29 +130,33 @@ export default function MealPage() {
                 </div>
             )}
             
-            {!isLoading && programs && programs.map(program => (
-                <Card key={program.id}>
-                    <CardHeader>
-                        <CardTitle>{program.title}</CardTitle>
-                        <CardDescription>Data collection forms for the {program.title}.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(programForms[program.title] || []).map(form => (
-                             <Link key={form.href} href={`${form.href}?programId=${program.id}`} className="block">
-                                <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                                    <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
-                                    <div>
-                                        <p className="font-semibold">{form.title}</p>
-                                        <p className="text-sm text-muted-foreground">{form.description}</p>
+            {!isLoading && programs && programs.map(program => {
+                const formsForProgram = programForms[program.title] || [];
+                if (formsForProgram.length === 0) return null;
+
+                return (
+                    <Card key={program.id}>
+                        <CardHeader>
+                            <CardTitle>{program.title}</CardTitle>
+                            <CardDescription>Data collection forms for the {program.title}.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {formsForProgram.map(form => (
+                                 <Link key={form.href} href={`${form.href}?programId=${program.id}`} className="block">
+                                    <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
+                                        <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
+                                        <div>
+                                            <p className="font-semibold">{form.title}</p>
+                                            <p className="text-sm text-muted-foreground">{form.description}</p>
+                                        </div>
+                                        <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
                                     </div>
-                                    <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                                </div>
-                            </Link>
-                        ))}
-                    </CardContent>
-                </Card>
-            ))}
+                                </Link>
+                            ))}
+                        </CardContent>
+                    </Card>
+                );
+            })}
         </div>
     );
 }
-

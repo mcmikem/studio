@@ -2,40 +2,52 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, Swords, Trophy } from 'lucide-react';
+import { Loader2, Users, FileText, FileUp, DollarSign } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const talentsForms = [
+const yapForms = [
   {
-    href: '/forms/talents/ofa',
-    title: 'Omuto Football Alliance (OFA)',
-    description: 'Manage teams, players, and matches for the league.',
-    icon: Swords,
+    href: '/forms/program-logs/yap/chapter-registration',
+    title: 'Chapter Registration',
+    description: 'Register a new Youth Action Pathway chapter.',
+    icon: Users,
   },
   {
-    href: '/forms/talents/omuto-cup',
-    title: 'Omuto Cup (Event)',
-    description: 'Manage tournament registrations, check-ins, and results.',
-    icon: Trophy,
+    href: '/forms/program-logs/yap/monthly-report',
+    title: 'Chapter Monthly Report',
+    description: 'Log monthly activities, outcomes, and challenges for a chapter.',
+    icon: FileText,
+  },
+  {
+    href: '/forms/program-logs/yap/seed-grant-application',
+    title: 'Seed Grant Application',
+    description: 'Apply for a seed grant for a youth-led project.',
+    icon: DollarSign,
+  },
+  {
+    href: '/forms/program-logs/yap/grant-accountability',
+    title: 'Grant Accountability',
+    description: 'Submit accountability reports for received seed grants.',
+    icon: FileUp,
   },
 ];
 
-function TalentsHubPage() {
+function YAPHubPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Talents Project</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">Youth Action Pathway (YAP)</h1>
                 <p className="text-muted-foreground">
-                    Data collection and management forms for our sports programs.
+                    Forms for managing YAP chapters and seed grants.
                 </p>
             </header>
              <Card>
                 <CardHeader>
-                    <CardTitle>Talents Programs</CardTitle>
+                    <CardTitle>YAP Forms</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {talentsForms.map(form => (
+                    {yapForms.map(form => (
                          <Link key={form.href} href={form.href} className="block">
                             <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                                 <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
@@ -52,10 +64,10 @@ function TalentsHubPage() {
     )
 }
 
-export default function TalentsPage() {
+export default function YAPPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <TalentsHubPage />
+            <YAPHubPage />
         </Suspense>
     )
 }

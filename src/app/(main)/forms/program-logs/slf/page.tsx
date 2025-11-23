@@ -2,40 +2,52 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, Swords, Trophy } from 'lucide-react';
+import { Loader2, Users, UserPlus, CheckSquare, BarChart } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const talentsForms = [
+const slfForms = [
   {
-    href: '/forms/talents/ofa',
-    title: 'Omuto Football Alliance (OFA)',
-    description: 'Manage teams, players, and matches for the league.',
-    icon: Swords,
+    href: '/forms/program-logs/slf/school-registration',
+    title: 'School Registration',
+    description: 'Register a new school for the Student Leaders Forum.',
+    icon: Users,
   },
   {
-    href: '/forms/talents/omuto-cup',
-    title: 'Omuto Cup (Event)',
-    description: 'Manage tournament registrations, check-ins, and results.',
-    icon: Trophy,
+    href: '/forms/program-logs/slf/prefect-registration',
+    title: 'Prefect Registration',
+    description: 'Register a new prefect from a participating school.',
+    icon: UserPlus,
+  },
+  {
+    href: '/forms/program-logs/slf/training-attendance',
+    title: 'Training Attendance',
+    description: 'Log attendance for an SLF training session.',
+    icon: CheckSquare,
+  },
+  {
+    href: '/forms/program-logs/slf/performance-tracking',
+    title: 'Prefect Performance',
+    description: 'Track the monthly performance of a student leader.',
+    icon: BarChart,
   },
 ];
 
-function TalentsHubPage() {
+function SLFHubPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Talents Project</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">Student Leaders Forum (SLF)</h1>
                 <p className="text-muted-foreground">
-                    Data collection and management forms for our sports programs.
+                    Data collection and management forms for the SLF program.
                 </p>
             </header>
              <Card>
                 <CardHeader>
-                    <CardTitle>Talents Programs</CardTitle>
+                    <CardTitle>SLF Forms</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {talentsForms.map(form => (
+                    {slfForms.map(form => (
                          <Link key={form.href} href={form.href} className="block">
                             <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                                 <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
@@ -52,10 +64,10 @@ function TalentsHubPage() {
     )
 }
 
-export default function TalentsPage() {
+export default function SLFPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <TalentsHubPage />
+            <SLFHubPage />
         </Suspense>
     )
 }

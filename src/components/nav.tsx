@@ -67,9 +67,8 @@ const OmutoLogo = () => (
 
 const navConfig = {
   home: [
-    { href: '/chat', icon: Sparkles, label: 'AI Coach' },
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/plan', icon: FileSignature, label: 'Operational Plan' },
+    { href: '/chat', icon: Sparkles, label: 'AI Coach' },
   ],
   myDay: [
      { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
@@ -82,20 +81,15 @@ const navConfig = {
     { href: '/checkins', icon: LogIn, label: 'Check-in Stream' },
     { href: '/stream', icon: Rss, label: 'Check-out Stream' },
     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
-    { href: '/checklists', icon: ListChecks, label: 'Operational Checklists' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
-    { href: '/help', icon: LifeBuoy, label: 'Help & Support' },
   ],
-  dataReporting: [
+  forms: [
      { href: '/forms', icon: ClipboardEdit, label: 'Forms Hub' },
-     { href: '/meal', icon: BarChart3, label: 'MEAL Hub' },
-     { href: '/talents', icon: Trophy, label: 'Omuto Talents' },
-     { href: '/essentials', icon: Store, label: 'Omuto Essentials' },
-     { href: '/pulse', icon: Wind, label: 'Omuto Pulse' },
+  ],
+  reports: [
+     { href: '/reports', icon: BarChart3, label: 'Reports Hub' },
      { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
-     { href: '/record-testimony', icon: Video, label: 'Record Testimony' },
      { href: '/testimonies', icon: FileText, label: 'Testimony Library' },
-     { href: '/reports', icon: BarChart3, label: 'Reports' },
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },
@@ -111,41 +105,22 @@ const navConfig = {
     { href: '/management/users', icon: UserIcon, label: 'User Roles' },
   ],
   system: [
-    { href: '/system/feedback', icon: Bug, label: 'System Feedback'},
+    { href: '/help', icon: LifeBuoy, label: 'Help & Support' },
   ]
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['home', 'myDay', 'teamHub', 'dataReporting', 'management', 'system'],
-  'Executive Director': ['home', 'myDay', 'teamHub', 'dataReporting', 'management', 'system'],
-  'Programs & Partnerships Manager': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
-  'Resource Mobilization Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
-  'Operations & Field Manager': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
-  'Media & Finance Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
-  'Media & Communications Lead': ['home', 'myDay', 'teamHub', 'dataReporting', 'management'],
-  'Field Coordinator': ['home', 'myDay', 'teamHub', 'dataReporting'],
-  'Intern': ['home', 'myDay', 'teamHub', 'dataReporting'],
-  'Volunteer': ['home', 'myDay', 'teamHub', 'dataReporting'],
-  'default': ['home', 'myDay', 'teamHub', 'dataReporting'],
-};
-
-const roleSpecificNav: Record<string, { href: string; icon: React.ElementType; label: string }[]> = {
-  'Media & Finance Lead': [
-    { href: '/management/finance', icon: DollarSign, label: 'Financial Ledger' },
-    { href: '/management/expenses', icon: Receipt, label: 'Expense Approval' },
-  ],
-  'Media & Communications Lead': [
-    { href: '/management/finance', icon: DollarSign, label: 'Financial Ledger' },
-    { href: '/management/expenses', icon: Receipt, label: 'Expense Approval' },
-  ],
-  'Programs & Partnerships Manager': [
-    { href: '/management/programs', icon: Briefcase, label: 'Program Tracker' },
-    { href: '/management/partnerships', icon: Handshake, label: 'Partnership Pipeline' },
-  ],
-   'Executive Director': [
-    { href: '/management/users', icon: Users, label: 'User Management' },
-    { href: '/reports', icon: BarChart3, label: 'M&E Hub' },
-  ],
+  'Administrator': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management', 'system'],
+  'Executive Director': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
+  'Resource Mobilization Lead': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
+  'Operations & Field Manager': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
+  'Media & Finance Lead': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
+  'Media & Communications Lead': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
+  'Field Coordinator': ['home', 'myDay', 'teamHub', 'forms', 'reports'],
+  'Intern': ['home', 'myDay', 'teamHub', 'forms', 'reports'],
+  'Volunteer': ['home', 'myDay', 'teamHub', 'forms', 'reports'],
+  'default': ['home', 'myDay', 'teamHub', 'forms', 'reports'],
 };
 
 
@@ -194,7 +169,6 @@ export function AppSidebar() {
   
   const userRole = effectiveRole as keyof typeof roleNavConfig;
   const allowedSections = roleNavConfig[userRole] || roleNavConfig['default'];
-  const specificNavItems = roleSpecificNav[userRole] || [];
 
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
     if (!allowedSections.includes(sectionName)) return null;
@@ -239,31 +213,10 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent data-mobile={isMobile}>
         {renderNavSection('home', 'Home')}
-        
-        {specificNavItems.length > 0 && (
-          <SidebarGroup data-mobile={isMobile}>
-            <SidebarGroupLabel data-mobile={isMobile}>My Workspace</SidebarGroupLabel>
-            <SidebarMenu>
-              {specificNavItems.map(item => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    href={item.href}
-                    isActive={isActive(item.href)}
-                    tooltip={item.label}
-                    onClick={handleLinkClick}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-        )}
-
         {renderNavSection('myDay', 'My Day')}
         {renderNavSection('teamHub', 'Team Hub')}
-        {renderNavSection('dataReporting', 'Data & Reporting')}
+        {renderNavSection('forms', 'Forms')}
+        {renderNavSection('reports', 'Reports & Analytics')}
         {renderNavSection('management', 'Management')}
         {renderNavSection('system', 'System')}
       </SidebarContent>

@@ -2,40 +2,40 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, Swords, Trophy } from 'lucide-react';
+import { Loader2, Droplets, Map, CheckSquare } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const talentsForms = [
+const pureWaterForms = [
   {
-    href: '/forms/talents/ofa',
-    title: 'Omuto Football Alliance (OFA)',
-    description: 'Manage teams, players, and matches for the league.',
-    icon: Swords,
+    href: '/forms/program-logs/purewater/water-source-mapping',
+    title: 'Water Source Mapping',
+    description: 'Log the location and status of a community water source.',
+    icon: Map,
   },
   {
-    href: '/forms/talents/omuto-cup',
-    title: 'Omuto Cup (Event)',
-    description: 'Manage tournament registrations, check-ins, and results.',
-    icon: Trophy,
+    href: '/forms/program-logs/purewater/wash-assessment',
+    title: 'WASH Assessment',
+    description: 'Conduct a Water, Sanitation, and Hygiene assessment for a school.',
+    icon: CheckSquare,
   },
 ];
 
-function TalentsHubPage() {
+function PureWaterHubPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Talents Project</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">PureWater Initiative</h1>
                 <p className="text-muted-foreground">
-                    Data collection and management forms for our sports programs.
+                    Data collection and management forms for the PureWater program.
                 </p>
             </header>
              <Card>
                 <CardHeader>
-                    <CardTitle>Talents Programs</CardTitle>
+                    <CardTitle>PureWater Forms</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {talentsForms.map(form => (
+                    {pureWaterForms.map(form => (
                          <Link key={form.href} href={form.href} className="block">
                             <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                                 <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
@@ -52,10 +52,10 @@ function TalentsHubPage() {
     )
 }
 
-export default function TalentsPage() {
+export default function PureWaterPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <TalentsHubPage />
+            <PureWaterHubPage />
         </Suspense>
     )
 }

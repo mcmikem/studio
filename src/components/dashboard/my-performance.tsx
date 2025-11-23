@@ -76,7 +76,7 @@ export function MyPerformance() {
             description="Log an activity via the Forms Hub to see your performance here."
             className="min-h-0 py-10"
           >
-              <Link href="/forms/activity" className='mt-4 text-primary underline'>Log your first activity</Link>
+              <Link href="/forms/program-logs/general" className='mt-4 text-primary underline'>Log your first activity</Link>
           </EmptyState>
         </CardContent>
       </Card>
