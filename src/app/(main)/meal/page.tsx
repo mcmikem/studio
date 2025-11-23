@@ -14,6 +14,7 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMemo } from 'react';
 
 const MOCK_PROGRAMS: Partial<Program>[] = [
     { id: 'red', title: 'RED Campaign' },
@@ -39,13 +40,21 @@ export default function MealPage() {
     const firestore = useFirestore();
     const programsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
+        // Simplified query to avoid composite index requirement.
         return query(
             collection(firestore, 'programs'), 
-            where('status', '==', 'On Track'), 
             orderBy('title')
         );
     }, [firestore]);
-    const { data: programs, isLoading } = useCollection<Program>(programsQuery);
+    
+    const { data: allPrograms, isLoading } = useCollection<Program>(programsQuery);
+
+    // Filter for active programs on the client-side
+    const programs = useMemo(() => {
+        if (!allPrograms) return [];
+        return allPrograms.filter(p => p.status === 'On Track');
+    }, [allPrograms]);
+
 
     return (
         <div className="space-y-6">
