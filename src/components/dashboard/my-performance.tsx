@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -10,6 +11,7 @@ import { Skeleton } from '../ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
 import { startOfMonth } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
+import Link from 'next/link';
 
 export function MyPerformance() {
   const { user } = useUser();
@@ -58,6 +60,27 @@ export function MyPerformance() {
 
   if (isLoading || !isClient) {
     return <Skeleton className="h-48" />;
+  }
+
+   if ((!isLoading && !activities) || (activities && activities.length === 0)) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>My Performance (This Month)</CardTitle>
+          <CardDescription>Your key contributions and efficiency.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <EmptyState
+            icon={BarChart3}
+            title="No Activity Logged"
+            description="Log an activity via the Forms Hub to see your performance here."
+            className="min-h-0 py-10"
+          >
+              <Link href="/forms/activity" className='mt-4 text-primary underline'>Log your first activity</Link>
+          </EmptyState>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (

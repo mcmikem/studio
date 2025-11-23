@@ -48,11 +48,13 @@ const analysisPrompt = ai.definePrompt({
 
 export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput): Promise<QualitativeAnalysisOutput> {
     
-    const { output } = await ai.generate({
+    const llmResponse = await ai.generate({
         model: 'googleai/gemini-2.5-flash',
         prompt: `Analyze the qualitative data for the '${input.programName}' program from ${input.startDate} to ${input.endDate}. Use the 'getActivitiesForProgram' tool with programId '${input.programId}'.`,
         tools: [getActivitiesForProgram],
     });
+
+    const output = llmResponse.output();
 
     if (!output) {
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");

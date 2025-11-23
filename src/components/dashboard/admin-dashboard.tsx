@@ -16,6 +16,11 @@ import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
 import { startOfDay } from "date-fns"
 import { useMemo } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../ui/card"
+import { BellRing, ArrowRight } from "lucide-react"
+import { Button } from "../ui/button"
+import Link from "next/link"
+
 
 interface DashboardProps {
   profile: User;
@@ -61,7 +66,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             <DashboardCalendar />
             <ManagementQuickLinks />
-            <Card>
+            <Card className="group/card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><BellRing /> Recent Alerts</CardTitle>
                 <CardDescription>The latest urgent issues and important reminders.</CardDescription>

@@ -75,7 +75,7 @@ function EcosystemPulse({ activities, programs }: { activities: Activity[] | nul
                         </div>
                          <div className="p-3 bg-muted rounded-lg">
                             <p className="text-sm font-semibold">Phase 3: Sustain</p>
-                            <p className="text-2xl font-bold">{formatCurrency(sustain)}</p>
+                            <p className="text-2xl font-bold">{formatCurrency(sustain, true)}</p>
                             <p className="text-xs text-muted-foreground">Value Generated</p>
                         </div>
                     </div>

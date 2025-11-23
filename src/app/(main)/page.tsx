@@ -120,7 +120,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} title={dashboardTitle} />
         
-        <DailyActions hour={currentHour} checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
+        <DailyActions checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
         
         <MyPerformance />
         
