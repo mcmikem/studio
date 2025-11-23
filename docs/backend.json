@@ -676,18 +676,16 @@
         "type": "object",
         "properties": {
             "id": { "type": "string" },
-            "title": { "type": "string" },
-            "text": { "type": "string", "description": "Transcribed text of the testimony." },
-            "summary": { "type": "string", "description": "AI-generated summary of the testimony." },
-            "quotes": { "type": "array", "items": { "type": "string" }, "description": "AI-extracted key quotes." },
-            "hashtags": { "type": "array", "items": { "type": "string" }, "description": "AI-suggested social media hashtags." },
-            "userId": { "type": "string", "description": "ID of the user who recorded the testimony." },
-            "userName": { "type": "string", "description": "Name of the user who recorded the testimony." },
-            "videoUrl": { "type": "string", "format": "uri", "description": "URL to the recorded video file." },
-            "audioUrl": { "type": "string", "format": "uri", "description": "URL to the recorded audio file." },
+            "beneficiaryName": { "type": "string" },
+            "project": { "type": "string" },
+            "beforeSituation": { "type": "string" },
+            "afterSituation": { "type": "string" },
+            "quote": { "type": "string" },
+            "mediaUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+            "consentSigned": { "type": "boolean" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["title", "userId", "userName", "createdAt"]
+        "required": ["beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt"]
     },
     "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -787,15 +785,17 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "age": { "type": "number" },
+        "dob": { "type": "string", "format": "date", "description": "Date of Birth" },
+        "gender": { "type": "string", "enum": ["Male", "Female"] },
         "village": { "type": "string" },
         "programEnrolled": { "type": "string" },
         "school": { "type": "string" },
         "phone": { "type": "string" },
         "guardianContact": { "type": "string" },
+        "photoURL": { "type": "string", "format": "uri" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "age", "village", "programEnrolled", "createdAt"]
+      "required": ["name", "dob", "gender", "village", "programEnrolled", "createdAt"]
     },
     "AttendanceRecord": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -811,9 +811,44 @@
         "age": { "type": "number" },
         "schoolOrCommunity": { "type": "string" },
         "contact": { "type": "string" },
+        "signature": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["eventName", "date", "participantName", "gender", "age", "schoolOrCommunity", "createdAt"]
+      "required": ["eventName", "date", "participantName", "gender", "age", "signature", "createdAt"]
+    },
+    "BaselineSurvey": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Baseline Survey",
+        "description": "Captures pre-program status of a beneficiary.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "beneficiaryId": { "type": "string" },
+            "surveyDate": { "type": "string", "format": "date" },
+            "skillLevel": { "type": "number", "description": "Rating from 1-10" },
+            "monthlyIncome": { "type": "number" },
+            "primaryChallenge": { "type": "string" },
+            "programGoals": { "type": "string" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["beneficiaryId", "surveyDate", "skillLevel", "primaryChallenge", "programGoals", "createdAt"]
+    },
+    "EndlineSurvey": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Endline Survey",
+        "description": "Captures post-program status of a beneficiary.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "beneficiaryId": { "type": "string" },
+            "surveyDate": { "type": "string", "format": "date" },
+            "skillLevel": { "type": "number", "description": "Rating from 1-10" },
+            "monthlyIncome": { "type": "number" },
+            "changesNoticed": { "type": "string" },
+            "satisfaction": { "type": "number", "description": "Rating from 1-5" },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["beneficiaryId", "surveyDate", "skillLevel", "changesNoticed", "satisfaction", "createdAt"]
     }
   },
   "auth": {
@@ -1002,6 +1037,14 @@
         "$ref": "#/entities/AttendanceRecord"
       },
       "description": "Stores attendance records for events and sessions."
+    },
+    "/baseline-surveys/{surveyId}": {
+      "schema": { "$ref": "#/entities/BaselineSurvey" },
+      "description": "Stores pre-program baseline data for beneficiaries."
+    },
+    "/endline-surveys/{surveyId}": {
+        "schema": { "$ref": "#/entities/EndlineSurvey" },
+        "description": "Stores post-program endline data for beneficiaries."
     }
   }
 }

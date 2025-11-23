@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -64,34 +65,30 @@ const formLinks = [
 export default function FormsPage() {
 
   return (
-     
-      
-        
-          
-          Forms Hub
-        
-        
-          Your central place for all daily reports, and logs.
-        
-      
-      
+    <div className="space-y-6">
+      <header>
+          <h1 className="font-headline text-3xl font-bold tracking-tight">Forms Hub</h1>
+          <p className="text-muted-foreground">Your central place for all daily reports, and logs.</p>
+      </header>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {formLinks.map(link => (
-          
-            
-              
-                
-                    
-                    {link.title}
-                
-              
-              
-                {link.description}
-              
-            
-          
+          <Link key={link.href} href={link.href}>
+            <Card className="hover:bg-muted/50 transition-colors h-full">
+              <CardHeader className="flex flex-row items-center gap-4">
+                <link.icon className="h-8 w-8 text-primary" />
+                <CardTitle>{link.title}</CardTitle>
+                <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  {link.description}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
-      
-    
+      </div>
+    </div>
   );
 }
 

@@ -1,5 +1,4 @@
 
-// Re-triggering deployment to resolve timeout issue.
 rules_version = '2';
 
 service cloud.firestore {
@@ -91,7 +90,7 @@ service cloud.firestore {
     }
      match /testimonies/{testimonyId} {
       allow read: if request.auth != null;
-      allow create: if isOwner(request.resource.data.userId);
+      allow create: if request.auth != null;
       allow update, delete: if isOwner(resource.data.userId);
     }
     match /feedback/{feedbackId} {
@@ -118,11 +117,17 @@ service cloud.firestore {
      match /attendance-records/{recordId} {
         allow read, write: if request.auth != null;
     }
+     match /baseline-surveys/{surveyId} {
+        allow read, write: if request.auth != null;
+    }
+     match /endline-surveys/{surveyId} {
+        allow read, write: if request.auth != null;
+    }
     
     // SCHOOL APPLICATIONS (Public write, Logged-in read)
     match /school-applications/{applicationId} {
-        allow read: if request.auth != null;
-        allow create: if true; // Allow anyone to create an application
+        allow read: if isManager(request.auth.uid);
+        allow create: if true;
         allow update, delete: if isManager(request.auth.uid);
     }
 
@@ -161,3 +166,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

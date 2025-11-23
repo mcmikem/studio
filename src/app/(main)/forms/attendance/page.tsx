@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Suspense } from 'react';
@@ -21,6 +22,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, Users } from 'lucide-react';
 import { format } from 'date-fns';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const attendanceSchema = z.object({
   eventName: z.string().min(3, 'Event name is required.'),
@@ -28,8 +30,11 @@ const attendanceSchema = z.object({
   participantName: z.string().min(3, 'Participant name is required.'),
   gender: z.enum(['Male', 'Female', 'Other']),
   age: z.coerce.number().min(1, 'Age is required.'),
-  schoolOrCommunity: z.string().min(3, 'School or Community is required.'),
+  schoolOrCommunity: z.string().optional(),
   contact: z.string().optional(),
+  signature: z.boolean().refine(val => val === true, {
+    message: 'Signature is required to confirm attendance.',
+  }),
 });
 
 type AttendanceFormData = z.infer<typeof attendanceSchema>;
@@ -72,6 +77,7 @@ function AttendanceForm() {
         participantName: '',
         age: undefined,
         contact: '',
+        signature: false,
       });
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
@@ -103,13 +109,10 @@ function AttendanceForm() {
               {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="schoolOrCommunity">School / Community</Label>
-            <Input id="schoolOrCommunity" {...register('schoolOrCommunity')} placeholder="e.g., St. Mary's College Kisubi" />
-            {errors.schoolOrCommunity && <p className="text-sm text-destructive">{errors.schoolOrCommunity.message}</p>}
-          </div>
-
+          
           <div className="my-6 border-t-2 border-dashed" />
+          
+          <h3 className="font-semibold text-lg">Participant Details</h3>
 
           <div className="space-y-2">
             <Label htmlFor="participantName">Participant Name</Label>
@@ -140,9 +143,37 @@ function AttendanceForm() {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="schoolOrCommunity">School / Community (Optional)</Label>
+            <Input id="schoolOrCommunity" {...register('schoolOrCommunity')} placeholder="e.g., St. Mary's College Kisubi" />
+            {errors.schoolOrCommunity && <p className="text-sm text-destructive">{errors.schoolOrCommunity.message}</p>}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="contact">Contact (Phone/Email - Optional)</Label>
             <Input id="contact" {...register('contact')} />
           </div>
+
+           <div className="flex items-center space-x-2 pt-4">
+            <Controller
+              name="signature"
+              control={control}
+              render={({ field }) => (
+                <Checkbox
+                  id="signature"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              )}
+            />
+            <label
+              htmlFor="signature"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Participant has signed the physical attendance sheet.
+            </label>
+          </div>
+          {errors.signature && <p className="text-sm text-destructive">{errors.signature.message}</p>}
+
         </CardContent>
         <CardFooter>
           <Button type="submit" disabled={isSubmitting} className="w-full">

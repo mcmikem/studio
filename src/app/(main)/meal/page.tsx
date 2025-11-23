@@ -8,19 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight, School, UserPlus, Users, Leaf, Heart } from 'lucide-react';
+import { ClipboardEdit, LogOut, BarChart3, Receipt, LogIn, Megaphone, ArrowRight, School, UserPlus, Users, Leaf, Heart, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where } from 'firebase/firestore';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
-
-const MOCK_PROGRAMS: Partial<Program>[] = [
-    { id: 'red', title: 'RED Campaign' },
-    { id: 'greenschools', title: 'GreenSchools Campaign' },
-    { id: 'yoskills', title: 'YoSkills Entrepreneurship' },
-]
 
 const programForms: { [key: string]: { href: string; title: string; description: string; icon: React.ElementType }[] } = {
     'RED Campaign': [
@@ -36,23 +30,33 @@ const programForms: { [key: string]: { href: string; title: string; description:
     ],
 };
 
+const generalMneForms = [
+    {
+        href: '/meal/baseline-survey',
+        title: 'Baseline Survey',
+        description: 'Capture "before the program" status for a beneficiary.',
+        icon: FileText,
+    },
+    {
+        href: '/meal/endline-survey',
+        title: 'Endline Survey',
+        description: 'Capture "after the program" status to measure impact.',
+        icon: FileText,
+    },
+];
+
 export default function MealPage() {
     const firestore = useFirestore();
     const programsQuery = useMemoFirebase(() => {
         if (!firestore) return null;
-        // Simplified query to avoid composite index requirement.
-        return query(
-            collection(firestore, 'programs'), 
-            orderBy('title')
-        );
+        return query(collection(firestore, 'programs'), orderBy('title'));
     }, [firestore]);
     
     const { data: allPrograms, isLoading } = useCollection<Program>(programsQuery);
 
-    // Filter for active programs on the client-side
     const programs = useMemo(() => {
         if (!allPrograms) return [];
-        return allPrograms.filter(p => p.status === 'On Track');
+        return allPrograms.filter(p => p.status !== 'Completed');
     }, [allPrograms]);
 
 
@@ -64,6 +68,28 @@ export default function MealPage() {
                     A central place for all program-specific data collection forms.
                 </p>
             </header>
+
+             <Card>
+                <CardHeader>
+                    <CardTitle>General M&E Forms</CardTitle>
+                    <CardDescription>Cross-cutting forms for beneficiary-level data.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     {generalMneForms.map(form => (
+                        <Link key={form.href} href={form.href} className="block">
+                            <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
+                                <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
+                                <div>
+                                    <p className="font-semibold">{form.title}</p>
+                                    <p className="text-sm text-muted-foreground">{form.description}</p>
+                                </div>
+                                <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                            </div>
+                        </Link>
+                    ))}
+                </CardContent>
+            </Card>
+
 
             {isLoading && (
                 <div className="space-y-6">
@@ -80,7 +106,7 @@ export default function MealPage() {
                     </CardHeader>
                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {(programForms[program.title] || []).map(form => (
-                             <Link key={form.href} href={form.href} className="block">
+                             <Link key={form.href} href={`${form.href}?programId=${program.id}`} className="block">
                                 <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                                     <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
                                     <div>
@@ -128,3 +154,5 @@ export default function MealPage() {
         </div>
     );
 }
+
+    

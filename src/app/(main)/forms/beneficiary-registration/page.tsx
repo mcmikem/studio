@@ -1,36 +1,44 @@
+
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, UserPlus } from 'lucide-react';
+import { Loader2, UserPlus, Upload } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { uploadFile } from '@/firebase/storage';
 
 const beneficiarySchema = z.object({
   name: z.string().min(3, 'Beneficiary name is required.'),
-  age: z.coerce.number().min(1, 'Age is required.'),
+  dob: z.string().min(1, 'Date of birth is required.'),
+  gender: z.enum(['Male', 'Female']),
   village: z.string().min(3, 'Village is required.'),
   programEnrolled: z.string().min(1, 'Please select a program.'),
   school: z.string().optional(),
   phone: z.string().optional(),
   guardianContact: z.string().optional(),
+  photo: z.any().optional(),
 });
 
 type BeneficiaryFormData = z.infer<typeof beneficiarySchema>;
 
 function BeneficiaryRegistrationForm() {
   const firestore = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -43,10 +51,19 @@ function BeneficiaryRegistrationForm() {
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<BeneficiaryFormData>({
     resolver: zodResolver(beneficiarySchema),
   });
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+          setValue('photo', file);
+          setPhotoPreview(URL.createObjectURL(file));
+      }
+  }
 
   const onSubmit = async (data: BeneficiaryFormData) => {
     if (!firestore) {
@@ -54,7 +71,29 @@ function BeneficiaryRegistrationForm() {
       return;
     }
 
-    const record = { ...data, createdAt: serverTimestamp() };
+    let photoURL = '';
+    if (data.photo && user) {
+        try {
+            const path = `beneficiary-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
+            photoURL = await uploadFile(data.photo, path);
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload profile photo.' });
+            return;
+        }
+    }
+
+    const record = { 
+        name: data.name,
+        dob: data.dob,
+        gender: data.gender,
+        village: data.village,
+        programEnrolled: data.programEnrolled,
+        school: data.school,
+        phone: data.phone,
+        guardianContact: data.guardianContact,
+        photoURL,
+        createdAt: serverTimestamp() 
+    };
 
     try {
       await addDocumentNonBlocking(collection(firestore, 'beneficiaries'), record);
@@ -63,6 +102,7 @@ function BeneficiaryRegistrationForm() {
         description: `${data.name} has been added to the system.`,
       });
       reset();
+      setPhotoPreview(null);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -81,6 +121,16 @@ function BeneficiaryRegistrationForm() {
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-6">
+          <div className="flex flex-col items-center space-y-4">
+              <Avatar className="h-24 w-24 border-2 border-dashed" data-ai-hint="person avatar">
+                  <AvatarImage src={photoPreview || ''} />
+                  <AvatarFallback className="bg-muted"><UserPlus className="h-10 w-10 text-muted-foreground"/></AvatarFallback>
+              </Avatar>
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="mr-2 h-4 w-4" /> Upload Photo
+              </Button>
+              <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
@@ -88,16 +138,28 @@ function BeneficiaryRegistrationForm() {
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="age">Age</Label>
-              <Input id="age" type="number" {...register('age')} />
-              {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
+              <Label htmlFor="dob">Date of Birth</Label>
+              <Input id="dob" type="date" {...register('dob')} />
+              {errors.dob && <p className="text-sm text-destructive">{errors.dob.message}</p>}
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="village">Village / Parish</Label>
-            <Input id="village" {...register('village')} />
-            {errors.village && <p className="text-sm text-destructive">{errors.village.message}</p>}
-          </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+                <Label>Gender</Label>
+                <Controller name="gender" control={control} render={({ field }) => (
+                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male">Male</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female">Female</Label></div>
+                    </RadioGroup>
+                )} />
+                {errors.gender && <p className="text-sm text-destructive">{errors.gender.message}</p>}
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="village">Village / Location</Label>
+              <Input id="village" {...register('village')} />
+              {errors.village && <p className="text-sm text-destructive">{errors.village.message}</p>}
+            </div>
+           </div>
            <div className="space-y-2">
               <Label htmlFor="programEnrolled">Program Enrolled In</Label>
                {isLoadingPrograms ? <Skeleton className="h-10 w-full" /> : (
