@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, Droplets, Leaf, Heart, Zap, User, Users, Trophy } from 'lucide-react';
+import { ArrowRight, Droplets, Leaf, Heart, Zap, User, Users, Trophy, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
@@ -22,6 +22,7 @@ const programForms: { [key: string]: { href: string; title: string; description:
         { href: '/meal/red-campaign', title: 'Log RED Campaign Activity', description: 'Log a new ROI activity specifically for the RED Campaign.', icon: Heart },
         { href: '/meal/red-campaign/school-visit', title: 'School Visit M&E Form', description: 'Log observations and feedback from a school visit.', icon: User },
         { href: '/meal/red-campaign/pads-distribution', title: 'Pads Distribution Log', description: 'Record the distribution of sanitary pads.', icon: Droplets },
+        { href: '/meal/red-campaign/mhm-training', title: 'MHM Training Report', description: 'Log details from a Menstrual Health Management session.', icon: Users },
     ],
     'GreenSchools Campaign': [
          { href: '/meal/greenschools', title: 'Log GreenSchools Activity', description: 'Log a new ROI activity specifically for GreenSchools.', icon: Leaf },
@@ -45,6 +46,18 @@ const programForms: { [key: string]: { href: string; title: string; description:
 
 const generalMneForms = [
     {
+        href: '/forms/attendance',
+        title: 'Session Attendance',
+        description: 'Track participants reached in any session or event.',
+        icon: Users,
+    },
+    {
+        href: '/forms/beneficiary-registration',
+        title: 'Beneficiary Registration',
+        description: 'Create a new profile for a program beneficiary.',
+        icon: User,
+    },
+    {
         href: '/meal/baseline-survey',
         title: 'Baseline Survey',
         description: 'Capture "before the program" status for a beneficiary.',
@@ -56,6 +69,12 @@ const generalMneForms = [
         description: 'Capture "after the program" status to measure impact.',
         icon: User,
     },
+    {
+        href: '/record-testimony',
+        title: 'Impact Story Capture',
+        description: 'Record a success story with before/after details and media.',
+        icon: Trophy,
+    }
 ];
 
 export default function MealPage() {
@@ -76,7 +95,10 @@ export default function MealPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">M&E and Data Collection Hub</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+                    <BarChart3 className="h-8 w-8" />
+                    M&E and Data Collection Hub
+                </h1>
                 <p className="text-muted-foreground">
                     A central place for all program-specific data collection forms.
                 </p>
