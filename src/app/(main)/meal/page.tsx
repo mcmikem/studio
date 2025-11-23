@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, Droplets, Leaf, Heart, Zap, User, Trophy, Wind, Store } from 'lucide-react';
+import { ArrowRight, Droplets, Leaf, Heart, Zap, User, Users, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
