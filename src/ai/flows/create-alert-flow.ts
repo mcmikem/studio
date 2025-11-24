@@ -7,7 +7,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { initializeFirebase } from '@/firebase/server';
+import { firestore } from '@/firebase/server';
 import { FieldValue } from 'firebase-admin/firestore';
 
 const AlertInputSchema = z.object({
@@ -33,7 +33,6 @@ const createAlertFlow = ai.defineFlow(
   },
   async (alertData) => {
     try {
-      const { firestore } = await initializeFirebase();
       const alertsCollection = firestore.collection('alerts');
       
       const newAlert = {

@@ -11,10 +11,7 @@ dotenv.config({ path: '.env' });
 
 import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
-import { initializeFirebase } from '@/firebase/server';
-
-// Initialize Firebase Admin SDK first
-initializeFirebase();
+import { firestore } from '@/firebase/server';
 
 genkit({
   plugins: [googleAI()],

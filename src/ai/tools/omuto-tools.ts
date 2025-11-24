@@ -7,7 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { initializeFirebase } from '@/firebase/server';
+import { firestore } from '@/firebase/server';
 import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { z } from 'zod';
 import { PartnershipSchema, SearchResultItemSchema } from '@/lib/types';
@@ -81,7 +81,6 @@ export const findUsersByName = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ name }) => {
-        const { firestore } = await initializeFirebase();
         const usersRef = collection(firestore, 'users');
         
         const q = query(
@@ -114,7 +113,6 @@ export const findProgramsByName = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
-        const { firestore } = await initializeFirebase();
         const programsRef = collection(firestore, 'programs');
         
         const q = query(
@@ -148,7 +146,6 @@ export const findExpensesByTitle = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
-        const { firestore } = await initializeFirebase();
         const expensesRef = collection(firestore, 'expenses');
         
         const q = query(
@@ -216,7 +213,6 @@ export const createCheckout = ai.defineTool(
         })
     },
     async ({ userId, task, learning, tomorrowPlan }) => {
-        const { firestore } = await initializeFirebase();
 
         try {
             const userRef = doc(firestore, 'users', userId);
@@ -268,7 +264,6 @@ export const getActivitiesForProgram = ai.defineTool(
         outputSchema: z.array(z.any()), // We can be more specific, but 'any' is fine for the tool
     },
     async ({ programId }) => {
-        const { firestore } = await initializeFirebase();
         
         const activitiesRef = collection(firestore, 'activities');
         const q = query(
@@ -311,7 +306,6 @@ export const getRecentCheckouts = ai.defineTool(
         ),
     },
     async ({ count }) => {
-        const { firestore } = await initializeFirebase();
         const checkoutsRef = collection(firestore, 'checkouts');
         const q = query(
             checkoutsRef,
@@ -351,7 +345,6 @@ export const getRecentCheckins = ai.defineTool(
         ),
     },
     async ({ count }) => {
-        const { firestore } = await initializeFirebase();
         const checkinsRef = collection(firestore, 'checkins');
         
         const today = new Date();
@@ -390,7 +383,6 @@ export const getUpcomingEventsForUser = ai.defineTool(
         outputSchema: z.array(z.any()),
     },
     async ({ userId }) => {
-        const { firestore } = await initializeFirebase();
         const today = new Date();
         const sevenDaysFromNow = new Date();
         sevenDaysFromNow.setDate(today.getDate() + 7);
@@ -425,7 +417,6 @@ export const getPendingTasksForUser = ai.defineTool(
         outputSchema: z.array(z.any()),
     },
     async ({ userId }) => {
-        const { firestore } = await initializeFirebase();
         const tasksQuery = query(
             collection(firestore, 'users', userId, 'tasks'),
             where('completed', '==', false),
@@ -443,5 +434,3 @@ export const getPendingTasksForUser = ai.defineTool(
         });
     }
 );
-
-      

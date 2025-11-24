@@ -7,37 +7,37 @@ import { firebaseConfig } from './config';
 import * as fs from 'fs';
 import * as path from 'path';
 
-let _app: App;
-let _firestore: Firestore;
+let firestore: Firestore;
 
-/**
- * Initializes the Firebase Admin SDK, reusing the existing instance if available.
- * This is the correct and efficient way to interact with Firebase from the server-side.
- * @returns An object containing the Firestore instance.
- */
-export async function initializeFirebase(): Promise<{ firestore: Firestore }> {
+function initializeFirebaseAdmin() {
   if (getApps().length === 0) {
-    const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
-    
-    if (!fs.existsSync(serviceAccountPath)) {
-        throw new Error("Firebase service account key not found at secrets/serviceAccountKey.json.");
-    }
-    
     try {
-        const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-        _app = initializeApp({
-            credential: cert(serviceAccount),
-            projectId: firebaseConfig.projectId,
-        });
-        _firestore = getFirestore(_app);
+      const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
+      if (!fs.existsSync(serviceAccountPath)) {
+        throw new Error("Firebase service account key not found at secrets/serviceAccountKey.json. Ensure the file exists and is correctly placed.");
+      }
+      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      
+      const app = initializeApp({
+        credential: cert(serviceAccount),
+        projectId: firebaseConfig.projectId,
+      });
+      firestore = getFirestore(app);
+      console.log("Firebase Admin SDK initialized successfully.");
     } catch (e) {
-        console.error("Failed to parse or initialize Firebase service account credentials.", e);
-        throw new Error("Invalid Firebase service account credentials.");
+      console.error("Critical Error: Failed to initialize Firebase Admin SDK.", e);
+      // In a production environment, you might want to exit the process
+      // or have a more robust error handling mechanism.
+      throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
     }
   } else {
-    _app = getApp();
-    _firestore = getFirestore(_app);
+    const app = getApp();
+    firestore = getFirestore(app);
   }
-  
-  return { firestore: _firestore };
 }
+
+// Initialize immediately when the module is loaded.
+initializeFirebaseAdmin();
+
+// Export the initialized instance.
+export { firestore };
