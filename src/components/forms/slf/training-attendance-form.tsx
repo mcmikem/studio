@@ -59,6 +59,7 @@ export function TrainingAttendanceForm() {
     resolver: zodResolver(trainingSchema),
      defaultValues: {
       date: format(new Date(), 'yyyy-MM-dd'),
+      attendees: [],
     }
   });
 

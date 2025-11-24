@@ -57,6 +57,7 @@ export function SessionAttendanceForm() {
     resolver: zodResolver(sessionSchema),
     defaultValues: {
       date: format(new Date(), 'yyyy-MM-dd'),
+      members: [],
     }
   });
 
