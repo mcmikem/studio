@@ -32,7 +32,7 @@ const grantWriterPrompt = ai.definePrompt({
   - The tone should be professional, confident, and passionate.
   - The output MUST be in markdown format.
   - Connect the proposed activities directly to Omuto's proven Ecosystem Model (Identify & Inspire, Equip & Empower, Activate & Sustain).
-  - Structure the note with the following sections: ### Introduction, ### Problem Statement, ### Our Proven Solution, ### Budget Overview.
+  - Structure the note with the following sections: **Introduction**, **Problem Statement**, **Our Proven Solution**, **Budget Overview**.
   - Keep it concise and impactful.`,
   prompt: `
 Draft a concept note for a proposal titled "**{{proposalTitle}}**" to be sent to **{{partnerName}}**.

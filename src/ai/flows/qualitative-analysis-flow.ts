@@ -8,6 +8,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { getActivitiesForProgram } from '../tools/omuto-tools';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const QualitativeAnalysisInputSchema = z.object({
   programId: z.string().describe('The ID of the program to analyze.'),
@@ -49,12 +50,12 @@ const analysisPrompt = ai.definePrompt({
 export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput): Promise<QualitativeAnalysisOutput> {
     
     const llmResponse = await ai.generate({
-        model: 'googleai/gemini-2.5-flash',
+        model: googleAI.model('gemini-2.5-flash'),
         prompt: `Analyze the qualitative data for the '${input.programName}' program from ${input.startDate} to ${input.endDate}. Use the 'getActivitiesForProgram' tool with programId '${input.programId}'.`,
-        tools: [getActivitiesForProgram],
+        tools: [await getActivitiesForProgram()],
     });
 
-    const output = llmResponse.output();
+    const output = llmResponse.output;
 
     if (!output) {
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");

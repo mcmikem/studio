@@ -8,6 +8,7 @@ import { ai } from '@/ai/genkit';
 import { SmartRemindersOutputSchema, SmartRemindersInputSchema, type SmartRemindersOutput, type SmartRemindersInput } from '@/lib/types';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { getUpcomingEventsForUserTool, getPendingTasksForUserTool } from '../tools/omuto-tools';
+import { googleAI } from '@genkit-ai/google-genai';
 
 
 const smartRemindersPrompt = ai.definePrompt(
@@ -28,7 +29,7 @@ Analyze the user's upcoming events and pending tasks from the provided tool outp
 - "As you prepare for the field visit, remember our 'Multiple Wins' goal. Could you also capture a short video for Omuto Pulse?"
 - "Since your calendar is clear, it's a great chance to make progress on standardizing the YAP Chapter SOPs (OCT-KR6)."
 `,
-    tools: [getUpcomingEventsForUserTool(), getPendingTasksForUserTool()],
+    tools: [getUpcomingEventsForUserTool, getPendingTasksForUserTool],
     output: { schema: SmartRemindersOutputSchema },
   }
 );
@@ -36,9 +37,9 @@ Analyze the user's upcoming events and pending tasks from the provided tool outp
 
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     const { output } = await ai.generate({
-        model: 'googleai/gemini-2.5-flash',
+        model: googleAI.model('gemini-2.5-flash'),
         prompt: `Generate a short list of 3-4 smart, actionable reminders for ${input.userName} (Role: ${input.userRole}). Use the getUpcomingEventsForUser and getPendingTasksForUser tools with userId '${input.userId}' to get the necessary data.`,
-        tools: [getUpcomingEventsForUserTool(), getPendingTasksForUserTool()],
+        tools: [await getUpcomingEventsForUserTool(), await getPendingTasksForUserTool()],
     });
     
     if (!output) {

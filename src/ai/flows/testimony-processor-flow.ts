@@ -8,6 +8,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { media, Part } from 'genkit/content';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const TestimonyInputSchema = z.object({
   mediaUri: z.string().describe("A data URI of the audio or video file. Must be in a format supported by Gemini, like webm."),
@@ -53,7 +54,7 @@ const processTestimonyFlow = ai.defineFlow(
     
     // 1. Transcribe the audio/video
     const llmResponse = await ai.generate({
-        model: 'googleai/gemini-2.5-flash',
+        model: googleAI.model('gemini-2.5-flash'),
         prompt: `Please transcribe the following audio. The audio is a testimony from a beneficiary of an NGO in Uganda. Capture the speech as accurately as possible. If there is more than one speaker, try to differentiate them.
         {{media url=mediaUri type="video/webm"}}
         `,
@@ -87,5 +88,3 @@ const processTestimonyFlow = ai.defineFlow(
 export async function processTestimony(input: TestimonyInput): Promise<TestimonyOutput> {
     return processTestimonyFlow(input);
 }
-
-    
