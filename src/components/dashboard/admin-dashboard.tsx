@@ -59,37 +59,17 @@ export function AdminDashboard({ profile }: DashboardProps) {
 
 
   return (
-    <>
-       <DashboardGrid className="mt-6 lg:grid-cols-3">
-         <div className="lg:col-span-1 flex flex-col gap-6">
-            <QuickAddTask />
+    <DashboardGrid className="lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-            <DashboardCalendar />
-            <ManagementQuickLinks />
-            <Card className="group/card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><BellRing /> Recent Alerts</CardTitle>
-                <CardDescription>The latest urgent issues and important reminders.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <NotificationsList />
-              </CardContent>
-               <CardFooter>
-                  <Button asChild variant="ghost" className="w-full justify-end text-sm text-primary group-hover/card:underline">
-                      <Link href="/notifications">
-                          View All Notifications <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                  </Button>
-              </CardFooter>
-            </Card>
-        </div>
-        <div className="lg:col-span-2 flex flex-col gap-6">
             <KeyResultsTracker showAtRisk />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
-            <ProgramsOverview programs={programs} />
+        </div>
+        <div className="flex flex-col gap-6">
+            <DashboardCalendar />
+            <ManagementQuickLinks />
             <TeamPulse checkouts={checkouts} />
         </div>
-      </DashboardGrid>
-    </>
+    </DashboardGrid>
   )
 }

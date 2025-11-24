@@ -93,7 +93,7 @@ export function ProgramActivityForm({
     return doc(firestore, 'programs', programId);
   }, [firestore, programId]);
 
-  const { data: program, isLoading: isLoadingProgram } = useDoc<Program>(programDocRef as any);
+  const { data: program, isLoading: isLoadingProgram } = useDoc<Program>(programDocRef);
 
   const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;

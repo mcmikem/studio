@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
@@ -48,19 +49,18 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-     <DashboardGrid className="mt-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 flex flex-col gap-6">
-            <KeyResultsTracker showAtRisk title="November Plan - Key Results"/>
+     <DashboardGrid className="mt-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
+            <KeyResultsTracker showAtRisk />
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins}/>
-        </div>
-        <div className="lg:col-span-1 flex flex-col gap-6">
-            <ApprovalQueue />
-            <QuickAddTask />
-            <MyWeeklyPlan />
-            <DashboardCalendar />
-            <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
             <QuickInsights activities={activities} />
             <ManagementQuickLinks />
+        </div>
+        <div className="flex flex-col gap-6">
+            <ApprovalQueue />
+            <DashboardCalendar />
+            <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
+            <MyWeeklyPlan />
         </div>
       </DashboardGrid>
     </>

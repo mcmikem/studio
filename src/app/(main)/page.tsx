@@ -15,6 +15,8 @@ import { startOfDay } from 'date-fns';
 import { useMemo, useState, useEffect } from 'react';
 import { DailyActions } from '@/components/dashboard/daily-actions';
 import { MyPerformance } from '@/components/dashboard/my-performance';
+import { SmartReminders } from '@/components/dashboard/smart-reminders';
+import { QuickAddTask } from '@/components/dashboard/quick-add-task';
 
 
 // Define a loading component for dynamic imports
@@ -35,7 +37,6 @@ const DashboardLoading = () => (
 
 // Dynamically import each dashboard component
 const DefaultDashboard = dynamic(() => import('@/components/dashboard/default-dashboard').then(mod => mod.DefaultDashboard), { loading: () => <DashboardLoading /> });
-const AdminDashboard = dynamic(() => import('@/components/dashboard/admin-dashboard').then(mod => mod.AdminDashboard), { loading: () => <DashboardLoading /> });
 const ExecutiveDashboard = dynamic(() => import('@/components/dashboard/executive-dashboard').then(mod => mod.ExecutiveDashboard), { loading: () => <DashboardLoading /> });
 const ProgramManagerDashboard = dynamic(() => import('@/components/dashboard/program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardLoading /> });
 const FieldStaffDashboard = dynamic(() => import('@/components/dashboard/field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardLoading /> });
@@ -44,7 +45,7 @@ const InternVolunteerDashboard = dynamic(() => import('@/components/dashboard/in
 
 
 const roleToDashboard: { [key: string]: { component: React.FC<any>, title: string } } = {
-  'Administrator': { component: AdminDashboard, title: 'Administrator Dashboard' },
+  'Administrator': { component: ExecutiveDashboard, title: 'Administrator Dashboard' },
   'Executive Director': { component: ExecutiveDashboard, title: 'Executive Dashboard' },
   'Programs & Partnerships Manager': { component: ProgramManagerDashboard, title: 'Program Dashboard' },
   'Operations & Field Manager': { component: ProgramManagerDashboard, title: 'Operations Dashboard' }, // Using Program Manager for now
@@ -63,19 +64,9 @@ export default function DashboardPage() {
   const { profile: realProfile, isLoading: isLoadingProfile } = useUserProfile(user);
   const { viewAsRole } = useViewAs();
   const firestore = useFirestore();
-  const [currentHour, setCurrentHour] = useState<number | null>(null);
-
-  useEffect(() => {
-    // This effect runs only on the client, ensuring `new Date()` is safe.
-    setCurrentHour(new Date().getHours());
-  }, []);
 
   const effectiveRole = viewAsRole || realProfile?.role;
-
   const profile = viewAsRole ? ({ ...realProfile, role: viewAsRole } as User) : realProfile;
-
-  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics'), orderBy('createdAt', 'desc'), limit(4)) : null, [firestore]);
-  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
   const latestCheckinQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -96,7 +87,7 @@ export default function DashboardPage() {
     return userCheckins[0];
   }, [userCheckins]);
 
-  if (isLoadingProfile || !user || currentHour === null) {
+  if (isLoadingProfile || !user) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -105,7 +96,6 @@ export default function DashboardPage() {
   }
   
   if (!profile) {
-    // This can happen briefly while the user profile is being created for the first time.
      return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -122,12 +112,16 @@ export default function DashboardPage() {
         
         <DailyActions checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
         
-        <MyPerformance />
-        
-        <QuickStatsSummary metrics={metrics} />
-        
-        <div className="flex-1">
-            <DashboardComponent profile={profile} />
+        <SmartReminders profile={profile} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 flex flex-col gap-6">
+                <DashboardComponent profile={profile} />
+            </div>
+            <div className="lg:col-span-1 flex flex-col gap-6">
+                 <QuickAddTask />
+                 <MyPerformance />
+            </div>
         </div>
     </div>
   );

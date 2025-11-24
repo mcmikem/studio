@@ -124,66 +124,100 @@ export default function MyFinancesPage() {
           <CardDescription>A log of all expense reports you have submitted.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && Array.from({ length: 4 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-28" /></TableCell>
-                  <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
-                </TableRow>
-              ))}
-              {expenses && expenses.length > 0 ? (
-                expenses.map((expense) => (
-                  <TableRow key={expense.id}>
-                    <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
-                    <TableCell className="font-medium">{expense.title}</TableCell>
-                    <TableCell>{expense.type}</TableCell>
-                    <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className={statusColors[expense.status]}>
-                        {expense.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                       {expense.status === 'Disbursed' && (
-                          <Button size="sm" variant="secondary" onClick={() => handleAcknowledge(expense)}>
-                            <CheckCheck className="mr-2 h-4 w-4"/>
-                            Acknowledge
-                          </Button>
-                        )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
+            {/* Mobile View */}
+            <div className="sm:hidden space-y-4">
+                 {isLoading && Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+                 {expenses && expenses.length > 0 ? (
+                    expenses.map(expense => (
+                        <Card key={expense.id}>
+                            <CardHeader>
+                                <div className="flex justify-between items-start">
+                                    <CardTitle>{expense.title}</CardTitle>
+                                    <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
+                                </div>
+                                <CardDescription>{formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-2xl font-bold">{formatCurrency(expense.totalAmount)}</p>
+                                <p className="text-xs text-muted-foreground">{expense.type}</p>
+                            </CardContent>
+                            {expense.status === 'Disbursed' && (
+                                <CardFooter>
+                                    <Button size="sm" variant="secondary" onClick={() => handleAcknowledge(expense)} className="w-full">
+                                        <CheckCheck className="mr-2 h-4 w-4"/> Acknowledge Receipt
+                                    </Button>
+                                </CardFooter>
+                            )}
+                        </Card>
+                    ))
+                 ) : (
+                    !isLoading && <EmptyState icon={Receipt} title="No Reports Yet" description="Submit an expense report to see it here." className="min-h-0" />
+                 )}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={6} className="h-48">
-                      <EmptyState
-                        icon={Receipt}
-                        title="No Expense Reports"
-                        description="You haven't submitted any reports yet. You can create one from the Forms Hub."
-                        className="min-h-0"
-                      />
-                    </TableCell>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
                   </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {isLoading && Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-40" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-28" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
+                    </TableRow>
+                  ))}
+                  {expenses && expenses.length > 0 ? (
+                    expenses.map((expense) => (
+                      <TableRow key={expense.id}>
+                        <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
+                        <TableCell className="font-medium">{expense.title}</TableCell>
+                        <TableCell>{expense.type}</TableCell>
+                        <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={statusColors[expense.status]}>
+                            {expense.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                           {expense.status === 'Disbursed' && (
+                              <Button size="sm" variant="secondary" onClick={() => handleAcknowledge(expense)}>
+                                <CheckCheck className="mr-2 h-4 w-4"/>
+                                Acknowledge
+                              </Button>
+                            )}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    !isLoading && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-48">
+                          <EmptyState
+                            icon={Receipt}
+                            title="No Expense Reports"
+                            description="You haven't submitted any reports yet. You can create one from the Forms Hub."
+                            className="min-h-0"
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )
+                  )}
+                </TableBody>
+              </Table>
+            </div>
         </CardContent>
       </Card>
     </div>
