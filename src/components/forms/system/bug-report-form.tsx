@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -62,13 +61,20 @@ export function BugReportForm() {
     try {
       await addDocumentNonBlocking(collection(firestore, 'feedback'), feedbackData);
       
-      await createAlert({
-        type: 'Urgent',
-        priority: 'Medium',
-        message: `A new ${data.type} report has been submitted by ${profile.name}.`,
-        action: '/management/feedback', // This page needs to be created
-        creatorId: user.uid,
-      });
+      const managementUsersQuery = query(collection(firestore, 'users'), where('role', 'in', ['Executive Director', 'Administrator']));
+      const managementSnapshot = await getDocs(managementUsersQuery);
+      const managerIds = managementSnapshot.docs.map(d => d.id);
+
+      if (managerIds.length > 0) {
+        await createAlert({
+            type: 'Urgent',
+            priority: 'Medium',
+            message: `A new ${data.type} report has been submitted by ${profile.name}.`,
+            action: '/management/feedback', // This page needs to be created
+            creatorId: user.uid,
+            targetUserIds: managerIds,
+        });
+      }
 
       toast({
         title: 'Feedback Submitted!',
@@ -136,5 +142,3 @@ export function BugReportForm() {
     </div>
   );
 }
-
-      

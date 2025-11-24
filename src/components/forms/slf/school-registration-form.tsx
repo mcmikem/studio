@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -17,7 +16,7 @@ import Link from 'next/link';
 
 const schoolSchema = z.object({
   schoolName: z.string().min(3, 'School name is required.'),
-  headTeacherName: z.string().min(3, 'Head Teacher name is required.'),
+  headTeacherName: z.string().min(3, "Head Teacher's name is required."),
   contactTeacher: z.string().min(3, 'Contact teacher name is required.'),
   phone: z.string().min(10, 'A valid phone number is required.'),
   enrollmentSize: z.coerce.number().min(1, 'Enrollment size is required.'),
