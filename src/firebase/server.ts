@@ -1,6 +1,3 @@
-
-'use server';
-
 import { initializeApp, getApps, getApp, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { firebaseConfig } from './config';

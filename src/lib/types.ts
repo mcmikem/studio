@@ -1,5 +1,3 @@
-
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -346,6 +344,9 @@ export type Testimony = {
   consentSigned: boolean;
   createdAt: Timestamp;
   summary?: string;
+  transcription?: string;
+  audioUrl?: string;
+  videoUrl?: string;
   quotes?: string[];
   hashtags?: string[];
 };

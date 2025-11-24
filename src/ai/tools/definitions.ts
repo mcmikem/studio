@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview This file contains the actual definitions of the Genkit tools.
  * It does NOT use the 'use server' directive and can safely export the tool objects.
@@ -9,7 +8,7 @@ import { ai } from '@/ai/genkit';
 import { firestore } from '@/firebase/server';
 import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { z } from 'zod';
-import { PartnershipSchema, SearchResultItemSchema } from '@/lib/types';
+import { SearchResultItemSchema } from '@/lib/types';
 import { format } from 'date-fns';
 import { createAlert } from '../flows/create-alert-flow';
 
