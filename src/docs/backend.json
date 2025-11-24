@@ -521,7 +521,6 @@
             "enum": ["Requisition", "Reimbursement"],
             "description": "The type of expense report (pre-spending or post-spending)."
         },
-        "projectId": { "type": "string", "description": "Optional ID of a linked project." },
         "items": {
           "type": "array",
           "description": "A list of individual expense items.",
@@ -677,34 +676,18 @@
         "type": "object",
         "properties": {
             "id": { "type": "string" },
-            "beneficiaryName": { "type": "string" },
-            "project": { "type": "string" },
-            "beforeSituation": { "type": "string" },
-            "afterSituation": { "type": "string" },
-            "quote": { "type": "string" },
-            "mediaUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
-            "consentSigned": { "type": "boolean" },
-            "userId": { "type": "string" },
+            "title": { "type": "string" },
             "userName": { "type": "string" },
+            "userId": { "type": "string" },
+            "summary": { "type": "string" },
+            "text": { "type": "string" },
+            "quotes": { "type": "array", "items": { "type": "string" } },
+            "hashtags": { "type": "array", "items": { "type": "string" } },
+            "audioUrl": { "type": "string", "format": "uri" },
+            "videoUrl": { "type": "string", "format": "uri" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "userId", "userName", "createdAt"]
-    },
-    "CommunityFeedback": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Community Feedback",
-      "description": "Feedback captured from community members.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "communityName": { "type": "string" },
-        "feedbackCategory": { "type": "string", "enum": ["Complaint", "Suggestion", "Appreciation"] },
-        "details": { "type": "string" },
-        "followUpRequired": { "type": "boolean" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["date", "communityName", "feedbackCategory", "details", "followUpRequired", "createdAt"]
+        "required": ["title", "userName", "userId", "createdAt"]
     },
     "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -961,7 +944,7 @@
             "location": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["schoolName", "contactTeacher", "enrollmentSize", "location", "createdAt"]
+        "required": ["schoolName", "headTeacherName", "contactTeacher", "enrollmentSize", "location", "createdAt"]
     },
     "SLF_Prefect": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1508,10 +1491,6 @@
       },
       "description": "Stores user feedback on AI features, bugs, and feature requests."
     },
-     "/community-feedback/{feedbackId}": {
-      "schema": { "$ref": "#/entities/CommunityFeedback" },
-      "description": "Stores feedback from community members."
-    },
     "/school-applications/{applicationId}": {
       "schema": {
         "$ref": "#/entities/SchoolApplication"
@@ -1668,5 +1647,3 @@
     }
   }
 }
-
-    
