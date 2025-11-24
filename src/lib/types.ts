@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -704,5 +705,4 @@ export type InventoryCheck = {
   discrepancyReason?: string;
   createdAt: Timestamp;
 };
-
-      
+    

@@ -186,3 +186,4 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
   // Fallback: If it's midday and user hasn't checked in, don't show the big card.
   return null;
 }
+    

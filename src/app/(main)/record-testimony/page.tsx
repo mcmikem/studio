@@ -24,6 +24,7 @@ import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const impactStorySchema = z.object({
+  title: z.string().min(5, "A title for the story is required."),
   beneficiaryName: z.string().min(3, "Beneficiary name is required."),
   project: z.string().min(1, "Please select a project."),
   beforeSituation: z.string().min(10, "Please describe the 'before' situation."),
@@ -39,6 +40,7 @@ type ImpactStoryFormData = z.infer<typeof impactStorySchema>;
 export default function RecordTestimonyPage() {
   const { toast } = useToast();
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
   const firestore = useFirestore();
   const [isSaving, setIsSaving] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
@@ -66,7 +68,7 @@ export default function RecordTestimonyPage() {
   };
 
   const onSubmit = async (data: ImpactStoryFormData) => {
-    if (!user || !firestore) {
+    if (!user || !profile || !firestore) {
       toast({ variant: 'destructive', title: 'Not Logged In' });
       return;
     }
@@ -88,8 +90,9 @@ export default function RecordTestimonyPage() {
 
         const testimonyData = {
             ...data,
-            mediaUrls,
             userId: user.uid,
+            userName: profile.name,
+            mediaUrls,
             createdAt: serverTimestamp(),
         };
 
@@ -119,6 +122,11 @@ export default function RecordTestimonyPage() {
       <Card>
         <form onSubmit={handleSubmit(onSubmit)}>
             <CardContent className="pt-6 space-y-6">
+                <div className="space-y-2">
+                    <Label htmlFor="title">Story Title</Label>
+                    <Input id="title" {...register('title')} placeholder="e.g., Jane's Journey to MHM Independence" />
+                    {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+                </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label htmlFor="beneficiaryName">Beneficiary Name</Label>
@@ -191,5 +199,4 @@ export default function RecordTestimonyPage() {
     </div>
   );
 }
-
     

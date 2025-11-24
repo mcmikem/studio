@@ -34,7 +34,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
       collection(firestore, 'activities'),
       where('userId', '==', userId),
       where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo)),
-      orderBy('loggedAt', 'desc') 
+      orderBy('loggedAt', 'desc')
     );
   }, [firestore, userId, isClient]);
 
@@ -109,5 +109,4 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     </Card>
   );
 }
-
-      
+    

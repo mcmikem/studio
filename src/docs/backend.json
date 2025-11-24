@@ -162,10 +162,6 @@
           "type": "number",
           "description": "The quantity achieved for the primary goal (e.g., number of students, number of objectives)."
         },
-        "keyResultId": {
-          "type": "string",
-          "description": "The ID of the Key Result this activity contributes to."
-        },
         "estimatedCost": {
           "type": "number",
           "description": "The pre-activity estimated cost."
@@ -232,7 +228,6 @@
         "primaryGoalId",
         "primaryGoalType",
         "primaryGoalQuantity",
-        "keyResultId",
         "estimatedCost",
         "actualCost",
         "directValue",
@@ -526,8 +521,6 @@
             "enum": ["Requisition", "Reimbursement"],
             "description": "The type of expense report (pre-spending or post-spending)."
         },
-        "projectId": { "type": "string", "description": "The ID of the project this expense is associated with."},
-        "projectName": { "type": "string", "description": "The name of the project this expense is associated with."},
         "items": {
           "type": "array",
           "description": "A list of individual expense items.",
@@ -684,8 +677,6 @@
         "properties": {
             "id": { "type": "string" },
             "title": { "type": "string" },
-            "userId": { "type": "string" },
-            "userName": { "type": "string" },
             "beneficiaryName": { "type": "string" },
             "project": { "type": "string" },
             "beforeSituation": { "type": "string" },
@@ -695,7 +686,7 @@
             "consentSigned": { "type": "boolean" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["title", "userId", "userName", "beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt"]
+        "required": ["beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt"]
     },
     "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -715,22 +706,6 @@
         "timestamp": { "type": "string", "format": "date-time" }
       },
       "required": ["type", "userId", "userName", "status", "timestamp"]
-    },
-    "CommunityFeedback": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Community Feedback",
-      "description": "Represents feedback collected from the community.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "date": { "type": "string", "format": "date-time" },
-        "communityName": { "type": "string" },
-        "feedbackCategory": { "type": "string", "enum": ["Complaint", "Suggestion", "Appreciation"] },
-        "details": { "type": "string" },
-        "followUpRequired": { "type": "boolean" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["date", "communityName", "feedbackCategory", "details", "followUpRequired", "createdAt"]
     },
     "Meeting": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -961,14 +936,13 @@
         "properties": {
             "id": { "type": "string" },
             "schoolName": { "type": "string" },
-            "headTeacherName": { "type": "string" },
             "contactTeacher": { "type": "string" },
             "phone": { "type": "string" },
             "enrollmentSize": { "type": "number" },
             "location": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["schoolName", "headTeacherName", "contactTeacher", "enrollmentSize", "location", "createdAt"]
+        "required": ["schoolName", "contactTeacher", "enrollmentSize", "location", "createdAt"]
     },
     "SLF_Prefect": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -983,7 +957,7 @@
             "position": { "type": "string" },
             "class": { "type": "string" },
             "age": { "type": "number" },
-            "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
+            "gender": { "type": "string" },
             "phone": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
@@ -1515,12 +1489,6 @@
       },
       "description": "Stores user feedback on AI features, bugs, and feature requests."
     },
-    "/community-feedback/{feedbackId}": {
-        "schema": {
-            "$ref": "#/entities/CommunityFeedback"
-        },
-        "description": "Stores feedback collected from community members."
-    },
     "/school-applications/{applicationId}": {
       "schema": {
         "$ref": "#/entities/SchoolApplication"
@@ -1677,5 +1645,4 @@
     }
   }
 }
-
-      
+    
