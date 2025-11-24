@@ -7,7 +7,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { media, Part } from 'genkit/content';
 import { googleAI } from '@genkit-ai/google-genai';
 import type { TestimonyInput, TestimonyOutput } from '@/lib/types';
 import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
@@ -48,7 +47,7 @@ const processTestimonyFlow = ai.defineFlow(
         ],
     });
     
-    const transcription = llmResponse.text;
+    const transcription = llmResponse.output()?.message.content.find(part => part.text)?.text;
 
     if (!transcription) {
       throw new Error('AI failed to transcribe the audio.');

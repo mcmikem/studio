@@ -14,7 +14,24 @@ import {googleAI} from '@genkit-ai/google-genai';
 import { firestore } from '@/firebase/server';
 import { defineDotprompt, dotprompt } from 'genkit/dotprompt';
 import { z } from 'zod';
-import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, KNOWLEDGE_BASE } from '../lib/data';
+import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, KNOWLEDGE_BASE } from '../lib/types';
+
+// Import flows so they are registered with Genkit
+import './flows/create-alert-flow';
+import './flows/daily-planner-flow';
+import './flows/impact-story-generator';
+import './flows/omuto-ai-flow';
+import './flows/smart-reminders-flow';
+import './flows/qualitative-analysis-flow';
+import './flows/generate-template-flow';
+import './flows/testimony-processor-flow';
+import './flows/grant-finder-flow';
+import './flows/grant-writer-flow';
+import './flows/parse-operational-plan-flow';
+import './flows/parse-workplan-flow';
+
+// Import tools so they are registered
+import './tools/omuto-tools';
 
 
 genkit({
@@ -51,19 +68,3 @@ defineDotprompt(
     Produce the output in the required JSON format.`,
   }
 );
-
-
-// Make sure all flows are exported from here.
-// Note: We only export the functions themselves, not the Genkit flow objects.
-export * from './flows/create-alert-flow';
-export * from './flows/daily-planner-flow';
-export * from './flows/impact-story-generator';
-export * from './flows/omuto-ai-flow';
-export * from './flows/smart-reminders-flow';
-export * from './flows/qualitative-analysis-flow';
-export * from './flows/generate-template-flow';
-export * from './flows/testimony-processor-flow';
-
-
-// NOTE: omuto-tools now only contains server-side safe tools.
-export * from './tools/omuto-tools';

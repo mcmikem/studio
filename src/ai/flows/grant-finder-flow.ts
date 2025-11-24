@@ -7,9 +7,8 @@
 
 import { ai } from '@/ai/genkit';
 import { findGrantOpportunitiesTool } from '../tools/omuto-tools';
-import { z } from 'zod';
 import type { GrantFinderInput, GrantFinderOutput } from '@/lib/types';
-import { GrantFinderOutputSchema } from '@/lib/types';
+import { GrantFinderInputSchema, GrantFinderOutputSchema } from '@/lib/types';
 
 
 const grantFinderPrompt = ai.definePrompt(
