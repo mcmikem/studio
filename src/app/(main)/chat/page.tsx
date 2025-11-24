@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb, User } from 'lucide-react';
+import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb } from 'lucide-react';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, orderBy, serverTimestamp, addDoc, limit } from 'firebase/firestore';
@@ -18,7 +18,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
 import { omutoAIFlow } from '@/ai/flows/omuto-ai-flow';
-import { Badge } from '@/components/ui/badge';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
 
 function MessageItem({ message }: { message: Message }) {
