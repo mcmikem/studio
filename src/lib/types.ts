@@ -323,6 +323,16 @@ export type Message = {
 
 export type Testimony = {
   id: string;
+  title: string;
+  userName: string;
+  userId: string;
+  summary: string;
+  text: string;
+  quotes: string[];
+  hashtags: string[];
+  audioUrl?: string;
+  videoUrl?: string;
+  createdAt: Timestamp;
   beneficiaryName: string;
   project: string;
   beforeSituation: string;
@@ -330,7 +340,6 @@ export type Testimony = {
   quote: string;
   mediaUrls: string[];
   consentSigned: boolean;
-  createdAt: Timestamp;
 };
 
 
@@ -526,6 +535,7 @@ export type WasteAudit = {
 export type SLF_School = {
     id: string;
     schoolName: string;
+    headTeacherName: string;
     contactTeacher: string;
     phone: string;
     enrollmentSize: number;
@@ -564,9 +574,9 @@ export type PrefectPerformance = {
     month: string;
     visibilityScore: number;
     disciplineScore: number;
-    leadershipScore: number;
+    initiativeScore: number;
     achievements?: string;
-    teacherFeedback?: string;
+    teacherComments?: string;
     createdAt: Timestamp;
 }
 
@@ -605,16 +615,17 @@ export type BusinessIdea = {
   businessName: string;
   problemSolved: string;
   targetCustomer: string;
-  revenueIdea: string;
+  startupCapitalNeeded: number;
   createdAt: Timestamp;
 }
 
 export type PitchScore = {
   id: string;
   businessIdeaId: string;
-  ideaClarity: number;
+  judgeName: string;
+  innovation: number;
   feasibility: number;
-  communityBenefit: number;
+  scalability: number;
   totalScore: number;
   createdAt: Timestamp;
 }
@@ -695,3 +706,5 @@ export type InventoryCheck = {
   discrepancyReason?: string;
   createdAt: Timestamp;
 };
+
+    

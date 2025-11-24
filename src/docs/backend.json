@@ -521,6 +521,7 @@
             "enum": ["Requisition", "Reimbursement"],
             "description": "The type of expense report (pre-spending or post-spending)."
         },
+        "projectId": { "type": "string" },
         "items": {
           "type": "array",
           "description": "A list of individual expense items.",
@@ -676,18 +677,16 @@
         "type": "object",
         "properties": {
             "id": { "type": "string" },
-            "title": { "type": "string" },
-            "userName": { "type": "string" },
-            "userId": { "type": "string" },
-            "summary": { "type": "string" },
-            "text": { "type": "string" },
-            "quotes": { "type": "array", "items": { "type": "string" } },
-            "hashtags": { "type": "array", "items": { "type": "string" } },
-            "audioUrl": { "type": "string", "format": "uri" },
-            "videoUrl": { "type": "string", "format": "uri" },
+            "beneficiaryName": { "type": "string" },
+            "project": { "type": "string" },
+            "beforeSituation": { "type": "string" },
+            "afterSituation": { "type": "string" },
+            "quote": { "type": "string" },
+            "mediaUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
+            "consentSigned": { "type": "boolean" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["title", "userName", "userId", "createdAt"]
+        "required": ["beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt"]
     },
     "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -959,7 +958,7 @@
             "position": { "type": "string" },
             "class": { "type": "string" },
             "age": { "type": "number" },
-            "gender": { "type": "string" },
+            "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
             "phone": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
@@ -1491,6 +1490,12 @@
       },
       "description": "Stores user feedback on AI features, bugs, and feature requests."
     },
+    "/community-feedback/{feedbackId}": {
+        "schema": {
+            "$ref": "#/entities/CommunityFeedback"
+        },
+        "description": "Stores feedback collected from community members."
+    },
     "/school-applications/{applicationId}": {
       "schema": {
         "$ref": "#/entities/SchoolApplication"
@@ -1647,3 +1652,5 @@
     }
   }
 }
+
+    

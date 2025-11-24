@@ -9,8 +9,9 @@ import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
-import { startOfMonth } from 'date-fns';
+import { startOfMonth, subMonths } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
+import Link from 'next/link';
 
 interface UserPerformanceProps {
   userId: string;
@@ -27,8 +28,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
   const activitiesQuery = useMemoFirebase(() => {
     if (!firestore || !userId || !isClient) return null;
 
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const oneMonthAgo = subMonths(new Date(), 1);
 
     return query(
       collection(firestore, 'activities'),
@@ -62,17 +62,25 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     return <Skeleton className="h-48" />;
   }
 
-  if (!activities || activities.length === 0) {
-      return (
-          <Card>
-              <CardHeader>
-                  <CardTitle>Performance (Last 30 Days)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  <EmptyState icon={BarChart3} title="No Activity" description="No activities logged in the last 30 days." className="min-h-0" />
-              </CardContent>
-          </Card>
-      )
+   if ((!isLoading && !activities) || (activities && activities.length === 0)) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance (Last 30 Days)</CardTitle>
+          <CardDescription>Your key contributions and efficiency.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <EmptyState
+            icon={BarChart3}
+            title="No Activity Logged"
+            description="Log an activity via the Forms Hub to see your performance here."
+            className="min-h-0 py-10"
+          >
+              <Link href="/forms/program-logs/general" className='mt-4 text-primary underline'>Log your first activity</Link>
+          </EmptyState>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -100,3 +108,5 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     </Card>
   );
 }
+
+    
