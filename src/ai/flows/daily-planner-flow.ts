@@ -9,33 +9,9 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import type { KeyResult } from '@/lib/types';
+import type { DailyPlannerAIInput, DailyPlannerAIOutput } from '@/lib/types';
+import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-
-// Zod schema for the input to the daily planner flow
-const DailyPlannerAIInputSchema = z.object({
-  userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
-  primaryMission: z.string().describe("The user's stated main focus for the day."),
-  weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
-  keyResults: z.array(z.any()).describe("A list of the organization's current Key Results (OKRs)."),
-});
-export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
-
-
-// Zod schema for the structured output from the AI
-const DailyPlannerAIOutputSchema = z.object({
-  timeBlocks: z.array(z.object({
-    startTime: z.string().describe("e.g., '09:00 AM'"),
-    endTime: z.string().describe("e.g., '11:00 AM'"),
-    description: z.string().describe("A specific, actionable task for this time block. This should be a clear to-do item."),
-  })).describe("A detailed, actionable schedule for the day. Each description should be a concrete task. Do not make up tasks; base them on the user's primary mission and context."),
-  multiWinConnections: z.array(z.string()).describe("Specific ways the daily mission connects to broader organizational goals (e.g., specific Key Results)."),
-  materials: z.string().describe("A comma-separated list of materials or resources needed."),
-  challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
-  bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from the provided knowledge base."),
-});
-export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
-
 
 const plannerPrompt = ai.definePrompt(
   {

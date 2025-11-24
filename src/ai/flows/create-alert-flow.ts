@@ -9,17 +9,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { firestore } from '@/firebase/server';
 import { FieldValue } from 'firebase-admin/firestore';
-
-const AlertInputSchema = z.object({
-  type: z.enum(['Urgent', 'Reminder', 'Info']),
-  message: z.string(),
-  priority: z.enum(['High', 'Medium', 'Low']),
-  action: z.string(),
-  creatorId: z.string().describe("The ID of the user creating the alert."),
-  targetUserIds: z.array(z.string()).optional().describe("An array of user IDs to target with this notification. If empty, it's a broadcast."),
-});
-
-export type AlertInput = z.infer<typeof AlertInputSchema>;
+import type { AlertInput } from '@/lib/types';
+import { AlertInputSchema } from '@/lib/types';
 
 export async function createAlert(input: AlertInput): Promise<{ id: string }> {
     return createAlertFlow(input);

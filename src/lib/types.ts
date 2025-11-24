@@ -282,6 +282,15 @@ export type WeeklyWorkplan = {
 };
 
 
+export const DailyPlannerAIInputSchema = z.object({
+  userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
+  primaryMission: z.string().describe("The user's stated main focus for the day."),
+  weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
+  keyResults: z.array(z.any()).describe("A list of the organization's current Key Results (OKRs)."),
+});
+export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
+
+
 export const DailyPlannerAIOutputSchema = z.object({
     timeBlocks: z.array(z.object({
         startTime: z.string().describe("e.g., '09:00 AM'"),
@@ -705,6 +714,159 @@ export type InventoryCheck = {
   discrepancyReason?: string;
   createdAt: Timestamp;
 };
-    
 
-    
+// Flow-specific types, centralized here
+export const AlertInputSchema = z.object({
+  type: z.enum(['Urgent', 'Reminder', 'Info']),
+  message: z.string(),
+  priority: z.enum(['High', 'Medium', 'Low']),
+  action: z.string(),
+  creatorId: z.string().describe("The ID of the user creating the alert."),
+  targetUserIds: z.array(z.string()).optional().describe("An array of user IDs to target with this notification. If empty, it's a broadcast."),
+});
+export type AlertInput = z.infer<typeof AlertInputSchema>;
+
+export const GenerateTemplateInputSchema = z.object({
+  description: z.string().describe('A natural language description of the checklist or template needed.'),
+});
+export type GenerateTemplateInput = z.infer<typeof GenerateTemplateInputSchema>;
+
+export const GenerateTemplateOutputSchema = z.object({
+  title: z.string().describe('A clear and concise title for the generated template.'),
+  checklistItems: z.array(z.string()).describe('A list of specific, actionable checklist items.'),
+});
+export type GenerateTemplateOutput = z.infer<typeof GenerateTemplateOutputSchema>;
+
+
+export const GrantFinderInputSchema = z.object({
+  query: z.string().describe('The user\'s search query for grant opportunities (e.g., "youth empowerment uganda").'),
+});
+export type GrantFinderInput = z.infer<typeof GrantFinderInputSchema>;
+
+
+export const GrantOpportunitySchema = z.object({
+  title: z.string(),
+  funder: z.string(),
+  description: z.string(),
+  amount: z.number(),
+  deadline: z.string().describe("Formatted as YYYY-MM-DD"),
+});
+export const GrantFinderOutputSchema = z.object({
+  opportunities: z.array(GrantOpportunitySchema).describe('A list of potential grant opportunities found.'),
+});
+export type GrantFinderOutput = z.infer<typeof GrantFinderOutputSchema>;
+
+
+export const GrantWriterInputSchema = z.object({
+  partnerName: z.string().describe("The name of the potential funder or partner."),
+  amountRequested: z.number().describe("The amount of funding being requested in UGX."),
+  proposalTitle: z.string().describe("The title of the proposal project."),
+});
+export type GrantWriterInput = z.infer<typeof GrantWriterInputSchema>;
+
+export const GrantWriterOutputSchema = z.object({
+  conceptNote: z.string().describe("A concise and persuasive concept note for the proposal, written in markdown format. It should include sections for Introduction, Problem Statement, Proposed Solution (linking to Omuto's ecosystem model), and Budget Overview."),
+});
+export type GrantWriterOutput = z.infer<typeof GrantWriterOutputSchema>;
+
+export const ImpactStoryInputSchema = z.object({
+  activityName: z.string().describe('The name of the activity.'),
+  activityDescription: z.string().describe('A detailed description of the activity.'),
+  activityImpact: z.string().describe('The measurable impact of the activity (e.g., number of trees planted, people reached).'),
+  userName: z.string().describe('The name of a user involved in the activity, to add a personal touch.'),
+  userQuote: z.string().optional().describe('A quote from a user or beneficiary about the activity.'),
+  memorableMoment: z.string().optional().describe('A specific, powerful interaction or observation from the activity.'),
+  challengesLearned: z.string().optional().describe('Surprising challenges and how they were overcome.'),
+});
+export type ImpactStoryInput = z.infer<typeof ImpactStoryInputSchema>;
+
+export const ImpactStoryOutputSchema = z.object({
+  impactStory: z.string().describe('A compelling narrative generated from the activity data.'),
+});
+export type ImpactStoryOutput = z.infer<typeof ImpactStoryOutputSchema>;
+
+
+export const HistoryMessageSchema = z.object({
+  role: z.enum(['user', 'model']),
+  content: z.array(z.object({ text: z.string() })),
+});
+export const OmutoAIInputSchema = z.object({
+  question: z.string().describe("The user's current question or message."),
+  history: z.array(HistoryMessageSchema).optional().describe('The chat history between the user and the AI.'),
+  userId: z.string().describe("The user's unique ID."), // Added for context
+});
+export type OmutoAIInput = z.infer<typeof OmutoAIInputSchema>;
+
+export const OmutoAIOutputSchema = z.object({
+  answer: z.string().describe('The AI-generated answer to the user\'s question.'),
+});
+export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
+
+export const KeyResultSchema = z.object({
+  title: z.string().describe("The unique identifier for the Key Result, e.g., 'OCT-KR1' or 'NOV-KR3'."),
+  description: z.string().describe("A concise summary of what the Key Result aims to achieve."),
+  currentProgress: z.number().default(0).describe("The starting progress for this new plan, which is always 0."),
+  target: z.number().describe("The numerical target for the Key Result."),
+  deadline: z.string().describe("The deadline for the Key Result, formatted as YYYY-MM-DD."),
+  priority: z.enum(['High', 'Medium', 'Low']).describe("The priority level of the Key Result."),
+});
+
+export const ParsePlanInputSchema = z.object({
+  planText: z.string().describe('The full, unstructured text of the monthly or quarterly operational plan.'),
+});
+export type ParsePlanInput = z.infer<typeof ParsePlanInputSchema>;
+
+export const ParsePlanOutputSchema = z.object({
+  keyResults: z.array(KeyResultSchema).describe('A list of all Key Results extracted from the plan text.'),
+});
+export type ParsePlanOutput = z.infer<typeof ParsePlanOutputSchema>;
+
+
+export const ParseWorkplanInputSchema = z.object({
+  textPlan: z.string().describe('The unstructured, raw text of a weekly plan.'),
+});
+export type ParseWorkplanInput = z.infer<typeof ParseWorkplanInputSchema>;
+
+export const PriorityItemSchema = z.object({
+    activity: z.string().describe('The specific task or activity to be done.'),
+    priority: z.enum(['High', 'Medium', 'Low']).describe('The priority level of the activity.'),
+    responsible: z.array(z.string()).describe('A list of names or roles responsible for the activity.'),
+    deadline: z.string().optional().describe('The deadline for the activity, if mentioned (YYYY-MM-DD format).'),
+});
+
+export const ParseWorkplanOutputSchema = z.object({
+  keyPriorities: z.array(PriorityItemSchema).describe('A list of structured priority items extracted from the text.'),
+  message: z.string().describe('A one or two-sentence summary of the overall focus or goal for the week.'),
+});
+export type ParseWorkplanOutput = z.infer<typeof ParseWorkplanOutputSchema>;
+
+export const QualitativeAnalysisInputSchema = z.object({
+  programId: z.string().describe('The ID of the program to analyze.'),
+  programName: z.string().describe('The name of the program being analyzed.'),
+  startDate: z.string().describe('The start date of the range to analyze (YYYY-MM-DD).'),
+  endDate: z.string().describe('The end date of the range to analyze (YYYY-MM-DD).'),
+});
+export type QualitativeAnalysisInput = z.infer<typeof QualitativeAnalysisInputSchema>;
+
+
+export const QualitativeAnalysisOutputSchema = z.object({
+  summary: z.string().describe("A high-level executive summary of the program's qualitative performance during the period."),
+  recurringSuccesses: z.array(z.string()).describe("A list of common themes and successes identified from the reports."),
+  commonChallenges: z.array(z.string()).describe("A list of recurring challenges or issues faced by the team."),
+  keyLearnings: z.array(z.string()).describe("A list of actionable learnings and recommendations for improvement."),
+});
+export type QualitativeAnalysisOutput = z.infer<typeof QualitativeAnalysisOutputSchema>;
+
+
+export const TestimonyInputSchema = z.object({
+  mediaUri: z.string().describe("A data URI of the audio or video file. Must be in a format supported by Gemini, like webm."),
+});
+export type TestimonyInput = z.infer<typeof TestimonyInputSchema>;
+
+export const TestimonyOutputSchema = z.object({
+  transcription: z.string().describe("The full transcription of the testimony."),
+  summary: z.string().describe("A concise one-paragraph summary of the testimony."),
+  quotes: z.array(z.string()).describe("A list of 2-3 powerful, impactful quotes from the testimony."),
+  hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
+});
+export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;

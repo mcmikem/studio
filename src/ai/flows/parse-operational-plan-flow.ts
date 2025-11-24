@@ -7,26 +7,9 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import type { ParsePlanInput, ParsePlanOutput } from '@/lib/types';
+import { ParsePlanInputSchema, ParsePlanOutputSchema } from '@/lib/types';
 
-const KeyResultSchema = z.object({
-  title: z.string().describe("The unique identifier for the Key Result, e.g., 'OCT-KR1' or 'NOV-KR3'."),
-  description: z.string().describe("A concise summary of what the Key Result aims to achieve."),
-  currentProgress: z.number().default(0).describe("The starting progress for this new plan, which is always 0."),
-  target: z.number().describe("The numerical target for the Key Result."),
-  deadline: z.string().describe("The deadline for the Key Result, formatted as YYYY-MM-DD."),
-  priority: z.enum(['High', 'Medium', 'Low']).describe("The priority level of the Key Result."),
-});
-
-const ParsePlanInputSchema = z.object({
-  planText: z.string().describe('The full, unstructured text of the monthly or quarterly operational plan.'),
-});
-
-const ParsePlanOutputSchema = z.object({
-  keyResults: z.array(KeyResultSchema).describe('A list of all Key Results extracted from the plan text.'),
-});
-
-export type ParsePlanInput = z.infer<typeof ParsePlanInputSchema>;
-export type ParsePlanOutput = z.infer<typeof ParsePlanOutputSchema>;
 
 const planParserPrompt = ai.definePrompt({
   name: 'operationalPlanParserPrompt',
@@ -63,4 +46,3 @@ export async function parseOperationalPlan(input: ParsePlanInput): Promise<Parse
   const sanitizedResults = output.keyResults.map(kr => ({ ...kr, currentProgress: 0 }));
   return { keyResults: sanitizedResults };
 }
-

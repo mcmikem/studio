@@ -7,24 +7,9 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import type { ParseWorkplanInput, ParseWorkplanOutput } from '@/lib/types';
+import { ParseWorkplanInputSchema, ParseWorkplanOutputSchema } from '@/lib/types';
 
-const ParseWorkplanInputSchema = z.object({
-  textPlan: z.string().describe('The unstructured, raw text of a weekly plan.'),
-});
-export type ParseWorkplanInput = z.infer<typeof ParseWorkplanInputSchema>;
-
-const PriorityItemSchema = z.object({
-    activity: z.string().describe('The specific task or activity to be done.'),
-    priority: z.enum(['High', 'Medium', 'Low']).describe('The priority level of the activity.'),
-    responsible: z.array(z.string()).describe('A list of names or roles responsible for the activity.'),
-    deadline: z.string().optional().describe('The deadline for the activity, if mentioned (YYYY-MM-DD format).'),
-});
-
-const ParseWorkplanOutputSchema = z.object({
-  keyPriorities: z.array(PriorityItemSchema).describe('A list of structured priority items extracted from the text.'),
-  message: z.string().describe('A one or two-sentence summary of the overall focus or goal for the week.'),
-});
-export type ParseWorkplanOutput = z.infer<typeof ParseWorkplanOutputSchema>;
 
 const workplanParserPrompt = ai.definePrompt({
   name: 'workplanParserPrompt',

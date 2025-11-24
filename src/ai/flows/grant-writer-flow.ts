@@ -6,20 +6,9 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-
-const GrantWriterInputSchema = z.object({
-  partnerName: z.string().describe("The name of the potential funder or partner."),
-  amountRequested: z.number().describe("The amount of funding being requested in UGX."),
-  proposalTitle: z.string().describe("The title of the proposal project."),
-});
-export type GrantWriterInput = z.infer<typeof GrantWriterInputSchema>;
-
-const GrantWriterOutputSchema = z.object({
-  conceptNote: z.string().describe("A concise and persuasive concept note for the proposal, written in markdown format. It should include sections for Introduction, Problem Statement, Proposed Solution (linking to Omuto's ecosystem model), and Budget Overview."),
-});
-export type GrantWriterOutput = z.infer<typeof GrantWriterOutputSchema>;
+import type { GrantWriterInput, GrantWriterOutput } from '@/lib/types';
+import { GrantWriterInputSchema, GrantWriterOutputSchema } from '@/lib/types';
 
 
 const grantWriterPrompt = ai.definePrompt({

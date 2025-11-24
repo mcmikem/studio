@@ -5,32 +5,11 @@
  * @fileOverview A GenAI-powered tool to automatically generate compelling narratives from activity data.
  *
  * - generateImpactStory - A function that generates impact stories.
- * - ImpactStoryInput - The input type for the generateImpactStory function.
- * - ImpactStoryOutput - The return type for the generateImpactStory function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ImpactStoryInputSchema, ImpactStoryOutputSchema, type ImpactStoryInput, type ImpactStoryOutput } from '@/lib/types';
 
-const ImpactStoryInputSchema = z.object({
-  activityName: z.string().describe('The name of the activity.'),
-  activityDescription: z.string().describe('A detailed description of the activity.'),
-  activityImpact: z.string().describe('The measurable impact of the activity (e.g., number of trees planted, people reached).'),
-  userName: z.string().describe('The name of a user involved in the activity, to add a personal touch.'),
-  userQuote: z.string().optional().describe('A quote from a user or beneficiary about the activity.'),
-  memorableMoment: z.string().optional().describe('A specific, powerful interaction or observation from the activity.'),
-  challengesLearned: z.string().optional().describe('Surprising challenges and how they were overcome.'),
-});
-export type ImpactStoryInput = z.infer<typeof ImpactStoryInputSchema>;
-
-const ImpactStoryOutputSchema = z.object({
-  impactStory: z.string().describe('A compelling narrative generated from the activity data.'),
-});
-export type ImpactStoryOutput = z.infer<typeof ImpactStoryOutputSchema>;
-
-export async function generateImpactStory(input: ImpactStoryInput): Promise<ImpactStoryOutput> {
-  return impactStoryGeneratorFlow(input);
-}
 
 const prompt = ai.definePrompt({
   name: 'impactStoryPrompt',
@@ -74,3 +53,8 @@ const impactStoryGeneratorFlow = ai.defineFlow(
     return output;
   }
 );
+
+
+export async function generateImpactStory(input: ImpactStoryInput): Promise<ImpactStoryOutput> {
+  return impactStoryGeneratorFlow(input);
+}

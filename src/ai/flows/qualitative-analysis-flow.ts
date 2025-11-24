@@ -9,23 +9,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { getActivitiesForProgramTool } from '../tools/omuto-tools';
 import { googleAI } from '@genkit-ai/google-genai';
-
-const QualitativeAnalysisInputSchema = z.object({
-  programId: z.string().describe('The ID of the program to analyze.'),
-  programName: z.string().describe('The name of the program being analyzed.'),
-  startDate: z.string().describe('The start date of the range to analyze (YYYY-MM-DD).'),
-  endDate: z.string().describe('The end date of the range to analyze (YYYY-MM-DD).'),
-});
-export type QualitativeAnalysisInput = z.infer<typeof QualitativeAnalysisInputSchema>;
-
-
-const QualitativeAnalysisOutputSchema = z.object({
-  summary: z.string().describe("A high-level executive summary of the program's qualitative performance during the period."),
-  recurringSuccesses: z.array(z.string()).describe("A list of common themes and successes identified from the reports."),
-  commonChallenges: z.array(z.string()).describe("A list of recurring challenges or issues faced by the team."),
-  keyLearnings: z.array(z.string()).describe("A list of actionable learnings and recommendations for improvement."),
-});
-export type QualitativeAnalysisOutput = z.infer<typeof QualitativeAnalysisOutputSchema>;
+import type { QualitativeAnalysisInput, QualitativeAnalysisOutput } from '@/lib/types';
+import { QualitativeAnalysisOutputSchema } from '@/lib/types';
 
 
 const analysisPrompt = ai.definePrompt({

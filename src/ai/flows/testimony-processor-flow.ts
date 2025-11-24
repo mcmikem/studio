@@ -9,21 +9,8 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { media, Part } from 'genkit/content';
 import { googleAI } from '@genkit-ai/google-genai';
-
-const TestimonyInputSchema = z.object({
-  mediaUri: z.string().describe("A data URI of the audio or video file. Must be in a format supported by Gemini, like webm."),
-});
-
-const TestimonyOutputSchema = z.object({
-  transcription: z.string().describe("The full transcription of the testimony."),
-  summary: z.string().describe("A concise one-paragraph summary of the testimony."),
-  quotes: z.array(z.string()).describe("A list of 2-3 powerful, impactful quotes from the testimony."),
-  hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
-});
-
-export type TestimonyInput = z.infer<typeof TestimonyInputSchema>;
-export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
-
+import type { TestimonyInput, TestimonyOutput } from '@/lib/types';
+import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
 
 const analysisPrompt = ai.definePrompt(
   {
@@ -55,12 +42,10 @@ const processTestimonyFlow = ai.defineFlow(
     // 1. Transcribe the audio/video
     const llmResponse = await ai.generate({
         model: googleAI.model('gemini-2.5-flash'),
-        prompt: `Please transcribe the following audio. The audio is a testimony from a beneficiary of an NGO in Uganda. Capture the speech as accurately as possible. If there is more than one speaker, try to differentiate them.
-        {{media url=mediaUri type="video/webm"}}
-        `,
-        input: {
-          mediaUri: input.mediaUri
-        }
+        prompt: [
+          { text: "Please transcribe the following audio. The audio is a testimony from a beneficiary of an NGO in Uganda. Capture the speech as accurately as possible. If there is more than one speaker, try to differentiate them." },
+          { media: { url: input.mediaUri } }
+        ],
     });
     
     const transcription = llmResponse.text;

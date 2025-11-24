@@ -6,19 +6,8 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
-
-const GenerateTemplateInputSchema = z.object({
-  description: z.string().describe('A natural language description of the checklist or template needed.'),
-});
-
-const GenerateTemplateOutputSchema = z.object({
-  title: z.string().describe('A clear and concise title for the generated template.'),
-  checklistItems: z.array(z.string()).describe('A list of specific, actionable checklist items.'),
-});
-
-export type GenerateTemplateInput = z.infer<typeof GenerateTemplateInputSchema>;
-export type GenerateTemplateOutput = z.infer<typeof GenerateTemplateOutputSchema>;
+import type { GenerateTemplateInput, GenerateTemplateOutput } from '@/lib/types';
+import { GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from '@/lib/types';
 
 const templateGeneratorPrompt = ai.definePrompt({
   name: 'templateGeneratorPrompt',

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,29 +11,9 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { createCheckoutTool, getRecentCheckinsTool, getRecentCheckoutsTool, searchOmutoTool } from '../tools/omuto-tools';
-import type { SearchResultItemSchema } from '@/lib/types';
 import { format } from 'date-fns';
 import { googleAI } from '@genkit-ai/google-genai';
-
-// Define the structure of a single message in the chat history
-const HistoryMessageSchema = z.object({
-  role: z.enum(['user', 'model']),
-  content: z.array(z.object({ text: z.string() })),
-});
-
-// Zod schema for the input to the flow
-const OmutoAIInputSchema = z.object({
-  question: z.string().describe("The user's current question or message."),
-  history: z.array(HistoryMessageSchema).optional().describe('The chat history between the user and the AI.'),
-  userId: z.string().describe("The user's unique ID."), // Added for context
-});
-export type OmutoAIInput = z.infer<typeof OmutoAIInputSchema>;
-
-// Zod schema for the output from the AI
-const OmutoAIOutputSchema = z.object({
-  answer: z.string().describe('The AI-generated answer to the user\'s question.'),
-});
-export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
+import type { OmutoAIInput, OmutoAIOutput } from '@/lib/types';
 
 // The main flow function that orchestrates the AI's response
 export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
