@@ -4,11 +4,15 @@ import { firebaseConfig } from './config';
 import * as fs from 'fs';
 import * as path from 'path';
 
-let app: App | undefined;
-let firestore: Firestore | undefined;
+// This file uses a singleton pattern to ensure Firebase Admin is initialized only once.
+let adminApp: App | undefined;
+let adminFirestore: Firestore | undefined;
 
-function initializeFirebaseAdmin() {
-  if (getApps().length === 0) {
+function initializeAdmin() {
+  if (getApps().some(app => app.name === 'firebase-admin')) {
+      adminApp = getApp('firebase-admin');
+      adminFirestore = getFirestore(adminApp);
+  } else {
     try {
       const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
       if (!fs.existsSync(serviceAccountPath)) {
@@ -16,26 +20,33 @@ function initializeFirebaseAdmin() {
       }
       const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
       
-      app = initializeApp({
+      adminApp = initializeApp({
         credential: cert(serviceAccount),
         projectId: firebaseConfig.projectId,
-      });
-      firestore = getFirestore(app);
+      }, 'firebase-admin');
+      adminFirestore = getFirestore(adminApp);
       console.log("Firebase Admin SDK initialized successfully.");
     } catch (e) {
       console.error("Critical Error: Failed to initialize Firebase Admin SDK.", e);
+      // In a server environment, if Firebase Admin fails, we should throw to halt the process.
       throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
     }
-  } else {
-    app = getApp();
-    firestore = getFirestore(app);
   }
 }
 
-// Singleton pattern to ensure Firebase is initialized only once
+// Call the initialization function immediately when the module is loaded.
+initializeAdmin();
+
+/**
+ * Returns the singleton instance of the Firebase Admin services.
+ * Throws an error if the services could not be initialized.
+ * @returns An object containing the initialized Firestore instance.
+ */
 export function getFirebaseAdmin() {
-    if (!app || !firestore) {
-        initializeFirebaseAdmin();
+    if (!adminFirestore) {
+        // This should theoretically not be reached if the module loading works as expected,
+        // but it's a safeguard.
+        throw new Error("Firebase Admin SDK not initialized. The server process might be in an inconsistent state.");
     }
-    return { app: app!, firestore: firestore! };
+    return { firestore: adminFirestore };
 }

@@ -14,7 +14,7 @@ import {
   addDocumentNonBlocking, 
   updateDocumentNonBlocking
 } from '@/firebase';
-import { collection, serverTimestamp, doc, query, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, query, orderBy, getDocs, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {

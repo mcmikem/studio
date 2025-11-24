@@ -32,7 +32,14 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  const [services, setServices] = useState<FirebaseServices | null>(null);
+  // Initialize services directly in the state for the provider.
+  // This ensures that Firebase is initialized only once per application lifecycle.
+  const [services] = useState<FirebaseServices | null>(() => {
+    if (typeof window !== 'undefined') {
+      return initializeFirebase();
+    }
+    return null;
+  });
 
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null; 
@@ -44,21 +51,13 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: null,
   });
 
-  // Effect for initializing Firebase services safely on the client
-  useEffect(() => {
-    // This check ensures initialization only happens on the client, and only once.
-    if (typeof window !== 'undefined' && !services) {
-      const initializedServices = initializeFirebase();
-      if (initializedServices) {
-          setServices(initializedServices);
-      }
-    }
-  }, [services]);
-
-
   // Effect for listening to authentication state changes
   useEffect(() => {
-    if (!services) return; // Don't run auth listener if services are not initialized
+    if (!services) {
+      // If services are null (e.g., on the server), we are effectively in a loading state for the user.
+      setUserAuthState(prevState => ({ ...prevState, isUserLoading: false }));
+      return;
+    };
 
     const unsubscribe = onAuthStateChanged(
       services.auth,
@@ -147,8 +146,7 @@ export const useUser = () => {
  * The factory function will only re-run if the dependencies in the deps array change.
  * It's crucial to use this for creating queries to prevent infinite re-renders.
  */
-export function useMemoFirebase<T>(factory: () => T, deps: React.DependencyList): T {
+export function useMemoFirebase<T>(factory: () => T, deps: React.DependencyList): T | null {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     return useMemo(factory, deps);
 }
-
