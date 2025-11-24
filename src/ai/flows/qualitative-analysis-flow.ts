@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -39,7 +38,7 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         tools: [await getActivitiesForProgramTool()],
     });
 
-    const output = llmResponse.output();
+    const output = llmResponse.output;
 
     if (!output) {
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");

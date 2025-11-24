@@ -1,16 +1,15 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function isManager(userId) {
-      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+    function isManager() {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
       return request.auth != null && userDoc.data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
     }
 
-    function isFinance(userId) {
-      let userDoc = get(/databases/$(database)/documents/users/$(userId));
+    function isFinance() {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
       return request.auth != null && userDoc.data.role in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
     }
 
@@ -25,63 +24,44 @@ service cloud.firestore {
     }
 
     // USER SUB-COLLECTIONS (private data)
-    match /users/{userId}/{subcollection}/{docId} {
+    match /users/{userId}/ai-chats/{chatId} {
       allow read, write: if isOwner(userId);
     }
-     match /users/{userId}/ai-chats/{chatId} {
+     match /users/{userId}/tasks/{taskId} {
       allow read, write: if isOwner(userId);
     }
-    match /users/{userId}/tasks/{taskId} {
-      allow read, write: if isOwner(userId);
-    }
-    
-    // Explicit index for user performance query
-    match /activities/{activityId} {
-      // This is a placeholder, the actual rule is below.
-      // This index is for the query in user-performance.tsx
-      // that filters by userId and orders by loggedAt.
-      allow read: if request.auth != null;
-      allow create: if isOwner(request.resource.data.userId);
-      allow update, delete: if isOwner(resource.data.userId);
-      
-      // Index for the query in user-performance.tsx
-      // This is a comment, but the presence of the index block
-      // is what matters for the Firestore emulator.
-      // index on userId, loggedAt desc {}
-    }
-
 
     // MANAGEMENT COLLECTIONS (Readable by all, Writable by Managers)
     match /programs/{programId} {
       allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
+      allow write: if isManager();
     }
     match /projects/{projectId} {
       allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
+      allow write: if isManager();
     }
     match /partnerships/{partnershipId} {
       allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
+      allow write: if isManager();
     }
      match /partnerships/{partnershipId}/{subcollection}/{docId} {
-      allow read, write: if isManager(request.auth.uid);
+      allow read, write: if isManager();
     }
     match /impact-metrics/{metricId} {
       allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
+      allow write: if isManager();
     }
     match /equipment/{equipmentId} {
       allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
+      allow write: if isManager();
     }
      match /task-templates/{templateId} {
       allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
+      allow write: if isManager();
     }
      match /key-results/{keyResultId} {
       allow read: if request.auth != null;
-      allow write: if isManager(request.auth.uid);
+      allow write: if isManager();
     }
 
     // TEAM-WIDE USER-GENERATED CONTENT (Readable by all, owned writes)
@@ -100,6 +80,14 @@ service cloud.firestore {
         allow create: if isOwner(request.resource.data.userId);
         allow update, delete: if isOwner(resource.data.userId);
     }
+    match /activities/{activityId} {
+      allow read: if request.auth != null;
+      allow create: if isOwner(request.resource.data.userId);
+      allow update, delete: if isOwner(resource.data.userId);
+      
+      // Composite index for UserPerformance query
+      index on userId, loggedAt desc {}
+    }
     match /workplans/{workplanId} {
       allow read: if request.auth != null;
       allow create: if isOwner(request.resource.data.userId);
@@ -111,17 +99,17 @@ service cloud.firestore {
       allow update, delete: if isOwner(resource.data.userId);
     }
     match /feedback/{feedbackId} {
-      allow read: if isManager(request.auth.uid);
+      allow read: if isManager();
       allow create: if isOwner(request.resource.data.userId);
-      allow update: if isManager(request.auth.uid);
-      allow delete: if isManager(request.auth.uid);
+      allow update: if isManager();
+      allow delete: if isManager();
     }
     match /community-feedback/{feedbackId} {
        allow read, write: if request.auth != null;
     }
     match /events/{eventId} {
         allow read: if request.auth != null;
-        allow write: if isManager(request.auth.uid);
+        allow write: if isManager();
     }
     
     // MEAL / DATA COLLECTION - Open access for any authenticated user
@@ -230,16 +218,16 @@ service cloud.firestore {
 
     // SCHOOL APPLICATIONS (Public write, Logged-in read)
     match /school-applications/{applicationId} {
-        allow read: if isManager(request.auth.uid);
+        allow read: if isManager();
         allow create: if true;
-        allow update, delete: if isManager(request.auth.uid);
+        allow update, delete: if isManager();
     }
 
 
     // TEAM-WIDE PLANS (Writable by Managers)
     match /team-workplans/{planId} {
         allow read: if request.auth != null;
-        allow write: if isManager(request.auth.uid);
+        allow write: if isManager();
     }
 
 
@@ -247,26 +235,26 @@ service cloud.firestore {
     match /alerts/{alertId} {
       allow list: if request.auth != null;
       allow get: if request.auth != null && (resource.data.targetUserIds.size() == 0 || request.auth.uid in resource.data.targetUserIds);
-      allow write: if isManager(request.auth.uid);
+      allow write: if isManager();
     }
 
     // FINANCIALS (Strictest Rules)
     match /expenses/{expenseId} {
-      allow get: if request.auth != null && (isFinance(request.auth.uid) || resource.data.userId == request.auth.uid);
-      allow list: if request.auth != null && isFinance(request.auth.uid);
+      allow get: if request.auth != null && (isFinance() || resource.data.userId == request.auth.uid);
+      allow list: if request.auth != null && isFinance();
       allow create: if request.auth != null;
-      allow update: if request.auth != null && (isManager(request.auth.uid) || (request.resource.data.status == 'Acknowledged' && resource.data.userId == request.auth.uid));
-      allow delete: if request.auth != null && (isFinance(request.auth.uid) || isOwner(resource.data.userId));
+      allow update: if request.auth != null && (isManager() || (request.resource.data.status == 'Acknowledged' && resource.data.userId == request.auth.uid));
+      allow delete: if request.auth != null && (isFinance() || isOwner(resource.data.userId));
     }
 
     match /income/{incomeId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && isFinance(request.auth.uid);
+      allow write: if request.auth != null && isFinance();
     }
     
     match /proposals/{proposalId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && isManager(request.auth.uid);
+      allow write: if request.auth != null && isManager();
     }
   }
 }

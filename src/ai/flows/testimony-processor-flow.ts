@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -47,7 +46,7 @@ const processTestimonyFlow = ai.defineFlow(
         ],
     });
     
-    const transcription = llmResponse.output()?.message.content.find(part => part.text)?.text;
+    const transcription = llmResponse.output?.message.content.find(part => part.text)?.text;
 
     if (!transcription) {
       throw new Error('AI failed to transcribe the audio.');

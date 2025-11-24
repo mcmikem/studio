@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -58,6 +57,6 @@ Your knowledge is not just static; you can learn about the team's current activi
     } catch (error: any) {
         console.error("[omutoAIFlow] Critical error during AI generation:", error);
         // Provide a user-facing error message that doesn't expose internal details.
-        return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. The technical details are: ${error.message}` };
+        return { answer: `I'm sorry, I encountered a server error and couldn't complete your request.` };
     }
 }
