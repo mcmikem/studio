@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Suspense } from 'react';
@@ -14,5 +13,3 @@ function PulsePage() {
 }
 
 export default PulsePage;
-
-    

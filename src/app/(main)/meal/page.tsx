@@ -160,5 +160,3 @@ export default function MealPage() {
         </div>
     );
 }
-
-      
