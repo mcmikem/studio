@@ -5,8 +5,8 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-import { firestore } from '@/firebase/server';
+import { z } from 'zod';
+import { getFirebaseAdmin } from '@/firebase/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import type { AlertInput } from '@/lib/types';
 import { AlertInputSchema } from '@/lib/types';
@@ -22,6 +22,7 @@ const createAlertFlow = ai.defineFlow(
     outputSchema: z.object({ id: z.string() }),
   },
   async (alertData) => {
+    const { firestore } = getFirebaseAdmin();
     try {
       const alertsCollection = firestore.collection('alerts');
       

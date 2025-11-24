@@ -4,7 +4,8 @@ import { firebaseConfig } from './config';
 import * as fs from 'fs';
 import * as path from 'path';
 
-let firestore: Firestore;
+let app: App | undefined;
+let firestore: Firestore | undefined;
 
 function initializeFirebaseAdmin() {
   if (getApps().length === 0) {
@@ -15,7 +16,7 @@ function initializeFirebaseAdmin() {
       }
       const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
       
-      const app = initializeApp({
+      app = initializeApp({
         credential: cert(serviceAccount),
         projectId: firebaseConfig.projectId,
       });
@@ -23,18 +24,18 @@ function initializeFirebaseAdmin() {
       console.log("Firebase Admin SDK initialized successfully.");
     } catch (e) {
       console.error("Critical Error: Failed to initialize Firebase Admin SDK.", e);
-      // In a production environment, you might want to exit the process
-      // or have a more robust error handling mechanism.
       throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
     }
   } else {
-    const app = getApp();
+    app = getApp();
     firestore = getFirestore(app);
   }
 }
 
-// Initialize immediately when the module is loaded.
-initializeFirebaseAdmin();
-
-// Export the initialized instance.
-export { firestore };
+// Singleton pattern to ensure Firebase is initialized only once
+export function getFirebaseAdmin() {
+    if (!app || !firestore) {
+        initializeFirebaseAdmin();
+    }
+    return { app: app!, firestore: firestore! };
+}

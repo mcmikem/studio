@@ -5,7 +5,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { firestore } from '@/firebase/server';
+import { getFirebaseAdmin } from '@/firebase/server';
 import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { z } from 'zod';
 import { SearchResultItemSchema } from '@/lib/types';
@@ -77,6 +77,7 @@ export const findUsersByNameToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ name }) => {
+        const { firestore } = getFirebaseAdmin();
         const usersRef = collection(firestore, 'users');
         
         const q = query(
@@ -109,6 +110,7 @@ export const findProgramsByNameToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
+        const { firestore } = getFirebaseAdmin();
         const programsRef = collection(firestore, 'programs');
         
         const q = query(
@@ -142,6 +144,7 @@ export const findExpensesByTitleToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
+        const { firestore } = getFirebaseAdmin();
         const expensesRef = collection(firestore, 'expenses');
         
         const q = query(
@@ -208,7 +211,7 @@ export const createCheckoutToolObject = ai.defineTool(
         })
     },
     async ({ userId, task, learning, tomorrowPlan }) => {
-
+        const { firestore } = getFirebaseAdmin();
         try {
             const userRef = doc(firestore, 'users', userId);
             const userSnap = await getDoc(userRef);
@@ -258,7 +261,7 @@ export const getActivitiesForProgramToolObject = ai.defineTool(
         outputSchema: z.array(z.any()), // We can be more specific, but 'any' is fine for the tool
     },
     async ({ programId }) => {
-        
+        const { firestore } = getFirebaseAdmin();
         const activitiesRef = collection(firestore, 'activities');
         const q = query(
             activitiesRef,
@@ -298,6 +301,7 @@ export const getRecentCheckoutsToolObject = ai.defineTool(
         ),
     },
     async ({ count }) => {
+        const { firestore } = getFirebaseAdmin();
         const checkoutsRef = collection(firestore, 'checkouts');
         const q = query(
             checkoutsRef,
@@ -337,6 +341,7 @@ export const getRecentCheckinsToolObject = ai.defineTool(
         ),
     },
     async ({ count }) => {
+        const { firestore } = getFirebaseAdmin();
         const checkinsRef = collection(firestore, 'checkins');
         
         const today = new Date();
@@ -375,6 +380,7 @@ export const getUpcomingEventsForUserToolObject = ai.defineTool(
         outputSchema: z.array(z.any()),
     },
     async ({ userId }) => {
+        const { firestore } = getFirebaseAdmin();
         const today = new Date();
         const sevenDaysFromNow = new Date();
         sevenDaysFromNow.setDate(today.getDate() + 7);
@@ -409,6 +415,7 @@ export const getPendingTasksForUserToolObject = ai.defineTool(
         outputSchema: z.array(z.any()),
     },
     async ({ userId }) => {
+        const { firestore } = getFirebaseAdmin();
         const tasksQuery = query(
             collection(firestore, 'users', userId, 'tasks'),
             where('completed', '==', false),
