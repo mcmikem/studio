@@ -13,7 +13,6 @@ import { EmptyState } from '../ui/empty-state';
 function CheckoutItem({ checkout }: { checkout: Checkout }) {
   const timeAgo = formatDateSafe(checkout.timestamp);
 
-  // Extract all hashtags from the task
   const completedTasks = checkout.tasks?.filter(t => t.status === 'Done') || [];
   const notCompletedTasks = checkout.tasks?.filter(t => t.status === 'Not Done') || [];
   
@@ -62,7 +61,7 @@ export function RecentCheckouts({ checkouts }: { checkouts: Checkout[] | null })
   return (
       <div className="space-y-4">
         {!checkouts ? (
-            Array.from({ length: 5 }).map((_, i) => (
+            Array.from({ length: 3 }).map((_, i) => (
                  <div key={i} className="flex items-center space-x-4">
                     <Skeleton className="h-9 w-9 rounded-full" />
                     <div className="space-y-2 flex-1">

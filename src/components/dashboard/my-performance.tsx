@@ -32,8 +32,7 @@ export function MyPerformance() {
     return query(
       collection(firestore, 'activities'),
       where('userId', '==', user.uid),
-      where('loggedAt', '>=', Timestamp.fromDate(monthStart)),
-      orderBy('loggedAt', 'desc')
+      where('loggedAt', '>=', Timestamp.fromDate(monthStart))
     );
   }, [firestore, user, isClient]);
 
