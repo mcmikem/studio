@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -8,9 +7,9 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import { createCheckout, getRecentCheckins, getRecentCheckouts, searchOmuto } from '../tools/omuto-tools';
+import { createCheckoutTool, getRecentCheckinsTool, getRecentCheckoutsTool, searchOmutoTool } from '../tools/omuto-tools';
 import type { SearchResultItemSchema } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -55,7 +54,7 @@ Your knowledge is not just static; you can learn about the team's current activi
 - **searchOmuto**: If the user asks a question about a person, program, project, or expense, use this tool to find the information from the database. This is your primary way of accessing organizational knowledge.
 - **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"
 - **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.`,
-            tools: [searchOmuto, createCheckout, getRecentCheckins, getRecentCheckouts],
+            tools: [searchOmutoTool(), createCheckoutTool(), getRecentCheckinsTool(), getRecentCheckoutsTool()],
             config: {
                 temperature: 0.2, // Be more factual
             }
@@ -80,5 +79,3 @@ Your knowledge is not just static; you can learn about the team's current activi
         return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. The technical details are: ${error.message}` };
     }
 }
-
-      

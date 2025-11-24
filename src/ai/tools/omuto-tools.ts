@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -14,8 +13,7 @@ import { PartnershipSchema, SearchResultItemSchema } from '@/lib/types';
 import { format } from 'date-fns';
 import { createAlert } from '../flows/create-alert-flow';
 
-
-export const findGrantOpportunities = ai.defineTool(
+const findGrantOpportunitiesToolObject = ai.defineTool(
   {
     name: 'findGrantOpportunities',
     description: 'Searches for grant and funding opportunities based on a query. This is a simulation and will return mock data.',
@@ -70,8 +68,7 @@ export const findGrantOpportunities = ai.defineTool(
   }
 );
 
-
-export const findUsersByName = ai.defineTool(
+const findUsersByNameToolObject = ai.defineTool(
     {
         name: 'findUsersByName',
         description: 'Finds staff members by their name.',
@@ -103,7 +100,7 @@ export const findUsersByName = ai.defineTool(
     }
 );
 
-export const findProgramsByName = ai.defineTool(
+const findProgramsByNameToolObject = ai.defineTool(
     {
         name: 'findProgramsByName',
         description: 'Finds programs by their title.',
@@ -136,7 +133,7 @@ export const findProgramsByName = ai.defineTool(
 );
 
 
-export const findExpensesByTitle = ai.defineTool(
+const findExpensesByTitleToolObject = ai.defineTool(
     {
         name: 'findExpensesByTitle',
         description: 'Finds expense reports by their title.',
@@ -168,7 +165,7 @@ export const findExpensesByTitle = ai.defineTool(
     }
 );
 
-export const searchOmuto = ai.defineTool(
+const searchOmutoToolObject = ai.defineTool(
     {
         name: 'searchOmuto',
         description: 'Performs a global search across users, programs, and expenses to find information within the Omuto Central app.',
@@ -181,9 +178,9 @@ export const searchOmuto = ai.defineTool(
         console.log(`Searching Omuto for: ${query}`);
         // Run all searches in parallel for efficiency
         const [userResults, programResults, expenseResults] = await Promise.all([
-            findUsersByName({ name: query }),
-            findProgramsByName({ title: query }),
-            findExpensesByTitle({ title: query }),
+            findUsersByNameToolObject({ name: query }),
+            findProgramsByNameToolObject({ title: query }),
+            findExpensesByTitleToolObject({ title: query }),
         ]);
 
         const combinedResults = [...userResults, ...programResults, ...expenseResults];
@@ -197,7 +194,7 @@ export const searchOmuto = ai.defineTool(
 );
 
 
-export const createCheckout = ai.defineTool(
+const createCheckoutToolObject = ai.defineTool(
     {
         name: 'createCheckout',
         description: 'Creates an end-of-day checkout report for a user.',
@@ -254,7 +251,7 @@ export const createCheckout = ai.defineTool(
 );
 
 
-export const getActivitiesForProgram = ai.defineTool(
+const getActivitiesForProgramToolObject = ai.defineTool(
     {
         name: 'getActivitiesForProgram',
         description: 'Retrieves all activity reports for a specific program within a given date range.',
@@ -289,7 +286,7 @@ export const getActivitiesForProgram = ai.defineTool(
     }
 );
 
-export const getRecentCheckouts = ai.defineTool(
+const getRecentCheckoutsToolObject = ai.defineTool(
     {
         name: 'getRecentCheckouts',
         description: 'Retrieves the most recent end-of-day checkout reports from the team.',
@@ -330,7 +327,7 @@ export const getRecentCheckouts = ai.defineTool(
     }
 );
 
-export const getRecentCheckins = ai.defineTool(
+const getRecentCheckinsToolObject = ai.defineTool(
     {
         name: 'getRecentCheckins',
         description: "Retrieves today's start-of-day check-in reports from the team.",
@@ -373,7 +370,7 @@ export const getRecentCheckins = ai.defineTool(
     }
 );
 
-export const getUpcomingEventsForUser = ai.defineTool(
+const getUpcomingEventsForUserToolObject = ai.defineTool(
     {
         name: 'getUpcomingEventsForUser',
         description: 'Retrieves the upcoming events for a specific user for the next 7 days.',
@@ -407,7 +404,7 @@ export const getUpcomingEventsForUser = ai.defineTool(
     }
 );
 
-export const getPendingTasksForUser = ai.defineTool(
+const getPendingTasksForUserToolObject = ai.defineTool(
     {
         name: 'getPendingTasksForUser',
         description: 'Retrieves the top 5 pending tasks for a specific user.',
@@ -434,3 +431,48 @@ export const getPendingTasksForUser = ai.defineTool(
         });
     }
 );
+
+
+export async function findGrantOpportunities() {
+    return findGrantOpportunitiesToolObject;
+}
+
+export async function findUsersByName() {
+    return findUsersByNameToolObject;
+}
+
+export async function findProgramsByName() {
+    return findProgramsByNameToolObject;
+}
+
+export async function findExpensesByTitle() {
+    return findExpensesByTitleToolObject;
+}
+
+export async function searchOmutoTool() {
+    return searchOmutoToolObject;
+}
+
+export async function createCheckoutTool() {
+    return createCheckoutToolObject;
+}
+
+export async function getActivitiesForProgramTool() {
+    return getActivitiesForProgramToolObject;
+}
+
+export async function getRecentCheckoutsTool() {
+    return getRecentCheckoutsToolObject;
+}
+
+export async function getRecentCheckinsTool() {
+    return getRecentCheckinsToolObject;
+}
+
+export async function getUpcomingEventsForUserTool() {
+    return getUpcomingEventsForUserToolObject;
+}
+
+export async function getPendingTasksForUserTool() {
+    return getPendingTasksForUserToolObject;
+}
