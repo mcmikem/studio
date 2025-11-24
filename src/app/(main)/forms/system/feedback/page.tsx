@@ -3,16 +3,16 @@
 
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import { ContentSubmissionForm } from '@/components/forms/pulse/content-submission-form';
+import { BugReportForm } from '@/components/forms/system/bug-report-form';
 
-function PulsePage() {
+function SystemFeedbackPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <ContentSubmissionForm />
+            <BugReportForm />
         </Suspense>
     )
 }
 
-export default PulsePage;
+export default SystemFeedbackPage;
 
     

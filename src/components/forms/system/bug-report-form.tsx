@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -9,8 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, serverTimestamp, query, getDocs, where } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Bug } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -142,3 +143,5 @@ export function BugReportForm() {
     </div>
   );
 }
+
+    

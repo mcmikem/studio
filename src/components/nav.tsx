@@ -117,6 +117,7 @@ const navConfig = {
   ],
   system: [
     { href: '/help', icon: LifeBuoy, label: 'Help & Support' },
+    { href: '/forms/system/feedback', icon: Bug, label: 'Feedback' },
   ]
 };
 
@@ -243,3 +244,5 @@ export function AppSidebar() {
     </>
   );
 }
+
+    
