@@ -18,26 +18,26 @@ import { useMemo } from 'react';
 
 const programForms: { [key: string]: { href: string; title: string; description: string; icon: React.ElementType }[] } = {
     'RED Campaign': [
-        { href: '/forms/program-logs/red-campaign/school-visit', title: 'School Visit M&E Form', description: 'Log observations and feedback from a school visit.', icon: Users },
-        { href: '/forms/program-logs/red-campaign/pads-distribution', title: 'Pads Distribution Log', description: 'Record the distribution of sanitary pads.', icon: Droplets },
-        { href: '/forms/program-logs/red-campaign/mhm-training', title: 'MHM Training Report', description: 'Log details from a Menstrual Health Management session.', icon: Users },
+        { href: '/meal/red-campaign/school-visit', title: 'School Visit M&E Form', description: 'Log observations and feedback from a school visit.', icon: Users },
+        { href: '/meal/red-campaign/pads-distribution', title: 'Pads Distribution Log', description: 'Record the distribution of sanitary pads.', icon: Droplets },
+        { href: '/meal/red-campaign/mhm-training', title: 'MHM Training Report', description: 'Log details from a Menstrual Health Management session.', icon: Users },
     ],
     'GreenSchools Campaign': [
-         { href: '/forms/program-logs/greenschools/tree-survey', title: 'Tree Survival Survey', description: 'Log follow-up data on a previous tree planting activity.', icon: Leaf },
-         { href: '/forms/program-logs/greenschools/environmental-club', title: 'Environmental Club Registration', description: 'Register a new environmental club.', icon: Users },
-         { href: '/forms/program-logs/greenschools/waste-audit', title: 'Waste Audit Form', description: 'Conduct and log a waste audit for a school.', icon: Leaf },
+         { href: '/meal/greenschools/tree-survey', title: 'Tree Survival Survey', description: 'Log follow-up data on a previous tree planting activity.', icon: Leaf },
+         { href: '/meal/greenschools/environmental-club', title: 'Environmental Club Registration', description: 'Register a new environmental club.', icon: Users },
+         { href: '/meal/greenschools/waste-audit', title: 'Waste Audit Form', description: 'Conduct and log a waste audit for a school.', icon: Leaf },
     ],
      'YoSkills Entrepreneurship': [
-        { href: '/forms/program-logs/yoskills', title: 'YoSkills Hub', description: 'Access all forms related to YoSkills circles and businesses.', icon: Zap },
+        { href: '/meal/yoskills', title: 'YoSkills Hub', description: 'Access all forms related to YoSkills circles and businesses.', icon: Zap },
     ],
     'Student Leaders Forum': [
-        { href: '/forms/program-logs/slf', title: 'Student Leaders Forum Hub', description: 'Manage schools, prefects, and performance for the SLF.', icon: Users },
+        { href: '/meal/slf', title: 'Student Leaders Forum Hub', description: 'Manage schools, prefects, and performance for the SLF.', icon: Users },
     ],
      'PureWater Initiative': [
-        { href: '/forms/program-logs/purewater', title: 'PureWater Hub', description: 'Forms for water source mapping and WASH assessments.', icon: Droplets },
+        { href: '/meal/purewater', title: 'PureWater Hub', description: 'Forms for water source mapping and WASH assessments.', icon: Droplets },
     ],
     'Youth Action Pathway (YAP)': [
-        { href: '/forms/program-logs/yap', title: 'YAP Hub', description: 'Manage YAP chapters and seed grant applications.', icon: Users },
+        { href: '/meal/yap', title: 'YAP Hub', description: 'Manage YAP chapters and seed grant applications.', icon: Users },
     ]
 };
 
@@ -55,13 +55,13 @@ const generalMneForms = [
         icon: UserPlus,
     },
     {
-        href: '/forms/surveys/baseline-survey',
+        href: '/meal/baseline-survey',
         title: 'Baseline Survey',
         description: 'Capture "before the program" status for a beneficiary.',
         icon: Users,
     },
     {
-        href: '/forms/surveys/endline-survey',
+        href: '/meal/endline-survey',
         title: 'Endline Survey',
         description: 'Capture "after the program" status to measure impact.',
         icon: Users,
@@ -161,4 +161,4 @@ export default function MealPage() {
     );
 }
 
-    
+      

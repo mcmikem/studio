@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -32,7 +32,7 @@ const performanceSchema = z.object({
 type PerformanceFormData = z.infer<typeof performanceSchema>;
 
 function StarRating({ name, label, control }: { name: "visibilityScore" | "disciplineScore" | "initiativeScore", label: string, control: any }) {
-    const value = useForm().watch(name);
+    
     return (
         <div className="space-y-2">
             <Label>{label}</Label>
@@ -181,3 +181,5 @@ export function PerformanceTrackingForm() {
     </div>
   );
 }
+
+      

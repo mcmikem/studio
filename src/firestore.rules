@@ -5,13 +5,13 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isManager(userId) {
-      let userDoc = get(/databases/$(database)/documents/users/$(userId));
-      return request.auth != null && userDoc.data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
+      let userRole = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return request.auth != null && userRole in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
     }
 
     function isFinance(userId) {
-      let userDoc = get(/databases/$(database)/documents/users/$(userId));
-      return request.auth != null && userDoc.data.role in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
+       let userRole = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return request.auth != null && userRole in ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'];
     }
 
     function isOwner(userId) {
@@ -26,6 +26,9 @@ service cloud.firestore {
 
     // USER SUB-COLLECTIONS (private data)
     match /users/{userId}/{subcollection}/{docId} {
+      allow read, write: if isOwner(userId);
+    }
+     match /users/{userId}/ai-chats/{chatId} {
       allow read, write: if isOwner(userId);
     }
 
@@ -98,6 +101,9 @@ service cloud.firestore {
       allow create: if isOwner(request.resource.data.userId);
       allow update: if isManager(request.auth.uid);
       allow delete: if isManager(request.auth.uid);
+    }
+    match /community-feedback/{feedbackId} {
+       allow read, write: if request.auth != null;
     }
     match /events/{eventId} {
         allow read: if request.auth != null;
@@ -183,7 +189,30 @@ service cloud.firestore {
     match /essentials-inventory/{checkId} {
       allow read, write: if request.auth != null;
     }
-
+    match /water-sources/{sourceId} {
+      allow read, write: if request.auth != null;
+    }
+    match /wash-assessments/{assessmentId} {
+      allow read, write: if request.auth != null;
+    }
+    match /yap-chapters/{chapterId} {
+      allow read, write: if request.auth != null;
+    }
+    match /yap-reports/{reportId} {
+      allow read, write: if request.auth != null;
+    }
+    match /seed-grant-applications/{applicationId} {
+      allow read, write: if request.auth != null;
+    }
+    match /seed-grant-accountability/{reportId} {
+      allow read, write: if request.auth != null;
+    }
+    match /ofa-tournaments/{registrationId} {
+      allow read, write: if request.auth != null;
+    }
+    match /ofa-volunteers/{volunteerId} {
+      allow read, write: if request.auth != null;
+    }
 
     // SCHOOL APPLICATIONS (Public write, Logged-in read)
     match /school-applications/{applicationId} {
@@ -227,3 +256,5 @@ service cloud.firestore {
     }
   }
 }
+
+      

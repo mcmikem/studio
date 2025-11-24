@@ -55,12 +55,10 @@ export function CommunityFeedbackForm() {
       return;
     }
 
-    // This would need a new collection, let's assume 'communityFeedback'
-    // and a corresponding entity and rule.
     const feedbackData = { ...data, createdAt: serverTimestamp() };
 
     try {
-      // await addDocumentNonBlocking(collection(firestore, 'communityFeedback'), feedbackData);
+      await addDocumentNonBlocking(collection(firestore, 'community-feedback'), feedbackData);
       toast({
         title: 'Feedback Logged!',
         description: `Feedback from ${data.communityName} has been recorded.`,
@@ -159,3 +157,5 @@ export function CommunityFeedbackForm() {
     </div>
   );
 }
+
+      

@@ -80,3 +80,5 @@ Your knowledge is not just static; you can learn about the team's current activi
         return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. The technical details are: ${error.message}` };
     }
 }
+
+      

@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -324,15 +325,8 @@ export type Message = {
 export type Testimony = {
   id: string;
   title: string;
-  userName: string;
   userId: string;
-  summary: string;
-  text: string;
-  quotes: string[];
-  hashtags: string[];
-  audioUrl?: string;
-  videoUrl?: string;
-  createdAt: Timestamp;
+  userName: string;
   beneficiaryName: string;
   project: string;
   beforeSituation: string;
@@ -340,6 +334,10 @@ export type Testimony = {
   quote: string;
   mediaUrls: string[];
   consentSigned: boolean;
+  createdAt: Timestamp;
+  summary?: string;
+  quotes?: string[];
+  hashtags?: string[];
 };
 
 
@@ -707,4 +705,4 @@ export type InventoryCheck = {
   createdAt: Timestamp;
 };
 
-    
+      
