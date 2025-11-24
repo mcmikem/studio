@@ -34,6 +34,8 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
       collection(firestore, 'activities'),
       where('userId', '==', userId),
       where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo))
+      // Removed: orderBy('loggedAt', 'desc') -- This was causing the index error.
+      // We will sort on the client, which is fine for this small, user-specific dataset.
     );
   }, [firestore, userId, isClient]);
 
@@ -108,5 +110,3 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     </Card>
   );
 }
-
-    
