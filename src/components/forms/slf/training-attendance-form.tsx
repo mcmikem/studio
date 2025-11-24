@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -190,3 +191,5 @@ export function TrainingAttendanceForm() {
     </div>
   );
 }
+
+    

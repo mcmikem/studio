@@ -28,6 +28,12 @@ service cloud.firestore {
     match /users/{userId}/{subcollection}/{docId} {
       allow read, write: if isOwner(userId);
     }
+     match /users/{userId}/ai-chats/{chatId} {
+      allow read, write: if isOwner(userId);
+    }
+     match /users/{userId}/tasks/{taskId} {
+      allow read, write: if isOwner(userId);
+    }
 
     // MANAGEMENT COLLECTIONS (Readable by all, Writable by Managers)
     match /programs/{programId} {
@@ -253,5 +259,21 @@ service cloud.firestore {
     }
   }
 }
+/*
+ Activities Collection Index
+    To make the queries on the activities collection more efficient and to avoid the "missing index" error,
+    I'm adding a composite index that includes the `userId` and `loggedAt` fields in descending order.
+    This will allow Firestore to quickly retrieve activities for a specific user, ordered by the time they were logged.
+    Without this index, Firestore has to scan the entire collection, which is slow and expensive.
+*/
+//  https://firebase.google.com/docs/firestore/query-data/indexing?hl=en
+//    Go to the Indexes tab and add the following composite index:
+// Collection ID: activities
+// Index Fields:
+//    Field Path  | Order
+//   -----------|----------------
+//    userId      | Ascending
+//    loggedAt   | Descending
+//This index will optimize queries that filter by `userId` and order by `loggedAt`.
 
     
