@@ -32,15 +32,7 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  // Initialize services directly in the state for the provider.
-  // This ensures that Firebase is initialized only once per application lifecycle.
-  const [services] = useState<FirebaseServices | null>(() => {
-    if (typeof window !== 'undefined') {
-      return initializeFirebase();
-    }
-    return null;
-  });
-
+  const [services, setServices] = useState<FirebaseServices | null>(null);
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null; 
     isUserLoading: boolean;
@@ -51,13 +43,22 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: null,
   });
 
-  // Effect for listening to authentication state changes
+  // This effect runs once on mount to initialize Firebase.
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !services) {
+      const initializedServices = initializeFirebase();
+      setServices(initializedServices);
+    }
+  }, [services]);
+
+  // Effect for listening to authentication state changes, depends on services.
   useEffect(() => {
     if (!services) {
-      // If services are null (e.g., on the server), we are effectively in a loading state for the user.
-      setUserAuthState(prevState => ({ ...prevState, isUserLoading: false }));
+      // Still waiting for Firebase to initialize.
       return;
     };
+
+    setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
 
     const unsubscribe = onAuthStateChanged(
       services.auth,
@@ -74,10 +75,12 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   }, [services]);
 
   const contextValue = useMemo((): FirebaseContextState => {
+    // The user is loading if either the auth state is being determined OR firebase services are not yet initialized.
+    const isLoading = userAuthState.isUserLoading || !services;
     return {
       services,
       user: userAuthState.user,
-      isUserLoading: userAuthState.isUserLoading || !services,
+      isUserLoading: isLoading,
       userError: userAuthState.userError,
     };
   }, [services, userAuthState]);
@@ -97,12 +100,6 @@ export const useFirebaseServices = () => {
   const context = useContext(FirebaseContext);
   if (context === undefined) {
     throw new Error('useFirebaseServices must be used within a FirebaseProvider.');
-  }
-   if (!context.services) {
-    if (typeof window !== 'undefined') {
-        throw new Error('Firebase services are not yet available. This may be a race condition or an initialization error.');
-    }
-    return { firebaseApp: null, firestore: null, auth: null };
   }
   return context.services;
 };
@@ -136,8 +133,7 @@ export const useUser = () => {
   if (context === undefined) {
     throw new Error('useUser must be used within a FirebaseProvider.');
   }
-  const { user, isUserLoading, userError } = context;
-  return { user, isUserLoading, userError };
+  return context;
 };
 
 
