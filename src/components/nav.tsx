@@ -83,8 +83,15 @@ const navConfig = {
     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
   ],
-  forms: [
-     { href: '/forms', icon: ClipboardEdit, label: 'Forms Hub' },
+  meal: [
+      { href: '/meal', icon: BarChart3, label: 'MEAL Hub' },
+  ],
+  talents: [
+       { href: '/talents', icon: Trophy, label: 'Talents Hub' },
+  ],
+  enterprises: [
+        { href: '/essentials', icon: Store, label: 'Omuto Essentials' },
+        { href: '/pulse', icon: Wind, label: 'Omuto Pulse' },
   ],
   reports: [
      { href: '/reports', icon: BarChart3, label: 'Reports Hub' },
@@ -95,9 +102,10 @@ const navConfig = {
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },
     { href: '/management/projects', icon: Briefcase, label: 'Projects' },
     { href: '/management/partnerships', icon: Handshake, label: 'Partnerships' },
-    { href: '/management/operational-plan', icon: FileSignature, label: 'Operational Plan', roles: ['Executive Director', 'Programs & Partnerships Manager'] },
+    { href: '/management/resources', icon: Handshake, label: 'Resources' },
+    { href: '/management/operational-plan', icon: FileSignature, label: 'Operational Plan', roles: ['Executive Director', 'Programs & Partnerships Manager', 'Administrator'] },
     { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'] },
-    { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'] },
+    { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Programs & Partnerships Manager', 'Operations & Field Manager'] },
     { href: '/management/metrics', icon: TrendingUp, label: 'Metrics (KPIs)' },
     { href: '/management/workplans', icon: CalendarCheck, label: 'Team Workplans' },
     { href: '/management/equipment', icon: Box, label: 'Equipment' },
@@ -110,17 +118,17 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management', 'system'],
-  'Executive Director': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
-  'Resource Mobilization Lead': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
-  'Operations & Field Manager': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
-  'Media & Finance Lead': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
-  'Media & Communications Lead': ['home', 'myDay', 'teamHub', 'forms', 'reports', 'management'],
-  'Field Coordinator': ['home', 'myDay', 'teamHub', 'forms', 'reports'],
-  'Intern': ['home', 'myDay', 'teamHub', 'forms', 'reports'],
-  'Volunteer': ['home', 'myDay', 'teamHub', 'forms', 'reports'],
-  'default': ['home', 'myDay', 'teamHub', 'forms', 'reports'],
+  'Administrator': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management', 'system'],
+  'Executive Director': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Resource Mobilization Lead': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Operations & Field Manager': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Media & Finance Lead': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Media & Communications Lead': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Field Coordinator': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
+  'Intern': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
+  'Volunteer': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
+  'default': ['home', 'myDay', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
 };
 
 
@@ -215,7 +223,9 @@ export function AppSidebar() {
         {renderNavSection('home', 'Home')}
         {renderNavSection('myDay', 'My Day')}
         {renderNavSection('teamHub', 'Team Hub')}
-        {renderNavSection('forms', 'Forms')}
+        {renderNavSection('meal', 'M&E')}
+        {renderNavSection('talents', 'Talents')}
+        {renderNavSection('enterprises', 'Enterprises')}
         {renderNavSection('reports', 'Reports & Analytics')}
         {renderNavSection('management', 'Management')}
         {renderNavSection('system', 'System')}

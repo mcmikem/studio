@@ -8,13 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const talentsForms = [
   {
-    href: '/forms/talents/ofa',
+    href: '/talents/ofa',
     title: 'Omuto Football Alliance (OFA)',
     description: 'Manage teams, players, and matches for the league.',
     icon: Swords,
   },
   {
-    href: '/forms/talents/omuto-cup',
+    href: '/talents/omuto-cup',
     title: 'Omuto Cup (Event)',
     description: 'Manage tournament registrations, check-ins, and results.',
     icon: Trophy,
