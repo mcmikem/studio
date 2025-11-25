@@ -10,29 +10,31 @@ import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 const unprotectedRoutes = ['/login', '/forms/school'];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, services } = useUser();
   const router = useRouter();
   const pathname = usePathname();
 
-  const isUnprotectedRoute = unprotectedRoutes.some(route => pathname === route);
+  const isUnprotectedRoute = unprotectedRoutes.some(route => pathname.startsWith(route));
 
   useEffect(() => {
-    // Wait until Firebase has determined the auth state
-    if (isUserLoading) return; 
+    // This effect handles redirection logic once loading is complete.
+    if (isUserLoading) return;
 
-    // If there's no user and we are on a protected route, redirect to login
     if (!user && !isUnprotectedRoute) {
       router.push('/login');
     }
-    // If there is a user and we are on an auth route (like /login), redirect to home
+    
     if (user && isUnprotectedRoute) {
       router.push('/');
     }
   }, [user, isUserLoading, router, pathname, isUnprotectedRoute]);
 
 
-  // While checking auth state on a protected route, show a global loader.
-  if (isUserLoading && !isUnprotectedRoute) {
+  // This is the core fix:
+  // Render a global loader if we are on a protected route and EITHER
+  // 1. Firebase services are not yet initialized (services === null)
+  // 2. The user's auth state is still being checked (isUserLoading === true)
+  if (!isUnprotectedRoute && (isUserLoading || !services)) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -40,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If we have a user, or we are on an unprotected route (and finished loading), render the children.
+  // If we are on an unprotected route, or if all loading is complete, render the app.
   return (
       <>
         <FirebaseErrorListener />

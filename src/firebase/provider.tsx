@@ -19,7 +19,7 @@ interface FirebaseServices {
 interface FirebaseContextState {
   services: FirebaseServices | null;
   user: User | null;
-  isUserLoading: boolean;
+  isUserLoading: boolean; // This now ONLY tracks auth state changes.
   userError: Error | null;
 }
 
@@ -32,7 +32,8 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  const [services, setServices] = useState<FirebaseServices | null>(null);
+  // Initialize services immediately on the client.
+  const [services, setServices] = useState<FirebaseServices | null>(() => initializeFirebase());
 
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null; 
@@ -40,14 +41,9 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: Error | null;
   }>({
     user: null, 
-    isUserLoading: true,
+    isUserLoading: true, // Start as true until first auth check completes.
     userError: null,
   });
-  
-  useEffect(() => {
-    const initializedServices = initializeFirebase();
-    setServices(initializedServices);
-  }, []);
   
   // Effect for listening to authentication state changes.
   useEffect(() => {
@@ -71,12 +67,10 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   }, [services]);
 
   const contextValue = useMemo((): FirebaseContextState => {
-    // The user is loading if either the auth state is being determined OR firebase services are not yet initialized on the client.
-    const isLoading = userAuthState.isUserLoading || !services;
     return {
       services,
       user: userAuthState.user,
-      isUserLoading: isLoading,
+      isUserLoading: userAuthState.isUserLoading,
       userError: userAuthState.userError,
     };
   }, [services, userAuthState]);
@@ -133,5 +127,6 @@ export const useUser = () => {
     user: context.user,
     isUserLoading: context.isUserLoading,
     userError: context.userError,
+    services: context.services, // Expose services for the AuthProvider check
   };
 };
