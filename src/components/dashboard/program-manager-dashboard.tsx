@@ -5,7 +5,7 @@ import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity }
 import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { KeyResultsTracker } from "../plan/key-results-tracker"
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
+import { useCollection, useFirestore, useUser } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
@@ -25,20 +25,20 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const { user } = useUser();
 
-  const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const partnershipsQuery = useMemo(() => firestore ? query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
 
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+  const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const checkinsQuery = useMemoFirebase(() => {
+  const checkinsQuery = useMemo(() => {
     if (!firestore) return null;
     const startOfToday = startOfDay(new Date());
     return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
   }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
   
-  const activitiesQuery = useMemoFirebase(() => {
+  const activitiesQuery = useMemo(() => {
     if (!firestore) return null;
     const sixWeeksAgo = startOfDay(subDays(new Date(), 42));
     return query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgo)), orderBy('loggedAt', 'desc'))

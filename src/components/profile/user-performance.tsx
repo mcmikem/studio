@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
@@ -25,7 +25,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     setIsClient(true);
   }, []);
 
-  const activitiesQuery = useMemoFirebase(() => {
+  const activitiesQuery = useMemo(() => {
     if (!firestore || !userId || !isClient) return null;
 
     const oneMonthAgo = subMonths(new Date(), 1);
@@ -109,5 +109,3 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     </Card>
   );
 }
-
-    

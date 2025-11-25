@@ -6,12 +6,13 @@ import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { Alerts } from "./alerts"
-import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
+import { useCollection, useFirestore, useUser } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
 import { QuickAddTask } from "./quick-add-task"
 import { TeamDeployment } from "./team-deployment"
 import { startOfDay } from "date-fns"
 import { MyWeeklyPlan } from "./my-weekly-plan"
+import { useMemo } from "react"
 
 interface DashboardProps {
   profile: User;
@@ -21,13 +22,13 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const { user } = useUser();
 
-  const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)) : null, [firestore]);
+  const checkoutsQuery = useMemo(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)) : null, [firestore]);
   const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
   
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+  const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
+  const checkinsQuery = useMemo(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (

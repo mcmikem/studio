@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import {
   collection,
   query,
@@ -48,7 +48,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Target, Edit, Trash2 } from 'lucide-react';
 import type { ImpactMetric } from '@/lib/types';
-import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import {
   ChartContainer,
   ChartTooltip,
@@ -258,7 +257,7 @@ export default function MetricsPage() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   
   const firestore = useFirestore();
-  const metricsQuery = useMemoFirebase(() => {
+  const metricsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'impact-metrics'), orderBy('metric'));
   }, [firestore]);

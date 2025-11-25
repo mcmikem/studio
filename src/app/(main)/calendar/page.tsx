@@ -7,7 +7,7 @@ import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon, PlusCircle, Clock, ChevronLeft, ChevronRight, CheckCircle, User } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -130,7 +130,7 @@ export default function CalendarPage() {
         setSelectedDate(new Date());
     }, []);
 
-    const eventsQuery = useMemoFirebase(() => {
+    const eventsQuery = useMemo(() => {
         if (!firestore) return null;
         return query(collection(firestore, 'events'), orderBy('date', 'asc'));
     }, [firestore]);

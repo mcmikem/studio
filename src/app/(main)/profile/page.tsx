@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useUser, useFirestore, useMemoFirebase, useCollection, updateDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useCollection, updateDocumentNonBlocking } from '@/firebase';
 import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown, LogOut as LogOutIcon, Settings, ChevronsUpDown, Eye, BarChart3 } from 'lucide-react';
 import { collection, query, where, orderBy, limit, doc } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
@@ -20,7 +21,7 @@ import { UserTasks } from '@/components/profile/user-tasks';
 import { useSearchParams } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { formatDateSafe } from '@/lib/utils';
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useRef, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { uploadImageAndUpdateProfile } from '@/firebase/storage';
@@ -45,7 +46,7 @@ function RecentUserCheckouts() {
   const firestore = useFirestore();
   const { user } = useUser();
 
-  const checkoutsQuery = useMemoFirebase(() => {
+  const checkoutsQuery = useMemo(() => {
     if (!user || !firestore) return null;
     return query(
       collection(firestore, 'checkouts'),

@@ -17,7 +17,6 @@ export function useUserProfile(user: AuthUser | null) {
       return doc(firestore, 'users', user.uid);
     }
     return null;
-  // Make dependency explicit on the user's UID and the firestore instance.
   }, [user?.uid, firestore]);
 
   const { data: profile, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
@@ -28,4 +27,3 @@ export function useUserProfile(user: AuthUser | null) {
 
   return { profile, isLoading, error };
 }
-

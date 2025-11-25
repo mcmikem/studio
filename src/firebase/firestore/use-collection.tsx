@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   type Query,
   onSnapshot,
@@ -31,10 +31,8 @@ export function useCollection<T = DocumentData>(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-  const memoizedQuery = useMemo(() => targetQuery, [targetQuery]);
-
   useEffect(() => {
-    if (!memoizedQuery) {
+    if (!targetQuery) {
       setIsLoading(false);
       setData(null);
       setError(null);
@@ -44,7 +42,7 @@ export function useCollection<T = DocumentData>(
     setIsLoading(true);
 
     const unsubscribe = onSnapshot(
-      memoizedQuery,
+      targetQuery,
       (snapshot: QuerySnapshot<DocumentData>) => {
         const results: WithId<T>[] = snapshot.docs.map(doc => ({
           ...(doc.data() as T),
@@ -56,7 +54,7 @@ export function useCollection<T = DocumentData>(
       },
       (err: FirestoreError) => {
         console.error('useCollection error:', err);
-        const path = (memoizedQuery as any)._query?.path?.canonicalString() || 'unknown path';
+        const path = (targetQuery as any)._query?.path?.canonicalString() || 'unknown path';
         const contextualError = new FirestorePermissionError({
           operation: 'list',
           path: path,
@@ -70,7 +68,7 @@ export function useCollection<T = DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [memoizedQuery]);
+  }, [targetQuery]);
 
   return { data, isLoading, error };
 }

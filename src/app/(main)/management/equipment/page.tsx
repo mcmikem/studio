@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -16,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Equipment } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,9 +38,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -203,7 +203,7 @@ export default function EquipmentPage() {
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
 
   const firestore = useFirestore();
-  const equipmentQuery = useMemoFirebase(() => {
+  const equipmentQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'equipment'), orderBy('createdAt', 'desc'));
   }, [firestore]);

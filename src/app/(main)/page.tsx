@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { useUser, useFirestore, useCollection } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Loader2 } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -68,7 +68,7 @@ export default function DashboardPage() {
   const effectiveRole = viewAsRole || realProfile?.role;
   const profile = viewAsRole ? ({ ...realProfile, role: viewAsRole } as User) : realProfile;
 
-  const latestCheckinQuery = useMemoFirebase(() => {
+  const latestCheckinQuery = useMemo(() => {
     if (!user || !firestore) return null;
     const todayStart = startOfDay(new Date());
     return query(

@@ -22,7 +22,7 @@ import {
   CardTitle,
   CardFooter,
 } from "../ui/card"
-import { useCollection, useFirestore, useUser, useMemoFirebase, updateDocumentNonBlocking } from "@/firebase"
+import { useCollection, useFirestore, useUser, updateDocumentNonBlocking } from "@/firebase"
 import { useMemo } from "react"
 import {
   Table,
@@ -356,28 +356,28 @@ interface DashboardProps {
 export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
 
-  const allExpensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const allExpensesQuery = useMemo(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: allExpenses } = useCollection<Expense>(allExpensesQuery);
   
-  const allIncomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const allIncomeQuery = useMemo(() => firestore ? query(collection(firestore, 'income'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: allIncome } = useCollection<Income>(allIncomeQuery);
 
-  const activitiesQuery = useMemoFirebase(() => {
+  const activitiesQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'), limit(10));
   }, [firestore]);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
   
-  const testimoniesQuery = useMemoFirebase(() => {
+  const testimoniesQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'), limit(5));
   }, [firestore]);
   const { data: testimonies, isLoading: isLoadingTestimonies } = useCollection<Testimony>(testimoniesQuery);
 
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+  const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const checkinsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
+  const checkinsQuery = useMemo(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
 

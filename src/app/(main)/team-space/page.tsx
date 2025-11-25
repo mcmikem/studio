@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, MessageSquare, Users } from 'lucide-react';
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, orderBy, serverTimestamp, addDoc, limit } from 'firebase/firestore';
 import type { Message } from '@/lib/types';
@@ -60,7 +60,7 @@ export default function TeamSpacePage() {
   const [isSending, setIsSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const messagesQuery = useMemoFirebase(() => {
+  const messagesQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'messages'), orderBy('createdAt', 'desc'), limit(50));
   }, [firestore]);

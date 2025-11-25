@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
@@ -23,7 +23,7 @@ export function MyPerformance() {
     setIsClient(true);
   }, []);
 
-  const activitiesQuery = useMemoFirebase(() => {
+  const activitiesQuery = useMemo(() => {
     // Defer query creation until we are on the client AND have a user.
     if (!firestore || !user || !isClient) return null;
 

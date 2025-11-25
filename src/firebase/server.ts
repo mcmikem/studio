@@ -1,56 +1,12 @@
+
 import { initializeApp, getApps, getApp, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { firebaseConfig } from './config';
 import * as fs from 'fs';
 import * as path from 'path';
 
-interface FirebaseAdminServices {
-  app: App;
-  firestore: Firestore;
-}
-
-let services: FirebaseAdminServices | null = null;
-
-function initializeAdmin(): FirebaseAdminServices {
-  if (services) {
-    return services;
-  }
-
-  // Check if the admin app is already initialized
-  const adminApps = getApps().filter(app => app.name === 'firebase-admin');
-  if (adminApps.length > 0) {
-    const adminApp = adminApps[0];
-    services = {
-      app: adminApp,
-      firestore: getFirestore(adminApp),
-    };
-    return services;
-  }
-
-  // Initialize a new admin app
-  try {
-    const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
-    if (!fs.existsSync(serviceAccountPath)) {
-      throw new Error("Firebase service account key not found at secrets/serviceAccountKey.json. Ensure the file exists and is correctly placed.");
-    }
-    const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-    
-    const newAdminApp = initializeApp({
-      credential: cert(serviceAccount),
-      projectId: firebaseConfig.projectId,
-    }, 'firebase-admin');
-
-    console.log("Firebase Admin SDK initialized successfully.");
-    services = {
-      app: newAdminApp,
-      firestore: getFirestore(newAdminApp),
-    };
-    return services;
-  } catch (e) {
-    console.error("Critical Error: Failed to initialize Firebase Admin SDK.", e);
-    throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
-  }
-}
+let adminApp: App | null = null;
+let firestoreInstance: Firestore | null = null;
 
 /**
  * Returns the singleton instance of the Firebase Admin services.
@@ -58,8 +14,37 @@ function initializeAdmin(): FirebaseAdminServices {
  * @returns An object containing the initialized Firestore instance.
  */
 export function getFirebaseAdmin() {
-  if (!services) {
-    services = initializeAdmin();
+  if (adminApp) {
+    return { firestore: firestoreInstance! };
   }
-  return services;
+
+  const appName = 'firebase-admin';
+  const existingApp = getApps().find(app => app.name === appName);
+  
+  if (existingApp) {
+    adminApp = existingApp;
+  } else {
+    try {
+      const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
+      if (!fs.existsSync(serviceAccountPath)) {
+        throw new Error("Firebase service account key not found at secrets/serviceAccountKey.json. Ensure the file exists and is correctly placed.");
+      }
+      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      
+      adminApp = initializeApp({
+        credential: cert(serviceAccount),
+        projectId: firebaseConfig.projectId,
+      }, appName);
+  
+      console.log("Firebase Admin SDK initialized successfully.");
+    } catch (e) {
+      console.error("Critical Error: Failed to initialize Firebase Admin SDK.", e);
+      // In a server environment, this is a fatal error.
+      // We throw to prevent the application from running in a broken state.
+      throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
+    }
+  }
+
+  firestoreInstance = getFirestore(adminApp);
+  return { firestore: firestoreInstance };
 }

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   type DocumentReference,
   onSnapshot,
@@ -32,10 +32,8 @@ export function useDoc<T = DocumentData>(
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
-  const memoizedDocRef = useMemo(() => docRef, [docRef]);
-
   useEffect(() => {
-    if (!memoizedDocRef) {
+    if (!docRef) {
       setIsLoading(false);
       setData(null);
       setError(null);
@@ -45,7 +43,7 @@ export function useDoc<T = DocumentData>(
     setIsLoading(true);
 
     const unsubscribe = onSnapshot(
-      memoizedDocRef,
+      docRef,
       (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
@@ -59,7 +57,7 @@ export function useDoc<T = DocumentData>(
         console.error('useDoc error:', err);
         const contextualError = new FirestorePermissionError({
           operation: 'get',
-          path: memoizedDocRef.path,
+          path: docRef.path,
         });
 
         setError(contextualError);
@@ -70,7 +68,7 @@ export function useDoc<T = DocumentData>(
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef]);
+  }, [docRef]);
 
   return { data, isLoading, error };
 }

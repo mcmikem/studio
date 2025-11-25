@@ -32,13 +32,7 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  const [services, setServices] = useState<FirebaseServices | null>(() => {
-    // Initialize synchronously on the client side.
-    if (typeof window !== 'undefined') {
-      return initializeFirebase();
-    }
-    return null;
-  });
+  const [services, setServices] = useState<FirebaseServices | null>(null);
 
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null; 
@@ -49,11 +43,15 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     isUserLoading: true,
     userError: null,
   });
-
+  
+  useEffect(() => {
+    const initializedServices = initializeFirebase();
+    setServices(initializedServices);
+  }, []);
+  
   // Effect for listening to authentication state changes.
   useEffect(() => {
     if (!services) {
-      // This will only happen on the server or if initialization failed.
       setUserAuthState({ user: null, isUserLoading: false, userError: null });
       return;
     };
@@ -137,14 +135,3 @@ export const useUser = () => {
     userError: context.userError,
   };
 };
-
-
-/**
- * A stable version of useMemo for Firebase objects.
- * The factory function will only re-run if the dependencies in the deps array change.
- * It's crucial to use this for creating queries to prevent infinite re-renders.
- */
-export function useMemoFirebase<T>(factory: () => T, deps: React.DependencyList): T | null {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    return useMemo(factory, deps);
-}

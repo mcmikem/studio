@@ -2,7 +2,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Testimony } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,15 +17,16 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import { useMemo } from 'react';
 
 function TestimonyCard({ testimony }: { testimony: Testimony }) {
-  const hasAudio = !!testimony.audioUrl;
-  const hasVideo = !!testimony.videoUrl;
-  const hasText = !!testimony.text;
+  const hasAudio = !!(testimony.mediaUrls && testimony.mediaUrls.some(url => url.includes('audio')));
+  const hasVideo = !!(testimony.mediaUrls && testimony.mediaUrls.some(url => url.includes('video')));
   const hasSummary = !!testimony.summary;
   const hasQuotes = testimony.quotes && testimony.quotes.length > 0;
   const hasHashtags = testimony.hashtags && testimony.hashtags.length > 0;
+  const hasTranscription = !!testimony.transcription;
 
   return (
     <Card>
@@ -33,7 +34,7 @@ function TestimonyCard({ testimony }: { testimony: Testimony }) {
         <div className="flex justify-between items-start">
           <CardTitle>{testimony.title}</CardTitle>
           <div className="flex gap-2">
-            {hasText && <Badge variant="secondary"><FileText className="h-3 w-3 mr-1" /> Text</Badge>}
+            {hasTranscription && <Badge variant="secondary"><FileText className="h-3 w-3 mr-1" /> Text</Badge>}
             {hasAudio && <Badge variant="secondary"><Mic className="h-3 w-3 mr-1" /> Audio</Badge>}
             {hasVideo && <Badge variant="secondary"><Video className="h-3 w-3 mr-1" /> Video</Badge>}
           </div>
@@ -77,11 +78,11 @@ function TestimonyCard({ testimony }: { testimony: Testimony }) {
                     </AccordionContent>
                 </AccordionItem>
             )}
-             {hasText && (
+             {hasTranscription && (
                  <AccordionItem value="full-transcript">
                     <AccordionTrigger>View Full Transcript</AccordionTrigger>
                     <AccordionContent className="prose prose-sm dark:prose-invert max-w-full">
-                       <p>{testimony.text}</p>
+                       <p>{testimony.transcription}</p>
                     </AccordionContent>
                 </AccordionItem>
             )}
@@ -90,8 +91,15 @@ function TestimonyCard({ testimony }: { testimony: Testimony }) {
       {(hasAudio || hasVideo) && (
          <CardFooter>
           <div className="flex gap-2">
-            {hasAudio && <audio controls src={testimony.audioUrl}>Your browser does not support the audio element.</audio>}
-            {hasVideo && <video controls src={testimony.videoUrl} className="w-full rounded-md">Your browser does not support the video element.</video>}
+            {testimony.mediaUrls?.map(url => {
+                 if (url.includes('audio')) {
+                    return <audio key={url} controls src={url}>Your browser does not support the audio element.</audio>
+                }
+                if (url.includes('video')) {
+                    return <video key={url} controls src={url} className="w-full rounded-md">Your browser does not support the video element.</video>
+                }
+                return null;
+            })}
           </div>
         </CardFooter>
       )}
@@ -102,7 +110,7 @@ function TestimonyCard({ testimony }: { testimony: Testimony }) {
 export default function TestimoniesPage() {
   const firestore = useFirestore();
 
-  const testimoniesQuery = useMemoFirebase(() => {
+  const testimoniesQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'));
   }, [firestore]);

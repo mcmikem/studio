@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, User, Calendar, DollarSign, AreaChart } from 'lucide-react';
@@ -26,12 +26,13 @@ import { formatDateSafe, formatCurrency } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { useMemo } from 'react';
 
 
 export default function ActivityLogPage() {
   const firestore = useFirestore();
 
-  const activitiesQuery = useMemoFirebase(() => {
+  const activitiesQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'));
   }, [firestore]);

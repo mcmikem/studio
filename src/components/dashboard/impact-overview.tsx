@@ -10,15 +10,16 @@ import {
 } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "../ui/skeleton"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { useCollection, useFirestore } from "@/firebase"
 import { collection, query, orderBy } from "firebase/firestore"
 import type { ImpactMetric } from "@/lib/types"
 import { Target } from "lucide-react"
 import Link from "next/link"
+import { useMemo } from "react"
 
 export function ImpactOverview() {
   const firestore = useFirestore()
-  const metricsQuery = useMemoFirebase(() => {
+  const metricsQuery = useMemo(() => {
     if (!firestore) return null
     return query(collection(firestore, "impact-metrics"), orderBy("metric"))
   }, [firestore])

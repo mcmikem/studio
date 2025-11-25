@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -7,7 +8,7 @@ import { format, isSameDay, addDays, subDays } from 'date-fns';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { PlusCircle, ChevronLeft, ChevronRight, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '../ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
@@ -127,7 +128,7 @@ export function DashboardCalendar() {
     setCurrentDate(new Date());
   }, []);
 
-  const eventsQuery = useMemoFirebase(() => {
+  const eventsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'events'), orderBy('date', 'asc'));
   }, [firestore]);

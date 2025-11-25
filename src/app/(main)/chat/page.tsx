@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb, User } from 'lucide-react';
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, orderBy, serverTimestamp, addDoc, limit } from 'firebase/firestore';
 import type { Message } from '@/lib/types';
@@ -73,7 +73,7 @@ export default function ChatPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Use a user-specific sub-collection for AI chats
-  const messagesQuery = useMemoFirebase(() => {
+  const messagesQuery = useMemo(() => {
     if (!firestore || !user) return null;
     return query(collection(firestore, 'users', user.uid, 'ai-chats'), orderBy('createdAt', 'asc'), limit(50));
   }, [firestore, user]);
@@ -225,5 +225,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-      

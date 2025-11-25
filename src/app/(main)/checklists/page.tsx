@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { TaskTemplate } from '@/lib/types';
 import { ListChecks } from 'lucide-react';
@@ -17,10 +17,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useMemo } from 'react';
 
 export default function ChecklistsPage() {
   const firestore = useFirestore();
-  const templatesQuery = useMemoFirebase(() => {
+  const templatesQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'task-templates'), orderBy('createdAt', 'desc'));
   }, [firestore]);
