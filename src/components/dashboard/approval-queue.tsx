@@ -23,7 +23,10 @@ export function ApprovalQueue() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!firestore) return;
+        if (!firestore) {
+            setIsLoading(false);
+            return;
+        };
 
         const q = query(
             collection(firestore, 'expenses'),

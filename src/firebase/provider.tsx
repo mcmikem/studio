@@ -19,7 +19,7 @@ interface FirebaseServices {
 interface FirebaseContextState {
   services: FirebaseServices | null;
   user: User | null;
-  isUserLoading: boolean; // This now ONLY tracks auth state changes.
+  isUserLoading: boolean; 
   userError: Error | null;
 }
 
@@ -32,18 +32,10 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  // Initialize services to null initially.
   const [services, setServices] = useState<FirebaseServices | null>(null);
-
-  const [userAuthState, setUserAuthState] = useState<{
-    user: User | null; 
-    isUserLoading: boolean;
-    userError: Error | null;
-  }>({
-    user: null, 
-    isUserLoading: true, // Start as true until first auth check completes.
-    userError: null,
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true); // Tracks auth state ONLY
+  const [userError, setUserError] = useState<Error | null>(null);
 
   // Effect to initialize Firebase services ONLY on the client side.
   useEffect(() => {
@@ -56,37 +48,35 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   
   // Effect for listening to authentication state changes.
   useEffect(() => {
-    if (!services) {
-      // Don't subscribe to auth state until services are initialized.
-      // Set loading to false if services fail to initialize.
-      if (!services && userAuthState.isUserLoading) {
-          setUserAuthState({ user: null, isUserLoading: false, userError: null });
-      }
-      return;
-    };
+    if (!services) return;
 
     const unsubscribe = onAuthStateChanged(
       services.auth,
       (firebaseUser) => {
-        setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
+        setUser(firebaseUser);
+        setIsAuthLoading(false);
       },
       (error) => {
         console.error("FirebaseProvider: onAuthStateChanged error:", error);
-        setUserAuthState({ user: null, isUserLoading: false, userError: error });
+        setUserError(error);
+        setIsAuthLoading(false);
       }
     );
 
     return () => unsubscribe();
-  }, [services, userAuthState.isUserLoading]);
+  }, [services]);
 
   const contextValue = useMemo((): FirebaseContextState => {
+    // The user is considered "loading" if either the services aren't initialized yet,
+    // or if the auth state check hasn't completed.
+    const isLoading = !services || isAuthLoading;
     return {
       services,
-      user: userAuthState.user,
-      isUserLoading: userAuthState.isUserLoading,
-      userError: userAuthState.userError,
+      user,
+      isUserLoading: isLoading,
+      userError,
     };
-  }, [services, userAuthState]);
+  }, [services, user, isAuthLoading, userError]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
@@ -140,6 +130,6 @@ export const useUser = () => {
     user: context.user,
     isUserLoading: context.isUserLoading,
     userError: context.userError,
-    services: context.services, // Expose services for the AuthProvider check
   };
 };
+

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser } from '@/firebase';
@@ -10,7 +9,7 @@ import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 const unprotectedRoutes = ['/login', '/forms/school'];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, isUserLoading, services } = useUser();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -31,10 +30,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 
   // This is the core fix:
-  // Render a global loader if we are on a protected route and EITHER
-  // 1. Firebase services are not yet initialized (services === null)
-  // 2. The user's auth state is still being checked (isUserLoading === true)
-  if (!isUnprotectedRoute && (isUserLoading || !services)) {
+  // Render a global loader if we are on a protected route and the user's auth state is still being checked.
+  if (!isUnprotectedRoute && isUserLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />

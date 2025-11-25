@@ -24,25 +24,6 @@ export function initializeFirebase() {
 
   const auth = getAuth(firebaseApp);
   const firestore = getFirestore(firebaseApp);
-
-  // NOTE: Offline persistence was disabled to prevent critical IndexedDB errors.
-  // This was the source of repeated application crashes.
-  // Re-enabling should be done with caution, ensuring it's handled
-  // in a way that is compatible with multiple tabs and HMR.
-  //
-  // try {
-  //   enableIndexedDbPersistence(firestore, { cacheSizeBytes: CACHE_SIZE_UNLIMITED });
-  // } catch (err: any) {
-  //    if (err.code === 'failed-precondition') {
-  //       console.warn(
-  //         'Firestore offline persistence failed: Multiple tabs open. Persistence will be enabled in one tab only.'
-  //       );
-  //     } else if (err.code === 'unimplemented') {
-  //       console.warn(
-  //         'Firestore offline persistence failed: The current browser does not support all of the features required.'
-  //       );
-  //     }
-  // }
   
   return { firebaseApp, auth, firestore };
 }
