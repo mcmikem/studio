@@ -536,7 +536,9 @@
         },
         "totalAmount": { "type": "number", "description": "The sum of all item amounts." },
         "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Disbursed", "Acknowledged"], "default": "Pending"},
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "projectId": { "type": "string", "description": "Optional ID of the project this expense belongs to." },
+        "projectName": { "type": "string", "description": "Optional name of the project this expense belongs to." }
       },
       "required": ["userId", "userName", "date", "title", "type", "items", "totalAmount", "status", "createdAt"]
     },
@@ -677,6 +679,8 @@
         "properties": {
             "id": { "type": "string" },
             "title": { "type": "string" },
+            "userId": { "type": "string" },
+            "userName": { "type": "string" },
             "beneficiaryName": { "type": "string" },
             "project": { "type": "string" },
             "beforeSituation": { "type": "string" },
@@ -684,9 +688,13 @@
             "quote": { "type": "string" },
             "mediaUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
             "consentSigned": { "type": "boolean" },
-            "createdAt": { "type": "string", "format": "date-time" }
+            "createdAt": { "type": "string", "format": "date-time" },
+            "transcription": { "type": "string" },
+            "summary": { "type": "string" },
+            "quotes": { "type": "array", "items": { "type": "string" } },
+            "hashtags": { "type": "array", "items": { "type": "string" } }
         },
-        "required": ["beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt"]
+        "required": ["title", "beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt", "userId", "userName"]
     },
     "Feedback": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -936,13 +944,14 @@
         "properties": {
             "id": { "type": "string" },
             "schoolName": { "type": "string" },
+            "headTeacherName": { "type": "string" },
             "contactTeacher": { "type": "string" },
             "phone": { "type": "string" },
             "enrollmentSize": { "type": "number" },
             "location": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
-        "required": ["schoolName", "contactTeacher", "enrollmentSize", "location", "createdAt"]
+        "required": ["schoolName", "headTeacherName", "contactTeacher", "enrollmentSize", "location", "createdAt"]
     },
     "SLF_Prefect": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -957,7 +966,7 @@
             "position": { "type": "string" },
             "class": { "type": "string" },
             "age": { "type": "number" },
-            "gender": { "type": "string" },
+            "gender": { "type": "string", "enum": ["Male", "Female", "Other"] },
             "phone": { "type": "string" },
             "createdAt": { "type": "string", "format": "date-time" }
         },
@@ -1119,7 +1128,7 @@
         "photoUrl": { "type": "string", "format": "uri" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["fullName", "team", "dob", "position"]
+      "required": ["fullName", "team", "dob", "position", "createdAt"]
     },
     "OFAMatch": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1645,4 +1654,3 @@
     }
   }
 }
-    

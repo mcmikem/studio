@@ -32,8 +32,8 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  // Initialize services immediately on the client.
-  const [services, setServices] = useState<FirebaseServices | null>(() => initializeFirebase());
+  // Initialize services to null initially.
+  const [services, setServices] = useState<FirebaseServices | null>(null);
 
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null; 
@@ -44,11 +44,24 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     isUserLoading: true, // Start as true until first auth check completes.
     userError: null,
   });
+
+  // Effect to initialize Firebase services ONLY on the client side.
+  useEffect(() => {
+    // This effect runs once after the initial client render.
+    if (typeof window !== 'undefined' && !services) {
+       const firebaseServices = initializeFirebase();
+       setServices(firebaseServices);
+    }
+  }, []); // Empty dependency array ensures this runs only once on the client.
   
   // Effect for listening to authentication state changes.
   useEffect(() => {
     if (!services) {
-      setUserAuthState({ user: null, isUserLoading: false, userError: null });
+      // Don't subscribe to auth state until services are initialized.
+      // Set loading to false if services fail to initialize.
+      if (!services && userAuthState.isUserLoading) {
+          setUserAuthState({ user: null, isUserLoading: false, userError: null });
+      }
       return;
     };
 
@@ -64,7 +77,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     );
 
     return () => unsubscribe();
-  }, [services]);
+  }, [services, userAuthState.isUserLoading]);
 
   const contextValue = useMemo((): FirebaseContextState => {
     return {
