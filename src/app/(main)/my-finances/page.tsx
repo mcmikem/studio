@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useCollection, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, where, orderBy, doc } from 'firebase/firestore';
 import type { Expense } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +29,7 @@ export default function MyFinancesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const userExpensesQuery = useMemoFirebase(() => {
+  const userExpensesQuery = useMemo(() => {
     if (!firestore || !user) return null;
     return query(
       collection(firestore, 'expenses'),

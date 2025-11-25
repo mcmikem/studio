@@ -1,7 +1,8 @@
+
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -14,12 +15,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, addDocumentNonBlocking, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, Timestamp, getDocs, doc } from 'firebase/firestore';
 import type { WeeklyWorkplan, TeamWeeklyPlan, PriorityItem } from '@/lib/types';
 import { getWeek, startOfWeek, endOfWeek, format, isValid } from 'date-fns';
-import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarCheck, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PlusCircle, Trash2, CalendarCheck, Loader2, Wand } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

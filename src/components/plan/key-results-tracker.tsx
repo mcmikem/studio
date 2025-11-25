@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useUser, updateDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, where, doc } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
 import { Target, Flag, AlertTriangle, Edit, Loader2 } from 'lucide-react';
@@ -100,7 +100,7 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
   const managementRoles = ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Administrator'];
   const canEdit = effectiveRole && managementRoles.includes(effectiveRole);
   
-  const keyResultsQuery = useMemoFirebase(() => {
+  const keyResultsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'), orderBy('title'));
   }, [firestore]);
