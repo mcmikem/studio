@@ -32,7 +32,14 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  const [services, setServices] = useState<FirebaseServices | null>(null);
+  const [services, setServices] = useState<FirebaseServices | null>(() => {
+    // Initialize synchronously on the client side.
+    if (typeof window !== 'undefined') {
+      return initializeFirebase();
+    }
+    return null;
+  });
+
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null; 
     isUserLoading: boolean;
@@ -43,22 +50,13 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: null,
   });
 
-  // This effect runs once on mount to initialize Firebase.
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !services) {
-      const initializedServices = initializeFirebase();
-      setServices(initializedServices);
-    }
-  }, [services]);
-
-  // Effect for listening to authentication state changes, depends on services.
+  // Effect for listening to authentication state changes.
   useEffect(() => {
     if (!services) {
-      // Still waiting for Firebase to initialize.
+      // This will only happen on the server or if initialization failed.
+      setUserAuthState({ user: null, isUserLoading: false, userError: null });
       return;
     };
-
-    setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
 
     const unsubscribe = onAuthStateChanged(
       services.auth,
@@ -75,7 +73,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   }, [services]);
 
   const contextValue = useMemo((): FirebaseContextState => {
-    // The user is loading if either the auth state is being determined OR firebase services are not yet initialized.
+    // The user is loading if either the auth state is being determined OR firebase services are not yet initialized on the client.
     const isLoading = userAuthState.isUserLoading || !services;
     return {
       services,
@@ -133,7 +131,11 @@ export const useUser = () => {
   if (context === undefined) {
     throw new Error('useUser must be used within a FirebaseProvider.');
   }
-  return context;
+  return {
+    user: context.user,
+    isUserLoading: context.isUserLoading,
+    userError: context.userError,
+  };
 };
 
 

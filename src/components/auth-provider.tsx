@@ -14,7 +14,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const isAuthRoute = unprotectedRoutes.includes(pathname);
+  const isAuthRoute = unprotectedRoutes.some(route => pathname.startsWith(route));
 
   useEffect(() => {
     // Wait until Firebase has determined the auth state
