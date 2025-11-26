@@ -6,11 +6,11 @@ import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
-import { Skeleton } from '../ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
 import { subMonths } from 'date-fns';
-import { EmptyState } from '../ui/empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 
 interface UserPerformanceProps {

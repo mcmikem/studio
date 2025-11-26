@@ -23,9 +23,9 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Target, Clock, AlertTriangle } from 'lucide-react';
 import { isWithinInterval, parse, startOfDay, format, isValid } from 'date-fns';
-import { EmptyState } from '../ui/empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 
 type TeamStatus = {
