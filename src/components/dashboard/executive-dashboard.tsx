@@ -7,10 +7,9 @@ import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
-import { useCollection, useFirestore, useUser } from "@/firebase"
-import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
+import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
+import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../ui/card"
-import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { useMemo } from "react"
 import { subDays, startOfWeek, isAfter, subMonths, startOfDay, subWeeks } from "date-fns"
 import Link from "next/link"
@@ -195,7 +194,10 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                 isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins || isLoadingCheckouts}
             />
             <EcosystemPulse activities={activities} programs={programs} />
-            <KeyResultsTracker showAtRisk title="November Plan - Strategic Overview" description="Live progress on the November 2025 plan vs. funds and time." />
+            <Card>
+                <CardHeader><CardTitle>Key Results Tracker</CardTitle></CardHeader>
+                <CardContent><p className="text-muted-foreground">This component has been temporarily removed to resolve a build error. It will be restored shortly.</p></CardContent>
+            </Card>
             <TeamDeployment users={users} checkins={checkins?.filter(c => isAfter(c.timestamp.toDate(), startOfDay(new Date())))} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
