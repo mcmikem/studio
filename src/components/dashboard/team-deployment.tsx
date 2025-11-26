@@ -56,6 +56,8 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
   const [selectedUserStatus, setSelectedUserStatus] = useState<TeamStatus | null>(null);
 
   useEffect(() => {
+    // This ensures that `new Date()` is only called on the client-side
+    // preventing hydration mismatches.
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); 
     return () => clearInterval(timer);
