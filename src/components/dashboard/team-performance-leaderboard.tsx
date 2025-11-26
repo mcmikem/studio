@@ -8,7 +8,7 @@ import { Trophy, Users as UsersIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Progress } from '../ui/progress';
 import { formatCurrency } from '@/lib/utils';
-import { startOfMonth } from 'date-fns';
+import { subDays } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/empty-state';
 
@@ -39,11 +39,11 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
       return [];
     }
     
-    const monthStart = startOfMonth(new Date());
-    const monthlyActivities = activities.filter(a => a.loggedAt && a.loggedAt.toDate() >= monthStart);
+    const thirtyDaysAgo = subDays(new Date(), 30);
+    const recentActivities = activities.filter(a => a.loggedAt && a.loggedAt.toDate() >= thirtyDaysAgo);
 
     const userPerformance = users.map(user => {
-      const userActivities = monthlyActivities.filter(a => a.userId === user.id);
+      const userActivities = recentActivities.filter(a => a.userId === user.id);
       const totalValue = userActivities.reduce((sum, act) => sum + act.totalValue, 0);
       return {
         user,
@@ -73,7 +73,7 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
             <Trophy className="text-yellow-500" />
             Team Performance Leaderboard
         </CardTitle>
-        <CardDescription>Top contributors by value generated this month.</CardDescription>
+        <CardDescription>Top contributors by value generated in the last 30 days.</CardDescription>
       </CardHeader>
       <CardContent>
          <div className="space-y-4">
@@ -110,7 +110,7 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
                     <EmptyState
                         icon={UsersIcon}
                         title="No Performance Data"
-                        description="No activities with generated value have been logged this month."
+                        description="No activities with generated value have been logged in the last 30 days."
                         className="min-h-0"
                     />
                  )
