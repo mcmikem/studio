@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -17,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, User, Calendar, DollarSign, AreaChart } from 'lucide-react';
@@ -30,12 +29,9 @@ import { useMemo } from 'react';
 
 
 export default function ActivityLogPage() {
-  const firestore = useFirestore();
-
-  const activitiesQuery = useMemo(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'));
-  }, [firestore]);
+  const activitiesQuery = useMemoFirebase((db) => {
+    return query(collection(db, 'activities'), orderBy('loggedAt', 'desc'));
+  }, []);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
   

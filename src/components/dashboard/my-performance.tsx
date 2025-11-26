@@ -20,7 +20,7 @@ export function MyPerformance() {
   const firestore = useFirestore();
 
   const activitiesQuery = useMemoFirebase((db) => {
-    if (!user || !db) return null;
+    if (!user) return null;
 
     const oneMonthAgo = subMonths(new Date(), 1);
 

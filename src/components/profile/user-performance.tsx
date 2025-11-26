@@ -19,7 +19,6 @@ interface UserPerformanceProps {
 }
 
 export function UserPerformance({ userId }: UserPerformanceProps) {
-  const firestore = useFirestore();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -27,7 +26,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
   }, []);
 
   const activitiesQuery = useMemoFirebase((db) => {
-    if (!userId || !isClient || !db) return null;
+    if (!userId || !isClient) return null;
 
     const oneMonthAgo = subMonths(new Date(), 1);
 

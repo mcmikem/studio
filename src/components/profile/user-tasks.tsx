@@ -93,17 +93,17 @@ function NewTaskForm() {
 
 export function UserTasks() {
   const { user } = useUser();
-  const firestore = useFirestore();
 
-  const tasksQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+  const tasksQuery = useMemoFirebase((db) => {
+    if (!user) return null;
     return query(
-      collection(firestore, 'users', user.uid, 'tasks'),
+      collection(db, 'users', user.uid, 'tasks'),
       orderBy('createdAt', 'desc')
     );
-  }, [firestore, user]);
+  }, [user]);
 
   const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
+  const firestore = useFirestore();
 
   const handleTaskToggle = (taskId: string, completed: boolean) => {
     if (!user || !firestore) return;

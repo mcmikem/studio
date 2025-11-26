@@ -25,11 +25,9 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function TeamRoles() {
-  const firestore = useFirestore();
-  const usersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'users'), orderBy('name'));
-  }, [firestore]);
+  const usersQuery = useMemoFirebase((db) => {
+    return query(collection(db, 'users'), orderBy('name'));
+  }, []);
 
   const { data: users, isLoading } = useCollection<User>(usersQuery);
   const getInitials = (name?: string) => {
