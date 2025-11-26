@@ -9,11 +9,11 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { LogIn, Calendar, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit, Check, X } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Checkin } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Suspense, useMemo } from 'react';
+import { Suspense } from 'react';
 import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -95,11 +95,9 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
 }
 
 function CheckinStream() {
-    const firestore = useFirestore();
-     const checkinsQuery = useMemo(() => {
-        if (!firestore) return null;
-        return query(collection(firestore, 'checkins'), orderBy('timestamp', 'desc'));
-    }, [firestore]);
+     const checkinsQuery = useMemoFirebase((db) => {
+        return query(collection(db, 'checkins'), orderBy('timestamp', 'desc'));
+    }, []);
 
     const { data: checkins, isLoading } = useCollection<Checkin>(checkinsQuery);
 

@@ -226,18 +226,16 @@ function FinancialOverview({ activities }: { activities: Activity[] | null }) {
 }
 
 export default function ReportsPage() {
-  const firestore = useFirestore();
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+  const activitiesQuery = useMemoFirebase((db) => {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
 
     return query(
-      collection(firestore, "activities"),
+      collection(db, "activities"),
       where("loggedAt", ">=", Timestamp.fromDate(startOfMonth))
     );
-  }, [firestore]);
+  }, []);
   
   const { data: activities } = useCollection<Activity>(activitiesQuery);
 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -25,8 +26,6 @@ import { formatDateSafe, formatCurrency } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useMemo } from 'react';
-
 
 export default function ActivityLogPage() {
   const activitiesQuery = useMemoFirebase((db) => {

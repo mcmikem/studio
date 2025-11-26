@@ -4,7 +4,7 @@
 import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
 import { DashboardGrid } from "./dashboard-grid"
 import { ManagementQuickLinks } from "./management-quick-links"
-import { useCollection, useFirestore, useUser } from "@/firebase"
+import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
@@ -12,20 +12,15 @@ import { QuickInsights } from "./program-manager/quick-insights"
 import { TeamDeployment } from "./team-deployment"
 import { DashboardCalendar } from "./dashboard-calendar"
 import { QuickAddTask } from "./quick-add-task"
-import { useMemo } from "react"
 import { MyWeeklyPlan } from "./my-weekly-plan"
 import { ApprovalQueue } from "./approval-queue"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { useMemoFirebase } from "@/firebase/provider"
 
 
 interface DashboardProps {
   profile: User;
 }
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
-  const firestore = useFirestore();
-  const { user } = useUser();
-
   const partnershipsQuery = useMemoFirebase((db) => query(collection(db, 'partnerships'), orderBy('createdAt', 'desc')), []);
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
 

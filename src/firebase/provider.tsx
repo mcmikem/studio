@@ -164,6 +164,8 @@ export const useMemoFirebase = <T, >(
       return null;
     }
     return createQuery(firestore);
+  // We include firestore in the dependency array to ensure the query is re-created
+  // if the firestore instance itself changes, which happens on initialization.
   }, [firestore, ...deps]);
 
   return memoizedQuery;

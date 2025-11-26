@@ -19,14 +19,9 @@ interface UserPerformanceProps {
 }
 
 export function UserPerformance({ userId }: UserPerformanceProps) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
+  
   const activitiesQuery = useMemoFirebase((db) => {
-    if (!userId || !isClient) return null;
+    if (!userId) return null;
 
     const oneMonthAgo = subMonths(new Date(), 1);
 
@@ -36,7 +31,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
       where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo)),
       orderBy('loggedAt', 'desc')
     );
-  }, [userId, isClient]);
+  }, [userId]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
@@ -59,7 +54,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     };
   }, [activities]);
 
-  if (isLoading || !isClient) {
+  if (isLoading) {
     return <Skeleton className="h-48" />;
   }
 

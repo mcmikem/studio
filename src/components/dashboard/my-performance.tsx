@@ -17,7 +17,6 @@ import { useMemoFirebase } from '@/firebase/provider';
 
 export function MyPerformance() {
   const { user } = useUser();
-  const firestore = useFirestore();
 
   const activitiesQuery = useMemoFirebase((db) => {
     if (!user) return null;

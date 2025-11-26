@@ -9,11 +9,11 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Rss, LogOut, BookOpen, Lightbulb, Check, X, Wind } from 'lucide-react';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Suspense, useMemo } from 'react';
+import { Suspense } from 'react';
 import { formatDateSafe } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -97,11 +97,9 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
 }
 
 function CheckoutStream() {
-    const firestore = useFirestore();
-     const checkoutsQuery = useMemo(() => {
-        if (!firestore) return null;
-        return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(50));
-    }, [firestore]);
+     const checkoutsQuery = useMemoFirebase((db) => {
+        return query(collection(db, 'checkouts'), orderBy('timestamp', 'desc'), limit(50));
+    }, []);
 
     const { data: checkouts, isLoading } = useCollection<Checkout>(checkoutsQuery);
 
