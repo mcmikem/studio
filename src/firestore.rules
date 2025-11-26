@@ -25,10 +25,7 @@ service cloud.firestore {
     }
 
     // USER SUB-COLLECTIONS (private data)
-    match /users/{userId}/ai-chats/{chatId} {
-      allow read, write: if isOwner(userId);
-    }
-     match /users/{userId}/tasks/{taskId} {
+    match /users/{userId}/{subcollection}/{docId} {
       allow read, write: if isOwner(userId);
     }
 
