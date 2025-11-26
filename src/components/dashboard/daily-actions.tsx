@@ -41,8 +41,6 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     const router = useRouter();
 
     useEffect(() => {
-        // This ensures the Date object is only created on the client side
-        // and that we have a reliable local time.
         setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
@@ -58,7 +56,6 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     
         for (const block of checkin.details.timeBlocks) {
           try {
-            // Add defensive checks for time format
             if (!block.startTime || !block.endTime || !block.startTime.includes(':') || !block.endTime.includes(':')) continue;
 
             const startTime = parse(block.startTime, 'hh:mm a', baseDate);
@@ -91,14 +88,12 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
         router.push('/chat');
     }
   
-  // Render skeleton while waiting for client-side time or checkin data
   if (isLoadingCheckin || !currentTime) {
       return <Skeleton className="h-48 w-full" />
   }
 
   const hour = currentTime.getHours();
 
-  // Morning Mode (before 12 PM) and user hasn't checked in yet FOR TODAY
   if (hour < 12 && !checkin) {
      return (
         <Card className="bg-primary/10 border-primary/20 animated-glowing-border">
@@ -120,7 +115,6 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     );
   }
 
-  // Evening Mode (4 PM or later)
   if (hour >= 16) {
     return (
         <Card className="bg-accent/10 border-accent/20">
@@ -142,7 +136,6 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     );
   }
   
-  // Workday mode, after checking in
   if (checkin) {
     if (currentTask) {
         return (
@@ -171,7 +164,6 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
             </Card>
         );
     } else {
-        // Checked in, but not in a scheduled block
         return (
             <div className="p-6 text-center rounded-lg bg-muted/50 border-dashed border">
                 <p className="font-semibold text-lg flex items-center justify-center gap-2"><Check className="text-green-500"/> You're in a free block!</p>
@@ -182,6 +174,5 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
   }
 
 
-  // Fallback: If it's midday and user hasn't checked in, don't show the big card.
   return null;
 }

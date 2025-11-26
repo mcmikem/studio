@@ -56,8 +56,6 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
   const [selectedUserStatus, setSelectedUserStatus] = useState<TeamStatus | null>(null);
 
   useEffect(() => {
-    // This ensures that `new Date()` is only called on the client-side
-    // preventing hydration mismatches.
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); 
     return () => clearInterval(timer);
@@ -85,7 +83,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
             try {
               const now = currentTime;
               const baseDate = startOfDay(now);
-              if (!block.startTime || !block.endTime) continue; // Skip blocks with invalid times
+              if (!block.startTime || !block.endTime) continue;
               const startTime = parse(block.startTime, 'hh:mm a', baseDate);
               const endTime = parse(block.endTime, 'hh:mm a', baseDate);
               
