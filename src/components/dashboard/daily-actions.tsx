@@ -8,15 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import { LogIn, LogOut, Sparkles, Check, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { Checkin } from '@/lib/types';
-import { Progress } from '../ui/progress';
+import { Progress } from '@/components/ui/progress';
 import { useState, useEffect, useMemo } from 'react';
 import { isWithinInterval, parse, startOfDay, differenceInMilliseconds, isValid } from 'date-fns';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { BrainCircuit } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -186,4 +186,3 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
   // Fallback: If it's midday and user hasn't checked in, don't show the big card.
   return null;
 }
-    
