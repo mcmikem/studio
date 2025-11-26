@@ -170,6 +170,12 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
                     <div className="space-y-4">
                         {selectedUserStatus.checkedIn ? (
                             <>
+                                 <Alert>
+                                    <AlertTitle className="font-semibold flex items-center justify-between">
+                                        Checked In
+                                        <Badge variant="secondary">{selectedUserStatus.checkinTime}</Badge>
+                                    </AlertTitle>
+                                </Alert>
                                 <div className="p-4 bg-muted rounded-lg">
                                     <div className="flex items-center gap-2 text-sm font-semibold text-primary">
                                         <Target /> Primary Mission Today

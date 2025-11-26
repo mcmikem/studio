@@ -42,8 +42,18 @@ export function TeamPerformanceLeaderboard({ activities, checkins, checkouts, us
 
       // New Engagement Score Logic
       const activityScore = userActivities.length * 10;
-      const checkinScore = userCheckins.length * 5;
+      
+      const checkinScore = userCheckins.reduce((score, checkin) => {
+          const checkinTime = checkin.timestamp.toDate();
+          // Bonus for checking in before 10 AM
+          if (checkinTime.getHours() < 10) {
+              return score + 10; // +5 base, +5 bonus
+          }
+          return score + 5;
+      }, 0);
+
       const checkoutScore = userCheckouts.length * 5;
+      
       const totalScore = activityScore + checkinScore + checkoutScore;
       
       return {
