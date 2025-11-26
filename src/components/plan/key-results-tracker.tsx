@@ -280,5 +280,3 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
     </Card>
   );
 }
-
-    
