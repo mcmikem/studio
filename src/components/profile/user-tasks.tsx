@@ -100,7 +100,7 @@ export function UserTasks() {
       collection(db, 'users', user.uid, 'tasks'),
       orderBy('createdAt', 'desc')
     );
-  }, [user]);
+  }, [user?.uid]);
 
   const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
   const firestore = useFirestore();

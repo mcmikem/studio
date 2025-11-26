@@ -144,26 +144,29 @@ export const useUser = () => {
 
 /**
  * Creates a stable query reference that is memoized and only re-created when dependencies change.
- * Crucially, it waits for the Firestore instance to be available before creating the query.
+ * Crucially, it waits for the Firestore instance AND the user to be available before creating the query.
  * @param createQuery A function that receives the Firestore instance and returns a Firestore Query.
  * @param deps A dependency array to control when the query is re-created.
- * @returns A memoized Firestore Query or null if Firestore is not yet available.
+ * @returns A memoized Firestore Query or null if Firestore or user are not yet available.
  */
 export const useMemoFirebase = <T, >(
   createQuery: (db: Firestore) => T,
   deps: React.DependencyList = []
 ): T | null => {
   const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const memoizedQuery = useMemo(() => {
-    if (!firestore) {
+    // Wait for both firestore and the user loading to be complete
+    if (!firestore || isUserLoading) {
       return null;
     }
+    // If a query depends on a user but there is none, return null.
+    // The check for whether a user is needed is implicit in the calling component.
     return createQuery(firestore);
-  // We include firestore in the dependency array to ensure the query is re-created
-  // if the firestore instance itself changes, which happens on initialization.
-  }, [firestore, ...deps]);
+  }, [firestore, isUserLoading, ...deps]);
 
   return memoizedQuery;
 };
+

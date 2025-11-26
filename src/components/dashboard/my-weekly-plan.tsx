@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
-import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import { CalendarCheck, Loader2 } from 'lucide-react';
@@ -11,52 +11,35 @@ import { Skeleton } from '../ui/skeleton';
 import Link from 'next/link';
 import { startOfWeek } from 'date-fns';
 import { Button } from '../ui/button';
-import { useMemoFirebase } from '@/firebase/provider';
 
 export function MyWeeklyPlan() {
   const { user } = useUser();
-  const firestore = useFirestore();
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchWeeklyPlan = useCallback(async () => {
-    if (!user || !firestore) {
-        setIsLoading(false);
-        return;
-    };
-    setIsLoading(true);
-
-    const today = new Date();
-    const start = startOfWeek(today, { weekStartsOn: 1 });
+  const weeklyPlanQuery = useMemoFirebase((db) => {
+    if (!user) return null;
+    const start = startOfWeek(new Date(), { weekStartsOn: 1 });
     start.setHours(0,0,0,0);
     const weekStartTimestamp = Timestamp.fromDate(start);
 
-    const q = query(
-      collection(firestore, 'workplans'),
+    return query(
+      collection(db, 'workplans'),
       where('userId', '==', user.uid),
       where('weekOf', '==', weekStartTimestamp),
       limit(1)
     );
+  }, [user?.uid]);
 
-    try {
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        const doc = snapshot.docs[0];
-        setWeeklyPlan({ id: doc.id, ...doc.data() } as WeeklyWorkplan);
-      } else {
-        setWeeklyPlan(null);
-      }
-    } catch (e) {
-      console.error("Error fetching weekly plan for dashboard:", e);
-      setWeeklyPlan(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user, firestore]);
+  const { data, isLoading: isLoadingCollection } = useCollection<WeeklyWorkplan>(weeklyPlanQuery);
   
   useEffect(() => {
-    fetchWeeklyPlan();
-  }, [fetchWeeklyPlan]);
+    setIsLoading(isLoadingCollection);
+    if (data) {
+        setWeeklyPlan(data[0] || null);
+    }
+  }, [data, isLoadingCollection]);
+
 
   return (
     <Card className="hover:bg-muted/50 transition-colors">
