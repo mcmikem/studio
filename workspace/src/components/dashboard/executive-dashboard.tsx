@@ -2,18 +2,14 @@
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin, Expense, Partnership } from "@/lib/types"
-import { ManagementQuickLinks } from "./management-quick-links"
-import { DashboardGrid } from "./dashboard-grid"
-import { TeamPulse } from "./team-activity-feed"
+import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
 import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 import { useMemo } from "react"
-import { subDays, startOfWeek, isAfter, subMonths, startOfDay, subWeeks } from "date-fns"
-import { Globe, TrendingUp, BellRing, ArrowRight } from "lucide-react"
-import { TeamDeployment } from "./team-deployment"
-import { formatCurrency } from "@/lib/utils"
-import { ApprovalQueue } from "./approval-queue"
-import { TeamPerformanceLeaderboard } from "./team-performance-leaderboard"
+import { subDays, startOfDay } from "date-fns"
+import { TeamDeployment } from "@/components/dashboard/team-deployment"
+import { ApprovalQueue } from "@/components/dashboard/approval-queue"
+import { TeamPerformanceLeaderboard } from "@/components/dashboard/team-performance-leaderboard"
 
 
 interface DashboardProps {
