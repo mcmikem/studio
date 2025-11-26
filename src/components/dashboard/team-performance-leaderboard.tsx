@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -9,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Progress } from '../ui/progress';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/empty-state';
+import { useMemoFirebase } from '@/firebase';
 
 interface TeamPerformanceLeaderboardProps {
     activities: Activity[] | null;
@@ -122,3 +124,5 @@ export function TeamPerformanceLeaderboard({ activities, checkins, checkouts, us
     </Card>
   );
 }
+
+    

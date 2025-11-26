@@ -1,30 +1,25 @@
+
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useFirestore, useUser, useCollection } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card';
 import { Skeleton } from '../ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
-import { startOfMonth } from 'date-fns';
+import { startOfMonth, subMonths } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
 import Link from 'next/link';
 
 export function MyPerformance() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    // This effect runs only on the client, after the initial render.
-    setIsClient(true);
-  }, []);
-
-  const activitiesQuery = useMemo(() => {
-    // Defer query creation until we are on the client AND have a user.
-    if (!firestore || !user || !isClient) return null;
+  const activitiesQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
 
     const monthStart = startOfMonth(new Date());
 
@@ -33,7 +28,7 @@ export function MyPerformance() {
       where('userId', '==', user.uid),
       where('loggedAt', '>=', Timestamp.fromDate(monthStart))
     );
-  }, [firestore, user, isClient]);
+  }, [firestore, user]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
@@ -56,7 +51,7 @@ export function MyPerformance() {
     };
   }, [activities]);
 
-  if (isLoading || !isClient) {
+  if (isLoading) {
     return <Skeleton className="h-48" />;
   }
 
@@ -107,3 +102,5 @@ export function MyPerformance() {
     </Card>
   );
 }
+
+    

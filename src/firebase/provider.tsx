@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -33,10 +34,17 @@ interface FirebaseProviderProps {
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
   const [services, setServices] = useState<FirebaseServices | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true); // Tracks auth state ONLY
-  const [userError, setUserError] = useState<Error | null>(null);
 
+  const [userAuthState, setUserAuthState] = useState<{
+    user: User | null; 
+    isUserLoading: boolean;
+    userError: Error | null;
+  }>({
+    user: null, 
+    isUserLoading: true,
+    userError: null,
+  });
+  
   // Effect to initialize Firebase services ONLY on the client side.
   useEffect(() => {
     // This effect runs once after the initial client render.
@@ -48,18 +56,19 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   
   // Effect for listening to authentication state changes.
   useEffect(() => {
-    if (!services) return;
+    if (!services) {
+      setUserAuthState({ user: null, isUserLoading: false, userError: null });
+      return;
+    };
 
     const unsubscribe = onAuthStateChanged(
       services.auth,
       (firebaseUser) => {
-        setUser(firebaseUser);
-        setIsAuthLoading(false);
+        setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
       (error) => {
         console.error("FirebaseProvider: onAuthStateChanged error:", error);
-        setUserError(error);
-        setIsAuthLoading(false);
+        setUserAuthState({ user: null, isUserLoading: false, userError: error });
       }
     );
 
@@ -69,14 +78,14 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   const contextValue = useMemo((): FirebaseContextState => {
     // The user is considered "loading" if either the services aren't initialized yet,
     // or if the auth state check hasn't completed.
-    const isLoading = !services || isAuthLoading;
+    const isLoading = !services || userAuthState.isUserLoading;
     return {
       services,
-      user,
+      user: userAuthState.user,
       isUserLoading: isLoading,
-      userError,
+      userError: userAuthState.userError,
     };
-  }, [services, user, isAuthLoading, userError]);
+  }, [services, userAuthState]);
 
   return (
     <FirebaseContext.Provider value={contextValue}>
@@ -133,3 +142,20 @@ export const useUser = () => {
   };
 };
 
+// A hook to create stable query references, only when firestore is ready.
+export const useMemoFirebase = <T>(
+  createQuery: () => T | null,
+  deps: React.DependencyList
+): T | null => {
+  const firestore = useFirestore();
+  // We include firestore in the dependency array to ensure the query is re-created
+  // if the firestore instance changes (which it shouldn't, but it's safe).
+  // The key is that the factory function `createQuery` will not be called
+  // until `firestore` is non-null.
+  return useMemo(() => {
+    if (!firestore) return null;
+    return createQuery();
+  }, [firestore, ...deps]);
+};
+
+    

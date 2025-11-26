@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
-import { useUser, useFirestore } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import { CalendarCheck, Loader2 } from 'lucide-react';
@@ -56,7 +57,7 @@ export function MyWeeklyPlan() {
   useEffect(() => {
     if (user && firestore) {
       fetchWeeklyPlan();
-    } else {
+    } else if (!user) { // If there's no user, we can stop loading
         setIsLoading(false);
     }
   }, [user, firestore, fetchWeeklyPlan]);
@@ -99,3 +100,5 @@ export function MyWeeklyPlan() {
     </Card>
   );
 }
+
+    

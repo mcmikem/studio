@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy, where, getDocs } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -42,7 +43,7 @@ export function SessionAttendanceForm() {
   const { toast } = useToast();
   const [selectedCircleId, setSelectedCircleId] = useState<string | null>(null);
 
-  const circlesQuery = useMemo(() => {
+  const circlesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'yoskills-circles'), orderBy('circleName'));
   }, [firestore]);
@@ -106,7 +107,7 @@ export function SessionAttendanceForm() {
         description: `Attendance for ${data.topic} has been recorded.`,
       });
       reset();
-      router.push('/meal/yoskills');
+      router.push('/forms/program-logs/yoskills');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -115,7 +116,7 @@ export function SessionAttendanceForm() {
   return (
     <div className="space-y-4">
       <Button variant="outline" asChild>
-        <Link href="/meal/yoskills">
+        <Link href="/forms/program-logs/yoskills">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to YoSkills Hub
         </Link>
@@ -197,3 +198,5 @@ export function SessionAttendanceForm() {
     </div>
   );
 }
+
+    
