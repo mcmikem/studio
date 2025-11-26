@@ -21,8 +21,8 @@ import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Users, Mail, Briefcase } from 'lucide-react';
-import { Badge } from '../ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function TeamRoles() {
   const firestore = useFirestore();
@@ -145,5 +145,3 @@ export function TeamRoles() {
     </Card>
   );
 }
-
-    
