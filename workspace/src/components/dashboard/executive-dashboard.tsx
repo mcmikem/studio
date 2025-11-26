@@ -22,10 +22,10 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     
     const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
 
-    const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
+    const metricsQuery = useMemoFirebase((db) => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
     const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
     
-    const activitiesQuery = useMemoFirebase(() => {
+    const activitiesQuery = useMemoFirebase((db) => {
         if (!firestore) return null;
         return query(
             collection(firestore, 'activities'),
@@ -35,7 +35,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     }, [firestore, thirtyDaysAgo]);
     const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
     
-    const checkoutsQuery = useMemoFirebase(() => {
+    const checkoutsQuery = useMemoFirebase((db) => {
         if (!firestore) return null;
         return query(
             collection(firestore, 'checkouts'),
@@ -45,10 +45,10 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     }, [firestore, thirtyDaysAgo]);
     const { data: checkouts, isLoading: isLoadingCheckouts } = useCollection<Checkout>(checkoutsQuery);
     
-    const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+    const usersQuery = useMemoFirebase((db) => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
     const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-    const checkinsQuery = useMemoFirebase(() => {
+    const checkinsQuery = useMemoFirebase((db) => {
         if (!firestore) return null;
         return query(
             collection(firestore, 'checkins'),
@@ -57,7 +57,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     }, [firestore]);
     const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
-    const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs')) : null, [firestore]);
+    const programsQuery = useMemoFirebase((db) => firestore ? query(collection(firestore, 'programs')) : null, [firestore]);
     const { data: programs } = useCollection<Program>(programsQuery);
 
   return (

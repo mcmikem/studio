@@ -55,7 +55,7 @@ export default function PlanPage() {
 
        <div className="grid grid-cols-1 gap-6">
         <div className="col-span-1">
-            
+            <KeyResultsTracker />
         </div>
       </div>
 
