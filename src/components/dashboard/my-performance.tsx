@@ -27,7 +27,7 @@ export function MyPerformance() {
       where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo)),
       orderBy('loggedAt', 'desc')
     );
-  }, [user?.uid]); // Depend on user.uid to re-evaluate when user changes
+  }, [user?.uid]); 
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
@@ -100,4 +100,3 @@ export function MyPerformance() {
     </Card>
   );
 }
-
