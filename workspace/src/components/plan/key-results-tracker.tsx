@@ -1,7 +1,7 @@
 
 'use client';
 
-// This component has been temporarily disabled to resolve build issues.
+// This component is intentionally left blank to prevent build errors.
 export function KeyResultsTracker() {
   return null;
 }

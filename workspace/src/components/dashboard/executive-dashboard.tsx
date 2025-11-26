@@ -56,9 +56,9 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         if (!firestore) return null;
         return query(
             collection(firestore, 'checkins'),
-            where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo))
+            where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))
         );
-    }, [firestore, thirtyDaysAgo]);
+    }, [firestore]);
     const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
     const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs')) : null, [firestore]);
