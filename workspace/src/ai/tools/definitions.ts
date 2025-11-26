@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview This file contains the actual definitions of the Genkit tools.
  * It does NOT use the 'use server' directive and can safely export the tool objects.
@@ -433,5 +434,3 @@ export const getPendingTasksForUserToolObject = ai.defineTool(
         });
     }
 );
-
-    
