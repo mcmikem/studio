@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -55,12 +54,8 @@ export function MyWeeklyPlan() {
   }, [user, firestore]);
   
   useEffect(() => {
-    if (user && firestore) {
-      fetchWeeklyPlan();
-    } else if (!user) { // If there's no user, we can stop loading
-        setIsLoading(false);
-    }
-  }, [user, firestore, fetchWeeklyPlan]);
+    fetchWeeklyPlan();
+  }, [fetchWeeklyPlan]);
 
   return (
     <Card className="hover:bg-muted/50 transition-colors">
@@ -100,5 +95,3 @@ export function MyWeeklyPlan() {
     </Card>
   );
 }
-
-    

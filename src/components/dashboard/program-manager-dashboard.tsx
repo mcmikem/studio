@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
@@ -26,24 +25,22 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const { user } = useUser();
 
-  const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const partnershipsQuery = useMemoFirebase((db) => query(collection(db, 'partnerships'), orderBy('createdAt', 'desc')), []);
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
 
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
+  const usersQuery = useMemoFirebase((db) => query(collection(db, 'users'), orderBy('name')), []);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const checkinsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+  const checkinsQuery = useMemoFirebase((db) => {
     const startOfToday = startOfDay(new Date());
-    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
-  }, [firestore]);
+    return query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
+  }, []);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
   
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+  const activitiesQuery = useMemoFirebase((db) => {
     const sixWeeksAgo = startOfDay(subDays(new Date(), 42));
-    return query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgo)), orderBy('loggedAt', 'desc'))
-  }, [firestore]);
+    return query(collection(db, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgo)), orderBy('loggedAt', 'desc'))
+  }, []);
 
   const { data: activities } = useCollection<Activity>(activitiesQuery);
   
@@ -67,5 +64,3 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
     </>
   )
 }
-
-    

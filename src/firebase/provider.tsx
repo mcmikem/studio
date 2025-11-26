@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -12,13 +11,13 @@ import { initializeFirebase } from '@/firebase/index';
 // --- Context and State Definitions ---
 
 interface FirebaseServices {
-    firebaseApp: FirebaseApp;
-    firestore: Firestore;
-    auth: Auth;
+    firebaseApp: FirebaseApp | null;
+    firestore: Firestore | null;
+    auth: Auth | null;
 }
 
 interface FirebaseContextState {
-  services: FirebaseServices | null;
+  services: FirebaseServices;
   user: User | null;
   isUserLoading: boolean; 
   userError: Error | null;
@@ -33,7 +32,8 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  const [services, setServices] = useState<FirebaseServices | null>(null);
+  // Initialize services immediately. The initializeFirebase function is idempotent.
+  const services = useMemo(() => initializeFirebase(), []);
 
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null; 
@@ -45,18 +45,10 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: null,
   });
   
-  // Effect to initialize Firebase services ONLY on the client side.
-  useEffect(() => {
-    // This effect runs once after the initial client render.
-    if (typeof window !== 'undefined' && !services) {
-       const firebaseServices = initializeFirebase();
-       setServices(firebaseServices);
-    }
-  }, [services]);
-  
   // Effect for listening to authentication state changes.
   useEffect(() => {
-    if (!services) {
+    if (!services?.auth) {
+      // If services are not available (e.g., on server), set loading to false.
       setUserAuthState({ user: null, isUserLoading: false, userError: null });
       return;
     };
@@ -76,11 +68,11 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   }, [services]);
 
   const contextValue = useMemo((): FirebaseContextState => {
-    // The user is considered "loading" if either the services aren't initialized yet,
-    // or if the auth state check hasn't completed.
-    const isLoading = !services || userAuthState.isUserLoading;
+    // The user is considered "loading" if the auth state check hasn't completed.
+    // Services are now initialized synchronously on the client.
+    const isLoading = userAuthState.isUserLoading;
     return {
-      services,
+      services: services || { firebaseApp: null, firestore: null, auth: null },
       user: userAuthState.user,
       isUserLoading: isLoading,
       userError: userAuthState.userError,
@@ -143,19 +135,18 @@ export const useUser = () => {
 };
 
 // A hook to create stable query references, only when firestore is ready.
-export const useMemoFirebase = <T>(
-  createQuery: () => T | null,
-  deps: React.DependencyList
+export const useMemoFirebase = <T, >(
+  createQuery: (firestore: Firestore) => T | null,
+  deps: React.DependencyList = []
 ): T | null => {
   const firestore = useFirestore();
   // We include firestore in the dependency array to ensure the query is re-created
   // if the firestore instance changes (which it shouldn't, but it's safe).
   // The key is that the factory function `createQuery` will not be called
   // until `firestore` is non-null.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => {
     if (!firestore) return null;
-    return createQuery();
+    return createQuery(firestore);
   }, [firestore, ...deps]);
 };
-
-    

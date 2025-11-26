@@ -1,9 +1,8 @@
 
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
@@ -13,22 +12,24 @@ import { formatCurrency } from '@/lib/utils';
 import { startOfMonth, subMonths } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
 import Link from 'next/link';
+import { useMemoFirebase } from '@/firebase/provider';
+
 
 export function MyPerformance() {
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
+  const activitiesQuery = useMemoFirebase((db) => {
+    if (!user) return null;
 
     const monthStart = startOfMonth(new Date());
 
     return query(
-      collection(firestore, 'activities'),
+      collection(db, 'activities'),
       where('userId', '==', user.uid),
       where('loggedAt', '>=', Timestamp.fromDate(monthStart))
     );
-  }, [firestore, user]);
+  }, [user]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
@@ -102,5 +103,3 @@ export function MyPerformance() {
     </Card>
   );
 }
-
-    

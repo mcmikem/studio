@@ -1,5 +1,4 @@
 
-
 'use client';
 
 // This file serves as a barrel file for exporting all necessary Firebase
@@ -10,7 +9,8 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getAuth, type Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-// This function is now designed to be called safely from within a React component's effect.
+// This function is now designed to be called safely on the client.
+// It ensures that Firebase is initialized only once.
 export function initializeFirebase() {
   if (typeof window === 'undefined') {
     return null;
@@ -38,5 +38,3 @@ export * from './non-blocking-writes';
 export * from './errors';
 export * from './error-emitter';
 export * from './storage';
-
-    
