@@ -14,7 +14,6 @@ import { TeamDeployment } from "./team-deployment"
 import { formatCurrency } from "@/lib/utils"
 import { ApprovalQueue } from "./approval-queue"
 import { TeamPerformanceLeaderboard } from "./team-performance-leaderboard"
-import { KeyResultsTracker } from "../plan/key-results-tracker"
 
 
 interface DashboardProps {
@@ -68,7 +67,6 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   return (
     <>
        <DashboardGrid className="mt-6">
-            <KeyResultsTracker showAtRisk />
             <TeamPerformanceLeaderboard 
                 activities={activities}
                 checkins={checkins} 

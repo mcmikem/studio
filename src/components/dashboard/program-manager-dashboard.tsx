@@ -17,7 +17,6 @@ import { MyWeeklyPlan } from "./my-weekly-plan"
 import { ApprovalQueue } from "./approval-queue"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { useMemoFirebase } from "@/firebase/provider"
-import { KeyResultsTracker } from "../plan/key-results-tracker"
 
 
 interface DashboardProps {
@@ -50,7 +49,6 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   return (
     <>
      <DashboardGrid className="mt-6">
-        <KeyResultsTracker showAtRisk />
         <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
         <QuickInsights activities={activities} />
       </DashboardGrid>
