@@ -7,10 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import { CalendarCheck, Loader2 } from 'lucide-react';
 import type { WeeklyWorkplan } from '@/lib/types';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { startOfWeek } from 'date-fns';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 
 export function MyWeeklyPlan() {
   const { user } = useUser();

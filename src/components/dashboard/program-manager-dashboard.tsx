@@ -14,7 +14,7 @@ import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar"
 import { QuickAddTask } from "@/components/dashboard/quick-add-task"
 import { MyWeeklyPlan } from "@/components/dashboard/my-weekly-plan"
 import { ApprovalQueue } from "@/components/dashboard/approval-queue"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 
 interface DashboardProps {
