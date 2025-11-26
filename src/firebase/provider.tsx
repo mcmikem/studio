@@ -11,13 +11,13 @@ import { initializeFirebase } from '@/firebase/index';
 // --- Context and State Definitions ---
 
 interface FirebaseServices {
-    firebaseApp: FirebaseApp | null;
-    firestore: Firestore | null;
-    auth: Auth | null;
+    firebaseApp: FirebaseApp;
+    firestore: Firestore;
+    auth: Auth;
 }
 
 interface FirebaseContextState {
-  services: FirebaseServices;
+  services: FirebaseServices | null;
   user: User | null;
   isUserLoading: boolean; 
   userError: Error | null;
@@ -32,8 +32,8 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  // Use useMemo with an empty dependency array to ensure this runs only once on the client.
-  const services = useMemo(() => initializeFirebase(), []);
+  // Use useState to ensure Firebase initializes only once on the client.
+  const [services, setServices] = useState<FirebaseServices | null>(null);
 
   const [userAuthState, setUserAuthState] = useState<{
     user: User | null; 
@@ -45,10 +45,23 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     userError: null,
   });
   
+  useEffect(() => {
+    // This effect runs once on component mount.
+    if (!services) {
+      const initializedServices = initializeFirebase();
+      setServices(initializedServices);
+    }
+  }, [services]);
+
   // Effect for listening to authentication state changes.
   useEffect(() => {
     if (!services?.auth) {
-      setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Firebase services not available.") });
+      // Set loading to false if services are not available, so the app doesn't hang.
+      if (!services) {
+          setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
+      } else {
+          setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Firebase services not available.") });
+      }
       return;
     };
 
@@ -70,7 +83,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     // The user is loading if either the auth state is being determined OR firebase services are not yet initialized.
     const isLoading = userAuthState.isUserLoading || !services;
     return {
-      services: services || { firebaseApp: null, firestore: null, auth: null },
+      services: services,
       user: userAuthState.user,
       isUserLoading: isLoading,
       userError: userAuthState.userError,
@@ -141,7 +154,7 @@ export const useUser = () => {
  */
 export const useMemoFirebase = <T, >(
   createQuery: (db: Firestore) => T,
-  deps: React.DependencyList
+  deps: React.DependencyList = []
 ): T | null => {
   const firestore = useFirestore();
 
