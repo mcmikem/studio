@@ -23,12 +23,12 @@ import { QuickAddTask } from '@/components/dashboard/quick-add-task';
 const DashboardLoading = () => (
   <div className="space-y-6 mt-6">
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-1 flex flex-col gap-6">
-             <Skeleton className="h-48" />
-             <Skeleton className="h-64" />
-        </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <Skeleton className="h-96" />
+             <Skeleton className="h-48" />
+             <Skeleton className="h-96" />
+        </div>
+        <div className="lg:col-span-1 flex flex-col gap-6">
+            <Skeleton className="h-64" />
         </div>
     </div>
   </div>

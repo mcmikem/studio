@@ -8,10 +8,10 @@ import { DashboardGrid } from './dashboard-grid';
 import { useCollection, useFirestore, useUser } from '@/firebase';
 import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
 import { DashboardCalendar } from './dashboard-calendar';
-import { QuickAddTask } from './quick-add-task';
 import { TeamDeployment } from './team-deployment';
 import { startOfDay } from 'date-fns';
 import { useMemo } from 'react';
+import { KeyResultsTracker } from '../plan/key-results-tracker';
 
 interface DashboardProps {
   profile: User;
@@ -38,16 +38,11 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-        <DashboardGrid className="mt-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-6">
-                <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-                <TeamPulse checkouts={checkouts} />
-            </div>
-            <div className="flex flex-col gap-6">
-                <QuickAddTask />
-                <DashboardCalendar />
-                <MyWeeklyPlan />
-            </div>
+        <DashboardGrid className="mt-6">
+            <MyWeeklyPlan />
+            <DashboardCalendar />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+            <TeamPulse checkouts={checkouts} />
         </DashboardGrid>
     </>
   );

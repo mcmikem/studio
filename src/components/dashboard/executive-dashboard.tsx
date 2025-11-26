@@ -2,136 +2,19 @@
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin, Expense, Partnership } from "@/lib/types"
-import { NotificationsList } from "../notifications/notifications-list"
-import { ProgramsOverview } from "./programs-overview"
 import { ManagementQuickLinks } from "./management-quick-links"
 import { DashboardGrid } from "./dashboard-grid"
 import { TeamPulse } from "./team-activity-feed"
 import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../ui/card"
 import { useMemo } from "react"
 import { subDays, startOfWeek, isAfter, subMonths, startOfDay, subWeeks } from "date-fns"
-import Link from "next/link"
 import { Globe, TrendingUp, BellRing, ArrowRight } from "lucide-react"
 import { TeamDeployment } from "./team-deployment"
-import { QuickAddTask } from "./quick-add-task"
 import { formatCurrency } from "@/lib/utils"
-import { MyWeeklyPlan } from "./my-weekly-plan"
 import { ApprovalQueue } from "./approval-queue"
 import { TeamPerformanceLeaderboard } from "./team-performance-leaderboard"
-import { MyPerformance } from "./my-performance"
-import { Button } from "../ui/button"
-
-
-function EcosystemPulse({ activities, programs }: { activities: Activity[] | null, programs: Program[] | null }) {
-
-    const { inspire, empower, sustain } = useMemo(() => {
-        if (!activities || !programs) {
-            return { inspire: 0, empower: 0, sustain: 0 };
-        }
-
-        const thirtyDaysAgo = subDays(new Date(), 30);
-
-        const recentActivities = activities.filter(act => {
-            if (!act.loggedAt || typeof act.loggedAt.toDate !== 'function') return false;
-            return isAfter(act.loggedAt.toDate(), thirtyDaysAgo)
-        });
-
-        // Inspire = Number of active programs
-        const inspireCount = programs.filter(p => p.status === 'On Track').length;
-
-        // Empower = Number of YoSkills activities
-        const empowerCount = recentActivities.filter(a => a.ecosystem_phase === 'Equip & Empower').length;
-        
-        // Sustain = Revenue from "Activate & Sustain" activities
-        const sustainRevenue = recentActivities
-            .filter(a => a.ecosystem_phase === 'Activate & Sustain')
-            .reduce((sum, act) => sum + act.totalValue, 0);
-
-        return { inspire: inspireCount, empower: empowerCount, sustain: sustainRevenue };
-
-    }, [activities, programs]);
-
-    return (
-        <Card className="hover:bg-card/90 transition-colors">
-            <Link href="/meal">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Globe className="h-6 w-6" /> Ecosystem Pulse</CardTitle>
-                    <CardDescription>A high-level view of the Omuto Ecosystem's health in the last 30 days.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                        <div className="p-3 bg-muted rounded-lg">
-                            <p className="text-sm font-semibold">Phase 1: Inspire</p>
-                            <p className="text-2xl font-bold">{inspire}</p>
-                            <p className="text-xs text-muted-foreground">Active Programs</p>
-                        </div>
-                        <div className="p-3 bg-muted rounded-lg">
-                            <p className="text-sm font-semibold">Phase 2: Equip</p>
-                            <p className="text-2xl font-bold">{empower}</p>
-                            <p className="text-xs text-muted-foreground">YAP Activities</p>
-                        </div>
-                         <div className="p-3 bg-muted rounded-lg">
-                            <p className="text-sm font-semibold">Phase 3: Sustain</p>
-                            <p className="text-2xl font-bold">{formatCurrency(sustain, true)}</p>
-                            <p className="text-xs text-muted-foreground">Value Generated</p>
-                        </div>
-                    </div>
-                </CardContent>
-             </Link>
-        </Card>
-    )
-}
-
-function TeamEffectiveness({ activities }: { activities: Activity[] | null}) {
-    const { weeklyAvg, costPerImpact } = useMemo(() => {
-        if (!activities) {
-            return { weeklyAvg: 0, costPerImpact: 0 };
-        }
-
-        const fourWeeksAgo = startOfWeek(subWeeks(new Date(), 3)); // 3 full weeks ago + this partial week
-        const recentActivities = activities.filter(act => 
-            act.loggedAt && act.loggedAt.toDate && isAfter(act.loggedAt.toDate(), fourWeeksAgo)
-        );
-
-        const weeklyAvg = recentActivities.length / 4;
-
-        const totalCost = activities.reduce((sum, act) => sum + act.actualCost, 0);
-        const totalValue = activities.reduce((sum, act) => sum + act.totalValue, 0);
-        const costPerImpact = totalValue > 0 ? totalCost / totalValue : 0; 
-
-        return { weeklyAvg, costPerImpact };
-
-    }, [activities]);
-    
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><TrendingUp className="h-6 w-6" /> Team Effectiveness</CardTitle>
-                 <CardDescription>Key organizational performance metrics.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-x-4 gap-y-6">
-                 <div>
-                    <p className="text-sm text-muted-foreground">Field Efficiency</p>
-                    <p className="text-2xl font-bold">{weeklyAvg.toFixed(1)} <span className="text-sm font-normal">activities/wk</span></p>
-                </div>
-                <div>
-                    <p className="text-sm text-muted-foreground">Cost Per Impact</p>
-                    <p className="text-2xl font-bold">{costPerImpact.toFixed(2)} <span className="text-sm font-normal">UGX/value</span></p>
-                </div>
-                <div>
-                    <p className="text-sm text-muted-foreground">Productivity</p>
-                    <p className="text-2xl font-bold">N/A</p>
-                </div>
-                <div>
-                    <p className="text-sm text-muted-foreground">Volunteer Ratio</p>
-                    <p className="text-2xl font-bold">N/A</p>
-                </div>
-            </CardContent>
-        </Card>
-    )
-}
+import { KeyResultsTracker } from "../plan/key-results-tracker"
 
 
 interface DashboardProps {
@@ -184,8 +67,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-       <DashboardGrid className="mt-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 flex flex-col gap-6">
+       <DashboardGrid className="mt-6">
+            <KeyResultsTracker showAtRisk />
             <TeamPerformanceLeaderboard 
                 activities={activities}
                 checkins={checkins} 
@@ -193,36 +76,6 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                 users={users} 
                 isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins || isLoadingCheckouts}
             />
-            <EcosystemPulse activities={activities} programs={programs} />
-            <Card>
-                <CardHeader><CardTitle>Key Results Tracker</CardTitle></CardHeader>
-                <CardContent><p className="text-muted-foreground">This component has been temporarily removed to resolve build errors. It will be restored shortly.</p></CardContent>
-            </Card>
-            <TeamDeployment users={users} checkins={checkins?.filter(c => isAfter(c.timestamp.toDate(), startOfDay(new Date())))} isLoading={isLoadingUsers || isLoadingCheckins} />
-        </div>
-        <div className="lg:col-span-1 flex flex-col gap-6">
-            <ApprovalQueue />
-            <QuickAddTask />
-            <TeamEffectiveness activities={activities} />
-            <ManagementQuickLinks />
-            <Card className="group/card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2"><BellRing /> Recent Alerts</CardTitle>
-                <CardDescription>The latest urgent issues and important reminders.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <NotificationsList />
-              </CardContent>
-               <CardFooter>
-                  <Button asChild variant="ghost" className="w-full justify-end text-sm text-primary group-hover/card:underline">
-                      <Link href="/notifications">
-                          View All Notifications <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                  </Button>
-              </CardFooter>
-            </Card>
-            <TeamPulse checkouts={checkouts?.slice(0, 10)} />
-        </div>
       </DashboardGrid>
     </>
   )

@@ -374,34 +374,19 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   }, [firestore]);
   const { data: testimonies, isLoading: isLoadingTestimonies } = useCollection<Testimony>(testimoniesQuery);
 
-  const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
-
-  const checkinsQuery = useMemo(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
-
 
   return (
     <>
-       <DashboardGrid className="mt-6 lg:grid-cols-3">
+       <DashboardGrid className="mt-6">
         <div className="col-span-full">
             <BudgetHealth expenses={allExpenses} income={allIncome} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
             <FinancialQueue allExpenses={allExpenses} />
-            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
-            <ManagementQuickLinks />
-            <Card>
-                <CardHeader>
-                    <CardTitle>Media Hub</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
-                    <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
-                </CardContent>
-            </Card>
+            <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
+            <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
         </div>
       </DashboardGrid>
     </>

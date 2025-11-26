@@ -22,6 +22,7 @@ import {
 } from '@/lib/data';
 import { CheckCircle2, Clock, Users, BarChart2 } from 'lucide-react';
 import { TeamRoles } from '@/components/plan/team-roles';
+import { KeyResultsTracker } from '@/components/plan/key-results-tracker';
 
 
 const successMetrics = [
@@ -54,14 +55,7 @@ export default function PlanPage() {
 
        <div className="grid grid-cols-1 gap-6">
         <div className="col-span-1">
-           <Card>
-            <CardHeader>
-                <CardTitle>Key Results Tracker</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p className='text-muted-foreground'>This component has been temporarily removed to resolve build errors. It will be restored shortly.</p>
-            </CardContent>
-           </Card>
+            <KeyResultsTracker />
         </div>
       </div>
 

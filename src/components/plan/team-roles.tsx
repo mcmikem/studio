@@ -23,6 +23,7 @@ import type { User } from '@/lib/types';
 import { Users, Mail, Briefcase } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export function TeamRoles() {
   const usersQuery = useMemoFirebase((db) => {
@@ -79,10 +80,12 @@ export function TeamRoles() {
             ))
           ) : (
             !isLoading && (
-              <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
-                <Users className="h-12 w-12" />
-                <span className="text-lg font-semibold mt-2">No Users Found</span>
-              </div>
+               <EmptyState 
+                icon={Users}
+                title="No Users Found"
+                description="Could not find any users in the database."
+                className="min-h-0"
+               />
             )
           )}
         </div>
