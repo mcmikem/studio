@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useFirestore, useUser, useCollection } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
@@ -12,7 +11,6 @@ import { formatCurrency } from '@/lib/utils';
 import { startOfMonth, subMonths } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
 import Link from 'next/link';
-import { useMemoFirebase } from '@/firebase/provider';
 
 
 export function MyPerformance() {

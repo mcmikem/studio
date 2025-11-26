@@ -32,7 +32,7 @@ interface FirebaseProviderProps {
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  // Initialize services immediately. The initializeFirebase function is idempotent.
+  // Use useMemo with an empty dependency array to ensure this runs only once on the client.
   const services = useMemo(() => initializeFirebase(), []);
 
   const [userAuthState, setUserAuthState] = useState<{
@@ -48,8 +48,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   // Effect for listening to authentication state changes.
   useEffect(() => {
     if (!services?.auth) {
-      // If services are not available (e.g., on server), set loading to false.
-      setUserAuthState({ user: null, isUserLoading: false, userError: null });
+      setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Firebase services not available.") });
       return;
     };
 
@@ -68,9 +67,8 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   }, [services]);
 
   const contextValue = useMemo((): FirebaseContextState => {
-    // The user is considered "loading" if the auth state check hasn't completed.
-    // Services are now initialized synchronously on the client.
-    const isLoading = userAuthState.isUserLoading;
+    // The user is loading if either the auth state is being determined OR firebase services are not yet initialized.
+    const isLoading = userAuthState.isUserLoading || !services;
     return {
       services: services || { firebaseApp: null, firestore: null, auth: null },
       user: userAuthState.user,
@@ -140,10 +138,6 @@ export const useMemoFirebase = <T, >(
   deps: React.DependencyList = []
 ): T | null => {
   const firestore = useFirestore();
-  // We include firestore in the dependency array to ensure the query is re-created
-  // if the firestore instance changes (which it shouldn't, but it's safe).
-  // The key is that the factory function `createQuery` will not be called
-  // until `firestore` is non-null.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => {
     if (!firestore) return null;
