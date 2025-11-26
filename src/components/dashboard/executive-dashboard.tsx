@@ -142,31 +142,42 @@ interface DashboardProps {
 export function ExecutiveDashboard({ profile }: DashboardProps) {
     const firestore = useFirestore();
     const { user } = useUser();
+    
+    const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
 
     const metricsQuery = useMemo(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
     const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
     
     const activitiesQuery = useMemo(() => {
         if (!firestore) return null;
-        // Fetch all activities, ordered by date. Filtering will happen in components.
         return query(
-            collection(firestore, 'activities'), 
+            collection(firestore, 'activities'),
+            where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), 
             orderBy('loggedAt', 'desc')
         );
-    }, [firestore]);
+    }, [firestore, thirtyDaysAgo]);
     const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
     
-    const checkoutsQuery = useMemo(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
-    const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
+    const checkoutsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'checkouts'),
+            where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)),
+            orderBy('timestamp', 'desc')
+        );
+    }, [firestore, thirtyDaysAgo]);
+    const { data: checkouts, isLoading: isLoadingCheckouts } = useCollection<Checkout>(checkoutsQuery);
     
     const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
     const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
     const checkinsQuery = useMemo(() => {
         if (!firestore) return null;
-        const startOfToday = startOfDay(new Date());
-        return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
-    }, [firestore]);
+        return query(
+            collection(firestore, 'checkins'),
+            where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo))
+        );
+    }, [firestore, thirtyDaysAgo]);
     const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
     const programsQuery = useMemo(() => firestore ? query(collection(firestore, 'programs')) : null, [firestore]);
@@ -176,10 +187,16 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     <>
        <DashboardGrid className="mt-6 lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <TeamPerformanceLeaderboard activities={activities} users={users} isLoading={isLoadingActivities || isLoadingUsers}/>
+            <TeamPerformanceLeaderboard 
+                activities={activities}
+                checkins={checkins} 
+                checkouts={checkouts}
+                users={users} 
+                isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins || isLoadingCheckouts}
+            />
             <EcosystemPulse activities={activities} programs={programs} />
             <KeyResultsTracker showAtRisk title="November Plan - Strategic Overview" description="Live progress on the November 2025 plan vs. funds and time." />
-            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+            <TeamDeployment users={users} checkins={checkins?.filter(c => isAfter(c.timestamp.toDate(), startOfDay(new Date())))} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <ApprovalQueue />
@@ -202,7 +219,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                   </Button>
               </CardFooter>
             </Card>
-            <TeamPulse checkouts={checkouts} />
+            <TeamPulse checkouts={checkouts?.slice(0, 10)} />
         </div>
       </DashboardGrid>
     </>

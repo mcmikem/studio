@@ -2,18 +2,18 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import type { Activity, User } from '@/lib/types';
+import type { Activity, User, Checkin, Checkout } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Trophy, Users as UsersIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Progress } from '../ui/progress';
-import { formatCurrency } from '@/lib/utils';
-import { subDays } from 'date-fns';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/empty-state';
 
 interface TeamPerformanceLeaderboardProps {
     activities: Activity[] | null;
+    checkins: Checkin[] | null;
+    checkouts: Checkout[] | null;
     users: User[] | null;
     isLoading: boolean;
 }
@@ -27,44 +27,46 @@ const getInitials = (name?: string) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-export function TeamPerformanceLeaderboard({ activities, users, isLoading }: TeamPerformanceLeaderboardProps) {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+export function TeamPerformanceLeaderboard({ activities, checkins, checkouts, users, isLoading }: TeamPerformanceLeaderboardProps) {
   
   const leaderboardData = useMemo(() => {
-    if (!activities || !users || !isClient) {
+    if (!users || isLoading) {
       return [];
     }
-    
-    const thirtyDaysAgo = subDays(new Date(), 30);
-    const recentActivities = activities.filter(a => a.loggedAt && a.loggedAt.toDate() >= thirtyDaysAgo);
 
     const userPerformance = users.map(user => {
-      const userActivities = recentActivities.filter(a => a.userId === user.id);
-      const totalValue = userActivities.reduce((sum, act) => sum + act.totalValue, 0);
+      const userActivities = activities?.filter(a => a.userId === user.id) || [];
+      const userCheckins = checkins?.filter(c => c.userId === user.id) || [];
+      const userCheckouts = checkouts?.filter(c => c.userId === user.id) || [];
+
+      // New Engagement Score Logic
+      const activityScore = userActivities.length * 10;
+      const checkinScore = userCheckins.length * 5;
+      const checkoutScore = userCheckouts.length * 5;
+      const totalScore = activityScore + checkinScore + checkoutScore;
+      
       return {
         user,
-        totalValue,
+        totalScore,
         activityCount: userActivities.length,
+        checkinCount: userCheckins.length,
+        checkoutCount: userCheckouts.length,
       };
     });
 
     const sortedUsers = userPerformance
-        .filter(p => p.totalValue > 0)
-        .sort((a, b) => b.totalValue - a.totalValue);
+        .filter(p => p.totalScore > 0)
+        .sort((a, b) => b.totalScore - a.totalScore);
         
-    const maxValue = sortedUsers[0]?.totalValue || 0;
+    const maxScore = sortedUsers[0]?.totalScore || 0;
 
     return sortedUsers.map((p, index) => ({
       ...p,
       rank: index + 1,
-      progress: maxValue > 0 ? (p.totalValue / maxValue) * 100 : 0,
+      progress: maxScore > 0 ? (p.totalScore / maxScore) * 100 : 0,
     }));
 
-  }, [activities, users, isClient]);
+  }, [activities, users, checkins, checkouts, isLoading]);
 
   return (
     <Card>
@@ -73,7 +75,7 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
             <Trophy className="text-yellow-500" />
             Team Performance Leaderboard
         </CardTitle>
-        <CardDescription>Top contributors by value generated in the last 30 days.</CardDescription>
+        <CardDescription>Top contributors by engagement in the last 30 days.</CardDescription>
       </CardHeader>
       <CardContent>
          <div className="space-y-4">
@@ -89,7 +91,7 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
                  ))
             )}
             {!isLoading && leaderboardData.length > 0 ? (
-                leaderboardData.map(item => (
+                leaderboardData.slice(0, 5).map(item => (
                     <div key={item.user.id}>
                         <div className="flex items-center gap-4">
                             <span className="text-lg font-bold w-6 text-center">{item.rank}</span>
@@ -99,7 +101,7 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
                             </Avatar>
                             <div className="flex-1">
                                 <p className="font-semibold">{item.user.name}</p>
-                                <p className="text-sm text-muted-foreground">{formatCurrency(item.totalValue, true)} from {item.activityCount} activities</p>
+                                <p className="text-sm text-muted-foreground">{item.totalScore} points ({item.activityCount} logs, {item.checkinCount} check-ins)</p>
                             </div>
                         </div>
                         <Progress value={item.progress} className="h-1 mt-2" />
@@ -110,7 +112,7 @@ export function TeamPerformanceLeaderboard({ activities, users, isLoading }: Tea
                     <EmptyState
                         icon={UsersIcon}
                         title="No Performance Data"
-                        description="No activities with generated value have been logged in the last 30 days."
+                        description="No team activities have been logged in the last 30 days."
                         className="min-h-0"
                     />
                  )
