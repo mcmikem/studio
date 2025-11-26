@@ -154,19 +154,14 @@ export const useMemoFirebase = <T, >(
   deps: React.DependencyList = []
 ): T | null => {
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const memoizedQuery = useMemo(() => {
-    // Wait for both firestore and the user loading to be complete
-    if (!firestore || isUserLoading) {
+    if (!firestore) {
       return null;
     }
-    // If a query depends on a user but there is none, return null.
-    // The check for whether a user is needed is implicit in the calling component.
     return createQuery(firestore);
-  }, [firestore, isUserLoading, ...deps]);
+  }, [firestore, ...deps]);
 
   return memoizedQuery;
 };
-
