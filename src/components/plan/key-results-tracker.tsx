@@ -13,19 +13,19 @@ import { useCollection, useFirestore, useUser, updateDocumentNonBlocking } from 
 import { collection, query, orderBy, where, doc } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
 import { Target, Flag, AlertTriangle, Edit, Loader2 } from 'lucide-react';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { isPast, parseISO, differenceInDays, isValid, startOfDay } from 'date-fns';
 import { cn, formatDateSafe } from '@/lib/utils';
 import { useMemo, useState } from 'react';
-import { Progress } from '../ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { ProgressRing } from '@/components/ui/progress-ring';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useViewAs } from '@/hooks/use-view-as';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '../ui/dialog';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -221,21 +221,23 @@ export function KeyResultsTracker({ title, description, showAtRisk }: KeyResults
                 <div key={kr.id} className="group p-4 rounded-lg -m-4 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-4">
                         <Link href={kr.link} className="flex-1">
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="font-semibold">{kr.title}: {kr.description}</p>
-                                        <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
-                                            <Flag className="inline h-3 w-3 mr-1" />
-                                            Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
-                                        </p>
+                            <div className="flex items-center gap-4">
+                                <ProgressRing progress={progressPercentage} size={60} strokeWidth={6} />
+                                <div className="flex-1 space-y-1">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="font-semibold">{kr.title}: {kr.description}</p>
+                                            <p className={cn("text-xs text-muted-foreground", isDeadlinePast && "text-destructive")}>
+                                                <Flag className="inline h-3 w-3 mr-1" />
+                                                Deadline: {formatDateSafe(kr.deadline, "dateOnly")}
+                                            </p>
+                                        </div>
+                                        <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>
                                     </div>
-                                    <Badge variant="outline" className={priorityColors[kr.priority]}>{kr.priority}</Badge>
-                                </div>
-                                <Progress value={progressPercentage} className="h-2" />
-                                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                                    <span>{formatProgress(kr)}</span>
-                                    <span>Target: {formatTarget(kr)}</span>
+                                    <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                        <span>{formatProgress(kr)}</span>
+                                        <span>Target: {formatTarget(kr)}</span>
+                                    </div>
                                 </div>
                             </div>
                         </Link>
