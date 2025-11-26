@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import { CalendarCheck, Loader2 } from 'lucide-react';
@@ -11,6 +11,7 @@ import { Skeleton } from '../ui/skeleton';
 import Link from 'next/link';
 import { startOfWeek } from 'date-fns';
 import { Button } from '../ui/button';
+import { useMemoFirebase } from '@/firebase/provider';
 
 export function MyWeeklyPlan() {
   const { user } = useUser();

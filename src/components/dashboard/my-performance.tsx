@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useCollection } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
@@ -11,6 +12,7 @@ import { formatCurrency } from '@/lib/utils';
 import { startOfMonth, subMonths } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
 import Link from 'next/link';
+import { useMemoFirebase } from '@/firebase/provider';
 
 
 export function MyPerformance() {
@@ -18,14 +20,15 @@ export function MyPerformance() {
   const firestore = useFirestore();
 
   const activitiesQuery = useMemoFirebase((db) => {
-    if (!user) return null;
+    if (!user || !db) return null;
 
-    const monthStart = startOfMonth(new Date());
+    const oneMonthAgo = subMonths(new Date(), 1);
 
     return query(
       collection(db, 'activities'),
       where('userId', '==', user.uid),
-      where('loggedAt', '>=', Timestamp.fromDate(monthStart))
+      where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo)),
+      orderBy('loggedAt', 'desc')
     );
   }, [user]);
 
@@ -58,7 +61,7 @@ export function MyPerformance() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>My Performance (This Month)</CardTitle>
+          <CardTitle>My Performance (Last 30 Days)</CardTitle>
           <CardDescription>Your key contributions and efficiency.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,11 +80,10 @@ export function MyPerformance() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>My Performance (This Month)</CardTitle>
-        <CardDescription>Your key contributions and efficiency.</CardDescription>
-      </CardHeader>
-      <CardContent className="grid grid-cols-3 gap-4 text-center">
+        <CardHeader>
+            <CardTitle>Performance (Last 30 Days)</CardTitle>
+        </CardHeader>
+      <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
         <div className="p-4 bg-muted rounded-lg">
           <BarChart3 className="h-6 w-6 mx-auto mb-2 text-primary" />
           <p className="text-2xl font-bold">{stats.activityCount}</p>

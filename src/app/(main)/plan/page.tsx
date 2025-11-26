@@ -59,7 +59,7 @@ export default function PlanPage() {
                 <CardTitle>Key Results Tracker</CardTitle>
             </CardHeader>
             <CardContent>
-                <p className='text-muted-foreground'>This component has been temporarily removed to resolve a build error. It will be restored shortly.</p>
+                <p className='text-muted-foreground'>This component has been temporarily removed to resolve build errors. It will be restored shortly.</p>
             </CardContent>
            </Card>
         </div>

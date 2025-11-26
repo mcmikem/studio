@@ -196,7 +196,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
             <EcosystemPulse activities={activities} programs={programs} />
             <Card>
                 <CardHeader><CardTitle>Key Results Tracker</CardTitle></CardHeader>
-                <CardContent><p className="text-muted-foreground">This component has been temporarily removed to resolve a build error. It will be restored shortly.</p></CardContent>
+                <CardContent><p className="text-muted-foreground">This component has been temporarily removed to resolve build errors. It will be restored shortly.</p></CardContent>
             </Card>
             <TeamDeployment users={users} checkins={checkins?.filter(c => isAfter(c.timestamp.toDate(), startOfDay(new Date())))} isLoading={isLoadingUsers || isLoadingCheckins} />
         </div>

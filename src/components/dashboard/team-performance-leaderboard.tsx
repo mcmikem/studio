@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -124,5 +123,3 @@ export function TeamPerformanceLeaderboard({ activities, checkins, checkouts, us
     </Card>
   );
 }
-
-    

@@ -12,6 +12,7 @@ import { formatCurrency } from '@/lib/utils';
 import { startOfMonth, subMonths } from 'date-fns';
 import { EmptyState } from '../ui/empty-state';
 import Link from 'next/link';
+import { useMemoFirebase } from '@/firebase/provider';
 
 interface UserPerformanceProps {
   userId: string;
@@ -25,18 +26,18 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
     setIsClient(true);
   }, []);
 
-  const activitiesQuery = useMemo(() => {
-    if (!firestore || !userId || !isClient) return null;
+  const activitiesQuery = useMemoFirebase((db) => {
+    if (!userId || !isClient || !db) return null;
 
     const oneMonthAgo = subMonths(new Date(), 1);
 
     return query(
-      collection(firestore, 'activities'),
+      collection(db, 'activities'),
       where('userId', '==', userId),
       where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo)),
       orderBy('loggedAt', 'desc')
     );
-  }, [firestore, userId, isClient]);
+  }, [userId, isClient]);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
