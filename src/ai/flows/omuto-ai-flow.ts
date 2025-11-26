@@ -12,7 +12,6 @@ import { z } from 'zod';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { createCheckoutTool, getRecentCheckinsTool, getRecentCheckoutsTool, searchOmutoTool } from '../tools/omuto-tools';
 import { format } from 'date-fns';
-import { googleAI } from '@genkit-ai/google-genai';
 import type { OmutoAIInput, OmutoAIOutput } from '@/lib/types';
 
 // The main flow function that orchestrates the AI's response
@@ -24,7 +23,6 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         // Call the Gemini model with the prepared prompt and history
         // The Genkit framework will automatically handle tool execution.
         const llmResponse = await ai.generate({
-            model: googleAI.model('gemini-2.5-flash'),
             prompt: `UserId: ${input.userId}. User's message: "${input.question}"`,
             history: history,
             system: `${KNOWLEDGE_BASE}
