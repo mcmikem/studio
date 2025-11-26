@@ -13,19 +13,19 @@ import { useCollection, useFirestore, useUser, updateDocumentNonBlocking } from 
 import { collection, query, orderBy, where, doc } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
 import { Target, Flag, AlertTriangle, Edit, Loader2 } from 'lucide-react';
-import { Badge } from '../ui/badge';
+import { Badge } from '@/components/ui/badge';
 import { isPast, parseISO, differenceInDays, isValid, startOfDay } from 'date-fns';
 import { cn, formatDateSafe } from '@/lib/utils';
 import { useMemo, useState } from 'react';
-import { ProgressRing } from '../ui/progress-ring';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { ProgressRing } from '@/components/ui/progress-ring';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useViewAs } from '@/hooks/use-view-as';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '../ui/dialog';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Label } from '../ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 
