@@ -14,7 +14,6 @@ import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
 import Link from 'next/link';
 
 const playerSchema = z.object({
