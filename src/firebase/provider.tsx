@@ -44,7 +44,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
        const firebaseServices = initializeFirebase();
        setServices(firebaseServices);
     }
-  }, []); // Empty dependency array ensures this runs only once on the client.
+  }, [services]);
   
   // Effect for listening to authentication state changes.
   useEffect(() => {

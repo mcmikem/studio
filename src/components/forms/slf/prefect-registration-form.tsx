@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { Loader2, ArrowLeft, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -17,6 +18,7 @@ import Link from 'next/link';
 import type { SLF_School } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useMemo } from 'react';
 
 const prefectSchema = z.object({
   schoolId: z.string().min(1, 'Please select a school.'),
@@ -35,7 +37,7 @@ export function PrefectRegistrationForm() {
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  const schoolsQuery = useMemoFirebase(() => {
+  const schoolsQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'slf-schools'), orderBy('schoolName'));
   }, [firestore]);

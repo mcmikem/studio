@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -346,8 +347,6 @@ export type Testimony = {
   createdAt: Timestamp;
   summary?: string;
   transcription?: string;
-  audioUrl?: string;
-  videoUrl?: string;
   quotes?: string[];
   hashtags?: string[];
 };
@@ -716,6 +715,83 @@ export type InventoryCheck = {
   discrepancyReason?: string;
   createdAt: Timestamp;
 };
+
+export type WaterSource = {
+  id: string;
+  sourceName: string;
+  type: "Borehole" | "Spring" | "Tap" | "Rainwater";
+  gpsCoordinates?: string;
+  functional: boolean;
+  photoUrl?: string;
+  createdAt: Timestamp;
+};
+
+export type WASH_Assessment = {
+  id: string;
+  school: string;
+  handwashingStations: number;
+  soapAvailable: boolean;
+  latrineCondition: "Good" | "Fair" | "Poor";
+  assessorComments?: string;
+  createdAt: Timestamp;
+};
+
+export type YAP_Chapter = {
+  id: string;
+  chapterName: string;
+  location: string;
+  leader: string;
+  membersCount: number;
+  createdAt: Timestamp;
+};
+
+export type YAP_Report = {
+  id: string;
+  chapterId: string;
+  month: string;
+  activities: string;
+  attendance: number;
+  outcomes: string;
+  challenges?: string;
+  createdAt: Timestamp;
+};
+
+export type SeedGrantApplication = {
+  id: string;
+  applicantName: string;
+  projectTitle: string;
+  budgetSummaryUrl?: string;
+  amountRequested: number;
+  startDate: string;
+  endDate: string;
+  createdAt: Timestamp;
+};
+
+export type SeedGrantAccountability = {
+  id: string;
+  grantId: string;
+  totalSpent: number;
+  receiptUrls: string[];
+  outputDescription: string;
+  createdAt: Timestamp;
+};
+
+export type OFATournament = {
+  id: string;
+  teamName: string;
+  category: string;
+  contact: string;
+  createdAt: Timestamp;
+};
+
+export type OFAVolunteer = {
+  id: string;
+  name: string;
+  role: string;
+  contact: string;
+  createdAt: Timestamp;
+};
+
 
 // Flow-specific types, centralized here
 export const AlertInputSchema = z.object({

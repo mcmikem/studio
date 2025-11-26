@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy, where, getDocs } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -42,7 +42,7 @@ export function SessionAttendanceForm() {
   const { toast } = useToast();
   const [selectedCircleId, setSelectedCircleId] = useState<string | null>(null);
 
-  const circlesQuery = useMemoFirebase(() => {
+  const circlesQuery = useMemo(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'yoskills-circles'), orderBy('circleName'));
   }, [firestore]);
@@ -52,11 +52,13 @@ export function SessionAttendanceForm() {
     register,
     handleSubmit,
     control,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<SessionFormData>({
     resolver: zodResolver(sessionSchema),
-    defaultValues: {
+     defaultValues: {
       date: format(new Date(), 'yyyy-MM-dd'),
       members: [],
     }

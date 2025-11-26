@@ -54,8 +54,12 @@ export function MyWeeklyPlan() {
   }, [user, firestore]);
   
   useEffect(() => {
-    fetchWeeklyPlan();
-  }, [fetchWeeklyPlan]);
+    if (user && firestore) {
+      fetchWeeklyPlan();
+    } else {
+        setIsLoading(false);
+    }
+  }, [user, firestore, fetchWeeklyPlan]);
 
   return (
     <Card className="hover:bg-muted/50 transition-colors">
