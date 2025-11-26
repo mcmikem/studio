@@ -20,8 +20,8 @@ export function useUserProfile(user: AuthUser | null) {
 
   const { data: profile, isLoading: isDocLoading, error } = useDoc<UserProfile>(userDocRef);
 
-  // Consider it loading if the document is loading, or if we have a user but no profile yet (and no error).
-  const isLoading = isDocLoading || (!!user && !profile && !error);
+  // Loading is true ONLY if we are expecting a user but haven't loaded their profile doc yet.
+  const isLoading = !!user && isDocLoading;
   
   return { profile, isLoading, error };
 }

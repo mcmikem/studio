@@ -46,7 +46,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   });
   
   useEffect(() => {
-    // This effect runs once on component mount.
+    // This effect runs once on component mount to initialize Firebase services.
     if (!services) {
       const initializedServices = initializeFirebase();
       setServices(initializedServices);
@@ -56,12 +56,9 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   // Effect for listening to authentication state changes.
   useEffect(() => {
     if (!services?.auth) {
-      // Set loading to false if services are not available, so the app doesn't hang.
-      if (!services) {
-          setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
-      } else {
-          setUserAuthState({ user: null, isUserLoading: false, userError: new Error("Firebase services not available.") });
-      }
+      // If services are not yet available, we are technically still loading.
+      // This state is important for the initial render.
+      setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
       return;
     };
 

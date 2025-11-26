@@ -41,10 +41,11 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     const router = useRouter();
 
     useEffect(() => {
+        // This effect runs only on the client, after hydration
         setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
-    }, []);
+    }, []); // Empty dependency array ensures it runs only once on mount
 
     const { currentTask, timeRemaining, progress } = useMemo(() => {
         if (!checkin?.details?.timeBlocks || !currentTime) {
