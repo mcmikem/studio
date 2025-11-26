@@ -10,7 +10,6 @@ import { TeamPulse } from "./team-activity-feed"
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
 import { DashboardCalendar } from "./dashboard-calendar"
-import { KeyResultsTracker } from "../plan/key-results-tracker"
 import { PartnershipPipeline } from "./program-manager/partnership-pipeline"
 import { TeamDeployment } from "./team-deployment"
 import { QuickAddTask } from "./quick-add-task"
@@ -62,7 +61,6 @@ export function AdminDashboard({ profile }: DashboardProps) {
     <DashboardGrid className="lg:grid-cols-2">
         <div className="flex flex-col gap-6">
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-            <KeyResultsTracker showAtRisk />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
         </div>
         <div className="flex flex-col gap-6">
