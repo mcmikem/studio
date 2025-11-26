@@ -56,8 +56,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
   const [selectedUserStatus, setSelectedUserStatus] = useState<TeamStatus | null>(null);
 
   useEffect(() => {
-    const now = new Date();
-    setCurrentTime(now);
+    setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); 
     return () => clearInterval(timer);
   }, []);
