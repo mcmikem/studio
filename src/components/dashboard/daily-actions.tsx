@@ -43,8 +43,7 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     useEffect(() => {
         // This ensures the Date object is only created on the client side
         // and that we have a reliable local time.
-        const now = new Date();
-        setCurrentTime(now);
+        setCurrentTime(new Date());
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
