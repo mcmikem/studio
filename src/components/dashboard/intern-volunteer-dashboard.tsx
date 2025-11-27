@@ -1,9 +1,10 @@
+
 'use client';
 
 import type { User } from '@/lib/types';
 import { DashboardGrid } from './dashboard-grid';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Clock, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { SmartReminders } from './smart-reminders';

@@ -5,13 +5,13 @@ import type { User, Checkout, Checkin } from '@/lib/types';
 import { TeamPulse } from './team-activity-feed';
 import { MyWeeklyPlan } from './my-weekly-plan';
 import { DashboardGrid } from './dashboard-grid';
-import { useCollection, useFirestore, useUser } from '@/firebase';
+import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
 import { DashboardCalendar } from './dashboard-calendar';
 import { TeamDeployment } from './team-deployment';
 import { startOfDay } from 'date-fns';
 import { useMemo } from 'react';
-import { KeyResultsTracker } from '../plan/key-results-tracker';
+import { KeyResultsTracker } from '@/components/plan/key-results-tracker';
 
 interface DashboardProps {
   profile: User;
@@ -33,7 +33,10 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
-  const checkinsQuery = useMemo(() => firestore ? query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null, [firestore]);
+  const checkinsQuery = useMemoFirebase((db) => {
+    if(!firestore) return null;
+    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
+  }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
