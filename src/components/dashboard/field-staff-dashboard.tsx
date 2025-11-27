@@ -2,13 +2,13 @@
 'use client';
 
 import type { User, Checkout, Checkin } from '@/lib/types';
-import { TeamPulse } from './team-activity-feed';
-import { MyWeeklyPlan } from './my-weekly-plan';
-import { DashboardGrid } from './dashboard-grid';
+import { TeamPulse } from '@/components/dashboard/team-activity-feed';
+import { MyWeeklyPlan } from '@/components/dashboard/my-weekly-plan';
+import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
-import { DashboardCalendar } from './dashboard-calendar';
-import { TeamDeployment } from './team-deployment';
+import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
+import { TeamDeployment } from '@/components/dashboard/team-deployment';
 import { startOfDay } from 'date-fns';
 import { useMemo } from 'react';
 import { KeyResultsTracker } from '@/components/plan/key-results-tracker';

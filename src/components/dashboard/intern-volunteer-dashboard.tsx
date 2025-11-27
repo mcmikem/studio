@@ -2,12 +2,12 @@
 'use client';
 
 import type { User } from '@/lib/types';
-import { DashboardGrid } from './dashboard-grid';
+import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { SmartReminders } from './smart-reminders';
+import { SmartReminders } from '@/components/dashboard/smart-reminders';
 
 function QuickActionsCard() {
   return (
