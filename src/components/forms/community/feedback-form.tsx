@@ -64,7 +64,7 @@ export function CommunityFeedbackForm() {
         description: `Feedback from ${data.communityName} has been recorded.`,
       });
       reset();
-      router.push('/forms');
+      router.push('/meal');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -73,9 +73,9 @@ export function CommunityFeedbackForm() {
   return (
     <div className="space-y-4">
       <Button variant="outline" asChild>
-        <Link href="/forms">
+        <Link href="/meal">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Forms Hub
+          Back to MEAL Hub
         </Link>
       </Button>
       <Card>

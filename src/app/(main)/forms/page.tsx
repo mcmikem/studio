@@ -54,8 +54,8 @@ const formSections = [
   {
     title: 'Social Enterprises',
     forms: [
-       { href: '/forms/essentials', title: 'Omuto Essentials', description: 'Manage production, sales, and inventory.', icon: Store },
-       { href: '/forms/pulse', title: 'Omuto Pulse', description: 'Submit content for the media platform.', icon: Wind },
+       { href: '/essentials', title: 'Omuto Essentials', description: 'Manage production, sales, and inventory.', icon: Store },
+       { href: '/pulse', title: 'Omuto Pulse', description: 'Submit content for the media platform.', icon: Wind },
     ]
   },
   {

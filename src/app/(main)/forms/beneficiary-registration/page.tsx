@@ -12,12 +12,13 @@ import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore'
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, UserPlus, Upload } from 'lucide-react';
+import { Loader2, UserPlus, Upload, RadioGroup } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
+import { RadioGroupItem } from '@/components/ui/radio-group';
 
 const beneficiarySchema = z.object({
   name: z.string().min(3, 'Beneficiary name is required.'),

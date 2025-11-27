@@ -66,15 +66,13 @@ const OmutoLogo = () => (
 );
 
 const navConfig = {
-  home: [
+  workspace: [
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/chat', icon: Sparkles, label: 'AI Coach' },
-  ],
-  myDay: [
-     { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
-     { href: '/workplan', icon: CalendarCheck, label: 'My Weekly Plan' },
-     { href: '/profile?tab=tasks', icon: CheckCircle, label: 'My Tasks' },
-     { href: '/my-finances', icon: Wallet, label: 'My Finances' },
+    { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
+    { href: '/workplan', icon: CalendarCheck, label: 'My Weekly Plan' },
+    { href: '/profile?tab=tasks', icon: CheckCircle, label: 'My Tasks' },
+    { href: '/my-finances', icon: Wallet, label: 'My Finances' },
   ],
   teamHub: [
     { href: '/team-space', icon: Users, label: 'Team Space' },
@@ -82,9 +80,6 @@ const navConfig = {
     { href: '/stream', icon: Rss, label: 'Check-out Stream' },
     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
-  ],
-  forms: [
-    { href: '/forms', icon: ClipboardEdit, label: 'Forms Hub' },
   ],
   meal: [
       { href: '/meal', icon: BarChart3, label: 'MEAL Hub' },
@@ -122,17 +117,17 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management', 'system'],
-  'Executive Director': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Resource Mobilization Lead': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Operations & Field Manager': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Media & Finance Lead': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Media & Communications Lead': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Field Coordinator': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
-  'Intern': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
-  'Volunteer': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
-  'default': ['home', 'myDay', 'forms', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
+  'Administrator': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management', 'system'],
+  'Executive Director': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Resource Mobilization Lead': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Operations & Field Manager': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Media & Finance Lead': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Media & Communications Lead': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
+  'Field Coordinator': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
+  'Intern': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
+  'Volunteer': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
+  'default': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
 };
 
 
@@ -173,9 +168,8 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => {
-    if (path === '/chat' && pathname === '/chat') return true;
     if (path === '/' && pathname === '/') return true;
-    if (path !== '/' && path !== '/chat' && pathname.startsWith(path)) return true;
+    if (path !== '/' && pathname.startsWith(path)) return true;
     return false;
   }
   
@@ -224,15 +218,14 @@ export function AppSidebar() {
         <OmutoLogo />
       </SidebarHeader>
       <SidebarContent data-mobile={isMobile}>
-        {renderNavSection('home', 'Home')}
-        {renderNavSection('myDay', 'My Day')}
-        {renderNavSection('forms', 'Forms')}
+        {renderNavSection('workspace', 'Workspace')}
         {renderNavSection('teamHub', 'Team Hub')}
-        {renderNavSection('meal', 'M&E')}
+        {renderNavSection('meal', 'MEAL')}
         {renderNavSection('talents', 'Talents')}
         {renderNavSection('enterprises', 'Enterprises')}
         {renderNavSection('reports', 'Reports & Analytics')}
         {renderNavSection('management', 'Management')}
+        <Separator className="my-2" />
         {renderNavSection('system', 'System')}
       </SidebarContent>
       <SidebarFooter>

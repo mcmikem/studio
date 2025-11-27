@@ -45,7 +45,7 @@ function OmutoCupHubPage() {
                 <CardHeader>
                     <CardTitle>Omuto Cup Forms</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {omutoCupForms.map(form => (
                          <Link key={form.href} href={form.href} className="block">
                             <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
@@ -70,4 +70,3 @@ export default function OmutoCupPage() {
         </Suspense>
     )
 }
-
