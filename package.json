@@ -58,7 +58,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@genkit-ai/googleai": "^1.20.0",
     "@types/canvas-confetti": "^1.6.4",
     "@types/marked": "^6.0.0",
     "@types/node": "^20",
