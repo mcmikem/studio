@@ -19,7 +19,7 @@ export function MyWeeklyPlan() {
   const [isLoading, setIsLoading] = useState(true);
 
   const weeklyPlanQuery = useMemoFirebase((db) => {
-    if (!user || !db) return null;
+    if (!user?.uid) return null;
     const start = startOfWeek(new Date(), { weekStartsOn: 1 });
     start.setHours(0,0,0,0);
     const weekStartTimestamp = Timestamp.fromDate(start);
@@ -73,7 +73,7 @@ export function MyWeeklyPlan() {
                 description="You haven't finalized your workplan for this week yet."
                 className="min-h-0 py-4"
              >
-                <Button variant="link">Set your plan now!</Button>
+                <Button variant="link" asChild><Link href="/workplan">Set your plan now!</Link></Button>
              </EmptyState>
           )}
           {weeklyPlan && weeklyPlan.individualTasks.length > 4 && (

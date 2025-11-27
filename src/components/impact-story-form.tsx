@@ -1,10 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { useState, useMemo, useEffect } from "react";
 import {
   generateImpactStory,
   ImpactStoryInput,
@@ -28,8 +25,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Copy, Sparkles, Wand } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
-import { collection, query, orderBy, doc } from "firebase/firestore";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
 import type { Activity, Checkout } from "@/lib/types";
 import { Skeleton } from "./ui/skeleton";
 import { useSearchParams } from 'next/navigation';
@@ -268,7 +265,7 @@ function ImpactStoryGeneratorContent() {
 
 export function ImpactStoryGenerator() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense>
       <ImpactStoryGeneratorContent />
     </Suspense>
   )

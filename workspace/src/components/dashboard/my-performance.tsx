@@ -17,7 +17,7 @@ export function MyPerformance() {
   const { user } = useUser();
 
   const activitiesQuery = useMemoFirebase((db) => {
-    if (!user) return null;
+    if (!user?.uid) return null;
 
     const oneMonthAgo = subMonths(new Date(), 1);
 
@@ -27,7 +27,7 @@ export function MyPerformance() {
       where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo)),
       orderBy('loggedAt', 'desc')
     );
-  }, [user?.uid]); // Depend on user.uid to re-evaluate when user changes
+  }, [user?.uid]); 
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 
