@@ -43,6 +43,12 @@ const programForms: { [key: string]: { href: string; title: string; description:
 
 const generalMneForms = [
     {
+        href: '/forms/program-logs/general',
+        title: 'General Activity (ROI)',
+        description: 'Log any activity and calculate its financial and social return.',
+        icon: BarChart3,
+    },
+    {
         href: '/forms/attendance',
         title: 'Session Attendance',
         description: 'Track participants reached in any session or event.',
@@ -85,7 +91,7 @@ export default function MealPage() {
 
     const programs = useMemo(() => {
         if (!allPrograms) return [];
-        return allPrograms.filter(p => p.status !== 'Completed');
+        return allPrograms.filter(p => p.status !== 'Completed' && programForms[p.title]);
     }, [allPrograms]);
 
 
@@ -104,7 +110,7 @@ export default function MealPage() {
              <Card>
                 <CardHeader>
                     <CardTitle>General M&E Forms</CardTitle>
-                    <CardDescription>Cross-cutting forms for beneficiary-level data.</CardDescription>
+                    <CardDescription>Cross-cutting forms for beneficiary-level data and general activities.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      {generalMneForms.map(form => (
