@@ -50,16 +50,7 @@ const dailyPlannerAIFlow = ai.defineFlow(
     outputSchema: DailyPlannerAIOutputSchema,
   },
   async (input) => {
-    const { output } = await plannerPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a plan.');
-    }
-    return output;
-  }
-);
-
-export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
-    // Sanitize the key results to ensure dates are strings, not objects
+    // Sanitize the key results to ensure dates are strings, not objects, and wrap it
     const sanitizedKeyResults = input.keyResults.map((kr: any) => ({
       ...kr,
       deadline: kr.deadline ? new Date(kr.deadline).toISOString().split('T')[0] : 'N/A',
@@ -71,5 +62,14 @@ export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyP
         keyResults: { keyResults: sanitizedKeyResults },
     };
 
-    return dailyPlannerAIFlow(sanitizedInput);
+    const { output } = await plannerPrompt(sanitizedInput);
+    if (!output) {
+      throw new Error('AI failed to generate a plan.');
+    }
+    return output;
+  }
+);
+
+export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
+    return dailyPlannerAIFlow(input);
 }
