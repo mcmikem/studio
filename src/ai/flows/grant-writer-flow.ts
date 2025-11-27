@@ -15,6 +15,7 @@ const grantWriterPrompt = ai.definePrompt({
   name: 'grantWriterPrompt',
   input: { schema: GrantWriterInputSchema },
   output: { schema: GrantWriterOutputSchema },
+  model: 'googleai/gemini-pro',
   system: `${KNOWLEDGE_BASE}
   
   **IMPORTANT:**

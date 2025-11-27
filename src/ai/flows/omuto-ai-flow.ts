@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -22,6 +23,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         // Call the Gemini model with the prepared prompt and history
         // The Genkit framework will automatically handle tool execution.
         const llmResponse = await ai.generate({
+            model: 'googleai/gemini-pro',
             prompt: `UserId: ${input.userId}. User's message: "${input.question}"`,
             history: history,
             system: `${KNOWLEDGE_BASE}

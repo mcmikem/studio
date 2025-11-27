@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -26,6 +27,7 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         - Provide a concise executive summary of your findings.
         
         Focus on patterns and insights, not just listing individual comments. Be insightful and strategic.`,
+        model: 'googleai/gemini-pro',
         output: {
           schema: QualitativeAnalysisOutputSchema,
         },

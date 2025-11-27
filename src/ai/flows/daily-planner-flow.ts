@@ -18,6 +18,7 @@ const plannerPrompt = ai.definePrompt(
     name: 'dailyPlannerPrompt',
     input: { schema: DailyPlannerAIInputSchema },
     output: { schema: DailyPlannerAIOutputSchema },
+    model: 'googleai/gemini-pro',
     system: KNOWLEDGE_BASE, // Embed the entire organizational DNA
     prompt: `You are an expert productivity coach for Omuto Foundation. A staff member with the role '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
 

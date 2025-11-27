@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -14,6 +15,7 @@ const prompt = ai.definePrompt({
   name: 'impactStoryPrompt',
   input: {schema: ImpactStoryInputSchema},
   output: {schema: ImpactStoryOutputSchema},
+  model: 'googleai/gemini-pro',
   prompt: `You are a skilled storyteller for Omuto Foundation, crafting engaging narratives that highlight the impact of our activities.
 
   Based on the following activity data, generate a compelling story suitable for social media and Omuto Pulse. Weave in the narrative details provided to make the story authentic and inspiring. Focus on the human impact and the positive change created.

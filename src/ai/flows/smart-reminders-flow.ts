@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -30,6 +31,7 @@ export async function generateSmartReminders(input: SmartRemindersInput): Promis
     - "Since your calendar is clear, it's a great chance to make progress on standardizing the YAP Chapter SOPs (OCT-KR6)."
     `,
         tools: [await getUpcomingEventsForUserTool(), await getPendingTasksForUserTool()],
+        model: 'googleai/gemini-pro',
         output: { schema: SmartRemindersOutputSchema },
       }
     );
