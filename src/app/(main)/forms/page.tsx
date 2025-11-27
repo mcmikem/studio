@@ -27,42 +27,9 @@ const formSections = [
     ]
   },
   {
-    title: 'General M&E',
+    title: 'MEAL Hub',
     forms: [
-      { href: '/forms/program-logs/general', title: 'General Activity Log (ROI)', description: 'Report any field activity and calculate its ROI.', icon: BarChart3 },
-      { href: '/forms/attendance', title: 'Session Attendance', description: 'Track participants reached in any session or event.', icon: Users },
-      { href: '/forms/beneficiary-registration', title: 'Beneficiary Registration', description: 'Create a new profile for a program beneficiary.', icon: UserPlus },
-      { href: '/record-testimony', title: 'Impact Story Capture', description: 'Record a success story with media.', icon: Video },
-    ]
-  },
-   {
-    title: 'Program-Specific Logs',
-    forms: [
-      { href: '/forms/program-logs/red-campaign', title: 'RED Campaign Log', description: 'Log activities for the RED Campaign.', icon: Heart },
-      { href: '/forms/program-logs/greenschools', title: 'GreenSchools Log', description: 'Log activities for the GreenSchools Campaign.', icon: Leaf },
-      { href: '/forms/program-logs/yoskills', title: 'YoSkills Hub', description: 'Access all forms related to YoSkills circles.', icon: Zap },
-      { href: '/forms/program-logs/slf', title: 'Student Leaders Forum Hub', description: 'Manage schools, prefects, and performance.', icon: Users },
-    ]
-  },
-  {
-    title: 'Omuto Talents',
-    forms: [
-      { href: '/forms/talents/ofa', title: 'Omuto Football Alliance (OFA)', description: 'Manage league players and match reports.', icon: Trophy },
-      { href: '/forms/talents/omuto-cup', title: 'Omuto Cup Event', description: 'Manage tournament registrations and results.', icon: Trophy },
-    ]
-  },
-  {
-    title: 'Social Enterprises',
-    forms: [
-       { href: '/essentials', title: 'Omuto Essentials', description: 'Manage production, sales, and inventory.', icon: Store },
-       { href: '/pulse', title: 'Omuto Pulse', description: 'Submit content for the media platform.', icon: Wind },
-    ]
-  },
-  {
-    title: 'Partnerships & Community',
-    forms: [
-      { href: '/management/partnerships', title: 'Partner Registration', description: 'Add a new partner to the pipeline.', icon: Handshake },
-      { href: '/forms/community/feedback', title: 'Community Feedback Form', description: 'Log complaints, suggestions, or appreciation.', icon: MessageSquare },
+      { href: '/meal', title: 'MEAL Hub', description: 'Access all program-specific data collection forms.', icon: BarChart3 },
     ]
   },
    {

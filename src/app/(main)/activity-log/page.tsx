@@ -109,7 +109,7 @@ export default function ActivityLogPage() {
                     description="Activities logged via the ROI Calculator will appear here."
                   >
                      <Button asChild className="mt-4">
-                        <Link href="/forms/program-logs/general">Log First Activity</Link>
+                        <Link href="/meal">Log First Activity</Link>
                     </Button>
                   </EmptyState>
                 )
@@ -175,11 +175,11 @@ export default function ActivityLogPage() {
                           <EmptyState
                             icon={History}
                             title="No Activities Logged"
-                            description="Activities logged via the ROI Calculator in the 'Forms Hub' will appear here."
+                            description="Activities logged via the ROI Calculator in the 'MEAL Hub' will appear here."
                             className="min-h-0"
                           >
                             <Button asChild className="mt-4" variant="outline">
-                                <Link href="/forms/program-logs/general">Log First Activity</Link>
+                                <Link href="/meal">Log First Activity</Link>
                             </Button>
                           </EmptyState>
                       </TableCell>
