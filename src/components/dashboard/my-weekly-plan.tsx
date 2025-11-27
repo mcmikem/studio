@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { collection, query, where, orderBy, limit, Timestamp, getDocs } from 'firebase/firestore';
 import { CalendarCheck, Loader2 } from 'lucide-react';
 import type { WeeklyWorkplan } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '../ui/skeleton';
 import Link from 'next/link';
 import { startOfWeek } from 'date-fns';
-import { Button } from '@/components/ui/button';
+import { Button } from '../ui/button';
+import { EmptyState } from '../ui/empty-state';
 
 export function MyWeeklyPlan() {
   const { user } = useUser();
@@ -66,10 +67,14 @@ export function MyWeeklyPlan() {
               </div>
             ))
           ) : (
-             <div className="text-center py-4">
-                <p className="text-muted-foreground">You haven't finalized your workplan for this week.</p>
-                 <Button variant="link">Set your plan now!</Button>
-            </div>
+             <EmptyState
+                icon={CalendarCheck}
+                title="Plan Your Week"
+                description="You haven't finalized your workplan for this week yet."
+                className="min-h-0 py-4"
+             >
+                <Button variant="link">Set your plan now!</Button>
+             </EmptyState>
           )}
           {weeklyPlan && weeklyPlan.individualTasks.length > 4 && (
              <p className="text-xs text-primary pt-2">View all {weeklyPlan.individualTasks.length} tasks →</p>

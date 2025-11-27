@@ -4,9 +4,6 @@
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from '@/components/ui/card';
 import {
   Table,
@@ -17,15 +14,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { History, User, Calendar, DollarSign, AreaChart } from 'lucide-react';
+import { History, Calendar } from 'lucide-react';
 import type { Activity } from '@/lib/types';
 import { formatDateSafe, formatCurrency } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { PageHeader } from '@/components/page-header';
 
 export default function ActivityLogPage() {
   const activitiesQuery = useMemoFirebase((db) => {
@@ -37,15 +35,11 @@ export default function ActivityLogPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-            <AreaChart className="h-8 w-8" />
-            Activity Log (ROI)
-        </h1>
-        <p className="text-muted-foreground">
-          A financial and data-driven log of all activities reported via the ROI Calculator.
-        </p>
-      </header>
+       <PageHeader 
+        icon={History}
+        title="Activity Log (ROI)"
+        description="A financial and data-driven log of all activities reported via the ROI Calculator."
+      />
       <Card>
         <CardContent className="pt-6">
           {/* Mobile View */}
@@ -170,13 +164,12 @@ export default function ActivityLogPage() {
                     <TableRow>
                       <TableCell
                         colSpan={6}
-                        className="h-48 text-center text-muted-foreground"
+                        className="h-48"
                       >
                           <EmptyState
                             icon={History}
                             title="No Activities Logged"
                             description="Activities logged via the ROI Calculator in the 'MEAL Hub' will appear here."
-                            className="min-h-0"
                           >
                             <Button asChild className="mt-4" variant="outline">
                                 <Link href="/meal">Log First Activity</Link>

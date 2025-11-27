@@ -19,7 +19,7 @@ export function TeamPulse({ checkouts }: { checkouts: Checkout[] | null }) {
   return (
     <Card className="hover:bg-muted/50 transition-colors group/card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-accent"><Rss /> Team Pulse</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Rss className="text-accent"/> Team Pulse</CardTitle>
           <CardDescription>
             Live activity and updates from the team check-outs.
           </CardDescription>
