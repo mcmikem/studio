@@ -91,7 +91,19 @@ export default function MealPage() {
 
     const programs = useMemo(() => {
         if (!allPrograms) return [];
-        return allPrograms.filter(p => p.status !== 'Completed' && programForms[p.title]);
+        
+        const filteredPrograms = allPrograms.filter(p => p.status !== 'Completed' && programForms[p.title]);
+        
+        // De-duplicate by program title to prevent rendering the same section multiple times
+        const uniqueTitles = new Set<string>();
+        return filteredPrograms.filter(p => {
+            if (uniqueTitles.has(p.title)) {
+                return false;
+            }
+            uniqueTitles.add(p.title);
+            return true;
+        });
+
     }, [allPrograms]);
 
 
