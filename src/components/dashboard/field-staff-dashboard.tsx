@@ -10,7 +10,7 @@ import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { TeamDeployment } from '@/components/dashboard/team-deployment';
 import { startOfDay } from 'date-fns';
 import { useMemo } from 'react';
-import { KeyResultsTracker } from '@/components/plan/key-results-tracker';
+
 
 interface DashboardProps {
   profile: User;
