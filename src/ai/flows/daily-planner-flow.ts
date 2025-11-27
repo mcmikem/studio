@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -25,7 +26,7 @@ const plannerPrompt = ai.definePrompt(
     {{/if}}
 
     CURRENT ORGANIZATIONAL KEY RESULTS (Summary):
-    {{#each keyResults}}
+    {{#each keyResults.keyResults}}
     - {{this.title}}: {{this.description}} (Deadline: {{this.deadline}})
     {{/each}}
 
@@ -58,5 +59,17 @@ const dailyPlannerAIFlow = ai.defineFlow(
 );
 
 export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
-    return dailyPlannerAIFlow(input);
+    // Sanitize the key results to ensure dates are strings, not objects
+    const sanitizedKeyResults = input.keyResults.map((kr: any) => ({
+      ...kr,
+      deadline: kr.deadline ? new Date(kr.deadline).toISOString().split('T')[0] : 'N/A',
+      createdAt: undefined, // Remove complex objects
+    }));
+
+    const sanitizedInput = {
+        ...input,
+        keyResults: { keyResults: sanitizedKeyResults },
+    };
+
+    return dailyPlannerAIFlow(sanitizedInput);
 }
