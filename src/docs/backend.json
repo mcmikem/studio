@@ -688,11 +688,7 @@
             "quote": { "type": "string" },
             "mediaUrls": { "type": "array", "items": { "type": "string", "format": "uri" } },
             "consentSigned": { "type": "boolean" },
-            "createdAt": { "type": "string", "format": "date-time" },
-            "transcription": { "type": "string" },
-            "summary": { "type": "string" },
-            "quotes": { "type": "array", "items": { "type": "string" } },
-            "hashtags": { "type": "array", "items": { "type": "string" } }
+            "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["title", "beneficiaryName", "project", "beforeSituation", "afterSituation", "quote", "consentSigned", "createdAt", "userId", "userName"]
     },
@@ -760,7 +756,6 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "School Application",
       "description": "An application submitted by a school to participate in Omuto programs.",
-      "type": "object",
       "properties": {
         "email": { "type": "string", "format": "email" },
         "schoolName": { "type": "string" },
@@ -792,7 +787,7 @@
       "description": "Represents a single beneficiary of Omuto's programs.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "id": { "type": "string", "description": "Optional ID for the beneficiary." },
         "name": { "type": "string" },
         "dob": { "type": "string", "format": "date", "description": "Date of Birth" },
         "gender": { "type": "string", "enum": ["Male", "Female"] },

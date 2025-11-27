@@ -74,3 +74,12 @@ export const formatCurrency = (value: number, compact = false) => {
     minimumFractionDigits: 0,
   }).format(value);
 };
+
+export const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
+        return parts[0][0] + parts[parts.length - 1][0];
+    }
+    return name.substring(0, 2).toUpperCase();
+};

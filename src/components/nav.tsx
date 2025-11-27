@@ -37,6 +37,7 @@ import {
   Wind,
   Trophy,
   Bug,
+  Database,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -82,14 +83,12 @@ const navConfig = {
     { href: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   meal: [
-      { href: '/meal', icon: BarChart3, label: 'MEAL Hub' },
+      { href: '/meal', icon: ClipboardEdit, label: 'MEAL Hub' },
   ],
-  talents: [
-       { href: '/talents', icon: Trophy, label: 'Talents Hub' },
-  ],
-  enterprises: [
-        { href: '/essentials', icon: Store, label: 'Omuto Essentials' },
-        { href: '/pulse', icon: Wind, label: 'Omuto Pulse' },
+  dataHub: [
+      { href: '/data/beneficiaries', icon: Users, label: 'Beneficiaries' },
+      { href: '/data/surveys', icon: FileText, label: 'Surveys' },
+      { href: '/data/attendance', icon: CheckCircle, label: 'Attendance' },
   ],
   reports: [
      { href: '/reports', icon: BarChart3, label: 'Reports Hub' },
@@ -117,17 +116,17 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management', 'system'],
-  'Executive Director': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Resource Mobilization Lead': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Operations & Field Manager': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Media & Finance Lead': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Media & Communications Lead': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports', 'management'],
-  'Field Coordinator': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
-  'Intern': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
-  'Volunteer': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
-  'default': ['workspace', 'teamHub', 'meal', 'talents', 'enterprises', 'reports'],
+  'Administrator': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
+  'Executive Director': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Resource Mobilization Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Operations & Field Manager': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Media & Finance Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Media & Communications Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Field Coordinator': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
+  'Intern': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
+  'Volunteer': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
+  'default': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
 };
 
 
@@ -220,9 +219,8 @@ export function AppSidebar() {
       <SidebarContent data-mobile={isMobile}>
         {renderNavSection('workspace', 'Workspace')}
         {renderNavSection('teamHub', 'Team Hub')}
-        {renderNavSection('meal', 'MEAL')}
-        {renderNavSection('talents', 'Talents')}
-        {renderNavSection('enterprises', 'Enterprises')}
+        {renderNavSection('meal', 'MEAL (Forms)')}
+        {renderNavSection('dataHub', 'Data Hub')}
         {renderNavSection('reports', 'Reports & Analytics')}
         {renderNavSection('management', 'Management')}
         <Separator className="my-2" />
