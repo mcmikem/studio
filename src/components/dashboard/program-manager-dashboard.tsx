@@ -1,4 +1,3 @@
-
 "use client"
 
 import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
@@ -21,22 +20,24 @@ interface DashboardProps {
   profile: User;
 }
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
-  const partnershipsQuery = useMemoFirebase((db) => query(collection(db, 'partnerships'), orderBy('createdAt', 'desc')), []);
+  const firestore = useFirestore();
+
+  const partnershipsQuery = useMemoFirebase((db) => query(collection(db, 'partnerships'), orderBy('createdAt', 'desc')), [firestore]);
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
 
-  const usersQuery = useMemoFirebase((db) => query(collection(db, 'users'), orderBy('name')), []);
+  const usersQuery = useMemoFirebase((db) => query(collection(db, 'users'), orderBy('name')), [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const checkinsQuery = useMemoFirebase((db) => {
     const startOfToday = startOfDay(new Date());
     return query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
-  }, []);
+  }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
   
   const activitiesQuery = useMemoFirebase((db) => {
     const sixWeeksAgo = startOfDay(subDays(new Date(), 42));
     return query(collection(db, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgo)), orderBy('loggedAt', 'desc'))
-  }, []);
+  }, [firestore]);
 
   const { data: activities } = useCollection<Activity>(activitiesQuery);
   

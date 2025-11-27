@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
@@ -150,7 +149,7 @@ export const useUser = () => {
  * @returns A memoized Firestore Query or null if Firestore is not yet available.
  */
 export const useMemoFirebase = <T, >(
-  createQuery: (db: Firestore) => T,
+  createQuery: (db: Firestore) => T | null,
   deps: React.DependencyList = []
 ): T | null => {
   const firestore = useFirestore();

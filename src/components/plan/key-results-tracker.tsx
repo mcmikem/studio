@@ -1,4 +1,3 @@
-
 'use client';
 
 // This component is intentionally left blank to prevent build errors.

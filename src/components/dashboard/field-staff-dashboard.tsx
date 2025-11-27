@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { User, Checkout, Checkin } from '@/lib/types';
