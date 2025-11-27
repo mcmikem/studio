@@ -19,7 +19,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
 import { omutoAIFlow } from '@/ai/flows/omuto-ai-flow';
-import { Badge } from '@/components/ui/badge';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
 
 function MessageItem({ message }: { message: Message }) {
@@ -131,7 +130,7 @@ export default function ChatPage() {
     } catch (error: any) {
       console.error('Error with Omuto AI:', error);
       const errorMessageData = {
-          text: `I'm sorry, I encountered a server error and couldn't complete your request. The technical details are: ${error.message}`,
+          text: `I'm sorry, I encountered a server error and couldn't complete your request. Please try again later.`,
           userId: 'omuto-ai',
           userName: 'Omuto AI',
           userAvatar: '',

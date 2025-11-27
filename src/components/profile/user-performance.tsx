@@ -2,7 +2,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore';
 import type { Activity } from '@/lib/types';
 import { BarChart3, TrendingUp, CircleDollarSign } from 'lucide-react';
@@ -30,7 +30,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
       where('loggedAt', '>=', Timestamp.fromDate(oneMonthAgo)),
       orderBy('loggedAt', 'desc')
     );
-  }, [userId]);
+  }, [userId]); 
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);
 

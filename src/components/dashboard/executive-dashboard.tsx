@@ -10,6 +10,8 @@ import { subDays, startOfDay } from "date-fns"
 import { TeamDeployment } from "@/components/dashboard/team-deployment"
 import { ApprovalQueue } from "@/components/dashboard/approval-queue"
 import { TeamPerformanceLeaderboard } from "@/components/dashboard/team-performance-leaderboard"
+import { KeyResultsTracker } from "@/components/plan/key-results-tracker"
+import { EcosystemPulse } from "@/components/dashboard/ecosystem-pulse"
 
 
 interface DashboardProps {
@@ -58,12 +60,13 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
     const programsQuery = useMemoFirebase((db) => db ? query(collection(db, 'programs')) : null, []);
-    const { data: programs } = useCollection<Program>(programsQuery);
+    const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery);
 
   return (
     <>
-       <DashboardGrid className="mt-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-6">
+       <DashboardGrid className="mt-6 lg:grid-cols-3">
+            <div className="lg:col-span-2 flex flex-col gap-6">
+                 <KeyResultsTracker />
                  <TeamPerformanceLeaderboard 
                     activities={activities}
                     checkins={checkins} 
@@ -72,7 +75,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                     isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins || isLoadingCheckouts}
                 />
             </div>
-             <div className="flex flex-col gap-6">
+             <div className="lg:col-span-1 flex flex-col gap-6">
+                <EcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
                 <ApprovalQueue />
                 <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             </div>

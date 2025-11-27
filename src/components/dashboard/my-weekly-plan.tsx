@@ -15,31 +15,45 @@ import { EmptyState } from '../ui/empty-state';
 
 export function MyWeeklyPlan() {
   const { user } = useUser();
+  const firestore = useFirestore();
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const weeklyPlanQuery = useMemoFirebase((db) => {
-    if (!user?.uid) return null;
+  const fetchWeeklyPlan = useCallback(async () => {
+    if (!user || !firestore) {
+      setIsLoading(false);
+      return;
+    }
+    setIsLoading(true);
     const start = startOfWeek(new Date(), { weekStartsOn: 1 });
-    start.setHours(0,0,0,0);
+    start.setHours(0, 0, 0, 0);
     const weekStartTimestamp = Timestamp.fromDate(start);
 
-    return query(
-      collection(db, 'workplans'),
+    const q = query(
+      collection(firestore, 'workplans'),
       where('userId', '==', user.uid),
       where('weekOf', '==', weekStartTimestamp),
       limit(1)
     );
-  }, [user?.uid]);
 
-  const { data, isLoading: isLoadingCollection } = useCollection<WeeklyWorkplan>(weeklyPlanQuery);
-  
-  useEffect(() => {
-    setIsLoading(isLoadingCollection);
-    if (data) {
-        setWeeklyPlan(data[0] || null);
+    try {
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        setWeeklyPlan({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as WeeklyWorkplan);
+      } else {
+        setWeeklyPlan(null);
+      }
+    } catch (e) {
+      console.error("Error fetching weekly plan:", e);
+      setWeeklyPlan(null);
+    } finally {
+      setIsLoading(false);
     }
-  }, [data, isLoadingCollection]);
+  }, [user, firestore]);
+
+  useEffect(() => {
+    fetchWeeklyPlan();
+  }, [fetchWeeklyPlan]);
 
 
   return (
