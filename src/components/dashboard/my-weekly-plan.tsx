@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -28,7 +29,7 @@ export function MyWeeklyPlan() {
       where('weekOf', '==', weekStartTimestamp),
       limit(1)
     );
-  }, [user?.uid]);
+  }, [user]);
 
   const { data, isLoading: isLoadingCollection } = useCollection<WeeklyWorkplan>(weeklyPlanQuery);
   
