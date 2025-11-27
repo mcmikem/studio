@@ -18,7 +18,7 @@ export function MyWeeklyPlan() {
   const [isLoading, setIsLoading] = useState(true);
 
   const weeklyPlanQuery = useMemoFirebase((db) => {
-    if (!user) return null;
+    if (!user || !db) return null;
     const start = startOfWeek(new Date(), { weekStartsOn: 1 });
     start.setHours(0,0,0,0);
     const weekStartTimestamp = Timestamp.fromDate(start);
@@ -29,7 +29,7 @@ export function MyWeeklyPlan() {
       where('weekOf', '==', weekStartTimestamp),
       limit(1)
     );
-  }, [user]);
+  }, [user?.uid]);
 
   const { data, isLoading: isLoadingCollection } = useCollection<WeeklyWorkplan>(weeklyPlanQuery);
   

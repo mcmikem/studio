@@ -20,7 +20,7 @@ interface UserPerformanceProps {
 export function UserPerformance({ userId }: UserPerformanceProps) {
   
   const activitiesQuery = useMemoFirebase((db) => {
-    if (!userId) return null;
+    if (!userId || !db) return null;
 
     const oneMonthAgo = subMonths(new Date(), 1);
 

@@ -155,14 +155,12 @@ export const useMemoFirebase = <T, >(
 ): T | null => {
   const firestore = useFirestore();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const memoizedQuery = useMemo(() => {
     if (!firestore) {
       return null;
     }
     return createQuery(firestore);
-  // We include firestore in the dependency array to ensure the query is re-created
-  // if the firestore instance itself changes, which happens on initialization.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [firestore, ...deps]);
 
   return memoizedQuery;
