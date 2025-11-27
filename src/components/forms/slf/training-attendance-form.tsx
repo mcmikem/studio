@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy, where, getDocs } from 'firebase/firestore';
 import { Loader2, ArrowLeft, CheckSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -42,7 +42,7 @@ export function TrainingAttendanceForm() {
   const { toast } = useToast();
   const [selectedSchoolId, setSelectedSchoolId] = useState<string | null>(null);
 
-  const schoolsQuery = useMemo(() => {
+  const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'slf-schools'), orderBy('schoolName'));
   }, [firestore]);
