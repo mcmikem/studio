@@ -31,7 +31,7 @@ import './tools/omuto-tools';
 
 
 genkit({
-  plugins: [googleAI({ apiVersion: 'v1beta', defaultModel: 'gemini-1.5-flash-latest' })],
+  plugins: [googleAI({ apiVersion: 'v1beta' })],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
 });
