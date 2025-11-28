@@ -16,8 +16,8 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
     
     const analysisPrompt = ai.definePrompt({
         name: 'qualitativeAnalysisPrompt',
-        model: 'googleai/gemini-1.5-flash-latest',
-        tools: [getActivitiesForProgramTool],
+        model: 'googleai/gemini-1.5-pro-latest',
+        tools: [await getActivitiesForProgramTool()],
         output: { schema: QualitativeAnalysisOutputSchema },
         prompt: `You are an expert M&E (Monitoring and Evaluation) analyst for a youth-led NGO in Uganda.
         Your task is to analyze a collection of raw, qualitative data from field reports for a specific program and return a structured JSON object conforming to the schema.
