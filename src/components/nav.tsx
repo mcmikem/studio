@@ -83,12 +83,13 @@ const navConfig = {
     { href: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   meal: [
-      { href: '/meal', icon: ClipboardEdit, label: 'MEAL Hub' },
+      { href: '/meal', icon: ClipboardEdit, label: 'MEAL Hub (Forms)' },
   ],
   dataHub: [
       { href: '/data/beneficiaries', icon: Users, label: 'Beneficiaries' },
-      { href: '/data/surveys', icon: FileText, label: 'Surveys' },
       { href: '/data/attendance', icon: CheckCircle, label: 'Attendance' },
+      { href: '/data/surveys', icon: FileText, label: 'Surveys' },
+      { href: '/data/ofa/teams', icon: Swords, label: 'OFA Data' },
   ],
   reports: [
      { href: '/reports', icon: BarChart3, label: 'Reports Hub' },
