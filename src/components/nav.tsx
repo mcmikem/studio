@@ -86,9 +86,6 @@ const navConfig = {
   meal: [
       { href: '/meal', icon: ClipboardEdit, label: 'MEAL Hub' },
   ],
-  talents: [
-      { href: '/talents', icon: Trophy, label: 'Talents Hub' },
-  ],
   dataHub: [
       { href: '/data/beneficiaries', icon: Users, label: 'Beneficiaries' },
       { href: '/data/surveys', icon: FileText, label: 'Surveys' },
@@ -120,17 +117,17 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports', 'management', 'system'],
-  'Executive Director': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports', 'management'],
-  'Resource Mobilization Lead': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports', 'management'],
-  'Operations & Field Manager': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports', 'management'],
-  'Media & Finance Lead': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports', 'management'],
-  'Media & Communications Lead': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports', 'management'],
-  'Field Coordinator': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports'],
+  'Administrator': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
+  'Executive Director': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Resource Mobilization Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Operations & Field Manager': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Media & Finance Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Media & Communications Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Field Coordinator': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
   'Intern': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
   'Volunteer': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
-  'default': ['workspace', 'teamHub', 'meal', 'talents', 'dataHub', 'reports'],
+  'default': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
 };
 
 
@@ -224,7 +221,6 @@ export function AppSidebar() {
         {renderNavSection('workspace', 'Workspace')}
         {renderNavSection('teamHub', 'Team Hub')}
         {renderNavSection('meal', 'MEAL (Forms)')}
-        {renderNavSection('talents', 'Talent Programs')}
         {renderNavSection('dataHub', 'Data Hub')}
         {renderNavSection('reports', 'Reports & Analytics')}
         {renderNavSection('management', 'Management')}
