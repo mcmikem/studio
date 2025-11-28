@@ -3,14 +3,14 @@
 
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import { QuarterlyScorecardForm } from '@/components/forms/ofa/quarterly-scorecard-form';
+import { PlayerRegistrationForm } from '@/components/forms/ofa/player-registration-form';
 
-function QuarterlyScorecardPage() {
+function PlayerRegistrationPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <QuarterlyScorecardForm />
+            <PlayerRegistrationForm />
         </Suspense>
     )
 }
 
-export default QuarterlyScorecardPage;
+export default PlayerRegistrationPage;

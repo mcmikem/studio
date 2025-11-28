@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, addDocumentNonBlocking } from '@/firebase';
@@ -18,11 +19,19 @@ import Link from 'next/link';
 
 const playerSchema = z.object({
   fullName: z.string().min(3, 'Player name is required.'),
-  team: z.string().min(2, 'Team name is required.'),
-  dob: z.string().min(1, 'Date of birth is required.'),
-  position: z.enum(['GK', 'DEF', 'MID', 'FWD']),
-  jerseyNumber: z.coerce.number().min(1, 'Jersey number is required.'),
+  age: z.coerce.number().min(5, "Age must be 5 or greater."),
   photoUrl: z.string().url().optional(),
+  position: z.enum(['GK', 'DEF', 'MID', 'FWD']),
+  school: z.string().min(3, "School name is required."),
+  class: z.string().optional(),
+  attendance: z.enum(['Good', 'Irregular', 'Dropped']),
+  performance: z.enum(['Excellent', 'Fair', 'Poor']),
+  medicalConditions: z.string().optional(),
+  guardianName: z.string().min(3, 'Guardian name is required.'),
+  guardianContact: z.string().min(10, 'A valid contact is required.'),
+  strengths: z.string().optional(),
+  weaknesses: z.string().optional(),
+  goalsForTheSeason: z.string().optional(),
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
@@ -42,6 +51,8 @@ export function PlayerRegistrationForm() {
     resolver: zodResolver(playerSchema),
     defaultValues: {
         position: 'MID',
+        attendance: 'Good',
+        performance: 'Fair',
     }
   });
 
@@ -60,7 +71,7 @@ export function PlayerRegistrationForm() {
         description: `${data.fullName} has been added to the league.`,
       });
       reset();
-      router.push('/talents/ofa');
+      router.push('/meal/ofa');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -69,7 +80,7 @@ export function PlayerRegistrationForm() {
   return (
     <div className="space-y-4">
        <Button variant="outline" asChild>
-            <Link href="/talents/ofa">
+            <Link href="/meal/ofa">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to OFA Hub
             </Link>
@@ -81,7 +92,7 @@ export function PlayerRegistrationForm() {
             OFA Player Registration
           </CardTitle>
           <CardDescription>
-            Register a new player for a team in the Omuto Football Alliance.
+            Create a player profile for database and talent tracking.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -93,48 +104,96 @@ export function PlayerRegistrationForm() {
                     {errors.fullName && <p className="text-sm text-destructive">{errors.fullName.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="team">Team</Label>
-                    <Input id="team" {...register('team')} />
-                    {errors.team && <p className="text-sm text-destructive">{errors.team.message}</p>}
+                    <Label htmlFor="age">Age</Label>
+                    <Input id="age" type="number" {...register('age')} />
+                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
                 </div>
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="photoUrl">Passport Photo URL (Optional)</Label>
+                <Input id="photoUrl" {...register('photoUrl')} placeholder="Link to player photo"/>
+                {errors.photoUrl && <p className="text-sm text-destructive">{errors.photoUrl.message}</p>}
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="dob">Date of Birth</Label>
-                    <Input id="dob" type="date" {...register('dob')} />
-                    {errors.dob && <p className="text-sm text-destructive">{errors.dob.message}</p>}
+                    <Label htmlFor="position">Playing Position</Label>
+                    <Controller name="position" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger id="position"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="GK">Goalkeeper (GK)</SelectItem>
+                                <SelectItem value="DEF">Defender (DEF)</SelectItem>
+                                <SelectItem value="MID">Midfielder (MID)</SelectItem>
+                                <SelectItem value="FWD">Forward (FWD)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )} />
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="jerseyNumber">Jersey Number</Label>
-                    <Input id="jerseyNumber" type="number" {...register('jerseyNumber')} />
-                    {errors.jerseyNumber && <p className="text-sm text-destructive">{errors.jerseyNumber.message}</p>}
+                    <Label htmlFor="school">School</Label>
+                    <Input id="school" {...register('school')} />
+                    {errors.school && <p className="text-sm text-destructive">{errors.school.message}</p>}
                 </div>
             </div>
              <div className="space-y-2">
-                  <Label htmlFor="position">Position</Label>
-                   <Controller
-                    name="position"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger id="position">
-                          <SelectValue placeholder="Select position..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="GK">Goalkeeper (GK)</SelectItem>
-                          <SelectItem value="DEF">Defender (DEF)</SelectItem>
-                          <SelectItem value="MID">Midfielder (MID)</SelectItem>
-                           <SelectItem value="FWD">Forward (FWD)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.position && <p className="text-sm text-destructive">{errors.position.message}</p>}
+                <Label htmlFor="class">Class</Label>
+                <Input id="class" {...register('class')} placeholder="e.g., P.7, S.3" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label>School Attendance</Label>
+                    <Controller name="attendance" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Good">Good</SelectItem>
+                                <SelectItem value="Irregular">Irregular</SelectItem>
+                                <SelectItem value="Dropped">Dropped Out</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )} />
                 </div>
+                 <div className="space-y-2">
+                    <Label>Academic Performance</Label>
+                    <Controller name="performance" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Excellent">Excellent</SelectItem>
+                                <SelectItem value="Fair">Fair</SelectItem>
+                                <SelectItem value="Poor">Poor</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )} />
+                </div>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="medicalConditions">Medical Conditions (if any)</Label>
+                <Textarea id="medicalConditions" {...register('medicalConditions')} />
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="guardianName">Guardian Name</Label>
+                    <Input id="guardianName" {...register('guardianName')} />
+                    {errors.guardianName && <p className="text-sm text-destructive">{errors.guardianName.message}</p>}
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="guardianContact">Guardian Contact</Label>
+                    <Input id="guardianContact" {...register('guardianContact')} />
+                    {errors.guardianContact && <p className="text-sm text-destructive">{errors.guardianContact.message}</p>}
+                </div>
+            </div>
              <div className="space-y-2">
-                <Label htmlFor="photoUrl">Photo URL (Optional)</Label>
-                <Input id="photoUrl" {...register('photoUrl')} placeholder="Link to player photo"/>
-                {errors.photoUrl && <p className="text-sm text-destructive">{errors.photoUrl.message}</p>}
+                <Label htmlFor="strengths">Strengths</Label>
+                <Textarea id="strengths" {...register('strengths')} placeholder="e.g., Pace, Dribbling, Teamwork" />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="weaknesses">Weaknesses</Label>
+                <Textarea id="weaknesses" {...register('weaknesses')} placeholder="e.g., Heading, Defensive discipline" />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="goalsForTheSeason">Goals for the Season</Label>
+                <Textarea id="goalsForTheSeason" {...register('goalsForTheSeason')} placeholder="e.g., Become top scorer, get a school bursary" />
             </div>
           </CardContent>
           <CardFooter>
