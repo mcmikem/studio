@@ -40,8 +40,7 @@ const formSections = [
   {
     title: 'Omuto Talents',
     forms: [
-      { href: '/talents/ofa', title: 'Omuto Football Alliance', description: 'Manage teams, players, and matches for the league.', icon: Trophy },
-      { href: '/pulse', title: 'Omuto Pulse', description: 'Submit content for the Omuto Pulse media platform.', icon: Wind },
+      { href: '/talents', title: 'Omuto Talents Hub', description: 'Manage Football, Media, and other talent programs.', icon: Trophy },
     ]
   },
    {
