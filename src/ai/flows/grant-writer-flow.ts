@@ -15,6 +15,7 @@ const grantWriterPrompt = ai.definePrompt({
   name: 'grantWriterPrompt',
   input: { schema: GrantWriterInputSchema },
   output: { schema: GrantWriterOutputSchema },
+  model: 'googleai/gemini-pro',
   prompt: `
   You are a professional grant writer for an NGO called Omuto Foundation.
   Use the following knowledge base:

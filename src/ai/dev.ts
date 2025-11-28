@@ -33,5 +33,4 @@ genkit({
   plugins: [googleAI()],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
-  defaultModel: 'googleai/gemini-pro',
 });

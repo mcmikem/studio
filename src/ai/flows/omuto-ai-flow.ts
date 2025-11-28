@@ -23,6 +23,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         // Call the Gemini model with the prepared prompt and history
         // The Genkit framework will automatically handle tool execution.
         const llmResponse = await ai.generate({
+            model: 'googleai/gemini-pro',
             prompt: `
             You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
             Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
