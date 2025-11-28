@@ -51,8 +51,8 @@ const dailyPlannerAIFlow = ai.defineFlow(
     outputSchema: DailyPlannerAIOutputSchema,
   },
   async (input) => {
-    // Sanitize the key results to ensure dates are strings, not objects, and wrap it
-    const sanitizedKeyResults = input.keyResults.map((kr: any) => ({
+    // Sanitize the key results to ensure dates are strings and no complex objects are passed
+    const sanitizedKeyResults = (input.keyResults || []).map((kr: any) => ({
       ...kr,
       deadline: kr.deadline ? new Date(kr.deadline).toISOString().split('T')[0] : 'N/A',
       createdAt: undefined, // Remove complex objects
