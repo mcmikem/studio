@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -93,7 +94,7 @@ const navConfig = {
   reports: [
      { href: '/reports', icon: BarChart3, label: 'Reports Hub' },
      { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
-     { href: '/testimonies', icon: FileText, label: 'Testimony Library' },
+     { href: '/testimonies', icon: Video, label: 'Testimony Library' },
   ],
   management: [
     { href: '/management/programs', icon: Briefcase, label: 'Programs' },

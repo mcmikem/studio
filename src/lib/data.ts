@@ -280,13 +280,14 @@ export const samplePrograms: Omit<Program, 'id' | 'createdAt'>[] = [
     { title: 'RED Campaign', description: 'Menstrual Health Management education and support.', lead: 'Dianah Nansikombi', status: 'On Track', deadline: '2025-12-31', objectives: ['Deliver sessions to 200 parents and 50 teachers', 'Reach 600 girls with MHM kits'], valuePerObjective: 50000 },
     { title: 'GreenSchools Campaign', description: 'Environmental conservation through school-based activities.', lead: 'Kasirye Constantine', status: 'At Risk', deadline: '2025-11-30', objectives: ['Plant 700 trees', 'Establish 10 student Green Teams'], valuePerObjective: 20000 },
     { title: 'YoSkills Entrepreneurship', description: 'Vocational and business training for youth.', lead: 'Dianah Nansikombi', status: 'On Track', deadline: '2026-01-31', objectives: ['Train 50 youth in soap-making', 'Launch 5 new youth-led enterprises'], valuePerObjective: 75000 },
+    { title: 'Omuto Football Alliance', description: 'Youth football league for talent development and community building.', lead: 'Kasirye Constantine', status: 'On Track', deadline: '2026-03-31', objectives: ['Register 12 teams', 'Host inaugural tournament'], valuePerObjective: 100000 },
 ];
 
-export const samplePartnerships: Omit<Partnership, 'id' | 'createdAt'>[] = [
-    { name: 'Spouts of Water', contactPerson: 'Daniel Yin', contactEmail: 'daniel@spouts.org', status: 'Active', nextStep: 'Co-design PureWater Initiative Phase 2' },
-    { name: 'MHAMIA Foundation', contactPerson: 'Sarah Nakka', contactEmail: 'sarah.n@mhamia.org', status: 'Active', nextStep: 'Joint training session at Mpigi Secondary' },
-    { name: 'Mpigi District Local Government', contactPerson: 'Mr. Bwekembe', contactEmail: 'cao.mpigi@lg.go.ug', status: 'Active', nextStep: 'Align on Q4 youth programs' },
-    { name: 'GlobalGiving', contactPerson: 'Regional Manager', contactEmail: 'africa@globalgiving.org', status: 'Prospecting', nextStep: 'Submit final report for Cycle of Dignity' },
+export const samplePartnerships: Omit<Partnership, 'id' | 'createdAt' | 'lastContacted'>[] = [
+    { name: 'Spouts of Water', type: 'NGO', contactPerson: 'Daniel Yin', contactEmail: 'daniel@spouts.org', status: 'Active', nextStep: 'Co-design PureWater Initiative Phase 2' },
+    { name: 'MHAMIA Foundation', type: 'NGO', contactPerson: 'Sarah Nakka', contactEmail: 'sarah.n@mhamia.org', status: 'Active', nextStep: 'Joint training session at Mpigi Secondary' },
+    { name: 'Mpigi District Local Government', type: 'Government', contactPerson: 'Mr. Bwekembe', contactEmail: 'cao.mpigi@lg.go.ug', status: 'Active', nextStep: 'Align on Q4 youth programs' },
+    { name: 'GlobalGiving', type: 'NGO', contactPerson: 'Regional Manager', contactEmail: 'africa@globalgiving.org', status: 'Prospecting', nextStep: 'Submit final report for Cycle of Dignity' },
 ];
 
 export const sampleProjects: Omit<Project, 'id' | 'createdAt'>[] = [
@@ -294,7 +295,7 @@ export const sampleProjects: Omit<Project, 'id' | 'createdAt'>[] = [
     { name: 'GreenSchools Butambala Launch', manager: 'Bwire Bashir', districts: 'Butambala', status: 'Active', completion: 20, nextMilestone: 'Recruit 5 volunteer facilitators' },
 ];
 
-export const sampleImpactMetrics: Omit<ImpactMetric, 'id'>[] = [
+export const sampleImpactMetrics: Omit<ImpactMetric, 'id' | 'createdAt'>[] = [
     { metric: 'Girls Supported (RED)', target: 600, current: 520, unit: 'girls', valuePerUnit: 25000 },
     { metric: 'Trees Planted (GreenSchools)', target: 700, current: 190, unit: 'trees', valuePerUnit: 5000 },
     { metric: 'Cycle of Dignity Fundraising', target: 2000000, current: 800000, unit: 'UGX', valuePerUnit: 1 },
@@ -396,5 +397,6 @@ export const sampleTaskTemplates: Omit<TaskTemplate, 'id' | 'createdAt'>[] = [
 
 
     
+
 
 
