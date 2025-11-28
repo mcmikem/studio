@@ -20,25 +20,25 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         // IMPORTANT: Ensure history is ordered from oldest to newest for the model.
         const history = input.history || [];
 
+        const prompt = `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
+Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
+
+## Knowledge Base
+${KNOWLEDGE_BASE}
+
+## Tool Usage Instructions & Dynamic Knowledge
+
+- **searchOmuto**: If the user asks a question about a person, program, project, or expense, use this tool to find the information from the database. This is your primary way of accessing organizational knowledge.
+- **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"
+- **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.
+
+---
+UserId: ${input.userId}.
+
+User's message: "${input.question}"`;
+
         const llmResponse = await ai.generate({
-            model: 'googleai/gemini-1.5-flash-latest',
-            prompt: `
-            You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
-            Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
-
-            ## Knowledge Base
-            ${KNOWLEDGE_BASE}
-            
-            ## Tool Usage Instructions & Dynamic Knowledge
-
-            - **searchOmuto**: If the user asks a question about a person, program, project, or expense, use this tool to find the information from the database. This is your primary way of accessing organizational knowledge.
-            - **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"
-            - **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.
-
-            ---
-            UserId: ${input.userId}.
-            
-            User's message: "${input.question}"`,
+            prompt: prompt,
             history: history,
             tools: [await searchOmutoTool(), await createCheckoutTool(), await getRecentCheckinsTool(), await getRecentCheckoutsTool()],
             config: {

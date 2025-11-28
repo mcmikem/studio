@@ -13,7 +13,6 @@ import { GrantWriterInputSchema, GrantWriterOutputSchema } from '@/lib/types';
 
 const grantWriterPrompt = ai.definePrompt({
   name: 'grantWriterPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: GrantWriterInputSchema },
   output: { schema: GrantWriterOutputSchema },
   prompt: `You are a professional grant writer for an NGO called Omuto Foundation.

@@ -13,7 +13,6 @@ import { ImpactStoryInputSchema, ImpactStoryOutputSchema, type ImpactStoryInput,
 
 const prompt = ai.definePrompt({
   name: 'impactStoryPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: ImpactStoryInputSchema},
   output: {schema: ImpactStoryOutputSchema},
   prompt: `You are a skilled storyteller for Omuto Foundation, crafting engaging narratives that highlight the impact of our activities. Your output must be a JSON object with a single key "impactStory".
