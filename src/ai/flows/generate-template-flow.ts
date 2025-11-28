@@ -12,17 +12,10 @@ import { GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from '@/lib
 const templateGeneratorPrompt = ai.definePrompt({
   name: 'templateGeneratorPrompt',
   input: { schema: GenerateTemplateInputSchema },
-  prompt: `You are an expert at creating Standard Operating Procedures (SOPs) and checklists for an NGO.
-  Your task is to take a user's description of a process and turn it into a structured JSON object.
-  Your entire output MUST be a single, valid JSON object that conforms to the following Zod schema:
-
-  \`\`\`
-  z.object({
-    title: z.string().describe('A clear and concise title for the generated template.'),
-    checklistItems: z.array(z.string()).describe('A list of specific, actionable checklist items.'),
-  })
-  \`\`\`
-  
+  output: { schema: GenerateTemplateOutputSchema },
+  system: `You are an expert at creating Standard Operating Procedures (SOPs) and checklists for an NGO.
+  Your task is to take a user's description of a process and turn it into a structured JSON object.`,
+  prompt: `
   Instructions:
   1.  **Create a Title:** Generate a short, clear title for the template based on the description.
   2.  **Generate Checklist Items:** Break down the described process into a series of distinct, actionable steps. Each step should be a checklist item.
@@ -37,17 +30,9 @@ const templateGeneratorPrompt = ai.definePrompt({
 
 export async function generateTemplate(input: GenerateTemplateInput): Promise<GenerateTemplateOutput> {
   const llmResponse = await templateGeneratorPrompt(input);
-  const text = llmResponse.text;
-  if (!text) {
+  const output = llmResponse.output();
+  if (!output) {
     throw new Error('AI failed to generate the template.');
   }
-
-  try {
-    const jsonText = text.trim().replace(/^```json|```$/g, '').trim();
-    const parsed = JSON.parse(jsonText);
-    return GenerateTemplateOutputSchema.parse(parsed);
-  } catch (e) {
-    console.error("Failed to parse AI response as JSON:", e);
-    throw new Error('AI returned an invalid template format.');
-  }
+  return output;
 }

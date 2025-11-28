@@ -23,8 +23,8 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         // Call the Gemini model with the prepared prompt and history
         // The Genkit framework will automatically handle tool execution.
         const llmResponse = await ai.generate({
-            model: 'googleai/gemini-pro',
-            prompt: `
+            model: 'googleai/gemini-2.5-flash-preview',
+            system: `
             ${KNOWLEDGE_BASE}
             
             ## Tool Usage Instructions & Dynamic Knowledge
@@ -36,8 +36,8 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
             - **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.
 
             ---
-            
-            UserId: ${input.userId}. User's message: "${input.question}"`,
+            `,
+            prompt: `UserId: ${input.userId}. User's message: "${input.question}"`,
             history: history,
             tools: [searchOmutoTool, createCheckoutTool, getRecentCheckinsTool, getRecentCheckoutsTool],
             config: {
@@ -45,7 +45,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
             }
         });
         
-        const answer = llmResponse.text;
+        const answer = llmResponse.text();
         
         if (!answer) {
             console.error("AI did not return a text response, even after potential tool use.", llmResponse);

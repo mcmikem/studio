@@ -17,38 +17,18 @@ export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOu
       {
         name: 'grantFinderPrompt',
         tools: [findGrantOpportunitiesTool],
-        prompt: `You are an expert at summarizing grant opportunities. The user will provide a query, and you will receive a list of potential grants from a search tool. Your job is to analyze the tool's output and present the most relevant opportunities in a clear, structured format. Do not add any grants that are not from the tool output.
-
-        Your entire output MUST be a single, valid JSON object that conforms to the following Zod schema:
-        \`\`\`
-        z.object({
-          opportunities: z.array(z.object({
-            title: z.string(),
-            funder: z.string(),
-            description: z.string(),
-            amount: z.number(),
-            deadline: z.string().describe("Formatted as YYYY-MM-DD"),
-          })).describe('A list of potential grant opportunities found.'),
-        })
-        \`\`\`
-
-        Please find grant opportunities related to the following query: "${input.query}"`,
+        output: { schema: GrantFinderOutputSchema },
+        system: `You are an expert at summarizing grant opportunities. The user will provide a query, and you will receive a list of potential grants from a search tool. Your job is to analyze the tool's output and present the most relevant opportunities in a clear, structured format. Do not add any grants that are not from the tool output.`,
+        prompt: `Please find grant opportunities related to the following query: "${input.query}"`,
       }
     );
 
     const llmResponse = await grantFinderPrompt();
-    const text = llmResponse.text;
+    const output = llmResponse.output();
 
-    if (!text) {
+    if (!output) {
       throw new Error('AI failed to generate a response for grant opportunities.');
     }
-
-    try {
-        const jsonText = text.trim().replace(/^```json|```$/g, '').trim();
-        const parsed = JSON.parse(jsonText);
-        return GrantFinderOutputSchema.parse(parsed);
-    } catch(e) {
-        console.error("Failed to parse AI response as JSON:", e);
-        throw new Error('AI returned an invalid response format.');
-    }
+    
+    return output;
 }
