@@ -16,7 +16,6 @@ import { KNOWLEDGE_BASE } from '@/lib/data';
 const plannerPrompt = ai.definePrompt(
   {
     name: 'dailyPlannerPrompt',
-    model: 'googleai/gemini-1.5-flash-latest',
     input: { schema: DailyPlannerAIInputSchema },
     output: { schema: DailyPlannerAIOutputSchema },
     prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format. You are a coach, not just a scheduler.
