@@ -13,6 +13,7 @@ import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
 const analysisPrompt = ai.definePrompt(
   {
     name: 'analyzeTestimonyPrompt',
+    model: 'googleai/gemini-1.5-flash-latest',
     input: { schema: z.object({ transcription: z.string() }) },
     output: { schema: TestimonyOutputSchema.pick({ summary: true, quotes: true, hashtags: true }) },
     prompt: `You are an expert communications assistant for a youth-led NGO in Uganda. You are brilliant at finding the core message in a story.
