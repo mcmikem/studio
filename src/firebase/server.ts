@@ -18,7 +18,7 @@ export function getFirebaseAdmin() {
     return { firestore: firestoreInstance! };
   }
 
-  const appName = 'firebase-admin';
+  const appName = 'firebase-admin-app'; // Use a unique name to avoid conflicts
   const existingApp = getApps().find(app => app.name === appName);
   
   if (existingApp) {
