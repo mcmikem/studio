@@ -164,6 +164,64 @@ export const KNOWLEDGE_BASE = `# **OMUTO FOUNDATION - NOVEMBER 2025 REALITY-BASE
 - ❌ December planning is vague and unrealistic
 `;
 
+export const roleKpis: Record<string, { title: string, description: string }[]> = {
+  'Executive Director': [
+    { title: 'Strategic Alignment', description: 'Ensure all team activities align with quarterly Key Results.' },
+    { title: 'Financial Health', description: 'Maintain a positive cash flow and approve mission-critical expenses within 48 hours.' },
+    { title: 'Team Performance', description: 'Maintain a team-wide coordination score of 4.0+ in weekly surveys.' },
+    { title: 'High-Level Partnerships', description: 'Secure at least one new strategic partnership or funding opportunity per month.' },
+  ],
+  'Programs & Partnerships Manager': [
+    { title: 'Program Health', description: 'Keep all managed programs in "On Track" status.' },
+    { title: 'Partnership Pipeline', description: 'Move at least 2 partners from "Prospecting" to "Negotiation" each month.' },
+    { title: 'Partner Engagement', description: 'Log at least 4 significant partner meetings or interactions per month.' },
+    { title: 'Data-Driven Decisions', description: 'Use the Qualitative Analysis tool monthly to generate insights for program improvement.' },
+  ],
+  'Operations & Field Manager': [
+    { title: 'Field Activity Velocity', description: 'Ensure the team logs at least 15 field activities per week.' },
+    { title: 'Resource Management', description: 'Maintain 100% accuracy in the equipment inventory.' },
+    { title: 'Team Deployment', description: 'Ensure 90% of the team has a published weekly workplan by Monday morning.' },
+    { title: 'Financial Prudence', description: 'Keep project expenses within 10% of their allocated budgets.' },
+  ],
+  'Media & Finance Lead': [
+    { title: 'Financial Accuracy', description: 'Reconcile the financial ledger weekly and ensure all transactions are categorized.' },
+    { title: 'Disbursement Speed', description: 'Process all "Approved" expenses for disbursement within 2 business days.' },
+    { title: 'Content Pipeline', description: 'Generate at least 5 impact stories from logged activities or testimonies each month.' },
+    { title: 'Audience Engagement', description: 'Publish at least 3 pieces of content to Omuto Pulse or social media per week.' },
+  ],
+   'Media & Communications Lead': [
+    { title: 'Financial Accuracy', description: 'Reconcile the financial ledger weekly and ensure all transactions are categorized.' },
+    { title: 'Disbursement Speed', description: 'Process all "Approved" expenses for disbursement within 2 business days.' },
+    { title: 'Content Pipeline', description: 'Generate at least 5 impact stories from logged activities or testimonies each month.' },
+    { title: 'Audience Engagement', description: 'Publish at least 3 pieces of content to Omuto Pulse or social media per week.' },
+  ],
+  'Resource Mobilization Lead': [
+    { title: 'Grant Discovery', description: 'Identify and add at least 5 new potential grants to the tracker each week.' },
+    { title: 'Proposal Submission', description: 'Submit at least 2 new grant proposals each month.' },
+    { title: 'Funding Pipeline', description: 'Move at least one proposal from "Draft" to "Submitted" status each week.' },
+    { title: 'Donor Communication', description: 'Log an interaction with at least 3 existing donors/partners each month.' },
+  ],
+  'Field Coordinator': [
+    { title: 'Activity Reporting', description: 'Log a detailed activity report for every field visit within 24 hours.' },
+    { title: 'ROI Data Quality', description: 'Ensure all activity logs have a final ROI calculated and include at least one narrative element (e.g., memorable moment).' },
+    { title: 'Beneficiary Data', description: 'Register at least 10 new beneficiaries in the system each week.' },
+    { title: 'Daily Check-in', description: 'Submit your AI-planned daily check-in before 10 AM every workday.' },
+  ],
+  'Intern': [
+    { title: 'Daily Notes', description: 'Submit your end-of-day note every day you work.' },
+    { title: 'Task Completion', description: 'Complete all assigned tasks in your "My Tasks" list by their due date.' },
+    { title: 'Learning & Growth', description: 'Ask the AI Coach at least one question per day to learn about Omuto\'s work.' },
+  ],
+  'Volunteer': [
+     { title: 'Daily Notes', description: 'Submit your end-of-day note every day you volunteer.' },
+     { title: 'Learning & Growth', description: 'Use the AI Coach to understand the programs you are supporting.' },
+  ],
+  'Administrator': [
+      { title: 'System Health', description: 'Ensure all users have the correct roles assigned.' },
+      { title: 'Support', description: 'Address any system feedback or bug reports within 48 hours.' },
+      { title: 'Data Integrity', description: 'Regularly review system data for completeness and accuracy.' },
+  ]
+};
 
 export const tagColors: { [key: string]: string } = {
     '#FieldVisit': 'border-blue-500 bg-blue-500/10 text-blue-500',
@@ -338,4 +396,5 @@ export const sampleTaskTemplates: Omit<TaskTemplate, 'id' | 'createdAt'>[] = [
 
 
     
+
 
