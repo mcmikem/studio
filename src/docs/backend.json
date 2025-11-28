@@ -1613,7 +1613,7 @@
       "schema": { "$ref": "#/entities/BusinessProgress" },
       "description": "Monthly progress reports for YoSkills businesses."
     },
-     "/ofa-players/{playerId}": {
+    "/ofa-players/{playerId}": {
         "schema": { "$ref": "#/entities/OFAPlayer" },
         "description": "Player registrations for Omuto Football Alliance."
     },
@@ -1671,3 +1671,5 @@
     }
   }
 }
+
+    

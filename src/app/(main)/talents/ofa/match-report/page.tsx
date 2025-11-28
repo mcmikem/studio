@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Suspense } from 'react';
@@ -13,3 +14,5 @@ function MatchReportPage() {
 }
 
 export default MatchReportPage;
+
+    
