@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 
 const ageGroups = ["U-13", "U-15", "U-17", "U-19"];
 const trainingDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
