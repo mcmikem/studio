@@ -4,10 +4,9 @@ import { AppHeader } from '@/components/header';
 import { MobileBottomNav } from '@/components/mobile-nav';
 import { AppSidebar } from '@/components/nav';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { ViewAsProvider, useViewAs } from '@/hooks/use-view-as';
+import { useViewAs } from '@/hooks/use-view-as';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, X } from 'lucide-react';
-import { CommandStateProvider } from '@/hooks/use-command-state';
 import { GlobalCommandBar } from '@/components/global-command-bar';
 
 function ViewAsBanner() {
@@ -31,7 +30,11 @@ function ViewAsBanner() {
     )
 }
 
-function MainLayoutContent({ children }: { children: React.ReactNode }) {
+export default function MainLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     return (
         <SidebarProvider>
             <Sidebar>
@@ -49,19 +52,5 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
                 </div>
             </SidebarInset>
         </SidebarProvider>
-    );
-}
-
-export default function MainLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
-    return (
-      <CommandStateProvider>
-        <ViewAsProvider>
-            <MainLayoutContent>{children}</MainLayoutContent>
-        </ViewAsProvider>
-      </CommandStateProvider>
     );
 }
