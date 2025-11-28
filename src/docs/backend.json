@@ -1116,14 +1116,22 @@
       "properties": {
         "id": { "type": "string" },
         "fullName": { "type": "string" },
-        "team": { "type": "string" },
-        "dob": { "type": "string", "format": "date" },
-        "position": { "type": "string", "enum": ["GK", "DEF", "MID", "FWD"] },
-        "jerseyNumber": { "type": "number" },
+        "age": { "type": "number" },
         "photoUrl": { "type": "string", "format": "uri" },
+        "position": { "type": "string", "enum": ["GK", "DEF", "MID", "FWD"] },
+        "school": { "type": "string" },
+        "class": { "type": "string" },
+        "attendance": { "type": "string", "enum": ["Good", "Irregular", "Dropped"] },
+        "performance": { "type": "string", "enum": ["Excellent", "Fair", "Poor"] },
+        "medicalConditions": { "type": "string" },
+        "guardianName": { "type": "string" },
+        "guardianContact": { "type": "string" },
+        "strengths": { "type": "string" },
+        "weaknesses": { "type": "string" },
+        "goalsForTheSeason": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["fullName", "team", "dob", "position", "createdAt"]
+      "required": ["fullName", "age", "position", "school", "attendance", "performance", "guardianName", "guardianContact", "createdAt"]
     },
     "OFAMatch": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1662,3 +1670,5 @@
     }
   }
 }
+
+    

@@ -3,7 +3,7 @@
 
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import { PlayerRegistrationForm } from '@/components/forms/ofa/player-registration-form';
+import { PlayerRegistrationForm } from '@/components/forms/talents/ofa/player-registration-form';
 
 function PlayerRegistrationPage() {
     return (
@@ -14,3 +14,5 @@ function PlayerRegistrationPage() {
 }
 
 export default PlayerRegistrationPage;
+
+    
