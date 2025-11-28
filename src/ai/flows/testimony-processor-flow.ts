@@ -15,9 +15,9 @@ const analysisPrompt = ai.definePrompt(
     name: 'analyzeTestimonyPrompt',
     input: { schema: z.object({ transcription: z.string() }) },
     output: { schema: TestimonyOutputSchema.pick({ summary: true, quotes: true, hashtags: true }) },
-    system: `You are an expert communications assistant for a youth-led NGO in Uganda. You are brilliant at finding the core message in a story.
-    Analyze the following transcription of a beneficiary's testimony.`,
-    prompt: `
+    prompt: `You are an expert communications assistant for a youth-led NGO in Uganda. You are brilliant at finding the core message in a story.
+    Analyze the following transcription of a beneficiary's testimony and return a JSON object with a summary, key quotes, and relevant hashtags.
+    
     Transcription:
     ---
     {{{transcription}}}
@@ -37,7 +37,6 @@ const processTestimonyFlow = ai.defineFlow(
     
     // 1. Transcribe the audio/video
     const llmResponse = await ai.generate({
-        model: 'googleai/gemini-2.5-flash-preview',
         prompt: [
           { text: "Please transcribe the following audio. The audio is a testimony from a beneficiary of an NGO in Uganda. Capture the speech as accurately as possible. If there is more than one speaker, try to differentiate them." },
           { media: { url: input.mediaUri } }

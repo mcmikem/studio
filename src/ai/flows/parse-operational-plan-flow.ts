@@ -15,8 +15,8 @@ const planParserPrompt = ai.definePrompt({
   name: 'operationalPlanParserPrompt',
   input: { schema: ParsePlanInputSchema },
   output: { schema: ParsePlanOutputSchema },
-  system: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format.`,
-  prompt: `
+  prompt: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
+
   **Instructions:**
   1.  **Identify Key Results:** Scan the text for items explicitly labeled with a KR code (e.g., "OCT-KR1", "NOV-KR1", "Q4-KR3").
   2.  **Extract Details:** For each KR found, extract the following information:

@@ -15,8 +15,8 @@ const workplanParserPrompt = ai.definePrompt({
   name: 'workplanParserPrompt',
   input: { schema: ParseWorkplanInputSchema },
   output: { schema: ParseWorkplanOutputSchema },
-  system: `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format.`,
-  prompt: `
+  prompt: `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format that conforms to the provided schema.
+
   **Instructions:**
   1.  **Extract Key Priorities:** Identify each distinct task or activity.
   2.  **Assign Priority:** Based on keywords (e.g., "must do", "urgent", "critical" -> High; "should do", "important" -> Medium; "if time", "nice to have" -> Low), assign a priority. If no keyword is present, default to 'Medium'.
