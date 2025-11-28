@@ -2,8 +2,7 @@ import {genkit} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 
 export const ai = genkit({
-  plugins: [googleAI()],
+  plugins: [googleAI({ apiVersion: 'v1' })],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
-  defaultModel: 'googleai/gemini-pro',
 });

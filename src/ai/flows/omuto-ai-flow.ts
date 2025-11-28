@@ -20,11 +20,9 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         // IMPORTANT: Ensure history is ordered from oldest to newest for the model.
         const history = input.history || [];
 
-        // Call the Gemini model with the prepared prompt and history
-        // The Genkit framework will automatically handle tool execution.
         const llmResponse = await ai.generate({
-            model: 'googleai/gemini-pro',
-            prompt: `
+            model: 'googleai/gemini-1.5-pro',
+            system: `
             You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
             Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
 
@@ -38,7 +36,8 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
             - **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.
 
             ---
-            UserId: ${input.userId}. User's message: "${input.question}"`,
+            UserId: ${input.userId}.`,
+            prompt: `User's message: "${input.question}"`,
             history: history,
             tools: [searchOmutoTool, createCheckoutTool, getRecentCheckinsTool, getRecentCheckoutsTool],
             config: {
@@ -50,7 +49,6 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         
         if (!answer) {
             console.error("AI did not return a text response, even after potential tool use.", llmResponse);
-            // This condition is now more of a fallback, as Genkit's `generate` with tools should still result in a text response.
             if (llmResponse.toolRequest()) {
               return { answer: "I've processed your request using my tools, but I don't have a final text summary to provide." };
             }
@@ -61,7 +59,6 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
 
     } catch (error: any) {
         console.error("[omutoAIFlow] Critical error during AI generation:", error);
-        // Provide a user-facing error message that doesn't expose internal details.
         return { answer: `I'm sorry, I encountered a server error and couldn't complete your request.` };
     }
 }

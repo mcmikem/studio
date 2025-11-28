@@ -30,7 +30,7 @@ import './tools/omuto-tools';
 
 
 genkit({
-  plugins: [googleAI()],
+  plugins: [googleAI({ apiVersion: 'v1' })],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
 });

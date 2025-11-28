@@ -15,8 +15,8 @@ const planParserPrompt = ai.definePrompt({
   name: 'operationalPlanParserPrompt',
   input: { schema: ParsePlanInputSchema },
   output: { schema: ParsePlanOutputSchema },
-  model: 'googleai/gemini-pro',
-  prompt: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
+  model: 'googleai/gemini-1.5-pro',
+  system: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
 
   **Instructions:**
   1.  **Identify Key Results:** Scan the text for items explicitly labeled with a KR code (e.g., "OCT-KR1", "NOV-KR1", "Q4-KR3").
@@ -28,9 +28,8 @@ const planParserPrompt = ai.definePrompt({
       - **priority:** Assign 'High', 'Medium', 'Low' based on context clues. If none, default to 'Medium'.
   3.  **Set Initial Progress:** The 'currentProgress' for all extracted KRs must always be set to 0, as this is a new plan.
   
-  Please parse the following operational plan text into a structured JSON object.
-
-  **Operational Plan Text:**
+  Please parse the following operational plan text into a structured JSON object.`,
+  prompt: `**Operational Plan Text:**
   ---
   {{planText}}
   ---
