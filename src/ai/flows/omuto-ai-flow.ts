@@ -21,8 +21,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         const history = input.history || [];
 
         const llmResponse = await ai.generate({
-            model: 'googleai/gemini-1.5-pro-latest',
-            system: `
+            prompt: `
             You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
             Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
 
@@ -36,8 +35,9 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
             - **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.
 
             ---
-            UserId: ${input.userId}.`,
-            prompt: `User's message: "${input.question}"`,
+            UserId: ${input.userId}.
+            
+            User's message: "${input.question}"`,
             history: history,
             tools: [searchOmutoTool, createCheckoutTool, getRecentCheckinsTool, getRecentCheckoutsTool],
             config: {

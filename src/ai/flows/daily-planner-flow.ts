@@ -18,15 +18,14 @@ const plannerPrompt = ai.definePrompt(
     name: 'dailyPlannerPrompt',
     input: { schema: DailyPlannerAIInputSchema },
     output: { schema: DailyPlannerAIOutputSchema },
-    model: 'googleai/gemini-1.5-pro-latest',
-    system: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan. You are a coach, not just a scheduler.
+    prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format. You are a coach, not just a scheduler.
 
     Here is the organizational knowledge base to draw from:
     ---
     ${KNOWLEDGE_BASE}
     ---
-    `,
-    prompt: `A staff member with the role '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
+    
+    A staff member with the role '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
 
     {{#if weeklyPriorities}}
     Their personal priorities for this week are: {{#each weeklyPriorities}}- {{{this}}} {{/each}}.

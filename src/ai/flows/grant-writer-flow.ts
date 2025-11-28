@@ -15,9 +15,7 @@ const grantWriterPrompt = ai.definePrompt({
   name: 'grantWriterPrompt',
   input: { schema: GrantWriterInputSchema },
   output: { schema: GrantWriterOutputSchema },
-  model: 'googleai/gemini-1.5-pro-latest',
-  system: `
-  You are a professional grant writer for an NGO called Omuto Foundation.
+  prompt: `You are a professional grant writer for an NGO called Omuto Foundation.
   Use the following knowledge base:
   ---
   ${KNOWLEDGE_BASE}
@@ -30,8 +28,9 @@ const grantWriterPrompt = ai.definePrompt({
   - The output MUST be a JSON object with a 'conceptNote' field containing markdown.
   - Connect the proposed activities directly to Omuto's proven Ecosystem Model (Identify & Inspire, Equip & Empower, Activate & Sustain).
   - Structure the markdown with the following sections: **Introduction**, **Problem Statement**, **Our Proven Solution**, **Budget Overview**.
-  - Keep it concise and impactful.`,
-  prompt: `Now, draft a concept note for a proposal titled "**{{proposalTitle}}**" to be sent to **{{partnerName}}**. The amount we are requesting is **{{amountRequested}} UGX**.
+  - Keep it concise and impactful.
+  
+  Now, draft a concept note for a proposal titled "**{{proposalTitle}}**" to be sent to **{{partnerName}}**. The amount we are requesting is **{{amountRequested}} UGX**.
 `,
 });
 
