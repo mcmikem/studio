@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, Heart, Leaf, Zap, Users, Droplets, Trophy, BarChart3, UserPlus } from 'lucide-react';
+import { ArrowRight, Heart, Leaf, Zap, Users, Droplets, Trophy, BarChart3, UserPlus, Swords } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
@@ -38,6 +38,9 @@ const programForms: { [key: string]: { href: string; title: string; description:
     ],
     'Youth Action Pathway (YAP)': [
         { href: '/meal/yap', title: 'YAP Hub', description: 'Manage YAP chapters and seed grant applications.', icon: Users },
+    ],
+    'Omuto Football Alliance': [
+        { href: '/talents/ofa', title: 'Omuto Football Alliance Hub', description: 'Manage teams, players, and matches for the league.', icon: Swords },
     ]
 };
 
