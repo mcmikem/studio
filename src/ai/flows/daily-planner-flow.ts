@@ -17,10 +17,28 @@ const plannerPrompt = ai.definePrompt(
   {
     name: 'dailyPlannerPrompt',
     input: { schema: DailyPlannerAIInputSchema },
-    output: { schema: DailyPlannerAIOutputSchema },
-    model: 'googleai/gemini-pro',
-    system: KNOWLEDGE_BASE, // Embed the entire organizational DNA
-    prompt: `You are an expert productivity coach for Omuto Foundation. A staff member with the role '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
+    prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your entire output must be a single, valid JSON object that conforms to the following Zod schema:
+
+    \`\`\`
+    z.object({
+        timeBlocks: z.array(z.object({
+            startTime: z.string().describe("e.g., '09:00 AM'"),
+            endTime: z.string().describe("e.g., '11:00 AM'"),
+            description: z.string(),
+        })).describe("A detailed, actionable schedule for the day."),
+        multiWinConnections: z.array(z.string()).describe("Specific ways the daily mission connects to broader organizational goals (e.g., specific Key Results)."),
+        materials: z.string().describe("A comma-separated list of materials or resources needed."),
+        challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
+        bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from the provided knowledge base."),
+    })
+    \`\`\`
+
+    Here is the organizational knowledge base to draw from:
+    ---
+    ${KNOWLEDGE_BASE}
+    ---
+
+    A staff member with the role '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
 
     {{#if weeklyPriorities}}
     Their personal priorities for this week are: {{#each weeklyPriorities}}- {{{this}}} {{/each}}.
@@ -39,7 +57,7 @@ const plannerPrompt = ai.definePrompt(
     4.  **Challenges & Mitigations:** Proactively identify at least one potential challenge from the "Risk Management" section of the knowledge base that is relevant to the user's mission. Provide the concrete mitigation strategy listed in the plan. This is active risk management. Example: "Challenge: Partner may be unavailable. Mitigation: Send a confirmation WhatsApp message one hour before the meeting."
     5.  **Best Practice:** Provide ONE single, highly relevant piece of advice from the knowledge base that helps the staff member think more strategically about their task today.
 
-    Produce the output in the required JSON format.`,
+    Now, produce the JSON object.`,
   }
 );
 
@@ -63,11 +81,21 @@ const dailyPlannerAIFlow = ai.defineFlow(
         keyResults: { keyResults: sanitizedKeyResults },
     };
 
-    const { output } = await plannerPrompt(sanitizedInput);
-    if (!output) {
+    const llmResponse = await plannerPrompt(sanitizedInput);
+    const text = llmResponse.text;
+
+    if (!text) {
       throw new Error('AI failed to generate a plan.');
     }
-    return output;
+    
+    try {
+        const jsonText = text.trim().replace(/^```json|```$/g, '').trim();
+        const parsed = JSON.parse(jsonText);
+        return DailyPlannerAIOutputSchema.parse(parsed);
+    } catch(e) {
+        console.error("Failed to parse AI response as JSON:", e);
+        throw new Error('AI returned an invalid plan format.');
+    }
   }
 );
 

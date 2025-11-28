@@ -6,7 +6,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import type { TestimonyInput, TestimonyOutput } from '@/lib/types';
 import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
 
@@ -14,17 +14,24 @@ const analysisPrompt = ai.definePrompt(
   {
     name: 'analyzeTestimonyPrompt',
     input: { schema: z.object({ transcription: z.string() }) },
-    output: { schema: TestimonyOutputSchema.pick({ summary: true, quotes: true, hashtags: true }) },
-    model: 'googleai/gemini-pro',
-    system: `You are an expert communications assistant for a youth-led NGO in Uganda. You are brilliant at finding the core message in a story.
+    prompt: `You are an expert communications assistant for a youth-led NGO in Uganda. You are brilliant at finding the core message in a story.
     Analyze the following transcription of a beneficiary's testimony.
-    - Summarize the key points into one compelling paragraph.
-    - Extract 2-3 of the most powerful and emotional quotes.
-    - Suggest 3-5 relevant social media hashtags starting with '#'.`,
-    prompt: `Transcription:
+    
+    Your entire output MUST be a single, valid JSON object that conforms to the following Zod schema:
+    \`\`\`
+    z.object({
+        summary: z.string().describe("A concise one-paragraph summary of the testimony."),
+        quotes: z.array(z.string()).describe("A list of 2-3 powerful, impactful quotes from the testimony."),
+        hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
+    })
+    \`\`\`
+    
+    Transcription:
     ---
     {{{transcription}}}
     ---
+
+    Now, generate the JSON object.
     `,
   }
 );
@@ -55,16 +62,26 @@ const processTestimonyFlow = ai.defineFlow(
 
     // 2. Analyze the transcription
     const analysisResult = await analysisPrompt({ transcription });
-    if (!analysisResult.output) {
+    const text = analysisResult.text;
+    if (!text) {
       throw new Error('AI failed to analyze the transcription.');
     }
-    
-    return {
-      transcription,
-      summary: analysisResult.output.summary,
-      quotes: analysisResult.output.quotes,
-      hashtags: analysisResult.output.hashtags,
-    };
+
+    try {
+        const jsonText = text.trim().replace(/^```json|```$/g, '').trim();
+        const parsed = JSON.parse(jsonText);
+        const validated = TestimonyOutputSchema.pick({ summary: true, quotes: true, hashtags: true }).parse(parsed);
+        
+        return {
+          transcription,
+          summary: validated.summary,
+          quotes: validated.quotes,
+          hashtags: validated.hashtags,
+        };
+    } catch (e) {
+        console.error("Failed to parse analysis from AI response as JSON:", e);
+        throw new Error('AI returned an invalid analysis format.');
+    }
   }
 );
 

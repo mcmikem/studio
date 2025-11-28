@@ -14,9 +14,14 @@ import { ImpactStoryInputSchema, ImpactStoryOutputSchema, type ImpactStoryInput,
 const prompt = ai.definePrompt({
   name: 'impactStoryPrompt',
   input: {schema: ImpactStoryInputSchema},
-  output: {schema: ImpactStoryOutputSchema},
-  model: 'googleai/gemini-pro',
   prompt: `You are a skilled storyteller for Omuto Foundation, crafting engaging narratives that highlight the impact of our activities.
+  
+  Your entire output MUST be a single, valid JSON object that conforms to the following Zod schema:
+  \`\`\`
+  z.object({
+    impactStory: z.string().describe('A compelling narrative generated from the activity data.'),
+  })
+  \`\`\`
 
   Based on the following activity data, generate a compelling story suitable for social media and Omuto Pulse. Weave in the narrative details provided to make the story authentic and inspiring. Focus on the human impact and the positive change created.
 
@@ -37,7 +42,7 @@ const prompt = ai.definePrompt({
   Quote from a Beneficiary: "{{{userQuote}}}"
   {{/if}}
 
-  Generated Impact Story:`,
+  Now, generate the JSON object containing the impact story.`,
 });
 
 const impactStoryGeneratorFlow = ai.defineFlow(
@@ -47,11 +52,21 @@ const impactStoryGeneratorFlow = ai.defineFlow(
     outputSchema: ImpactStoryOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    if (!output) {
+    const llmResponse = await prompt(input);
+    const text = llmResponse.text;
+
+    if (!text) {
       throw new Error('Could not generate story');
     }
-    return output;
+    
+    try {
+        const jsonText = text.trim().replace(/^```json|```$/g, '').trim();
+        const parsed = JSON.parse(jsonText);
+        return ImpactStoryOutputSchema.parse(parsed);
+    } catch(e) {
+        console.error("Failed to parse AI response as JSON:", e);
+        throw new Error('AI returned an invalid story format.');
+    }
   }
 );
 

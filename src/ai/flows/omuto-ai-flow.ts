@@ -24,17 +24,21 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         // The Genkit framework will automatically handle tool execution.
         const llmResponse = await ai.generate({
             model: 'googleai/gemini-pro',
-            prompt: `UserId: ${input.userId}. User's message: "${input.question}"`,
-            history: history,
-            system: `${KNOWLEDGE_BASE}
+            prompt: `
+            ${KNOWLEDGE_BASE}
             
-## Tool Usage Instructions & Dynamic Knowledge
+            ## Tool Usage Instructions & Dynamic Knowledge
 
-Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
+            Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
 
-- **searchOmuto**: If the user asks a question about a person, program, project, or expense, use this tool to find the information from the database. This is your primary way of accessing organizational knowledge.
-- **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"
-- **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.`,
+            - **searchOmuto**: If the user asks a question about a person, program, project, or expense, use this tool to find the information from the database. This is your primary way of accessing organizational knowledge.
+            - **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"
+            - **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.
+
+            ---
+            
+            UserId: ${input.userId}. User's message: "${input.question}"`,
+            history: history,
             tools: [searchOmutoTool, createCheckoutTool, getRecentCheckinsTool, getRecentCheckoutsTool],
             config: {
                 temperature: 0.2, // Be more factual
