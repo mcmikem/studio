@@ -15,7 +15,7 @@ const workplanParserPrompt = ai.definePrompt({
   name: 'workplanParserPrompt',
   input: { schema: ParseWorkplanInputSchema },
   output: { schema: ParseWorkplanOutputSchema },
-  model: 'googleai/gemini-1.5-pro-latest',
+  model: 'googleai/gemini-2.5-flash-preview',
   system: `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format that conforms to the provided schema.
 
   **Instructions:**
