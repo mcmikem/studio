@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -33,9 +32,14 @@ const formSections = [
     ]
   },
   {
-    title: 'Social Enterprises & Talents',
+    title: 'Social Enterprise',
     forms: [
       { href: '/essentials', title: 'Omuto Essentials', description: 'Manage production, sales, and inventory.', icon: Store },
+    ]
+  },
+  {
+    title: 'Omuto Talents',
+    forms: [
       { href: '/talents/ofa', title: 'Omuto Football Alliance', description: 'Manage teams, players, and matches for the league.', icon: Trophy },
       { href: '/pulse', title: 'Omuto Pulse', description: 'Submit content for the Omuto Pulse media platform.', icon: Wind },
     ]
