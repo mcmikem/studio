@@ -11,6 +11,7 @@ import { GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from '@/lib
 
 const templateGeneratorPrompt = ai.definePrompt({
   name: 'templateGeneratorPrompt',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: GenerateTemplateInputSchema },
   output: { schema: GenerateTemplateOutputSchema },
   prompt: `You are an expert at creating Standard Operating Procedures (SOPs) and checklists for an NGO.

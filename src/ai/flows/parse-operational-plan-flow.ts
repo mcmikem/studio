@@ -13,6 +13,7 @@ import { ParsePlanInputSchema, ParsePlanOutputSchema } from '@/lib/types';
 
 const planParserPrompt = ai.definePrompt({
   name: 'operationalPlanParserPrompt',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: { schema: ParsePlanInputSchema },
   output: { schema: ParsePlanOutputSchema },
   prompt: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
