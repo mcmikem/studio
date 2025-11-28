@@ -1147,6 +1147,7 @@
         "homeScore": { "type": "number" },
         "awayScore": { "type": "number" },
         "goalScorers": { "type": "string" },
+        "assists": { "type": "string" },
         "cards": { "type": "string" },
         "referee": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
@@ -1356,6 +1357,28 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "role", "contact", "createdAt"]
+    },
+     "OFAScorecard": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Quarterly Scorecard",
+      "description": "A quarterly performance scorecard for an OFA team.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "teamId": { "type": "string" },
+        "teamName": { "type": "string" },
+        "trainingAttendance": { "type": "number" },
+        "coachingQuality": { "type": "number" },
+        "playerDiscipline": { "type": "number" },
+        "academicAttendance": { "type": "number" },
+        "parentEngagement": { "type": "number" },
+        "communityReputation": { "type": "number" },
+        "achievements": { "type": "string" },
+        "challenges": { "type": "string" },
+        "supportNeeded": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["teamId", "teamName", "trainingAttendance", "coachingQuality", "playerDiscipline", "academicAttendance", "parentEngagement", "communityReputation"]
     }
   },
   "auth": {
@@ -1620,6 +1643,10 @@
     "/ofa-matches/{matchId}": {
         "schema": { "$ref": "#/entities/OFAMatch" },
         "description": "Match reports for Omuto Football Alliance."
+    },
+    "/ofa-scorecards/{scorecardId}": {
+        "schema": { "$ref": "#/entities/OFAScorecard" },
+        "description": "Quarterly performance scorecards for OFA teams."
     },
     "/pulse-content/{contentId}": {
         "schema": { "$ref": "#/entities/PulseContent" },
