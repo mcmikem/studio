@@ -15,6 +15,7 @@ const analysisPrompt = ai.definePrompt(
     name: 'analyzeTestimonyPrompt',
     input: { schema: z.object({ transcription: z.string() }) },
     output: { schema: TestimonyOutputSchema.pick({ summary: true, quotes: true, hashtags: true }) },
+    model: 'googleai/gemini-pro',
     prompt: `You are an expert communications assistant for a youth-led NGO in Uganda. You are brilliant at finding the core message in a story.
     Analyze the following transcription of a beneficiary's testimony and return a JSON object with a summary, key quotes, and relevant hashtags.
     
