@@ -2,52 +2,46 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, UserPlus, FileText, Swords, BarChart } from 'lucide-react';
+import { Loader2, Trophy, Swords, Wind } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const ofaForms = [
+const talentHubs = [
   {
-    href: '/talents/ofa/team-registration',
-    title: 'Team Registration',
-    description: 'Onboard a new team to the Omuto Football Alliance.',
+    href: '/talents/ofa',
+    title: 'Omuto Football Alliance',
+    description: 'Manage teams, players, and matches for the league.',
     icon: Swords,
   },
   {
-    href: '/talents/ofa/player-registration',
-    title: 'Player Registration',
-    description: 'Register a new player for a team in the alliance.',
-    icon: UserPlus,
+    href: '/talents/omuto-cup',
+    title: 'Omuto Cup (Event)',
+    description: 'Data collection and management for the tournament.',
+    icon: Trophy,
   },
   {
-    href: '/talents/ofa/match-report',
-    title: 'Match Report Form',
-    description: 'Log the results and details of a completed match.',
-    icon: FileText,
-  },
-  {
-    href: '/talents/ofa/quarterly-scorecard',
-    title: 'Quarterly Scorecard',
-    description: "Log a team's quarterly progress and performance.",
-    icon: BarChart,
+    href: '/talents/pulse',
+    title: 'Omuto Pulse',
+    description: 'Submit content for the media platform.',
+    icon: Wind,
   },
 ];
 
-function OFAHubPage() {
+function TalentsHubPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Football Alliance (OFA)</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Talents</h1>
                 <p className="text-muted-foreground">
-                    Manage teams, players, and matches for the league.
+                    A hub for all talent development programs including sports and media.
                 </p>
             </header>
              <Card>
                 <CardHeader>
-                    <CardTitle>OFA Forms</CardTitle>
+                    <CardTitle>Talent Programs</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {ofaForms.map(form => (
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {talentHubs.map(form => (
                          <Link key={form.href} href={form.href} className="block">
                             <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                                 <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
@@ -64,10 +58,10 @@ function OFAHubPage() {
     )
 }
 
-export default function OFAPage() {
+export default function TalentsPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <OFAHubPage />
+            <TalentsHubPage />
         </Suspense>
     )
 }

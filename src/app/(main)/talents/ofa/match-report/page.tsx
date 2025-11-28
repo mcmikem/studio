@@ -3,7 +3,7 @@
 
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import { MatchReportForm } from '@/components/forms/ofa/match-report-form';
+import { MatchReportForm } from '@/components/forms/talents/ofa/match-report-form';
 
 function MatchReportPage() {
     return (
@@ -14,5 +14,3 @@ function MatchReportPage() {
 }
 
 export default MatchReportPage;
-
-    
