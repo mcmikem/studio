@@ -40,7 +40,7 @@ const programForms: { [key: string]: { href: string; title: string; description:
         { href: '/meal/yap', title: 'YAP Hub', description: 'Manage YAP chapters and seed grant applications.', icon: Users },
     ],
     'Omuto Football Alliance': [
-        { href: '/talents/ofa', title: 'Omuto Football Alliance Hub', description: 'Manage teams, players, and matches for the league.', icon: Swords },
+        { href: '/meal/ofa', title: 'Omuto Football Alliance Hub', description: 'Manage teams, players, and matches for the league.', icon: Swords },
     ]
 };
 

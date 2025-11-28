@@ -84,7 +84,7 @@ export function OFATeamRegistrationForm() {
         description: `${data.teamName} has been successfully registered for the OFA.`,
       });
       reset();
-      router.push('/talents/ofa');
+      router.push('/meal/ofa');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -93,7 +93,7 @@ export function OFATeamRegistrationForm() {
   return (
     <div className="space-y-4">
        <Button variant="outline" asChild>
-            <Link href="/talents/ofa">
+            <Link href="/meal/ofa">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to OFA Hub
             </Link>

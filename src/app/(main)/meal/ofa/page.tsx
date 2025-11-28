@@ -8,19 +8,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const ofaForms = [
   {
-    href: '/talents/ofa/team-registration',
+    href: '/meal/ofa/team-registration',
     title: 'Team Registration',
     description: 'Onboard a new team to the Omuto Football Alliance.',
     icon: Swords,
   },
   {
-    href: '/talents/ofa/player-registration',
+    href: '/meal/ofa/player-registration',
     title: 'Player Registration',
     description: 'Register a new player for a team in the alliance.',
     icon: UserPlus,
   },
   {
-    href: '/talents/ofa/match-report',
+    href: '/meal/ofa/match-report',
     title: 'Match Report Form',
     description: 'Log the results and details of a completed match.',
     icon: FileText,
