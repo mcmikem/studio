@@ -38,6 +38,7 @@ UserId: ${input.userId}.
 User's message: "${input.question}"`;
 
         const llmResponse = await ai.generate({
+            model: 'googleai/gemini-pro',
             prompt: prompt,
             history: history,
             tools: [await searchOmutoTool(), await createCheckoutTool(), await getRecentCheckinsTool(), await getRecentCheckoutsTool()],
