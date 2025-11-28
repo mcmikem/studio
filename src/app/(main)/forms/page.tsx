@@ -32,6 +32,14 @@ const formSections = [
       { href: '/meal', title: 'MEAL Hub', description: 'Access all program-specific data collection forms.', icon: BarChart3 },
     ]
   },
+  {
+    title: 'Social Enterprises & Talents',
+    forms: [
+      { href: '/essentials', title: 'Omuto Essentials', description: 'Manage production, sales, and inventory.', icon: Store },
+      { href: '/talents/ofa', title: 'Omuto Football Alliance', description: 'Manage teams, players, and matches for the league.', icon: Trophy },
+      { href: '/pulse', title: 'Omuto Pulse', description: 'Submit content for the Omuto Pulse media platform.', icon: Wind },
+    ]
+  },
    {
     title: 'System',
     forms: [
