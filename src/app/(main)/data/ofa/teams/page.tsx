@@ -76,7 +76,7 @@ export default function TeamsPage() {
                     <TableCell className="hidden sm:table-cell">{team.numberOfPlayers}</TableCell>
                     <TableCell className="hidden sm:table-cell">
                         <div className="flex gap-1 flex-wrap">
-                            {team.ageGroups.map(ag => <Badge key={ag} variant="secondary">{ag}</Badge>)}
+                            {team.ageGroups?.map(ag => <Badge key={ag} variant="secondary">{ag}</Badge>)}
                         </div>
                     </TableCell>
                   </TableRow>
