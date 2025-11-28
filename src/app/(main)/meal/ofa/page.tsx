@@ -1,8 +1,7 @@
-
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, UserPlus, FileText, Swords } from 'lucide-react';
+import { Loader2, UserPlus, FileText, Swords, BarChart } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -24,6 +23,12 @@ const ofaForms = [
     title: 'Match Report Form',
     description: 'Log the results and details of a completed match.',
     icon: FileText,
+  },
+  {
+    href: '/meal/ofa/quarterly-scorecard',
+    title: 'Quarterly Scorecard',
+    description: 'Log a team\'s quarterly progress and performance.',
+    icon: BarChart,
   },
 ];
 

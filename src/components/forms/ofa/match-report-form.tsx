@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -24,6 +23,7 @@ const matchReportSchema = z.object({
   homeScore: z.coerce.number().min(0, 'Score must be 0 or greater.'),
   awayScore: z.coerce.number().min(0, 'Score must be 0 or greater.'),
   goalScorers: z.string().optional(),
+  assists: z.string().optional(),
   cards: z.string().optional(),
   referee: z.string().optional(),
 });
@@ -62,7 +62,7 @@ export function MatchReportForm() {
         description: `The result for ${data.homeTeam} vs ${data.awayTeam} has been recorded.`,
       });
       reset();
-      router.push('/talents/ofa');
+      router.push('/meal/ofa');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -71,7 +71,7 @@ export function MatchReportForm() {
   return (
     <div className="space-y-4">
        <Button variant="outline" asChild>
-            <Link href="/talents/ofa">
+            <Link href="/meal/ofa">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to OFA Hub
             </Link>
@@ -118,12 +118,16 @@ export function MatchReportForm() {
                 </div>
             </div>
              <div className="space-y-2">
-                <Label htmlFor="goalScorers">Goal Scorers (Optional)</Label>
-                <Textarea id="goalScorers" {...register('goalScorers')} placeholder="e.g., John Doe (2), Jane Smith (1)" />
+                <Label htmlFor="goalScorers">Goal Scorers &amp; Minutes (Optional)</Label>
+                <Textarea id="goalScorers" {...register('goalScorers')} placeholder="e.g., John Doe (23', 78'), Jane Smith (45')" />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="assists">Assists (Optional)</Label>
+                <Textarea id="assists" {...register('assists')} placeholder="e.g., Player A (2), Player C (1)" />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="cards">Yellow/Red Cards (Optional)</Label>
-                <Textarea id="cards" {...register('cards')} placeholder="e.g., Player A (Yellow), Player B (Red)" />
+                <Textarea id="cards" {...register('cards')} placeholder="e.g., Player X (Yellow), Player Y (Red)" />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="referee">Referee Name (Optional)</Label>
@@ -141,5 +145,3 @@ export function MatchReportForm() {
     </div>
   );
 }
-
-    

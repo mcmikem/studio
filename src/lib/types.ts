@@ -651,11 +651,19 @@ export type BusinessProgress = {
 export type OFAPlayer = {
   id: string;
   fullName: string;
-  team: string;
-  dob: string;
-  position: "GK" | "DEF" | "MID" | "FWD";
-  jerseyNumber: number;
+  age: number;
   photoUrl?: string;
+  position: "GK" | "DEF" | "MID" | "FWD";
+  school: string;
+  class?: string;
+  attendance: "Good" | "Irregular" | "Dropped";
+  performance: "Excellent" | "Fair" | "Poor";
+  medicalConditions?: string;
+  guardianName: string;
+  guardianContact: string;
+  strengths?: string;
+  weaknesses?: string;
+  goalsForTheSeason?: string;
   createdAt: Timestamp;
 };
 
@@ -667,10 +675,28 @@ export type OFAMatch = {
   homeScore: number;
   awayScore: number;
   goalScorers?: string;
+  assists?: string;
   cards?: string;
   referee?: string;
   createdAt: Timestamp;
 };
+
+export type OFAScorecard = {
+    id: string;
+    teamId: string;
+    teamName: string;
+    trainingAttendance: number;
+    coachingQuality: number;
+    playerDiscipline: number;
+    academicAttendance: number;
+    parentEngagement: number;
+    communityReputation: number;
+    achievements?: string;
+    challenges?: string;
+    supportNeeded?: string;
+    createdAt: Timestamp;
+};
+
 
 export type PulseContent = {
   id: string;
@@ -775,11 +801,24 @@ export type SeedGrantAccountability = {
   createdAt: Timestamp;
 };
 
-export type OFATournament = {
+export type OFATeam = {
   id: string;
   teamName: string;
-  category: string;
-  contact: string;
+  subcounty: string;
+  parish?: string;
+  village?: string;
+  yearOfEstablishment?: string;
+  coachName: string;
+  coachPhone: string;
+  assistantCoach?: string;
+  patron?: string;
+  numberOfPlayers: number;
+  ageGroups: string[];
+  trainingGround?: string;
+  trainingDays: string[];
+  equipmentOwned?: string[];
+  challengesFaced?: string;
+  agreedToRules: boolean;
   createdAt: Timestamp;
 };
 
