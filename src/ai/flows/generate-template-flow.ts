@@ -13,7 +13,7 @@ const templateGeneratorPrompt = ai.definePrompt({
   name: 'templateGeneratorPrompt',
   input: { schema: GenerateTemplateInputSchema },
   output: { schema: GenerateTemplateOutputSchema },
-  model: 'googleai/gemini-2.5-flash-preview',
+  model: 'googleai/gemini-1.5-flash',
   system: `You are an expert at creating Standard Operating Procedures (SOPs) and checklists for an NGO.
   Your task is to take a user's description of a process and turn it into a structured JSON object that conforms to the provided schema.
 
