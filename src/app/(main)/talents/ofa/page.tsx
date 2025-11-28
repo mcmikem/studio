@@ -2,11 +2,17 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, UserPlus, FileText } from 'lucide-react';
+import { Loader2, UserPlus, FileText, Swords } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ofaForms = [
+  {
+    href: '/talents/ofa/team-registration',
+    title: 'Team Registration',
+    description: 'Onboard a new team to the Omuto Football Alliance.',
+    icon: Swords,
+  },
   {
     href: '/talents/ofa/player-registration',
     title: 'Player Registration',

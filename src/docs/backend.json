@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "User": {
@@ -756,6 +755,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "School Application",
       "description": "An application submitted by a school to participate in Omuto programs.",
+      "type": "object",
       "properties": {
         "email": { "type": "string", "format": "email" },
         "schoolName": { "type": "string" },
@@ -787,7 +787,7 @@
       "description": "Represents a single beneficiary of Omuto's programs.",
       "type": "object",
       "properties": {
-        "id": { "type": "string", "description": "Optional ID for the beneficiary." },
+        "id": { "type": "string" },
         "name": { "type": "string" },
         "dob": { "type": "string", "format": "date", "description": "Date of Birth" },
         "gender": { "type": "string", "enum": ["Male", "Female"] },
@@ -1307,19 +1307,32 @@
       },
       "required": ["grantId", "totalSpent", "receiptUrls", "outputDescription", "createdAt"]
     },
-    "OFATournament": {
+    "OFATeam": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "OFA Tournament",
-      "description": "A team registration for an Omuto Cup event.",
+      "title": "OFA Team",
+      "description": "An OFA Team registered in the Omuto Football Alliance.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "teamName": { "type": "string" },
-        "category": { "type": "string" },
-        "contact": { "type": "string" },
+        "subcounty": { "type": "string" },
+        "parish": { "type": "string" },
+        "village": { "type": "string" },
+        "yearOfEstablishment": { "type": "string" },
+        "coachName": { "type": "string" },
+        "coachPhone": { "type": "string" },
+        "assistantCoach": { "type": "string" },
+        "patron": { "type": "string" },
+        "numberOfPlayers": { "type": "number" },
+        "ageGroups": { "type": "array", "items": { "type": "string" } },
+        "trainingGround": { "type": "string" },
+        "trainingDays": { "type": "array", "items": { "type": "string" } },
+        "equipmentOwned": { "type": "array", "items": { "type": "string" } },
+        "challengesFaced": { "type": "string" },
+        "agreedToRules": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["teamName", "category", "contact", "createdAt"]
+      "required": ["teamName", "subcounty", "coachName", "coachPhone", "numberOfPlayers", "ageGroups", "trainingDays", "agreedToRules", "createdAt"]
     },
     "OFAVolunteer": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1639,9 +1652,9 @@
       "schema": { "$ref": "#/entities/SeedGrantAccountability" },
       "description": "Seed grant accountability reports."
     },
-    "/ofa-tournaments/{registrationId}": {
-      "schema": { "$ref": "#/entities/OFATournament" },
-      "description": "Team registrations for Omuto Cup."
+    "/ofa-teams/{teamId}": {
+      "schema": { "$ref": "#/entities/OFATeam" },
+      "description": "Team registrations for Omuto Football Alliance."
     },
     "/ofa-volunteers/{volunteerId}": {
       "schema": { "$ref": "#/entities/OFAVolunteer" },
