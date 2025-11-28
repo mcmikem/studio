@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -117,6 +116,18 @@ export function OFATeamRegistrationForm() {
     defaultValues: {
       equipment: equipmentItems.map(item => ({ item, qty: 0, condition: 'Good', needLevel: 'Low' })),
       needs: supportAreas.map(area => ({ area, priority: 1 })),
+      headCoachAttendance: 'Always',
+      assistantCoachAttendance: 'Always',
+      teamManagerAttendance: 'Always',
+      captainAttendance: 'Always',
+      viceCaptainAttendance: 'Always',
+      headCoachAvailability: 'Full-Time',
+      assistantCoachAvailability: 'Full-Time',
+      teamManagerAvailability: 'Full-Time',
+      avgTrainingAttendance: 'High',
+      enforceSchoolAttendance: 'Yes',
+      communitySupport: 'Yes',
+      parentEngagement: 'Yes',
     }
   });
 
@@ -125,7 +136,16 @@ export function OFATeamRegistrationForm() {
       toast({ variant: 'destructive', title: 'Database connection failed.' });
       return;
     }
-    const formData = { ...data, createdAt: serverTimestamp() };
+
+    // Clean up undefined values before submitting to Firestore
+    const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key as keyof TeamRegistrationFormData] = value;
+      }
+      return acc;
+    }, {} as Partial<TeamRegistrationFormData>);
+
+    const formData = { ...cleanedData, createdAt: serverTimestamp() };
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-teams'), formData);
       toast({
@@ -135,12 +155,13 @@ export function OFATeamRegistrationForm() {
       reset();
       router.push('/meal/ofa');
     } catch (error: any) {
+      console.error("Submission Error:", error)
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
   };
   
   const ManagementRow = ({ role, control }: {role: string, control: any}) => {
-    const fieldName = role.toLowerCase().replace(' ', '');
+    const fieldName = role.toLowerCase().replace(/ /g, '');
     return (
        <TableRow>
         <TableCell className="font-semibold">{role}</TableCell>
@@ -199,7 +220,7 @@ export function OFATeamRegistrationForm() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Team Colours</Label><Input {...register('teamColours')} /></div>
-                <div className="space-y-2"><Label>Motto / Values</Label><Input {...register('motto')} /></div>
+                <div className="space-y-2"><Label>Motto / Values / Culture Statement (short answer)</Label><Input {...register('motto')} /></div>
               </div>
             </div>
 
@@ -347,5 +368,3 @@ export function OFATeamRegistrationForm() {
     </div>
   );
 }
-
-    
