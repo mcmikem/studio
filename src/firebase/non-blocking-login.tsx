@@ -178,16 +178,6 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
   const user = userCredential.user;
   if (!user || !user.email) return userCredential;
 
-  if (!isEmailApproved(user.email)) {
-    await user.delete();
-    throw new Error(
-      'This email address is not authorized to use this application.'
-    );
-  }
-
-  const userRef = doc(db, 'users', user.uid);
-  const docSnap = await getDoc(userRef);
-
   const userEmailLower = user.email.toLowerCase();
   const approvedEmailKey = Object.keys(approvedUsers).find(key => key.toLowerCase() === userEmailLower);
 
@@ -195,6 +185,9 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
      await user.delete();
      throw new Error('This email address is not authorized to use this application.');
   }
+
+  const userRef = doc(db, 'users', user.uid);
+  const docSnap = await getDoc(userRef);
   
   const userData = approvedUsers[approvedEmailKey];
   const userProfile = {
@@ -231,6 +224,11 @@ export function initiateEmailSignUp(
   email: string,
   password: string
 ) {
+  if (!isEmailApproved(email)) {
+    throw new Error(
+      'This email address is not authorized to sign up.'
+    );
+  }
   const db = getFirestore(authInstance.app);
 
   return createUserWithEmailAndPassword(authInstance, email, password)
@@ -247,11 +245,6 @@ export function initiateEmailSignIn(
   email: string,
   password: string
 ) {
-  if (!isEmailApproved(email)) {
-    throw new Error(
-      'This email address is not authorized to use this application.'
-    );
-  }
   const db = getFirestore(authInstance.app);
   return signInWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db)) // Also run profile check/update on sign-in
