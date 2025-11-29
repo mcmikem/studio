@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { OFAMatch } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileText } from 'lucide-react';
@@ -29,7 +29,7 @@ export default function MatchesPage() {
   const firestore = useFirestore();
   const matchesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'ofa-matches'), orderBy('date', 'desc'));
+    return query(collection(firestore, 'ofa-matches'), orderBy('date', 'desc'), limit(50));
   }, [firestore]);
 
   const { data: matches, isLoading } = useCollection<OFAMatch>(matchesQuery);

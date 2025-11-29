@@ -4,6 +4,9 @@
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from '@/components/ui/card';
 import {
   Table,
@@ -15,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, Calendar } from 'lucide-react';
 import type { Activity } from '@/lib/types';
@@ -27,7 +30,7 @@ import { PageHeader } from '@/components/page-header';
 
 export default function ActivityLogPage() {
   const activitiesQuery = useMemoFirebase((db) => {
-    return query(collection(db, 'activities'), orderBy('loggedAt', 'desc'));
+    return query(collection(db, 'activities'), orderBy('loggedAt', 'desc'), limit(50));
   }, []);
 
   const { data: activities, isLoading } = useCollection<Activity>(activitiesQuery);

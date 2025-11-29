@@ -2,8 +2,8 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { useCollection, useFirestore } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Testimony } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -110,9 +110,9 @@ function TestimonyCard({ testimony }: { testimony: Testimony }) {
 export default function TestimoniesPage() {
   const firestore = useFirestore();
 
-  const testimoniesQuery = useMemo(() => {
+  const testimoniesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'), limit(50));
   }, [firestore]);
 
   const { data: testimonies, isLoading } = useCollection<Testimony>(testimoniesQuery);

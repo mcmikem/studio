@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { OFAScorecard } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart } from 'lucide-react';
@@ -27,7 +27,7 @@ export default function ScorecardsPage() {
   const firestore = useFirestore();
   const scorecardsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'ofa-scorecards'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'ofa-scorecards'), orderBy('createdAt', 'desc'), limit(50));
   }, [firestore]);
 
   const { data: scorecards, isLoading } = useCollection<OFAScorecard>(scorecardsQuery);

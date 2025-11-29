@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { AttendanceRecord } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CheckCircle } from 'lucide-react';
@@ -29,7 +29,7 @@ export default function AttendanceRecordsPage() {
   const firestore = useFirestore();
   const attendanceQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'attendance-records'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'attendance-records'), orderBy('createdAt', 'desc'), limit(50));
   }, [firestore]);
 
   const { data: records, isLoading } = useCollection<AttendanceRecord>(attendanceQuery);

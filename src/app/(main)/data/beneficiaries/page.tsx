@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Beneficiary } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users } from 'lucide-react';
@@ -30,7 +30,7 @@ export default function BeneficiariesPage() {
   const firestore = useFirestore();
   const beneficiariesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'beneficiaries'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'beneficiaries'), orderBy('createdAt', 'desc'), limit(50));
   }, [firestore]);
 
   const { data: beneficiaries, isLoading } = useCollection<Beneficiary>(beneficiariesQuery);

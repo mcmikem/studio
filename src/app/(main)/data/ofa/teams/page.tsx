@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -17,7 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Swords, ArrowRight } from 'lucide-react';
@@ -30,7 +31,7 @@ export default function TeamsPage() {
   const firestore = useFirestore();
   const teamsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'ofa-teams'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'ofa-teams'), orderBy('createdAt', 'desc'), limit(50));
   }, [firestore]);
 
   const { data: teams, isLoading } = useCollection<OFATeam>(teamsQuery);
@@ -61,8 +62,8 @@ export default function TeamsPage() {
                             <CardDescription>{team.subcounty}</CardDescription>
                         </CardHeader>
                         <CardContent className="text-sm">
-                            <p><strong>Coach:</strong> {team.coachName}</p>
-                            <p><strong>Players:</strong> {team.numberOfPlayers}</p>
+                            <p><strong>Coach:</strong> {team.headCoachName}</p>
+                            <p><strong>Players:</strong> {team.totalPlayers}</p>
                         </CardContent>
                         <CardFooter>
                             <Button asChild variant="secondary" className="w-full">
@@ -90,7 +91,6 @@ export default function TeamsPage() {
                   <TableHead className="hidden md:table-cell">Location</TableHead>
                   <TableHead>Coach</TableHead>
                   <TableHead className="hidden sm:table-cell">Players</TableHead>
-                  <TableHead className="hidden sm:table-cell">Age Groups</TableHead>
                   <TableHead><span className="sr-only">Actions</span></TableHead>
                 </TableRow>
               </TableHeader>
@@ -102,7 +102,6 @@ export default function TeamsPage() {
                       <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-28" /></TableCell>
                       <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                       <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-12" /></TableCell>
-                      <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                        <TableCell><Skeleton className="h-8 w-24" /></TableCell>
                     </TableRow>
                   ))}
@@ -111,13 +110,8 @@ export default function TeamsPage() {
                     <TableRow key={team.id}>
                       <TableCell className="font-medium">{team.teamName}</TableCell>
                       <TableCell className="hidden md:table-cell">{team.subcounty}</TableCell>
-                      <TableCell>{team.coachName}</TableCell>
-                      <TableCell className="hidden sm:table-cell">{team.numberOfPlayers}</TableCell>
-                      <TableCell className="hidden sm:table-cell">
-                          <div className="flex gap-1 flex-wrap">
-                              {team.ageGroups?.map(ag => <Badge key={ag} variant="secondary">{ag}</Badge>)}
-                          </div>
-                      </TableCell>
+                      <TableCell>{team.headCoachName}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{team.totalPlayers}</TableCell>
                        <TableCell className="text-right">
                         <Button asChild variant="outline" size="sm">
                           <Link href={`/data/ofa/teams/${team.id}`}>View Details</Link>
