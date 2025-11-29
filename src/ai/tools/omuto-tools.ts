@@ -22,45 +22,45 @@ import {
 } from './definitions';
 
 export async function findGrantOpportunitiesTool() {
-    return findGrantOpportunitiesToolObject;
+    return await findGrantOpportunitiesToolObject();
 }
 
 export async function findUsersByNameTool() {
-    return findUsersByNameToolObject;
+    return await findUsersByNameToolObject();
 }
 
 export async function findProgramsByNameTool() {
-    return findProgramsByNameToolObject;
+    return await findProgramsByNameToolObject();
 }
 
 export async function findExpensesByTitleTool() {
-    return findExpensesByTitleToolObject;
+    return await findExpensesByTitleToolObject();
 }
 
 export async function searchOmutoTool() {
-    return searchOmutoToolObject;
+    return await searchOmutoToolObject();
 }
 
 export async function createCheckoutTool() {
-    return createCheckoutToolObject;
+    return await createCheckoutToolObject();
 }
 
 export async function getActivitiesForProgramTool() {
-    return getActivitiesForProgramToolObject;
+    return await getActivitiesForProgramToolObject();
 }
 
 export async function getRecentCheckoutsTool() {
-    return getRecentCheckoutsToolObject;
+    return await getRecentCheckoutsToolObject();
 }
 
 export async function getRecentCheckinsTool() {
-    return getRecentCheckinsToolObject;
+    return await getRecentCheckinsToolObject();
 }
 
 export async function getUpcomingEventsForUserTool() {
-    return getUpcomingEventsForUserToolObject;
+    return await getUpcomingEventsForUserToolObject();
 }
 
 export async function getPendingTasksForUserTool() {
-    return getPendingTasksForUserToolObject;
+    return await getPendingTasksForUserToolObject();
 }
