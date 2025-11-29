@@ -12,10 +12,13 @@ import { getUpcomingEventsForUserTool, getPendingTasksForUserTool } from '../too
 
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     
+    const upcomingEventsTool = await getUpcomingEventsForUserTool();
+    const pendingTasksTool = await getPendingTasksForUserTool();
+
     const smartRemindersPrompt = ai.definePrompt(
       {
         name: 'smartRemindersPrompt',
-        tools: [await getUpcomingEventsForUserTool(), await getPendingTasksForUserTool()],
+        tools: [upcomingEventsTool, pendingTasksTool],
         output: { schema: SmartRemindersOutputSchema },
         model: 'googleai/gemini-1.5-flash',
         prompt: `You are a proactive, intelligent assistant and performance coach for the Omuto Foundation, a youth-led NGO in Uganda. Your goal is to help team members stay on track by providing smart, actionable reminders based on their current context. Your output must be a JSON object conforming to the schema.

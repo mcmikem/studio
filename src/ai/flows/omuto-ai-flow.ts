@@ -41,13 +41,18 @@ User's message: "${input.question}"`;
             model: 'googleai/gemini-1.5-flash',
             prompt: prompt,
             history: history,
-            tools: [await searchOmutoTool(), await createCheckoutTool(), await getRecentCheckinsTool(), await getRecentCheckoutsTool()],
+            tools: [
+                await searchOmutoTool(), 
+                await createCheckoutTool(), 
+                await getRecentCheckinsTool(), 
+                await getRecentCheckoutsTool()
+            ],
             config: {
                 temperature: 0.2, // Be more factual
             }
         });
         
-        const answer = llmResponse.text;
+        const answer = llmResponse.text();
         
         if (!answer) {
             console.error("AI did not return a text response, even after potential tool use.", llmResponse);
