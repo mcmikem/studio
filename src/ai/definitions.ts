@@ -1,17 +1,19 @@
-
 /**
- * @fileOverview This file contains the actual definitions of the Genkit tools.
- * It does NOT use the 'use server' directive and can safely export the tool objects.
- * The server actions in omuto-tools.ts will import these definitions.
+ * @fileOverview This file contains the actual definitions of the Genkit tools and prompts.
+ * It does NOT use the 'use server' directive and can safely export the tool/prompt objects.
+ * The server actions in the /flows directory will import these definitions.
  */
 
 import { ai } from '@/ai/genkit';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { collection, query, where, getDocs, serverTimestamp, doc, addDoc, getDoc, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { z } from 'zod';
-import { SearchResultItemSchema } from '@/lib/types';
+import { SearchResultItemSchema, DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, GrantFinderOutputSchema, QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema, SmartRemindersOutputSchema } from '@/lib/types';
 import { format } from 'date-fns';
-import { createAlert } from '../flows/create-alert-flow';
+import { createAlert } from './flows/create-alert-flow';
+import { KNOWLEDGE_BASE } from '@/lib/data';
+
+// --- TOOL DEFINITIONS ---
 
 export const findGrantOpportunitiesToolObject = ai.defineTool(
     {
@@ -68,7 +70,6 @@ export const findGrantOpportunitiesToolObject = ai.defineTool(
     }
 );
 
-
 export const findUsersByNameToolObject = ai.defineTool(
     {
         name: 'findUsersByName',
@@ -101,7 +102,6 @@ export const findUsersByNameToolObject = ai.defineTool(
         }));
     }
 );
-
 
 export const findProgramsByNameToolObject = ai.defineTool(
     {
@@ -136,7 +136,6 @@ export const findProgramsByNameToolObject = ai.defineTool(
     }
 );
 
-
 export const findExpensesByTitleToolObject = ai.defineTool(
     {
         name: 'findExpensesByTitle',
@@ -170,7 +169,6 @@ export const findExpensesByTitleToolObject = ai.defineTool(
     }
 );
 
-
 export const searchOmutoToolObject = ai.defineTool(
     {
         name: 'searchOmuto',
@@ -194,8 +192,6 @@ export const searchOmutoToolObject = ai.defineTool(
         return uniqueResults;
     }
 );
-
-
 
 export const createCheckoutToolObject = ai.defineTool(
     {
@@ -252,8 +248,6 @@ export const createCheckoutToolObject = ai.defineTool(
     }
 );
 
-
-
 export const getActivitiesForProgramToolObject = ai.defineTool(
     {
         name: 'getActivitiesForProgram',
@@ -286,7 +280,6 @@ export const getActivitiesForProgramToolObject = ai.defineTool(
         });
     }
 );
-
 
 export const getRecentCheckoutsToolObject = ai.defineTool(
     {
@@ -329,7 +322,6 @@ export const getRecentCheckoutsToolObject = ai.defineTool(
         });
     }
 );
-
 
 export const getRecentCheckinsToolObject = ai.defineTool(
     {
@@ -375,7 +367,6 @@ export const getRecentCheckinsToolObject = ai.defineTool(
     }
 );
 
-
 export const getUpcomingEventsForUserToolObject = ai.defineTool(
     {
         name: 'getUpcomingEventsForUser',
@@ -411,7 +402,6 @@ export const getUpcomingEventsForUserToolObject = ai.defineTool(
     }
 );
 
-
 export const getPendingTasksForUserToolObject = ai.defineTool(
     {
         name: 'getPendingTasksForUser',
@@ -440,3 +430,97 @@ export const getPendingTasksForUserToolObject = ai.defineTool(
         });
     }
 );
+
+
+// --- PROMPT DEFINITIONS ---
+
+export const dailyPlannerPrompt = ai.definePrompt(
+    {
+      name: 'dailyPlannerPrompt',
+      input: { schema: DailyPlannerAIInputSchema },
+      output: { schema: DailyPlannerAIOutputSchema },
+      model: 'googleai/gemini-1.5-flash',
+      prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format. You are a coach, not just a scheduler.
+
+      Here is the organizational knowledge base to draw from:
+      ---
+      ${KNOWLEDGE_BASE}
+      ---
+      
+      A staff member with the role '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
+
+      {{#if weeklyPriorities}}
+      Their personal priorities for this week are: {{#each weeklyPriorities}}- {{{this}}} {{/each}}.
+      {{/if}}
+
+      CURRENT ORGANIZATIONAL KEY RESULTS (Summary):
+      {{#if keyResults}}
+      {{#each keyResults}}
+      - {{this.title}}: {{this.description}} (Deadline: {{this.deadline}})
+      {{/each}}
+      {{/if}}
+
+      Your task is to generate a structured JSON object based on the schema provided.
+
+      1.  **Time Blocks:** Break down the user's primary mission into a series of specific, actionable tasks. Assign each task to a logical time block. The 'description' for each time block MUST be a concrete to-do item (e.g., "Draft the first section of the RED Campaign report" or "Call 3 potential partners from the list"). Do NOT put coaching questions or general advice in the description field. Make sure your tasks directly relate to the user's stated primary mission.
+      2.  **Multi-Win Connections:** Explicitly connect the daily mission to AT LEAST TWO specific weekly priorities (if available) or organizational Key Results from the provided list. Use the "Integrated Activity Framework" and "Individual Accountability" sections of the knowledge base to find these connections. For example, if the mission is 'Finalize Dignity Pads production', a connection would be 'Contributes to KR1: Clear October Backlogs'. This is critical for strategic alignment.
+      3.  **Materials:** List specific, tangible items needed (e.g., "Updated partners spreadsheet," "Camera with charged battery").
+      4.  **Challenges & Mitigations:** Proactively identify at least one potential challenge from the "Risk Management" section of the knowledge base that is relevant to the user's mission. Provide the concrete mitigation strategy listed in the plan. This is active risk management. Example: "Challenge: Partner may be unavailable. Mitigation: Send a confirmation WhatsApp message one hour before the meeting."
+      5.  **Best Practice:** Provide ONE single, highly relevant piece of advice from the knowledge base that helps the staff member think more strategically about their task today.`,
+    }
+);
+
+export const grantFinderPrompt = ai.definePrompt(
+      {
+        name: 'grantFinderPrompt',
+        tools: [findGrantOpportunitiesToolObject],
+        output: { schema: GrantFinderOutputSchema },
+        model: 'googleai/gemini-pro',
+        prompt: `You are an expert at summarizing grant opportunities. The user will provide a query, and you will receive a list of potential grants from a search tool. Your job is to analyze the tool's output and present the most relevant opportunities in a clear, structured JSON format that conforms to the provided schema. Do not add any grants that are not from the tool output.
+        
+        Please find grant opportunities related to the following query: "{{query}}"`,
+      }
+);
+
+export const qualitativeAnalysisPrompt = ai.definePrompt({
+    name: 'qualitativeAnalysisPrompt',
+    input: { schema: QualitativeAnalysisInputSchema },
+    tools: [getActivitiesForProgramToolObject],
+    output: { schema: QualitativeAnalysisOutputSchema },
+    model: 'googleai/gemini-pro',
+    prompt: `You are an expert M&E (Monitoring and Evaluation) analyst for a youth-led NGO in Uganda.
+    Your task is to analyze a collection of raw, qualitative data from field reports for a specific program and return a structured JSON object conforming to the schema.
+    The data includes memorable moments, challenges, lessons learned, and direct quotes from beneficiaries.
+    
+    Synthesize this information into a high-level, thematic analysis.
+    - Identify recurring themes of success. What is consistently going well?
+    - Identify common challenges. What obstacles does the team repeatedly face?
+    - Extract key, actionable learnings. What are the most important takeaways for improving the program?
+    - Provide a concise executive summary of your findings.
+    
+    Focus on patterns and insights, not just listing individual comments. Be insightful and strategic.
+    
+    Analyze the qualitative data for the '{{programName}}' program from {{startDate}} to {{endDate}}. Use the 'getActivitiesForProgram' tool with programId '{{programId}}'.`,
+});
+
+
+export const smartRemindersPrompt = ai.definePrompt(
+      {
+        name: 'smartRemindersPrompt',
+        tools: [getUpcomingEventsForUserToolObject, getPendingTasksForUserToolObject],
+        output: { schema: SmartRemindersOutputSchema },
+        model: 'googleai/gemini-pro',
+        prompt: `You are a proactive, intelligent assistant and performance coach for the Omuto Foundation, a youth-led NGO in Uganda. Your goal is to help team members stay on track by providing smart, actionable reminders based on their current context. Your output must be a JSON object conforming to the schema.
+
+        Your reminders should be:
+        - **Concise & Actionable**: Direct and to the point.
+        - **Context-Aware**: Directly reference the user's tasks, events, and role.
+        - **Strategically Aligned**: Connect daily tasks to broader Omuto goals (like Key Results from the October Plan) and the "Multiple Wins" framework.
+        - **Encouraging & Supportive**: Sound like a helpful teammate, not a corporate robot.
+        
+        Analyze the user's upcoming events and pending tasks from the provided tool outputs. Provide a specific, helpful list of 3-4 smart, actionable reminders.
+
+        Now, generate the reminders for {{userName}} (Role: {{userRole}}). Use the getUpcomingEventsForUser and getPendingTasksForUser tools with userId '{{userId}}' to get the necessary data.`,
+      }
+    );
+

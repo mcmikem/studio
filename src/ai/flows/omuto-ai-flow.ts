@@ -8,10 +8,8 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'zod';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import { createCheckoutTool, getRecentCheckinsTool, getRecentCheckoutsTool, searchOmutoTool } from '../tools/omuto-tools';
-import { format } from 'date-fns';
+import { searchOmutoToolObject, createCheckoutToolObject, getRecentCheckinsToolObject, getRecentCheckoutsToolObject } from '@/ai/definitions';
 import type { OmutoAIInput, OmutoAIOutput } from '@/lib/types';
 
 // The main flow function that orchestrates the AI's response
@@ -40,10 +38,10 @@ UserId: ${input.userId}.
 User's message: "${input.question}"`,
             history: history,
             tools: [
-                await searchOmutoTool(), 
-                await createCheckoutTool(), 
-                await getRecentCheckinsTool(), 
-                await getRecentCheckoutsTool()
+                searchOmutoToolObject, 
+                createCheckoutToolObject, 
+                getRecentCheckinsToolObject, 
+                getRecentCheckoutsToolObject
             ],
             config: {
                 temperature: 0.2, // Be more factual

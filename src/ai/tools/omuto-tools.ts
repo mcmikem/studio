@@ -1,10 +1,10 @@
-
 'use server';
-
 /**
- * @fileOverview This file exports async functions that return tool definitions.
- * This pattern is required for 'use server' compatibility in Next.js, as tool
- * objects themselves cannot be directly exported from server-side modules.
+ * @fileOverview This file acts as a server-side entry point for AI tools.
+ * It uses the 'use server' directive and exports async functions that
+ * return the actual tool objects defined elsewhere. This ensures that
+ * only async functions are exported from the server module, complying
+ * with Next.js Server Action constraints.
  */
 
 import { 
@@ -19,7 +19,7 @@ import {
     getRecentCheckinsToolObject,
     getUpcomingEventsForUserToolObject,
     getPendingTasksForUserToolObject,
-} from './definitions';
+} from '../definitions';
 
 export async function findGrantOpportunitiesTool() {
     return findGrantOpportunitiesToolObject;
