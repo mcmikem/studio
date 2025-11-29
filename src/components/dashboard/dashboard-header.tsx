@@ -28,7 +28,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
                       className="object-cover"
                       data-ai-hint={headerImage.imageHint}
                   />
-                  <div className="absolute inset-0 bg-primary/80 mix-blend-multiply" />
+                  <div className="absolute inset-0 bg-accent/80 mix-blend-multiply" />
               </>
           )}
         <div className="relative z-10 text-white">
