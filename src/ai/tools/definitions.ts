@@ -13,8 +13,7 @@ import { SearchResultItemSchema } from '@/lib/types';
 import { format } from 'date-fns';
 import { createAlert } from '../flows/create-alert-flow';
 
-export async function findGrantOpportunitiesToolObject() {
-    return ai.defineTool(
+export const findGrantOpportunitiesToolObject = ai.defineTool(
     {
         name: 'findGrantOpportunities',
         description: 'Searches for grant and funding opportunities based on a query. This is a simulation and will return mock data.',
@@ -67,12 +66,10 @@ export async function findGrantOpportunitiesToolObject() {
         // Simple filter to make the mock data slightly responsive to the query
         return MOCK_OPPORTUNITIES.filter(op => op.description.toLowerCase().includes(query.split(' ')[0].toLowerCase()));
     }
-    );
-}
+);
 
 
-export async function findUsersByNameToolObject() {
-    return ai.defineTool(
+export const findUsersByNameToolObject = ai.defineTool(
     {
         name: 'findUsersByName',
         description: 'Finds staff members by their name.',
@@ -104,10 +101,9 @@ export async function findUsersByNameToolObject() {
         }));
     }
 );
-}
 
-export async function findProgramsByNameToolObject() {
-    return ai.defineTool(
+
+export const findProgramsByNameToolObject = ai.defineTool(
     {
         name: 'findProgramsByName',
         description: 'Finds programs by their title.',
@@ -139,11 +135,9 @@ export async function findProgramsByNameToolObject() {
         }));
     }
 );
-}
 
 
-export async function findExpensesByTitleToolObject() {
-    return ai.defineTool(
+export const findExpensesByTitleToolObject = ai.defineTool(
     {
         name: 'findExpensesByTitle',
         description: 'Finds expense reports by their title.',
@@ -175,11 +169,9 @@ export async function findExpensesByTitleToolObject() {
         }));
     }
 );
-}
 
 
-export async function searchOmutoToolObject() {
-    return ai.defineTool(
+export const searchOmutoToolObject = ai.defineTool(
     {
         name: 'searchOmuto',
         description: 'Performs a global search across users, programs, and expenses to find information within the Omuto Central app.',
@@ -190,12 +182,10 @@ export async function searchOmutoToolObject() {
     },
     async ({ query }) => {
         console.log(`Searching Omuto for: ${query}`);
-        // This is simplified and should call the more specific tools.
-        // For this fix, we'll just show a placeholder result.
         // In a real scenario, you'd call findUsersByNameToolObject, etc.
-        const users = await (await findUsersByNameToolObject()).fn({ name: query });
-        const programs = await (await findProgramsByNameToolObject()).fn({ title: query });
-        const expenses = await (await findExpensesByTitleToolObject()).fn({ title: query });
+        const users = await findUsersByNameToolObject.fn({ name: query });
+        const programs = await findProgramsByNameToolObject.fn({ title: query });
+        const expenses = await findExpensesByTitleToolObject.fn({ title: query });
 
         const combined = [...users, ...programs, ...expenses];
         const uniqueResults = Array.from(new Map(combined.map(item => [item.id, item])).values());
@@ -204,12 +194,10 @@ export async function searchOmutoToolObject() {
         return uniqueResults;
     }
 );
-}
 
 
 
-export async function createCheckoutToolObject() {
-    return ai.defineTool(
+export const createCheckoutToolObject = ai.defineTool(
     {
         name: 'createCheckout',
         description: 'Creates an end-of-day checkout report for a user.',
@@ -263,12 +251,10 @@ export async function createCheckoutToolObject() {
         }
     }
 );
-}
 
 
 
-export async function getActivitiesForProgramToolObject() {
-    return ai.defineTool(
+export const getActivitiesForProgramToolObject = ai.defineTool(
     {
         name: 'getActivitiesForProgram',
         description: 'Retrieves all activity reports for a specific program within a given date range.',
@@ -300,11 +286,9 @@ export async function getActivitiesForProgramToolObject() {
         });
     }
 );
-}
 
 
-export async function getRecentCheckoutsToolObject() {
-    return ai.defineTool(
+export const getRecentCheckoutsToolObject = ai.defineTool(
     {
         name: 'getRecentCheckouts',
         description: 'Retrieves the most recent end-of-day checkout reports from the team.',
@@ -345,11 +329,9 @@ export async function getRecentCheckoutsToolObject() {
         });
     }
 );
-}
 
 
-export async function getRecentCheckinsToolObject() {
-    return ai.defineTool(
+export const getRecentCheckinsToolObject = ai.defineTool(
     {
         name: 'getRecentCheckins',
         description: "Retrieves today's start-of-day check-in reports from the team.",
@@ -392,11 +374,9 @@ export async function getRecentCheckinsToolObject() {
         });
     }
 );
-}
 
 
-export async function getUpcomingEventsForUserToolObject() {
-    return ai.defineTool(
+export const getUpcomingEventsForUserToolObject = ai.defineTool(
     {
         name: 'getUpcomingEventsForUser',
         description: 'Retrieves the upcoming events for a specific user for the next 7 days.',
@@ -430,11 +410,9 @@ export async function getUpcomingEventsForUserToolObject() {
         });
     }
 );
-}
 
 
-export async function getPendingTasksForUserToolObject() {
-    return ai.defineTool(
+export const getPendingTasksForUserToolObject = ai.defineTool(
     {
         name: 'getPendingTasksForUser',
         description: 'Retrieves the top 5 pending tasks for a specific user.',
@@ -462,4 +440,3 @@ export async function getPendingTasksForUserToolObject() {
         });
     }
 );
-}
