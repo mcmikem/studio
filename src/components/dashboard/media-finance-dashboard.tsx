@@ -18,7 +18,7 @@ import {
   CardTitle,
   CardFooter,
 } from "../ui/card"
-import { useCollection, useFirestore, useUser } from "@/firebase"
+import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
 import { useMemo } from "react"
 import {
   Table,
@@ -214,19 +214,19 @@ interface DashboardProps {
 export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
 
-  const allExpensesQuery = useMemo(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const allExpensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: allExpenses } = useCollection<Expense>(allExpensesQuery, { listen: false });
   
-  const allIncomeQuery = useMemo(() => firestore ? query(collection(firestore, 'income'), orderBy('createdAt', 'desc')) : null, [firestore]);
+  const allIncomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: allIncome } = useCollection<Income>(allIncomeQuery, { listen: false });
 
-  const activitiesQuery = useMemo(() => {
+  const activitiesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'), limit(10));
   }, [firestore]);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
   
-  const testimoniesQuery = useMemo(() => {
+  const testimoniesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'), limit(5));
   }, [firestore]);
@@ -235,7 +235,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-       <DashboardGrid className="mt-0 lg:grid-cols-1">
+       <DashboardGrid className="mt-6 lg:grid-cols-1">
         <BudgetHealth expenses={allExpenses} income={allIncome} />
         <DynamicApprovalQueue />
         <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />

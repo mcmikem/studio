@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User, Program, Checkout, ImpactMetric, Partnership, Checkin, Expense } from "@/lib/types"
@@ -60,7 +61,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
 
 
   return (
-    <DashboardGrid className="lg:grid-cols-2">
+    <DashboardGrid className="mt-6 lg:grid-cols-2">
         <div className="flex flex-col gap-6">
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />

@@ -18,7 +18,8 @@ import { Skeleton } from "../ui/skeleton"
 const DynamicTeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-48" />, ssr: false });
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const DynamicEcosystemPulse = dynamic(() => import('@/components/dashboard/ecosystem-pulse').then(mod => mod.EcosystemPulse), { loading: () => <Skeleton className="h-64" />, ssr: false });
-
+const DynamicKeyResultsTracker = dynamic(() => import('@/components/plan/key-results-tracker').then(mod => mod.KeyResultsTracker), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const DynamicTeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 interface DashboardProps {
   profile: User;
@@ -56,8 +57,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   return (
     <>
        <DashboardGrid className="mt-0 lg:grid-cols-1">
-            <KeyResultsTracker />
-            <TeamPerformanceLeaderboard 
+            <DynamicKeyResultsTracker />
+            <DynamicTeamPerformanceLeaderboard 
                 activities={activities}
                 checkins={checkins} 
                 users={users} 

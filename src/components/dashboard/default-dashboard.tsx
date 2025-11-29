@@ -37,7 +37,7 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
-      <DashboardGrid className="mt-6 lg:grid-cols-2">
+      <DashboardGrid className="mt-0 lg:grid-cols-2">
          <div className="flex flex-col gap-6">
           <DynamicDashboardCalendar />
           <DynamicMyWeeklyPlan />

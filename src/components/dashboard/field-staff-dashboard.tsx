@@ -42,7 +42,7 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   return (
     <>
         <DashboardGrid className="mt-0 lg:grid-cols-2">
-             <MyWeeklyPlan />
+            <MyWeeklyPlan />
             <DashboardCalendar />
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             <TeamPulse checkouts={checkouts} />

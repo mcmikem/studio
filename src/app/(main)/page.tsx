@@ -15,7 +15,7 @@ import { DailyActions } from '@/components/dashboard/daily-actions';
 import { QuickAddTask } from '@/components/dashboard/quick-add-task';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
 import { RoleSpecificKpis } from '@/components/dashboard/role-kpis';
-import { MyPerformance } from '@/components/dashboard/my-performance';
+import { UserPerformance } from '@/components/profile/user-performance';
 
 
 // Define a loading component for dynamic imports
@@ -122,7 +122,7 @@ export default function DashboardPage() {
             </div>
             <div className="lg:col-span-1 flex flex-col gap-6">
                  <RoleSpecificKpis role={profile.role} />
-                 <MyPerformance />
+                 <UserPerformance userId={user.uid} />
             </div>
         </div>
     </div>

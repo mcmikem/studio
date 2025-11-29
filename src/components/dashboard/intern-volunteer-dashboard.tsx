@@ -32,7 +32,7 @@ interface DashboardProps {
 
 export function InternVolunteerDashboard({ profile }: DashboardProps) {
   return (
-    <DashboardGrid className="mt-0">
+    <DashboardGrid className="mt-6">
         <QuickActionsCard />
         <Card className="min-h-96">
           <CardHeader>
