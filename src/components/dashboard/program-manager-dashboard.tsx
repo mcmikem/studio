@@ -12,7 +12,6 @@ import { PartnershipPipeline } from "@/components/dashboard/program-manager/part
 import { QuickInsights } from "@/components/dashboard/program-manager/quick-insights"
 import { TeamDeployment } from "@/components/dashboard/team-deployment"
 import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar"
-import { QuickAddTask } from "@/components/dashboard/quick-add-task"
 import { MyWeeklyPlan } from "@/components/dashboard/my-weekly-plan"
 import { ApprovalQueue } from "@/components/dashboard/approval-queue"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"

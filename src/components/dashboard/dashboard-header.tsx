@@ -5,9 +5,16 @@ import type { User } from "@/lib/types"
 import { Card } from "../ui/card";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
  
 export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    setCurrentDate(format(new Date(), 'eeee, MMMM d, yyyy'));
+  }, []);
  
   return (
     <>
@@ -25,7 +32,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
               </>
           )}
         <div className="relative z-10 text-white">
-            <p className="text-md text-white/80">{title || `Good Morning!`}</p>
+            <p className="text-md text-white/80">{currentDate || title || `Good Morning!`}</p>
             <h1 className="font-headline text-3xl font-bold tracking-tight text-white">
                 {profile?.name.split(' ')[0] || "User"}!
             </h1>

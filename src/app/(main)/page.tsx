@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser, useFirestore, useCollection } from '@/firebase';
@@ -109,6 +110,8 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} title={dashboardTitle} />
+
+        <QuickAddTask />
         
         <DailyActions checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
         
@@ -119,7 +122,6 @@ export default function DashboardPage() {
                 <DashboardComponent profile={profile} />
             </div>
             <div className="lg:col-span-1 flex flex-col gap-6">
-                 <QuickAddTask />
                  <RoleSpecificKpis role={profile.role} />
                  <MyPerformance />
             </div>

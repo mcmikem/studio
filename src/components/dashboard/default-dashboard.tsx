@@ -8,7 +8,6 @@ import { DashboardCalendar } from "./dashboard-calendar"
 import { Alerts } from "./alerts"
 import { useCollection, useFirestore, useUser } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
-import { QuickAddTask } from "./quick-add-task"
 import { TeamDeployment } from "./team-deployment"
 import { startOfDay } from "date-fns"
 import { MyWeeklyPlan } from "./my-weekly-plan"
@@ -34,7 +33,6 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   return (
       <DashboardGrid className="mt-6 lg:grid-cols-2">
          <div className="flex flex-col gap-6">
-          <QuickAddTask />
           <DashboardCalendar />
           <MyWeeklyPlan />
         </div>
