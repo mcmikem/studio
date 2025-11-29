@@ -1,5 +1,3 @@
-
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -705,6 +703,57 @@ export type OFAScorecard = {
     createdAt: Timestamp;
 };
 
+export type OFAMatchSummary = {
+  id: string;
+  region: string;
+  teamA: string;
+  teamB: string;
+  finalScore: string;
+  bestPerformers?: string;
+  injuries: 'Yes' | 'No';
+  teamADiscipline: number;
+  teamACards?: string;
+  teamBDiscipline: number;
+  teamBCards?: string;
+  quickNotes?: string;
+  createdAt: Timestamp;
+};
+
+export type OFAAdvancedAnalysis = {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  homePossession?: number;
+  awayPossession?: number;
+  homeShots?: number;
+  awayShots?: number;
+  homeSaves?: number;
+  awaySaves?: number;
+  homePassSuccess?: number;
+  awayPassSuccess?: number;
+  homeFormation?: string;
+  homeStrengths?: string;
+  homeWeaknesses?: string;
+  homeAdjustments?: string;
+  awayFormation?: string;
+  awayStrengths?: string;
+  awayWeaknesses?: string;
+  awayAdjustments?: string;
+  createdAt: Timestamp;
+};
+
+export type OFAEquipmentImpact = {
+  id: string;
+  teamId: string;
+  item: string;
+  dateGiven: string;
+  beforeSupport?: string;
+  thirtyDays?: string;
+  sixtyDays?: string;
+  ninetyDays?: string;
+  realImpact?: string;
+  createdAt: Timestamp;
+};
 
 export type PulseContent = {
   id: string;

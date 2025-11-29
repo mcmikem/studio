@@ -1159,6 +1159,76 @@
       },
       "required": ["date", "homeTeam", "awayTeam", "homeScore", "awayScore"]
     },
+    "OFAMatchSummary": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Match Summary",
+      "description": "A simplified match report for district meets.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "region": { "type": "string" },
+        "teamA": { "type": "string" },
+        "teamB": { "type": "string" },
+        "finalScore": { "type": "string" },
+        "bestPerformers": { "type": "string" },
+        "injuries": { "type": "string", "enum": ["Yes", "No"] },
+        "teamADiscipline": { "type": "number" },
+        "teamACards": { "type": "string" },
+        "teamBDiscipline": { "type": "number" },
+        "teamBCards": { "type": "string" },
+        "quickNotes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["region", "teamA", "teamB", "finalScore", "injuries", "teamADiscipline", "teamBDiscipline", "createdAt"]
+    },
+    "OFAAdvancedAnalysis": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Advanced Match Analysis",
+      "description": "A detailed analysis report for tournament finals.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "homeTeam": { "type": "string" },
+        "awayTeam": { "type": "string" },
+        "homePossession": { "type": "number" },
+        "awayPossession": { "type": "number" },
+        "homeShots": { "type": "number" },
+        "awayShots": { "type": "number" },
+        "homeSaves": { "type": "number" },
+        "awaySaves": { "type": "number" },
+        "homePassSuccess": { "type": "number" },
+        "awayPassSuccess": { "type": "number" },
+        "homeFormation": { "type": "string" },
+        "homeStrengths": { "type": "string" },
+        "homeWeaknesses": { "type": "string" },
+        "homeAdjustments": { "type": "string" },
+        "awayFormation": { "type": "string" },
+        "awayStrengths": { "type": "string" },
+        "awayWeaknesses": { "type": "string" },
+        "awayAdjustments": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["homeTeam", "awayTeam", "createdAt"]
+    },
+    "OFAEquipmentImpact": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OFA Equipment Impact Tracker",
+      "description": "Tracks the impact of equipment/support provided to teams.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "teamId": { "type": "string" },
+        "item": { "type": "string" },
+        "dateGiven": { "type": "string", "format": "date" },
+        "beforeSupport": { "type": "string" },
+        "thirtyDays": { "type": "string" },
+        "sixtyDays": { "type": "string" },
+        "ninetyDays": { "type": "string" },
+        "realImpact": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["teamId", "item", "dateGiven", "createdAt"]
+    },
     "PulseContent": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Omuto Pulse Content",
@@ -1335,6 +1405,9 @@
         "parish": { "type": "string" },
         "village": { "type": "string" },
         "yearOfEstablishment": { "type": "string" },
+        "homePitchName": { "type": "string" },
+        "teamColours": { "type": "string" },
+        "motto": { "type": "string" },
         "headCoachName": { "type": "string" },
         "headCoachPhone": { "type": "string" },
         "headCoachAttendance": { "type": "string", "enum": ["Always", "Sometimes", "Rare"] },
@@ -1677,6 +1750,18 @@
     "/ofa-matches/{matchId}": {
         "schema": { "$ref": "#/entities/OFAMatch" },
         "description": "Match reports for Omuto Football Alliance."
+    },
+    "/ofa-match-summaries/{summaryId}": {
+        "schema": { "$ref": "#/entities/OFAMatchSummary" },
+        "description": "Simplified match reports for Omuto Football Alliance district meets."
+    },
+    "/ofa-advanced-analysis/{analysisId}": {
+        "schema": { "$ref": "#/entities/OFAAdvancedAnalysis" },
+        "description": "Advanced match analysis reports for Omuto Football Alliance tournament stages."
+    },
+    "/ofa-equipment-impact/{trackerId}": {
+        "schema": { "$ref": "#/entities/OFAEquipmentImpact" },
+        "description": "Tracks the impact of equipment provided to OFA teams."
     },
     "/ofa-scorecards/{scorecardId}": {
         "schema": { "$ref": "#/entities/OFAScorecard" },

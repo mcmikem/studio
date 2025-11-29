@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, UserPlus, FileText, Swords, BarChart } from 'lucide-react';
+import { Loader2, UserPlus, FileText, Swords, BarChart, FileSearch, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -19,15 +19,27 @@ const ofaForms = [
     icon: UserPlus,
   },
   {
-    href: '/meal/ofa/match-report',
-    title: 'Match Report Form',
-    description: 'Log the results and details of a completed match.',
+    href: '/meal/ofa/match-summary',
+    title: 'Match Summary Sheet',
+    description: 'Simplified report for District Meets.',
     icon: FileText,
+  },
+  {
+    href: '/meal/ofa/advanced-analysis',
+    title: 'Advanced Match Analysis',
+    description: 'Detailed report for finals or tournament stages.',
+    icon: FileSearch,
+  },
+  {
+    href: '/meal/ofa/equipment-tracker',
+    title: 'Equipment Impact Tracker',
+    description: 'Track the impact of support given to teams.',
+    icon: TrendingUp,
   },
   {
     href: '/meal/ofa/quarterly-scorecard',
     title: 'Quarterly Scorecard',
-    description: 'Log a team\'s quarterly progress and performance.',
+    description: "Log a team's quarterly progress and performance.",
     icon: BarChart,
   },
 ];
