@@ -9,14 +9,8 @@
     {
       "id": "dashboard-header",
       "description": "A vibrant photo of Ugandan children smiling, representing community and youth empowerment.",
-      "imageUrl": "https://images.unsplash.com/photo-1593113598332-cd288d649433?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjb21tdW5pdHl8ZW58MHx8fHwxNzU5NjEwMTU2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "ugandan children"
-    },
-    {
-      "id": "dashboard-header-dark-leaves",
-      "description": "Dark, moody leaves for a dashboard header background",
-      "imageUrl": "https://images.unsplash.com/photo-1587825123328-361099b2478f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      "imageHint": "dark leaves"
+      "imageUrl": "https://i.imgur.com/AuhF19l.jpeg",
+      "imageHint": "dashboard screenshot"
     },
     {
       "id": "user-avatar-1",
