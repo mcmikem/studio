@@ -35,8 +35,7 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         Analyze the qualitative data for the '${input.programName}' program from ${input.startDate} to ${input.endDate}. Use the 'getActivitiesForProgram' tool with programId '${input.programId}'.`,
     });
 
-    const llmResponse = await analysisPrompt(input);
-    const output = llmResponse.output();
+    const {output} = await analysisPrompt(input);
 
     if (!output) {
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");

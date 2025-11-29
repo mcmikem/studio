@@ -27,8 +27,7 @@ export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOu
       }
     );
 
-    const llmResponse = await grantFinderPrompt({query: input.query});
-    const output = llmResponse.output();
+    const {output} = await grantFinderPrompt({query: input.query});
 
     if (!output) {
       throw new Error('AI failed to generate a response for grant opportunities.');

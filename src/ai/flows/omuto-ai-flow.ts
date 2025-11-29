@@ -42,10 +42,10 @@ User's message: "${input.question}"`;
             prompt: prompt,
             history: history,
             tools: [
-                searchOmutoTool(), 
-                createCheckoutTool(), 
-                getRecentCheckinsTool(), 
-                getRecentCheckoutsTool()
+                await searchOmutoTool(), 
+                await createCheckoutTool(), 
+                await getRecentCheckinsTool(), 
+                await getRecentCheckoutsTool()
             ],
             config: {
                 temperature: 0.2, // Be more factual
