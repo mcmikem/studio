@@ -125,7 +125,7 @@ export default function LoginPage() {
             case 'auth/user-not-found':
                 title = 'Invalid Credentials';
                 description = activeTab === 'signin' 
-                  ? 'Please check your email and password. If this is your first time signing in, please use the "Sign Up" tab to create your account first.'
+                  ? 'Please check your email and password. If this is your first time signing in with this email, please use the "Sign Up" tab to create your account first.'
                   : 'There was an issue with your credentials.';
                 break;
             case 'auth/email-already-in-use':
@@ -283,3 +283,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    
