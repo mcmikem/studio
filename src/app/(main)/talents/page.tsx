@@ -5,6 +5,8 @@ import { Suspense } from 'react';
 import { Loader2, Trophy, Swords, Wind } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const talentHubs = [
   {
@@ -20,7 +22,7 @@ const talentHubs = [
     icon: Trophy,
   },
   {
-    href: '/talents/pulse',
+    href: '/pulse',
     title: 'Omuto Pulse',
     description: 'Submit content for the media platform.',
     icon: Wind,
@@ -31,6 +33,12 @@ function TalentsHubPage() {
     return (
         <div className="space-y-6">
             <header>
+                <Button variant="outline" asChild className="mb-4">
+                    <Link href="/forms">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Forms Hub
+                    </Link>
+                </Button>
                 <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Talents</h1>
                 <p className="text-muted-foreground">
                     A hub for all talent development programs including sports and media.

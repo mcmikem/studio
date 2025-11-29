@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -7,15 +8,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, LogIn, LogOut, Receipt, Megaphone, School, Users, UserPlus, Heart, Leaf, Zap, Trophy, Store, Wind, Handshake, MessageSquare, Bug, BarChart3, Video, FileText } from 'lucide-react';
+import { ArrowRight, LogIn, LogOut, Receipt, Megaphone, Trophy, Store, Bug, BarChart3, Wand } from 'lucide-react';
 import Link from 'next/link';
 
 const formSections = [
   {
     title: 'Daily Routines',
     forms: [
-      { href: '/daily-plan', title: 'AI Daily Planner', description: 'Plan your day and align with team goals.', icon: LogIn },
+      { href: '/daily-plan', title: 'AI Daily Planner', description: 'Plan your day and align with team goals.', icon: Wand },
       { href: '/forms/check-out', title: 'Daily Check-out', description: 'Report your impact and share key learnings.', icon: LogOut },
+    ]
+  },
+  {
+    title: 'MEAL & Data Collection',
+    forms: [
+      { href: '/meal', title: 'MEAL Hub', description: 'Access all program-specific data collection forms.', icon: BarChart3 },
     ]
   },
   {
@@ -25,28 +32,10 @@ const formSections = [
       { href: '/forms/alert', title: 'Create Alert', description: 'Broadcast an important message to the team.', icon: Megaphone },
     ]
   },
-  {
-    title: 'MEAL Hub',
-    forms: [
-      { href: '/meal', title: 'MEAL Hub', description: 'Access all program-specific data collection forms.', icon: BarChart3 },
-    ]
-  },
-  {
-    title: 'Social Enterprise',
-    forms: [
-      { href: '/essentials', title: 'Omuto Essentials', description: 'Manage production, sales, and inventory.', icon: Store },
-    ]
-  },
-  {
-    title: 'Omuto Talents',
-    forms: [
-      { href: '/talents', title: 'Omuto Talents Hub', description: 'Manage Football, Media, and other talent programs.', icon: Trophy },
-    ]
-  },
    {
     title: 'System',
     forms: [
-        { href: '/forms/system/feedback', title: 'System Feedback & Bug Report', description: 'Report an issue or suggest a feature.', icon: Bug },
+        { href: '/system/feedback', title: 'System Feedback & Bug Report', description: 'Report an issue or suggest a feature.', icon: Bug },
     ]
   },
 ];

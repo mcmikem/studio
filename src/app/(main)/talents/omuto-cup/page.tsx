@@ -2,9 +2,10 @@
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, Swords, UserPlus, FileText, UserCheck } from 'lucide-react';
+import { Loader2, Swords, UserPlus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const omutoCupForms = [
   {
@@ -25,6 +26,12 @@ function OmutoCupHubPage() {
     return (
         <div className="space-y-6">
             <header>
+                 <Button variant="outline" asChild className="mb-4">
+                    <Link href="/talents">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Talents Hub
+                    </Link>
+                </Button>
                 <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Cup (Event)</h1>
                 <p className="text-muted-foreground">
                     Data collection forms for managing the Omuto Cup tournament.
