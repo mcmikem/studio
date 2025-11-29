@@ -15,7 +15,7 @@ const planParserPrompt = ai.definePrompt({
   name: 'operationalPlanParserPrompt',
   input: { schema: ParsePlanInputSchema },
   output: { schema: ParsePlanOutputSchema },
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-1.5-pro-latest',
   prompt: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
 
   **Instructions:**
