@@ -10,7 +10,8 @@ import { smartRemindersPrompt } from '@/ai/definitions';
 
 
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
-    const {output} = await smartRemindersPrompt(input);
+    const llmResponse = await smartRemindersPrompt(input);
+    const output = llmResponse.output();
     
     if (!output) {
       throw new Error('AI failed to generate reminders.');

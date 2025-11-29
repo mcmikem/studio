@@ -22,46 +22,14 @@ import {
     getPendingTasksForUserToolObject,
 } from '../definitions';
 
-export async function findGrantOpportunitiesTool() {
-    return findGrantOpportunitiesToolObject;
-}
-
-export async function findUsersByNameTool() {
-    return findUsersByNameToolObject;
-}
-
-export async function findProgramsByNameTool() {
-    return findProgramsByNameToolObject;
-}
-
-export async function findExpensesByTitleTool() {
-    return findExpensesByTitleToolObject;
-}
-
-export async function searchOmutoTool() {
-    return searchOmutoToolObject;
-}
-
-export async function createCheckoutTool() {
-    return createCheckoutToolObject;
-}
-
-export async function getActivitiesForProgramTool() {
-    return getActivitiesForProgramToolObject;
-}
-
-export async function getRecentCheckoutsTool() {
-    return getRecentCheckoutsToolObject;
-}
-
-export async function getRecentCheckinsTool() {
-    return getRecentCheckinsToolObject;
-}
-
-export async function getUpcomingEventsForUserTool() {
-    return getUpcomingEventsForUserToolObject;
-}
-
-export async function getPendingTasksForUserTool() {
-    return getPendingTasksForUserToolObject;
-}
+export const findGrantOpportunitiesTool = findGrantOpportunitiesToolObject;
+export const findUsersByNameTool = findUsersByNameToolObject;
+export const findProgramsByNameTool = findProgramsByNameToolObject;
+export const findExpensesByTitleTool = findExpensesByTitleToolObject;
+export const searchOmutoTool = searchOmutoToolObject;
+export const createCheckoutTool = createCheckoutToolObject;
+export const getActivitiesForProgramTool = getActivitiesForProgramToolObject;
+export const getRecentCheckoutsTool = getRecentCheckoutsToolObject;
+export const getRecentCheckinsTool = getRecentCheckinsToolObject;
+export const getUpcomingEventsForUserTool = getUpcomingEventsForUserToolObject;
+export const getPendingTasksForUserTool = getPendingTasksForUserToolObject;

@@ -11,7 +11,8 @@ import { qualitativeAnalysisPrompt } from '@/ai/definitions';
 
 export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput): Promise<QualitativeAnalysisOutput> {
     
-    const {output} = await qualitativeAnalysisPrompt(input);
+    const llmResponse = await qualitativeAnalysisPrompt(input);
+    const output = llmResponse.output();
 
     if (!output) {
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");

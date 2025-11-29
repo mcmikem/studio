@@ -43,10 +43,10 @@ UserId: ${input.userId}.
 User's message: "${input.question}"`,
             history: history,
             tools: [
-                await searchOmutoTool(), 
-                await createCheckoutTool(), 
-                await getRecentCheckinsTool(), 
-                await getRecentCheckoutsTool()
+                searchOmutoTool, 
+                createCheckoutTool, 
+                getRecentCheckinsTool, 
+                getRecentCheckoutsTool
             ],
             config: {
                 temperature: 0.2, // Be more factual
