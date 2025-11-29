@@ -235,14 +235,14 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-       <DashboardGrid className="mt-6">
-        <div className="col-span-full">
+       <DashboardGrid className="mt-6 lg:grid-cols-3">
+        <div className="lg:col-span-3">
             <BudgetHealth expenses={allExpenses} income={allIncome} />
         </div>
-        <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="lg:col-span-1 flex flex-col gap-6">
             <DynamicApprovalQueue />
         </div>
-        <div className="lg:col-span-1 flex flex-col gap-6">
+        <div className="lg:col-span-2 flex flex-col gap-6">
             <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
             <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
         </div>

@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import type { User, Activity } from "@/lib/types"
