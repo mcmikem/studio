@@ -19,18 +19,6 @@ const omutoCupForms = [
     description: 'Register a new volunteer for the Omuto Cup event.',
     icon: UserPlus,
   },
-  {
-    href: '/talents/omuto-cup/team-check-in',
-    title: 'Team Check-in',
-    description: 'Check in a team and its players before a match.',
-    icon: UserCheck,
-  },
-  {
-    href: '/talents/omuto-cup/score-sheet',
-    title: 'Score Sheet',
-    description: 'Log the score and details of a completed match.',
-    icon: FileText,
-  },
 ];
 
 function OmutoCupHubPage() {

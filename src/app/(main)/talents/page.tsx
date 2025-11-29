@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const talentHubs = [
   {
-    href: '/talents/ofa',
+    href: '/meal/ofa',
     title: 'Omuto Football Alliance',
     description: 'Manage teams, players, and matches for the league.',
     icon: Swords,
