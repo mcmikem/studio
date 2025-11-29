@@ -4,8 +4,7 @@
 /**
  * @fileOverview An AI flow to analyze the qualitative data from program activities.
  */
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
+import { ai } from '@/ai/genkit';
 import type { QualitativeAnalysisInput, QualitativeAnalysisOutput } from '@/lib/types';
 import { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from '@/lib/types';
 import { getFirebaseAdmin } from '@/firebase/server';
@@ -15,11 +14,6 @@ import { z } from 'zod';
 
 export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput): Promise<QualitativeAnalysisOutput> {
     console.log('Starting analyzeProgramQualitativeData flow');
-    
-    const ai = genkit({
-        plugins: [googleAI()],
-    });
-    console.log('AI instance created for qualitative analysis');
 
     const getActivitiesForProgramToolObject = ai.defineTool(
         {
@@ -59,7 +53,7 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         input: { schema: QualitativeAnalysisInputSchema },
         tools: [getActivitiesForProgramToolObject],
         output: { schema: QualitativeAnalysisOutputSchema },
-        model: 'googleai/gemini-pro',
+        model: 'gemini-pro',
         prompt: `You are an expert M&E (Monitoring and Evaluation) analyst for a youth-led NGO in Uganda.
         Your task is to analyze a collection of raw, qualitative data from field reports for a specific program and return a structured JSON object conforming to the schema.
         The data includes memorable moments, challenges, lessons learned, and direct quotes from beneficiaries.

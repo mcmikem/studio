@@ -7,8 +7,7 @@
  * to generate a structured, strategic daily plan.
  */
 
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
+import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import type { DailyPlannerAIInput, DailyPlannerAIOutput } from '@/lib/types';
 import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
@@ -16,18 +15,12 @@ import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/typ
 export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
   console.log('Starting dailyPlannerAI flow');
 
-  const ai = genkit({
-    plugins: [googleAI()],
-  });
-
-  console.log('AI instance created for dailyPlannerAI');
-
   const dailyPlannerPrompt = ai.definePrompt(
       {
         name: 'dailyPlannerPrompt',
         input: { schema: DailyPlannerAIInputSchema },
         output: { schema: DailyPlannerAIOutputSchema },
-        model: 'googleai/gemini-pro',
+        model: 'gemini-pro',
         prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format. You are a coach, not just a scheduler.
 
         Here is the organizational knowledge base to draw from:

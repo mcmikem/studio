@@ -4,8 +4,7 @@
 /**
  * @fileOverview A flow to generate dynamic, context-aware reminders for a user.
  */
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
+import { ai } from '@/ai/genkit';
 import type { SmartRemindersOutput, SmartRemindersInput } from '@/lib/types';
 import { SmartRemindersInputSchema, SmartRemindersOutputSchema } from '@/lib/types';
 import { getFirebaseAdmin } from '@/firebase/server';
@@ -15,11 +14,6 @@ import { z } from 'zod';
 
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     console.log('Starting generateSmartReminders flow');
-    
-    const ai = genkit({
-        plugins: [googleAI()],
-    });
-    console.log('AI instance created for smart reminders');
 
     const getUpcomingEventsForUserToolObject = ai.defineTool(
         {
@@ -86,7 +80,7 @@ export async function generateSmartReminders(input: SmartRemindersInput): Promis
           name: 'smartRemindersPrompt',
           tools: [getUpcomingEventsForUserToolObject, getPendingTasksForUserToolObject],
           output: { schema: SmartRemindersOutputSchema },
-          model: 'googleai/gemini-pro',
+          model: 'gemini-pro',
           prompt: `You are a proactive, intelligent assistant and performance coach for the Omuto Foundation, a youth-led NGO in Uganda. Your goal is to help team members stay on track by providing smart, actionable reminders based on their current context. Your output must be a JSON object conforming to the schema.
 
           Your reminders should be:

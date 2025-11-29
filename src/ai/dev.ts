@@ -27,7 +27,7 @@ import './flows/parse-operational-plan-flow';
 import './flows/parse-workplan-flow';
 
 genkit({
-  plugins: [googleAI()],
+  plugins: [googleAI({ apiVersion: 'v1' })],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
 });

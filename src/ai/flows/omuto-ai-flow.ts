@@ -7,8 +7,7 @@
  * of the Omuto Foundation's operations.
  */
 
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
+import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import type { OmutoAIInput, OmutoAIOutput, SearchResultItem } from '@/lib/types';
 import { SearchResultItemSchema } from '@/lib/types';
@@ -22,10 +21,6 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
 
     try {
         const { firestore } = getFirebaseAdmin();
-        const ai = genkit({
-            plugins: [googleAI()],
-        });
-        console.log('AI instance created for omutoAIFlow');
 
         // --- TOOL DEFINITIONS (MOVED INSIDE) ---
 
@@ -207,7 +202,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
         const llmResponse = await ai.generate({
-            model: 'googleai/gemini-pro',
+            model: 'gemini-pro',
             prompt: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
 Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
 
