@@ -10,11 +10,11 @@
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { 
-    searchOmutoTool, 
-    createCheckoutTool, 
-    getRecentCheckinsTool, 
-    getRecentCheckoutsTool 
-} from '@/ai/tools/omuto-tools';
+    searchOmutoToolObject, 
+    createCheckoutToolObject, 
+    getRecentCheckinsToolObject, 
+    getRecentCheckoutsToolObject 
+} from '@/ai/definitions';
 import type { OmutoAIInput, OmutoAIOutput } from '@/lib/types';
 
 // The main flow function that orchestrates the AI's response
@@ -43,10 +43,10 @@ UserId: ${input.userId}.
 User's message: "${input.question}"`,
             history: history,
             tools: [
-                searchOmutoTool, 
-                createCheckoutTool, 
-                getRecentCheckinsTool, 
-                getRecentCheckoutsTool
+                searchOmutoToolObject, 
+                createCheckoutToolObject, 
+                getRecentCheckinsToolObject, 
+                getRecentCheckoutsToolObject
             ],
             config: {
                 temperature: 0.2, // Be more factual
@@ -67,6 +67,6 @@ User's message: "${input.question}"`,
 
     } catch (error: any) {
         console.error("[omutoAIFlow] Critical error during AI generation:", error);
-        return { answer: `I'm sorry, I encountered a server error and couldn't complete your request.` };
+        return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. Please try again later.` };
     }
 }

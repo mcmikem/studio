@@ -33,7 +33,8 @@ export function GlobalCommandBar() {
       }
       setIsLoading(true);
       try {
-        const res = await searchOmutoTool()({ query: debouncedQuery });
+        const searchFn = await searchOmutoTool();
+        const res = await searchFn({ query: debouncedQuery });
         setResults(res || []);
       } catch (error) {
         console.error('Search failed:', error);
