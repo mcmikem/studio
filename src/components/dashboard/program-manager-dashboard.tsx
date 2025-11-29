@@ -3,7 +3,7 @@
 
 import type { User, Activity } from "@/lib/types"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { useMemoFirebase } from "@/firebase"
+import { useMemoFirebase, useCollection } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { subDays, startOfDay } from "date-fns"
 import { PartnershipPipeline } from "@/components/dashboard/program-manager/partnership-pipeline"
@@ -38,7 +38,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-     <DashboardGrid className="mt-0 lg:grid-cols-2">
+     <DashboardGrid className="mt-6 lg:grid-cols-2">
         <DynamicPartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
         <DynamicQuickInsights activities={activities} />
         <DynamicMyWeeklyPlan />
