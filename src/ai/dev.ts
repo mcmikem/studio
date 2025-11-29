@@ -26,11 +26,6 @@ import './flows/grant-writer-flow';
 import './flows/parse-operational-plan-flow';
 import './flows/parse-workplan-flow';
 
-// Import tool definitions so they are available to the flows that need them.
-// Note: The actual 'use server' files import these definitions.
-import './definitions';
-
-
 genkit({
   plugins: [googleAI()],
   logLevel: 'debug',
