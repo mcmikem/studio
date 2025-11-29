@@ -207,3 +207,5 @@ export function PlayerRegistrationForm() {
     </div>
   );
 }
+
+    
