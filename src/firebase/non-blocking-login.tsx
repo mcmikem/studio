@@ -68,9 +68,9 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
 
 export const isEmailApproved = (email: string | null): boolean => {
   if (!email) return false;
-  // Correctly perform a case-insensitive check.
+  const lowercasedEmail = email.toLowerCase();
   const lowercasedApprovedEmails = Object.keys(approvedUsers).map(e => e.toLowerCase());
-  return lowercasedApprovedEmails.includes(email.toLowerCase());
+  return lowercasedApprovedEmails.includes(lowercasedEmail);
 };
 
 const sampleKeyResults = [
@@ -188,7 +188,15 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
   const userRef = doc(db, 'users', user.uid);
   const docSnap = await getDoc(userRef);
 
-  const userData = approvedUsers[user.email.toLowerCase()];
+  const lowercasedEmail = user.email.toLowerCase();
+  const approvedEmailKey = Object.keys(approvedUsers).find(key => key.toLowerCase() === lowercasedEmail);
+
+  if (!approvedEmailKey) {
+     await user.delete();
+     throw new Error('This email address is not authorized to use this application.');
+  }
+  
+  const userData = approvedUsers[approvedEmailKey];
   const userProfile = {
     id: user.uid,
     name: userData.name,
