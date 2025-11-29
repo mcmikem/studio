@@ -188,8 +188,8 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
   const userRef = doc(db, 'users', user.uid);
   const docSnap = await getDoc(userRef);
 
-  const lowercasedEmail = user.email.toLowerCase();
-  const approvedEmailKey = Object.keys(approvedUsers).find(key => key.toLowerCase() === lowercasedEmail);
+  const userEmailLower = user.email.toLowerCase();
+  const approvedEmailKey = Object.keys(approvedUsers).find(key => key.toLowerCase() === userEmailLower);
 
   if (!approvedEmailKey) {
      await user.delete();
