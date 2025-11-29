@@ -116,15 +116,7 @@ export default function DashboardPage() {
         
         <SmartReminders profile={profile} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 flex flex-col gap-6">
-                <DashboardComponent profile={profile} />
-            </div>
-            <div className="lg:col-span-1 flex flex-col gap-6">
-                 <RoleSpecificKpis role={profile.role} />
-                 <UserPerformance userId={user.uid} />
-            </div>
-        </div>
+        <DashboardComponent profile={profile} />
     </div>
   );
 }
