@@ -16,20 +16,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isUnprotectedRoute = unprotectedRoutes.some(route => pathname.startsWith(route));
 
   useEffect(() => {
-    // This effect handles redirection logic once loading is complete.
+    // This effect handles redirection logic for logged-out users trying to access protected routes.
     if (isUserLoading) return;
 
     if (!user && !isUnprotectedRoute) {
       router.push('/login');
     }
     
-    if (user && isUnprotectedRoute) {
-      router.push('/');
-    }
   }, [user, isUserLoading, router, pathname, isUnprotectedRoute]);
 
 
-  // This is the core fix:
   // Render a global loader if we are on a protected route and the user's auth state is still being checked.
   if (!isUnprotectedRoute && isUserLoading) {
     return (

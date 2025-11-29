@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useAuth } from '@/firebase';
+import { useState, useEffect } from 'react';
+import { useAuth, useUser } from '@/firebase';
 import { initiateEmailAuth } from '@/firebase/non-blocking-login';
 import { initiateGoogleSignIn, initiatePasswordReset } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,8 @@ import { Separator } from '@/components/ui/separator';
 import { FirebaseError } from 'firebase/app';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 
 const GoogleIcon = () => (
     <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -106,10 +108,19 @@ function ForgotPasswordDialog() {
 
 export default function LoginPage() {
   const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<'google' | 'email' | null>(null);
+
+  useEffect(() => {
+    if (user && !isUserLoading) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
+
 
   const handleAuthError = (error: Error | FirebaseError) => {
     let title = 'An error occurred';
@@ -120,7 +131,7 @@ export default function LoginPage() {
             case 'auth/invalid-credential':
             case 'auth/wrong-password':
                 title = 'Invalid Credentials';
-                description = 'Please check your email and password.';
+                description = 'Please check your email and password. If you are signing up for the first time, make sure your email has been approved by an admin.';
                 break;
             case 'auth/user-not-found':
                 title = 'Account Not Found';
@@ -163,6 +174,7 @@ export default function LoginPage() {
     setLoading('email');
     try {
         await initiateEmailAuth(auth, email, password);
+        // On success, the useEffect hook will handle the redirect.
     } catch (error: any) {
         handleAuthError(error);
     } finally {
@@ -175,6 +187,7 @@ export default function LoginPage() {
     setLoading('google');
     try {
         await initiateGoogleSignIn(auth);
+         // On success, the useEffect hook will handle the redirect.
     } catch (error: any) {
         handleAuthError(error);
     } finally {
