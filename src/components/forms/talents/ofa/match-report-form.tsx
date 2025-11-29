@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -18,14 +17,17 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 
 const matchReportSchema = z.object({
-  date: z.string().min(1, 'Date is required.'),
-  homeTeam: z.string().min(2, 'Home team is required.'),
-  awayTeam: z.string().min(2, 'Away team is required.'),
-  homeScore: z.coerce.number().min(0, 'Score must be 0 or greater.'),
-  awayScore: z.coerce.number().min(0, 'Score must be 0 or greater.'),
-  goalScorers: z.string().optional(),
-  cards: z.string().optional(),
-  referee: z.string().optional(),
+  region: z.string().min(2, "Region is required."),
+  teamA: z.string().min(2, 'Team A is required.'),
+  teamB: z.string().min(2, 'Team B is required.'),
+  finalScore: z.string().min(3, "Final score is required (e.g., 2 - 1)."),
+  bestPerformers: z.string().optional(),
+  injuries: z.enum(['Yes', 'No']),
+  teamADiscipline: z.coerce.number().min(1).max(5),
+  teamACards: z.string().optional(),
+  teamBDiscipline: z.coerce.number().min(1).max(5),
+  teamBCards: z.string().optional(),
+  quickNotes: z.string().max(200).optional(),
 });
 
 type MatchReportFormData = z.infer<typeof matchReportSchema>;
@@ -43,8 +45,10 @@ export function MatchReportForm() {
   } = useForm<MatchReportFormData>({
     resolver: zodResolver(matchReportSchema),
     defaultValues: {
-      date: format(new Date(), 'yyyy-MM-dd'),
-    },
+        injuries: 'No',
+        teamADiscipline: 3,
+        teamBDiscipline: 3,
+    }
   });
 
   const onSubmit = async (data: MatchReportFormData) => {
@@ -52,14 +56,25 @@ export function MatchReportForm() {
       toast({ variant: 'destructive', title: 'Database connection failed.' });
       return;
     }
-
-    const logData = { ...data, createdAt: serverTimestamp() };
+    // Re-structure to match OFAMatch schema
+    const [homeScore, awayScore] = data.finalScore.split('-').map(s => parseInt(s.trim()));
+    const logData = {
+        date: format(new Date(), 'yyyy-MM-dd'),
+        homeTeam: data.teamA,
+        awayTeam: data.teamB,
+        homeScore: isNaN(homeScore) ? 0 : homeScore,
+        awayScore: isNaN(awayScore) ? 0 : awayScore,
+        goalScorers: data.bestPerformers, // Simplified mapping
+        cards: `Team A: ${data.teamACards || 'None'}, Team B: ${data.teamBCards || 'None'}`,
+        // You might want to add other fields here
+        createdAt: serverTimestamp()
+    };
 
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-matches'), logData);
       toast({
         title: 'Match Report Submitted!',
-        description: `The result for ${data.homeTeam} vs ${data.awayTeam} has been recorded.`,
+        description: `The result for ${data.teamA} vs ${data.teamB} has been recorded.`,
       });
       reset();
       router.push('/talents/ofa');
@@ -80,60 +95,85 @@ export function MatchReportForm() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-6 w-6" />
-            OFA Match Report Form
+            OFA Match Summary Sheet
           </CardTitle>
           <CardDescription>
-            Log the results and details of a completed match.
+            Simplified report for District Meets.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-             <div className="space-y-2">
-                <Label htmlFor="date">Date of Match</Label>
-                <Input id="date" type="date" {...register('date')} />
-                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+            <h3 className="text-lg font-semibold border-b pb-2">Match Details</h3>
+            <div className="space-y-2">
+              <Label htmlFor="region">Region</Label>
+              <Input id="region" {...register('region')} />
+              {errors.region && <p className="text-sm text-destructive">{errors.region.message}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="homeTeam">Home Team</Label>
-                    <Input id="homeTeam" {...register('homeTeam')} />
-                    {errors.homeTeam && <p className="text-sm text-destructive">{errors.homeTeam.message}</p>}
+                    <Label htmlFor="teamA">Team A</Label>
+                    <Input id="teamA" {...register('teamA')} />
+                    {errors.teamA && <p className="text-sm text-destructive">{errors.teamA.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="awayTeam">Away Team</Label>
-                    <Input id="awayTeam" {...register('awayTeam')} />
-                    {errors.awayTeam && <p className="text-sm text-destructive">{errors.awayTeam.message}</p>}
+                    <Label htmlFor="teamB">Team B</Label>
+                    <Input id="teamB" {...register('teamB')} />
+                    {errors.teamB && <p className="text-sm text-destructive">{errors.teamB.message}</p>}
                 </div>
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="homeScore">Home Score</Label>
-                    <Input id="homeScore" type="number" {...register('homeScore')} />
-                    {errors.homeScore && <p className="text-sm text-destructive">{errors.homeScore.message}</p>}
+                    <Label htmlFor="finalScore">Final Score (e.g., 2 - 1)</Label>
+                    <Input id="finalScore" {...register('finalScore')} />
+                    {errors.finalScore && <p className="text-sm text-destructive">{errors.finalScore.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="awayScore">Away Score</Label>
-                    <Input id="awayScore" type="number" {...register('awayScore')} />
-                    {errors.awayScore && <p className="text-sm text-destructive">{errors.awayScore.message}</p>}
+                    <Label>Any Injuries?</Label>
+                    <RadioGroup defaultValue="No" onValueChange={val => setValue('injuries', val as 'Yes' | 'No')} className="flex items-center gap-4 pt-2">
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="inj-yes" /><Label htmlFor="inj-yes">Yes</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="inj-no" /><Label htmlFor="inj-no">No</Label></div>
+                    </RadioGroup>
                 </div>
             </div>
-             <div className="space-y-2">
-                <Label htmlFor="goalScorers">Goal Scorers (Optional)</Label>
-                <Textarea id="goalScorers" {...register('goalScorers')} placeholder="e.g., John Doe (2), Jane Smith (1)" />
+            <div className="space-y-2">
+                <Label htmlFor="bestPerformers">Best 3 Performers (Optional)</Label>
+                <Input id="bestPerformers" {...register('bestPerformers')} placeholder="e.g., Player 1, Player 2, Player 3" />
             </div>
-             <div className="space-y-2">
-                <Label htmlFor="cards">Yellow/Red Cards (Optional)</Label>
-                <Textarea id="cards" {...register('cards')} placeholder="e.g., Player A (Yellow), Player B (Red)" />
+
+            <h3 className="text-lg font-semibold border-b pb-2 pt-4">Behaviour & Discipline</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4 p-4 border rounded-lg">
+                    <Label className="font-semibold">Team A: {watch('teamA') || '...'}</Label>
+                    <div className="space-y-2">
+                        <Label>Discipline Score (1-5)</Label>
+                        <Input type="number" min="1" max="5" {...register('teamADiscipline')} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label>Cards</Label>
+                        <Input {...register('teamACards')} placeholder="e.g., 2 Yellow, 1 Red" />
+                    </div>
+                </div>
+                 <div className="space-y-4 p-4 border rounded-lg">
+                    <Label className="font-semibold">Team B: {watch('teamB') || '...'}</Label>
+                    <div className="space-y-2">
+                        <Label>Discipline Score (1-5)</Label>
+                        <Input type="number" min="1" max="5" {...register('teamBDiscipline')} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label>Cards</Label>
+                        <Input {...register('teamBCards')} placeholder="e.g., 1 Yellow" />
+                    </div>
+                </div>
             </div>
-             <div className="space-y-2">
-                <Label htmlFor="referee">Referee Name (Optional)</Label>
-                <Input id="referee" {...register('referee')} />
+            <div className="space-y-2">
+                <Label htmlFor="quickNotes">Quick Notes (max 40 words)</Label>
+                <Textarea id="quickNotes" {...register('quickNotes')} />
             </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isSubmitting} className="w-full">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Match Report
+              Save Match Summary
             </Button>
           </CardFooter>
         </form>
@@ -141,5 +181,3 @@ export function MatchReportForm() {
     </div>
   );
 }
-
-    
