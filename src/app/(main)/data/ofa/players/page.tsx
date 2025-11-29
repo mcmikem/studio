@@ -52,8 +52,8 @@ export default function PlayersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead className="hidden md:table-cell">Position</TableHead>
-                <TableHead>Age</TableHead>
+                <TableHead className="hidden md:table-cell">Team</TableHead>
+                <TableHead>Age Category</TableHead>
                 <TableHead className="hidden sm:table-cell">School</TableHead>
                 <TableHead className="hidden md:table-cell">Guardian Contact</TableHead>
               </TableRow>
@@ -70,8 +70,8 @@ export default function PlayersPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-12" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
                     <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
                     <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
                   </TableRow>
@@ -82,16 +82,16 @@ export default function PlayersPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                          <AvatarImage src={player.photoUrl} alt={player.fullName} />
-                          <AvatarFallback>{getInitials(player.fullName)}</AvatarFallback>
+                          <AvatarImage src={player.photoUrl} alt={player.name} />
+                          <AvatarFallback>{getInitials(player.name)}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{player.fullName}</p>
+                          <p className="font-medium">{player.name}</p>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell"><Badge variant="outline">{player.position}</Badge></TableCell>
-                    <TableCell>{player.age}</TableCell>
+                    <TableCell className="hidden md:table-cell">{player.teamName}</TableCell>
+                    <TableCell><Badge variant="outline">{player.ageCategory}</Badge></TableCell>
                     <TableCell className="hidden sm:table-cell">{player.school}</TableCell>
                     <TableCell className="hidden md:table-cell">{player.guardianContact}</TableCell>
                   </TableRow>
