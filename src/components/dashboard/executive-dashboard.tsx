@@ -32,7 +32,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         return query(
             collection(db, 'activities'),
             where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), 
-            orderBy('loggedAt', 'desc')
+            orderBy('loggedAt', 'desc'),
+            limit(50) // Performance: Limit to last 50 activities
         );
     }, [thirtyDaysAgo]);
     const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
@@ -42,7 +43,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         return query(
             collection(db, 'checkouts'),
             where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)),
-            orderBy('timestamp', 'desc')
+            orderBy('timestamp', 'desc'),
+            limit(50) // Performance: Limit to last 50 checkouts
         );
     }, [thirtyDaysAgo]);
     const { data: checkouts, isLoading: isLoadingCheckouts } = useCollection<Checkout>(checkoutsQuery);
