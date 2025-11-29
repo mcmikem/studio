@@ -43,8 +43,8 @@ export function MyWeeklyPlan() {
 
 
   return (
-    <Card className="hover:bg-muted/50 transition-colors">
-      <Link href="/workplan">
+    <Card className="transition-colors hover:bg-muted/50">
+      <Link href="/workplan" className="block">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarCheck className="h-5 w-5" />
@@ -52,35 +52,39 @@ export function MyWeeklyPlan() {
           </CardTitle>
           <CardDescription>Your specific tasks for this week.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          {isLoading ? (
-            <>
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-5 w-4/5" />
-              <Skeleton className="h-5 w-2/3" />
-            </>
-          ) : weeklyPlan && weeklyPlan.individualTasks.length > 0 ? (
-            weeklyPlan.individualTasks.slice(0, 4).map((task, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="flex h-5 w-5 items-center justify-center rounded-sm border border-primary"></div>
-                <span>{task}</span>
-              </div>
-            ))
-          ) : (
-             <EmptyState
-                icon={CalendarCheck}
-                title="Plan Your Week"
-                description="You haven't finalized your workplan for this week yet."
-                className="min-h-0 py-4"
-             >
-                <Button variant="link" asChild><Link href="/workplan">Set your plan now!</Link></Button>
-             </EmptyState>
-          )}
-          {weeklyPlan && weeklyPlan.individualTasks.length > 4 && (
-             <p className="text-xs text-primary pt-2">View all {weeklyPlan.individualTasks.length} tasks →</p>
-          )}
-        </CardContent>
       </Link>
+      <CardContent className="space-y-3 text-sm">
+        {isLoading ? (
+          <>
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-5 w-4/5" />
+            <Skeleton className="h-5 w-2/3" />
+          </>
+        ) : weeklyPlan && weeklyPlan.individualTasks.length > 0 ? (
+          weeklyPlan.individualTasks.slice(0, 4).map((task, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <div className="flex h-5 w-5 items-center justify-center rounded-sm border border-primary"></div>
+              <span>{task}</span>
+            </div>
+          ))
+        ) : (
+            <EmptyState
+              icon={CalendarCheck}
+              title="Plan Your Week"
+              description="You haven't finalized your workplan for this week yet."
+              className="min-h-0 py-4"
+            >
+              <Button variant="link" asChild>
+                <Link href="/workplan">Set your plan now!</Link>
+              </Button>
+            </EmptyState>
+        )}
+        {weeklyPlan && weeklyPlan.individualTasks.length > 4 && (
+            <Link href="/workplan" className="block text-xs text-primary pt-2 hover:underline">
+              View all {weeklyPlan.individualTasks.length} tasks →
+            </Link>
+        )}
+      </CardContent>
     </Card>
   );
 }
