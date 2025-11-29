@@ -68,7 +68,9 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
 
 export const isEmailApproved = (email: string | null): boolean => {
   if (!email) return false;
-  return Object.keys(approvedUsers).includes(email.toLowerCase());
+  // Correctly perform a case-insensitive check.
+  const lowercasedApprovedEmails = Object.keys(approvedUsers).map(e => e.toLowerCase());
+  return lowercasedApprovedEmails.includes(email.toLowerCase());
 };
 
 const sampleKeyResults = [
