@@ -69,12 +69,8 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
 export const isEmailApproved = (email: string | null): boolean => {
   if (!email) return false;
   const lowercasedEmail = email.toLowerCase();
-  for (const key in approvedUsers) {
-    if (key.toLowerCase() === lowercasedEmail) {
-      return true;
-    }
-  }
-  return false;
+  const lowercasedApprovedEmails = Object.keys(approvedUsers).map(e => e.toLowerCase());
+  return lowercasedApprovedEmails.includes(lowercasedEmail);
 };
 
 const sampleKeyResults = [
@@ -183,7 +179,10 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
   if (!user || !user.email) return userCredential;
 
   const userEmailLower = user.email.toLowerCase();
-  const approvedEmailKey = Object.keys(approvedUsers).find(key => key.toLowerCase() === userEmailLower);
+  
+  const approvedEmailKey = Object.keys(approvedUsers).find(
+    (key) => key.toLowerCase() === userEmailLower
+  );
 
   if (!approvedEmailKey) {
      await user.delete();
@@ -229,6 +228,11 @@ export function initiateEmailSignUp(
   password: string
 ) {
   const db = getFirestore(authInstance.app);
+  if (!isEmailApproved(email)) {
+    throw new Error(
+      'This email address is not authorized to use this application.'
+    );
+  }
   return createUserWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
