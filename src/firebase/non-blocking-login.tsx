@@ -49,6 +49,10 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
     name: 'Kasirye Constantine',
     role: 'Operations & Field Manager',
   },
+  'kasiryeconstantine@gmail.com': {
+    name: 'Kasirye Constantine',
+    role: 'Operations & Field Manager',
+  },
   'communications@omuto.org': {
     name: 'Nsereko Alex',
     role: 'Media & Finance Lead',
