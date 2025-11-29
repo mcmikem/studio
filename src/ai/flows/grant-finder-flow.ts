@@ -13,7 +13,7 @@ import { GrantFinderInputSchema, GrantFinderOutputSchema } from '@/lib/types';
 
 export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOutput> {
     
-    const tool = findGrantOpportunitiesTool();
+    const tool = await findGrantOpportunitiesTool();
 
     const grantFinderPrompt = ai.definePrompt(
       {
