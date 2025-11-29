@@ -3,18 +3,17 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/firebase';
-import { initiateEmailSignIn, initiateEmailSignUp, initiateGoogleSignIn, isEmailApproved, initiatePasswordReset } from '@/firebase/non-blocking-login';
+import { initiateEmailAuth } from '@/firebase/non-blocking-login';
+import { initiateGoogleSignIn, initiatePasswordReset } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FirebaseError } from 'firebase/app';
-import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 
@@ -111,8 +110,6 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<'google' | 'email' | null>(null);
-  const [activeTab, setActiveTab] = useState('signin');
-
 
   const handleAuthError = (error: Error | FirebaseError) => {
     let title = 'An error occurred';
@@ -122,11 +119,12 @@ export default function LoginPage() {
         switch (error.code) {
             case 'auth/invalid-credential':
             case 'auth/wrong-password':
-            case 'auth/user-not-found':
                 title = 'Invalid Credentials';
-                description = activeTab === 'signin' 
-                  ? 'Please check your email and password. If this is your first time signing in with this email, please use the "Sign Up" tab to create your account first.'
-                  : 'There was an issue with your credentials.';
+                description = 'Please check your email and password.';
+                break;
+            case 'auth/user-not-found':
+                title = 'Account Not Found';
+                description = 'This email is not registered. An account will be created if the email is on the approved list.';
                 break;
             case 'auth/email-already-in-use':
                 title = 'Email Already in Use';
@@ -159,12 +157,12 @@ export default function LoginPage() {
     });
   }
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
     setLoading('email');
     try {
-        await initiateEmailSignIn(auth, email, password);
+        await initiateEmailAuth(auth, email, password);
     } catch (error: any) {
         handleAuthError(error);
     } finally {
@@ -172,25 +170,6 @@ export default function LoginPage() {
     }
   };
   
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!auth) return;
-
-    if (!isEmailApproved(email)) {
-      handleAuthError(new Error("This email address is not authorized to sign up."));
-      return;
-    }
-
-    setLoading('email');
-    try {
-        await initiateEmailSignUp(auth, email, password);
-    } catch (error: any) {
-        handleAuthError(error);
-    } finally {
-        setLoading(null);
-    }
-  };
-
   const handleGoogleSignIn = async () => {
     if (!auth) return;
     setLoading('google');
@@ -219,63 +198,39 @@ export default function LoginPage() {
             <CardContent className="space-y-4">
                 <Alert>
                     <Info className="h-4 w-4" />
-                    <AlertTitle>First Time Signing In?</AlertTitle>
+                    <AlertTitle>First Time Here?</AlertTitle>
                     <AlertDescription>
-                        If you have been given an approved email, please use the **Sign Up** tab first to create your account.
+                        If your email is pre-approved, simply enter it with a new password to create your account and sign in.
                     </AlertDescription>
                 </Alert>
                 <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={!!loading}>
                     {loading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <GoogleIcon />}
-                    Sign in with Google
+                    Continue with Google
                 </Button>
                 
                 <div className="flex items-center space-x-2">
                     <Separator className="flex-1" />
-                    <span className="text-xs text-muted-foreground">OR CONTINUE WITH</span>
+                    <span className="text-xs text-muted-foreground">OR</span>
                     <Separator className="flex-1" />
                 </div>
 
-                <Tabs defaultValue="signin" className="w-full" onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="signin">Sign In</TabsTrigger>
-                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                </TabsList>
-                <TabsContent value="signin">
-                    <form onSubmit={handleSignIn} className="space-y-4 pt-4">
+                <form onSubmit={handleAuth} className="space-y-4 pt-4">
                     <div className="space-y-2">
-                        <Label htmlFor="email-signin">Email</Label>
-                        <Input id="email-signin" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="password-signin">Password</Label>
-                        <Input id="password-signin" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <Label htmlFor="password">Password</Label>
+                        <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                     </div>
                      <div className="flex items-center justify-between text-sm">
                         <ForgotPasswordDialog />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading === 'email'}>
                         {loading === 'email' && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Sign In
+                        Continue with Email
                     </Button>
-                    </form>
-                </TabsContent>
-                <TabsContent value="signup">
-                    <form onSubmit={handleSignUp} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="email-signup">Email</Label>
-                        <Input id="email-signup" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="password-signup">Password</Label>
-                        <Input id="password-signup" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={loading === 'email'}>
-                        {loading === 'email' && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Sign Up
-                    </Button>
-                    </form>
-                </TabsContent>
-                </Tabs>
+                </form>
             </CardContent>
         </Card>
 
@@ -283,5 +238,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    
