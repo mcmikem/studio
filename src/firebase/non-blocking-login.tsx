@@ -53,6 +53,10 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
     name: 'Kasirye Constantine',
     role: 'Operations & Field Manager',
   },
+  'kasiryecostantine@gmail.com': {
+    name: 'Kasirye Constantine',
+    role: 'Operations & Field Manager',
+  },
   'communications@omuto.org': {
     name: 'Nsereko Alex',
     role: 'Media & Finance Lead',
@@ -69,8 +73,8 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
 export const isEmailApproved = (email: string | null): boolean => {
   if (!email) return false;
   const lowercasedEmail = email.toLowerCase();
-  const lowercasedApprovedEmails = Object.keys(approvedUsers).map(e => e.toLowerCase());
-  return lowercasedApprovedEmails.includes(lowercasedEmail);
+  const approvedEmailKeys = Object.keys(approvedUsers);
+  return approvedEmailKeys.some(key => key.toLowerCase() === lowercasedEmail);
 };
 
 const sampleKeyResults = [
