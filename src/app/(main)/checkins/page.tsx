@@ -62,7 +62,7 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
             <CardContent className="space-y-4">
                 <div className="p-4 rounded-lg bg-muted border">
                     <h3 className="font-semibold flex items-center gap-2"><TargetIcon className="h-5 w-5 text-primary" /> Today's Primary Mission</h3>
-                    <p className="text-muted-foreground mt-1">{checkin.primaryMission}</p>
+                    <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{checkin.primaryMission}</p>
                 </div>
 
                 {hasDetails && (
@@ -95,12 +95,6 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                     </Accordion>
                   </>
                 )}
-
-                 {!hasDetails && (
-                    <div className="p-4 text-center text-sm text-muted-foreground bg-amber-50 dark:bg-amber-900/20 border border-dashed rounded-lg">
-                        This was a manual check-in submitted while the AI was unavailable.
-                    </div>
-                 )}
             </CardContent>
         </Card>
     )

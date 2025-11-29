@@ -186,6 +186,11 @@ function PlannerCheckinFormComponent() {
                 await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
            } else {
                 setGenerationStatus('error');
+                const missionData = getMissionValues();
+                setValue('primaryMission', missionData.primaryMission);
+                setValue('mood', missionData.mood);
+                setValue('timeBlocks', [{startTime: '09:00 AM', endTime: '11:00 AM', description: ''}]);
+                setValue('multiWinConnections', []);
                 return;
            }
         }
@@ -248,6 +253,8 @@ function PlannerCheckinFormComponent() {
 
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
   const isGeneratingPlan = generationStatus === 'loading' || generationStatus === 'retrying';
+
+  const showFinalForm = (aiOutput || generationStatus === 'error') && !isGeneratingPlan;
 
   if (isLoading) {
     return (
@@ -359,26 +366,22 @@ function PlannerCheckinFormComponent() {
               </div>
           )}
           
-          {generationStatus === 'error' && (
-              <CardContent>
-                <Alert variant="destructive">
-                    <AlertTitle>AI Planner Unavailable</AlertTitle>
-                    <AlertDescription>The AI assistant couldn't generate a plan. You can submit a manual check-in with your primary mission instead.</AlertDescription>
-                </Alert>
-                <Button onClick={handleManualCheckin} className="mt-4 w-full" disabled={isSubmitting}>
-                  {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                   Submit Manual Check-in
-                </Button>
-              </CardContent>
-          )}
-
-          {aiOutput && !isGeneratingPlan && (
+          {showFinalForm && (
               <form onSubmit={handleSubmit(handleFinalizeAndCheckin)}>
                  <div className="space-y-6 pt-4">
                     <Separator />
                     <CardHeader className="px-6 pt-6 pb-0">
-                        <CardTitle className="text-xl text-primary">Your AI-Generated Draft Plan</CardTitle>
-                        <CardDescription>Review and edit the AI's suggestions below, then finalize and submit your check-in.</CardDescription>
+                         {generationStatus === 'error' ? (
+                            <Alert variant="destructive">
+                                <AlertTitle>AI Planner Unavailable</AlertTitle>
+                                <AlertDescription>The AI assistant couldn't generate a plan. Please fill out your plan manually below.</AlertDescription>
+                            </Alert>
+                        ) : (
+                            <>
+                                <CardTitle className="text-xl text-primary">Your AI-Generated Draft Plan</CardTitle>
+                                <CardDescription>Review and edit the AI's suggestions below, then finalize and submit your check-in.</CardDescription>
+                            </>
+                        )}
                     </CardHeader>
                     <CardContent className="space-y-6">
                         {/* Time Blocks */}

@@ -10,6 +10,12 @@ import { ArrowLeft } from 'lucide-react';
 function CheckinFormPageContent() {
   return (
     <div className='space-y-4'>
+        <Button variant="outline" asChild>
+            <Link href="/daily-plan">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Daily Planner
+            </Link>
+        </Button>
         <CheckinForm />
     </div>
   );
