@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -43,10 +44,6 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
   'programs@omuto.org': {
     name: 'Dianah Nansikombi',
     role: 'Programs & Partnerships Manager',
-  },
-  'operations@omuto.org': {
-    name: 'Kasirye Constantine',
-    role: 'Operations & Field Manager',
   },
   'communications@omuto.org': {
     name: 'Nsereko Alex',
