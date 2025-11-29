@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -7,21 +8,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { Loader2, ArrowLeft, UserPlus, Star } from 'lucide-react';
+import { Loader2, ArrowLeft, UserPlus, Star, Camera, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-
+import { useState, useRef, useEffect } from 'react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { uploadFile } from '@/firebase/storage';
 
 const playerSchema = z.object({
   name: z.string().min(3, 'Player name is required.'),
+  photo: z.any().optional(),
   ageCategory: z.enum(["U13", "U15", "U17", "U19"]),
   teamId: z.string().min(1, 'Please select the team.'),
   school: z.string().optional(),
@@ -68,7 +70,12 @@ const StarRating = ({ name, label, control }: { name: any, label: string, contro
 export function PlayerRegistrationForm() {
   const router = useRouter();
   const firestore = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const teamsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -80,6 +87,7 @@ export function PlayerRegistrationForm() {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<PlayerFormData>({
@@ -96,11 +104,69 @@ export function PlayerRegistrationForm() {
         performanceTrend: 'Stable',
     }
   });
+  
+  useEffect(() => {
+    const getCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({video: true});
+        setHasCameraPermission(true);
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        setHasCameraPermission(false);
+      }
+    };
+
+    getCameraPermission();
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setValue('photo', file);
+      setPhotoPreview(URL.createObjectURL(file));
+      if (videoRef.current && videoRef.current.srcObject) {
+          (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+      }
+    }
+  };
+
+  const handleCapture = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob => {
+        if (blob) {
+            const file = new File([blob], "player-photo.jpg", { type: "image/jpeg" });
+            setValue('photo', file);
+            setPhotoPreview(URL.createObjectURL(file));
+        }
+      }, 'image/jpeg');
+    }
+  };
 
   const onSubmit = async (data: PlayerFormData) => {
-    if (!firestore) return;
+    if (!firestore || !user) return;
+    
+    let photoUrl = '';
+    if (data.photo) {
+        try {
+            const path = `ofa-players/${user.uid}/${Date.now()}_${data.photo.name}`;
+            photoUrl = await uploadFile(data.photo, path);
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Photo Upload Failed' });
+            return;
+        }
+    }
+
     const teamName = teams?.find(t => t.id === data.teamId)?.teamName || 'Unknown';
-    const logData = { ...data, teamName, createdAt: serverTimestamp() };
+    const logData = { ...data, photoUrl, teamName, createdAt: serverTimestamp() };
+    delete (logData as any).photo;
 
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
@@ -109,6 +175,7 @@ export function PlayerRegistrationForm() {
         description: `${data.name} has been added to ${teamName}.`,
       });
       reset();
+      setPhotoPreview(null);
       router.push('/talents/ofa');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
@@ -135,9 +202,33 @@ export function PlayerRegistrationForm() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8">
-            {/* Section 1 */}
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold border-b pb-2">Player Bio</h3>
+                
+                 <div className="flex flex-col items-center gap-4">
+                    {photoPreview ? (
+                        <img src={photoPreview} alt="Player preview" className="w-40 h-40 object-cover rounded-full border" />
+                    ) : (
+                        <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted />
+                    )}
+
+                    <div className="flex gap-2">
+                        <Button type="button" onClick={handleCapture} disabled={!hasCameraPermission}>
+                            <Camera className="mr-2 h-4 w-4" /> Capture Photo
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                            <Upload className="mr-2 h-4 w-4" /> Upload File
+                        </Button>
+                        <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+                    </div>
+                     {hasCameraPermission === false && (
+                        <Alert variant="destructive">
+                            <AlertTitle>Camera Access Required</AlertTitle>
+                            <AlertDescription>Please allow camera access to use this feature.</AlertDescription>
+                        </Alert>
+                    )}
+                </div>
+
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
                     <Input id="name" {...register('name')} />
@@ -171,8 +262,7 @@ export function PlayerRegistrationForm() {
                     <Input id="guardianContact" {...register('guardianContact')} />
                 </div>
             </div>
-
-            {/* Section 2 */}
+            
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold border-b pb-2">Football Skills Assessment (1-5)</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -185,7 +275,6 @@ export function PlayerRegistrationForm() {
                 </div>
             </div>
 
-            {/* Section 3 */}
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold border-b pb-2">Education & Life</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -208,7 +297,6 @@ export function PlayerRegistrationForm() {
                 </div>
             </div>
 
-             {/* Section 4 */}
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold border-b pb-2">Quarterly Goals</h3>
                  <div className="space-y-2">

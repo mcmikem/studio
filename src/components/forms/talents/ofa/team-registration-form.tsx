@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -7,11 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Loader2, ArrowLeft, Swords } from 'lucide-react';
+import { Loader2, ArrowLeft, Swords, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,6 +19,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { useState, useRef } from 'react';
+import { uploadFile } from '@/firebase/storage';
+import { useUser } from '@/firebase';
 
 const mainAcademicChallenges = ["Fees", "Attendance", "Motivation", "Performance", "Distance", "None"];
 const equipmentItems = ["Balls", "Jerseys", "Boots", "Cones/Markers", "Goal Nets", "First Aid Kit"];
@@ -33,6 +36,7 @@ const teamRegistrationSchema = z.object({
   homePitchName: z.string().optional(),
   teamColours: z.string().optional(),
   motto: z.string().optional(),
+  teamPhoto: z.any().optional(),
 
   headCoachName: z.string().optional(),
   headCoachPhone: z.string().optional(),
@@ -100,13 +104,17 @@ type TeamRegistrationFormData = z.infer<typeof teamRegistrationSchema>;
 export function OFATeamRegistrationForm() {
   const router = useRouter();
   const firestore = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<TeamRegistrationFormData>({
@@ -129,12 +137,34 @@ export function OFATeamRegistrationForm() {
     }
   });
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setValue('teamPhoto', file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
+
+
   const onSubmit = async (data: TeamRegistrationFormData) => {
-    if (!firestore) {
+    if (!firestore || !user) {
       toast({ variant: 'destructive', title: 'Database connection failed.' });
       return;
     }
 
+    let teamPhotoUrl = '';
+    if (data.teamPhoto) {
+        try {
+            const path = `ofa-teams/${user.uid}/${Date.now()}_${data.teamPhoto.name}`;
+            teamPhotoUrl = await uploadFile(data.teamPhoto, path);
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Photo Upload Failed' });
+            return;
+        }
+    }
+
+
+    // Clean up undefined values before submitting to Firestore
     const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
       if (value !== undefined) {
         (acc as any)[key] = value;
@@ -142,7 +172,9 @@ export function OFATeamRegistrationForm() {
       return acc;
     }, {} as Partial<TeamRegistrationFormData>);
 
-    const formData = { ...cleanedData, createdAt: serverTimestamp() };
+    const formData = { ...cleanedData, teamPhotoUrl, createdAt: serverTimestamp() };
+    delete (formData as any).teamPhoto;
+
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-teams'), formData);
       toast({
@@ -172,7 +204,7 @@ export function OFATeamRegistrationForm() {
         {role !== 'Captain' && role !== 'Vice Captain' && (
             <TableCell>
                  <Controller name={`${fieldName}Availability`} control={control} render={({field}) => (
-                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Full-Time">Full-Time</SelectItem><SelectItem value="Part-Time">Part-Time</SelectItem></SelectContent></Select>
+                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Full-Time">Full-Time</SelectItem><SelectItem value="Part-Time">Part-Time</SelectItem></SelectContent></Select>
                 )} />
             </TableCell>
         )}
@@ -203,6 +235,17 @@ export function OFATeamRegistrationForm() {
             {/* Section A */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">Section A: Team Identity</h3>
+              
+              <div className="flex flex-col items-center gap-4">
+                    {photoPreview && (
+                        <img src={photoPreview} alt="Team preview" className="w-full max-w-sm aspect-video object-cover rounded-md border" />
+                    )}
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="mr-2 h-4 w-4" /> Upload Team Photo
+                    </Button>
+                    <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+                </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label htmlFor="teamName">Team Name</Label><Input id="teamName" {...register('teamName')} />{errors.teamName && <p className="text-sm text-destructive">{errors.teamName.message}</p>}</div>
                 <div className="space-y-2"><Label htmlFor="subcounty">Sub-county</Label><Input id="subcounty" {...register('subcounty')} />{errors.subcounty && <p className="text-sm text-destructive">{errors.subcounty.message}</p>}</div>
