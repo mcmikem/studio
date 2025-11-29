@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Expense, Activity, Income, Testimony } from "@/lib/types"
+import type { User, Expense, Activity, Income, Testimony, Checkin } from "@/lib/types"
 import {
   ArrowRight,
   Wallet,
@@ -32,10 +32,13 @@ import { Button } from "../ui/button"
 import Link from "next/link"
 import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
-import { collection, query, orderBy, limit } from "firebase/firestore"
+import { collection, query, orderBy, limit, Timestamp, where } from "firebase/firestore"
 import { Skeleton } from "../ui/skeleton"
 import { ApprovalQueue } from "./approval-queue"
 import dynamic from "next/dynamic"
+import { TeamDeployment } from "./team-deployment"
+import { startOfDay } from "date-fns"
+
 
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
@@ -231,13 +234,24 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
     return query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'), limit(5));
   }, [firestore]);
   const { data: testimonies, isLoading: isLoadingTestimonies } = useCollection<Testimony>(testimoniesQuery);
+  
+  const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
+  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
+  const checkinsQuery = useMemoFirebase((db) => {
+    if(!firestore) return null;
+    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
+  }, [firestore]);
+  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
 
   return (
     <>
-       <DashboardGrid className="mt-6 lg:grid-cols-1">
-        <BudgetHealth expenses={allExpenses} income={allIncome} />
+       <DashboardGrid className="mt-6 lg:grid-cols-2">
+         <div className="lg:col-span-2">
+            <BudgetHealth expenses={allExpenses} income={allIncome} />
+         </div>
         <DynamicApprovalQueue />
+        <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
         <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
         <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
       </DashboardGrid>
