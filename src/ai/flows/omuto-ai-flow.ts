@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import type { OmutoAIInput, OmutoAIOutput, SearchResultItem } from '@/lib/types';
-import { SearchResultItemSchema } from '@/lib/types';
+import { SearchResultItemSchema, OmutoAIInputSchema } from '@/lib/types';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { collection, query, where, getDocs, doc, addDoc, getDoc, serverTimestamp, orderBy, limit, Timestamp } from 'firebase/firestore';

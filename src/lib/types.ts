@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -387,6 +388,7 @@ export const SearchResultItemSchema = z.object({
     title: z.string().describe("The main title or name of the item."),
     url: z.string().describe("The in-app URL to navigate to the item."),
 });
+export type SearchResultItem = z.infer<typeof SearchResultItemSchema>;
 
 export const SearchOutputSchema = z.object({
   results: z.array(SearchResultItemSchema).describe('A list of search results.'),
