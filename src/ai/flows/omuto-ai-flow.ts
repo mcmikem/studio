@@ -38,7 +38,7 @@ UserId: ${input.userId}.
 User's message: "${input.question}"`;
 
         const llmResponse = await ai.generate({
-            model: 'googleai/gemini-pro',
+            model: 'googleai/gemini-1.5-flash',
             prompt: prompt,
             history: history,
             tools: [await searchOmutoTool(), await createCheckoutTool(), await getRecentCheckinsTool(), await getRecentCheckoutsTool()],
@@ -47,11 +47,11 @@ User's message: "${input.question}"`;
             }
         });
         
-        const answer = llmResponse.text();
+        const answer = llmResponse.text;
         
         if (!answer) {
             console.error("AI did not return a text response, even after potential tool use.", llmResponse);
-            if (llmResponse.toolRequest()) {
+            if (llmResponse.toolRequest) {
               return { answer: "I've processed your request using my tools, but I don't have a final text summary to provide." };
             }
             return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
