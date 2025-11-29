@@ -8,16 +8,14 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { useViewAs } from '@/hooks/use-view-as';
-import type { User, ImpactMetric, Checkin } from '@/lib/types';
-import { QuickStatsSummary } from '@/components/dashboard/quick-stats-summary';
-import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
-import { startOfDay } from 'date-fns';
-import { useMemo, useState, useEffect } from 'react';
+import type { User, Checkin } from '@/lib/types';
+import { collection, query, where, Timestamp, orderBy, limit } from 'firebase/firestore';
+import { useMemo } from 'react';
 import { DailyActions } from '@/components/dashboard/daily-actions';
-import { MyPerformance } from '@/components/dashboard/my-performance';
-import { SmartReminders } from '@/components/dashboard/smart-reminders';
 import { QuickAddTask } from '@/components/dashboard/quick-add-task';
+import { SmartReminders } from '@/components/dashboard/smart-reminders';
 import { RoleSpecificKpis } from '@/components/dashboard/role-kpis';
+import { MyPerformance } from '@/components/dashboard/my-performance';
 
 
 // Define a loading component for dynamic imports
@@ -71,7 +69,8 @@ export default function DashboardPage() {
 
   const latestCheckinQuery = useMemo(() => {
     if (!user || !firestore) return null;
-    const todayStart = startOfDay(new Date());
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
     return query(
       collection(firestore, 'checkins'),
       where('userId', '==', user.uid),

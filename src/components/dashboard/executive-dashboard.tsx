@@ -1,10 +1,10 @@
 
 "use client"
 
-import type { User, Program, Checkout, ImpactMetric, KeyResult, Activity, Checkin, Expense, Partnership } from "@/lib/types"
+import type { User, Activity, Checkin } from "@/lib/types"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
-import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
+import { useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { useMemo } from "react"
 import { subDays, startOfDay } from "date-fns"
 import { TeamDeployment } from "@/components/dashboard/team-deployment"
@@ -25,7 +25,6 @@ interface DashboardProps {
 }
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
-    const firestore = useFirestore();
     
     const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
 
@@ -52,25 +51,21 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
     const programsQuery = useMemoFirebase((db) => db ? query(collection(db, 'programs')) : null, []);
-    const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery);
+    const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery, { listen: false });
 
   return (
     <>
-       <DashboardGrid className="mt-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 flex flex-col gap-6">
-                 <KeyResultsTracker />
-                 <TeamPerformanceLeaderboard 
-                    activities={activities}
-                    checkins={checkins} 
-                    users={users} 
-                    isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins}
-                />
-            </div>
-             <div className="lg:col-span-1 flex flex-col gap-6">
-                <DynamicEcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
-                <DynamicApprovalQueue />
-                <DynamicTeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-            </div>
+       <DashboardGrid className="mt-0 lg:grid-cols-1">
+            <KeyResultsTracker />
+            <TeamPerformanceLeaderboard 
+                activities={activities}
+                checkins={checkins} 
+                users={users} 
+                isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins}
+            />
+            <DynamicEcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
+            <DynamicApprovalQueue />
+            <DynamicTeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
       </DashboardGrid>
     </>
   )

@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Clock, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
-import { SmartReminders } from '@/components/dashboard/smart-reminders';
 
 function QuickActionsCard() {
   return (
@@ -33,13 +32,8 @@ interface DashboardProps {
 
 export function InternVolunteerDashboard({ profile }: DashboardProps) {
   return (
-    <DashboardGrid className="mt-6 lg:grid-cols-3">
-      <div className="lg:col-span-1 flex flex-col gap-6">
+    <DashboardGrid className="mt-0">
         <QuickActionsCard />
-      </div>
-      <div className="lg:col-span-2 flex flex-col gap-6">
-        {/* The SmartReminders component provides contextual, AI-driven prompts */}
-        <SmartReminders profile={profile} />
         <Card className="min-h-96">
           <CardHeader>
             <CardTitle>My Tasks &amp; Impact</CardTitle>
@@ -49,7 +43,6 @@ export function InternVolunteerDashboard({ profile }: DashboardProps) {
             </CardDescription>
           </CardHeader>
         </Card>
-      </div>
     </DashboardGrid>
   );
 }

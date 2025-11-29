@@ -3,7 +3,7 @@
 
 import type { User, Activity } from "@/lib/types"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "@/components/dashboard/program-manager/partnership-pipeline"
@@ -19,8 +19,6 @@ interface DashboardProps {
   profile: User;
 }
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
-  const firestore = useFirestore();
-
   const partnershipsQuery = useMemoFirebase((db) => db ? query(collection(db, 'partnerships'), orderBy('createdAt', 'desc')) : null, []);
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection(partnershipsQuery);
 
@@ -36,7 +34,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
 
   return (
     <>
-     <DashboardGrid className="mt-6">
+     <DashboardGrid className="mt-0">
         <DynamicPartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
         <DynamicQuickInsights activities={activities} />
       </DashboardGrid>
