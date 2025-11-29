@@ -12,6 +12,12 @@ import { ApprovalQueue } from "@/components/dashboard/approval-queue"
 import { TeamPerformanceLeaderboard } from "@/components/dashboard/team-performance-leaderboard"
 import { KeyResultsTracker } from "@/components/plan/key-results-tracker"
 import { EcosystemPulse } from "@/components/dashboard/ecosystem-pulse"
+import dynamic from "next/dynamic"
+import { Skeleton } from "../ui/skeleton"
+
+const DynamicTeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-48" />, ssr: false });
+const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const DynamicEcosystemPulse = dynamic(() => import('@/components/dashboard/ecosystem-pulse').then(mod => mod.EcosystemPulse), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 
 interface DashboardProps {
@@ -20,37 +26,21 @@ interface DashboardProps {
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
     const firestore = useFirestore();
-    const { user } = useUser();
     
     const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
 
-    const metricsQuery = useMemoFirebase((db) => db ? query(collection(db, 'impact-metrics')) : null, []);
-    const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
-    
     const activitiesQuery = useMemoFirebase((db) => {
         if (!db) return null;
         return query(
             collection(db, 'activities'),
             where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), 
-            orderBy('loggedAt', 'desc'),
-            limit(50) // Performance: Limit to last 50 activities
+            orderBy('loggedAt', 'desc')
         );
     }, [thirtyDaysAgo]);
-    const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
-    
-    const checkoutsQuery = useMemoFirebase((db) => {
-        if (!db) return null;
-        return query(
-            collection(db, 'checkouts'),
-            where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)),
-            orderBy('timestamp', 'desc'),
-            limit(50) // Performance: Limit to last 50 checkouts
-        );
-    }, [thirtyDaysAgo]);
-    const { data: checkouts, isLoading: isLoadingCheckouts } = useCollection<Checkout>(checkoutsQuery);
+    const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery, { listen: false });
     
     const usersQuery = useMemoFirebase((db) => db ? query(collection(db, 'users'), orderBy('name')) : null, []);
-    const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
+    const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery, { listen: false });
 
     const checkinsQuery = useMemoFirebase((db) => {
         if (!db) return null;
@@ -72,15 +62,14 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                  <TeamPerformanceLeaderboard 
                     activities={activities}
                     checkins={checkins} 
-                    checkouts={checkouts}
                     users={users} 
-                    isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins || isLoadingCheckouts}
+                    isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins}
                 />
             </div>
              <div className="lg:col-span-1 flex flex-col gap-6">
-                <EcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
-                <ApprovalQueue />
-                <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+                <DynamicEcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
+                <DynamicApprovalQueue />
+                <DynamicTeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
             </div>
       </DashboardGrid>
     </>

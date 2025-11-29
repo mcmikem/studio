@@ -14,7 +14,6 @@ import { useMemoFirebase } from '@/firebase';
 interface TeamPerformanceLeaderboardProps {
     activities: Activity[] | null;
     checkins: Checkin[] | null;
-    checkouts: Checkout[] | null;
     users: User[] | null;
     isLoading: boolean;
 }
@@ -28,7 +27,7 @@ const getInitials = (name?: string) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-export function TeamPerformanceLeaderboard({ activities, checkins, checkouts, users, isLoading }: TeamPerformanceLeaderboardProps) {
+export function TeamPerformanceLeaderboard({ activities, checkins, users, isLoading }: TeamPerformanceLeaderboardProps) {
   
   const leaderboardData = useMemo(() => {
     if (!users || isLoading) {
@@ -38,30 +37,25 @@ export function TeamPerformanceLeaderboard({ activities, checkins, checkouts, us
     const userPerformance = users.map(user => {
       const userActivities = activities?.filter(a => a.userId === user.id) || [];
       const userCheckins = checkins?.filter(c => c.userId === user.id) || [];
-      const userCheckouts = checkouts?.filter(c => c.userId === user.id) || [];
-
-      // New Engagement Score Logic
+      
       const activityScore = userActivities.length * 10;
       
       const checkinScore = userCheckins.reduce((score, checkin) => {
+          if(!checkin.timestamp) return score;
           const checkinTime = checkin.timestamp.toDate();
-          // Bonus for checking in before 10 AM
           if (checkinTime.getHours() < 10) {
-              return score + 10; // +5 base, +5 bonus
+              return score + 10;
           }
           return score + 5;
       }, 0);
-
-      const checkoutScore = userCheckouts.length * 5;
       
-      const totalScore = activityScore + checkinScore + checkoutScore;
+      const totalScore = activityScore + checkinScore;
       
       return {
         user,
         totalScore,
         activityCount: userActivities.length,
         checkinCount: userCheckins.length,
-        checkoutCount: userCheckouts.length,
       };
     });
 
@@ -77,7 +71,7 @@ export function TeamPerformanceLeaderboard({ activities, checkins, checkouts, us
       progress: maxScore > 0 ? (p.totalScore / maxScore) * 100 : 0,
     }));
 
-  }, [activities, users, checkins, checkouts, isLoading]);
+  }, [activities, users, checkins, isLoading]);
 
   return (
     <Card>

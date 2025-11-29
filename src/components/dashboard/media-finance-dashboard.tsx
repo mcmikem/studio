@@ -1,17 +1,13 @@
 
 "use client"
 
-import type { User, Expense, Activity, ImpactMetric, Income, Checkout, Checkin, Testimony } from "@/lib/types"
+import type { User, Expense, Activity, Income, Testimony } from "@/lib/types"
 import {
   ArrowRight,
-  Check,
   Wallet,
   Camera,
   Wand,
   CheckCheck,
-  X,
-  Rss,
-  Users,
   Video,
 } from "lucide-react"
 import {
@@ -22,7 +18,7 @@ import {
   CardTitle,
   CardFooter,
 } from "../ui/card"
-import { useCollection, useFirestore, useUser, updateDocumentNonBlocking } from "@/firebase"
+import { useCollection, useFirestore, useUser } from "@/firebase"
 import { useMemo } from "react"
 import {
   Table,
@@ -36,16 +32,12 @@ import { Button } from "../ui/button"
 import Link from "next/link"
 import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
-import { useToast } from "@/hooks/use-toast"
-import { createAlert } from "@/ai/flows/create-alert-flow"
-import { ManagementQuickLinks } from "./management-quick-links"
-import { Badge } from "../ui/badge"
-import { doc, collection, query, where, orderBy, Timestamp, limit, getDocs } from "firebase/firestore"
-import { startOfDay, startOfMonth } from "date-fns"
+import { collection, query, orderBy, limit } from "firebase/firestore"
 import { Skeleton } from "../ui/skeleton"
-import { QuickAddTask } from "./quick-add-task"
-import { TeamDeployment } from "./team-deployment"
-import { useUserProfile } from "@/hooks/use-user-profile"
+import { ApprovalQueue } from "./approval-queue"
+import dynamic from "next/dynamic"
+
+const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -176,28 +168,17 @@ function LatestTestimonies({ testimonies, isLoading }: { testimonies: Testimony[
     );
 }
 
-
 function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income: Income[] | null }) {
 
     const { totalIncome, totalExpenses, cashBalance } = useMemo(() => {
         if (!income || !expenses) return { totalIncome: 0, totalExpenses: 0, cashBalance: 0 };
         
-        const monthStart = startOfMonth(new Date());
-
-        const currentMonthIncome = income
-            .filter(i => i.dateReceived && new Date(i.dateReceived) >= monthStart)
-            .reduce((sum, i) => sum + i.amount, 0);
-        
-        const currentMonthExpenses = expenses
-            .filter(e => (e.status === 'Approved' || e.status === 'Disbursed' || e.status === 'Acknowledged') && e.createdAt && e.createdAt.toDate() >= monthStart)
-            .reduce((sum, e) => sum + e.totalAmount, 0);
-
         const allTimeIncome = income.reduce((sum, i) => sum + i.amount, 0);
         const allTimeClearedExpenses = expenses.filter(e => e.status === 'Acknowledged' || e.status === 'Disbursed').reduce((sum, e) => sum + e.totalAmount, 0);
 
         return { 
-            totalIncome: currentMonthIncome, 
-            totalExpenses: currentMonthExpenses,
+            totalIncome: allTimeIncome, 
+            totalExpenses: allTimeClearedExpenses,
             cashBalance: allTimeIncome - allTimeClearedExpenses
         };
     }, [income, expenses]);
@@ -214,136 +195,13 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
             <p className="text-3xl font-bold">{formatCurrency(cashBalance)}</p>
         </div>
         <div className="p-4 bg-muted rounded-lg text-center">
-            <p className="text-sm font-medium text-muted-foreground">Income (This Month)</p>
+            <p className="text-sm font-medium text-muted-foreground">Total Income</p>
             <p className="text-3xl font-bold text-green-500">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="p-4 bg-muted rounded-lg text-center">
-            <p className="text-sm font-medium text-muted-foreground">Expenses (This Month)</p>
+            <p className="text-sm font-medium text-muted-foreground">Total Expenses</p>
             <p className="text-3xl font-bold text-red-500">{formatCurrency(totalExpenses)}</p>
         </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function FinancialQueue({ allExpenses }: { allExpenses: Expense[] | null }) {
-  const firestore = useFirestore();
-  const { toast } = useToast();
-  const { user: currentUser } = useUser();
-  const { profile } = useUserProfile(currentUser);
-
-  const approvalRoles = [
-      'Executive Director',
-      'Programs & Partnerships Manager',
-      'Operations & Field Manager'
-  ];
-  const canApprove = profile && approvalRoles.includes(profile.role);
-
-  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
-  const canManageFinances = profile && financeRoles.includes(profile.role);
-
-  const { pendingExpenses, approvedExpenses } = useMemo(() => {
-    if (!allExpenses) return { pendingExpenses: [], approvedExpenses: [] };
-    return {
-        pendingExpenses: allExpenses.filter(e => e.status === 'Pending'),
-        approvedExpenses: allExpenses.filter(e => e.status === 'Approved'),
-    }
-  }, [allExpenses]);
-  
-  const handleStatusUpdate = async (expense: Expense, status: 'Approved' | 'Rejected' | 'Disbursed') => {
-    if (!firestore || !currentUser) return;
-    const expenseRef = doc(firestore, 'expenses', expense.id);
-    try {
-      await updateDocumentNonBlocking(expenseRef, { status });
-      toast({
-        title: `Expense ${status}`,
-        description: `The expense from ${expense.userName} has been marked as ${status.toLowerCase()}.`,
-      });
-
-      if (expense.userId !== currentUser.uid && (status === 'Approved' || status === 'Rejected')) {
-        await createAlert({
-          type: 'Info',
-          message: `Your expense for '${expense.title}' of ${formatCurrency(expense.totalAmount)} has been ${status.toLowerCase()}.`,
-          priority: 'Medium',
-          action: `/management/expenses?highlight=${expense.id}`,
-          creatorId: currentUser.uid,
-          targetUserIds: [expense.userId],
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: "Could not update the expense status. Please try again.",
-      });
-    }
-  };
-
-  const renderTable = (expensesToRender: Expense[], type: 'pending' | 'approved') => (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>User</TableHead>
-          <TableHead>Amount</TableHead>
-          <TableHead className="text-right">Action</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {expensesToRender && expensesToRender.length > 0 ? (
-          expensesToRender.map((expense) => (
-            <TableRow key={expense.id}>
-              <TableCell>
-                <p className="font-medium">{expense.userName}</p>
-                <p className="text-xs text-muted-foreground">{expense.title}</p>
-              </TableCell>
-              <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
-              <TableCell className="text-right">
-                {type === 'pending' && canApprove && (
-                  <div className="flex gap-2 justify-end">
-                    <Button size="icon" variant="ghost" className="text-green-500 hover:text-green-600" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
-                    <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
-                  </div>
-                )}
-                {type === 'approved' && canManageFinances && (
-                  <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>
-                    <CheckCheck className="mr-2 h-4 w-4" />
-                    Mark Disbursed
-                  </Button>
-                )}
-              </TableCell>
-            </TableRow>
-          ))
-        ) : (
-            <TableRow>
-              <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
-                The {type === 'pending' ? 'approval' : 'disbursement'} queue is empty.
-              </TableCell>
-            </TableRow>
-        )}
-      </TableBody>
-    </Table>
-  );
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Financial Queue</CardTitle>
-        <CardDescription>Approve new requests and clear approved payments.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <h3 className="font-semibold mb-2 flex items-center gap-2"><Badge variant="outline" className="border-yellow-500 bg-yellow-500/10 text-yellow-500">Pending Approval</Badge></h3>
-          {renderTable(pendingExpenses, 'pending')}
-        </div>
-         <div>
-          <h3 className="font-semibold mb-2 flex items-center gap-2"><Badge variant="outline" className="border-blue-500 bg-blue-500/10 text-blue-500">Awaiting Disbursement</Badge></h3>
-          {renderTable(approvedExpenses, 'approved')}
-        </div>
-        <Button asChild className="mt-4 w-full" variant="outline">
-          <Link href="/management/expenses">
-            View All Expense Reports <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
       </CardContent>
     </Card>
   )
@@ -357,10 +215,10 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
 
   const allExpensesQuery = useMemo(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const { data: allExpenses } = useCollection<Expense>(allExpensesQuery);
+  const { data: allExpenses } = useCollection<Expense>(allExpensesQuery, { listen: false });
   
   const allIncomeQuery = useMemo(() => firestore ? query(collection(firestore, 'income'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const { data: allIncome } = useCollection<Income>(allIncomeQuery);
+  const { data: allIncome } = useCollection<Income>(allIncomeQuery, { listen: false });
 
   const activitiesQuery = useMemo(() => {
     if (!firestore) return null;
@@ -382,7 +240,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <BudgetHealth expenses={allExpenses} income={allIncome} />
         </div>
         <div className="lg:col-span-2 flex flex-col gap-6">
-            <FinancialQueue allExpenses={allExpenses} />
+            <DynamicApprovalQueue />
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
             <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />

@@ -2,19 +2,18 @@
 
 "use client"
 
-import type { User, Program, Partnership, Checkout, Checkin, Expense, Activity } from "@/lib/types"
+import type { User, Activity } from "@/lib/types"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { ManagementQuickLinks } from "@/components/dashboard/management-quick-links"
-import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
-import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { startOfDay, subDays } from "date-fns"
 import { PartnershipPipeline } from "@/components/dashboard/program-manager/partnership-pipeline"
 import { QuickInsights } from "@/components/dashboard/program-manager/quick-insights"
-import { TeamDeployment } from "@/components/dashboard/team-deployment"
-import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar"
-import { MyWeeklyPlan } from "@/components/dashboard/my-weekly-plan"
-import { ApprovalQueue } from "@/components/dashboard/approval-queue"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "../ui/skeleton"
+import dynamic from "next/dynamic"
+
+const DynamicPartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const DynamicQuickInsights = dynamic(() => import('@/components/dashboard/program-manager/quick-insights').then(mod => mod.QuickInsights), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 
 interface DashboardProps {
@@ -24,17 +23,8 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
 
   const partnershipsQuery = useMemoFirebase((db) => db ? query(collection(db, 'partnerships'), orderBy('createdAt', 'desc')) : null, []);
-  const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
+  const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection(partnershipsQuery);
 
-  const usersQuery = useMemoFirebase((db) => db ? query(collection(db, 'users'), orderBy('name')) : null, []);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
-
-  const checkinsQuery = useMemoFirebase((db) => {
-    if (!db) return null;
-    const startOfToday = startOfDay(new Date());
-    return query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfToday)));
-  }, []);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
   
   const activitiesQuery = useMemoFirebase((db) => {
     if (!db) return null;
@@ -42,14 +32,14 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
     return query(collection(db, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgo)), orderBy('loggedAt', 'desc'))
   }, []);
 
-  const { data: activities } = useCollection<Activity>(activitiesQuery);
+  const { data: activities } = useCollection<Activity>(activitiesQuery, { listen: false });
   
 
   return (
     <>
      <DashboardGrid className="mt-6">
-        <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
-        <QuickInsights activities={activities} />
+        <DynamicPartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
+        <DynamicQuickInsights activities={activities} />
       </DashboardGrid>
     </>
   )
