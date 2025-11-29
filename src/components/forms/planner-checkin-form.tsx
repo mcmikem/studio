@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
@@ -30,7 +31,7 @@ import { Textarea } from '../ui/textarea';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-
+import { Skeleton } from '../ui/skeleton';
 
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
@@ -46,8 +47,8 @@ const finalCheckinSchema = z.object({
         startTime: z.string().min(1, 'Start time is required.'),
         endTime: z.string().min(1, 'End time is required.'),
         description: z.string().min(1, 'Description cannot be empty.')
-    })).min(1, 'At least one time block is required.'),
-    multiWinConnections: z.array(z.object({ value: z.string().min(1, 'Connection cannot be empty.') })),
+    })).optional(),
+    multiWinConnections: z.array(z.object({ value: z.string().min(1, 'Connection cannot be empty.') })).optional(),
     materials: z.string().optional(),
     challenges: z.string().optional(),
     bestPractice: z.string().optional(),
@@ -67,7 +68,6 @@ function PlannerCheckinFormComponent() {
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState('');
   
-  // --- Data Fetching for Context ---
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoadingWeeklyPlan, setIsLoadingWeeklyPlan] = useState(true);
 
@@ -117,9 +117,8 @@ function PlannerCheckinFormComponent() {
     return query(collection(firestore, 'task-templates'), where('title', '!=', ''));
   }, [firestore]);
   const { data: taskTemplates } = useCollection<TaskTemplate>(templatesQuery);
-  // --- End Data Fetching ---
 
-  const { register: registerMission, handleSubmit: handleMissionSubmit, setValue: setMissionValue, control: missionControl, formState: { errors: missionErrors } } = useForm<PlanFormData>({
+  const { register: registerMission, handleSubmit: handleMissionSubmit, setValue: setMissionValue, control: missionControl, getValues: getMissionValues, formState: { errors: missionErrors } } = useForm<PlanFormData>({
     resolver: zodResolver(planSchema),
      defaultValues: {
       mood: 'energized'
@@ -179,7 +178,7 @@ function PlannerCheckinFormComponent() {
           setValue('challenges', output.challenges);
           setValue('bestPractice', output.bestPractice);
           setGenerationStatus('idle');
-          return; // Success
+          return;
         } catch (error: any) {
            console.error(`AI generation attempt ${attempt} failed:`, error);
            if (error.message?.includes('503') && attempt <= MAX_RETRIES) {
@@ -187,20 +186,13 @@ function PlannerCheckinFormComponent() {
                 await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
            } else {
                 setGenerationStatus('error');
-                toast({
-                    variant: 'destructive',
-                    title: 'AI Planner Failed',
-                    description: error.message?.includes('503') ? 'The AI assistant is currently overloaded. Please try again in a few moments.' : 'The AI could not generate a plan. Please try again.',
-                    duration: 7000,
-                });
-                return; // Failure
+                return;
            }
         }
     }
   };
   
   const applyTemplate = (template: TaskTemplate) => {
-    // This is the corrected implementation
     const checklistText = template.checklistItems.map(item => `- ${item}`).join('\n');
     const newMissionText = `My focus is completing the '${template.title}' task. The steps are:\n${checklistText}`;
     setMissionValue('primaryMission', newMissionText);
@@ -228,27 +220,31 @@ function PlannerCheckinFormComponent() {
     params.set('plan', encodeURIComponent(JSON.stringify(planData)));
     router.push(`/forms/check-in?${params.toString()}`);
   }
-
-  const handleFeedback = async (wasHelpful: boolean) => {
-    if (!firestore || !user) return;
+  
+  const handleManualCheckin = async () => {
+    if (!user || !profile || !firestore) {
+        toast({ variant: 'destructive', title: 'Not logged in' });
+        return;
+    }
+    const missionData = getMissionValues();
     
-    const feedbackData = {
-      type: 'ai',
-      flow: 'dailyPlannerAIFlow',
-      userId: user.uid,
-      userName: profile?.name || 'Unknown',
-      status: 'New',
-      wasHelpful,
-      comment: feedbackComment,
-      timestamp: serverTimestamp(),
+    const checkinData = {
+        userId: user.uid,
+        name: profile.name,
+        primaryMission: missionData.primaryMission,
+        mood: missionData.mood,
+        timestamp: serverTimestamp(),
     };
-
-    await addDocumentNonBlocking(collection(firestore, 'feedback'), feedbackData);
     
-    toast({ title: "Feedback submitted!", description: "Thank you for helping us improve." });
-    setFeedbackSubmitted(true);
-  };
-
+    try {
+        await addDocumentNonBlocking(collection(firestore, 'checkins'), checkinData);
+        toast({ title: 'Manual Check-in Submitted!', description: 'Your plan is visible to the team.'});
+        router.push('/');
+    } catch(e) {
+        console.error("Manual checkin failed", e);
+        toast({ variant: 'destructive', title: 'Submission Failed' });
+    }
+  }
 
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
   const isGeneratingPlan = generationStatus === 'loading' || generationStatus === 'retrying';
@@ -362,6 +358,19 @@ function PlannerCheckinFormComponent() {
                 <p className="text-muted-foreground">{generationStatus === 'retrying' ? 'AI is busy, retrying...' : 'Your AI coach is thinking...'}</p>
               </div>
           )}
+          
+          {generationStatus === 'error' && (
+              <CardContent>
+                <Alert variant="destructive">
+                    <AlertTitle>AI Planner Unavailable</AlertTitle>
+                    <AlertDescription>The AI assistant couldn't generate a plan. You can submit a manual check-in with your primary mission instead.</AlertDescription>
+                </Alert>
+                <Button onClick={handleManualCheckin} className="mt-4 w-full" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                   Submit Manual Check-in
+                </Button>
+              </CardContent>
+          )}
 
           {aiOutput && !isGeneratingPlan && (
               <form onSubmit={handleSubmit(handleFinalizeAndCheckin)}>
@@ -372,30 +381,6 @@ function PlannerCheckinFormComponent() {
                         <CardDescription>Review and edit the AI's suggestions below, then finalize and submit your check-in.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {/* Feedback Section */}
-                        {!feedbackSubmitted ? (
-                          <Card className="bg-muted/50 p-4">
-                            <div className="space-y-3">
-                              <p className="text-sm font-semibold">Was this draft plan helpful?</p>
-                              <div className="flex gap-2">
-                                <Button type="button" size="sm" variant="outline" onClick={() => handleFeedback(true)}><ThumbsUp className="mr-2 h-4 w-4" /> Yes</Button>
-                                <Button type="button" size="sm" variant="outline" onClick={() => handleFeedback(false)}><ThumbsDown className="mr-2 h-4 w-4" /> No</Button>
-                              </div>
-                              <Textarea
-                                placeholder="Optional: How can we improve this?"
-                                value={feedbackComment}
-                                onChange={(e) => setFeedbackComment(e.target.value)}
-                                className="text-sm"
-                              />
-                            </div>
-                          </Card>
-                        ) : (
-                          <Alert variant="default" className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-                             <AlertTitle>Thank you for your feedback!</AlertTitle>
-                          </Alert>
-                        )}
-
-
                         {/* Time Blocks */}
                         <div className="space-y-3">
                             <Label className="font-semibold text-base flex items-center gap-2"><ListChecks className="h-5 w-5" /> Key Time Blocks</Label>

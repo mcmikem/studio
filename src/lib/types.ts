@@ -33,7 +33,7 @@ export type Checkin = {
   name: string;
   primaryMission: string;
   mood: string;
-  details: DailyPlannerAIOutput;
+  details?: DailyPlannerAIOutput;
   timestamp: Timestamp;
 };
 
