@@ -4,7 +4,7 @@
 /**
  * @fileOverview A flow to generate dynamic, context-aware reminders for a user.
  */
-
+import { ai } from '@/ai/genkit';
 import type { SmartRemindersOutput, SmartRemindersInput } from '@/lib/types';
 import { smartRemindersPrompt } from '@/ai/definitions';
 

@@ -4,6 +4,7 @@
 /**
  * @fileOverview An AI flow to analyze the qualitative data from program activities.
  */
+import { ai } from '@/ai/genkit';
 import type { QualitativeAnalysisInput, QualitativeAnalysisOutput } from '@/lib/types';
 import { qualitativeAnalysisPrompt } from '@/ai/definitions';
 

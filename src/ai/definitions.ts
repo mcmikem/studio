@@ -523,4 +523,3 @@ export const smartRemindersPrompt = ai.definePrompt(
         Now, generate the reminders for {{userName}} (Role: {{userRole}}). Use the getUpcomingEventsForUser and getPendingTasksForUser tools with userId '{{userId}}' to get the necessary data.`,
       }
     );
-

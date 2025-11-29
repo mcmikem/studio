@@ -9,7 +9,12 @@
 
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import { searchOmutoToolObject, createCheckoutToolObject, getRecentCheckinsToolObject, getRecentCheckoutsToolObject } from '@/ai/definitions';
+import { 
+    searchOmutoTool, 
+    createCheckoutTool, 
+    getRecentCheckinsTool, 
+    getRecentCheckoutsTool 
+} from '@/ai/tools/omuto-tools';
 import type { OmutoAIInput, OmutoAIOutput } from '@/lib/types';
 
 // The main flow function that orchestrates the AI's response
@@ -38,10 +43,10 @@ UserId: ${input.userId}.
 User's message: "${input.question}"`,
             history: history,
             tools: [
-                searchOmutoToolObject, 
-                createCheckoutToolObject, 
-                getRecentCheckinsToolObject, 
-                getRecentCheckoutsToolObject
+                await searchOmutoTool(), 
+                await createCheckoutTool(), 
+                await getRecentCheckinsTool(), 
+                await getRecentCheckoutsTool()
             ],
             config: {
                 temperature: 0.2, // Be more factual
