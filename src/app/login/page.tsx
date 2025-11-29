@@ -111,6 +111,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState<'google' | 'email' | null>(null);
+  const [activeTab, setActiveTab] = useState('signin');
+
 
   const handleAuthError = (error: Error | FirebaseError) => {
     let title = 'An error occurred';
@@ -122,7 +124,9 @@ export default function LoginPage() {
             case 'auth/wrong-password':
             case 'auth/user-not-found':
                 title = 'Invalid Credentials';
-                description = 'Please check your email and password. If this is your first time signing in, please use the "Sign Up" tab to create your account first.';
+                description = activeTab === 'signin' 
+                  ? 'Please check your email and password. If this is your first time signing in, please use the "Sign Up" tab to create your account first.'
+                  : 'There was an issue with your credentials.';
                 break;
             case 'auth/email-already-in-use':
                 title = 'Email Already in Use';
@@ -231,7 +235,7 @@ export default function LoginPage() {
                     <Separator className="flex-1" />
                 </div>
 
-                <Tabs defaultValue="signin" className="w-full">
+                <Tabs defaultValue="signin" className="w-full" onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="signin">Sign In</TabsTrigger>
                     <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -279,5 +283,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    
