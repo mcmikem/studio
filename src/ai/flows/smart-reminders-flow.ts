@@ -32,7 +32,7 @@ export async function generateSmartReminders(input: SmartRemindersInput): Promis
       }
     );
 
-    const {output} = await smartRemindersPrompt();
+    const {output} = await smartRemindersPrompt(input);
     
     if (!output) {
       throw new Error('AI failed to generate reminders.');

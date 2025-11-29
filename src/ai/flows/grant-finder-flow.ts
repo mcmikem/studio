@@ -8,7 +8,7 @@
 import { ai } from '@/ai/genkit';
 import { findGrantOpportunitiesTool } from '../tools/omuto-tools';
 import type { GrantFinderInput, GrantFinderOutput } from '@/lib/types';
-import { GrantFinderOutputSchema } from '@/lib/types';
+import { GrantFinderInputSchema, GrantFinderOutputSchema } from '@/lib/types';
 
 
 export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOutput> {
@@ -25,7 +25,7 @@ export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOu
       }
     );
 
-    const {output} = await grantFinderPrompt({query: input.query});
+    const {output} = await grantFinderPrompt(input);
 
     if (!output) {
       throw new Error('AI failed to generate a response for grant opportunities.');
