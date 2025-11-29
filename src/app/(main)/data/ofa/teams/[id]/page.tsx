@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Label } from '@/components/ui/label';
 
 function DetailItem({ label, value }: { label: string, value: string | number | undefined | null }) {
     if (!value) return null;
