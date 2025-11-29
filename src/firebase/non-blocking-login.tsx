@@ -224,13 +224,7 @@ export function initiateEmailSignUp(
   email: string,
   password: string
 ) {
-  if (!isEmailApproved(email)) {
-    throw new Error(
-      'This email address is not authorized to sign up.'
-    );
-  }
   const db = getFirestore(authInstance.app);
-
   return createUserWithEmailAndPassword(authInstance, email, password)
     .then((cred) => createUserProfile(cred, db))
     .catch((error) => {
