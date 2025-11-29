@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import { Loader2, FileText, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const matchReportSchema = z.object({
   region: z.string().min(2, "Region is required."),
@@ -40,6 +41,8 @@ export function MatchReportForm() {
   const {
     register,
     handleSubmit,
+    control,
+    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<MatchReportFormData>({
@@ -129,10 +132,26 @@ export function MatchReportForm() {
                 </div>
                  <div className="space-y-2">
                     <Label>Any Injuries?</Label>
-                    <RadioGroup defaultValue="No" onValueChange={val => setValue('injuries', val as 'Yes' | 'No')} className="flex items-center gap-4 pt-2">
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="inj-yes" /><Label htmlFor="inj-yes">Yes</Label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="inj-no" /><Label htmlFor="inj-no">No</Label></div>
-                    </RadioGroup>
+                    <Controller
+                      name="injuries"
+                      control={control}
+                      render={({ field }) => (
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex items-center gap-4 pt-2"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Yes" id="inj-yes" />
+                            <Label htmlFor="inj-yes">Yes</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="No" id="inj-no" />
+                            <Label htmlFor="inj-no">No</Label>
+                          </div>
+                        </RadioGroup>
+                      )}
+                    />
                 </div>
             </div>
             <div className="space-y-2">
