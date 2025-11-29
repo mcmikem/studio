@@ -14,11 +14,11 @@ let firestoreInstance: Firestore | null = null;
  * @returns An object containing the initialized Firestore instance.
  */
 export function getFirebaseAdmin() {
-  if (adminApp) {
-    return { firestore: firestoreInstance! };
+  if (adminApp && firestoreInstance) {
+    return { firestore: firestoreInstance };
   }
 
-  const appName = 'firebase-admin-app'; // Use a unique name to avoid conflicts
+  const appName = 'firebase-admin-app-e9d6a3c2'; // Use a unique name to avoid conflicts
   const existingApp = getApps().find(app => app.name === appName);
   
   if (existingApp) {
