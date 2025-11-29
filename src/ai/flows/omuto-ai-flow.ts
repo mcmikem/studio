@@ -20,7 +20,9 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         // IMPORTANT: Ensure history is ordered from oldest to newest for the model.
         const history = input.history || [];
 
-        const prompt = `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
+        const llmResponse = await ai.generate({
+            model: 'googleai/gemini-pro',
+            prompt: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
 Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
 
 ## Knowledge Base
@@ -35,11 +37,7 @@ ${KNOWLEDGE_BASE}
 ---
 UserId: ${input.userId}.
 
-User's message: "${input.question}"`;
-
-        const llmResponse = await ai.generate({
-            model: 'googleai/gemini-pro',
-            prompt: prompt,
+User's message: "${input.question}"`,
             history: history,
             tools: [
                 await searchOmutoTool(), 
