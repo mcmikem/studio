@@ -122,7 +122,7 @@ export default function LoginPage() {
             case 'auth/wrong-password':
             case 'auth/user-not-found':
                 title = 'Invalid Credentials';
-                description = 'Please check your email and password. If this is your first time signing in, please use the "Sign Up" tab instead.';
+                description = 'Please check your email and password. If this is your first time signing in, please use the "Sign Up" tab to create your account first.';
                 break;
             case 'auth/email-already-in-use':
                 title = 'Email Already in Use';
