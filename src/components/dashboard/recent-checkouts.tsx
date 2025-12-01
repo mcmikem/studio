@@ -49,6 +49,11 @@ function CheckoutItem({ checkout }: { checkout: Checkout }) {
                     <span className="line-through">{task.description}</span>
                 </div>
             ))}
+             {(completedTasks.length === 0 && notCompletedTasks.length === 0) && (
+              <div className="flex items-start gap-2">
+                <span>No specific tasks reported.</span>
+              </div>
+            )}
         </div>
       </div>
     </div>

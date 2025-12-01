@@ -201,7 +201,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         const history = input.history || [];
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
-        const llmResponse = await ai.generate({
+        const { text, toolRequest } = await ai.generate({
             model: 'gemini-pro',
             prompt: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
 Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
@@ -231,12 +231,12 @@ User's message: "${input.question}"`,
             }
         });
         
-        const answer = llmResponse.text();
+        const answer = text;
         
         if (!answer) {
-            console.error("AI did not return a text response, even after potential tool use.", llmResponse);
-            if (llmResponse.toolRequest) {
-              return { answer: "I've processed your request using my tools, but I don't have a final text summary to provide." };
+            console.error("AI did not return a text response, even after potential tool use.", { text, toolRequest });
+            if (toolRequest) {
+              return { answer: "I've processed your request using my tools, but I don't have a final text summary to provide. Let me know if you need anything else!" };
             }
             return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
         }

@@ -63,8 +63,7 @@ export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyP
       keyResults: sanitizedKeyResults,
   };
 
-  const llmResponse = await dailyPlannerPrompt(sanitizedInput);
-  const output = llmResponse.output();
+  const {output} = await dailyPlannerPrompt(sanitizedInput);
   
   if (!output) {
     throw new Error('AI failed to generate a plan.');

@@ -100,7 +100,7 @@ export function TeamPerformanceLeaderboard({ activities, checkins, users, isLoad
                     <div key={item.user.id}>
                         <div className="flex items-center gap-4">
                             <span className="text-lg font-bold w-6 text-center">{item.rank}</span>
-                            <Avatar className="h-10 w-10 border">
+                            <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
                                 <AvatarImage src={item.user.photoURL} />
                                 <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
                             </Avatar>
