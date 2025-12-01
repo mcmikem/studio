@@ -14,8 +14,6 @@ import { useMemo } from 'react';
 import { DailyActions } from '@/components/dashboard/daily-actions';
 import { QuickAddTask } from '@/components/dashboard/quick-add-task';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
-import { RoleSpecificKpis } from '@/components/dashboard/role-kpis';
-import { UserPerformance } from '@/components/profile/user-performance';
 
 
 // Define a loading component for dynamic imports
