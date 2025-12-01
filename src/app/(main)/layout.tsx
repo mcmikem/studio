@@ -1,3 +1,4 @@
+
 'use client';
 
 import { AppHeader } from '@/components/header';
@@ -7,7 +8,13 @@ import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { useViewAs } from '@/hooks/use-view-as';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, X } from 'lucide-react';
-import { GlobalCommandBar } from '@/components/global-command-bar';
+import dynamic from 'next/dynamic';
+
+const GlobalCommandBar = dynamic(() =>
+  import('@/components/global-command-bar').then((mod) => mod.GlobalCommandBar),
+  { ssr: false }
+);
+
 
 function ViewAsBanner() {
     const { viewAsRole, clearViewAs } = useViewAs();
