@@ -2,18 +2,18 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import type { Activity, User, Checkin, Checkout } from '@/lib/types';
+import type { Activity, User, Checkin } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Trophy, Users as UsersIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Progress } from '../ui/progress';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/empty-state';
-import { useMemoFirebase } from '@/firebase';
+import { useMemoFirebase, useCollection } from '@/firebase';
+import { collection, query, where, Timestamp } from 'firebase/firestore';
+import { subDays, startOfWeek, endOfWeek } from 'date-fns';
 
 interface TeamPerformanceLeaderboardProps {
-    activities: Activity[] | null;
-    checkins: Checkin[] | null;
     users: User[] | null;
     isLoading: boolean;
 }
@@ -27,10 +27,32 @@ const getInitials = (name?: string) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-export function TeamPerformanceLeaderboard({ activities, checkins, users, isLoading }: TeamPerformanceLeaderboardProps) {
+export function TeamPerformanceLeaderboard({ users, isLoading }: TeamPerformanceLeaderboardProps) {
+
+  const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
+
+  const activitiesQuery = useMemoFirebase((db) => {
+      if (!db) return null;
+      return query(
+          collection(db, 'activities'),
+          where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo))
+      );
+  }, [thirtyDaysAgo]);
+  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery, { listen: false });
   
+  const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const checkinsQuery = useMemoFirebase((db) => {
+    if (!db) return null;
+    return query(
+        collection(db, 'checkins'),
+        where('timestamp', '>=', Timestamp.fromDate(thisWeekStart))
+    );
+  }, [thisWeekStart]);
+  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery, { listen: false });
+
+
   const leaderboardData = useMemo(() => {
-    if (!users || isLoading) {
+    if (!users || isLoading || isLoadingActivities || isLoadingCheckins) {
       return [];
     }
 
@@ -71,7 +93,9 @@ export function TeamPerformanceLeaderboard({ activities, checkins, users, isLoad
       progress: maxScore > 0 ? (p.totalScore / maxScore) * 100 : 0,
     }));
 
-  }, [activities, users, checkins, isLoading]);
+  }, [activities, users, checkins, isLoading, isLoadingActivities, isLoadingCheckins]);
+
+  const finalIsLoading = isLoading || isLoadingActivities || isLoadingCheckins;
 
   return (
     <Card>
@@ -84,7 +108,7 @@ export function TeamPerformanceLeaderboard({ activities, checkins, users, isLoad
       </CardHeader>
       <CardContent>
          <div className="space-y-4">
-            {isLoading && (
+            {finalIsLoading && (
                  Array.from({length: 3}).map((_, i) => (
                     <div key={i} className="flex items-center gap-4">
                         <Skeleton className="h-10 w-10 rounded-full" />
@@ -95,7 +119,7 @@ export function TeamPerformanceLeaderboard({ activities, checkins, users, isLoad
                     </div>
                  ))
             )}
-            {!isLoading && leaderboardData.length > 0 ? (
+            {!finalIsLoading && leaderboardData.length > 0 ? (
                 leaderboardData.slice(0, 5).map(item => (
                     <div key={item.user.id}>
                         <div className="flex items-center gap-4">
@@ -113,7 +137,7 @@ export function TeamPerformanceLeaderboard({ activities, checkins, users, isLoad
                     </div>
                 ))
             ) : (
-                 !isLoading && (
+                 !finalIsLoading && (
                     <EmptyState
                         icon={UsersIcon}
                         title="No Performance Data"

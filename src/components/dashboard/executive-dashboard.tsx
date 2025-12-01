@@ -59,10 +59,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
        <DashboardGrid className="mt-0 lg:grid-cols-1">
             <DynamicKeyResultsTracker />
             <DynamicTeamPerformanceLeaderboard 
-                activities={activities}
-                checkins={checkins} 
                 users={users} 
-                isLoading={isLoadingActivities || isLoadingUsers || isLoadingCheckins}
+                isLoading={isLoadingUsers}
             />
             <DynamicEcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
             <DynamicApprovalQueue />
