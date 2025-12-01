@@ -7,7 +7,7 @@ import { collection, doc, query, where, orderBy } from 'firebase/firestore';
 import type { Project, Expense, Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, CheckCircle, XCircle, BarChart, CheckSquare, Clock, File, Video, BookOpen } from 'lucide-react';
+import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, CheckCircle, XCircle, BarChart, CheckSquare, Clock, File, Video, BookOpen, Banknote, BookUser, Store } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -439,10 +439,25 @@ function ProjectDashboard() {
              <Card>
                 <CardHeader>
                     <CardTitle>Reports</CardTitle>
-                    <CardDescription>Coming Soon: Auto-generated project reports and analytics.</CardDescription>
+                    <CardDescription>Auto-generated project reports and analytics.</CardDescription>
+                     <div className="flex gap-2 pt-2">
+                        <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+                        <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download Excel</Button>
+                    </div>
                 </CardHeader>
-                 <CardContent>
-                    <p className="text-center py-12 text-muted-foreground">Reporting features will be available here.</p>
+                 <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <h4 className="font-semibold text-base">Financial Skills Improvement</h4>
+                         <div className="h-64 flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-lg mt-2">
+                            Radar Chart placeholder
+                        </div>
+                    </div>
+                     <div className="space-y-4">
+                        <h4 className="font-semibold text-base">Participant Progress Over Time</h4>
+                         <div className="h-64 flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-lg mt-2">
+                            Line Graph placeholder
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -450,10 +465,21 @@ function ProjectDashboard() {
              <Card>
                 <CardHeader>
                     <CardTitle>Follow-Up Tracking</CardTitle>
-                    <CardDescription>Coming Soon: Track long-term skill adoption and impact.</CardDescription>
+                    <CardDescription>Track long-term skill adoption and impact at 6 and 12 months.</CardDescription>
                 </CardHeader>
-                 <CardContent>
-                    <p className="text-center py-12 text-muted-foreground">Follow-up tracking will be available here.</p>
+                 <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <StatCard title="Active Businesses" value="78%" icon={Store} />
+                        <StatCard title="Recorded Profits" value="65%" icon={DollarSign} />
+                        <StatCard title="Using Bookkeeping" value="85%" icon={BookUser} />
+                        <StatCard title="Opened Bank Account" value="55%" icon={Banknote} />
+                    </div>
+                     <div className="pt-4">
+                        <h4 className="font-semibold text-base mb-2">Beneficiary Follow-up List</h4>
+                        <div className="h-64 flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-lg mt-2">
+                            Beneficiary List placeholder → Click to Open Assessment Form
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
