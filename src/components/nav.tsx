@@ -97,18 +97,7 @@ const navConfig = {
      { href: '/testimonies', icon: Video, label: 'Testimony Library' },
   ],
   management: [
-    { href: '/management/programs', icon: Briefcase, label: 'Programs' },
-    { href: '/management/projects', icon: Briefcase, label: 'Projects' },
-    { href: '/management/partnerships', icon: Handshake, label: 'Partnerships' },
-    { href: '/management/resources', icon: Handshake, label: 'Resources' },
-    { href: '/management/operational-plan', icon: FileSignature, label: 'Operational Plan', roles: ['Executive Director', 'Programs & Partnerships Manager', 'Administrator'] },
-    { href: '/management/finance', icon: DollarSign, label: 'Finance', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'] },
-    { href: '/management/expenses', icon: Receipt, label: 'Expenses', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Programs & Partnerships Manager', 'Operations & Field Manager'] },
-    { href: '/management/metrics', icon: TrendingUp, label: 'Metrics (KPIs)' },
-    { href: '/management/workplans', icon: CalendarCheck, label: 'Team Workplans' },
-    { href: '/management/equipment', icon: Box, label: 'Equipment' },
-    { href: '/management/templates', icon: ListChecks, label: 'Templates' },
-    { href: '/management/users', icon: UserIcon, label: 'User Roles' },
+    { href: '/management', icon: Briefcase, label: 'Overview' },
   ],
   system: [
     { href: '/help', icon: LifeBuoy, label: 'Help & Support' },
@@ -180,13 +169,6 @@ export function AppSidebar() {
     if (!allowedSections.includes(sectionName)) return null;
     
     let navItems = navConfig[sectionName];
-
-    if (sectionName === 'management') {
-      navItems = navItems.filter(item => {
-        if (!item.roles) return true; // if no roles are specified, it's public for management
-        return item.roles.includes(userRole);
-      });
-    }
 
     if (!navItems || navItems.length === 0) return null;
 
