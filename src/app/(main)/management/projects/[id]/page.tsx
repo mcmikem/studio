@@ -7,14 +7,16 @@ import { collection, doc, query, where, orderBy } from 'firebase/firestore';
 import type { Project, Expense, Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil } from 'lucide-react';
+import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { formatCurrency, formatDateSafe } from '@/lib/utils';
+import { formatCurrency, formatDateSafe, getInitials } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const statusColors: { [key: string]: string } = {
   Active: 'border-green-500 bg-green-500/10 text-green-500',
@@ -38,6 +40,15 @@ function StatCard({ title, value, icon: Icon }: { title: string; value: string |
         </Card>
     )
 }
+
+const sampleParticipants = [
+    { id: '1', name: 'Aisha Nakato', phone: '077****123', village: 'Kitebi', businessStage: 'Ideation', attendance: 95, businessScore: 78, avatar: 'https://i.imgur.com/5Ke5QZ0.jpeg' },
+    { id: '2', name: 'Brian Okello', phone: '078****456', village: 'Buwama Town', businessStage: 'Operating', attendance: 88, businessScore: 92, avatar: 'https://i.imgur.com/7D7Q42G.jpeg' },
+    { id: '3', name: 'Cathy Nabulya', phone: '075****789', village: 'Nsangi', businessStage: 'Growth', attendance: 98, businessScore: 95, avatar: 'https://i.imgur.com/8a2eO2J.jpeg' },
+    { id: '4', name: 'David Semakula', phone: '070****101', village: 'Maya', businessStage: 'Ideation', attendance: 82, businessScore: 65, avatar: 'https://i.imgur.com/4Jz2h2X.jpeg' },
+    { id: '5', name: 'Esther Akongo', phone: '079****212', village: 'Nkozi', businessStage: 'Operating', attendance: 91, businessScore: 85, avatar: 'https://i.imgur.com/3Y2a0yI.jpeg' },
+];
+
 
 function ProjectDashboard() {
   const params = useParams();
@@ -109,7 +120,7 @@ function ProjectDashboard() {
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
             <StatCard title="Participants" value={project.participants || 50} icon={Users} />
             <StatCard title="Attendance Rate" value={`${project.attendanceRate || 88}%`} icon={Percent} />
-            <StatCard title="Avg. Learning Improvement" value={`${project.learningImprovement || 45}%`} icon={TrendingUp} />
+            <StatCard title="Avg Learning Improvement" value={`${project.learningImprovement || 45}%`} icon={TrendingUp} />
             <StatCard title="6-Month Adoption Rate" value={`${project.adoptionRate || 62}%`} icon={TrendingUp} />
             <StatCard title="Partner" value={project.partner || 'Stanbic Bank'} icon={Handshake} />
         </div>
@@ -165,11 +176,66 @@ function ProjectDashboard() {
         <TabsContent value="participants">
             <Card>
                 <CardHeader>
-                    <CardTitle>Participants</CardTitle>
-                    <CardDescription>Coming Soon: Manage and view all project participants.</CardDescription>
+                    <CardTitle>Project Participants</CardTitle>
+                     <CardDescription>Enroll and manage all beneficiaries for this project.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <p className="text-center py-12 text-muted-foreground">Participant management will be available here.</p>
+                <CardContent className="space-y-4">
+                     <div className="flex flex-col sm:flex-row gap-2">
+                        <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Participant</Button>
+                        <Button variant="outline"><Upload className="mr-2 h-4 w-4" /> Bulk Upload CSV</Button>
+                    </div>
+                    <div className="border rounded-md">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead className="hidden md:table-cell">Phone</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Village</TableHead>
+                                    <TableHead>Business Stage</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Attendance</TableHead>
+                                    <TableHead>Business Score</TableHead>
+                                    <TableHead><span className="sr-only">Actions</span></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {sampleParticipants.map(participant => (
+                                    <TableRow key={participant.id}>
+                                        <TableCell>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-8 w-8 border">
+                                                    <AvatarImage src={participant.avatar} alt={participant.name} />
+                                                    <AvatarFallback>{getInitials(participant.name)}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="font-medium">{participant.name}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="hidden md:table-cell text-muted-foreground">{participant.phone}</TableCell>
+                                        <TableCell className="hidden sm:table-cell text-muted-foreground">{participant.village}</TableCell>
+                                        <TableCell><Badge variant="secondary">{participant.businessStage}</Badge></TableCell>
+                                        <TableCell className="hidden sm:table-cell">{participant.attendance}%</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                 <Progress value={participant.businessScore} className="h-2" />
+                                                 <span className="font-semibold text-sm">{participant.businessScore}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                             <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    <DropdownMenuItem>View Profile</DropdownMenuItem>
+                                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -236,5 +302,3 @@ function ProjectDashboard() {
 export default function ProjectPage() {
     return <ProjectDashboard />;
 }
-
-    
