@@ -73,7 +73,7 @@ export default function ManagementLayout({
                 href={tab.href}
                 className={cn(
                   'flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md',
-                  pathname.startsWith(tab.href)
+                  pathname.includes(tab.href) // Use includes for parent route highlighting
                     ? 'border-primary text-primary bg-primary/10'
                     : 'border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                 )}

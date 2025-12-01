@@ -1,362 +1,214 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { Project } from '@/lib/types';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardFooter,
 } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, ArrowRight } from 'lucide-react';
-import type { Project } from '@/lib/types';
-import { updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Briefcase } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
+import {
+  PlusCircle,
+  Briefcase,
+  Search,
+  ArrowRight,
+  BarChart2,
+  Users,
+  CheckCircle,
+} from 'lucide-react';
 import Link from 'next/link';
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 const statusColors: { [key: string]: string } = {
-  Active: 'border-green-500 bg-green-500/10 text-green-500',
-  Moderate: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
-  'At Risk': 'border-orange-500 bg-orange-500/10 text-orange-500',
-  Delayed: 'border-red-500 bg-red-500/10 text-red-500',
+    Active: 'border-green-500 bg-green-500/10 text-green-500',
+    Moderate: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
+    'At Risk': 'border-orange-500 bg-orange-500/10 text-orange-500',
+    Delayed: 'border-red-500 bg-red-500/10 text-red-500',
 };
 
-const projectSchema = z.object({
-  name: z.string().min(3, 'Project name is required.'),
-  manager: z.string().min(3, 'Manager name is required.'),
-  districts: z.string().min(3, 'Districts are required.'),
-  status: z.enum(['Active', 'Moderate', 'At Risk', 'Delayed']),
-  completion: z.coerce.number().min(0).max(100, 'Completion must be between 0 and 100.'),
-  nextMilestone: z.string().min(3, 'Next milestone is required.'),
-});
 
-type ProjectFormData = z.infer<typeof projectSchema>;
-
-
-function ProjectForm({
-  project,
-  onFormSubmit,
-}: {
-  project?: Project;
-  onFormSubmit: () => void;
-}) {
-  const firestore = useFirestore();
-  const { toast } = useToast();
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<ProjectFormData>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: project ? {
-      ...project,
-      completion: project.completion || 0
-    } : {
-      status: 'Active',
-      completion: 0,
-    },
-  });
-
-  const onSubmit = async (data: z.infer<typeof projectSchema>) => {
-    if (!firestore) return;
-    
-    if (project) {
-        // Update existing project
-        const projectRef = doc(firestore, 'projects', project.id);
-        updateDocumentNonBlocking(projectRef, data);
-        toast({
-            title: 'Project Updated!',
-            description: `${data.name} has been successfully updated.`,
-        });
-    } else {
-        // Add new project
-        const projectsCollection = collection(firestore, 'projects');
-        const newProject = {
-            ...data,
-            createdAt: serverTimestamp(),
-        };
-        addDocumentNonBlocking(projectsCollection, newProject);
-        toast({
-            title: 'Project Added!',
-            description: `${data.name} has been added to your dashboard.`,
-        });
-    }
-
-    reset();
-    onFormSubmit();
-  };
-
+function ProjectCard({ project }: { project: Project }) {
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="name">Project Name</Label>
-        <Input id="name" {...register('name')} placeholder="e.g., RED Campaign School Tour" />
-        {errors.name && <p className="text-sm text-destructive">{`${errors.name.message}`}</p>}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="manager">Manager</Label>
-          <Input id="manager" {...register('manager')} placeholder="e.g., Nansikombi Dianah" />
-          {errors.manager && <p className="text-sm text-destructive">{`${errors.manager.message}`}</p>}
+    <Card className="flex flex-col hover:shadow-md transition-shadow">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <CardTitle className="text-lg">{project.name}</CardTitle>
+          <Badge variant="outline" className={statusColors[project.status]}>
+            {project.status}
+          </Badge>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="districts">Districts</Label>
-          <Input id="districts" {...register('districts')} placeholder="e.g., Mpigi, Butambala" />
-          {errors.districts && <p className="text-sm text-destructive">{`${errors.districts.message}`}</p>}
+        <CardDescription>
+          {project.districts} &bull; Managed by {project.manager}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <div className="space-y-1">
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Progress</span>
+            <span>{project.completion}%</span>
+          </div>
+          <Progress value={project.completion} />
         </div>
-      </div>
-
-       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="status">Status</Label>
-          <Controller
-            name="status"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Moderate">Moderate</SelectItem>
-                  <SelectItem value="At Risk">At Risk</SelectItem>
-                  <SelectItem value="Delayed">Delayed</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.status && <p className="text-sm text-destructive">{`${errors.status.message}`}</p>}
+        <div className="mt-4">
+          <p className="text-sm font-semibold">Next Milestone</p>
+          <p className="text-sm text-muted-foreground">{project.nextMilestone}</p>
         </div>
-        <div className="space-y-2">
-            <Label htmlFor="completion">Completion (%)</Label>
-            <Input id="completion" type="number" {...register('completion')} />
-            {errors.completion && <p className="text-sm text-destructive">{`${errors.completion.message}`}</p>}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="nextMilestone">Next Milestone</Label>
-        <Input id="nextMilestone" {...register('nextMilestone')} placeholder="e.g., Sign MoU with Nindye SS" />
-        {errors.nextMilestone && <p className="text-sm text-destructive">{`${errors.nextMilestone.message}`}</p>}
-      </div>
-
-      <DialogFooter>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? (project ? 'Saving...' : 'Adding...') : (project ? 'Save Changes' : 'Add Project')}
+      </CardContent>
+      <CardFooter>
+        <Button variant="outline" asChild size="sm" className="w-full">
+          <Link href={`/management/projects/${project.id}`}>
+            View Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
         </Button>
-      </DialogFooter>
-    </form>
+      </CardFooter>
+    </Card>
   );
 }
 
-function ProjectCard({ project, onEdit, onDelete }: { project: Project, onEdit: () => void, onDelete: () => void }) {
-    return (
-        <Card className="flex flex-col">
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <CardTitle className="text-lg">{project.name}</CardTitle>
-                     <Badge
-                        variant="outline"
-                        className={statusColors[project.status]}
-                      >
-                        {project.status}
-                      </Badge>
-                </div>
-                <CardDescription>Managed by {project.manager}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                 <div className="space-y-1">
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>Progress</span>
-                        <span>{project.completion}%</span>
-                    </div>
-                    <Progress value={project.completion} />
-                 </div>
-                 <div className="mt-4">
-                    <p className="text-sm font-semibold">Next Milestone</p>
-                    <p className="text-sm text-muted-foreground">{project.nextMilestone}</p>
-                 </div>
-            </CardContent>
-            <CardFooter className="justify-between">
-                <Button variant="outline" asChild size="sm">
-                    <Link href={`/management/projects/${project.id}`}>
-                        View Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                </Button>
-                <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}>
-                        <Edit className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                            This will permanently delete the project "{project.name}".
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
-                        </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </div>
-            </CardFooter>
-        </Card>
-    )
-}
-
-export default function ProjectsPage() {
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
-  const { toast } = useToast();
-
+export default function ProjectsDirectoryPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('All');
   const firestore = useFirestore();
-  const projectsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'projects'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+
+  const projectsQuery = useMemoFirebase(
+    () => (firestore ? query(collection(firestore, 'projects'), orderBy('createdAt', 'desc')) : null),
+    [firestore]
+  );
 
   const { data: projects, isLoading } = useCollection<Project>(projectsQuery);
 
-  const handleDelete = (project: Project) => {
-    if (!firestore) return;
-    const projectRef = doc(firestore, 'projects', project.id);
-    deleteDocumentNonBlocking(projectRef);
-    toast({
-        title: "Project Deleted",
-        description: `The project "${project.name}" has been removed.`,
-    });
-  };
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+    
+    let filtered = projects;
+
+    if (activeTab !== 'All') {
+        if(activeTab === 'Completed') {
+            filtered = filtered.filter((p) => p.completion === 100);
+        } else {
+            filtered = filtered.filter((p) => p.status === activeTab && p.completion < 100);
+        }
+    }
+    
+    if (searchTerm) {
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.manager.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.districts.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    return filtered;
+  }, [projects, searchTerm, activeTab]);
+  
+  const stats = useMemo(() => {
+    if (!projects) return { enrolled: 0, sessions: 0, attendance: 0, adoption: 0 };
+    return {
+        enrolled: 50, // Mock
+        sessions: 12, // Mock
+        attendance: 92, // Mock
+        adoption: 78 // Mock
+    }
+  }, [projects]);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <CardTitle>Projects Tracker</CardTitle>
-          <CardDescription>
-            A high-level view of all ongoing field projects.
-          </CardDescription>
+          <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Briefcase className="h-8 w-8" />
+            Projects Directory
+          </h1>
+          <p className="text-muted-foreground">
+            A central dashboard for all organizational projects.
+          </p>
         </div>
-        <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              New Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Add New Project</DialogTitle>
-              <DialogDescription>
-                Define a new project to track on the dashboard.
-              </DialogDescription>
-            </DialogHeader>
-            <ProjectForm onFormSubmit={() => setIsNewDialogOpen(false)} />
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-          {isLoading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
-              </div>
-          )}
-          {!isLoading && projects && projects.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map(project => (
-                    <ProjectCard
-                        key={project.id}
-                        project={project}
-                        onEdit={() => setEditingProject(project)}
-                        onDelete={() => handleDelete(project)}
-                    />
-                ))}
-              </div>
-          ) : (
-            !isLoading && (
-              <EmptyState
-                icon={Briefcase}
-                title="No Projects Found"
-                description="Add a project to get started."
-              />
-            )
-          )}
-      </CardContent>
-      {editingProject && (
-        <Dialog
-          open={!!editingProject}
-          onOpenChange={(open) => !open && setEditingProject(null)}
-        >
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Edit Project</DialogTitle>
-              <DialogDescription>
-                Update the details for the "{editingProject.name}" project.
-              </DialogDescription>
-            </DialogHeader>
-            <ProjectForm
-              project={editingProject}
-              onFormSubmit={() => setEditingProject(null)}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-    </Card>
+        <Button size="lg" disabled>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          New Project
+        </Button>
+      </div>
+
+       <Card>
+        <CardHeader>
+            <CardTitle>Live Project Stats</CardTitle>
+            <CardDescription>Quick view of key performance indicators across all active projects.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-4 bg-muted rounded-lg text-center">
+            <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
+            <p className="text-2xl font-bold">{stats.enrolled}</p>
+            <p className="text-xs text-muted-foreground">Beneficiaries Enrolled</p>
+          </div>
+          <div className="p-4 bg-muted rounded-lg text-center">
+            <CheckCircle className="h-6 w-6 mx-auto mb-2 text-primary" />
+            <p className="text-2xl font-bold">{stats.sessions}</p>
+            <p className="text-xs text-muted-foreground">Sessions Delivered</p>
+          </div>
+          <div className="p-4 bg-muted rounded-lg text-center">
+            <BarChart2 className="h-6 w-6 mx-auto mb-2 text-primary" />
+            <p className="text-2xl font-bold">{stats.attendance}%</p>
+            <p className="text-xs text-muted-foreground">Avg. Attendance</p>
+          </div>
+           <div className="p-4 bg-muted rounded-lg text-center">
+            <TrendingUp className="h-6 w-6 mx-auto mb-2 text-primary" />
+            <p className="text-2xl font-bold">{stats.adoption}%</p>
+            <p className="text-xs text-muted-foreground">Skill Adoption</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search by name, manager, location..." className="pl-10" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+            </div>
+        </CardHeader>
+        <CardContent>
+           <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList>
+                    <TabsTrigger value="All">All Projects</TabsTrigger>
+                    <TabsTrigger value="Active">Active</TabsTrigger>
+                    <TabsTrigger value="At Risk">At Risk</TabsTrigger>
+                    <TabsTrigger value="Delayed">Delayed</TabsTrigger>
+                    <TabsTrigger value="Completed">Completed</TabsTrigger>
+                </TabsList>
+                <div className="mt-6">
+                    {isLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <Skeleton className="h-64 w-full" />
+                            <Skeleton className="h-64 w-full" />
+                            <Skeleton className="h-64 w-full" />
+                        </div>
+                    ) : filteredProjects.length > 0 ? (
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                           {filteredProjects.map((project) => (
+                             <ProjectCard key={project.id} project={project} />
+                           ))}
+                         </div>
+                    ) : (
+                        <EmptyState 
+                            icon={Briefcase}
+                            title="No Projects Found"
+                            description={`There are no projects that match your current filter and search criteria.`}
+                            className="min-h-[300px]"
+                        />
+                    )}
+                </div>
+            </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
