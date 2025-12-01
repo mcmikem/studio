@@ -7,7 +7,7 @@ import { collection, doc, query, where, orderBy } from 'firebase/firestore';
 import type { Project, Expense, Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal } from 'lucide-react';
+import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import React, { useState } from 'react';
+import { cn } from '@/lib/utils';
+
 
 const statusColors: { [key: string]: string } = {
   Active: 'border-green-500 bg-green-500/10 text-green-500',
@@ -47,6 +50,11 @@ const sampleParticipants = [
     { id: '3', name: 'Cathy Nabulya', phone: '075****789', village: 'Nsangi', businessStage: 'Growth', attendance: 98, businessScore: 95, avatar: 'https://i.imgur.com/8a2eO2J.jpeg' },
     { id: '4', name: 'David Semakula', phone: '070****101', village: 'Maya', businessStage: 'Ideation', attendance: 82, businessScore: 65, avatar: 'https://i.imgur.com/4Jz2h2X.jpeg' },
     { id: '5', name: 'Esther Akongo', phone: '079****212', village: 'Nkozi', businessStage: 'Operating', attendance: 91, businessScore: 85, avatar: 'https://i.imgur.com/3Y2a0yI.jpeg' },
+    { id: '6', name: 'Frank Mubiru', phone: '071****313', village: 'Kitebi', businessStage: 'Operating', attendance: 93, businessScore: 88, avatar: 'https://i.imgur.com/O3GqA4m.jpeg' },
+    { id: '7', name: 'Grace Nabwire', phone: '072****414', village: 'Buwama Town', businessStage: 'Growth', attendance: 99, businessScore: 97, avatar: 'https://i.imgur.com/C1zAl4P.jpeg' },
+    { id: '8', name: 'Henry Ssebugwawo', phone: '073****515', village: 'Nsangi', businessStage: 'Ideation', attendance: 85, businessScore: 70, avatar: 'https://i.imgur.com/w2k2jCH.jpeg' },
+    { id: '9', name: 'Irene Kansiime', phone: '074****616', village: 'Maya', businessStage: 'Operating', attendance: 92, businessScore: 89, avatar: 'https://i.imgur.com/nJgqL6p.jpeg' },
+    { id: '10', name: 'John Okoth', phone: '076****717', village: 'Nkozi', businessStage: 'Growth', attendance: 96, businessScore: 94, avatar: 'https://i.imgur.com/Q2z2a4U.jpeg' },
 ];
 
 
@@ -54,6 +62,26 @@ function ProjectDashboard() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
+  const [attendance, setAttendance] = useState<Record<string, boolean>>({});
+
+  React.useEffect(() => {
+    // Initialize attendance state
+    const initialAttendance = sampleParticipants.reduce((acc, p) => {
+        acc[p.id] = true; // Default to present
+        return acc;
+    }, {} as Record<string, boolean>);
+    setAttendance(initialAttendance);
+  }, []);
+
+  const toggleAttendance = (participantId: string) => {
+    setAttendance(prev => ({
+      ...prev,
+      [participantId]: !prev[participantId]
+    }));
+  };
+
+  const presentCount = React.useMemo(() => Object.values(attendance).filter(Boolean).length, [attendance]);
+  const presentPercentage = React.useMemo(() => (presentCount / sampleParticipants.length) * 100, [presentCount]);
 
   const projectDocRef = useMemoFirebase(() => {
     if (!firestore || !id) return null;
@@ -240,15 +268,54 @@ function ProjectDashboard() {
             </Card>
         </TabsContent>
          <TabsContent value="attendance">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Attendance</CardTitle>
-                    <CardDescription>Coming Soon: Track attendance for training sessions.</CardDescription>
-                </CardHeader>
-                 <CardContent>
-                    <p className="text-center py-12 text-muted-foreground">Attendance tracking will be available here.</p>
-                </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Workshop Day Interface</CardTitle>
+                            <CardDescription>Click on a participant to toggle their attendance status.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                            {sampleParticipants.map(participant => (
+                                <button key={participant.id} onClick={() => toggleAttendance(participant.id)} className="group space-y-2">
+                                    <div className={cn("p-2 border-2 rounded-lg transition-colors", attendance[participant.id] ? 'border-green-500 bg-green-500/10' : 'border-destructive bg-destructive/10')}>
+                                        <Avatar className="h-20 w-20 mx-auto">
+                                            <AvatarImage src={participant.avatar} />
+                                            <AvatarFallback>{getInitials(participant.name)}</AvatarFallback>
+                                        </Avatar>
+                                    </div>
+                                    <p className="text-xs font-medium text-center truncate group-hover:text-primary">{participant.name}</p>
+                                </button>
+                            ))}
+                        </CardContent>
+                    </Card>
+                </div>
+                <div className="lg:col-span-1">
+                    <Card className="sticky top-6">
+                        <CardHeader>
+                            <CardTitle>Live Metrics</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                             <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                                <span className="font-medium flex items-center gap-2"><CheckCircle className="text-green-500"/> Present</span>
+                                <span className="font-bold text-2xl">{presentPercentage.toFixed(0)}%</span>
+                            </div>
+                             <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                                <span className="font-medium flex items-center gap-2"><XCircle className="text-destructive"/> Absent</span>
+                                <span className="font-bold text-2xl">{100-presentPercentage.toFixed(0)}%</span>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                                <span className="font-medium">Late Count</span>
+                                <span className="font-bold text-2xl">0</span>
+                            </div>
+                            <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                                <span className="font-medium">Engagement Score</span>
+                                <span className="font-bold text-2xl">N/A</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
         </TabsContent>
         <TabsContent value="sessions">
             <Card>
@@ -302,3 +369,5 @@ function ProjectDashboard() {
 export default function ProjectPage() {
     return <ProjectDashboard />;
 }
+
+    
