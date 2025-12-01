@@ -1,26 +1,43 @@
+
 'use client';
 
 import { useParams } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, doc, query, where, orderBy } from 'firebase/firestore';
-import type { Project, Expense } from '@/lib/types';
+import type { Project, Expense, Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, DollarSign } from 'lucide-react';
+import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const statusColors: { [key: string]: string } = {
   Active: 'border-green-500 bg-green-500/10 text-green-500',
   Moderate: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
   'At Risk': 'border-orange-500 bg-orange-500/10 text-orange-500',
   Delayed: 'border-red-500 bg-red-500/10 text-red-500',
+  Completed: 'border-primary bg-primary/10 text-primary',
 };
 
+
+function StatCard({ title, value, icon: Icon }: { title: string; value: string | number; icon: React.ElementType }) {
+    return (
+        <Card className="bg-background">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+            </CardContent>
+        </Card>
+    )
+}
 
 function ProjectDashboard() {
   const params = useParams();
@@ -33,33 +50,26 @@ function ProjectDashboard() {
   }, [firestore, id]);
 
   const { data: project, isLoading: isLoadingProject } = useDoc<Project>(projectDocRef);
-
-  const expensesQuery = useMemoFirebase(() => {
-    if (!firestore || !id) return null;
-    return query(
-        collection(firestore, 'expenses'),
-        where('projectId', '==', id),
-        orderBy('date', 'desc')
-    );
-  }, [firestore, id]);
-
-  const { data: expenses, isLoading: isLoadingExpenses } = useCollection<Expense>(expensesQuery);
   
-  const totalSpent = expenses?.reduce((acc, exp) => acc + exp.totalAmount, 0) || 0;
-  const budget = 5000000; // Placeholder budget
-  const remainingBudget = budget - totalSpent;
-  const burnRate = budget > 0 ? (totalSpent / budget) * 100 : 0;
+  const partnerQuery = useMemoFirebase(() => {
+      if (!firestore || !project) return null;
+      return query(collection(firestore, 'partnerships'), where('name', '==', project.partner), limit(1));
+  }, [firestore, project]);
+  const { data: partnerData } = useCollection<Partnership>(partnerQuery);
+  const partner = partnerData?.[0];
 
-  const isLoading = isLoadingProject || isLoadingExpenses;
+  const isLoading = isLoadingProject;
 
   if (isLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
+            <Skeleton className="h-24" />
         </div>
         <Skeleton className="h-64 w-full" />
       </div>
@@ -89,124 +99,136 @@ function ProjectDashboard() {
             <Link href="/management/projects"><ArrowLeft className="mr-2 h-4 w-4" />Back to All Projects</Link>
           </Button>
         <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-3">
-          <Briefcase className="h-8 w-8" />
           {project.name}
         </h1>
         <p className="text-muted-foreground">
-          A detailed dashboard for the {project.name} project.
+          {project.districts} – {project.participants || 50} Youth Participants
         </p>
       </header>
 
-       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <CardTitle>Project Snapshot</CardTitle>
-            <Badge variant="outline" className={statusColors[project.status]}>
-              {project.status}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Project Manager</p>
-            <p className="font-semibold">{project.manager}</p>
-          </div>
-           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Target Districts</p>
-            <p className="font-semibold">{project.districts}</p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Next Milestone</p>
-            <p className="font-semibold">{project.nextMilestone}</p>
-          </div>
-           <div className="md:col-span-3 space-y-2">
-            <p className="text-sm text-muted-foreground">Overall Completion</p>
-            <div className="flex items-center gap-4">
-              <Progress value={project.completion} className="h-3" />
-              <span className="font-bold text-lg">{project.completion}%</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+            <StatCard title="Participants" value={project.participants || 50} icon={Users} />
+            <StatCard title="Attendance Rate" value={`${project.attendanceRate || 88}%`} icon={Percent} />
+            <StatCard title="Avg. Learning Improvement" value={`${project.learningImprovement || 45}%`} icon={TrendingUp} />
+            <StatCard title="6-Month Adoption Rate" value={`${project.adoptionRate || 62}%`} icon={TrendingUp} />
+            <StatCard title="Partner" value={project.partner || 'Stanbic Bank'} icon={Handshake} />
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><DollarSign /> Financials</CardTitle>
-                <CardDescription>Budget vs. Actuals for this project.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                        <div className="p-2 bg-muted rounded-md">
-                            <p className="text-xs text-muted-foreground">Budget</p>
-                            <p className="text-lg font-bold">{formatCurrency(budget)}</p>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="participants">Participants</TabsTrigger>
+          <TabsTrigger value="attendance">Attendance</TabsTrigger>
+          <TabsTrigger value="sessions">Training Sessions</TabsTrigger>
+          <TabsTrigger value="resources">Resources & Materials</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="follow-up">Follow-Up</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview" className="mt-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Project Overview</CardTitle>
+                    <CardDescription>High-level information and status of the project.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="md:col-span-2 space-y-4">
+                         <div className="space-y-1">
+                            <h4 className="font-semibold">Project Info</h4>
+                            <p className="text-sm">ID: {project.id}</p>
+                            <p className="text-sm">Status: <Badge variant="outline" className={statusColors[project.status]}>{project.status}</Badge></p>
+                            <p className="text-sm">Timeline: {formatDateSafe(project.startDate, 'dateOnly')} - {formatDateSafe(project.endDate, 'dateOnly')}</p>
+                            <p className="text-sm">Owner: {project.manager}</p>
                         </div>
-                        <div className="p-2 bg-muted rounded-md">
-                            <p className="text-xs text-muted-foreground">Spent</p>
-                            <p className="text-lg font-bold text-red-500">{formatCurrency(totalSpent)}</p>
-                        </div>
-                        <div className="p-2 bg-muted rounded-md">
-                            <p className="text-xs text-muted-foreground">Remaining</p>
-                            <p className="text-lg font-bold text-green-500">{formatCurrency(remainingBudget)}</p>
+                        <div className="flex gap-2">
+                            <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download Charter</Button>
+                            <Button variant="outline"><LinkIcon className="mr-2 h-4 w-4" /> Share Link</Button>
+                            <Button><Pencil className="mr-2 h-4 w-4" /> Edit Project</Button>
                         </div>
                     </div>
-                     <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">Budget Burn Rate</p>
-                        <div className="flex items-center gap-4">
-                            <Progress value={burnRate} className="h-2" />
-                            <span className="font-bold text-sm">{burnRate.toFixed(0)}%</span>
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle>Impact Metrics</CardTitle>
-                <CardDescription>Key performance indicators for this project.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <p className="text-center text-muted-foreground py-12">KPI tracking for projects is coming soon.</p>
-            </CardContent>
-        </Card>
-      </div>
-      <Card>
-            <CardHeader>
-                <CardTitle>Expense Stream</CardTitle>
-                <CardDescription>All expenses logged for this project.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Submitted By</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {expenses && expenses.length > 0 ? (
-                            expenses.map(exp => (
-                                <TableRow key={exp.id}>
-                                    <TableCell>{formatDateSafe(exp.date, 'dateOnly')}</TableCell>
-                                    <TableCell className="font-medium">{exp.title}</TableCell>
-                                    <TableCell>{exp.userName}</TableCell>
-                                    <TableCell className="text-right font-mono">{formatCurrency(exp.totalAmount)}</TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={4} className="h-24 text-center">
-                                    No expenses have been logged for this project yet.
-                                </TableCell>
-                            </TableRow>
+                     <div className="md:col-span-1">
+                        {partner && (
+                             <Card className="bg-muted/50">
+                                <CardHeader>
+                                    <CardTitle className="text-base">{partner.name}</CardTitle>
+                                    <CardDescription>{partner.type}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="text-sm space-y-1">
+                                    <p>{partner.contactPerson}</p>
+                                    <p className="text-muted-foreground">{partner.contactEmail}</p>
+                                </CardContent>
+                            </Card>
                         )}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+                    </div>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="participants">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Participants</CardTitle>
+                    <CardDescription>Coming Soon: Manage and view all project participants.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-center py-12 text-muted-foreground">Participant management will be available here.</p>
+                </CardContent>
+            </Card>
+        </TabsContent>
+         <TabsContent value="attendance">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Attendance</CardTitle>
+                    <CardDescription>Coming Soon: Track attendance for training sessions.</CardDescription>
+                </CardHeader>
+                 <CardContent>
+                    <p className="text-center py-12 text-muted-foreground">Attendance tracking will be available here.</p>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="sessions">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Training Sessions</CardTitle>
+                    <CardDescription>Coming Soon: Log and view all training sessions delivered.</CardDescription>
+                </CardHeader>
+                 <CardContent>
+                    <p className="text-center py-12 text-muted-foreground">Session logging will be available here.</p>
+                </CardContent>
+            </Card>
+        </TabsContent>
+        <TabsContent value="resources">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Resources & Materials</CardTitle>
+                    <CardDescription>Coming Soon: Upload and access project materials.</CardDescription>
+                </CardHeader>
+                 <CardContent>
+                    <p className="text-center py-12 text-muted-foreground">Resource management will be available here.</p>
+                </CardContent>
+            </Card>
+        </TabsContent>
+         <TabsContent value="reports">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Reports</CardTitle>
+                    <CardDescription>Coming Soon: Auto-generated project reports and analytics.</CardDescription>
+                </CardHeader>
+                 <CardContent>
+                    <p className="text-center py-12 text-muted-foreground">Reporting features will be available here.</p>
+                </CardContent>
+            </Card>
+        </TabsContent>
+         <TabsContent value="follow-up">
+             <Card>
+                <CardHeader>
+                    <CardTitle>Follow-Up Tracking</CardTitle>
+                    <CardDescription>Coming Soon: Track long-term skill adoption and impact.</CardDescription>
+                </CardHeader>
+                 <CardContent>
+                    <p className="text-center py-12 text-muted-foreground">Follow-up tracking will be available here.</p>
+                </CardContent>
+            </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -214,3 +236,5 @@ function ProjectDashboard() {
 export default function ProjectPage() {
     return <ProjectDashboard />;
 }
+
+    

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -23,6 +24,7 @@ import {
   BarChart2,
   Users,
   CheckCircle,
+  TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -35,6 +37,7 @@ const statusColors: { [key: string]: string } = {
     Moderate: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
     'At Risk': 'border-orange-500 bg-orange-500/10 text-orange-500',
     Delayed: 'border-red-500 bg-red-500/10 text-red-500',
+    Completed: 'border-primary bg-primary/10 text-primary',
 };
 
 
@@ -113,11 +116,16 @@ export default function ProjectsDirectoryPage() {
   
   const stats = useMemo(() => {
     if (!projects) return { enrolled: 0, sessions: 0, attendance: 0, adoption: 0 };
+    // These are mock stats based on your blueprint. They can be replaced with real data queries.
+    const totalParticipants = projects.reduce((acc, p) => acc + (p.participants || 0), 0) || 50;
+    const totalAttendance = projects.reduce((acc, p) => acc + (p.attendanceRate || 0), 0) / (projects.length || 1) || 88;
+    const totalAdoption = projects.reduce((acc, p) => acc + (p.adoptionRate || 0), 0) / (projects.length || 1) || 62;
+
     return {
-        enrolled: 50, // Mock
+        enrolled: totalParticipants, 
         sessions: 12, // Mock
-        attendance: 92, // Mock
-        adoption: 78 // Mock
+        attendance: Math.round(totalAttendance),
+        adoption: Math.round(totalAdoption),
     }
   }, [projects]);
 
@@ -212,3 +220,5 @@ export default function ProjectsDirectoryPage() {
     </div>
   );
 }
+
+    

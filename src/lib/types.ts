@@ -152,10 +152,17 @@ export type Project = {
     name: string;
     manager: string;
     districts: string;
-    status: "Active" | "Moderate" | "At Risk" | "Delayed";
+    status: "Active" | "Moderate" | "At Risk" | "Delayed" | "Completed";
     completion: number;
     nextMilestone: string;
     createdAt?: Timestamp;
+    participants?: number;
+    attendanceRate?: number;
+    learningImprovement?: number;
+    adoptionRate?: number;
+    partner?: string;
+    startDate?: string;
+    endDate?: string;
 }
 
 export type ImpactMetric = {
@@ -1085,3 +1092,5 @@ export const TestimonyOutputSchema = z.object({
   hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
+
+    
