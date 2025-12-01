@@ -2,20 +2,18 @@
 
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import dynamic from 'next/dynamic';
+import { OFATeamRegistrationForm } from '@/components/forms/ofa/team-registration-form';
 
-const OFATeamRegistrationForm = dynamic(
-  () => import('@/components/forms/ofa/team-registration-form').then(mod => mod.OFATeamRegistrationForm),
-  {
-    loading: () => <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>,
-    ssr: false
-  }
-);
 
-export default function TeamRegistrationPage() {
+function TeamRegistrationPageContent() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
             <OFATeamRegistrationForm />
         </Suspense>
     )
+}
+
+
+export default function TeamRegistrationPage() {
+    return <TeamRegistrationPageContent />;
 }
