@@ -7,7 +7,7 @@ import { collection, doc, query, where, orderBy } from 'firebase/firestore';
 import type { Project, Expense, Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
+import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, CheckCircle, XCircle, BarChart, CheckSquare, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,11 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 
 const statusColors: { [key: string]: string } = {
@@ -57,12 +62,17 @@ const sampleParticipants = [
     { id: '10', name: 'John Okoth', phone: '076****717', village: 'Nkozi', businessStage: 'Growth', attendance: 96, businessScore: 94, avatar: 'https://i.imgur.com/Q2z2a4U.jpeg' },
 ];
 
+const sampleModules = ["Intro to Finance", "Budgeting 101", "Savings & Investment", "Digital Finance Tools", "Business Planning"];
+const sampleTrainers = ["Dianah Nansikombi", "Kasirye Constantine", "Guest Speaker"];
+
 
 function ProjectDashboard() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
+
 
   React.useEffect(() => {
     // Initialize attendance state
@@ -297,7 +307,7 @@ function ProjectDashboard() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                                <span className="font-medium flex items-center gap-2"><CheckCircle className="text-green-500"/> Present</span>
+                                <span className="font-medium flex items-center gap-2"><CheckSquare className="text-green-500"/> Present</span>
                                 <span className="font-bold text-2xl">{presentPercentage.toFixed(0)}%</span>
                             </div>
                              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
@@ -318,17 +328,67 @@ function ProjectDashboard() {
             </div>
         </TabsContent>
         <TabsContent value="sessions">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Training Sessions</CardTitle>
-                    <CardDescription>Coming Soon: Log and view all training sessions delivered.</CardDescription>
+           <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Training Sessions</CardTitle>
+                        <CardDescription>Log and view all training sessions delivered for this project.</CardDescription>
+                    </div>
+                    <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Session Record</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add Trainer Session Record</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label>Module</Label>
+                                    <Select><SelectTrigger><SelectValue placeholder="Select a module..." /></SelectTrigger><SelectContent>{sampleModules.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Trainer</Label>
+                                    <Select><SelectTrigger><SelectValue placeholder="Select a trainer..." /></SelectTrigger><SelectContent>{sampleTrainers.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Duration (minutes)</Label>
+                                    <Input type="number" placeholder="e.g., 90" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Observations / Challenges</Label>
+                                    <Textarea placeholder="Any notes from the session..." />
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label>Next Step</Label>
+                                    <Input placeholder="e.g., Follow up on budgeting exercise" />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button onClick={() => setIsSessionDialogOpen(false)}>Save Session</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </CardHeader>
-                 <CardContent>
-                    <p className="text-center py-12 text-muted-foreground">Session logging will be available here.</p>
+                 <CardContent className="space-y-4">
+                    <Table>
+                        <TableHeader><TableRow><TableHead>Module</TableHead><TableHead>Trainer</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            {/* Sample data */}
+                            <TableRow><TableCell>Intro to Finance</TableCell><TableCell>Dianah Nansikombi</TableCell><TableCell>Dec 1, 2025</TableCell></TableRow>
+                            <TableRow><TableCell>Budgeting 101</TableCell><TableCell>Kasirye Constantine</TableCell><TableCell>Dec 3, 2025</TableCell></TableRow>
+                        </TableBody>
+                    </Table>
+                     <div className="pt-4">
+                        <CardTitle>Module Effectiveness</CardTitle>
+                        <div className="h-48 flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-lg mt-2">
+                            Bar graph placeholder
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
-        <TabsContent value="resources">
+         <TabsContent value="resources">
              <Card>
                 <CardHeader>
                     <CardTitle>Resources & Materials</CardTitle>
@@ -369,5 +429,3 @@ function ProjectDashboard() {
 export default function ProjectPage() {
     return <ProjectDashboard />;
 }
-
-    
