@@ -7,11 +7,6 @@ import { useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { useMemo } from "react"
 import { subDays, startOfDay } from "date-fns"
-import { TeamDeployment } from "@/components/dashboard/team-deployment"
-import { ApprovalQueue } from "@/components/dashboard/approval-queue"
-import { TeamPerformanceLeaderboard } from "@/components/dashboard/team-performance-leaderboard"
-import { KeyResultsTracker } from "@/components/plan/key-results-tracker"
-import { EcosystemPulse } from "@/components/dashboard/ecosystem-pulse"
 import dynamic from "next/dynamic"
 import { Skeleton } from "../ui/skeleton"
 
@@ -55,17 +50,19 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery, { listen: false });
 
   return (
-    <>
-       <DashboardGrid className="mt-0 lg:grid-cols-1">
+    <DashboardGrid className="mt-6 lg:grid-cols-2">
+        <div className="lg:col-span-2 space-y-6">
             <DynamicKeyResultsTracker />
             <DynamicTeamPerformanceLeaderboard 
                 users={users} 
                 isLoading={isLoadingUsers}
             />
             <DynamicEcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
-            <DynamicApprovalQueue />
-            <DynamicTeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-      </DashboardGrid>
-    </>
+        </div>
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+             <DynamicApprovalQueue />
+             <DynamicTeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+        </div>
+    </DashboardGrid>
   )
 }

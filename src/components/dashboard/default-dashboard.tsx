@@ -3,13 +3,9 @@
 
 import type { User, Checkout, Checkin } from "@/lib/types"
 import { DashboardGrid } from "./dashboard-grid"
-import { TeamPulse } from "./team-activity-feed"
-import { DashboardCalendar } from "./dashboard-calendar"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
-import { TeamDeployment } from "./team-deployment"
 import { startOfDay } from "date-fns"
-import { MyWeeklyPlan } from "./my-weekly-plan"
 import { useMemo } from "react"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
@@ -37,7 +33,7 @@ export function DefaultDashboard({ profile }: DashboardProps) {
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
-      <DashboardGrid className="mt-0 lg:grid-cols-2">
+      <DashboardGrid className="mt-6 lg:grid-cols-2">
          <div className="flex flex-col gap-6">
           <DynamicDashboardCalendar />
           <DynamicMyWeeklyPlan />
