@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Activity, Checkin } from "@/lib/types"
+import type { User, Activity, Checkin, Program } from "@/lib/types"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
 import { useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
@@ -9,11 +9,12 @@ import { useMemo } from "react"
 import { subDays, startOfDay } from "date-fns"
 import dynamic from "next/dynamic"
 import { Skeleton } from "../ui/skeleton"
+import { useFirestore } from "@/firebase"
 
 const DynamicTeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-48" />, ssr: false });
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const DynamicEcosystemPulse = dynamic(() => import('@/components/dashboard/ecosystem-pulse').then(mod => mod.EcosystemPulse), { loading: () => <Skeleton className="h-64" />, ssr: false });
-const DynamicKeyResultsTracker = dynamic(() => import('@/components/plan/key-results-tracker').then(mod => mod.KeyResultsTracker), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const DynamicKeyResultsTracker = dynamic(() => import('@/components/plan/key-results-tracker'), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const DynamicTeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 interface DashboardProps {
@@ -21,6 +22,7 @@ interface DashboardProps {
 }
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
+    const firestore = useFirestore();
     
     const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
 
