@@ -164,6 +164,8 @@ export default function ChatPage() {
                 <p className="text-muted-foreground">What can I help you accomplish today?</p>
               </div>
 
+              {profile && <SmartReminders profile={profile} />}
+
               {isLoadingMessages && (
                 <>
                   <Skeleton className="h-16 w-3/4" />
@@ -178,7 +180,7 @@ export default function ChatPage() {
           </ScrollArea>
           
           <div className="p-4 border-t space-y-4">
-            {profile && <SmartReminders profile={profile} />}
+            
             <div className='flex items-center gap-2 overflow-x-auto pb-2'>
                  <Button variant="outline" size="sm" onClick={() => handleQuickAction('Plan my day')}>
                     <CalendarCheck className="h-4 w-4 mr-2" /> Plan My Day

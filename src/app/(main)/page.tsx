@@ -13,7 +13,6 @@ import { collection, query, where, Timestamp, orderBy, limit } from 'firebase/fi
 import { useMemo } from 'react';
 import { DailyActions } from '@/components/dashboard/daily-actions';
 import { QuickAddTask } from '@/components/dashboard/quick-add-task';
-import { SmartReminders } from '@/components/dashboard/smart-reminders';
 
 
 // Define a loading component for dynamic imports
@@ -112,8 +111,6 @@ export default function DashboardPage() {
         
         <DailyActions checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
         
-        <SmartReminders profile={profile} />
-
         <DashboardComponent profile={profile} />
     </div>
   );
