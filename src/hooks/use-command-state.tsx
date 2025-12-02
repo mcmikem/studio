@@ -1,6 +1,13 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import dynamic from 'next/dynamic';
+
+const GlobalCommandBar = dynamic(() =>
+  import('@/components/global-command-bar').then((mod) => mod.GlobalCommandBar),
+  { ssr: false }
+);
 
 interface CommandContextType {
   open: boolean;
@@ -15,6 +22,7 @@ export const CommandStateProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CommandContext.Provider value={{ open, setOpen }}>
       {children}
+      <GlobalCommandBar />
     </CommandContext.Provider>
   );
 };
@@ -26,3 +34,5 @@ export const useCommandState = () => {
   }
   return context;
 };
+
+    
