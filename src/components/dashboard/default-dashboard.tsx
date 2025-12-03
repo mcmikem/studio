@@ -20,7 +20,7 @@ interface DashboardProps {
   profile: User;
 }
 
-export function DefaultDashboard({ profile }: DashboardProps) {
+export default function DefaultDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
 
   const checkoutsQuery = useMemo(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)) : null, [firestore]);
