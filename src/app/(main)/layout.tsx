@@ -1,7 +1,6 @@
 
 'use client';
 
-import { AppHeader } from '@/components/header';
 import { MobileBottomNav } from '@/components/mobile-nav';
 import { AppSidebar } from '@/components/nav';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -44,7 +43,7 @@ export default function MainLayout({
             <SidebarInset>
                 <div className="relative flex flex-col flex-1 h-full">
                     <ViewAsBanner />
-                    <AppHeader />
+                    {/* The AppHeader is now moved to the page level for pages that need it */}
                     <main className="flex-1 p-4 lg:p-6 mb-20 md:mb-0">
                         {children}
                     </main>

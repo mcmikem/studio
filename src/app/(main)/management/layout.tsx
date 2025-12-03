@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -9,6 +8,7 @@ import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
 import { useViewAs } from '@/hooks/use-view-as';
+import { AppHeader } from '@/components/header';
 
 
 export default function ManagementLayout({
@@ -62,7 +62,9 @@ export default function ManagementLayout({
   });
 
   return (
-    <div className="flex flex-col gap-6">
+    <>
+      <AppHeader />
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
        <div className="border-b border-border">
         <div className="flex items-center gap-x-4 gap-y-2 p-2 flex-wrap">
             {tabs.map((tab) => (
@@ -84,5 +86,7 @@ export default function ManagementLayout({
       </div>
       <div>{children}</div>
     </div>
+    </>
   );
 }
+

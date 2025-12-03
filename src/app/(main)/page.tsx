@@ -6,17 +6,8 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { Loader2 } from 'lucide-react';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { QuickAddTask } from '@/components/dashboard/quick-add-task';
-import { DashboardLoading } from '@/components/dashboard/dashboard-loader';
-import dynamic from 'next/dynamic';
-
-// Dynamically import the DashboardLoader to keep the initial page chunk small.
-const DashboardLoader = dynamic(() => 
-  import('@/components/dashboard/dashboard-loader').then(mod => mod.DashboardLoader),
-  { 
-    loading: () => <DashboardLoading />,
-    ssr: false // Ensure it's only loaded on the client side
-  }
-);
+import { DashboardLoader } from '@/components/dashboard/dashboard-loader';
+import { AppHeader } from '@/components/header';
 
 export default function DashboardPage() {
   const { user, isUserLoading: isAuthLoading } = useUser();
@@ -42,10 +33,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-        <DashboardHeader profile={profile} />
-        <QuickAddTask />
-        <DashboardLoader profile={profile} />
-    </div>
+    <>
+      <AppHeader />
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+          <DashboardHeader profile={profile} />
+          <QuickAddTask />
+          <DashboardLoader profile={profile} />
+      </div>
+    </>
   );
 }
