@@ -48,7 +48,7 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     }, []); // Empty dependency array ensures it runs only once on mount
 
     const { currentTask, timeRemaining, progress } = useMemo(() => {
-        if (!checkin?.details?.timeBlocks || !currentTime) {
+        if (!checkin?.details?.timeBlocks || !Array.isArray(checkin.details.timeBlocks) || !currentTime) {
           return { currentTask: null, timeRemaining: 0, progress: 0 };
         }
     
@@ -57,7 +57,10 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     
         for (const block of checkin.details.timeBlocks) {
           try {
-            if (!block.startTime || !block.endTime || !block.startTime.includes(':') || !block.endTime.includes(':')) continue;
+            // **CRITICAL FIX**: Ensure block and its time properties are valid before parsing
+            if (!block || typeof block.startTime !== 'string' || typeof block.endTime !== 'string' || !block.startTime.includes(':') || !block.endTime.includes(':')) {
+                continue; // Skip this malformed block
+            }
 
             const startTime = parse(block.startTime, 'hh:mm a', baseDate);
             const endTime = parse(block.endTime, 'hh:mm a', baseDate);
