@@ -34,13 +34,12 @@ import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
 import { collection, query, orderBy, limit, Timestamp, where } from "firebase/firestore"
 import { Skeleton } from "../ui/skeleton"
-import { ApprovalQueue } from "./approval-queue"
 import dynamic from "next/dynamic"
-import { TeamDeployment } from "./team-deployment"
 import { startOfDay } from "date-fns"
 
 
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -238,8 +237,8 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
   const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
   const checkinsQuery = useMemoFirebase((db) => {
-    if(!firestore) return null;
-    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
+    if(!db) return null;
+    return query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
   }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 

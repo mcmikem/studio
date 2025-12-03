@@ -3,7 +3,7 @@
 
 import type { User, Activity, Checkin } from "@/lib/types"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { useMemoFirebase, useCollection } from "@/firebase"
+import { useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { subDays, startOfDay } from "date-fns"
 import { useFirestore } from "@/firebase"

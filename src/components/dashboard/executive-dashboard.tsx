@@ -7,12 +7,15 @@ import { useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { useMemo } from "react"
 import { subDays, startOfDay } from "date-fns"
-import { TeamDeployment } from '@/components/dashboard/team-deployment'
-import { ApprovalQueue } from '@/components/dashboard/approval-queue'
-import { EcosystemPulse } from '@/components/dashboard/ecosystem-pulse'
-import { KeyResultsTracker } from '@/components/plan/key-results-tracker'
-import { TeamPerformanceLeaderboard } from '@/components/dashboard/team-performance-leaderboard'
 import { useFirestore } from "@/firebase"
+import dynamic from 'next/dynamic'
+import { Skeleton } from "../ui/skeleton"
+
+const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const ApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const EcosystemPulse = dynamic(() => import('@/components/dashboard/ecosystem-pulse').then(mod => mod.EcosystemPulse), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const KeyResultsTracker = dynamic(() => import('@/components/plan/key-results-tracker').then(mod => mod.KeyResultsTracker), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 interface DashboardProps {
   profile: User;

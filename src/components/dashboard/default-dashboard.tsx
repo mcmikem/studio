@@ -8,11 +8,24 @@ import { collection, query, orderBy, limit, where, Timestamp } from "firebase/fi
 import { startOfDay } from "date-fns"
 import { useMemo } from "react"
 import { Skeleton } from "../ui/skeleton"
-import { TeamDeployment } from '@/components/dashboard/team-deployment'
-import { TeamPulse } from '@/components/dashboard/team-activity-feed'
-import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar'
-import { MyWeeklyPlan } from '@/components/dashboard/my-weekly-plan'
+import dynamic from "next/dynamic"
 
+const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
+const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
+const DashboardCalendar = dynamic(() => import('@/components/dashboard/dashboard-calendar').then(mod => mod.DashboardCalendar), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
+const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan').then(mod => mod.MyWeeklyPlan), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
 
 interface DashboardProps {
   profile: User;

@@ -10,7 +10,10 @@ import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp } from 'firebase/firestore';
 import { startOfDay } from 'date-fns';
-import { TeamDeployment } from './team-deployment';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '../ui/skeleton';
+
+const TeamDeployment = dynamic(() => import('./team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 function QuickActionsCard() {
   return (
