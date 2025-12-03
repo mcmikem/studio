@@ -28,6 +28,4 @@ import './flows/parse-workplan-flow';
 
 genkit({
   plugins: [googleAI({ apiVersion: 'v1' })],
-  logLevel: 'debug',
-  enableTracingAndMetrics: true,
 });
