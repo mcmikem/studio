@@ -76,22 +76,25 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
       let primaryMission: string | null = null;
       
       if (userCheckin) {
-        checkinTime = format(userCheckin.timestamp.toDate(), 'p');
+        checkinTime = userCheckin.timestamp ? format(userCheckin.timestamp.toDate(), 'p') : null;
         primaryMission = userCheckin.primaryMission;
-        if (userCheckin.details?.timeBlocks) {
+        
+        // Defensive check for timeBlocks
+        if (userCheckin.details && Array.isArray(userCheckin.details.timeBlocks)) {
           for (const block of userCheckin.details.timeBlocks) {
             try {
               const now = currentTime;
               const baseDate = startOfDay(now);
-              if (!block.startTime || !block.endTime) continue;
+              if (!block.startTime || !block.endTime || !block.startTime.includes(':') || !block.endTime.includes(':')) continue;
+
               const startTime = parse(block.startTime, 'hh:mm a', baseDate);
               const endTime = parse(block.endTime, 'hh:mm a', baseDate);
-              
-              if (!isValid(startTime) || !isValid(endTime)) {
-                console.error("Invalid time format in time block:", block);
-                continue;
+      
+               if (!isValid(startTime) || !isValid(endTime)) {
+                  console.error("Invalid time format in time block:", block);
+                  continue;
               }
-              
+
               if (isWithinInterval(now, { start: startTime, end: endTime })) {
                 currentTask = block.description;
                 break;
