@@ -6,7 +6,6 @@ import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
 import { useMemoFirebase, useCollection } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
 import { subDays, startOfDay } from "date-fns"
-import { Skeleton } from "../ui/skeleton"
 import { PartnershipPipeline } from '@/components/dashboard/program-manager/partnership-pipeline'
 import { QuickInsights } from '@/components/dashboard/program-manager/quick-insights'
 import { MyWeeklyPlan } from '@/components/dashboard/my-weekly-plan'
