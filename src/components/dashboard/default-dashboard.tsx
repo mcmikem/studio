@@ -8,12 +8,10 @@ import { collection, query, orderBy, limit, where, Timestamp } from "firebase/fi
 import { startOfDay } from "date-fns"
 import { useMemo } from "react"
 import { Skeleton } from "../ui/skeleton"
-import dynamic from "next/dynamic"
-
-const DynamicTeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
-const DynamicTeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), { loading: () => <Skeleton className="h-64" />, ssr: false });
-const DynamicDashboardCalendar = dynamic(() => import('@/components/dashboard/dashboard-calendar').then(mod => mod.DashboardCalendar), { loading: () => <Skeleton className="h-64" />, ssr: false });
-const DynamicMyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan').then(mod => mod.MyWeeklyPlan), { loading: () => <Skeleton className="h-64" />, ssr: false });
+import { TeamDeployment } from '@/components/dashboard/team-deployment'
+import { TeamPulse } from '@/components/dashboard/team-activity-feed'
+import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar'
+import { MyWeeklyPlan } from '@/components/dashboard/my-weekly-plan'
 
 
 interface DashboardProps {
@@ -35,12 +33,12 @@ export default function DefaultDashboard({ profile }: DashboardProps) {
   return (
       <DashboardGrid className="mt-6 lg:grid-cols-2">
          <div className="flex flex-col gap-6">
-          <DynamicDashboardCalendar />
-          <DynamicMyWeeklyPlan />
+          <DashboardCalendar />
+          <MyWeeklyPlan />
         </div>
         <div className="flex flex-col gap-6">
-           <DynamicTeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-           <DynamicTeamPulse checkouts={checkouts} />
+           <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+           <TeamPulse checkouts={checkouts} />
         </div>
       </DashboardGrid>
   )
