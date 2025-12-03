@@ -56,30 +56,28 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
         const baseDate = startOfDay(now);
     
         for (const block of checkin.details.timeBlocks) {
-          try {
-            // **CRITICAL FIX**: Ensure block and its time properties are valid before parsing
-            if (!block || typeof block.startTime !== 'string' || typeof block.endTime !== 'string' || !block.startTime.includes(':') || !block.endTime.includes(':')) {
-                continue; // Skip this malformed block
-            }
+            // **CRITICAL FIX**: Add robust guards to prevent parsing invalid data.
+            if (block && typeof block.startTime === 'string' && typeof block.endTime === 'string' && block.startTime.includes(':') && block.endTime.includes(':')) {
+                try {
+                    const startTime = parse(block.startTime, 'hh:mm a', baseDate);
+                    const endTime = parse(block.endTime, 'hh:mm a', baseDate);
+            
+                     if (!isValid(startTime) || !isValid(endTime)) {
+                        console.error("Invalid time format in time block:", block);
+                        continue;
+                    }
 
-            const startTime = parse(block.startTime, 'hh:mm a', baseDate);
-            const endTime = parse(block.endTime, 'hh:mm a', baseDate);
-    
-             if (!isValid(startTime) || !isValid(endTime)) {
-                console.error("Invalid time format in time block:", block);
-                continue;
+                    if (isWithinInterval(now, { start: startTime, end: endTime })) {
+                      const remaining = differenceInMilliseconds(endTime, now);
+                      const totalDuration = differenceInMilliseconds(endTime, startTime);
+                      const elapsed = totalDuration - remaining;
+                      const currentProgress = totalDuration > 0 ? (elapsed / totalDuration) * 100 : 0;
+                      return { currentTask: block.description, timeRemaining: remaining, progress: currentProgress };
+                    }
+                } catch (e) {
+                    console.error("Error parsing time block for focus card:", block, e);
+                }
             }
-
-            if (isWithinInterval(now, { start: startTime, end: endTime })) {
-              const remaining = differenceInMilliseconds(endTime, now);
-              const totalDuration = differenceInMilliseconds(endTime, startTime);
-              const elapsed = totalDuration - remaining;
-              const currentProgress = totalDuration > 0 ? (elapsed / totalDuration) * 100 : 0;
-              return { currentTask: block.description, timeRemaining: remaining, progress: currentProgress };
-            }
-          } catch (e) {
-            console.error("Error parsing time block for focus card:", block, e);
-          }
         }
         return { currentTask: null, timeRemaining: 0, progress: 0 };
     }, [checkin, currentTime]);
