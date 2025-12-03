@@ -36,6 +36,9 @@ import { collection, query, orderBy, limit, Timestamp, where } from "firebase/fi
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
 import { startOfDay } from "date-fns"
+import { AppHeader } from "../header"
+import { DashboardHeader } from "./dashboard-header"
+import { QuickAddTask } from "./quick-add-task"
 
 
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
@@ -245,6 +248,10 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
 
   return (
     <>
+      <AppHeader />
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <DashboardHeader profile={profile} />
+        <QuickAddTask />
        <DashboardGrid className="mt-6 lg:grid-cols-2">
          <div className="lg:col-span-2">
             <BudgetHealth expenses={allExpenses} income={allIncome} />
@@ -254,6 +261,7 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
         <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
         <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
       </DashboardGrid>
+      </div>
     </>
   )
 }

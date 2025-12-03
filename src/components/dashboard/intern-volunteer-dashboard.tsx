@@ -12,6 +12,8 @@ import { collection, query, where, Timestamp } from 'firebase/firestore';
 import { startOfDay } from 'date-fns';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
+import { AppHeader } from '../header';
+import { DashboardHeader } from './dashboard-header';
 
 const TeamDeployment = dynamic(() => import('./team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
@@ -49,18 +51,24 @@ export function InternVolunteerDashboard({ profile }: DashboardProps) {
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
-    <DashboardGrid className="mt-6">
-        <QuickActionsCard />
-        <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-        <Card className="min-h-96">
-          <CardHeader>
-            <CardTitle>My Tasks &amp; Impact</CardTitle>
-            <CardDescription>
-              Coming Soon: A view of your assigned tasks and the impact you're
-              making.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-    </DashboardGrid>
+    <>
+      <AppHeader />
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <DashboardHeader profile={profile} />
+        <DashboardGrid className="mt-6">
+            <QuickActionsCard />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+            <Card className="min-h-96">
+              <CardHeader>
+                <CardTitle>My Tasks &amp; Impact</CardTitle>
+                <CardDescription>
+                  Coming Soon: A view of your assigned tasks and the impact you're
+                  making.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+        </DashboardGrid>
+      </div>
+    </>
   );
 }

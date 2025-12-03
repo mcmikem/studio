@@ -4,12 +4,10 @@
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Loader2 } from 'lucide-react';
-import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { QuickAddTask } from '@/components/dashboard/quick-add-task';
 import { DashboardLoader } from '@/components/dashboard/dashboard-loader';
-import { AppHeader } from '@/components/header';
+import { Suspense } from 'react';
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { profile, isLoading: isProfileLoading } = useUserProfile(user);
 
@@ -33,13 +31,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <>
-      <AppHeader />
-      <div className="flex flex-col gap-6 p-4 lg:p-6">
-          <DashboardHeader profile={profile} />
-          <QuickAddTask />
-          <DashboardLoader profile={profile} />
-      </div>
-    </>
+    <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
+        <DashboardLoader profile={profile} />
+    </Suspense>
   );
+}
+
+
+export default function DashboardPage() {
+    return <DashboardPageContent />;
 }

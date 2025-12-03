@@ -9,6 +9,9 @@ import { subDays, startOfDay } from "date-fns"
 import { useFirestore } from "@/firebase"
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AppHeader } from "../header"
+import { DashboardHeader } from "./dashboard-header"
+import { QuickAddTask } from "./quick-add-task"
 
 const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), {
   loading: () => <Skeleton className="h-64" />,
@@ -63,14 +66,21 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   
 
   return (
-    <DashboardGrid className="mt-6 lg:grid-cols-2">
-        <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
-        <QuickInsights activities={activities} />
-        <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-        <DashboardCalendar />
-        <div className="lg:col-span-2">
-            <MyWeeklyPlan />
-        </div>
-    </DashboardGrid>
+    <>
+      <AppHeader />
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <DashboardHeader profile={profile} />
+        <QuickAddTask />
+        <DashboardGrid className="mt-6 lg:grid-cols-2">
+            <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
+            <QuickInsights activities={activities} />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+            <DashboardCalendar />
+            <div className="lg:col-span-2">
+                <MyWeeklyPlan />
+            </div>
+        </DashboardGrid>
+      </div>
+    </>
   )
 }

@@ -10,6 +10,10 @@ import { subDays, startOfDay } from "date-fns"
 import { useFirestore } from "@/firebase"
 import dynamic from 'next/dynamic'
 import { Skeleton } from "../ui/skeleton"
+import { AppHeader } from "../header"
+import { DashboardHeader } from "./dashboard-header"
+import { QuickAddTask } from "./quick-add-task"
+
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const ApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
@@ -52,19 +56,26 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery, { listen: false });
 
   return (
-    <DashboardGrid className="mt-6 lg:grid-cols-2">
-        <div className="lg:col-span-2 space-y-6">
-            <KeyResultsTracker />
-            <TeamPerformanceLeaderboard 
-                users={users} 
-                isLoading={isLoadingUsers}
-            />
-            <EcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
-        </div>
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-             <ApprovalQueue />
-             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-        </div>
-    </DashboardGrid>
+    <>
+      <AppHeader />
+      <div className="flex flex-col gap-6 p-4 lg:p-6">
+        <DashboardHeader profile={profile} />
+        <QuickAddTask />
+        <DashboardGrid className="mt-6 lg:grid-cols-2">
+            <div className="lg:col-span-2 space-y-6">
+                <KeyResultsTracker />
+                <TeamPerformanceLeaderboard 
+                    users={users} 
+                    isLoading={isLoadingUsers}
+                />
+                <EcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
+            </div>
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <ApprovalQueue />
+                <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+            </div>
+        </DashboardGrid>
+      </div>
+    </>
   )
 }
