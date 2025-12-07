@@ -89,7 +89,8 @@ export function TrainingAttendanceForm() {
   const onSubmit = async (data: TrainingFormData) => {
      if (!firestore) return;
     
-    const schoolName = schools?.find(s => s.id === data.schoolId)?.schoolName || 'Unknown School';
+    const selectedSchool = schools?.find(s => s.id === data.schoolId);
+    const schoolName = selectedSchool?.name || 'Unknown School';
 
     const formData = { ...data, schoolName, createdAt: serverTimestamp() };
 
