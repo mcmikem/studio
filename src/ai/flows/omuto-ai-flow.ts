@@ -11,7 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import type { OmutoAIInput, OmutoAIOutput, SearchResultItem, AlertInput } from '@/lib/types';
-import { SearchResultItemSchema, OmutoAIInputSchema } from '@/lib/types';
+import { SearchResultItemSchema, OmutoAIInputSchema, OmutoAIOutputSchema, AlertInputSchema } from '@/lib/types';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { collection, query, where, getDocs, doc, addDoc, getDoc, serverTimestamp, orderBy, limit, Timestamp } from 'firebase/firestore';
@@ -140,7 +140,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
                         message: `${userProfile.name} has submitted their end-of-day report.`,
                         action: '/stream',
                         creatorId: userId,
-                    } as AlertInput);
+                    });
 
                     return { success: true, message: `Successfully submitted the checkout report for ${userProfile.name}.` };
                 } catch (error: any) {
