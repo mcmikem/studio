@@ -90,56 +90,56 @@ function SchoolVisitFormComponent() {
   };
 
   return (
-    <Card>
-        <CardHeader>
-            <div className="flex items-center gap-4">
-                <Heart className="h-8 w-8 text-primary" />
-                <div>
-                    <CardTitle>RED Campaign School Visit M&E</CardTitle>
-                    <CardDescription>Log observations and feedback from a school visit.</CardDescription>
+        <Card>
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                    <Heart className="h-8 w-8 text-primary" />
+                    <div>
+                        <CardTitle>RED Campaign School Visit M&E</CardTitle>
+                        <CardDescription>Log observations and feedback from a school visit.</CardDescription>
+                    </div>
                 </div>
-            </div>
-      </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          </CardHeader>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="schoolName">School Name</Label>
+                        <Input id="schoolName" {...register('schoolName')} placeholder="e.g., St. Mary's College Kisubi" />
+                        {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName.message}</p>}
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="dateOfVisit">Date of Visit</Label>
+                        <Input id="dateOfVisit" type="date" {...register('dateOfVisit')} />
+                        {errors.dateOfVisit && <p className="text-sm text-destructive">{errors.dateOfVisit.message}</p>}
+                    </div>
+                </div>
                 <div className="space-y-2">
-                    <Label htmlFor="schoolName">School Name</Label>
-                    <Input id="schoolName" {...register('schoolName')} placeholder="e.g., St. Mary's College Kisubi" />
-                    {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName.message}</p>}
+                    <Label htmlFor="objectivesMet">Objectives Met</Label>
+                    <Textarea id="objectivesMet" {...register('objectivesMet')} placeholder="Describe which of the visit's goals were achieved..." className="min-h-[100px]" />
+                    {errors.objectivesMet && <p className="text-sm text-destructive">{errors.objectivesMet.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="dateOfVisit">Date of Visit</Label>
-                    <Input id="dateOfVisit" type="date" {...register('dateOfVisit')} />
-                    {errors.dateOfVisit && <p className="text-sm text-destructive">{errors.dateOfVisit.message}</p>}
+                    <Label htmlFor="challengesObserved">Challenges Observed</Label>
+                    <Textarea id="challengesObserved" {...register('challengesObserved')} placeholder="e.g., Low student participation, lack of teacher support..." className="min-h-[100px]" />
                 </div>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="objectivesMet">Objectives Met</Label>
-                <Textarea id="objectivesMet" {...register('objectivesMet')} placeholder="Describe which of the visit's goals were achieved..." className="min-h-[100px]" />
-                {errors.objectivesMet && <p className="text-sm text-destructive">{errors.objectivesMet.message}</p>}
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="challengesObserved">Challenges Observed</Label>
-                <Textarea id="challengesObserved" {...register('challengesObserved')} placeholder="e.g., Low student participation, lack of teacher support..." className="min-h-[100px]" />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="teacherFeedback">Teacher Feedback</Label>
-                <Textarea id="teacherFeedback" {...register('teacherFeedback')} placeholder="Summarize key feedback points from teachers..." className="min-h-[100px]" />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="studentFeedback">Student Feedback</Label>
-                <Textarea id="studentFeedback" {...register('studentFeedback')} placeholder="Summarize key feedback points from students..." className="min-h-[100px]" />
-            </div>
-        </CardContent>
-        <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Visit Report
-            </Button>
-        </CardFooter>
-      </form>
-    </Card>
+                 <div className="space-y-2">
+                    <Label htmlFor="teacherFeedback">Teacher Feedback</Label>
+                    <Textarea id="teacherFeedback" {...register('teacherFeedback')} placeholder="Summarize key feedback points from teachers..." className="min-h-[100px]" />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="studentFeedback">Student Feedback</Label>
+                    <Textarea id="studentFeedback" {...register('studentFeedback')} placeholder="Summarize key feedback points from students..." className="min-h-[100px]" />
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button type="submit" disabled={isSubmitting} className="w-full">
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Save Visit Report
+                </Button>
+            </CardFooter>
+          </form>
+        </Card>
   );
 }
 
@@ -147,7 +147,7 @@ export default function RedSchoolVisitPage() {
     return (
         <Suspense>
             <div className="space-y-4">
-                <Button variant="outline" asChild>
+                 <Button variant="outline" asChild>
                     <Link href="/meal">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to MEAL Hub

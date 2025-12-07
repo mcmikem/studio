@@ -9,8 +9,16 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
-// This ensures all flows are registered with the central AI instance.
-import { ai } from './genkit';
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
+
+// This is where the server-side configuration is done.
+// The `ai` object is augmented with the plugin.
+const ai = genkit({
+    plugins: [
+        googleAI({ apiKey: process.env.GEMINI_API_KEY }),
+    ],
+});
 
 // By importing the flows, we ensure they are attached to the `ai` instance
 // that the dev server will use.
@@ -27,6 +35,5 @@ import './flows/grant-writer-flow';
 import './flows/parse-operational-plan-flow';
 import './flows/parse-workplan-flow';
 
-// The 'ai' object is already configured in genkit.ts, so we just need to make
-// sure it's loaded here. The Genkit CLI will pick it up automatically.
+
 export default ai;

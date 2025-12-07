@@ -13,8 +13,6 @@ import type { DailyPlannerAIInput, DailyPlannerAIOutput } from '@/lib/types';
 import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
 
 export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
-  console.log('Starting dailyPlannerAI flow');
-
   const dailyPlannerPrompt = ai.definePrompt(
       {
         name: 'dailyPlannerPrompt',
@@ -50,24 +48,11 @@ export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyP
       }
   );
 
-  // Sanitize the key results to ensure dates are strings and no complex objects are passed
-  const sanitizedKeyResults = (input.keyResults || []).map((kr: any) => ({
-    ...kr,
-    deadline: kr.deadline ? new Date(kr.deadline).toISOString().split('T')[0] : 'N/A',
-    createdAt: undefined, // Remove complex objects
-  }));
-
-  const sanitizedInput = {
-      ...input,
-      keyResults: sanitizedKeyResults,
-  };
-
-  const {output} = await dailyPlannerPrompt(sanitizedInput);
+  const {output} = await dailyPlannerPrompt(input);
   
   if (!output) {
     throw new Error('AI failed to generate a plan.');
   }
   
-  console.log('dailyPlannerAI flow completed successfully.');
   return output;
 }
