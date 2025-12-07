@@ -11,6 +11,7 @@ import { getFirebaseAdmin } from '@/firebase/server';
 import { collection, query, where, orderBy, getDocs, Timestamp, limit } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { z } from 'zod';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export async function generateSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     console.log('Starting generateSmartReminders flow');
@@ -78,6 +79,7 @@ export async function generateSmartReminders(input: SmartRemindersInput): Promis
     const smartRemindersPrompt = ai.definePrompt(
         {
           name: 'smartRemindersPrompt',
+          model: googleAI('gemini-1.5-flash-latest'),
           tools: [getUpcomingEventsForUserToolObject, getPendingTasksForUserToolObject],
           output: { schema: SmartRemindersOutputSchema },
           prompt: `You are a proactive, intelligent assistant and performance coach for the Omuto Foundation, a youth-led NGO in Uganda. Your goal is to help team members stay on track by providing smart, actionable reminders based on their current context. Your output must be a JSON object conforming to the schema.
