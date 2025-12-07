@@ -164,6 +164,7 @@ function PlannerCheckinFormComponent() {
     for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
         try {
           const output = await dailyPlannerAI({
+            userName: profile.name,
             userRole: profile.role,
             primaryMission: data.primaryMission,
             weeklyPriorities: weeklyPlan?.individualTasks || [],
