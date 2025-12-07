@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -60,6 +61,7 @@ export function CreateAlertForm() {
     const alertInput: AlertInput = {
       ...data,
       creatorId: user.uid,
+      targetUserIds: [], // Broadcasting to everyone
     };
 
     try {

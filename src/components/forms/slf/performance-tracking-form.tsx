@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm, Controller, useWatch } from 'react-hook-form';
@@ -91,10 +92,15 @@ export function PerformanceTrackingForm() {
     
     const selectedPrefect = prefects?.find(p => p.id === data.prefectId);
 
+    if (!selectedPrefect) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Selected prefect not found.' });
+      return;
+    }
+
     const formData = {
       ...data,
-      prefectName: selectedPrefect?.name || 'Unknown Prefect',
-      schoolId: selectedPrefect?.schoolId || 'Unknown School',
+      prefectName: selectedPrefect.name,
+      schoolId: selectedPrefect.schoolId,
       createdAt: serverTimestamp(),
     };
 
@@ -102,7 +108,7 @@ export function PerformanceTrackingForm() {
       await addDocumentNonBlocking(collection(firestore, 'prefect-performance'), formData);
       toast({
         title: 'Performance Logged!',
-        description: `The performance for ${selectedPrefect?.name} has been recorded for the month.`,
+        description: `The performance for ${selectedPrefect.name} has been recorded for the month.`,
       });
       reset();
       router.push('/meal/slf');
@@ -181,5 +187,3 @@ export function PerformanceTrackingForm() {
     </div>
   );
 }
-
-      

@@ -107,7 +107,7 @@ export function SessionAttendanceForm() {
         description: `Attendance for ${data.topic} has been recorded.`,
       });
       reset();
-      router.push('/forms/program-logs/yoskills');
+      router.push('/meal/yoskills');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -116,7 +116,7 @@ export function SessionAttendanceForm() {
   return (
     <div className="space-y-4">
       <Button variant="outline" asChild>
-        <Link href="/forms/program-logs/yoskills">
+        <Link href="/meal/yoskills">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to YoSkills Hub
         </Link>
