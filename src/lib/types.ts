@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -1016,6 +1017,7 @@ export const HistoryMessageSchema = z.object({
   role: z.enum(['user', 'model']),
   content: z.array(z.object({ text: z.string() })),
 });
+
 export const OmutoAIInputSchema = z.object({
   question: z.string().describe("The user's current question or message."),
   history: z.array(HistoryMessageSchema).optional().describe('The chat history between the user and the AI.'),
@@ -1096,3 +1098,5 @@ export const TestimonyOutputSchema = z.object({
   hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
+
+    

@@ -15,7 +15,6 @@ import { SearchResultItemSchema, OmutoAIInputSchema, OmutoAIOutputSchema, AlertI
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { collection, query, where, getDocs, doc, addDoc, getDoc, serverTimestamp, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { createAlert } from './create-alert-flow';
 import { googleAI } from '@genkit-ai/google-genai';
 
 export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
@@ -24,7 +23,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     try {
         const { firestore } = getFirebaseAdmin();
 
-        // --- TOOL DEFINITIONS (MOVED INSIDE) ---
+        // --- TOOL DEFINITIONS ---
 
         const findUsersByNameToolObject = ai.defineTool(
             {
@@ -134,7 +133,6 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
 
                     await addDoc(collection(firestore, 'checkouts'), checkoutData);
                     
-                    // Do not call createAlert from here. This will be handled on the client.
                     return { success: true, message: `Successfully submitted the checkout report for ${userProfile.name}.` };
                 } catch (error: any) {
                     console.error("Error creating checkout:", error);
@@ -200,7 +198,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         const history = input.history || [];
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
-        const { text, toolRequest } = await ai.generate({
+        const llmResponse = await ai.generate({
             model: googleAI('gemini-1.5-flash-latest'),
             prompt: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
 Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
@@ -230,13 +228,27 @@ User's message: "${input.question}"`,
             }
         });
         
-        const answer = text;
+        if (llmResponse.toolRequest) {
+            console.log('Tool request received:', llmResponse.toolRequest);
+            const toolResponse = await llmResponse.toolRequest.run();
+            
+            const finalResponse = await ai.generate({
+                model: googleAI('gemini-1.5-flash-latest'),
+                prompt: `You are Omuto AI. You previously decided to use a tool to answer the user's question. Now, based on the tool's output, provide a final, user-friendly answer.
+                Original Question: "${input.question}"`,
+                history: [
+                    ...history,
+                    llmResponse.message,
+                    { role: 'tool', content: [{ output: toolResponse }] }
+                ]
+            });
+            return { answer: finalResponse.text };
+        }
+
+        const answer = llmResponse.text;
         
         if (!answer) {
-            console.error("AI did not return a text response, even after potential tool use.", { text, toolRequest });
-            if (toolRequest) {
-              return { answer: "I've processed your request using my tools, but I don't have a final text summary to provide. Let me know if you need anything else!" };
-            }
+            console.error("AI did not return a text response.", { llmResponse });
             return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
         }
         
@@ -248,3 +260,5 @@ User's message: "${input.question}"`,
         return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. Please try again.` };
     }
 }
+
+    
