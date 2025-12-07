@@ -11,8 +11,6 @@ import { GrantFinderOutputSchema } from '@/lib/types';
 import { googleAI } from '@genkit-ai/google-genai';
 
 export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOutput> {
-    console.log('Starting findGrants flow');
-
     const findGrantOpportunitiesToolObject = ai.defineTool(
         {
             name: 'findGrantOpportunities',
@@ -86,6 +84,5 @@ export async function findGrants(input: GrantFinderInput): Promise<GrantFinderOu
       throw new Error('AI failed to generate a response for grant opportunities.');
     }
     
-    console.log('findGrants flow completed successfully.');
     return output;
 }

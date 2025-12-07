@@ -18,7 +18,7 @@ import Link from 'next/link';
 import type { YoSkillsCircle, YoSkillsYouth } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 

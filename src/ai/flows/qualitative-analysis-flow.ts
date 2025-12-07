@@ -14,8 +14,6 @@ import { z } from 'zod';
 import { googleAI } from '@genkit-ai/google-genai';
 
 export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput): Promise<QualitativeAnalysisOutput> {
-    console.log('Starting analyzeProgramQualitativeData flow');
-
     const getActivitiesForProgramToolObject = ai.defineTool(
         {
             name: 'getActivitiesForProgram',
@@ -76,6 +74,5 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");
     }
     
-    console.log('analyzeProgramQualitativeData flow completed successfully.');
     return output;
 }
