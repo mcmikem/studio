@@ -299,7 +299,7 @@ export type Equipment = {
     currentHolder: string;
     purchaseDate?: string;
     createdAt: Timestamp;
-}
+};
 
 export type TaskTemplate = {
     id: string;
@@ -1004,10 +1004,10 @@ export const OmutoAIOutputSchema = z.object({
 });
 export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
 
-export const KeyResultAISchema = z.object({
+const KeyResultAISchema = z.object({
   title: z.string(),
   description: z.string(),
-  deadline: z.string(),
+  deadline: z.string(), // YYYY-MM-DD format
 });
 export type KeyResultAI = z.infer<typeof KeyResultAISchema>;
 
@@ -1094,3 +1094,7 @@ export const TestimonyOutputSchema = z.object({
   hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
+
+export type KeyResult = z.infer<typeof ParsePlanKeyResultSchema>;
+
+    

@@ -20,10 +20,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, where, getDocs, Timestamp, limit, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, Timestamp, limit, serverTimestamp, doc } from 'firebase/firestore';
 import type { KeyResultAI, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
-import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks, ThumbsUp, ThumbsDown, BrainCircuit, Link as LinkIcon, Puzzle, Wrench } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks, BrainCircuit, Link as LinkIcon, Puzzle, Wrench } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { startOfWeek } from 'date-fns';
 import { Separator } from '../ui/separator';
@@ -33,6 +33,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Skeleton } from '../ui/skeleton';
 import { formatDateSafe } from '@/lib/utils';
+import type { KeyResult } from '@/lib/types';
 
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
@@ -66,8 +67,6 @@ function PlannerCheckinFormComponent() {
   const { toast } = useToast();
   const [generationStatus, setGenerationStatus] = useState<'idle' | 'loading' | 'retrying' | 'error'>('idle');
   const [aiOutput, setAiOutput] = useState<DailyPlannerAIOutput | null>(null);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const [feedbackComment, setFeedbackComment] = useState('');
   
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyWorkplan | null>(null);
   const [isLoadingWeeklyPlan, setIsLoadingWeeklyPlan] = useState(true);
@@ -111,7 +110,7 @@ function PlannerCheckinFormComponent() {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'));
   }, [firestore]);
-  const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResultAI>(keyResultsQuery);
+  const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
 
   const templatesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -154,12 +153,11 @@ function PlannerCheckinFormComponent() {
 
     setGenerationStatus('loading');
     setAiOutput(null);
-    setFeedbackSubmitted(false);
 
-    const serializableKeyResults = keyResults.map(kr => ({
+    const serializableKeyResults: KeyResultAI[] = keyResults.map(kr => ({
       title: kr.title,
       description: kr.description,
-      deadline: formatDateSafe(kr.deadline, 'dateOnly'),
+      deadline: formatDateSafe(kr.deadline, 'iso'), // Ensure deadlines are strings
     }));
 
     for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
@@ -183,7 +181,7 @@ function PlannerCheckinFormComponent() {
           return;
         } catch (error: any) {
            console.error(`AI generation attempt ${attempt} failed:`, error);
-           if (error.message?.includes('503') && attempt <= MAX_RETRIES) {
+           if (attempt <= MAX_RETRIES) {
                 setGenerationStatus('retrying');
                 await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
            } else {
@@ -227,36 +225,11 @@ function PlannerCheckinFormComponent() {
     params.set('plan', encodeURIComponent(JSON.stringify(planData)));
     router.push(`/forms/check-in?${params.toString()}`);
   }
-  
-  const handleManualCheckin = async () => {
-    if (!user || !profile || !firestore) {
-        toast({ variant: 'destructive', title: 'Not logged in' });
-        return;
-    }
-    const missionData = getMissionValues();
-    
-    const checkinData = {
-        userId: user.uid,
-        name: profile.name,
-        primaryMission: missionData.primaryMission,
-        mood: missionData.mood,
-        timestamp: serverTimestamp(),
-    };
-    
-    try {
-        await addDocumentNonBlocking(collection(firestore, 'checkins'), checkinData);
-        toast({ title: 'Manual Check-in Submitted!', description: 'Your plan is visible to the team.'});
-        router.push('/');
-    } catch(e) {
-        console.error("Manual checkin failed", e);
-        toast({ variant: 'destructive', title: 'Submission Failed' });
-    }
-  }
 
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
   const isGeneratingPlan = generationStatus === 'loading' || generationStatus === 'retrying';
 
-  const showFinalForm = generationStatus === 'error' || (aiOutput !== null && !isGeneratingPlan);
+  const showFinalForm = (generationStatus === 'error' || aiOutput !== null) && !isGeneratingPlan;
 
   if (isLoading) {
     return (
@@ -467,3 +440,5 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
+
+    
