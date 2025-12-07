@@ -16,7 +16,6 @@ export async function parseWorkplan(input: ParseWorkplanInput): Promise<ParseWor
     name: 'workplanParserPrompt',
     input: { schema: ParseWorkplanInputSchema },
     output: { schema: ParseWorkplanOutputSchema },
-    model: 'gemini-pro',
     prompt: `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format that conforms to the provided schema.
 
     **Instructions:**
@@ -35,8 +34,7 @@ export async function parseWorkplan(input: ParseWorkplanInput): Promise<ParseWor
     `,
   });
 
-  const llmResponse = await workplanParserPrompt(input);
-  const output = llmResponse.output();
+  const {output} = await workplanParserPrompt(input);
 
   if (!output) {
     throw new Error('AI failed to parse the workplan.');

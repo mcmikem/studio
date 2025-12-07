@@ -2,9 +2,7 @@
 'use server';
 
 import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 
-// Centralized AI configuration
-export const ai = genkit({
-  plugins: [googleAI({ apiVersion: 'v1' })],
-});
+// Centralized AI configuration, without plugins.
+// Plugins will be attached by the server environment (e.g., dev.ts or a production entry point).
+export const ai = genkit();

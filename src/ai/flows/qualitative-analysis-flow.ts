@@ -53,7 +53,6 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         input: { schema: QualitativeAnalysisInputSchema },
         tools: [getActivitiesForProgramToolObject],
         output: { schema: QualitativeAnalysisOutputSchema },
-        model: 'gemini-pro',
         prompt: `You are an expert M&E (Monitoring and Evaluation) analyst for a youth-led NGO in Uganda.
         Your task is to analyze a collection of raw, qualitative data from field reports for a specific program and return a structured JSON object conforming to the schema.
         The data includes memorable moments, challenges, lessons learned, and direct quotes from beneficiaries.
@@ -69,8 +68,7 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
         Analyze the qualitative data for the '{{programName}}' program from {{startDate}} to {{endDate}}. Use the 'getActivitiesForProgram' tool with programId '{{programId}}'.`,
     });
     
-    const llmResponse = await qualitativeAnalysisPrompt(input);
-    const output = llmResponse.output();
+    const {output} = await qualitativeAnalysisPrompt(input);
 
     if (!output) {
         throw new Error("The AI failed to generate an analysis for the program's qualitative data.");

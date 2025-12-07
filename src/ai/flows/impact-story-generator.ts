@@ -14,7 +14,6 @@ export async function generateImpactStory(input: ImpactStoryInput): Promise<Impa
     name: 'impactStoryPrompt',
     input: {schema: ImpactStoryInputSchema},
     output: {schema: ImpactStoryOutputSchema},
-    model: 'gemini-pro',
     prompt: `You are a skilled storyteller for Omuto Foundation, crafting engaging narratives that highlight the impact of our activities. Your output must be a JSON object with a single key "impactStory".
     
     Based on the following activity data, generate a compelling story suitable for social media and Omuto Pulse. Weave in the narrative details provided to make the story authentic and inspiring. Focus on the human impact and the positive change created.
@@ -37,8 +36,7 @@ export async function generateImpactStory(input: ImpactStoryInput): Promise<Impa
     {{/if}}`,
   });
 
-  const llmResponse = await prompt(input);
-  const output = llmResponse.output();
+  const {output} = await prompt(input);
 
   if (!output) {
     throw new Error('Could not generate story');

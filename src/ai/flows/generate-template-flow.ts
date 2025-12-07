@@ -14,7 +14,6 @@ export async function generateTemplate(input: GenerateTemplateInput): Promise<Ge
     name: 'templateGeneratorPrompt',
     input: { schema: GenerateTemplateInputSchema },
     output: { schema: GenerateTemplateOutputSchema },
-    model: 'gemini-pro',
     prompt: `You are an expert at creating Standard Operating Procedures (SOPs) and checklists for an NGO.
     Your task is to take a user's description of a process and turn it into a structured JSON object that conforms to the provided schema.
 
@@ -30,8 +29,7 @@ export async function generateTemplate(input: GenerateTemplateInput): Promise<Ge
     `,
   });
 
-  const llmResponse = await templateGeneratorPrompt(input);
-  const output = llmResponse.output();
+  const {output} = await templateGeneratorPrompt(input);
   if (!output) {
     throw new Error('AI failed to generate the template.');
   }

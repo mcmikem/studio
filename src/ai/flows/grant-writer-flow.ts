@@ -16,7 +16,6 @@ export async function writeConceptNote(input: GrantWriterInput): Promise<GrantWr
     name: 'grantWriterPrompt',
     input: { schema: GrantWriterInputSchema },
     output: { schema: GrantWriterOutputSchema },
-    model: 'gemini-pro',
     prompt: `You are a professional grant writer for an NGO called Omuto Foundation.
     Use the following knowledge base:
     ---
@@ -36,8 +35,7 @@ export async function writeConceptNote(input: GrantWriterInput): Promise<GrantWr
   `,
   });
   
-  const llmResponse = await grantWriterPrompt(input);
-  const output = llmResponse.output();
+  const {output} = await grantWriterPrompt(input);
 
   if (!output) {
     throw new Error('AI failed to generate a concept note.');

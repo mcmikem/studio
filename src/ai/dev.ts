@@ -11,6 +11,8 @@ dotenv.config({ path: '.env' });
 
 // This ensures all flows are registered with the central AI instance.
 import { ai } from './genkit';
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 // By importing the flows, we ensure they are attached to the `ai` instance
 // that the dev server will use.
@@ -29,4 +31,6 @@ import './flows/parse-workplan-flow';
 
 // The 'ai' object is already configured in genkit.ts, so we just need to make
 // sure it's loaded here. The Genkit CLI will pick it up automatically.
-export default ai;
+export default genkit({
+  plugins: [googleAI({ apiVersion: 'v1' })],
+});

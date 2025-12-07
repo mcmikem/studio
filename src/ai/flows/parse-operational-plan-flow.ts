@@ -16,7 +16,6 @@ export async function parseOperationalPlan(input: ParsePlanInput): Promise<Parse
     name: 'operationalPlanParserPrompt',
     input: { schema: ParsePlanInputSchema },
     output: { schema: ParsePlanOutputSchema },
-    model: 'gemini-pro',
     prompt: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
 
     **Instructions:**
@@ -38,8 +37,7 @@ export async function parseOperationalPlan(input: ParsePlanInput): Promise<Parse
     `,
   });
 
-  const llmResponse = await planParserPrompt(input);
-  const output = llmResponse.output();
+  const {output} = await planParserPrompt(input);
 
   if (!output) {
     throw new Error('AI failed to parse the operational plan.');
