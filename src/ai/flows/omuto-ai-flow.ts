@@ -133,15 +133,8 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
                     };
 
                     await addDoc(collection(firestore, 'checkouts'), checkoutData);
-
-                    await createAlert({
-                        type: 'Info',
-                        priority: 'Low',
-                        message: `${userProfile.name} has submitted their end-of-day report.`,
-                        action: '/stream',
-                        creatorId: userId,
-                    });
-
+                    
+                    // Do not call createAlert from here. This will be handled on the client.
                     return { success: true, message: `Successfully submitted the checkout report for ${userProfile.name}.` };
                 } catch (error: any) {
                     console.error("Error creating checkout:", error);
