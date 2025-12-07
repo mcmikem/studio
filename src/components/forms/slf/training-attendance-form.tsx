@@ -90,7 +90,7 @@ export function TrainingAttendanceForm() {
      if (!firestore) return;
     
     const selectedSchool = schools?.find(s => s.id === data.schoolId);
-    const schoolName = selectedSchool?.name || 'Unknown School';
+    const schoolName = selectedSchool?.schoolName || 'Unknown School';
 
     const formData = { ...data, schoolName, createdAt: serverTimestamp() };
 
