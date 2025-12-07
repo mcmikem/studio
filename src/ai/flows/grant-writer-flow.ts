@@ -9,11 +9,13 @@ import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import type { GrantWriterInput, GrantWriterOutput } from '@/lib/types';
 import { GrantWriterInputSchema, GrantWriterOutputSchema } from '@/lib/types';
+import { googleAI } from '@genkit-ai/google-genai';
 
 
 export async function writeConceptNote(input: GrantWriterInput): Promise<GrantWriterOutput> {
   const grantWriterPrompt = ai.definePrompt({
     name: 'grantWriterPrompt',
+    model: googleAI('gemini-1.5-flash-latest'),
     input: { schema: GrantWriterInputSchema },
     output: { schema: GrantWriterOutputSchema },
     prompt: `You are a professional grant writer for an NGO called Omuto Foundation.

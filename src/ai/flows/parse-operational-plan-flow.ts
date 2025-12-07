@@ -9,11 +9,13 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import type { ParsePlanInput, ParsePlanOutput } from '@/lib/types';
 import { ParsePlanInputSchema, ParsePlanOutputSchema } from '@/lib/types';
+import { googleAI } from '@genkit-ai/google-genai';
 
 
 export async function parseOperationalPlan(input: ParsePlanInput): Promise<ParsePlanOutput> {
   const planParserPrompt = ai.definePrompt({
     name: 'operationalPlanParserPrompt',
+    model: googleAI('gemini-1.5-flash-latest'),
     input: { schema: ParsePlanInputSchema },
     output: { schema: ParsePlanOutputSchema },
     prompt: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.

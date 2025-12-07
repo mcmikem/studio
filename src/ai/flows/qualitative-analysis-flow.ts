@@ -11,6 +11,7 @@ import { getFirebaseAdmin } from '@/firebase/server';
 import { collection, query, where } from 'firebase/firestore';
 import { getDocs } from 'firebase/firestore';
 import { z } from 'zod';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput): Promise<QualitativeAnalysisOutput> {
     console.log('Starting analyzeProgramQualitativeData flow');
@@ -50,6 +51,7 @@ export async function analyzeProgramQualitativeData(input: QualitativeAnalysisIn
 
     const qualitativeAnalysisPrompt = ai.definePrompt({
         name: 'qualitativeAnalysisPrompt',
+        model: googleAI('gemini-1.5-flash-latest'),
         input: { schema: QualitativeAnalysisInputSchema },
         tools: [getActivitiesForProgramToolObject],
         output: { schema: QualitativeAnalysisOutputSchema },

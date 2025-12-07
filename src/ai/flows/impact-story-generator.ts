@@ -7,11 +7,13 @@
 
 import {ai} from '@/ai/genkit';
 import { ImpactStoryInputSchema, ImpactStoryOutputSchema, type ImpactStoryInput, type ImpactStoryOutput } from '@/lib/types';
+import { googleAI } from '@genkit-ai/google-genai';
 
 
 export async function generateImpactStory(input: ImpactStoryInput): Promise<ImpactStoryOutput> {
   const prompt = ai.definePrompt({
     name: 'impactStoryPrompt',
+    model: googleAI('gemini-1.5-flash-latest'),
     input: {schema: ImpactStoryInputSchema},
     output: {schema: ImpactStoryOutputSchema},
     prompt: `You are a skilled storyteller for Omuto Foundation, crafting engaging narratives that highlight the impact of our activities. Your output must be a JSON object with a single key "impactStory".

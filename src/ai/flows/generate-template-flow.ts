@@ -8,10 +8,12 @@
 import { ai } from '@/ai/genkit';
 import type { GenerateTemplateInput, GenerateTemplateOutput } from '@/lib/types';
 import { GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from '@/lib/types';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export async function generateTemplate(input: GenerateTemplateInput): Promise<GenerateTemplateOutput> {
   const templateGeneratorPrompt = ai.definePrompt({
     name: 'templateGeneratorPrompt',
+    model: googleAI('gemini-1.5-flash-latest'),
     input: { schema: GenerateTemplateInputSchema },
     output: { schema: GenerateTemplateOutputSchema },
     prompt: `You are an expert at creating Standard Operating Procedures (SOPs) and checklists for an NGO.
