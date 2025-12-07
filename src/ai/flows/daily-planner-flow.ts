@@ -36,7 +36,7 @@ export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyP
         CURRENT ORGANIZATIONAL KEY RESULTS (Summary):
         {{#if keyResults}}
         {{#each keyResults}}
-        - {{this.title}}: {{this.description}} (Deadline: {{this.deadline}})
+        - {{this.title}}: {{this.description}}
         {{/each}}
         {{/if}}
 
@@ -58,3 +58,4 @@ export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyP
   
   return output;
 }
+
