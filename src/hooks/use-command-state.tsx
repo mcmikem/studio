@@ -5,8 +5,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 
 const GlobalCommandBar = dynamic(() =>
-  import('@/components/global-command-bar').then((mod) => mod.GlobalCommandBar),
-  { ssr: false }
+  import('@/components/global-command-bar').then((mod) => mod.GlobalCommandBar)
 );
 
 interface CommandContextType {
