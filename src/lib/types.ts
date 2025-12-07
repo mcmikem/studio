@@ -1,5 +1,4 @@
 
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -287,33 +286,6 @@ export type WeeklyWorkplan = {
   individualTasks: string[];
   createdAt: Timestamp;
 };
-
-
-export const DailyPlannerAIInputSchema = z.object({
-  userName: z.string().describe("The name of the user."),
-  userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
-  primaryMission: z.string().describe("The user's stated main focus for the day."),
-  weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
-  keyResults: z.array(z.object({
-      title: z.string(),
-      description: z.string(),
-  })).describe("A list of the organization's current Key Results (OKRs)."),
-});
-export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
-
-
-export const DailyPlannerAIOutputSchema = z.object({
-    timeBlocks: z.array(z.object({
-        startTime: z.string().describe("e.g., '09:00 AM'"),
-        endTime: z.string().describe("e.g., '11:00 AM'"),
-        description: z.string(),
-    })).describe("A detailed, actionable schedule for the day."),
-    multiWinConnections: z.array(z.string()).describe("Specific ways the daily mission connects to broader organizational goals (e.g., specific Key Results)."),
-    materials: z.string().describe("A comma-separated list of materials or resources needed."),
-    challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
-    bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from the provided knowledge base."),
-});
-export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
 
 
 export type Equipment = {
@@ -1030,14 +1002,35 @@ export const OmutoAIOutputSchema = z.object({
 });
 export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
 
-export const KeyResultSchema = z.object({
-  title: z.string().describe("The unique identifier for the Key Result, e.g., 'OCT-KR1' or 'NOV-KR3'."),
-  description: z.string().describe("A concise summary of what the Key Result aims to achieve."),
-  currentProgress: z.number().default(0).describe("The starting progress for this new plan, which is always 0."),
-  target: z.number().describe("The numerical target for the Key Result."),
-  deadline: z.string().describe("The deadline for the Key Result, formatted as YYYY-MM-DD."),
-  priority: z.enum(['High', 'Medium', 'Low']).describe("The priority level of the Key Result."),
+export const KeyResultAISchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  deadline: z.string(),
 });
+
+export const DailyPlannerAIInputSchema = z.object({
+  userName: z.string().describe("The name of the user."),
+  userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
+  primaryMission: z.string().describe("The user's stated main focus for the day."),
+  weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
+  keyResults: z.array(KeyResultAISchema).describe("A list of the organization's current Key Results (OKRs)."),
+});
+export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
+
+
+export const DailyPlannerAIOutputSchema = z.object({
+    timeBlocks: z.array(z.object({
+        startTime: z.string().describe("e.g., '09:00 AM'"),
+        endTime: z.string().describe("e.g., '11:00 AM'"),
+        description: z.string(),
+    })).describe("A detailed, actionable schedule for the day."),
+    multiWinConnections: z.array(z.string()).describe("Specific ways the daily mission connects to broader organizational goals (e.g., specific Key Results)."),
+    materials: z.string().describe("A comma-separated list of materials or resources needed."),
+    challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
+    bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from the provided knowledge base."),
+});
+export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
+
 
 export const ParsePlanInputSchema = z.object({
   planText: z.string().describe('The full, unstructured text of the monthly or quarterly operational plan.'),
@@ -1098,5 +1091,3 @@ export const TestimonyOutputSchema = z.object({
   hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
-
-    

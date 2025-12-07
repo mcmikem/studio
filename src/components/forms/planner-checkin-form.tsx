@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -32,6 +32,7 @@ import Link from 'next/link';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Skeleton } from '../ui/skeleton';
+import { formatDateSafe } from '@/lib/utils';
 
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
@@ -158,6 +159,7 @@ function PlannerCheckinFormComponent() {
     const serializableKeyResults = keyResults.map(kr => ({
       title: kr.title,
       description: kr.description,
+      deadline: formatDateSafe(kr.deadline, 'dateOnly'),
     }));
 
     for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
