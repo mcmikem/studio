@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -75,7 +74,7 @@ export function SessionAttendanceForm() {
     const membersQuery = query(collection(firestore, 'yoskills-youth'), where('circleId', '==', circleId), orderBy('name'));
     const snapshot = await getDocs(membersQuery);
     const membersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YoSkillsYouth));
-    const attendees = membersData.map(m => ({ memberId: m.id, memberName: m.name, present: false }));
+    const attendees = membersData.map(m => ({ memberId: m.id, memberName: m.name || 'Unnamed Member', present: false }));
     replace(attendees);
   }, [firestore, replace]);
 
@@ -166,7 +165,7 @@ export function SessionAttendanceForm() {
               <div className="space-y-4 pt-4 border-t">
                 <h3 className="text-lg font-semibold">Mark Attendance</h3>
                 <div className="space-y-2">
-                  {fields.map((field, index) => (
+                  {fields.length > 0 && fields.map((field, index) => (
                     <div key={field.memberId} className="flex items-center gap-4 p-2 border rounded-md">
                       <Controller
                         name={`members.${index}.present`}
@@ -198,5 +197,3 @@ export function SessionAttendanceForm() {
     </div>
   );
 }
-
-    

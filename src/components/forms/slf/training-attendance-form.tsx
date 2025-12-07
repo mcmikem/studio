@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -10,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy, where, getDocs } from 'firebase/firestore';
 import { Loader2, ArrowLeft, CheckSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -21,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
+import { useMemoFirebase } from '@/firebase/provider';
 
 const attendeeSchema = z.object({
   prefectId: z.string(),
@@ -75,7 +75,9 @@ export function TrainingAttendanceForm() {
     const prefectsQuery = query(collection(firestore, 'slf-prefects'), where('schoolId', '==', schoolId), orderBy('name'));
     const snapshot = await getDocs(prefectsQuery);
     const prefectsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as SLF_Prefect));
-    const attendees = prefectsData.map(p => ({ prefectId: p.id, prefectName: p.name, attended: false }));
+    
+    // Ensure prefect.name exists before mapping
+    const attendees = prefectsData.map(p => ({ prefectId: p.id, prefectName: p.name || 'Unnamed Prefect', attended: false }));
     replace(attendees);
   }, [firestore, replace]);
 
@@ -161,7 +163,7 @@ export function TrainingAttendanceForm() {
               <div className="space-y-4 pt-4 border-t">
                 <h3 className="text-lg font-semibold">Mark Attendance</h3>
                 <div className="space-y-2">
-                  {fields.map((field, index) => (
+                  {fields.length > 0 && fields.map((field, index) => (
                     <div key={field.prefectId} className="flex items-center gap-4 p-2 border rounded-md">
                       <Controller
                         name={`attendees.${index}.attended`}
