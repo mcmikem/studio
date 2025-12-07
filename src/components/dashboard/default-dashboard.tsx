@@ -9,7 +9,6 @@ import { startOfDay } from "date-fns"
 import { useMemo } from "react"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
-import { AppHeader } from "../header"
 import { DashboardHeader } from "./dashboard-header"
 import { QuickAddTask } from "./quick-add-task"
 
@@ -47,9 +46,7 @@ export default function DefaultDashboard({ profile }: DashboardProps) {
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
-    <>
-      <AppHeader />
-      <div className="flex flex-col gap-6 p-4 lg:p-6">
+      <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} />
         <QuickAddTask />
         <DashboardGrid className="mt-6 lg:grid-cols-2">
@@ -63,6 +60,5 @@ export default function DefaultDashboard({ profile }: DashboardProps) {
             </div>
         </DashboardGrid>
       </div>
-    </>
   )
 }

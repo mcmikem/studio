@@ -12,7 +12,6 @@ import { collection, query, where, Timestamp } from 'firebase/firestore';
 import { startOfDay } from 'date-fns';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
-import { AppHeader } from '../header';
 import { DashboardHeader } from './dashboard-header';
 
 const TeamDeployment = dynamic(() => import('./team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
@@ -46,14 +45,12 @@ export function InternVolunteerDashboard({ profile }: DashboardProps) {
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
   const checkinsQuery = useMemoFirebase((db) => {
     if(!firestore) return null;
-    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
+    return query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
   }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
-    <>
-      <AppHeader />
-      <div className="flex flex-col gap-6 p-4 lg:p-6">
+      <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} />
         <DashboardGrid className="mt-6">
             <QuickActionsCard />
@@ -69,6 +66,5 @@ export function InternVolunteerDashboard({ profile }: DashboardProps) {
             </Card>
         </DashboardGrid>
       </div>
-    </>
   );
 }

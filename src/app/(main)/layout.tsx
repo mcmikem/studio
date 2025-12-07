@@ -7,6 +7,7 @@ import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { useViewAs } from '@/hooks/use-view-as';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, X } from 'lucide-react';
+import { AppHeader } from '@/components/header';
 
 
 function ViewAsBanner() {
@@ -42,8 +43,8 @@ export default function MainLayout({
             </Sidebar>
             <SidebarInset>
                 <div className="relative flex flex-col flex-1 h-full">
+                    <AppHeader />
                     <ViewAsBanner />
-                    {/* The AppHeader is now moved to the page level for pages that need it */}
                     <main className="flex-1 p-4 lg:p-6 mb-20 md:mb-0">
                         {children}
                     </main>
@@ -53,5 +54,3 @@ export default function MainLayout({
         </SidebarProvider>
     );
 }
-
-    
