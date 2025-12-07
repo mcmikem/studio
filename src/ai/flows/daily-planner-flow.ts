@@ -10,7 +10,7 @@
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import type { DailyPlannerAIInput, DailyPlannerAIOutput } from '@/lib/types';
-import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, KeyResultAISchema } from '@/lib/types';
+import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
 import { googleAI } from '@genkit-ai/google-genai';
 
 export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
@@ -58,5 +58,3 @@ export async function dailyPlannerAI(input: DailyPlannerAIInput): Promise<DailyP
   
   return output;
 }
-
-    

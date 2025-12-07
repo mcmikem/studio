@@ -1009,6 +1009,7 @@ export const KeyResultAISchema = z.object({
   description: z.string(),
   deadline: z.string(),
 });
+export type KeyResultAI = z.infer<typeof KeyResultAISchema>;
 
 export const DailyPlannerAIInputSchema = z.object({
   userName: z.string().describe("The name of the user."),
