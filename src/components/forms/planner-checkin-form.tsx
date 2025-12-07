@@ -155,9 +155,9 @@ function PlannerCheckinFormComponent() {
     setAiOutput(null);
 
     const serializableKeyResults: KeyResultAI[] = keyResults.map(kr => ({
-      title: kr.title,
-      description: kr.description,
-      deadline: formatDateSafe(kr.deadline, 'iso'), // Ensure deadlines are strings
+        title: kr.title,
+        description: kr.description,
+        deadline: formatDateSafe(kr.deadline, 'iso'), // Ensure deadlines are strings
     }));
 
     for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {

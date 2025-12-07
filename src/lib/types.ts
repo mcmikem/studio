@@ -204,17 +204,22 @@ export type User = {
     createdAt?: Timestamp;
 }
 
-export const ParsePlanKeyResultSchema = z.object({
-  id: z.string().optional(), // id is not present when parsing
+export type KeyResult = {
+    id: string,
+    title: string,
+    description: string,
+    currentProgress: number,
+    target: number,
+    deadline: Timestamp, // Firestore Timestamp
+    priority: 'High' | 'Medium' | 'Low'
+};
+
+export const KeyResultAISchema = z.object({
   title: z.string(),
   description: z.string(),
-  currentProgress: z.number(),
-  target: z.number(),
-  deadline: z.string(), // Is a string 'YYYY-MM-DD'
-  priority: z.enum(['High', 'Medium', 'Low']),
+  deadline: z.string(), // YYYY-MM-DD format as a string
 });
-export type ParsePlanKeyResult = z.infer<typeof ParsePlanKeyResultSchema>;
-
+export type KeyResultAI = z.infer<typeof KeyResultAISchema>;
 
 export type ExpenseItem = {
     description: string;
@@ -1004,13 +1009,6 @@ export const OmutoAIOutputSchema = z.object({
 });
 export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
 
-const KeyResultAISchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  deadline: z.string(), // YYYY-MM-DD format
-});
-export type KeyResultAI = z.infer<typeof KeyResultAISchema>;
-
 export const DailyPlannerAIInputSchema = z.object({
   userName: z.string().describe("The name of the user."),
   userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
@@ -1034,11 +1032,20 @@ export const DailyPlannerAIOutputSchema = z.object({
 });
 export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
 
-
 export const ParsePlanInputSchema = z.object({
   planText: z.string().describe('The full, unstructured text of the monthly or quarterly operational plan.'),
 });
 export type ParsePlanInput = z.infer<typeof ParsePlanInputSchema>;
+
+const ParsePlanKeyResultSchema = z.object({
+  id: z.string().optional(),
+  title: z.string(),
+  description: z.string(),
+  currentProgress: z.number(),
+  target: z.number(),
+  deadline: z.string(),
+  priority: z.enum(['High', 'Medium', 'Low']),
+});
 
 export const ParsePlanOutputSchema = z.object({
   keyResults: z.array(ParsePlanKeyResultSchema).describe('A list of all Key Results extracted from the plan text.'),
@@ -1094,7 +1101,5 @@ export const TestimonyOutputSchema = z.object({
   hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
-
-export type KeyResult = z.infer<typeof ParsePlanKeyResultSchema>;
 
     
