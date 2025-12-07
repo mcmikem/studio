@@ -57,6 +57,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
 
   const usersQuery = useMemoFirebase((db) => db ? query(collection(db, 'users')) : null, []);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
+  
   const checkinsQuery = useMemoFirebase((db) => {
     if(!db) return null;
     return query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -17,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 const productionLogSchema = z.object({
   batchNumber: z.string().min(1, 'Batch number is required.'),
@@ -44,14 +46,21 @@ export function ProductionLogForm() {
     control,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
   } = useForm<ProductionLogFormData>({
     resolver: zodResolver(productionLogSchema),
     defaultValues: {
       date: format(new Date(), 'yyyy-MM-dd'),
       product: 'Liquid Soap',
-      producedBy: profile?.name || '',
     },
   });
+
+  useEffect(() => {
+    if (profile) {
+      setValue('producedBy', profile.name);
+    }
+  }, [profile, setValue]);
+
 
   const onSubmit = async (data: ProductionLogFormData) => {
     if (!firestore) {

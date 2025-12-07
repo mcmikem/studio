@@ -1,4 +1,5 @@
 
+
 'use server';
 
 /**
@@ -115,6 +116,10 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
                         return { success: false, message: `Could not find user with ID ${userId}.`};
                     }
                     const userProfile = userSnap.data();
+
+                    if (!userProfile) {
+                        return { success: false, message: `Could not load user profile for ID ${userId}.`};
+                    }
 
                     const checkoutData = {
                         userId,

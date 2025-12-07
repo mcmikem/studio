@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -7,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, addDocumentNonBlocking, useUser } from '@/firebase';
@@ -17,6 +19,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { useMemo, useEffect } from 'react';
+import { formatCurrency } from '@/lib/utils';
 
 const salesTrackingSchema = z.object({
   date: z.string().min(1, 'Date is required.'),
@@ -52,12 +55,17 @@ export function SalesTrackingForm() {
     defaultValues: {
       date: format(new Date(), 'yyyy-MM-dd'),
       product: 'Liquid Soap',
-      salesAgent: profile?.name || '',
       paymentMethod: 'Cash',
       quantity: 1,
       unitPrice: 5000,
     },
   });
+  
+  useEffect(() => {
+    if (profile) {
+      setValue('salesAgent', profile.name);
+    }
+  }, [profile, setValue]);
 
   const quantity = watch('quantity');
   const unitPrice = watch('unitPrice');
