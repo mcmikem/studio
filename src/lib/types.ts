@@ -204,8 +204,8 @@ export type User = {
     createdAt?: Timestamp;
 }
 
-const KeyResultSchema = z.object({
-  id: z.string(),
+export const ParsePlanKeyResultSchema = z.object({
+  id: z.string().optional(), // id is not present when parsing
   title: z.string(),
   description: z.string(),
   currentProgress: z.number(),
@@ -213,7 +213,7 @@ const KeyResultSchema = z.object({
   deadline: z.string(), // Is a string 'YYYY-MM-DD'
   priority: z.enum(['High', 'Medium', 'Low']),
 });
-export type KeyResult = z.infer<typeof KeyResultSchema>;
+export type ParsePlanKeyResult = z.infer<typeof ParsePlanKeyResultSchema>;
 
 
 export type ExpenseItem = {
@@ -1041,7 +1041,7 @@ export const ParsePlanInputSchema = z.object({
 export type ParsePlanInput = z.infer<typeof ParsePlanInputSchema>;
 
 export const ParsePlanOutputSchema = z.object({
-  keyResults: z.array(KeyResultSchema).describe('A list of all Key Results extracted from the plan text.'),
+  keyResults: z.array(ParsePlanKeyResultSchema).describe('A list of all Key Results extracted from the plan text.'),
 });
 export type ParsePlanOutput = z.infer<typeof ParsePlanOutputSchema>;
 

@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, getDocs, Timestamp, limit, serverTimestamp } from 'firebase/firestore';
-import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate } from '@/lib/types';
+import type { KeyResultAI, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
 import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks, ThumbsUp, ThumbsDown, BrainCircuit, Link as LinkIcon, Puzzle, Wrench } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -111,7 +111,7 @@ function PlannerCheckinFormComponent() {
     if (!firestore) return null;
     return query(collection(firestore, 'key-results'));
   }, [firestore]);
-  const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
+  const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResultAI>(keyResultsQuery);
 
   const templatesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -256,7 +256,7 @@ function PlannerCheckinFormComponent() {
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
   const isGeneratingPlan = generationStatus === 'loading' || generationStatus === 'retrying';
 
-  const showFinalForm = (aiOutput || generationStatus === 'error') && !isGeneratingPlan;
+  const showFinalForm = generationStatus === 'error' || (aiOutput !== null && !isGeneratingPlan);
 
   if (isLoading) {
     return (
