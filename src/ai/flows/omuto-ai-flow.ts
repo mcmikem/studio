@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { collection, query, where, getDocs, doc, addDoc, getDoc, serverTimestamp, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { createAlert } from './create-alert-flow';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
     console.log('Starting omutoAIFlow');
@@ -202,6 +203,7 @@ export async function omutoAIFlow(input: OmutoAIInput): Promise<OmutoAIOutput> {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
         const { text, toolRequest } = await ai.generate({
+            model: googleAI('gemini-1.5-flash-latest'),
             prompt: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
 Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
 
@@ -245,6 +247,8 @@ User's message: "${input.question}"`,
 
     } catch (error: any) {
         console.error("[omutoAIFlow] Critical error during AI generation:", error);
-        return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. Please try again later.` };
+        return { answer: `I'm sorry, I encountered a server error and couldn't complete your request. Please try again.` };
     }
 }
+
+    
