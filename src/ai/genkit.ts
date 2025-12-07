@@ -1,6 +1,11 @@
 
 import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
-// Centralized AI configuration, without plugins.
-// Plugins will be attached by the server environment (e.g., dev.ts or a production entry point).
-export const ai = genkit();
+// Centralized AI configuration.
+// It is now configured with the plugin and API key here.
+export const ai = genkit({
+    plugins: [
+        googleAI({ apiKey: process.env.GEMINI_API_KEY }),
+    ],
+});
