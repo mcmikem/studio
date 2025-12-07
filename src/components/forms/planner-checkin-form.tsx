@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, getDocs, Timestamp, limit, serverTimestamp, doc } from 'firebase/firestore';
-import type { KeyResultAI, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate } from '@/lib/types';
+import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate, KeyResultAI } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
 import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks, BrainCircuit, Link as LinkIcon, Puzzle, Wrench } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -33,7 +33,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Skeleton } from '../ui/skeleton';
 import { formatDateSafe } from '@/lib/utils';
-import type { KeyResult } from '@/lib/types';
+
 
 const planSchema = z.object({
   primaryMission: z.string().min(10, 'Please describe your main focus for the day.'),
@@ -154,10 +154,11 @@ function PlannerCheckinFormComponent() {
     setGenerationStatus('loading');
     setAiOutput(null);
 
+    // **FIX**: Convert Firestore Timestamps to AI-safe strings before calling the flow.
     const serializableKeyResults: KeyResultAI[] = keyResults.map(kr => ({
         title: kr.title,
         description: kr.description,
-        deadline: formatDateSafe(kr.deadline, 'iso'), // Ensure deadlines are strings
+        deadline: formatDateSafe(kr.deadline, 'iso'),
     }));
 
     for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
@@ -167,7 +168,7 @@ function PlannerCheckinFormComponent() {
             userRole: profile.role,
             primaryMission: data.primaryMission,
             weeklyPriorities: weeklyPlan?.individualTasks || [],
-            keyResults: serializableKeyResults,
+            keyResults: serializableKeyResults, // Use the sanitized data
           });
           setAiOutput(output);
           setValue('primaryMission', data.primaryMission);
@@ -229,7 +230,8 @@ function PlannerCheckinFormComponent() {
   const isLoading = isLoadingProfile || isLoadingWeeklyPlan || isLoadingKeyResults;
   const isGeneratingPlan = generationStatus === 'loading' || generationStatus === 'retrying';
 
-  const showFinalForm = (generationStatus === 'error' || aiOutput !== null) && !isGeneratingPlan;
+  const showFinalForm = (generationStatus === 'error' || (aiOutput !== null && !isGeneratingPlan));
+
 
   if (isLoading) {
     return (
@@ -440,5 +442,3 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
-
-    
