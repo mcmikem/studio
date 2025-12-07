@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useUser, useFirestore, useCollection, updateDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useCollection, updateDocumentNonBlocking, useFirebaseApp } from '@/firebase';
 import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown, LogOut as LogOutIcon, Settings, ChevronsUpDown, Eye, BarChart3 } from 'lucide-react';
 import { collection, query, where, orderBy, limit, doc } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
@@ -112,6 +112,7 @@ function UserProfileCard() {
   const { profile, isLoading } = useUserProfile(user);
   const { toast } = useToast();
   const firestore = useFirestore();
+  const firebaseApp = useFirebaseApp();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -131,10 +132,10 @@ function UserProfileCard() {
   
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && user && firestore) {
+    if (file && user && firestore && firebaseApp) {
       setIsUploading(true);
       try {
-        await uploadImageAndUpdateProfile(file, user, firestore);
+        await uploadImageAndUpdateProfile(firebaseApp, file, user, firestore);
         toast({
           title: "Profile Picture Updated!",
           description: "Your new picture has been saved.",

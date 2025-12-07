@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase, useFirebaseApp } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { serverTimestamp, collection, query, orderBy } from 'firebase/firestore';
 import { uploadFile } from '@/firebase/storage';
@@ -42,6 +42,7 @@ export default function RecordTestimonyPage() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const firestore = useFirestore();
+  const firebaseApp = useFirebaseApp();
   const [isSaving, setIsSaving] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,8 +69,8 @@ export default function RecordTestimonyPage() {
   };
 
   const onSubmit = async (data: ImpactStoryFormData) => {
-    if (!user || !profile || !firestore) {
-      toast({ variant: 'destructive', title: 'Not Logged In' });
+    if (!user || !profile || !firestore || !firebaseApp) {
+      toast({ variant: 'destructive', title: 'Not Logged In or Firebase not ready' });
       return;
     }
     
@@ -83,7 +84,7 @@ export default function RecordTestimonyPage() {
     try {
         const uploadPromises = mediaFiles.map(file => {
             const path = `testimonies/${user.uid}/${Date.now()}_${file.name}`;
-            return uploadFile(file, path);
+            return uploadFile(firebaseApp, file, path);
         });
 
         const mediaUrls = await Promise.all(uploadPromises);
@@ -199,4 +200,3 @@ export default function RecordTestimonyPage() {
     </div>
   );
 }
-    
