@@ -204,15 +204,17 @@ export type User = {
     createdAt?: Timestamp;
 }
 
-export type KeyResult = {
-  id: string;
-  title: string;
-  description: string;
-  currentProgress: number;
-  target: number;
-  deadline: string;
-  priority: 'High' | 'Medium' | 'Low';
-};
+const KeyResultSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  currentProgress: z.number(),
+  target: z.number(),
+  deadline: z.string(), // Is a string 'YYYY-MM-DD'
+  priority: z.enum(['High', 'Medium', 'Low']),
+});
+export type KeyResult = z.infer<typeof KeyResultSchema>;
+
 
 export type ExpenseItem = {
     description: string;
