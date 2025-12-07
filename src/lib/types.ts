@@ -293,7 +293,10 @@ export const DailyPlannerAIInputSchema = z.object({
   userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
   primaryMission: z.string().describe("The user's stated main focus for the day."),
   weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
-  keyResults: z.array(z.any()).describe("A list of the organization's current Key Results (OKRs)."),
+  keyResults: z.array(z.object({
+      title: z.string(),
+      description: z.string(),
+  })).describe("A list of the organization's current Key Results (OKRs)."),
 });
 export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
 
@@ -1093,3 +1096,5 @@ export const TestimonyOutputSchema = z.object({
   hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
+
+    

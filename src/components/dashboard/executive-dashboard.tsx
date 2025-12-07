@@ -53,25 +53,37 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
 
     const programsQuery = useMemoFirebase((db) => db ? query(collection(db, 'programs')) : null, []);
     const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery, { listen: false });
+  
+  const isLoading = isLoadingUsers || isLoadingActivities || isLoadingCheckins || isLoadingPrograms;
 
   return (
       <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} />
         <QuickAddTask />
-        <DashboardGrid className="mt-6 lg:grid-cols-2">
-            <div className="lg:col-span-2 space-y-6">
-                <KeyResultsTracker />
-                <TeamPerformanceLeaderboard 
-                    users={users} 
-                    isLoading={isLoadingUsers}
-                />
-                <EcosystemPulse activities={activities} programs={programs} isLoading={isLoadingActivities || isLoadingPrograms} />
+        {isLoading ? (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-6">
+                <Skeleton className="h-96" />
+                <Skeleton className="h-96" />
+                <Skeleton className="h-64 lg:col-span-2" />
             </div>
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                <ApprovalQueue />
-                <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-            </div>
-        </DashboardGrid>
+        ) : (
+            <DashboardGrid className="mt-6 lg:grid-cols-2">
+                <div className="lg:col-span-2 space-y-6">
+                    <KeyResultsTracker />
+                    <TeamPerformanceLeaderboard 
+                        users={users} 
+                        isLoading={false}
+                    />
+                    <EcosystemPulse activities={activities} programs={programs} isLoading={false} />
+                </div>
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <ApprovalQueue />
+                    <TeamDeployment users={users} checkins={checkins} isLoading={false} />
+                </div>
+            </DashboardGrid>
+        )}
       </div>
   )
 }
+
+    

@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { BellRing, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { Skeleton } from "../ui/skeleton"
 
 
 interface DashboardProps {
@@ -30,13 +31,10 @@ export function AdminDashboard({ profile }: DashboardProps) {
   const { user } = useUser();
 
   const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs'), orderBy('deadline')) : null, [firestore]);
-  const { data: programs } = useCollection<Program>(programsQuery);
+  const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery);
 
   const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
-  const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
-
-  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics')) : null, [firestore]);
-  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
+  const { data: checkouts, isLoading: isLoadingCheckouts } = useCollection<Checkout>(checkoutsQuery);
 
   const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
@@ -50,27 +48,30 @@ export function AdminDashboard({ profile }: DashboardProps) {
   }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0,0,0,0);
-  const expensesQuery = useMemoFirebase(() => {
-      if (!firestore) return null;
-      return query(collection(firestore, 'expenses'), where('createdAt', '>=', Timestamp.fromDate(startOfMonth)))
-  }, [firestore]);
-  const { data: expenses } = useCollection<Expense>(expensesQuery);
-
+  const isLoading = isLoadingUsers || isLoadingCheckins || isLoadingPartnerships || isLoadingCheckouts;
 
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-2">
-        <div className="flex flex-col gap-6">
-            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-            <PartnershipPipeline partnerships={partnerships} isLoading={isLoadingPartnerships} />
-        </div>
-        <div className="flex flex-col gap-6">
-            <DashboardCalendar />
-            <ManagementQuickLinks />
-            <TeamPulse checkouts={checkouts} />
-        </div>
+        {isLoading ? (
+            <>
+                <Skeleton className="h-96" />
+                <Skeleton className="h-96" />
+            </>
+        ) : (
+            <>
+                <div className="flex flex-col gap-6">
+                    <TeamDeployment users={users} checkins={checkins} isLoading={false} />
+                    <PartnershipPipeline partnerships={partnerships} isLoading={false} />
+                </div>
+                <div className="flex flex-col gap-6">
+                    <DashboardCalendar />
+                    <ManagementQuickLinks />
+                    <TeamPulse checkouts={checkouts} />
+                </div>
+            </>
+        )}
     </DashboardGrid>
   )
 }
+
+    

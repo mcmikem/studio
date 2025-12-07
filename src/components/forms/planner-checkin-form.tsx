@@ -156,9 +156,8 @@ function PlannerCheckinFormComponent() {
     setFeedbackSubmitted(false);
 
     const serializableKeyResults = keyResults.map(kr => ({
-      ...kr,
-      deadline: kr.deadline ? new Date(kr.deadline).toISOString().split('T')[0] : 'N/A',
-      createdAt: undefined, 
+      title: kr.title,
+      description: kr.description,
     }));
 
     for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
@@ -334,7 +333,7 @@ function PlannerCheckinFormComponent() {
                     )}
                 </CardContent>
                 <CardFooter className="flex-wrap gap-4">
-                    <Button type="submit" disabled={isGeneratingPlan} size="lg">
+                    <Button type="submit" disabled={isGeneratingPlan || isLoading} size="lg">
                         {isGeneratingPlan ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                         {generationStatus === 'loading' ? 'Generating...' : generationStatus === 'retrying' ? 'Retrying...' : 'Brainstorm My Daily Plan'}
                     </Button>
@@ -466,3 +465,5 @@ export function PlannerCheckinForm() {
         </Suspense>
     )
 }
+
+    
