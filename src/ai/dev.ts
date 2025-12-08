@@ -10,7 +10,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
 import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
+import { googleAI } from '@genkit-ai/googleai';
 
 // This is where the server-side configuration is done.
 // The `ai` object is augmented with the plugin.
