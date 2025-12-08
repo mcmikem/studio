@@ -18,10 +18,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, where, getDocs, Timestamp, limit, serverTimestamp, doc } from 'firebase/firestore';
-import type { KeyResult, WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate, KeyResultAI } from '@/lib/types';
+import { collection, query, where, getDocs, Timestamp, limit, doc } from 'firebase/firestore';
+import type { WeeklyWorkplan, DailyPlannerAIOutput, TaskTemplate, KeyResult, KeyResultAI } from '@/lib/types';
 import { dailyPlannerAI } from '@/ai/flows/daily-planner-flow';
 import { Loader2, Sparkles, ArrowRight, PlusCircle, Trash2, ListChecks, BrainCircuit, Link as LinkIcon, Puzzle, Wrench } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -154,7 +154,6 @@ function PlannerCheckinFormComponent() {
     setGenerationStatus('loading');
     setAiOutput(null);
 
-    // **FIX**: Convert Firestore Timestamps to AI-safe strings before calling the flow.
     const serializableKeyResults: KeyResultAI[] = keyResults.map(kr => ({
         title: kr.title,
         description: kr.description,
@@ -168,7 +167,7 @@ function PlannerCheckinFormComponent() {
             userRole: profile.role,
             primaryMission: data.primaryMission,
             weeklyPriorities: weeklyPlan?.individualTasks || [],
-            keyResults: serializableKeyResults, // Use the sanitized data
+            keyResults: serializableKeyResults,
           });
           setAiOutput(output);
           setValue('primaryMission', data.primaryMission);
@@ -231,7 +230,6 @@ function PlannerCheckinFormComponent() {
   const isGeneratingPlan = generationStatus === 'loading' || generationStatus === 'retrying';
 
   const showFinalForm = (generationStatus === 'error' || (aiOutput !== null && !isGeneratingPlan));
-
 
   if (isLoading) {
     return (

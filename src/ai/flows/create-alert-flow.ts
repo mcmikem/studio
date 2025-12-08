@@ -12,11 +12,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import type { AlertInput } from '@/lib/types';
 import { AlertInputSchema } from '@/lib/types';
 
-export async function createAlert(input: AlertInput): Promise<{ id: string }> {
-    return createAlertFlow(input);
-}
-
-const createAlertFlow = ai.defineFlow(
+export const createAlert = ai.defineFlow(
   {
     name: 'createAlertFlow',
     inputSchema: AlertInputSchema,
