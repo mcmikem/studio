@@ -1102,22 +1102,3 @@ export const TestimonyOutputSchema = z.object({
   hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
-
-export const OFAScorecardSchema = z.object({
-  id: z.string(),
-  teamId: z.string(),
-  teamName: z.string(),
-  trainingAttendance: z.number(),
-  coachingQuality: z.number(),
-  playerDiscipline: z.number(),
-  academicAttendance: z.number(),
-  parentEngagement: z.number(),
-  communityReputation: z.number(),
-  achievements: z.string().optional(),
-  challenges: z.string().optional(),
-  supportNeeded: z.string().optional(),
-  createdAt: z.any(),
-});
-export type OFAScorecard = z.infer<typeof OFAScorecardSchema>;
-
-  
