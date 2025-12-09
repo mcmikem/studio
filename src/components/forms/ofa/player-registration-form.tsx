@@ -93,7 +93,11 @@ export function PlayerRegistrationForm() {
     }
     
     const selectedTeam = teams?.find(t => t.id === data.teamId);
-    const teamName = selectedTeam?.teamName || 'Unknown Team';
+    if (!selectedTeam) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Selected team not found.' });
+        return;
+    }
+    const teamName = selectedTeam.teamName;
 
     const { photo, ...restOfData } = data;
 
@@ -102,7 +106,6 @@ export function PlayerRegistrationForm() {
       teamName,
       photoUrl,
       createdAt: serverTimestamp(),
-      // Defaulting performance metrics on creation
       speed: 5,
       ballControl: 5,
       passing: 5,
@@ -121,7 +124,7 @@ export function PlayerRegistrationForm() {
       });
       reset();
       setPhotoPreview(null);
-      router.push('/meal/ofa');
+      router.push('/data/ofa/players');
     } catch (error: any) {
       console.error("Error during form submission:", error)
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
