@@ -22,7 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const playerSchema = z.object({
-  fullName: z.string().min(3, 'Player name is required.'),
+  name: z.string().min(3, 'Player name is required.'),
   age: z.coerce.number().min(5, "Age must be 5 or greater."),
   photo: z.any().optional(),
   position: z.enum(['GK', 'DEF', 'MID', 'FWD']),
@@ -90,22 +90,11 @@ export function PlayerRegistrationForm() {
         }
     }
 
+    const { photo, ...restOfData } = data;
 
     const logData = { 
-        fullName: data.fullName,
-        age: data.age,
+        ...restOfData,
         photoUrl: photoUrl,
-        position: data.position,
-        school: data.school,
-        class: data.class,
-        attendance: data.attendance,
-        performance: data.performance,
-        medicalConditions: data.medicalConditions,
-        guardianName: data.guardianName,
-        guardianContact: data.guardianContact,
-        strengths: data.strengths,
-        weaknesses: data.weaknesses,
-        goalsForTheSeason: data.goalsForTheSeason,
         createdAt: serverTimestamp() 
     };
 
@@ -113,7 +102,7 @@ export function PlayerRegistrationForm() {
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
       toast({
         title: 'Player Registered!',
-        description: `${data.fullName} has been added to the league.`,
+        description: `${data.name} has been added to the league.`,
       });
       reset();
       setPhotoPreview(null);
@@ -155,9 +144,9 @@ export function PlayerRegistrationForm() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="fullName">Player's Full Name</Label>
-                    <Input id="fullName" {...register('fullName')} />
-                    {errors.fullName && <p className="text-sm text-destructive">{errors.fullName.message}</p>}
+                    <Label htmlFor="name">Player's Full Name</Label>
+                    <Input id="name" {...register('name')} />
+                    {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="age">Age</Label>
@@ -259,3 +248,4 @@ export function PlayerRegistrationForm() {
   );
 }
 
+    
