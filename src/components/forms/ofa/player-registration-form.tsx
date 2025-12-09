@@ -11,16 +11,20 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, useFirebaseApp, useUser } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Loader2, ArrowLeft, UserPlus } from 'lucide-react';
+import { Loader2, ArrowLeft, UserPlus, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { uploadFile } from '@/firebase/storage';
+import { useRef, useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const playerSchema = z.object({
   fullName: z.string().min(3, 'Player name is required.'),
   age: z.coerce.number().min(5, "Age must be 5 or greater."),
-  photoUrl: z.string().url().optional(),
+  photo: z.any().optional(),
   position: z.enum(['GK', 'DEF', 'MID', 'FWD']),
   school: z.string().min(3, "School name is required."),
   class: z.string().optional(),
@@ -39,12 +43,17 @@ type PlayerFormData = z.infer<typeof playerSchema>;
 export function PlayerRegistrationForm() {
   const router = useRouter();
   const firestore = useFirestore();
+  const { user } = useUser();
+  const firebaseApp = useFirebaseApp();
   const { toast } = useToast();
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<PlayerFormData>({
@@ -55,14 +64,50 @@ export function PlayerRegistrationForm() {
         performance: 'Fair',
     }
   });
+  
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+          setValue('photo', file);
+          setPhotoPreview(URL.createObjectURL(file));
+      }
+  }
 
   const onSubmit = async (data: PlayerFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
+    if (!firestore || !user || !firebaseApp) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Application is not ready. Please try again.' });
       return;
     }
+    
+    let photoUrl = '';
+    if (data.photo) {
+        try {
+            const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
+            photoUrl = await uploadFile(firebaseApp, data.photo, path);
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload player photo.' });
+            return;
+        }
+    }
 
-    const logData = { ...data, createdAt: serverTimestamp() };
+
+    const logData = { 
+        fullName: data.fullName,
+        age: data.age,
+        photoUrl: photoUrl,
+        position: data.position,
+        school: data.school,
+        class: data.class,
+        attendance: data.attendance,
+        performance: data.performance,
+        medicalConditions: data.medicalConditions,
+        guardianName: data.guardianName,
+        guardianContact: data.guardianContact,
+        strengths: data.strengths,
+        weaknesses: data.weaknesses,
+        goalsForTheSeason: data.goalsForTheSeason,
+        createdAt: serverTimestamp() 
+    };
 
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
@@ -71,6 +116,7 @@ export function PlayerRegistrationForm() {
         description: `${data.fullName} has been added to the league.`,
       });
       reset();
+      setPhotoPreview(null);
       router.push('/meal/ofa');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
@@ -97,6 +143,16 @@ export function PlayerRegistrationForm() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
+             <div className="flex flex-col items-center space-y-4">
+                <Avatar className="h-24 w-24 border-2 border-dashed">
+                    <AvatarImage src={photoPreview || ''} />
+                    <AvatarFallback className="bg-muted"><UserPlus className="h-10 w-10 text-muted-foreground"/></AvatarFallback>
+                </Avatar>
+                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" /> Upload Photo
+                </Button>
+                <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="fullName">Player's Full Name</Label>
@@ -108,11 +164,6 @@ export function PlayerRegistrationForm() {
                     <Input id="age" type="number" {...register('age')} />
                     {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
                 </div>
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="photoUrl">Passport Photo URL (Optional)</Label>
-                <Input id="photoUrl" {...register('photoUrl')} placeholder="Link to player photo"/>
-                {errors.photoUrl && <p className="text-sm text-destructive">{errors.photoUrl.message}</p>}
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -207,3 +258,4 @@ export function PlayerRegistrationForm() {
     </div>
   );
 }
+
