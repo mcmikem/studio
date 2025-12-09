@@ -645,19 +645,22 @@ export type OFAPlayer = {
   name: string;
   teamId: string;
   teamName: string;
-  age: number;
+  ageCategory: 'U13' | 'U15' | 'U17' | 'U19';
   photoUrl?: string;
-  playingPosition?: "Goalkeeper" | "Defender" | "Midfielder" | "Forward";
+  playingPosition?: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward';
   school?: string;
   class?: string;
-  schoolAttendance?: "Good" | "Fair" | "Poor" | "Not Applicable";
-  academicPerformance?: "Good" | "Fair" | "Poor" | "Not Applicable";
+  schoolAttendance?: 'Good' | 'Fair' | 'Poor' | 'Not Applicable';
+  academicPerformance?: 'Good' | 'Fair' | 'Poor' | 'Not Applicable';
   medicalConditions?: string;
   guardianName?: string;
   guardianContact?: string;
   strengths?: string;
   weaknesses?: string;
-  seasonGoals?: string;
+  careerDream?: string;
+  skillGoal?: string;
+  schoolGoal?: string;
+  behaviourGoal?: string;
   createdAt: Timestamp;
 };
 
@@ -676,21 +679,23 @@ export type OFAMatch = {
   createdAt: Timestamp;
 };
 
-export type OFAScorecard = {
-    id: string;
-    teamId: string;
-    teamName: string;
-    trainingAttendance: number;
-    coachingQuality: number;
-    playerDiscipline: number;
-    academicAttendance: number;
-    parentEngagement: number;
-    communityReputation: number;
-    achievements?: string;
-    challenges?: string;
-    supportNeeded?: string;
-    createdAt: Timestamp;
-};
+export const OFAScorecardSchema = z.object({
+  id: z.string(),
+  teamId: z.string(),
+  teamName: z.string(),
+  trainingAttendance: z.number(),
+  coachingQuality: z.number(),
+  playerDiscipline: z.number(),
+  academicAttendance: z.number(),
+  parentEngagement: z.number(),
+  communityReputation: z.number(),
+  achievements: z.string().optional(),
+  challenges: z.string().optional(),
+  supportNeeded: z.string().optional(),
+  createdAt: z.any(),
+});
+export type OFAScorecard = z.infer<typeof OFAScorecardSchema>;
+
 
 export type OFAMatchSummary = {
   id: string;
@@ -1098,7 +1103,7 @@ export const TestimonyOutputSchema = z.object({
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
 
-export type OFAScorecard = z.object({
+export const OFAScorecardSchema = z.object({
   id: z.string(),
   teamId: z.string(),
   teamName: z.string(),
@@ -1113,27 +1118,6 @@ export type OFAScorecard = z.object({
   supportNeeded: z.string().optional(),
   createdAt: z.any(),
 });
+export type OFAScorecard = z.infer<typeof OFAScorecardSchema>;
 
-```
-- `src/app/(main)/data/ofa/page.tsx`
-- `src/app/(main)/data/ofa/players/[id]/page.tsx`
-- `src/app/(main)/data/ofa/players/page.tsx`
-- `src/app/(main)/data/ofa/teams/page.tsx`
-- `src/app/(main)/data/ofa/teams/[id]/page.tsx`
-- `src/app/(main)/data/ofa/matches/page.tsx`
-- `src/app/(main)/data/ofa/scorecards/page.tsx`
-- `src/app/(main)/meal/ofa/team-registration/page.tsx`
-- `src/app/(main)/meal/ofa/player-registration/page.tsx`
-- `src/app/(main)/meal/ofa/match-summary/page.tsx`
-- `src/app/(main)/meal/ofa/advanced-analysis/page.tsx`
-- `src/app/(main)/meal/ofa/equipment-tracker/page.tsx`
-- `src/app/(main)/meal/ofa/quarterly-scorecard/page.tsx`
-- `src/components/forms/ofa/team-registration-form.tsx`
-- `src/components/forms/ofa/player-registration-form.tsx`
-- `src/components/forms/ofa/match-summary-form.tsx`
-- `src/components/forms/ofa/advanced-analysis-form.tsx`
-- `src/components/forms/ofa/equipment-impact-form.tsx`
-- `src/components/forms/ofa/quarterly-scorecard-form.tsx`
-- `src/docs/backend.json`
-- `src/firebase/firestore.rules`
-- `src/lib/types.ts`
+  

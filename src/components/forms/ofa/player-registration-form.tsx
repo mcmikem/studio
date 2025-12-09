@@ -25,7 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const playerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
   teamId: z.string().min(1, 'Team is required.'),
-  age: z.coerce.number().min(10, "Age must be 10 or older."),
+  ageCategory: z.enum(["U13", "U15", "U17", "U19"]),
   photo: z.any().optional(),
   playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional(),
   school: z.string().optional(),
@@ -37,7 +37,10 @@ const playerSchema = z.object({
   guardianContact: z.string().optional(),
   strengths: z.string().optional(),
   weaknesses: z.string().optional(),
-  seasonGoals: z.string().optional(),
+  careerDream: z.string().optional(),
+  skillGoal: z.string().optional(),
+  schoolGoal: z.string().optional(),
+  behaviourGoal: z.string().optional(),
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
@@ -66,6 +69,9 @@ export function PlayerRegistrationForm() {
     reset,
   } = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
+    defaultValues: {
+        ageCategory: 'U15',
+    }
   });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +89,7 @@ export function PlayerRegistrationForm() {
     }
     
     let photoUrl = '';
-    if (data.photo) {
+    if (data.photo && data.photo.name) {
       try {
         const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
         photoUrl = await uploadFile(firebaseApp, data.photo, path);
@@ -93,16 +99,20 @@ export function PlayerRegistrationForm() {
       }
     }
     
-    const teamName = teams?.find(t => t.id === data.teamId)?.teamName || 'Unknown Team';
+    const selectedTeam = teams?.find(t => t.id === data.teamId);
+    if (!selectedTeam) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Selected team not found.' });
+        return;
+    }
     
-    const logData: any = {
-      name: data.name,
-      teamId: data.teamId,
-      teamName: teamName,
-      age: data.age,
-      createdAt: serverTimestamp(),
+    const logData: { [key: string]: any } = {
+        name: data.name,
+        teamId: data.teamId,
+        teamName: selectedTeam.teamName,
+        ageCategory: data.ageCategory,
+        createdAt: serverTimestamp(),
     };
-
+    
     if (photoUrl) logData.photoUrl = photoUrl;
     if (data.playingPosition) logData.playingPosition = data.playingPosition;
     if (data.school) logData.school = data.school;
@@ -114,8 +124,10 @@ export function PlayerRegistrationForm() {
     if (data.guardianContact) logData.guardianContact = data.guardianContact;
     if (data.strengths) logData.strengths = data.strengths;
     if (data.weaknesses) logData.weaknesses = data.weaknesses;
-    if (data.seasonGoals) logData.seasonGoals = data.seasonGoals;
-
+    if (data.careerDream) logData.careerDream = data.careerDream;
+    if (data.skillGoal) logData.skillGoal = data.skillGoal;
+    if (data.schoolGoal) logData.schoolGoal = data.schoolGoal;
+    if (data.behaviourGoal) logData.behaviourGoal = data.behaviourGoal;
 
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
@@ -171,9 +183,19 @@ export function PlayerRegistrationForm() {
                     {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
-                    <Input id="age" type="number" {...register('age')} />
-                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
+                    <Label htmlFor="ageCategory">Age Category</Label>
+                     <Controller name="ageCategory" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger id="ageCategory"><SelectValue placeholder="Select category..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="U13">U13</SelectItem>
+                                <SelectItem value="U15">U15</SelectItem>
+                                <SelectItem value="U17">U17</SelectItem>
+                                <SelectItem value="U19">U19</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )} />
+                    {errors.ageCategory && <p className="text-sm text-destructive">{errors.ageCategory.message}</p>}
                 </div>
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -252,9 +274,13 @@ export function PlayerRegistrationForm() {
                 <Label htmlFor="weaknesses">Weaknesses</Label>
                 <Textarea id="weaknesses" {...register('weaknesses')} placeholder="e.g., Heading, Defensive discipline" />
             </div>
-             <div className="space-y-2">
-                <Label htmlFor="seasonGoals">Goals for the Season</Label>
-                <Textarea id="seasonGoals" {...register('seasonGoals')} placeholder="e.g., Become top scorer, get a school bursary" />
+            <div className="space-y-2">
+                <Label>Personal Goals</Label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <Input placeholder="Career Dream..." {...register('careerDream')} />
+                    <Input placeholder="Skill Goal..." {...register('skillGoal')} />
+                    <Input placeholder="School Goal..." {...register('schoolGoal')} />
+                </div>
             </div>
           </CardContent>
           <CardFooter>
@@ -262,4 +288,9 @@ export function PlayerRegistrationForm() {
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Register Player
             </Button>
-          </Card
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  );
+}
