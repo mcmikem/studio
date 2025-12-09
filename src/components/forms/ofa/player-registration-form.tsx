@@ -11,31 +11,29 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useFirebaseApp, useUser } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, addDocumentNonBlocking, useFirebaseApp, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { Loader2, ArrowLeft, UserPlus, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { uploadFile } from '@/firebase/storage';
 import { useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
+import type { OFATeam } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const playerSchema = z.object({
-  name: z.string().min(3, 'Player name is required.'),
-  age: z.coerce.number().min(5, "Age must be 5 or greater."),
+  name: z.string().min(3, "Player's name is required."),
   photo: z.any().optional(),
-  position: z.enum(['GK', 'DEF', 'MID', 'FWD']),
-  school: z.string().min(3, "School name is required."),
+  ageCategory: z.enum(["U13", "U15", "U17", "U19"]),
+  teamId: z.string().min(1, 'Please select a team.'),
+  school: z.string().optional(),
   class: z.string().optional(),
-  attendance: z.enum(['Good', 'Irregular', 'Dropped']),
-  performance: z.enum(['Excellent', 'Fair', 'Poor']),
-  medicalConditions: z.string().optional(),
-  guardianName: z.string().min(3, 'Guardian name is required.'),
-  guardianContact: z.string().min(10, 'A valid contact is required.'),
-  strengths: z.string().optional(),
-  weaknesses: z.string().optional(),
-  goalsForTheSeason: z.string().optional(),
+  guardianContact: z.string().optional(),
+  careerDream: z.string().optional(),
+  skillGoal: z.string().optional(),
+  schoolGoal: z.string().optional(),
+  behaviourGoal: z.string().optional(),
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
@@ -49,6 +47,12 @@ export function PlayerRegistrationForm() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const teamsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'ofa-teams'), orderBy('teamName'));
+  }, [firestore]);
+  const { data: teams, isLoading: isLoadingTeams } = useCollection<OFATeam>(teamsQuery);
+
   const {
     register,
     handleSubmit,
@@ -59,19 +63,17 @@ export function PlayerRegistrationForm() {
   } = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
     defaultValues: {
-        position: 'MID',
-        attendance: 'Good',
-        performance: 'Fair',
+      ageCategory: "U15",
     }
   });
-  
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-          setValue('photo', file);
-          setPhotoPreview(URL.createObjectURL(file));
-      }
-  }
+    const file = e.target.files?.[0];
+    if (file) {
+      setValue('photo', file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
 
   const onSubmit = async (data: PlayerFormData) => {
     if (!firestore || !user || !firebaseApp) {
@@ -81,21 +83,34 @@ export function PlayerRegistrationForm() {
     
     let photoUrl = '';
     if (data.photo) {
-        try {
-            const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
-            photoUrl = await uploadFile(firebaseApp, data.photo, path);
-        } catch (e) {
-            toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload player photo.' });
-            return;
-        }
+      try {
+        const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
+        photoUrl = await uploadFile(firebaseApp, data.photo, path);
+      } catch (e) {
+        toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload player photo.' });
+        return;
+      }
     }
+    
+    const selectedTeam = teams?.find(t => t.id === data.teamId);
+    const teamName = selectedTeam?.teamName || 'Unknown Team';
 
     const { photo, ...restOfData } = data;
 
-    const logData = { 
-        ...restOfData,
-        photoUrl: photoUrl,
-        createdAt: serverTimestamp() 
+    const logData = {
+      ...restOfData,
+      teamName,
+      photoUrl,
+      createdAt: serverTimestamp(),
+      // Defaulting performance metrics on creation
+      speed: 5,
+      ballControl: 5,
+      passing: 5,
+      gameAwareness: 5,
+      teamwork: 5,
+      attitude: 5,
+      attendance: 'Good',
+      performanceTrend: 'Stable',
     };
 
     try {
@@ -108,18 +123,19 @@ export function PlayerRegistrationForm() {
       setPhotoPreview(null);
       router.push('/meal/ofa');
     } catch (error: any) {
+      console.error("Error during form submission:", error)
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
   };
 
   return (
     <div className="space-y-4">
-       <Button variant="outline" asChild>
-            <Link href="/meal/ofa">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to OFA Hub
-            </Link>
-        </Button>
+      <Button variant="outline" asChild>
+        <Link href="/meal/ofa">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to OFA Hub
+        </Link>
+      </Button>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -132,108 +148,86 @@ export function PlayerRegistrationForm() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-             <div className="flex flex-col items-center space-y-4">
-                <Avatar className="h-24 w-24 border-2 border-dashed">
-                    <AvatarImage src={photoPreview || ''} />
-                    <AvatarFallback className="bg-muted"><UserPlus className="h-10 w-10 text-muted-foreground"/></AvatarFallback>
-                </Avatar>
-                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="mr-2 h-4 w-4" /> Upload Photo
-                </Button>
-                <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+            <div className="flex flex-col items-center space-y-4">
+              <Avatar className="h-24 w-24 border-2 border-dashed" data-ai-hint="person avatar">
+                <AvatarImage src={photoPreview || ''} />
+                <AvatarFallback className="bg-muted">
+                  <UserPlus className="h-10 w-10 text-muted-foreground" />
+                </AvatarFallback>
+              </Avatar>
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                <Upload className="mr-2 h-4 w-4" /> Upload Photo
+              </Button>
+              <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">Player's Full Name</Label>
+              <Input id="name" {...register('name')} />
+              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div className="space-y-2">
+                <Label htmlFor="teamId">Team</Label>
+                {isLoadingTeams ? <Skeleton className="h-10 w-full" /> : (
+                  <Controller
+                    name="teamId"
+                    control={control}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <SelectTrigger id="teamId"><SelectValue placeholder="Select a team..." /></SelectTrigger>
+                        <SelectContent>
+                          {teams?.map(t => <SelectItem key={t.id} value={t.id}>{t.teamName}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                )}
+                {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="ageCategory">Age Category</Label>
+                  <Controller name="ageCategory" control={control} render={({ field }) => (
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <SelectTrigger id="ageCategory"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                              <SelectItem value="U13">U-13</SelectItem>
+                              <SelectItem value="U15">U-15</SelectItem>
+                              <SelectItem value="U17">U-17</SelectItem>
+                              <SelectItem value="U19">U-19</SelectItem>
+                          </SelectContent>
+                      </Select>
+                  )} />
+              </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Player's Full Name</Label>
-                    <Input id="name" {...register('name')} />
-                    {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+                  <Label htmlFor="school">School</Label>
+                  <Input id="school" {...register('school')} />
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
-                    <Input id="age" type="number" {...register('age')} />
-                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
-                </div>
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="position">Playing Position</Label>
-                    <Controller name="position" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger id="position"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="GK">Goalkeeper (GK)</SelectItem>
-                                <SelectItem value="DEF">Defender (DEF)</SelectItem>
-                                <SelectItem value="MID">Midfielder (MID)</SelectItem>
-                                <SelectItem value="FWD">Forward (FWD)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    )} />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="school">School</Label>
-                    <Input id="school" {...register('school')} />
-                    {errors.school && <p className="text-sm text-destructive">{errors.school.message}</p>}
-                </div>
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="class">Class</Label>
-                <Input id="class" {...register('class')} placeholder="e.g., P.7, S.3" />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label>School Attendance</Label>
-                    <Controller name="attendance" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Good">Good</SelectItem>
-                                <SelectItem value="Irregular">Irregular</SelectItem>
-                                <SelectItem value="Dropped">Dropped Out</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    )} />
-                </div>
-                 <div className="space-y-2">
-                    <Label>Academic Performance</Label>
-                    <Controller name="performance" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Excellent">Excellent</SelectItem>
-                                <SelectItem value="Fair">Fair</SelectItem>
-                                <SelectItem value="Poor">Poor</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    )} />
+                  <Label htmlFor="class">Class</Label>
+                  <Input id="class" {...register('class')} placeholder="e.g., P.7, S.3" />
                 </div>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="medicalConditions">Medical Conditions (if any)</Label>
-                <Textarea id="medicalConditions" {...register('medicalConditions')} />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="guardianName">Guardian Name</Label>
-                    <Input id="guardianName" {...register('guardianName')} />
-                    {errors.guardianName && <p className="text-sm text-destructive">{errors.guardianName.message}</p>}
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="guardianContact">Guardian Contact</Label>
-                    <Input id="guardianContact" {...register('guardianContact')} />
-                    {errors.guardianContact && <p className="text-sm text-destructive">{errors.guardianContact.message}</p>}
-                </div>
+              <Label htmlFor="guardianContact">Guardian's Contact</Label>
+              <Input id="guardianContact" {...register('guardianContact')} />
             </div>
              <div className="space-y-2">
-                <Label htmlFor="strengths">Strengths</Label>
-                <Textarea id="strengths" {...register('strengths')} placeholder="e.g., Pace, Dribbling, Teamwork" />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="weaknesses">Weaknesses</Label>
-                <Textarea id="weaknesses" {...register('weaknesses')} placeholder="e.g., Heading, Defensive discipline" />
+                <Label htmlFor="careerDream">Career Dream (besides football)</Label>
+                <Input id="careerDream" {...register('careerDream')} />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="goalsForTheSeason">Goals for the Season</Label>
-                <Textarea id="goalsForTheSeason" {...register('goalsForTheSeason')} placeholder="e.g., Become top scorer, get a school bursary" />
+                <Label htmlFor="skillGoal">A skill they want to improve</Label>
+                <Input id="skillGoal" {...register('skillGoal')} />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="schoolGoal">A goal for school</Label>
+                <Input id="schoolGoal" {...register('schoolGoal')} />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="behaviourGoal">A behaviour goal (e.g. being on time)</Label>
+                <Input id="behaviourGoal" {...register('behaviourGoal')} />
             </div>
           </CardContent>
           <CardFooter>
@@ -247,5 +241,3 @@ export function PlayerRegistrationForm() {
     </div>
   );
 }
-
-    
