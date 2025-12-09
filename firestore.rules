@@ -5,9 +5,10 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Executive Director', 'Administrator'];
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
+      return request.auth != null && userDoc.data.role in ['Executive Director', 'Administrator'];
     }
-
+    
     function isManager() {
       let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
       return request.auth != null && userDoc.data.role in ['Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Resource Mobilization Lead'];
