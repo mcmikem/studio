@@ -10,7 +10,7 @@ import { Progress } from '../ui/progress';
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/empty-state';
 import { useMemoFirebase, useCollection } from '@/firebase';
-import { collection, query, where, Timestamp } from 'firebase/firestore';
+import { collection, query, where, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { subDays, startOfWeek, endOfWeek } from 'date-fns';
 
 interface TeamPerformanceLeaderboardProps {
@@ -35,7 +35,9 @@ export function TeamPerformanceLeaderboard({ users, isLoading }: TeamPerformance
       if (!db) return null;
       return query(
           collection(db, 'activities'),
-          where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo))
+          where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
+          orderBy('loggedAt', 'desc'),
+          limit(200) // Add a limit to prevent fetching too many documents
       );
   }, [thirtyDaysAgo]);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery, { listen: false });
