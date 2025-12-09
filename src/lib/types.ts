@@ -650,6 +650,10 @@ export type OFAPlayer = {
   school?: string;
   class?: string;
   guardianContact?: string;
+  careerDream?: string;
+  skillGoal?: string;
+  schoolGoal?: string;
+  behaviourGoal?: string;
   speed: number;
   ballControl: number;
   passing: number;
@@ -658,10 +662,6 @@ export type OFAPlayer = {
   attitude: number;
   attendance: "Good" | "Fair" | "Poor";
   performanceTrend: "Improving" | "Stable" | "Declining";
-  careerDream?: string;
-  skillGoal?: string;
-  schoolGoal?: string;
-  behaviourGoal?: string;
   createdAt: Timestamp;
 };
 
