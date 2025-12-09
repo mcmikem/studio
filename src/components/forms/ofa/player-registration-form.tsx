@@ -20,7 +20,7 @@ import { useRef, useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import type { OFATeam } from '@/lib/types';
-import { Skeleton } from '../ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const playerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
