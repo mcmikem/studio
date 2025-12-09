@@ -645,7 +645,7 @@ export type OFAPlayer = {
   name: string;
   teamId: string;
   teamName: string;
-  ageCategory: "U13" | "U15" | "U17" | "U19";
+  age: number;
   photoUrl?: string;
   playingPosition?: "Goalkeeper" | "Defender" | "Midfielder" | "Forward";
   school?: string;
@@ -657,10 +657,7 @@ export type OFAPlayer = {
   guardianContact?: string;
   strengths?: string;
   weaknesses?: string;
-  careerDream?: string;
-  skillGoal?: string;
-  schoolGoal?: string;
-  behaviourGoal?: string;
+  seasonGoals?: string;
   createdAt: Timestamp;
 };
 
@@ -1100,3 +1097,43 @@ export const TestimonyOutputSchema = z.object({
   hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
+
+export type OFAScorecard = z.object({
+  id: z.string(),
+  teamId: z.string(),
+  teamName: z.string(),
+  trainingAttendance: z.number(),
+  coachingQuality: z.number(),
+  playerDiscipline: z.number(),
+  academicAttendance: z.number(),
+  parentEngagement: z.number(),
+  communityReputation: z.number(),
+  achievements: z.string().optional(),
+  challenges: z.string().optional(),
+  supportNeeded: z.string().optional(),
+  createdAt: z.any(),
+});
+
+```
+- `src/app/(main)/data/ofa/page.tsx`
+- `src/app/(main)/data/ofa/players/[id]/page.tsx`
+- `src/app/(main)/data/ofa/players/page.tsx`
+- `src/app/(main)/data/ofa/teams/page.tsx`
+- `src/app/(main)/data/ofa/teams/[id]/page.tsx`
+- `src/app/(main)/data/ofa/matches/page.tsx`
+- `src/app/(main)/data/ofa/scorecards/page.tsx`
+- `src/app/(main)/meal/ofa/team-registration/page.tsx`
+- `src/app/(main)/meal/ofa/player-registration/page.tsx`
+- `src/app/(main)/meal/ofa/match-summary/page.tsx`
+- `src/app/(main)/meal/ofa/advanced-analysis/page.tsx`
+- `src/app/(main)/meal/ofa/equipment-tracker/page.tsx`
+- `src/app/(main)/meal/ofa/quarterly-scorecard/page.tsx`
+- `src/components/forms/ofa/team-registration-form.tsx`
+- `src/components/forms/ofa/player-registration-form.tsx`
+- `src/components/forms/ofa/match-summary-form.tsx`
+- `src/components/forms/ofa/advanced-analysis-form.tsx`
+- `src/components/forms/ofa/equipment-impact-form.tsx`
+- `src/components/forms/ofa/quarterly-scorecard-form.tsx`
+- `src/docs/backend.json`
+- `src/firebase/firestore.rules`
+- `src/lib/types.ts`

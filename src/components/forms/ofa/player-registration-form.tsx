@@ -25,8 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 const playerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
   teamId: z.string().min(1, 'Team is required.'),
-  teamName: z.string(),
-  ageCategory: z.enum(["U13", "U15", "U17", "U19"]),
+  age: z.coerce.number().min(10, "Age must be 10 or older."),
   photo: z.any().optional(),
   playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional(),
   school: z.string().optional(),
@@ -38,10 +37,7 @@ const playerSchema = z.object({
   guardianContact: z.string().optional(),
   strengths: z.string().optional(),
   weaknesses: z.string().optional(),
-  careerDream: z.string().optional(),
-  skillGoal: z.string().optional(),
-  schoolGoal: z.string().optional(),
-  behaviourGoal: z.string().optional(),
+  seasonGoals: z.string().optional(),
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
@@ -66,21 +62,11 @@ export function PlayerRegistrationForm() {
     handleSubmit,
     control,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
   });
-
-  const selectedTeamId = watch('teamId');
-
-  useEffect(() => {
-      if (selectedTeamId && teams) {
-          const teamName = teams.find(t => t.id === selectedTeamId)?.teamName || '';
-          setValue('teamName', teamName);
-      }
-  }, [selectedTeamId, teams, setValue]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,13 +93,29 @@ export function PlayerRegistrationForm() {
       }
     }
     
-    const { photo, ...restOfData } = data;
-
-    const logData = {
-      ...restOfData,
-      photoUrl,
+    const teamName = teams?.find(t => t.id === data.teamId)?.teamName || 'Unknown Team';
+    
+    const logData: any = {
+      name: data.name,
+      teamId: data.teamId,
+      teamName: teamName,
+      age: data.age,
       createdAt: serverTimestamp(),
     };
+
+    if (photoUrl) logData.photoUrl = photoUrl;
+    if (data.playingPosition) logData.playingPosition = data.playingPosition;
+    if (data.school) logData.school = data.school;
+    if (data.class) logData.class = data.class;
+    if (data.schoolAttendance) logData.schoolAttendance = data.schoolAttendance;
+    if (data.academicPerformance) logData.academicPerformance = data.academicPerformance;
+    if (data.medicalConditions) logData.medicalConditions = data.medicalConditions;
+    if (data.guardianName) logData.guardianName = data.guardianName;
+    if (data.guardianContact) logData.guardianContact = data.guardianContact;
+    if (data.strengths) logData.strengths = data.strengths;
+    if (data.weaknesses) logData.weaknesses = data.weaknesses;
+    if (data.seasonGoals) logData.seasonGoals = data.seasonGoals;
+
 
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
@@ -126,7 +128,7 @@ export function PlayerRegistrationForm() {
       router.push('/data/ofa/players');
     } catch (error: any) {
       console.error("Error during form submission:", error)
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+      toast({ variant: 'destructive', title: 'Submission Failed', description: 'Invalid data submitted to the server.' });
     }
   };
 
@@ -168,7 +170,14 @@ export function PlayerRegistrationForm() {
                     <Input id="name" {...register('name')} />
                     {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
                 </div>
-                <div className="space-y-2">
+                 <div className="space-y-2">
+                    <Label htmlFor="age">Age</Label>
+                    <Input id="age" type="number" {...register('age')} />
+                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
+                </div>
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-2">
                     <Label htmlFor="teamId">Team</Label>
                     {isLoadingTeams ? <Skeleton className="h-10 w-full" /> : (
                          <Controller
@@ -190,19 +199,10 @@ export function PlayerRegistrationForm() {
                     )}
                     {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
                 </div>
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="space-y-2">
-                    <Label htmlFor="ageCategory">Age Category</Label>
-                    <Controller name="ageCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger id="ageCategory"><SelectValue placeholder="Select category..." /></SelectTrigger><SelectContent><SelectItem value="U13">U13</SelectItem><SelectItem value="U15">U15</SelectItem><SelectItem value="U17">U17</SelectItem><SelectItem value="U19">U19</SelectItem></SelectContent></Select>
-                    )} />
-                    {errors.ageCategory && <p className="text-sm text-destructive">{errors.ageCategory.message}</p>}
-                </div>
-                 <div className="space-y-2">
+                <div className="space-y-2">
                     <Label htmlFor="playingPosition">Playing Position</Label>
                     <Controller name="playingPosition" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger id="playingPosition"><SelectValue placeholder="Select position..." /></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="playingPosition"><SelectValue placeholder="Select position..." /></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
                     )} />
                 </div>
             </div>
@@ -252,25 +252,9 @@ export function PlayerRegistrationForm() {
                 <Label htmlFor="weaknesses">Weaknesses</Label>
                 <Textarea id="weaknesses" {...register('weaknesses')} placeholder="e.g., Heading, Defensive discipline" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="space-y-2">
-                    <Label htmlFor="careerDream">Career Dream</Label>
-                    <Input id="careerDream" {...register('careerDream')} placeholder="e.g., Professional Footballer, Doctor" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="skillGoal">Personal Skill Goal</Label>
-                    <Input id="skillGoal" {...register('skillGoal')} placeholder="e.g., Improve free kicks" />
-                </div>
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="schoolGoal">School Goal</Label>
-                    <Input id="schoolGoal" {...register('schoolGoal')} placeholder="e.g., Pass PLE exams" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="behaviourGoal">Behaviour Goal</Label>
-                    <Input id="behaviourGoal" {...register('behaviourGoal')} placeholder="e.g., Be more disciplined on the pitch" />
-                </div>
+             <div className="space-y-2">
+                <Label htmlFor="seasonGoals">Goals for the Season</Label>
+                <Textarea id="seasonGoals" {...register('seasonGoals')} placeholder="e.g., Become top scorer, get a school bursary" />
             </div>
           </CardContent>
           <CardFooter>
@@ -278,9 +262,4 @@ export function PlayerRegistrationForm() {
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Register Player
             </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
-  );
-}
+          </Card
