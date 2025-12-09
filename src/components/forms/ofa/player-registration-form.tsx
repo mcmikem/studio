@@ -41,6 +41,7 @@ const playerSchema = z.object({
   skillGoal: z.string().optional(),
   schoolGoal: z.string().optional(),
   behaviourGoal: z.string().optional(),
+  age: z.coerce.number().optional(),
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
@@ -114,6 +115,7 @@ export function PlayerRegistrationForm() {
     };
     
     if (photoUrl) logData.photoUrl = photoUrl;
+    if (data.age) logData.age = data.age;
     if (data.playingPosition) logData.playingPosition = data.playingPosition;
     if (data.school) logData.school = data.school;
     if (data.class) logData.class = data.class;
@@ -129,6 +131,7 @@ export function PlayerRegistrationForm() {
     if (data.schoolGoal) logData.schoolGoal = data.schoolGoal;
     if (data.behaviourGoal) logData.behaviourGoal = data.behaviourGoal;
 
+
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
       toast({
@@ -140,7 +143,7 @@ export function PlayerRegistrationForm() {
       router.push('/data/ofa/players');
     } catch (error: any) {
       console.error("Error during form submission:", error)
-      toast({ variant: 'destructive', title: 'Submission Failed', description: 'Invalid data submitted to the server.' });
+      toast({ variant: 'destructive', title: 'Submission Failed', description: 'Invalid data submitted to the server. Please check all fields and try again.' });
     }
   };
 
@@ -183,19 +186,9 @@ export function PlayerRegistrationForm() {
                     {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="ageCategory">Age Category</Label>
-                     <Controller name="ageCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger id="ageCategory"><SelectValue placeholder="Select category..." /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="U13">U13</SelectItem>
-                                <SelectItem value="U15">U15</SelectItem>
-                                <SelectItem value="U17">U17</SelectItem>
-                                <SelectItem value="U19">U19</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    )} />
-                    {errors.ageCategory && <p className="text-sm text-destructive">{errors.ageCategory.message}</p>}
+                    <Label htmlFor="age">Age</Label>
+                    <Input id="age" type="number" {...register('age')} />
+                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
                 </div>
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -221,12 +214,27 @@ export function PlayerRegistrationForm() {
                     )}
                     {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="playingPosition">Playing Position</Label>
-                    <Controller name="playingPosition" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="playingPosition"><SelectValue placeholder="Select position..." /></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
+                 <div className="space-y-2">
+                    <Label htmlFor="ageCategory">Age Category</Label>
+                     <Controller name="ageCategory" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger id="ageCategory"><SelectValue placeholder="Select category..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="U13">U13</SelectItem>
+                                <SelectItem value="U15">U15</SelectItem>
+                                <SelectItem value="U17">U17</SelectItem>
+                                <SelectItem value="U19">U19</SelectItem>
+                            </SelectContent>
+                        </Select>
                     )} />
+                    {errors.ageCategory && <p className="text-sm text-destructive">{errors.ageCategory.message}</p>}
                 </div>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="playingPosition">Playing Position</Label>
+                <Controller name="playingPosition" control={control} render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="playingPosition"><SelectValue placeholder="Select position..." /></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
+                )} />
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">

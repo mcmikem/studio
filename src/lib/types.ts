@@ -646,6 +646,7 @@ export type OFAPlayer = {
   teamId: string;
   teamName: string;
   ageCategory: 'U13' | 'U15' | 'U17' | 'U19';
+  age?: number;
   photoUrl?: string;
   playingPosition?: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward';
   school?: string;
@@ -693,6 +694,7 @@ export const OFAScorecardSchema = z.object({
   challenges: z.string().optional(),
   supportNeeded: z.string().optional(),
   createdAt: z.any(),
+  month: z.string(),
 });
 export type OFAScorecard = z.infer<typeof OFAScorecardSchema>;
 

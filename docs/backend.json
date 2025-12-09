@@ -1120,6 +1120,7 @@
         "teamId": { "type": "string" },
         "teamName": { "type": "string" },
         "ageCategory": { "type": "string", "enum": ["U13", "U15", "U17", "U19"] },
+        "age": { "type": "number" },
         "photoUrl": { "type": "string", "format": "uri" },
         "playingPosition": { "type": "string", "enum": ["Goalkeeper", "Defender", "Midfielder", "Forward"] },
         "school": { "type": "string" },
@@ -1137,7 +1138,7 @@
         "behaviourGoal": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "ageCategory", "teamId", "teamName", "createdAt"]
+      "required": ["name", "teamId", "teamName", "ageCategory", "createdAt"]
     },
     "OFAMatch": {
       "$schema": "http://json-schema.org/draft-07/schema#",
