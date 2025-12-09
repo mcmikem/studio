@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -89,23 +88,13 @@ export function PlayerRegistrationForm() {
       return;
     }
     
-    let photoUrl = '';
-    if (data.photo && data.photo.name) {
-      try {
-        const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
-        photoUrl = await uploadFile(firebaseApp, data.photo, path);
-      } catch (e) {
-        toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload player photo.' });
-        return;
-      }
-    }
-    
     const selectedTeam = teams?.find(t => t.id === data.teamId);
     if (!selectedTeam) {
         toast({ variant: 'destructive', title: 'Error', description: 'Selected team not found.' });
         return;
     }
     
+    // Start building the data object with required fields
     const logData: { [key: string]: any } = {
         name: data.name,
         teamId: data.teamId,
@@ -114,23 +103,29 @@ export function PlayerRegistrationForm() {
         createdAt: serverTimestamp(),
     };
     
-    if (photoUrl) logData.photoUrl = photoUrl;
-    if (data.age) logData.age = data.age;
-    if (data.playingPosition) logData.playingPosition = data.playingPosition;
-    if (data.school) logData.school = data.school;
-    if (data.class) logData.class = data.class;
-    if (data.schoolAttendance) logData.schoolAttendance = data.schoolAttendance;
-    if (data.academicPerformance) logData.academicPerformance = data.academicPerformance;
-    if (data.medicalConditions) logData.medicalConditions = data.medicalConditions;
-    if (data.guardianName) logData.guardianName = data.guardianName;
-    if (data.guardianContact) logData.guardianContact = data.guardianContact;
-    if (data.strengths) logData.strengths = data.strengths;
-    if (data.weaknesses) logData.weaknesses = data.weaknesses;
-    if (data.careerDream) logData.careerDream = data.careerDream;
-    if (data.skillGoal) logData.skillGoal = data.skillGoal;
-    if (data.schoolGoal) logData.schoolGoal = data.schoolGoal;
-    if (data.behaviourGoal) logData.behaviourGoal = data.behaviourGoal;
+    // Conditionally add photoUrl
+    if (data.photo && data.photo.name) {
+      try {
+        const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
+        logData.photoUrl = await uploadFile(firebaseApp, data.photo, path);
+      } catch (e) {
+        toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload player photo.' });
+        return; // Stop execution if photo upload fails
+      }
+    }
 
+    // Conditionally add all other optional fields
+    const optionalFields: (keyof PlayerFormData)[] = [
+      'age', 'playingPosition', 'school', 'class', 'schoolAttendance', 'academicPerformance',
+      'medicalConditions', 'guardianName', 'guardianContact', 'strengths', 'weaknesses',
+      'careerDream', 'skillGoal', 'schoolGoal', 'behaviourGoal'
+    ];
+    
+    optionalFields.forEach(field => {
+      if (data[field] !== null && data[field] !== undefined && data[field] !== '') {
+        logData[field] = data[field];
+      }
+    });
 
     try {
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
@@ -143,7 +138,7 @@ export function PlayerRegistrationForm() {
       router.push('/data/ofa/players');
     } catch (error: any) {
       console.error("Error during form submission:", error)
-      toast({ variant: 'destructive', title: 'Submission Failed', description: 'Invalid data submitted to the server. Please check all fields and try again.' });
+      toast({ variant: 'destructive', title: 'Submission Failed', description: 'An error occurred while saving the data. Please check console for details.' });
     }
   };
 
