@@ -643,19 +643,24 @@ export type BusinessProgress = {
 export type OFAPlayer = {
   id: string;
   name: string;
-  age: number;
+  teamId: string;
+  teamName: string;
+  ageCategory: "U13" | "U15" | "U17" | "U19";
   photoUrl?: string;
-  playingPosition?: string;
+  playingPosition?: "Goalkeeper" | "Defender" | "Midfielder" | "Forward";
   school?: string;
   class?: string;
-  schoolAttendance?: 'Good' | 'Fair' | 'Poor';
-  academicPerformance?: 'Good' | 'Fair' | 'Poor';
+  schoolAttendance?: "Good" | "Fair" | "Poor" | "Not Applicable";
+  academicPerformance?: "Good" | "Fair" | "Poor" | "Not Applicable";
   medicalConditions?: string;
   guardianName?: string;
   guardianContact?: string;
   strengths?: string;
   weaknesses?: string;
-  seasonGoals?: string;
+  careerDream?: string;
+  skillGoal?: string;
+  schoolGoal?: string;
+  behaviourGoal?: string;
   createdAt: Timestamp;
 };
 

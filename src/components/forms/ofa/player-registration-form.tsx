@@ -10,31 +10,38 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useFirebaseApp, useUser } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, addDocumentNonBlocking, useFirebaseApp, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { Loader2, ArrowLeft, UserPlus, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { uploadFile } from '@/firebase/storage';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
+import type { OFATeam } from '@/lib/types';
+import { Skeleton } from '../ui/skeleton';
 
 const playerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
-  age: z.coerce.number().min(10, 'Age must be 10 or over.'),
+  teamId: z.string().min(1, 'Team is required.'),
+  teamName: z.string(),
+  ageCategory: z.enum(["U13", "U15", "U17", "U19"]),
   photo: z.any().optional(),
-  playingPosition: z.string().optional(),
+  playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional(),
   school: z.string().optional(),
   class: z.string().optional(),
-  schoolAttendance: z.enum(["Good", "Fair", "Poor"]).optional(),
-  academicPerformance: z.enum(["Good", "Fair", "Poor"]).optional(),
+  schoolAttendance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional(),
+  academicPerformance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional(),
   medicalConditions: z.string().optional(),
   guardianName: z.string().optional(),
   guardianContact: z.string().optional(),
   strengths: z.string().optional(),
   weaknesses: z.string().optional(),
-  seasonGoals: z.string().optional(),
+  careerDream: z.string().optional(),
+  skillGoal: z.string().optional(),
+  schoolGoal: z.string().optional(),
+  behaviourGoal: z.string().optional(),
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
@@ -48,16 +55,32 @@ export function PlayerRegistrationForm() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const teamsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'ofa-teams'), orderBy('teamName'));
+  }, [firestore]);
+  const { data: teams, isLoading: isLoadingTeams } = useCollection<OFATeam>(teamsQuery);
+
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
   });
+
+  const selectedTeamId = watch('teamId');
+
+  useEffect(() => {
+      if (selectedTeamId && teams) {
+          const teamName = teams.find(t => t.id === selectedTeamId)?.teamName || '';
+          setValue('teamName', teamName);
+      }
+  }, [selectedTeamId, teams, setValue]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -146,14 +169,42 @@ export function PlayerRegistrationForm() {
                     {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
-                    <Input id="age" type="number" {...register('age')} />
-                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
+                    <Label htmlFor="teamId">Team</Label>
+                    {isLoadingTeams ? <Skeleton className="h-10 w-full" /> : (
+                         <Controller
+                            name="teamId"
+                            control={control}
+                            render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <SelectTrigger id="teamId">
+                                    <SelectValue placeholder="Select a team..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {teams?.map(t => (
+                                        <SelectItem key={t.id} value={t.id}>{t.teamName}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            )}
+                        />
+                    )}
+                    {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
                 </div>
             </div>
-             <div className="space-y-2">
-                <Label htmlFor="playingPosition">Playing Position</Label>
-                <Input id="playingPosition" {...register('playingPosition')} placeholder="e.g., Midfielder (MID), Striker (ST)" />
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                    <Label htmlFor="ageCategory">Age Category</Label>
+                    <Controller name="ageCategory" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger id="ageCategory"><SelectValue placeholder="Select category..." /></SelectTrigger><SelectContent><SelectItem value="U13">U13</SelectItem><SelectItem value="U15">U15</SelectItem><SelectItem value="U17">U17</SelectItem><SelectItem value="U19">U19</SelectItem></SelectContent></Select>
+                    )} />
+                    {errors.ageCategory && <p className="text-sm text-destructive">{errors.ageCategory.message}</p>}
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="playingPosition">Playing Position</Label>
+                    <Controller name="playingPosition" control={control} render={({ field }) => (
+                        <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger id="playingPosition"><SelectValue placeholder="Select position..." /></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
+                    )} />
+                </div>
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -169,13 +220,13 @@ export function PlayerRegistrationForm() {
                  <div className="space-y-2">
                     <Label htmlFor="schoolAttendance">School Attendance</Label>
                      <Controller name="schoolAttendance" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="schoolAttendance"><SelectValue placeholder="Select attendance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem></SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="schoolAttendance"><SelectValue placeholder="Select attendance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
                     )} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="academicPerformance">Academic Performance</Label>
                       <Controller name="academicPerformance" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="academicPerformance"><SelectValue placeholder="Select performance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem></SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="academicPerformance"><SelectValue placeholder="Select performance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
                     )} />
                 </div>
             </div>
@@ -201,9 +252,25 @@ export function PlayerRegistrationForm() {
                 <Label htmlFor="weaknesses">Weaknesses</Label>
                 <Textarea id="weaknesses" {...register('weaknesses')} placeholder="e.g., Heading, Defensive discipline" />
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="seasonGoals">Goals for the Season</Label>
-                <Textarea id="seasonGoals" {...register('seasonGoals')} placeholder="e.g., Become top scorer, get a school bursary" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                    <Label htmlFor="careerDream">Career Dream</Label>
+                    <Input id="careerDream" {...register('careerDream')} placeholder="e.g., Professional Footballer, Doctor" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="skillGoal">Personal Skill Goal</Label>
+                    <Input id="skillGoal" {...register('skillGoal')} placeholder="e.g., Improve free kicks" />
+                </div>
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="schoolGoal">School Goal</Label>
+                    <Input id="schoolGoal" {...register('schoolGoal')} placeholder="e.g., Pass PLE exams" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="behaviourGoal">Behaviour Goal</Label>
+                    <Input id="behaviourGoal" {...register('behaviourGoal')} placeholder="e.g., Be more disciplined on the pitch" />
+                </div>
             </div>
           </CardContent>
           <CardFooter>
