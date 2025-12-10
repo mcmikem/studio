@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { Suspense, useState, useRef, useEffect } from 'react';
+import { Suspense, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,13 +13,13 @@ import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore'
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, UserPlus, Upload, RadioGroup } from 'lucide-react';
+import { Loader2, UserPlus, Upload } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
-import { RadioGroupItem } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const beneficiarySchema = z.object({
   name: z.string().min(3, 'Beneficiary name is required.'),
@@ -74,7 +75,7 @@ function BeneficiaryRegistrationForm() {
     }
 
     try {
-        let photoURL = '';
+        let photoURL: string | null = null;
         if (data.photo && data.photo instanceof File) {
             const path = `beneficiary-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
             photoURL = await uploadFile(firebaseApp, data.photo, path);

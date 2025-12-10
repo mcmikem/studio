@@ -18,6 +18,9 @@ export async function uploadFile(
   fileBlob: Blob,
   path: string
 ): Promise<string> {
+  if (!app) {
+    throw new Error("Firebase app is not initialized. Cannot upload file.");
+  }
   const storage = getStorage(app);
   const storageRef = ref(storage, path);
 
@@ -50,6 +53,9 @@ export async function uploadImageAndUpdateProfile(
 ): Promise<string> {
   if (!file.type.startsWith('image/')) {
     throw new Error('File is not an image.');
+  }
+   if (!app) {
+    throw new Error("Firebase app is not initialized. Cannot upload file.");
   }
 
   const fileExtension = file.name.split('.').pop() || 'jpg';

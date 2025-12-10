@@ -1,4 +1,5 @@
 
+
 {
   "entities": {
     "User": {
@@ -1120,22 +1121,22 @@
         "teamId": { "type": "string" },
         "teamName": { "type": "string" },
         "ageCategory": { "type": "string", "enum": ["U13", "U15", "U17", "U19"] },
-        "age": { "type": "number" },
-        "photoUrl": { "type": "string", "format": "uri" },
-        "playingPosition": { "type": "string", "enum": ["Goalkeeper", "Defender", "Midfielder", "Forward"] },
-        "school": { "type": "string" },
-        "class": { "type": "string" },
-        "schoolAttendance": { "type": "string", "enum": ["Good", "Fair", "Poor", "Not Applicable"] },
-        "academicPerformance": { "type": "string", "enum": ["Good", "Fair", "Poor", "Not Applicable"] },
-        "medicalConditions": { "type": "string" },
-        "guardianName": { "type": "string" },
-        "guardianContact": { "type": "string" },
-        "strengths": { "type": "string" },
-        "weaknesses": { "type": "string" },
-        "careerDream": { "type": "string" },
-        "skillGoal": { "type": "string" },
-        "schoolGoal": { "type": "string" },
-        "behaviourGoal": { "type": "string" },
+        "age": { "type": ["number", "null"] },
+        "photoUrl": { "type": ["string", "null"], "format": "uri" },
+        "playingPosition": { "type": ["string", "null"], "enum": ["Goalkeeper", "Defender", "Midfielder", "Forward"] },
+        "school": { "type": ["string", "null"] },
+        "class": { "type": ["string", "null"] },
+        "schoolAttendance": { "type": ["string", "null"], "enum": ["Good", "Fair", "Poor", "Not Applicable"] },
+        "academicPerformance": { "type": ["string", "null"], "enum": ["Good", "Fair", "Poor", "Not Applicable"] },
+        "medicalConditions": { "type": ["string", "null"] },
+        "guardianName": { "type": ["string", "null"] },
+        "guardianContact": { "type": ["string", "null"] },
+        "strengths": { "type": ["string", "null"] },
+        "weaknesses": { "type": ["string", "null"] },
+        "careerDream": { "type": ["string", "null"] },
+        "skillGoal": { "type": ["string", "null"] },
+        "schoolGoal": { "type": ["string", "null"] },
+        "behaviourGoal": { "type": ["string", "null"] },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "teamId", "teamName", "ageCategory", "createdAt"]
@@ -1818,3 +1819,4 @@
     }
   }
 }
+
