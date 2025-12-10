@@ -1117,22 +1117,28 @@
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
+        "teamId": { "type": "string" },
+        "teamName": { "type": "string" },
+        "ageCategory": { "type": "string", "enum": ["U13", "U15", "U17", "U19"] },
         "age": { "type": "number" },
         "photoUrl": { "type": "string", "format": "uri" },
-        "playingPosition": { "type": "string" },
+        "playingPosition": { "type": "string", "enum": ["Goalkeeper", "Defender", "Midfielder", "Forward"] },
         "school": { "type": "string" },
         "class": { "type": "string" },
-        "schoolAttendance": { "type": "string", "enum": ["Good", "Fair", "Poor"] },
-        "academicPerformance": { "type": "string", "enum": ["Good", "Fair", "Poor"] },
+        "schoolAttendance": { "type": "string", "enum": ["Good", "Fair", "Poor", "Not Applicable"] },
+        "academicPerformance": { "type": "string", "enum": ["Good", "Fair", "Poor", "Not Applicable"] },
         "medicalConditions": { "type": "string" },
         "guardianName": { "type": "string" },
         "guardianContact": { "type": "string" },
         "strengths": { "type": "string" },
         "weaknesses": { "type": "string" },
-        "seasonGoals": { "type": "string" },
+        "careerDream": { "type": "string" },
+        "skillGoal": { "type": "string" },
+        "schoolGoal": { "type": "string" },
+        "behaviourGoal": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "age", "createdAt"]
+      "required": ["name", "teamId", "teamName", "ageCategory", "createdAt"]
     },
     "OFAMatch": {
       "$schema": "http://json-schema.org/draft-07/schema#",

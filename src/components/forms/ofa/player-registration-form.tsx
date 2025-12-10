@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -94,7 +95,6 @@ export function PlayerRegistrationForm() {
         return;
     }
     
-    // Start building the data object with required fields
     const logData: { [key: string]: any } = {
         name: data.name,
         teamId: data.teamId,
@@ -103,18 +103,16 @@ export function PlayerRegistrationForm() {
         createdAt: serverTimestamp(),
     };
     
-    // Conditionally add photoUrl
     if (data.photo && data.photo.name) {
       try {
         const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
         logData.photoUrl = await uploadFile(firebaseApp, data.photo, path);
       } catch (e) {
         toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload player photo.' });
-        return; // Stop execution if photo upload fails
+        return;
       }
     }
 
-    // Conditionally add all other optional fields
     const optionalFields: (keyof PlayerFormData)[] = [
       'age', 'playingPosition', 'school', 'class', 'schoolAttendance', 'academicPerformance',
       'medicalConditions', 'guardianName', 'guardianContact', 'strengths', 'weaknesses',
@@ -122,8 +120,9 @@ export function PlayerRegistrationForm() {
     ];
     
     optionalFields.forEach(field => {
-      if (data[field] !== null && data[field] !== undefined && data[field] !== '') {
-        logData[field] = data[field];
+      const value = data[field];
+      if (value !== null && value !== undefined && value !== '') {
+        logData[field] = value;
       }
     });
 
