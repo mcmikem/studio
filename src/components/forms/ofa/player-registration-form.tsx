@@ -24,13 +24,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const playerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
-  age: z.coerce.number().optional().nullable().transform(val => val || null),
+  age: z.coerce.number().optional().nullable().transform(val => (val === 0 ? null : val)),
   teamId: z.string().min(1, 'Team is required.'),
-  playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional(),
+  playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional().nullable(),
   school: z.string().optional(),
   class: z.string().optional(),
-  schoolAttendance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional(),
-  academicPerformance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional(),
+  schoolAttendance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional().nullable(),
+  academicPerformance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional().nullable(),
   medicalConditions: z.string().optional(),
   guardianName: z.string().optional(),
   guardianContact: z.string().optional(),
@@ -39,6 +39,7 @@ const playerSchema = z.object({
   skillGoal: z.string().optional(), // 'Goals for the Season'
   photo: z.any().optional(),
 });
+
 
 type PlayerFormData = z.infer<typeof playerSchema>;
 
@@ -81,52 +82,50 @@ export function PlayerRegistrationForm() {
     }
   };
 
-  const onSubmit = async (data: PlayerFormData) => {
+ const onSubmit = async (data: PlayerFormData) => {
     if (!firestore || !user || !firebaseApp) {
       toast({ variant: 'destructive', title: 'Error', description: 'Application is not ready. Please try again.' });
       return;
     }
-    
+
     const selectedTeam = teams?.find(t => t.id === data.teamId);
     if (!selectedTeam) {
         toast({ variant: 'destructive', title: 'Error', description: 'Selected team not found.' });
         return;
     }
-    
-    // Start with core required data
-    const logData: { [key: string]: any } = {
-        name: data.name,
-        teamId: data.teamId,
-        teamName: selectedTeam.teamName,
-        createdAt: serverTimestamp(),
-    };
-
-    // Handle photo upload
-    if (data.photo && data.photo.name) {
-      try {
-        const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
-        logData.photoUrl = await uploadFile(firebaseApp, data.photo, path);
-      } catch (e) {
-        toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload player photo.' });
-        return;
-      }
-    }
-
-    // Conditionally add optional fields ONLY if they have a value
-    const optionalFields: (keyof PlayerFormData)[] = [
-      'age', 'playingPosition', 'school', 'class', 'schoolAttendance', 'academicPerformance',
-      'medicalConditions', 'guardianName', 'guardianContact', 'strengths', 'weaknesses', 'skillGoal'
-    ];
-    
-    optionalFields.forEach(field => {
-        const value = data[field];
-        if (value !== undefined && value !== null && value !== '' && !(typeof value === 'number' && isNaN(value))) {
-            logData[field] = value;
-        }
-    });
 
     try {
+      let photoUrl: string | null = null;
+      if (data.photo && data.photo instanceof File) {
+          const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
+          photoUrl = await uploadFile(firebaseApp, data.photo, path);
+      }
+
+      // Build the final data object, omitting undefined/null/empty optional fields
+      const logData: { [key: string]: any } = {
+          name: data.name,
+          teamId: data.teamId,
+          teamName: selectedTeam.teamName,
+          ageCategory: 'U17', // Example default, should be derived or set
+          createdAt: serverTimestamp(),
+      };
+      
+      if (photoUrl) logData.photoUrl = photoUrl;
+      if (data.age) logData.age = data.age;
+      if (data.playingPosition) logData.playingPosition = data.playingPosition;
+      if (data.school) logData.school = data.school;
+      if (data.class) logData.class = data.class;
+      if (data.schoolAttendance) logData.schoolAttendance = data.schoolAttendance;
+      if (data.academicPerformance) logData.academicPerformance = data.academicPerformance;
+      if (data.medicalConditions) logData.medicalConditions = data.medicalConditions;
+      if (data.guardianName) logData.guardianName = data.guardianName;
+      if (data.guardianContact) logData.guardianContact = data.guardianContact;
+      if (data.strengths) logData.strengths = data.strengths;
+      if (data.weaknesses) logData.weaknesses = data.weaknesses;
+      if (data.skillGoal) logData.skillGoal = data.skillGoal;
+
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
+
       toast({
         title: 'Player Registered!',
         description: `${data.name} has been added to the league.`,
@@ -134,6 +133,7 @@ export function PlayerRegistrationForm() {
       reset();
       setPhotoPreview(null);
       router.push('/data/ofa/players');
+
     } catch (error: any) {
       console.error("Error during form submission:", error)
       toast({ variant: 'destructive', title: 'Submission Failed', description: 'An error occurred while saving the data. Please check console for details.' });
@@ -210,7 +210,7 @@ export function PlayerRegistrationForm() {
             <div className="space-y-2">
                 <Label htmlFor="playingPosition">Playing Position</Label>
                 <Controller name="playingPosition" control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="playingPosition"><SelectValue placeholder="Select position..." /></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
+                    <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger id="playingPosition"><SelectValue placeholder="Select position..." /></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
                 )} />
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -227,13 +227,13 @@ export function PlayerRegistrationForm() {
                  <div className="space-y-2">
                     <Label htmlFor="schoolAttendance">School Attendance</Label>
                      <Controller name="schoolAttendance" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="schoolAttendance"><SelectValue placeholder="Select attendance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger id="schoolAttendance"><SelectValue placeholder="Select attendance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
                     )} />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="academicPerformance">Academic Performance</Label>
                       <Controller name="academicPerformance" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger id="academicPerformance"><SelectValue placeholder="Select performance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger id="academicPerformance"><SelectValue placeholder="Select performance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
                     )} />
                 </div>
             </div>

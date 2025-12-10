@@ -29,7 +29,7 @@ const beneficiarySchema = z.object({
   school: z.string().optional(),
   phone: z.string().optional(),
   guardianContact: z.string().optional(),
-  photo: z.instanceof(File).optional().nullable(),
+  photo: z.any().optional(),
 });
 
 type BeneficiaryFormData = z.infer<typeof beneficiarySchema>;
@@ -73,51 +73,37 @@ function BeneficiaryRegistrationForm() {
       return;
     }
 
-    let photoURL = '';
-    if (data.photo) {
-        try {
+    try {
+        let photoURL = '';
+        if (data.photo && data.photo instanceof File) {
             const path = `beneficiary-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
             photoURL = await uploadFile(firebaseApp, data.photo, path);
-        } catch (e: any) {
-            console.error("Photo upload failed:", e);
-            toast({ variant: 'destructive', title: 'Photo Upload Failed', description: 'Could not upload profile photo. Please try again.' });
-            return;
         }
-    }
 
-    const beneficiaryData: { [key: string]: any } = {
-        name: data.name,
-        dob: data.dob,
-        gender: data.gender,
-        village: data.village,
-        programEnrolled: data.programEnrolled,
-        createdAt: serverTimestamp(),
-    };
+        const beneficiaryData: { [key: string]: any } = {
+            name: data.name,
+            dob: data.dob,
+            gender: data.gender,
+            village: data.village,
+            programEnrolled: data.programEnrolled,
+            createdAt: serverTimestamp(),
+        };
 
-    if (photoURL) {
-      beneficiaryData.photoURL = photoURL;
-    }
-    if (data.school) {
-      beneficiaryData.school = data.school;
-    }
-    if (data.phone) {
-      beneficiaryData.phone = data.phone;
-    }
-    if (data.guardianContact) {
-      beneficiaryData.guardianContact = data.guardianContact;
-    }
+        if (photoURL) beneficiaryData.photoURL = photoURL;
+        if (data.school) beneficiaryData.school = data.school;
+        if (data.phone) beneficiaryData.phone = data.phone;
+        if (data.guardianContact) beneficiaryData.guardianContact = data.guardianContact;
 
-    try {
-      await addDocumentNonBlocking(collection(firestore, 'beneficiaries'), beneficiaryData);
-      toast({
-        title: 'Beneficiary Registered!',
-        description: `${data.name} has been added to the system.`,
-      });
-      reset();
-      setPhotoPreview(null);
+        await addDocumentNonBlocking(collection(firestore, 'beneficiaries'), beneficiaryData);
+        toast({
+            title: 'Beneficiary Registered!',
+            description: `${data.name} has been added to the system.`,
+        });
+        reset();
+        setPhotoPreview(null);
     } catch (error: any) {
-      console.error("Firestore submission failed:", error);
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+        console.error("Firestore submission failed:", error);
+        toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
   };
 
@@ -232,3 +218,4 @@ export default function BeneficiaryRegistrationPage() {
         </Suspense>
     )
 }
+
