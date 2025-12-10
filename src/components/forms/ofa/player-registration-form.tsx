@@ -24,7 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const playerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
-  age: z.coerce.number().optional(),
+  age: z.coerce.number().optional().nullable().transform(val => val || null),
   teamId: z.string().min(1, 'Team is required.'),
   playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional(),
   school: z.string().optional(),
@@ -92,7 +92,8 @@ export function PlayerRegistrationForm() {
         toast({ variant: 'destructive', title: 'Error', description: 'Selected team not found.' });
         return;
     }
-
+    
+    // Start with core required data
     const logData: { [key: string]: any } = {
         name: data.name,
         teamId: data.teamId,
@@ -100,6 +101,7 @@ export function PlayerRegistrationForm() {
         createdAt: serverTimestamp(),
     };
 
+    // Handle photo upload
     if (data.photo && data.photo.name) {
       try {
         const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
@@ -110,6 +112,7 @@ export function PlayerRegistrationForm() {
       }
     }
 
+    // Conditionally add optional fields ONLY if they have a value
     const optionalFields: (keyof PlayerFormData)[] = [
       'age', 'playingPosition', 'school', 'class', 'schoolAttendance', 'academicPerformance',
       'medicalConditions', 'guardianName', 'guardianContact', 'strengths', 'weaknesses', 'skillGoal'
@@ -117,13 +120,8 @@ export function PlayerRegistrationForm() {
     
     optionalFields.forEach(field => {
         const value = data[field];
-        // Check for non-empty strings, and for numbers, check if they are not undefined/null.
-        if (value !== undefined && value !== null && value !== '') {
-            if (typeof value === 'number' && isNaN(value)) {
-                // Do not add NaN values to Firestore
-            } else {
-                logData[field] = value;
-            }
+        if (value !== undefined && value !== null && value !== '' && !(typeof value === 'number' && isNaN(value))) {
+            logData[field] = value;
         }
     });
 
@@ -141,6 +139,7 @@ export function PlayerRegistrationForm() {
       toast({ variant: 'destructive', title: 'Submission Failed', description: 'An error occurred while saving the data. Please check console for details.' });
     }
   };
+
 
   return (
     <div className="space-y-4">

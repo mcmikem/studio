@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -640,27 +641,31 @@ export type BusinessProgress = {
   createdAt: Timestamp;
 }
 
-export type OFAPlayer = {
-  id: string;
-  name: string;
-  teamId: string;
-  teamName: string;
-  ageCategory: 'U13' | 'U15' | 'U17' | 'U19';
-  age?: number;
-  photoUrl?: string;
-  playingPosition?: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward';
-  school?: string;
-  class?: string;
-  schoolAttendance?: 'Good' | 'Fair' | 'Poor' | 'Not Applicable';
-  academicPerformance?: 'Good' | 'Fair' | 'Poor' | 'Not Applicable';
-  medicalConditions?: string;
-  guardianName?: string;
-  guardianContact?: string;
-  strengths?: string;
-  weaknesses?: string;
-  skillGoal?: string; // This corresponds to 'Goals for the Season'
-  createdAt: Timestamp;
-};
+export const OFAPlayerSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  teamId: z.string(),
+  teamName: z.string(),
+  ageCategory: z.enum(['U13', 'U15', 'U17', 'U19']),
+  age: z.coerce.number().optional().nullable(),
+  photoUrl: z.string().url().optional().nullable(),
+  playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional().nullable(),
+  school: z.string().optional().nullable(),
+  class: z.string().optional().nullable(),
+  schoolAttendance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional().nullable(),
+  academicPerformance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional().nullable(),
+  medicalConditions: z.string().optional().nullable(),
+  guardianName: z.string().optional().nullable(),
+  guardianContact: z.string().optional().nullable(),
+  strengths: z.string().optional().nullable(),
+  weaknesses: z.string().optional().nullable(),
+  careerDream: z.string().optional().nullable(),
+  skillGoal: z.string().optional().nullable(),
+  schoolGoal: z.string().optional().nullable(),
+  behaviourGoal: z.string().optional().nullable(),
+  createdAt: z.any(),
+});
+export type OFAPlayer = z.infer<typeof OFAPlayerSchema>;
 
 
 export type OFAMatch = {
