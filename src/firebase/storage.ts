@@ -21,10 +21,15 @@ export async function uploadFile(
   const storage = getStorage(app);
   const storageRef = ref(storage, path);
 
-  const snapshot = await uploadBytes(storageRef, fileBlob);
-  const downloadURL = await getDownloadURL(snapshot.ref);
-  
-  return downloadURL;
+  try {
+    const snapshot = await uploadBytes(storageRef, fileBlob);
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    return downloadURL;
+  } catch (error) {
+      console.error("Firebase Storage upload failed:", error);
+      // Re-throw the error so the calling function can handle it.
+      throw new Error("File upload failed. Please try again.");
+  }
 }
 
 
@@ -47,7 +52,7 @@ export async function uploadImageAndUpdateProfile(
     throw new Error('File is not an image.');
   }
 
-  const fileExtension = file.name.split('.').pop();
+  const fileExtension = file.name.split('.').pop() || 'jpg';
   const filePath = `profile-pictures/${user.uid}/profile.${fileExtension}`;
   const downloadURL = await uploadFile(app, file, filePath);
   
@@ -60,4 +65,3 @@ export async function uploadImageAndUpdateProfile(
 
   return downloadURL;
 }
-

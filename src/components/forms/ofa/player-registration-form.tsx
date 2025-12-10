@@ -26,17 +26,6 @@ const playerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
   age: z.coerce.number().optional().nullable().transform(val => (val === 0 ? null : val)),
   teamId: z.string().min(1, 'Team is required.'),
-  playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional().nullable(),
-  school: z.string().optional(),
-  class: z.string().optional(),
-  schoolAttendance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional().nullable(),
-  academicPerformance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional().nullable(),
-  medicalConditions: z.string().optional(),
-  guardianName: z.string().optional(),
-  guardianContact: z.string().optional(),
-  strengths: z.string().optional(),
-  weaknesses: z.string().optional(),
-  skillGoal: z.string().optional(), // 'Goals for the Season'
   photo: z.any().optional(),
 });
 
@@ -67,11 +56,6 @@ export function PlayerRegistrationForm() {
     reset,
   } = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
-    defaultValues: {
-        playingPosition: 'Midfielder',
-        schoolAttendance: 'Good',
-        academicPerformance: 'Fair',
-    }
   });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,17 +96,6 @@ export function PlayerRegistrationForm() {
       
       if (photoUrl) logData.photoUrl = photoUrl;
       if (data.age) logData.age = data.age;
-      if (data.playingPosition) logData.playingPosition = data.playingPosition;
-      if (data.school) logData.school = data.school;
-      if (data.class) logData.class = data.class;
-      if (data.schoolAttendance) logData.schoolAttendance = data.schoolAttendance;
-      if (data.academicPerformance) logData.academicPerformance = data.academicPerformance;
-      if (data.medicalConditions) logData.medicalConditions = data.medicalConditions;
-      if (data.guardianName) logData.guardianName = data.guardianName;
-      if (data.guardianContact) logData.guardianContact = data.guardianContact;
-      if (data.strengths) logData.strengths = data.strengths;
-      if (data.weaknesses) logData.weaknesses = data.weaknesses;
-      if (data.skillGoal) logData.skillGoal = data.skillGoal;
 
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
 
@@ -136,7 +109,7 @@ export function PlayerRegistrationForm() {
 
     } catch (error: any) {
       console.error("Error during form submission:", error)
-      toast({ variant: 'destructive', title: 'Submission Failed', description: 'An error occurred while saving the data. Please check console for details.' });
+      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
   };
 
@@ -206,62 +179,6 @@ export function PlayerRegistrationForm() {
                     />
                 )}
                 {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="playingPosition">Playing Position</Label>
-                <Controller name="playingPosition" control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger id="playingPosition"><SelectValue placeholder="Select position..." /></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
-                )} />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="school">School</Label>
-                  <Input id="school" {...register('school')} />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="class">Class</Label>
-                  <Input id="class" {...register('class')} placeholder="e.g., P.7, S.3" />
-                </div>
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="space-y-2">
-                    <Label htmlFor="schoolAttendance">School Attendance</Label>
-                     <Controller name="schoolAttendance" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger id="schoolAttendance"><SelectValue placeholder="Select attendance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
-                    )} />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="academicPerformance">Academic Performance</Label>
-                      <Controller name="academicPerformance" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger id="academicPerformance"><SelectValue placeholder="Select performance..." /></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
-                    )} />
-                </div>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="medicalConditions">Medical Conditions (if any)</Label>
-                <Input id="medicalConditions" {...register('medicalConditions')} />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="guardianName">Guardian Name</Label>
-                    <Input id="guardianName" {...register('guardianName')} />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="guardianContact">Guardian Contact</Label>
-                    <Input id="guardianContact" type="tel" {...register('guardianContact')} />
-                </div>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="strengths">Strengths</Label>
-                <Textarea id="strengths" {...register('strengths')} placeholder="e.g., Pace, Dribbling, Teamwork" />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="weaknesses">Weaknesses</Label>
-                <Textarea id="weaknesses" {...register('weaknesses')} placeholder="e.g., Heading, Defensive discipline" />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="skillGoal">Goals for the Season</Label>
-                <Textarea id="skillGoal" {...register('skillGoal')} placeholder="e.g., Become top scorer, get a school bursary" />
             </div>
           </CardContent>
           <CardFooter>
