@@ -658,10 +658,7 @@ export type OFAPlayer = {
   guardianContact?: string;
   strengths?: string;
   weaknesses?: string;
-  careerDream?: string;
-  skillGoal?: string;
-  schoolGoal?: string;
-  behaviourGoal?: string;
+  skillGoal?: string; // This corresponds to 'Goals for the Season'
   createdAt: Timestamp;
 };
 

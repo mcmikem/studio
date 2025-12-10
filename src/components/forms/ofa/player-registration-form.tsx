@@ -24,9 +24,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const playerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
+  age: z.coerce.number().optional(),
   teamId: z.string().min(1, 'Team is required.'),
-  ageCategory: z.enum(["U13", "U15", "U17", "U19"]),
-  photo: z.any().optional(),
   playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional(),
   school: z.string().optional(),
   class: z.string().optional(),
@@ -37,11 +36,8 @@ const playerSchema = z.object({
   guardianContact: z.string().optional(),
   strengths: z.string().optional(),
   weaknesses: z.string().optional(),
-  careerDream: z.string().optional(),
-  skillGoal: z.string().optional(),
-  schoolGoal: z.string().optional(),
-  behaviourGoal: z.string().optional(),
-  age: z.coerce.number().optional(),
+  skillGoal: z.string().optional(), // 'Goals for the Season'
+  photo: z.any().optional(),
 });
 
 type PlayerFormData = z.infer<typeof playerSchema>;
@@ -71,7 +67,9 @@ export function PlayerRegistrationForm() {
   } = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
     defaultValues: {
-        ageCategory: 'U15',
+        playingPosition: 'Midfielder',
+        schoolAttendance: 'Good',
+        academicPerformance: 'Fair',
     }
   });
 
@@ -94,15 +92,14 @@ export function PlayerRegistrationForm() {
         toast({ variant: 'destructive', title: 'Error', description: 'Selected team not found.' });
         return;
     }
-    
+
     const logData: { [key: string]: any } = {
         name: data.name,
         teamId: data.teamId,
         teamName: selectedTeam.teamName,
-        ageCategory: data.ageCategory,
         createdAt: serverTimestamp(),
     };
-    
+
     if (data.photo && data.photo.name) {
       try {
         const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
@@ -115,15 +112,19 @@ export function PlayerRegistrationForm() {
 
     const optionalFields: (keyof PlayerFormData)[] = [
       'age', 'playingPosition', 'school', 'class', 'schoolAttendance', 'academicPerformance',
-      'medicalConditions', 'guardianName', 'guardianContact', 'strengths', 'weaknesses',
-      'careerDream', 'skillGoal', 'schoolGoal', 'behaviourGoal'
+      'medicalConditions', 'guardianName', 'guardianContact', 'strengths', 'weaknesses', 'skillGoal'
     ];
     
     optionalFields.forEach(field => {
-      const value = data[field];
-      if (value !== null && value !== undefined && value !== '') {
-        logData[field] = value;
-      }
+        const value = data[field];
+        // Check for non-empty strings, and for numbers, check if they are not undefined/null.
+        if (value !== undefined && value !== null && value !== '') {
+            if (typeof value === 'number' && isNaN(value)) {
+                // Do not add NaN values to Firestore
+            } else {
+                logData[field] = value;
+            }
+        }
     });
 
     try {
@@ -185,44 +186,27 @@ export function PlayerRegistrationForm() {
                     {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
                 </div>
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="space-y-2">
-                    <Label htmlFor="teamId">Team</Label>
-                    {isLoadingTeams ? <Skeleton className="h-10 w-full" /> : (
-                         <Controller
-                            name="teamId"
-                            control={control}
-                            render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger id="teamId">
-                                    <SelectValue placeholder="Select a team..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {teams?.map(t => (
-                                        <SelectItem key={t.id} value={t.id}>{t.teamName}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            )}
-                        />
-                    )}
-                    {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="ageCategory">Age Category</Label>
-                     <Controller name="ageCategory" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger id="ageCategory"><SelectValue placeholder="Select category..." /></SelectTrigger>
+            <div className="space-y-2">
+                <Label htmlFor="teamId">Team</Label>
+                {isLoadingTeams ? <Skeleton className="h-10 w-full" /> : (
+                     <Controller
+                        name="teamId"
+                        control={control}
+                        render={({ field }) => (
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <SelectTrigger id="teamId">
+                                <SelectValue placeholder="Select a team..." />
+                            </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="U13">U13</SelectItem>
-                                <SelectItem value="U15">U15</SelectItem>
-                                <SelectItem value="U17">U17</SelectItem>
-                                <SelectItem value="U19">U19</SelectItem>
+                                {teams?.map(t => (
+                                    <SelectItem key={t.id} value={t.id}>{t.teamName}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
-                    )} />
-                    {errors.ageCategory && <p className="text-sm text-destructive">{errors.ageCategory.message}</p>}
-                </div>
+                        )}
+                    />
+                )}
+                {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
             </div>
             <div className="space-y-2">
                 <Label htmlFor="playingPosition">Playing Position</Label>
@@ -276,13 +260,9 @@ export function PlayerRegistrationForm() {
                 <Label htmlFor="weaknesses">Weaknesses</Label>
                 <Textarea id="weaknesses" {...register('weaknesses')} placeholder="e.g., Heading, Defensive discipline" />
             </div>
-            <div className="space-y-2">
-                <Label>Personal Goals</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <Input placeholder="Career Dream..." {...register('careerDream')} />
-                    <Input placeholder="Skill Goal..." {...register('skillGoal')} />
-                    <Input placeholder="School Goal..." {...register('schoolGoal')} />
-                </div>
+             <div className="space-y-2">
+                <Label htmlFor="skillGoal">Goals for the Season</Label>
+                <Textarea id="skillGoal" {...register('skillGoal')} placeholder="e.g., Become top scorer, get a school bursary" />
             </div>
           </CardContent>
           <CardFooter>
