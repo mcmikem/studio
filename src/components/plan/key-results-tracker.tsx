@@ -9,12 +9,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ProgressRing } from '@/components/ui/progress-ring';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Goal } from 'lucide-react';
+import { Goal, ArrowRight } from 'lucide-react';
 import { formatDateSafe } from '@/lib/utils';
-import { isPast } from 'date-fns';
+import { isPast, format } from 'date-fns';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export function KeyResultsTracker() {
   const firestore = useFirestore();
+  const [currentMonth, setCurrentMonth] = React.useState('');
+
+  React.useEffect(() => {
+    setCurrentMonth(format(new Date(), 'MMMM yyyy'));
+  }, []);
 
   const keyResultsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -24,7 +31,7 @@ export function KeyResultsTracker() {
   const { data: keyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
 
   const formatTarget = (kr: KeyResult) => {
-    if (kr.title?.includes('KR1')) return `${(kr.target / 1000000).toFixed(1)}M UGX`;
+    if (kr.title?.includes('KR1')) return `${((kr.target || 0) / 1000000).toFixed(1)}M UGX`;
     if (kr.target === 100) return `${kr.target}%`;
     return kr.target.toLocaleString();
   };
@@ -46,7 +53,7 @@ export function KeyResultsTracker() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>October Operational Plan: Key Results</CardTitle>
+        <CardTitle>{currentMonth} Operational Plan: Key Results</CardTitle>
         <CardDescription>Live progress against our strategic objectives for the month.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -81,8 +88,14 @@ export function KeyResultsTracker() {
             <EmptyState 
                 icon={Goal}
                 title="No Key Results Found"
-                description="The operational plan has not been loaded. A manager can upload it in the management section."
-            />
+                description="The operational plan for this month has not been loaded yet."
+            >
+                <Button asChild className="mt-4">
+                    <Link href="/management/operational-plan">
+                        Add New Plan <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </EmptyState>
         )}
       </CardContent>
     </Card>
