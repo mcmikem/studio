@@ -53,8 +53,18 @@ export function KeyResultsTracker() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{currentMonth} Operational Plan: Key Results</CardTitle>
-        <CardDescription>Live progress against our strategic objectives for the month.</CardDescription>
+        <div className="flex justify-between items-center">
+            <div>
+                <CardTitle>{currentMonth} Operational Plan</CardTitle>
+                <CardDescription>Live progress against our strategic objectives for the month.</CardDescription>
+            </div>
+            <Button asChild variant="secondary">
+                <Link href="/management/operational-plan">
+                    Update Plan
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+        </div>
       </CardHeader>
       <CardContent>
         {keyResults && keyResults.length > 0 ? (
@@ -85,17 +95,19 @@ export function KeyResultsTracker() {
             })}
           </div>
         ) : (
-            <EmptyState 
-                icon={Goal}
-                title="No Key Results Found"
-                description="The operational plan for this month has not been loaded yet."
-            >
+            <div className="text-center p-8 bg-muted rounded-lg">
+                <div className="mx-auto h-12 w-12 text-muted-foreground"><Goal/></div>
+                <h3 className="mt-4 text-lg font-semibold">The {currentMonth} Plan is Not Set</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    You need to upload the operational plan to activate the dashboard for this month.
+                </p>
                 <Button asChild className="mt-4">
                     <Link href="/management/operational-plan">
-                        Add New Plan <ArrowRight className="ml-2 h-4 w-4" />
+                        Go to Plan Updater
+                        <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                 </Button>
-            </EmptyState>
+            </div>
         )}
       </CardContent>
     </Card>
