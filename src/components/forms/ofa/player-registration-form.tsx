@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OFAPlayerSchema } from '@/lib/types';
+import Image from 'next/image';
 
 type PlayerFormData = z.infer<typeof OFAPlayerSchema>;
 
@@ -81,21 +82,21 @@ export function PlayerRegistrationForm() {
           photoUrl = await uploadFile(firebaseApp, data.photo, path);
       }
 
-      const logData: Partial<OFAPlayer> = {
-          name: data.name,
-          teamId: data.teamId,
-          teamName: selectedTeam.teamName,
-          ageCategory: data.ageCategory,
-          createdAt: serverTimestamp(),
-      };
+      const logData: Partial<OFAPlayer> = {};
       
-      // Correctly add optional fields only if they have a valid value
       (Object.keys(data) as Array<keyof PlayerFormData>).forEach(key => {
         const value = data[key];
-        if (value !== undefined && value !== null && value !== '' && !['name', 'teamId', 'ageCategory', 'photo'].includes(key)) {
-          logData[key as keyof OFAPlayer] = value as any;
+        if (value !== undefined && value !== '' && value !== null && !['photo'].includes(key)) {
+           if (key === 'age' && value === 0) {
+            // Skip age if it's 0 but don't add it as null unless it's truly meant to be cleared.
+           } else {
+             logData[key as keyof OFAPlayer] = value as any;
+           }
         }
       });
+
+      logData.teamName = selectedTeam.teamName;
+      logData.createdAt = serverTimestamp();
       
       if (photoUrl) logData.photoUrl = photoUrl;
 
@@ -137,20 +138,16 @@ export function PlayerRegistrationForm() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
-              <Avatar className="h-24 w-24 border-2 border-dashed" data-ai-hint="person avatar">
-                <AvatarImage src={photoPreview || ''} />
-                <AvatarFallback className="bg-muted">
-                  <UserPlus className="h-10 w-10 text-muted-foreground" />
-                </AvatarFallback>
-              </Avatar>
-              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="mr-2 h-4 w-4" /> Upload Photo
-              </Button>
-              <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange} />
+                <Image src="https://i.imgur.com/gC5fG7T.png" alt="OFA Logo" width={100} height={100} data-ai-hint="logo" />
+                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload className="mr-2 h-4 w-4" /> Upload Photo
+                </Button>
+                <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+                {photoPreview && <Avatar className="h-24 w-24"><AvatarImage src={photoPreview} /></Avatar>}
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Player's Full Name</Label>
+                    <Label htmlFor="name">Player's Fullname</Label>
                     <Input id="name" {...register('name')} />
                     {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
                 </div>
