@@ -757,7 +757,6 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "School Application",
       "description": "An application submitted by a school to participate in Omuto programs.",
-      "type": "object",
       "properties": {
         "email": { "type": "string", "format": "email" },
         "schoolName": { "type": "string" },
@@ -798,7 +797,7 @@
         "school": { "type": "string" },
         "phone": { "type": "string" },
         "guardianContact": { "type": "string" },
-        "photoURL": { "type": "string", "format": "uri" },
+        "photoURL": { "type": ["string", "null"], "format": "uri" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "dob", "gender", "village", "programEnrolled", "createdAt"]
@@ -1485,7 +1484,8 @@
         "achievements": { "type": "string" },
         "challenges": { "type": "string" },
         "supportNeeded": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "month": { "type": "string" }
       },
       "required": ["teamId", "teamName", "trainingAttendance", "coachingQuality", "playerDiscipline", "academicAttendance", "parentEngagement", "communityReputation"]
     }

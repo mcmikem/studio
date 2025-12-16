@@ -21,30 +21,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { OFAPlayerSchema } from '@/lib/types';
 
-const playerSchema = z.object({
-  name: z.string().min(3, "Player's name is required."),
-  teamId: z.string().min(1, 'Team is required.'),
-  ageCategory: z.enum(['U13', 'U15', 'U17', 'U19']),
-  age: z.coerce.number().optional().nullable().transform(val => (val === 0 ? null : val)),
-  photo: z.any().optional(),
-  playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional().nullable(),
-  school: z.string().optional().nullable(),
-  class: z.string().optional().nullable(),
-  schoolAttendance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional().nullable(),
-  academicPerformance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional().nullable(),
-  medicalConditions: z.string().optional().nullable(),
-  guardianName: z.string().optional().nullable(),
-  guardianContact: z.string().optional().nullable(),
-  strengths: z.string().optional().nullable(),
-  weaknesses: z.string().optional().nullable(),
-  careerDream: z.string().optional().nullable(),
-  skillGoal: z.string().optional().nullable(),
-  schoolGoal: z.string().optional().nullable(),
-  behaviourGoal: z.string().optional().nullable(),
-});
-
-type PlayerFormData = z.infer<typeof playerSchema>;
+type PlayerFormData = z.infer<typeof OFAPlayerSchema>;
 
 export function PlayerRegistrationForm() {
   const router = useRouter();
@@ -69,7 +48,7 @@ export function PlayerRegistrationForm() {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<PlayerFormData>({
-    resolver: zodResolver(playerSchema),
+    resolver: zodResolver(OFAPlayerSchema),
     defaultValues: {
         ageCategory: 'U17',
     }
@@ -102,8 +81,7 @@ export function PlayerRegistrationForm() {
           photoUrl = await uploadFile(firebaseApp, data.photo, path);
       }
 
-      // Build the final data object, omitting undefined/null/empty optional fields
-      const logData: { [key: string]: any } = {
+      const logData: Partial<OFAPlayer> = {
           name: data.name,
           teamId: data.teamId,
           teamName: selectedTeam.teamName,
@@ -111,22 +89,15 @@ export function PlayerRegistrationForm() {
           createdAt: serverTimestamp(),
       };
       
+      // Correctly add optional fields only if they have a valid value
+      (Object.keys(data) as Array<keyof PlayerFormData>).forEach(key => {
+        const value = data[key];
+        if (value !== undefined && value !== null && value !== '' && !['name', 'teamId', 'ageCategory', 'photo'].includes(key)) {
+          logData[key as keyof OFAPlayer] = value as any;
+        }
+      });
+      
       if (photoUrl) logData.photoUrl = photoUrl;
-      if (data.age) logData.age = data.age;
-      if (data.playingPosition) logData.playingPosition = data.playingPosition;
-      if (data.school) logData.school = data.school;
-      if (data.class) logData.class = data.class;
-      if (data.schoolAttendance) logData.schoolAttendance = data.schoolAttendance;
-      if (data.academicPerformance) logData.academicPerformance = data.academicPerformance;
-      if (data.medicalConditions) logData.medicalConditions = data.medicalConditions;
-      if (data.guardianName) logData.guardianName = data.guardianName;
-      if (data.guardianContact) logData.guardianContact = data.guardianContact;
-      if (data.strengths) logData.strengths = data.strengths;
-      if (data.weaknesses) logData.weaknesses = data.weaknesses;
-      if (data.careerDream) logData.careerDream = data.careerDream;
-      if (data.skillGoal) logData.skillGoal = data.skillGoal;
-      if (data.schoolGoal) logData.schoolGoal = data.schoolGoal;
-      if (data.behaviourGoal) logData.behaviourGoal = data.behaviourGoal;
 
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
 

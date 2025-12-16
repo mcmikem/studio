@@ -642,12 +642,13 @@ export type BusinessProgress = {
 }
 
 export const OFAPlayerSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  teamId: z.string(),
-  teamName: z.string(),
+  id: z.string().optional(),
+  name: z.string().min(3, "Player's name is required."),
+  teamId: z.string().min(1, 'Team is required.'),
+  teamName: z.string().optional(),
   ageCategory: z.enum(['U13', 'U15', 'U17', 'U19']),
-  age: z.coerce.number().optional().nullable(),
+  age: z.coerce.number().optional().nullable().transform(val => (val === 0 ? null : val)),
+  photo: z.any().optional(),
   photoUrl: z.string().url().optional().nullable(),
   playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional().nullable(),
   school: z.string().optional().nullable(),
@@ -663,7 +664,7 @@ export const OFAPlayerSchema = z.object({
   skillGoal: z.string().optional().nullable(),
   schoolGoal: z.string().optional().nullable(),
   behaviourGoal: z.string().optional().nullable(),
-  createdAt: z.any(),
+  createdAt: z.any().optional(),
 });
 export type OFAPlayer = z.infer<typeof OFAPlayerSchema>;
 
