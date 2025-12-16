@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -163,18 +164,21 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
     
     const selectedProject = projects?.find(p => p.id === data.projectId);
 
-
-    const expenseData = {
+    const expenseData: Partial<Expense> = {
       title: data.title,
       type: data.type,
       date: data.date,
-      projectId: data.projectId || null,
-      projectName: selectedProject?.name || null,
       items: finalItems,
       totalAmount: finalTotal,
       userId: expenseUserId,
       userName: expenseUserName,
     };
+    
+    if (selectedProject) {
+        expenseData.projectId = selectedProject.id;
+        expenseData.projectName = selectedProject.name;
+    }
+
 
     try {
         if (isEditMode && expense) {
