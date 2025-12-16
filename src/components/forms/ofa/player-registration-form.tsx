@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -21,10 +20,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { OFAPlayerSchema } from '@/lib/types';
+import { OFAPlayerSchema, OFAPlayer, OFAPlayerFormData } from '@/lib/types';
 import Image from 'next/image';
-
-type PlayerFormData = z.infer<typeof OFAPlayerSchema>;
 
 export function PlayerRegistrationForm() {
   const router = useRouter();
@@ -48,10 +45,10 @@ export function PlayerRegistrationForm() {
     setValue,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<PlayerFormData>({
+  } = useForm<OFAPlayerFormData>({
     resolver: zodResolver(OFAPlayerSchema),
     defaultValues: {
-        ageCategory: 'U17',
+      ageCategory: 'U17',
     }
   });
 
@@ -63,10 +60,10 @@ export function PlayerRegistrationForm() {
     }
   };
 
-  const onSubmit = async (data: PlayerFormData) => {
-    if (!firestore || !user || !firebaseApp) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Application is not ready. Please try again.' });
-      return;
+  const onSubmit = async (data: OFAPlayerFormData) => {
+    if (!user || !firebaseApp || !firestore) {
+        toast({ variant: 'destructive', title: 'Error', description: 'User or application not ready. Please try again.' });
+        return;
     }
 
     const selectedTeam = teams?.find(t => t.id === data.teamId);
@@ -76,43 +73,51 @@ export function PlayerRegistrationForm() {
     }
 
     try {
-      let photoUrl: string | null = null;
-      if (data.photo && data.photo instanceof File) {
-          const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
-          photoUrl = await uploadFile(firebaseApp, data.photo, path);
-      }
-
-      const logData: Partial<OFAPlayer> = {};
-      
-      (Object.keys(data) as Array<keyof PlayerFormData>).forEach(key => {
-        const value = data[key];
-        if (value !== undefined && value !== '' && value !== null && !['photo'].includes(key)) {
-           if (key === 'age' && value === 0) {
-            // Skip age if it's 0 but don't add it as null unless it's truly meant to be cleared.
-           } else {
-             logData[key as keyof OFAPlayer] = value as any;
-           }
+        let photoUrl: string | null = null;
+        if (data.photo && data.photo instanceof File) {
+            const path = `ofa-player-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
+            photoUrl = await uploadFile(firebaseApp, data.photo, path);
         }
-      });
 
-      logData.teamName = selectedTeam.teamName;
-      logData.createdAt = serverTimestamp();
-      
-      if (photoUrl) logData.photoUrl = photoUrl;
+        const playerData: Partial<OFAPlayer> = {
+            name: data.name,
+            teamId: data.teamId,
+            teamName: selectedTeam.teamName,
+            ageCategory: data.ageCategory,
+            createdAt: serverTimestamp(),
+        };
 
-      await addDocumentNonBlocking(collection(firestore, 'ofa-players'), logData);
+        // Only add optional fields if they have a value
+        if (data.age !== null && data.age !== undefined) playerData.age = data.age;
+        if (photoUrl) playerData.photoUrl = photoUrl;
+        if (data.playingPosition) playerData.playingPosition = data.playingPosition;
+        if (data.school) playerData.school = data.school;
+        if (data.class) playerData.class = data.class;
+        if (data.schoolAttendance) playerData.schoolAttendance = data.schoolAttendance;
+        if (data.academicPerformance) playerData.academicPerformance = data.academicPerformance;
+        if (data.medicalConditions) playerData.medicalConditions = data.medicalConditions;
+        if (data.guardianName) playerData.guardianName = data.guardianName;
+        if (data.guardianContact) playerData.guardianContact = data.guardianContact;
+        if (data.strengths) playerData.strengths = data.strengths;
+        if (data.weaknesses) playerData.weaknesses = data.weaknesses;
+        if (data.careerDream) playerData.careerDream = data.careerDream;
+        if (data.skillGoal) playerData.skillGoal = data.skillGoal;
+        if (data.schoolGoal) playerData.schoolGoal = data.schoolGoal;
+        if (data.behaviourGoal) playerData.behaviourGoal = data.behaviourGoal;
 
-      toast({
-        title: 'Player Registered!',
-        description: `${data.name} has been added to the league.`,
-      });
-      reset();
-      setPhotoPreview(null);
-      router.push('/data/ofa/players');
+        await addDocumentNonBlocking(collection(firestore, 'ofa-players'), playerData);
+
+        toast({
+            title: 'Player Registered!',
+            description: `${data.name} has been added to the league.`,
+        });
+        reset();
+        setPhotoPreview(null);
+        router.push('/data/ofa/players');
 
     } catch (error: any) {
-      console.error("Error during form submission:", error)
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+        console.error("Error during form submission:", error);
+        toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
   };
 
