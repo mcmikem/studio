@@ -11,9 +11,6 @@ import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { TeamDeployment } from '@/components/dashboard/team-deployment';
 import { startOfDay } from 'date-fns';
 import { useMemo } from 'react';
-import { DashboardHeader } from './dashboard-header';
-import { QuickAddTask } from './quick-add-task';
-
 
 interface DashboardProps {
   profile: User;
@@ -42,15 +39,11 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
-      <div className="flex flex-col gap-6">
-        <DashboardHeader profile={profile} />
-        <QuickAddTask />
-        <DashboardGrid className="mt-6 lg:grid-cols-2">
-            <MyWeeklyPlan />
-            <DashboardCalendar />
-            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-            <TeamPulse checkouts={checkouts} />
-        </DashboardGrid>
-      </div>
+    <DashboardGrid className="mt-6 lg:grid-cols-2">
+        <MyWeeklyPlan />
+        <DashboardCalendar />
+        <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+        <TeamPulse checkouts={checkouts} />
+    </DashboardGrid>
   );
 }

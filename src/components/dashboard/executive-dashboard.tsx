@@ -10,9 +10,6 @@ import { subDays, startOfDay } from "date-fns"
 import { useFirestore } from "@/firebase"
 import dynamic from 'next/dynamic'
 import { Skeleton } from "../ui/skeleton"
-import { QuickAddTask } from "./quick-add-task"
-import { DashboardHeader } from "./dashboard-header"
-
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const ApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
@@ -57,35 +54,33 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   const isLoading = isLoadingUsers || isLoadingActivities || isLoadingCheckins || isLoadingPrograms;
 
   return (
-      <div className="flex flex-col gap-6">
-        <DashboardHeader profile={profile} />
-        <QuickAddTask />
-        {isLoading ? (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-6">
-                <Skeleton className="h-96" />
-                <Skeleton className="h-96" />
-                <Skeleton className="h-64 lg:col-span-2" />
-            </div>
-        ) : (
-             <div className="flex flex-col gap-6 mt-6">
-                <KeyResultsTracker />
-                <DashboardGrid className="lg:grid-cols-3">
+    <>
+      {isLoading ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-6">
+              <Skeleton className="h-96" />
+              <Skeleton className="h-96" />
+              <Skeleton className="h-64 lg:col-span-2" />
+          </div>
+      ) : (
+            <div className="flex flex-col gap-6 mt-6">
+              <KeyResultsTracker />
+              <DashboardGrid className="lg:grid-cols-3">
+                  <div className="flex flex-col gap-6">
+                      <ApprovalQueue />
+                      <TeamDeployment users={users} checkins={checkins} isLoading={false} />
+                  </div>
+                  <div className="flex flex-col gap-6">
+                      <EcosystemPulse activities={activities} programs={programs} isLoading={false} />
+                  </div>
                     <div className="flex flex-col gap-6">
-                        <ApprovalQueue />
-                        <TeamDeployment users={users} checkins={checkins} isLoading={false} />
-                    </div>
-                    <div className="flex flex-col gap-6">
-                        <EcosystemPulse activities={activities} programs={programs} isLoading={false} />
-                    </div>
-                     <div className="flex flex-col gap-6">
-                        <TeamPerformanceLeaderboard 
-                            users={users} 
-                            isLoading={false}
-                        />
-                    </div>
-                </DashboardGrid>
-            </div>
-        )}
-      </div>
+                      <TeamPerformanceLeaderboard 
+                          users={users} 
+                          isLoading={false}
+                      />
+                  </div>
+              </DashboardGrid>
+          </div>
+      )}
+    </>
   )
 }

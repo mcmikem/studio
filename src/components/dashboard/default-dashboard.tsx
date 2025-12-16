@@ -9,8 +9,6 @@ import { startOfDay } from "date-fns"
 import { useMemo } from "react"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
-import { DashboardHeader } from "./dashboard-header"
-import { QuickAddTask } from "./quick-add-task"
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), {
   loading: () => <Skeleton className="h-64" />,
@@ -46,19 +44,15 @@ export default function DefaultDashboard({ profile }: DashboardProps) {
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
+    <DashboardGrid className="mt-6 lg:grid-cols-2">
       <div className="flex flex-col gap-6">
-        <DashboardHeader profile={profile} />
-        <QuickAddTask />
-        <DashboardGrid className="mt-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-6">
-            <DashboardCalendar />
-            <MyWeeklyPlan />
-            </div>
-            <div className="flex flex-col gap-6">
-            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-            <TeamPulse checkouts={checkouts} />
-            </div>
-        </DashboardGrid>
+        <DashboardCalendar />
+        <MyWeeklyPlan />
       </div>
+      <div className="flex flex-col gap-6">
+        <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+        <TeamPulse checkouts={checkouts} />
+      </div>
+    </DashboardGrid>
   )
 }

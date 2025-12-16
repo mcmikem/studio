@@ -1,3 +1,4 @@
+
 'use client';
 
 import dynamic from 'next/dynamic';
@@ -9,6 +10,8 @@ import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebas
 import { collection, query, where, Timestamp, orderBy, limit } from 'firebase/firestore';
 import { useMemo } from 'react';
 import { startOfDay } from 'date-fns';
+import { QuickAddTask } from './quick-add-task';
+import { DashboardHeader } from './dashboard-header';
 
 const DashboardLoading = () => (
   <div className="space-y-6 mt-6">
@@ -79,9 +82,11 @@ export function DashboardLoader({ profile }: DashboardLoaderProps) {
   const DashboardComponent = roleToDashboard[effectiveRole as string] || roleToDashboard['default'];
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
+      <DashboardHeader profile={profile} />
+      <QuickAddTask />
       <DailyActions checkin={latestCheckin} isLoadingCheckin={isLoadingUserCheckin} />
       <DashboardComponent profile={hydratedProfile} />
-    </>
+    </div>
   );
 }
