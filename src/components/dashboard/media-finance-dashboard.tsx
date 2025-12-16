@@ -249,14 +249,17 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
       <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} />
         <QuickAddTask />
-       <DashboardGrid className="mt-6 lg:grid-cols-2">
-         <div className="lg:col-span-2">
+       <DashboardGrid className="mt-6 lg:grid-cols-3">
+         <div className="lg:col-span-3">
             <BudgetHealth expenses={allExpenses} income={allIncome} />
          </div>
-        <DynamicApprovalQueue />
-        <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-        <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
-        <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
+        <div className="lg:col-span-1 flex flex-col gap-6">
+            <DynamicApprovalQueue />
+        </div>
+         <div className="lg:col-span-2 flex flex-col gap-6">
+             <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
+             <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
+        </div>
       </DashboardGrid>
       </div>
   )

@@ -45,7 +45,7 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
       <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} />
         <QuickAddTask />
-        <DashboardGrid className="mt-0 lg:grid-cols-2">
+        <DashboardGrid className="mt-6 lg:grid-cols-2">
             <MyWeeklyPlan />
             <DashboardCalendar />
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />

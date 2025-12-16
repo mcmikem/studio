@@ -67,23 +67,25 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                 <Skeleton className="h-64 lg:col-span-2" />
             </div>
         ) : (
-            <DashboardGrid className="mt-6 lg:grid-cols-2">
-                <div className="lg:col-span-2 space-y-6">
-                    <KeyResultsTracker />
-                    <TeamPerformanceLeaderboard 
-                        users={users} 
-                        isLoading={false}
-                    />
-                    <EcosystemPulse activities={activities} programs={programs} isLoading={false} />
-                </div>
-                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                    <ApprovalQueue />
-                    <TeamDeployment users={users} checkins={checkins} isLoading={false} />
-                </div>
-            </DashboardGrid>
+             <div className="flex flex-col gap-6 mt-6">
+                <KeyResultsTracker />
+                <DashboardGrid className="lg:grid-cols-3">
+                    <div className="flex flex-col gap-6">
+                        <ApprovalQueue />
+                        <TeamDeployment users={users} checkins={checkins} isLoading={false} />
+                    </div>
+                    <div className="flex flex-col gap-6">
+                        <EcosystemPulse activities={activities} programs={programs} isLoading={false} />
+                    </div>
+                     <div className="flex flex-col gap-6">
+                        <TeamPerformanceLeaderboard 
+                            users={users} 
+                            isLoading={false}
+                        />
+                    </div>
+                </DashboardGrid>
+            </div>
         )}
       </div>
   )
 }
-
-    
