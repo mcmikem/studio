@@ -143,15 +143,17 @@ export default function OperationalPlanPage() {
               onChange={e => setPastedText(e.target.value)}
             />
           </div>
-          <Button onClick={handleParseWithAI} disabled={isParsing || !pastedText.trim()}>
-            {isParsing ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Wand className="mr-2 h-4 w-4" />
-            )}
-            Analyze Plan with AI
-          </Button>
         </CardContent>
+        <CardFooter>
+             <Button onClick={handleParseWithAI} disabled={isParsing || !pastedText.trim()}>
+                {isParsing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Wand className="mr-2 h-4 w-4" />
+                )}
+                Analyze Plan with AI
+            </Button>
+        </CardFooter>
       </Card>
 
       {parsedResults.length > 0 && (

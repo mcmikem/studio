@@ -8,8 +8,21 @@ import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
 import { useViewAs } from '@/hooks/use-view-as';
-import { AppHeader } from '@/components/header';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
+const NavItem = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string; }) => {
+    const pathname = usePathname();
+    const isActive = pathname.startsWith(href);
+    return (
+        <Link href={href} className={cn(
+            "flex flex-col items-center justify-center gap-2 p-4 border rounded-lg hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground",
+            isActive && "bg-muted/80 text-foreground"
+        )}>
+            <Icon className="h-6 w-6" />
+            <span className="text-sm font-medium">{label}</span>
+        </Link>
+    )
+}
 
 export default function ManagementLayout({
   children,
@@ -31,6 +44,7 @@ export default function ManagementLayout({
       'Operations & Field Manager',
       'Media & Finance Lead',
       'Media & Communications Lead',
+      'Resource Mobilization Lead',
   ];
 
   if (!managementRoles.includes(effectiveRole || '')) {
@@ -46,9 +60,6 @@ export default function ManagementLayout({
     { name: 'Programs', href: '/management/programs', icon: FolderKanban },
     { name: 'Projects', href: '/management/projects', icon: Briefcase },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
-    { name: 'Operational Plan', href: '/management/operational-plan', icon: FileSignature, roles: ['Executive Director', 'Programs & Partnerships Manager'] },
-    { name: 'Finance', href: '/management/finance', icon: DollarSign, roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'] },
-    { name: 'Expenses', href: '/management/expenses', icon: Receipt, roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead'] },
     { name: 'Metrics', href: '/management/metrics', icon: Target },
     { name: 'Workplans', href: '/management/workplans', icon: CalendarClock },
     { name: 'Equipment', href: '/management/equipment', icon: Box },
@@ -57,36 +68,22 @@ export default function ManagementLayout({
   ];
 
   const tabs = allTabs.filter(tab => {
-    if (!tab.roles) return true;
-    return tab.roles.includes(effectiveRole || '');
+    if ('roles' in tab) {
+        // @ts-ignore
+        return tab.roles.includes(effectiveRole || '');
+    }
+    return true;
   });
 
   return (
-    <>
-      <AppHeader />
-      <div className="flex flex-col gap-6 p-4 lg:p-6">
-       <div className="border-b border-border">
-        <div className="flex items-center gap-x-4 gap-y-2 p-2 flex-wrap">
-            {tabs.map((tab) => (
-              <Link
-                key={tab.name}
-                href={tab.href}
-                className={cn(
-                  'flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md',
-                  pathname.startsWith(tab.href)
-                    ? 'border-primary text-primary bg-primary/10'
-                    : 'border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                )}
-              >
-                <tab.icon className="h-4 w-4" />
-                {tab.name}
-              </Link>
+    <div className="space-y-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+             {tabs.map((tab) => (
+              <NavItem key={tab.name} href={tab.href} icon={tab.icon} label={tab.name} />
             ))}
-          </div>
-      </div>
-      <div>{children}</div>
+        </div>
+        <div>{children}</div>
     </div>
-    </>
   );
 }
 
