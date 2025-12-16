@@ -32,7 +32,6 @@ export function TeamPerformanceLeaderboard({ users, isLoading }: TeamPerformance
   const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
 
   const activitiesQuery = useMemoFirebase((db) => {
-      if (!db) return null;
       return query(
           collection(db, 'activities'),
           where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
@@ -42,9 +41,8 @@ export function TeamPerformanceLeaderboard({ users, isLoading }: TeamPerformance
   }, [thirtyDaysAgo]);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery, { listen: false });
   
-  const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+  const thisWeekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
   const checkinsQuery = useMemoFirebase((db) => {
-    if (!db) return null;
     return query(
         collection(db, 'checkins'),
         where('timestamp', '>=', Timestamp.fromDate(thisWeekStart))
