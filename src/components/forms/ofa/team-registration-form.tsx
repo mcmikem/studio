@@ -10,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp, doc } from 'firebase/firestore';
+import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, serverTimestamp, doc, query, orderBy } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Swords } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -20,88 +20,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import type { OFATeam } from '@/lib/types';
+import type { OFATeam, User } from '@/lib/types';
 import { useEffect } from 'react';
+import { OFAPlayerSchema, OFAPlayer, OFAPlayerFormData, OFATeamSchema, OFATeamFormData } from '@/lib/types';
 import { DialogFooter } from '@/components/ui/dialog';
-
-const ageGroups = ["U-13", "U-15", "U-17", "U-19"];
-const trainingDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const mainAcademicChallenges = ["Fees", "Attendance", "Motivation", "Performance", "Distance", "None"];
-const equipmentItems = ["Balls", "Jerseys", "Boots", "Cones/Markers", "Goal Nets", "First Aid Kit"];
-const supportAreas = ["Football equipment", "Leadership & coaching workshop", "Academic support for players", "Mentorship & life-skills", "Team branding (logo/ID)", "Competition exposure", "Nutrition or welfare support"];
-
-const teamRegistrationSchema = z.object({
-  teamName: z.string().min(3, 'Team name is required.'),
-  subcounty: z.string().min(3, 'Subcounty is required.'),
-  parish: z.string().optional(),
-  village: z.string().optional(),
-  yearOfEstablishment: z.string().optional(),
-  homePitchName: z.string().optional(),
-  teamColours: z.string().optional(),
-  motto: z.string().optional(),
-
-  headCoachName: z.string().optional(),
-  headCoachPhone: z.string().optional(),
-  headCoachAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
-  headCoachAvailability: z.enum(['Full-Time', 'Part-Time']).optional(),
-
-  assistantCoachName: z.string().optional(),
-  assistantCoachPhone: z.string().optional(),
-  assistantCoachAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
-  assistantCoachAvailability: z.enum(['Full-Time', 'Part-Time']).optional(),
-
-  teamManagerName: z.string().optional(),
-  teamManagerPhone: z.string().optional(),
-  teamManagerAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
-  teamManagerAvailability: z.enum(['Full-Time', 'Part-Time']).optional(),
-
-  captainName: z.string().optional(),
-  captainPhone: z.string().optional(),
-  captainAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
-  
-  viceCaptainName: z.string().optional(),
-  viceCaptainPhone: z.string().optional(),
-  viceCaptainAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
-
-  trainingDaysPerWeek: z.coerce.number().optional(),
-  avgTrainingAttendance: z.enum(['High', 'Medium', 'Low']).optional(),
-  punctualityScore: z.coerce.number().min(1).max(5).optional(),
-  disciplineScore: z.coerce.number().min(1).max(5).optional(),
-  useWarmups: z.boolean().optional(),
-  trackPlayerProgress: z.boolean().optional(),
-
-  totalPlayers: z.coerce.number().optional(),
-  u13: z.coerce.number().optional(),
-  u15: z.coerce.number().optional(),
-  u17: z.coerce.number().optional(),
-  u19: z.coerce.number().optional(),
-  percentageInSchool: z.coerce.number().optional(),
-  mainAcademicChallenges: z.array(z.string()).optional(),
-  enforceSchoolAttendance: z.enum(['Yes', 'No', 'Trying']).optional(),
-  
-  equipment: z.array(z.object({
-    item: z.string(),
-    qty: z.coerce.number().optional(),
-    condition: z.enum(['Good', 'Worn', 'Poor']).optional(),
-    needLevel: z.enum(['Low', 'Medium', 'High']).optional(),
-  })).optional(),
-
-  needs: z.array(z.object({
-    area: z.string(),
-    priority: z.coerce.number().min(1).max(5).optional(),
-  })).optional(),
-
-  communitySupport: z.enum(['Yes', 'No', 'Sometimes']).optional(),
-  parentEngagement: z.enum(['Yes', 'No', 'Weak Engagement']).optional(),
-  hasVolunteers: z.boolean().optional(),
-  volunteerCount: z.coerce.number().optional(),
-  
-  agreedToRules: z.boolean().refine(val => val === true, {
-    message: 'You must agree to the OFA membership rules.',
-  }),
-});
-
-type TeamRegistrationFormData = z.infer<typeof teamRegistrationSchema>;
 
 type ManagementRole = 'Head Coach' | 'Assistant Coach' | 'Team Manager' | 'Captain' | 'Vice Captain';
 
@@ -159,8 +81,8 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
     watch,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<TeamRegistrationFormData>({
-    resolver: zodResolver(teamRegistrationSchema),
+  } = useForm<OFATeamFormData>({
+    resolver: zodResolver(OFATeamSchema),
   });
 
   useEffect(() => {
@@ -187,7 +109,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
   }, [team, isEditMode, reset]);
 
 
-  const onSubmit = async (data: TeamRegistrationFormData) => {
+  const onSubmit = async (data: OFATeamFormData) => {
     if (!firestore) {
       toast({ variant: 'destructive', title: 'Database connection failed.' });
       return;
@@ -225,10 +147,14 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
   };
 
   const formId = `ofa-team-form-${team?.id || 'new'}`;
+  
+  const equipmentItems = ["Balls", "Jerseys", "Boots", "Cones/Markers", "Goal Nets", "First Aid Kit"];
+  const supportAreas = ["Football equipment", "Leadership & coaching workshop", "Academic support for players", "Mentorship & life-skills", "Team branding (logo/ID)", "Competition exposure", "Nutrition or welfare support"];
+
 
   return (
-    <>
-      <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto p-1">
+    <Card>
+      <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {!isEditMode && (
           <Button variant="outline" asChild>
               <Link href="/meal/ofa">
@@ -249,7 +175,6 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
             </CardHeader>
         )}
         <CardContent className="pt-6 space-y-8">
-          {/* Section A */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold border-b pb-2">Section A: Team Identity</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -269,8 +194,6 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
               <div className="space-y-2"><Label>Motto / Values / Culture Statement (short answer)</Label><Input {...register('motto')} /></div>
             </div>
           </div>
-
-          {/* Section B */}
           <div className="space-y-4">
              <h3 className="text-lg font-semibold border-b pb-2">Section B: Management Structure</h3>
              <div className="overflow-x-auto">
@@ -294,8 +217,6 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   </Table>
               </div>
           </div>
-
-          {/* Section C */}
            <div className="space-y-4">
              <h3 className="text-lg font-semibold border-b pb-2">Section C: Training Culture</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -321,8 +242,6 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   <div className="flex items-center space-x-2"><Controller name="trackPlayerProgress" control={control} render={({field}) => (<Checkbox id="trackPlayerProgress" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="trackPlayerProgress">Team tracks player progress?</Label></div>
               </div>
           </div>
-          
-           {/* Section D */}
           <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">Section D: Player Development & Education</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -340,7 +259,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   )} />
               </div>
               <div className="space-y-2"><Label>Does team enforce school attendance?</Label>
-                  <Controller name="enforceSchoolAttendance" control={control} render={({field}) => (
+                   <Controller name="enforceSchoolAttendance" control={control} render={({field}) => (
                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2">
                           <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="enforce-yes" /><Label htmlFor="enforce-yes">Yes</Label></div>
                           <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="enforce-no" /><Label htmlFor="enforce-no">No</Label></div>
@@ -349,8 +268,6 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   )} />
               </div>
           </div>
-
-          {/* Section E */}
            <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">Section E: Equipment & Resource Status</h3>
               <Table>
@@ -367,9 +284,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   </TableBody>
               </Table>
           </div>
-          
-          {/* Section F */}
-           <div className="space-y-4">
+          <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">Section F: Team Needs (1=Low, 5=Urgent)</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {supportAreas.map((area, index) => (
@@ -382,8 +297,6 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   ))}
               </div>
            </div>
-
-           {/* Section G */}
           <div className="space-y-4">
                <h3 className="text-lg font-semibold border-b pb-2">Section G: Community & Volunteer Involvement</h3>
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -393,8 +306,6 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                </div>
                {watch('hasVolunteers') && <div className="space-y-2 pt-2"><Label>How many volunteers?</Label><Input type="number" {...register('volunteerCount')} /></div>}
           </div>
-
-          {/* Section H */}
           <div className="space-y-4">
                <h3 className="text-lg font-semibold border-b pb-2">Section H: Agreement</h3>
                 <div className="flex items-center space-x-2">
@@ -405,26 +316,16 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
               </div>
                {errors.agreedToRules && <p className="text-sm text-destructive">{errors.agreedToRules.message}</p>}
           </div>
-
         </CardContent>
-      </form>
-      {isEditMode && (
-        <DialogFooter className="p-6 pt-0">
-          <Button type="submit" form={formId} disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
-          </Button>
-        </DialogFooter>
-      )}
-
-      {!isEditMode && (
+        {!isEditMode && (
          <CardFooter>
             <Button type="submit" form={formId} disabled={isSubmitting} className="w-full">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Register Team
             </Button>
           </CardFooter>
-      )}
-    </>
+        )}
+      </form>
+    </Card>
   );
 }
