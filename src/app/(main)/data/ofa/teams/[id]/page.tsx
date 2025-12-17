@@ -8,12 +8,15 @@ import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Swords, ArrowLeft, Users, Calendar, ShieldCheck, ClipboardList, Package, MessageCircleQuestion, CheckCircle2 } from 'lucide-react';
+import { Swords, ArrowLeft, Users, Calendar, ShieldCheck, ClipboardList, Package, MessageCircleQuestion, CheckCircle2, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { OFATeamRegistrationForm } from '@/components/forms/ofa/team-registration-form';
 
 function DetailItem({ label, value }: { label: string, value: string | number | undefined | null }) {
     if (value === undefined || value === null || value === '') return null;
@@ -29,6 +32,7 @@ function TeamDetailDashboard() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const teamDocRef = useMemoFirebase(() => {
     if (!firestore || !id) return null;
@@ -73,24 +77,42 @@ function TeamDetailDashboard() {
 
   return (
     <div className="space-y-6">
-      <header>
-         <Button asChild variant="outline" className="mb-4">
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+         <Button asChild variant="outline">
             <Link href="/data/ofa/teams"><ArrowLeft className="mr-2 h-4 w-4" />Back to All Teams</Link>
           </Button>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-3">
-          <Swords className="h-8 w-8" />
-          {team.teamName}
-        </h1>
-        <p className="text-muted-foreground">
-          Detailed profile and assessment for {team.teamName}.
-        </p>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(true)}>
+                <Edit className="mr-2 h-4 w-4" /> Edit
+            </Button>
+             <Button variant="destructive">
+                <Trash2 className="mr-2 h-4 w-4" /> Delete
+            </Button>
+          </div>
       </header>
 
+       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-4xl">
+            <DialogHeader>
+                <DialogTitle>Edit Team: {team.teamName}</DialogTitle>
+                <DialogDescription>Update the registration details for this team.</DialogDescription>
+            </DialogHeader>
+            <div className="max-h-[80vh] overflow-y-auto p-1">
+                 <OFATeamRegistrationForm team={team} onSuccess={() => setIsEditDialogOpen(false)} />
+            </div>
+        </DialogContent>
+       </Dialog>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
             <Card>
-                <CardHeader><CardTitle>Team Identity</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-2xl">
+                        <Swords className="h-7 w-7" />
+                        {team.teamName}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <DetailItem label="Subcounty" value={team.subcounty} />
                     <DetailItem label="Parish" value={team.parish} />
                     <DetailItem label="Village" value={team.village} />
@@ -111,9 +133,9 @@ function TeamDetailDashboard() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {managementData.map(m => (
+                                {managementData.length > 0 ? managementData.map(m => (
                                     <TableRow key={m.role}><TableCell>{m.role}</TableCell><TableCell>{m.name}</TableCell><TableCell>{m.phone || '-'}</TableCell><TableCell>{m.attendance || '-'}</TableCell><TableCell>{m.availability || '-'}</TableCell></TableRow>
-                                ))}
+                                )) : <TableRow><TableCell colSpan={5} className="text-center h-24">No management data recorded.</TableCell></TableRow>}
                             </TableBody>
                         </Table>
                     </div>
@@ -122,7 +144,7 @@ function TeamDetailDashboard() {
              <Card>
                 <CardHeader><CardTitle>Player Development & Education</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
                         <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Players</p><p className="text-2xl font-bold">{team.totalPlayers || 0}</p></div>
                         <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U13</p><p className="text-2xl font-bold">{team.u13 || 0}</p></div>
                         <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U15</p><p className="text-2xl font-bold">{team.u15 || 0}</p></div>
@@ -134,54 +156,58 @@ function TeamDetailDashboard() {
                     <DetailItem label="School Attendance Enforcement" value={team.enforceSchoolAttendance} />
                 </CardContent>
             </Card>
-            <Card>
-                <CardHeader><CardTitle>Equipment Status</CardTitle></CardHeader>
-                <CardContent>
-                     <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Item</TableHead><TableHead>Quantity</TableHead><TableHead>Condition</TableHead><TableHead>Need Level</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {team.equipment?.map(e => (
-                                    <TableRow key={e.item}><TableCell>{e.item}</TableCell><TableCell>{e.qty || 0}</TableCell><TableCell>{e.condition}</TableCell><TableCell>{e.needLevel}</TableCell></TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-        <div className="lg:col-span-1 space-y-6">
-            <Card>
+             <Card>
                 <CardHeader><CardTitle>Training Culture</CardTitle></CardHeader>
-                 <CardContent className="space-y-4">
-                    <DetailItem label="Training Days per Week" value={team.trainingDaysPerWeek} />
-                    <DetailItem label="Average Attendance" value={team.avgTrainingAttendance} />
-                    <div><Label className="text-sm text-muted-foreground">Punctuality</Label><Progress value={(team.punctualityScore || 0)*20} className="h-2 mt-1" /></div>
-                    <div><Label className="text-sm text-muted-foreground">Discipline</Label><Progress value={(team.disciplineScore || 0)*20} className="h-2 mt-1" /></div>
-                    <div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${team.useWarmups ? 'text-green-500' : 'text-muted-foreground'}`}/> <span className="text-sm">Uses warm-ups & drills</span></div>
-                    <div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${team.trackPlayerProgress ? 'text-green-500' : 'text-muted-foreground'}`}/> <span className="text-sm">Tracks player progress</span></div>
+                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <DetailItem label="Training Days per Week" value={team.trainingDaysPerWeek} />
+                        <DetailItem label="Average Attendance" value={team.avgTrainingAttendance} />
+                        <div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${team.useWarmups ? 'text-green-500' : 'text-muted-foreground'}`}/> <span className="text-sm">Uses warm-ups & drills</span></div>
+                        <div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${team.trackPlayerProgress ? 'text-green-500' : 'text-muted-foreground'}`}/> <span className="text-sm">Tracks player progress</span></div>
+                    </div>
+                     <div className="space-y-4">
+                        <div><Label className="text-sm text-muted-foreground">Punctuality</Label><Progress value={(team.punctualityScore || 0)*20} className="h-2 mt-1" /></div>
+                        <div><Label className="text-sm text-muted-foreground">Discipline</Label><Progress value={(team.disciplineScore || 0)*20} className="h-2 mt-1" /></div>
+                     </div>
                 </CardContent>
             </Card>
-            <Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                    <CardHeader><CardTitle>Equipment Status</CardTitle></CardHeader>
+                    <CardContent>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Item</TableHead><TableHead>Quantity</TableHead><TableHead>Condition</TableHead><TableHead>Need Level</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {team.equipment?.length ? team.equipment.map(e => (
+                                        <TableRow key={e.item}><TableCell>{e.item}</TableCell><TableCell>{e.qty || 0}</TableCell><TableCell>{e.condition}</TableCell><TableCell>{e.needLevel}</TableCell></TableRow>
+                                    )) : <TableRow><TableCell colSpan={4} className="h-24 text-center">No equipment data.</TableCell></TableRow>}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader><CardTitle>Needs Assessment</CardTitle></CardHeader>
+                    <CardContent>
+                        <ul className="space-y-2">
+                            {team.needs?.length ? team.needs.sort((a,b) => (b.priority || 0) - (a.priority || 0)).map(n => (
+                                <li key={n.area} className="flex justify-between items-center text-sm"><span>{n.area}</span><Badge variant="outline">{n.priority}/5</Badge></li>
+                            )) : <li className="text-center text-sm text-muted-foreground h-24 flex items-center justify-center">No needs assessed.</li>}
+                        </ul>
+                    </CardContent>
+                </Card>
+            </div>
+             <Card>
                 <CardHeader><CardTitle>Community Involvement</CardTitle></CardHeader>
-                 <CardContent className="space-y-4">
+                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <DetailItem label="Community Support" value={team.communitySupport} />
                     <DetailItem label="Parent Engagement" value={team.parentEngagement} />
                     <DetailItem label="Volunteers" value={team.hasVolunteers ? `Yes (${team.volunteerCount || 'N/A'})` : 'No'} />
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader><CardTitle>Needs Assessment</CardTitle></CardHeader>
-                <CardContent>
-                     <ul className="space-y-2">
-                        {team.needs?.sort((a,b) => (b.priority || 0) - (a.priority || 0)).map(n => (
-                            <li key={n.area} className="flex justify-between items-center text-sm"><span>{n.area}</span><span className="font-bold">{n.priority}/5</span></li>
-                        ))}
-                     </ul>
                 </CardContent>
             </Card>
         </div>
