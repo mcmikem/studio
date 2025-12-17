@@ -646,7 +646,7 @@ export const OFAPlayerSchema = z.object({
   name: z.string().min(3, "Player's name is required."),
   teamId: z.string().min(1, 'Team is required.'),
   ageCategory: z.enum(['U13', 'U15', 'U17', 'U19']),
-  age: z.coerce.number().optional().nullable().transform(val => (val === 0 ? null : val)),
+  age: z.coerce.number().optional().nullable(),
   photo: z.any().optional(),
   playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional().nullable(),
   school: z.string().optional().nullable(),
