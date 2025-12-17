@@ -10,7 +10,6 @@
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, type DailyPlannerAIInput, type DailyPlannerAIOutput } from '@/lib/types';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const dailyPlannerPrompt = ai.definePrompt(
     {

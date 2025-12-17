@@ -7,18 +7,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase, useUser, useFirebaseApp } from '@/firebase';
+import { collection, serverTimestamp, query, orderBy, Timestamp } from 'firebase/firestore';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, UserPlus, Upload, RadioGroup } from 'lucide-react';
+import { Loader2, UserPlus, Upload } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Program } from '@/lib/types';
+import type { Program, Beneficiary } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
-import { RadioGroupItem } from '@/components/ui/radio-group';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const beneficiarySchema = z.object({
   name: z.string().min(3, 'Beneficiary name is required.'),
@@ -67,13 +67,13 @@ function BeneficiaryRegistrationForm() {
   }
 
   const onSubmit = async (data: BeneficiaryFormData) => {
-    if (!firestore) {
+    if (!firestore || !user) {
       toast({ variant: 'destructive', title: 'Database connection failed.' });
       return;
     }
 
     let photoURL = '';
-    if (data.photo && user) {
+    if (data.photo) {
         try {
             const path = `beneficiary-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
             photoURL = await uploadFile(data.photo, path);

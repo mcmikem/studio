@@ -213,5 +213,3 @@ export function BeneficiaryRegistrationForm() {
     </Card>
   );
 }
-
-    
