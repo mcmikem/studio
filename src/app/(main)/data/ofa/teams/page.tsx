@@ -42,8 +42,7 @@ import { OFATeamRegistrationForm } from '@/components/forms/ofa/team-registratio
 export default function TeamsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
-  const [editingTeam, setEditingTeam] = useState<OFATeam | null>(null);
-
+  
   const teamsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'ofa-teams'), orderBy('createdAt', 'desc'), limit(50));
@@ -97,7 +96,19 @@ export default function TeamsPage() {
                             <Button asChild variant="secondary" className="w-full">
                                 <Link href={`/data/ofa/teams/${team.id}`}>View Details <ArrowRight className="ml-2 h-4 w-4" /></Link>
                             </Button>
-                            <Button variant="outline" size="icon" onClick={() => setEditingTeam(team)}><Edit className="h-4 w-4"/></Button>
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild><Button variant="destructive" size="icon"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
+                                 <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>This will permanently delete "{team.teamName}" and all its data. This action cannot be undone.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(team)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </CardFooter>
                     </Card>
                 ))
@@ -146,9 +157,6 @@ export default function TeamsPage() {
                             <Button asChild variant="outline" size="sm">
                                 <Link href={`/data/ofa/teams/${team.id}`}>View</Link>
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => setEditingTeam(team)}>
-                                <Edit className="h-4 w-4" />
-                            </Button>
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
@@ -189,17 +197,6 @@ export default function TeamsPage() {
         </CardContent>
       </Card>
     </div>
-    <Dialog open={!!editingTeam} onOpenChange={() => setEditingTeam(null)}>
-        <DialogContent className="max-w-4xl">
-            <DialogHeader>
-                <DialogTitle>Edit Team: {editingTeam?.teamName}</DialogTitle>
-                <DialogDescription>Update the registration details for this team.</DialogDescription>
-            </DialogHeader>
-            <div className="max-h-[80vh] overflow-y-auto p-1">
-                 {editingTeam && <OFATeamRegistrationForm team={editingTeam} onSuccess={() => setEditingTeam(null)} />}
-            </div>
-        </DialogContent>
-       </Dialog>
     </>
   );
 }

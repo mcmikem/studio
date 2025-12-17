@@ -1,22 +1,24 @@
 
 'use client';
 
-import { useParams } from 'next/navigation';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { useParams, useRouter } from 'next/navigation';
+import { useDoc, useFirestore, useMemoFirebase, deleteDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Swords, ArrowLeft, Users, Calendar, ShieldCheck, ClipboardList, Package, MessageCircleQuestion, CheckCircle2, Edit, Trash2 } from 'lucide-react';
+import { Swords, ArrowLeft, Users, Calendar, ShieldCheck, ClipboardList, Package, MessageCircleQuestion, CheckCircle2, Edit, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { OFATeamRegistrationForm } from '@/components/forms/ofa/team-registration-form';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 function DetailItem({ label, value }: { label: string, value: string | number | undefined | null }) {
     if (value === undefined || value === null || value === '') return null;
@@ -30,9 +32,11 @@ function DetailItem({ label, value }: { label: string, value: string | number | 
 
 function TeamDetailDashboard() {
   const params = useParams();
+  const router = useRouter();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const teamDocRef = useMemoFirebase(() => {
     if (!firestore || !id) return null;
@@ -40,6 +44,19 @@ function TeamDetailDashboard() {
   }, [firestore, id]);
 
   const { data: team, isLoading } = useDoc<OFATeam>(teamDocRef);
+
+  const handleDelete = () => {
+    if (!firestore || !id) return;
+    deleteDocumentNonBlocking(doc(firestore, 'ofa-teams', id))
+      .then(() => {
+        toast({ title: "Team Deleted", description: `${team?.teamName} has been removed from the database.` });
+        router.push('/data/ofa/teams');
+      })
+      .catch((err) => {
+        toast({ variant: 'destructive', title: "Error", description: "Could not delete team. Check permissions." });
+        console.error(err);
+      });
+  };
   
   if (isLoading) {
     return (
@@ -85,9 +102,19 @@ function TeamDetailDashboard() {
             <Button variant="outline" onClick={() => setIsEditDialogOpen(true)}>
                 <Edit className="mr-2 h-4 w-4" /> Edit
             </Button>
-             <Button variant="destructive">
-                <Trash2 className="mr-2 h-4 w-4" /> Delete
-            </Button>
+             <AlertDialog>
+                <AlertDialogTrigger asChild><Button variant="destructive"><Trash2 className="mr-2 h-4 w-4" /> Delete</Button></AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>This will permanently delete "{team.teamName}" and all its associated data. This action cannot be undone.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+             </AlertDialog>
           </div>
       </header>
 
@@ -97,9 +124,7 @@ function TeamDetailDashboard() {
                 <DialogTitle>Edit Team: {team.teamName}</DialogTitle>
                 <DialogDescription>Update the registration details for this team.</DialogDescription>
             </DialogHeader>
-            <div className="max-h-[80vh] overflow-y-auto p-1">
-                 <OFATeamRegistrationForm team={team} onSuccess={() => setIsEditDialogOpen(false)} />
-            </div>
+            <OFATeamRegistrationForm team={team} onSuccess={() => setIsEditDialogOpen(false)} />
         </DialogContent>
        </Dialog>
 
@@ -146,10 +171,10 @@ function TeamDetailDashboard() {
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
                         <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Players</p><p className="text-2xl font-bold">{team.totalPlayers || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U13</p><p className="text-2xl font-bold">{team.u13 || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U15</p><p className="text-2xl font-bold">{team.u15 || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U17</p><p className="text-2xl font-bold">{team.u17 || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U19</p><p className="text-2xl font-bold">{team.u19 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-13</p><p className="text-2xl font-bold">{team.u13 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-15</p><p className="text-2xl font-bold">{team.u15 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-17</p><p className="text-2xl font-bold">{team.u17 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-19</p><p className="text-2xl font-bold">{team.u19 || 0}</p></div>
                         <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">% in School</p><p className="text-2xl font-bold">{team.percentageInSchool || 0}%</p></div>
                     </div>
                     <DetailItem label="Main Academic Challenges" value={team.mainAcademicChallenges?.join(', ')} />
