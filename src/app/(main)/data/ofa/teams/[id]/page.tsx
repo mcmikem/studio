@@ -124,6 +124,10 @@ function TeamDetailDashboard() {
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Players</p><p className="text-2xl font-bold">{team.totalPlayers || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U13</p><p className="text-2xl font-bold">{team.u13 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U15</p><p className="text-2xl font-bold">{team.u15 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U17</p><p className="text-2xl font-bold">{team.u17 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U19</p><p className="text-2xl font-bold">{team.u19 || 0}</p></div>
                         <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">% in School</p><p className="text-2xl font-bold">{team.percentageInSchool || 0}%</p></div>
                     </div>
                     <DetailItem label="Main Academic Challenges" value={team.mainAcademicChallenges?.join(', ')} />
