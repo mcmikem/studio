@@ -15,7 +15,7 @@ import { googleAI } from '@genkit-ai/google-genai';
 const dailyPlannerPrompt = ai.definePrompt(
     {
       name: 'dailyPlannerPrompt',
-      model: googleAI('gemini-1.5-flash-latest'),
+      model: 'googleai/gemini-1.5-flash-latest',
       input: { schema: DailyPlannerAIInputSchema },
       output: { schema: DailyPlannerAIOutputSchema },
       prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format for {{userName}}. You are a coach, not just a scheduler.
