@@ -173,7 +173,7 @@ export default function TeamsPage() {
                 ) : (
                   !isLoading && (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-48">
+                      <TableCell colSpan={5} className="h-48">
                         <EmptyState
                           icon={Swords}
                           title="No Teams Registered"
