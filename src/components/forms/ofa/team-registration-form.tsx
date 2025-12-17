@@ -103,20 +103,19 @@ const teamRegistrationSchema = z.object({
 type TeamRegistrationFormData = z.infer<typeof teamRegistrationSchema>;
 
 type ManagementRole = 'Head Coach' | 'Assistant Coach' | 'Team Manager' | 'Captain' | 'Vice Captain';
-type FieldNamePrefix = 'headCoach' | 'assistantCoach' | 'teamManager' | 'captain' | 'viceCaptain';
 
 const ManagementRow = ({ role, register, control }: { role: ManagementRole, register: any, control: any }) => {
     
-    const getFieldName = <T extends string>(field: T): `${FieldNamePrefix}${Capitalize<T>}` | `${FieldNamePrefix}${Capitalize<T>}Phone` | `${FieldNamePrefix}${Capitalize<T>}Attendance` | `${FieldNamePrefix}${Capitalize<T>}Availability` => {
-        const prefixMap: Record<ManagementRole, FieldNamePrefix> = {
-            'Head Coach': 'headCoach',
-            'Assistant Coach': 'assistantCoach',
-            'Team Manager': 'teamManager',
-            'Captain': 'captain',
-            'Vice Captain': 'viceCaptain'
-        };
-        const prefix = prefixMap[role];
-        return `${prefix}${field.charAt(0).toUpperCase() + field.slice(1)}` as any;
+    const getFieldName = (field: string): string => {
+      const prefixMap: Record<string, string> = {
+        'Head Coach': 'headCoach',
+        'Assistant Coach': 'assistantCoach',
+        'Team Manager': 'teamManager',
+        'Captain': 'captain',
+        'Vice Captain': 'viceCaptain'
+      };
+      const prefix = prefixMap[role];
+      return `${prefix}${field.charAt(0).toUpperCase() + field.slice(1)}`;
     };
     
     return (
@@ -340,7 +339,11 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                 </div>
                 <div className="space-y-2"><Label>Does team enforce school attendance?</Label>
                     <Controller name="enforceSchoolAttendance" control={control} render={({field}) => (
-                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><RadioGroupItem value="Yes" id="enforce-yes" /><Label htmlFor="enforce-yes">Yes</Label><RadioGroupItem value="No" id="enforce-no" /><Label htmlFor="enforce-no">No</RadioGroupItem><RadioGroupItem value="Trying" id="enforce-trying" /><Label htmlFor="enforce-trying">Trying</Label></RadioGroup>
+                         <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4">
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="enforce-yes" /><Label htmlFor="enforce-yes">Yes</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="enforce-no" /><Label htmlFor="enforce-no">No</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="Trying" id="enforce-trying" /><Label htmlFor="enforce-trying">Trying</Label></div>
+                        </RadioGroup>
                     )} />
                 </div>
             </div>
@@ -413,5 +416,3 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
     </div>
   );
 }
-
-    
