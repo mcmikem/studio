@@ -15,7 +15,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, UserPlus, Upload } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Program } from '@/lib/types';
+import type { Program, Beneficiary } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
@@ -58,6 +58,9 @@ function BeneficiaryRegistrationForm() {
     formState: { errors, isSubmitting },
   } = useForm<BeneficiaryFormData>({
     resolver: zodResolver(beneficiarySchema),
+    defaultValues: {
+        gender: 'Female',
+    }
   });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,13 +84,13 @@ function BeneficiaryRegistrationForm() {
             photoURL = await uploadFile(firebaseApp, data.photo, path);
         }
 
-        const beneficiaryData: { [key: string]: any } = {
+        const beneficiaryData: Partial<Beneficiary> = {
             name: data.name,
             dob: data.dob,
             gender: data.gender,
             village: data.village,
             programEnrolled: data.programEnrolled,
-            createdAt: serverTimestamp(),
+            createdAt: serverTimestamp() as Timestamp,
         };
 
         if (photoURL) beneficiaryData.photoURL = photoURL;
@@ -219,3 +222,5 @@ export default function BeneficiaryRegistrationPage() {
         </Suspense>
     )
 }
+
+    

@@ -4,10 +4,10 @@
 import { useParams } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, doc, query, where, orderBy } from 'firebase/firestore';
-import type { Project, Expense, Partnership } from '@/lib/types';
+import type { Project, Expense, Partnership, Beneficiary } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, CheckCircle, XCircle, BarChart, CheckSquare, Clock } from 'lucide-react';
+import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, CheckCircle, XCircle, BarChart, CheckSquare, Clock, File, Video, BookOpen, Banknote, Store, BookUser } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,18 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { BarChart as RechartsBarChart, Bar as RechartsBar, XAxis, YAxis, ResponsiveContainer, Tooltip, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, LineChart, Line, CartesianGrid } from 'recharts';
+
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies import('recharts').LegendProps;
 
 
 const statusColors: { [key: string]: string } = {
@@ -65,6 +77,27 @@ const sampleParticipants = [
 const sampleModules = ["Intro to Finance", "Budgeting 101", "Savings & Investment", "Digital Finance Tools", "Business Planning"];
 const sampleTrainers = ["Dianah Nansikombi", "Kasirye Constantine", "Guest Speaker"];
 
+const sampleResources = [
+    { type: 'document', name: 'Financial Literacy Booklet', format: 'PDF', size: '1.2MB', icon: BookOpen },
+    { type: 'document', name: 'Personal Budget Worksheet', format: 'XLSX', size: '45KB', icon: File },
+    { type: 'media', name: 'Workshop Intro Video', format: 'MP4', size: '25.6MB', icon: Video },
+];
+
+const skillsImprovementData = [
+  { "skill": "Budgeting", "A": 45, "B": 75 },
+  { "skill": "Saving", "A": 50, "B": 85 },
+  { "skill": "Investing", "A": 20, "B": 60 },
+  { "skill": "Digital Tools", "A": 30, "B": 80 },
+  { "skill": "Business Plan", "A": 15, "B": 70 },
+]
+
+const progressOverTimeData = [
+  { "month": "Jan", "score": 20 },
+  { "month": "Feb", "score": 35 },
+  { "month": "Mar", "score": 50 },
+  { "month": "Apr", "score": 65 },
+  { "month": "May", "score": 80 },
+]
 
 function ProjectDashboard() {
   const params = useParams();
@@ -72,7 +105,6 @@ function ProjectDashboard() {
   const firestore = useFirestore();
   const [attendance, setAttendance] = useState<Record<string, boolean>>({});
   const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
-
 
   React.useEffect(() => {
     // Initialize attendance state
@@ -99,6 +131,13 @@ function ProjectDashboard() {
   }, [firestore, id]);
 
   const { data: project, isLoading: isLoadingProject } = useDoc<Project>(projectDocRef);
+
+  const beneficiariesQuery = useMemoFirebase(() => {
+    if (!firestore || !project?.name) return null;
+    return query(collection(firestore, 'beneficiaries'), where('programEnrolled', '==', project.name));
+  }, [firestore, project?.name]);
+  
+  const { data: beneficiaries } = useCollection<Beneficiary>(beneficiariesQuery);
   
   const partnerQuery = useMemoFirebase(() => {
       if (!firestore || !project) return null;
@@ -169,7 +208,7 @@ function ProjectDashboard() {
           <TabsTrigger value="participants">Participants</TabsTrigger>
           <TabsTrigger value="attendance">Attendance</TabsTrigger>
           <TabsTrigger value="sessions">Training Sessions</TabsTrigger>
-          <TabsTrigger value="resources">Resources & Materials</TabsTrigger>
+          <TabsTrigger value="resources">Resources</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
           <TabsTrigger value="follow-up">Follow-Up</TabsTrigger>
         </TabsList>
@@ -381,8 +420,15 @@ function ProjectDashboard() {
                     </Table>
                      <div className="pt-4">
                         <CardTitle>Module Effectiveness</CardTitle>
-                        <div className="h-48 flex items-center justify-center text-muted-foreground text-sm border-2 border-dashed rounded-lg mt-2">
-                            Bar graph placeholder
+                         <div className="h-48 w-full mt-2">
+                            <ResponsiveContainer>
+                                <RechartsBarChart data={[{name: 'Intro', score: 85}, {name: 'Budget', score: 72}, {name: 'Saving', score: 91}]}>
+                                    <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                    <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+                                    <Tooltip />
+                                    <RechartsBar dataKey="score" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                                </RechartsBarChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
                 </CardContent>
@@ -390,12 +436,24 @@ function ProjectDashboard() {
         </TabsContent>
          <TabsContent value="resources">
              <Card>
-                <CardHeader>
-                    <CardTitle>Resources & Materials</CardTitle>
-                    <CardDescription>Coming Soon: Upload and access project materials.</CardDescription>
+                <CardHeader className="flex flex-row justify-between items-center">
+                    <div>
+                        <CardTitle>Resources & Materials</CardTitle>
+                        <CardDescription>Project-related documents, media, and templates.</CardDescription>
+                    </div>
+                    <Button variant="outline"><Upload className="mr-2 h-4 w-4" /> Upload New Resource</Button>
                 </CardHeader>
-                 <CardContent>
-                    <p className="text-center py-12 text-muted-foreground">Resource management will be available here.</p>
+                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {sampleResources.map((res, index) => (
+                        <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                            <res.icon className="h-6 w-6 text-primary flex-shrink-0" />
+                            <div>
+                                <p className="font-medium text-sm">{res.name}</p>
+                                <p className="text-xs text-muted-foreground">{res.format} - {res.size}</p>
+                            </div>
+                            <Button size="icon" variant="ghost" className="ml-auto"><Download className="h-4 w-4" /></Button>
+                        </div>
+                    ))}
                 </CardContent>
             </Card>
         </TabsContent>
@@ -403,10 +461,41 @@ function ProjectDashboard() {
              <Card>
                 <CardHeader>
                     <CardTitle>Reports</CardTitle>
-                    <CardDescription>Coming Soon: Auto-generated project reports and analytics.</CardDescription>
+                    <CardDescription>Auto-generated project reports and analytics.</CardDescription>
+                     <div className="flex gap-2 pt-2">
+                        <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
+                        <Button variant="outline"><Download className="mr-2 h-4 w-4" /> Download Excel</Button>
+                    </div>
                 </CardHeader>
-                 <CardContent>
-                    <p className="text-center py-12 text-muted-foreground">Reporting features will be available here.</p>
+                 <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <h4 className="font-semibold text-base">Financial Skills Improvement (Pre vs. Post)</h4>
+                         <div className="h-64 w-full mt-2">
+                             <ResponsiveContainer>
+                                 <RadarChart data={skillsImprovementData}>
+                                     <PolarGrid />
+                                     <PolarAngleAxis dataKey="skill" />
+                                     <Tooltip />
+                                     <Radar name="Pre-test" dataKey="A" stroke="hsl(var(--muted-foreground))" fill="hsl(var(--muted-foreground))" fillOpacity={0.6} />
+                                     <Radar name="Post-test" dataKey="B" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.7} />
+                                 </RadarChart>
+                             </ResponsiveContainer>
+                        </div>
+                    </div>
+                     <div className="space-y-4">
+                        <h4 className="font-semibold text-base">Participant Progress Over Time (Avg. Score)</h4>
+                         <div className="h-64 w-full mt-2">
+                            <ResponsiveContainer>
+                                <LineChart data={progressOverTimeData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="month" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Line type="monotone" dataKey="score" stroke="hsl(var(--primary))" strokeWidth={2} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -414,10 +503,44 @@ function ProjectDashboard() {
              <Card>
                 <CardHeader>
                     <CardTitle>Follow-Up Tracking</CardTitle>
-                    <CardDescription>Coming Soon: Track long-term skill adoption and impact.</CardDescription>
+                    <CardDescription>Track long-term skill adoption and impact at 6 and 12 months.</CardDescription>
                 </CardHeader>
-                 <CardContent>
-                    <p className="text-center py-12 text-muted-foreground">Follow-up tracking will be available here.</p>
+                 <CardContent className="space-y-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <StatCard title="Active Businesses" value="78%" icon={Store} />
+                        <StatCard title="Recorded Profits" value="65%" icon={DollarSign} />
+                        <StatCard title="Using Bookkeeping" value="85%" icon={BookUser} />
+                        <StatCard title="Opened Bank Account" value="55%" icon={Banknote} />
+                    </div>
+                     <div className="pt-4">
+                        <h4 className="font-semibold text-base mb-2">Beneficiary Follow-up List</h4>
+                         <div className="border rounded-md">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Beneficiary</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Last Contacted</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {beneficiaries && beneficiaries.length > 0 ? (
+                                        beneficiaries.slice(0,5).map(b => (
+                                             <TableRow key={b.id}>
+                                                 <TableCell>{b.name}</TableCell>
+                                                 <TableCell><Badge variant="secondary">Active</Badge></TableCell>
+                                                 <TableCell>2 weeks ago</TableCell>
+                                                 <TableCell className="text-right"><Button variant="outline" size="sm">Log Follow-up</Button></TableCell>
+                                             </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow><TableCell colSpan={4} className="h-24 text-center">No beneficiaries enrolled in this project yet.</TableCell></TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                         </div>
+                    </div>
                 </CardContent>
             </Card>
         </TabsContent>
@@ -429,3 +552,5 @@ function ProjectDashboard() {
 export default function ProjectPage() {
     return <ProjectDashboard />;
 }
+
+    

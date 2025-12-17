@@ -757,6 +757,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "School Application",
       "description": "An application submitted by a school to participate in Omuto programs.",
+      "type": "object",
       "properties": {
         "email": { "type": "string", "format": "email" },
         "schoolName": { "type": "string" },
@@ -1819,3 +1820,5 @@
     }
   }
 }
+
+    

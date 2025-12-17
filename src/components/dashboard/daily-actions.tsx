@@ -57,14 +57,24 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
     
         for (const block of checkin.details.timeBlocks) {
             // **CRITICAL FIX**: Add robust guards to prevent parsing invalid data.
-            if (block && typeof block.startTime === 'string' && typeof block.endTime === 'string' && block.startTime.includes(':') && block.endTime.includes(':')) {
+            if (block && typeof block.startTime === 'string' && typeof block.endTime === 'string') {
                 try {
-                    const startTime = parse(block.startTime, 'hh:mm a', baseDate);
-                    const endTime = parse(block.endTime, 'hh:mm a', baseDate);
-            
+                    // Attempt to parse different possible time formats
+                    let startTime, endTime;
+                    const possibleFormats = ['hh:mm a', 'h:mm a', 'HH:mm'];
+
+                    for (const format of possibleFormats) {
+                        startTime = parse(block.startTime, format, baseDate);
+                        if (isValid(startTime)) break;
+                    }
+                     for (const format of possibleFormats) {
+                        endTime = parse(block.endTime, format, baseDate);
+                        if (isValid(endTime)) break;
+                    }
+
                      if (!isValid(startTime) || !isValid(endTime)) {
                         console.error("Invalid time format in time block:", block);
-                        continue;
+                        continue; // Skip this block if times are invalid
                     }
 
                     if (isWithinInterval(now, { start: startTime, end: endTime })) {
@@ -178,3 +188,5 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
 
   return null;
 }
+
+    
