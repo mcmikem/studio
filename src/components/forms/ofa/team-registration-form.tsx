@@ -102,21 +102,36 @@ const teamRegistrationSchema = z.object({
 
 type TeamRegistrationFormData = z.infer<typeof teamRegistrationSchema>;
 
-const ManagementRow = ({ role, register, control }: {role: string, register: any, control: any}) => {
-    const fieldName = role.toLowerCase().replace(/\s/g, '');
+type ManagementRole = 'Head Coach' | 'Assistant Coach' | 'Team Manager' | 'Captain' | 'Vice Captain';
+type FieldNamePrefix = 'headCoach' | 'assistantCoach' | 'teamManager' | 'captain' | 'viceCaptain';
+
+const ManagementRow = ({ role, register, control }: { role: ManagementRole, register: any, control: any }) => {
+    
+    const getFieldName = <T extends string>(field: T): `${FieldNamePrefix}${Capitalize<T>}` | `${FieldNamePrefix}${Capitalize<T>}Phone` | `${FieldNamePrefix}${Capitalize<T>}Attendance` | `${FieldNamePrefix}${Capitalize<T>}Availability` => {
+        const prefixMap: Record<ManagementRole, FieldNamePrefix> = {
+            'Head Coach': 'headCoach',
+            'Assistant Coach': 'assistantCoach',
+            'Team Manager': 'teamManager',
+            'Captain': 'captain',
+            'Vice Captain': 'viceCaptain'
+        };
+        const prefix = prefixMap[role];
+        return `${prefix}${field.charAt(0).toUpperCase() + field.slice(1)}` as any;
+    };
+    
     return (
        <TableRow>
         <TableCell className="font-semibold">{role}</TableCell>
-        <TableCell><Input {...register(`${fieldName}Name`)} /></TableCell>
-        <TableCell><Input type="tel" {...register(`${fieldName}Phone`)} /></TableCell>
+        <TableCell><Input {...register(getFieldName('name'))} /></TableCell>
+        <TableCell><Input type="tel" {...register(getFieldName('phone'))} /></TableCell>
         <TableCell>
-            <Controller name={`${fieldName}Attendance`} control={control} render={({field}) => (
+            <Controller name={getFieldName('attendance')} control={control} render={({field}) => (
                 <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Always">Always</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem><SelectItem value="Rare">Rare</SelectItem></SelectContent></Select>
             )} />
         </TableCell>
-        {role !== 'Captain' && role !== 'Vice Captain' && (
+        {(role !== 'Captain' && role !== 'Vice Captain') && (
             <TableCell>
-                 <Controller name={`${fieldName}Availability`} control={control} render={({field}) => (
+                 <Controller name={getFieldName('availability')} control={control} render={({field}) => (
                     <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Full-Time">Full-Time</SelectItem><SelectItem value="Part-Time">Part-Time</SelectItem></SelectContent></Select>
                 )} />
             </TableCell>
@@ -146,27 +161,28 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
     reset,
   } = useForm<TeamRegistrationFormData>({
     resolver: zodResolver(teamRegistrationSchema),
-    defaultValues: isEditMode ? team : {
-      equipment: equipmentItems.map(item => ({ item, qty: 0, condition: 'Good', needLevel: 'Low' })),
-      needs: supportAreas.map(area => ({ area, priority: 1 })),
-      headCoachAttendance: 'Always',
-      assistantCoachAttendance: 'Always',
-      teamManagerAttendance: 'Always',
-      captainAttendance: 'Always',
-      viceCaptainAttendance: 'Always',
-      headCoachAvailability: 'Full-Time',
-      assistantCoachAvailability: 'Full-Time',
-      teamManagerAvailability: 'Full-Time',
-      avgTrainingAttendance: 'High',
-      enforceSchoolAttendance: 'Yes',
-      communitySupport: 'Yes',
-      parentEngagement: 'Yes',
-    }
   });
 
   useEffect(() => {
     if (isEditMode && team) {
       reset(team);
+    } else {
+        reset({
+          equipment: equipmentItems.map(item => ({ item, qty: 0, condition: 'Good', needLevel: 'Low' })),
+          needs: supportAreas.map(area => ({ area, priority: 1 })),
+          headCoachAttendance: 'Always',
+          assistantCoachAttendance: 'Always',
+          teamManagerAttendance: 'Always',
+          captainAttendance: 'Always',
+          viceCaptainAttendance: 'Always',
+          headCoachAvailability: 'Full-Time',
+          assistantCoachAvailability: 'Full-Time',
+          teamManagerAvailability: 'Full-Time',
+          avgTrainingAttendance: 'High',
+          enforceSchoolAttendance: 'Yes',
+          communitySupport: 'Yes',
+          parentEngagement: 'Yes',
+        });
     }
   }, [team, isEditMode, reset]);
 
@@ -324,7 +340,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                 </div>
                 <div className="space-y-2"><Label>Does team enforce school attendance?</Label>
                     <Controller name="enforceSchoolAttendance" control={control} render={({field}) => (
-                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><RadioGroupItem value="Yes" id="enforce-yes" /><Label htmlFor="enforce-yes">Yes</Label><RadioGroupItem value="No" id="enforce-no" /><Label htmlFor="enforce-no">No</Label><RadioGroupItem value="Trying" id="enforce-trying" /><Label htmlFor="enforce-trying">Trying</Label></RadioGroup>
+                        <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"><RadioGroupItem value="Yes" id="enforce-yes" /><Label htmlFor="enforce-yes">Yes</Label><RadioGroupItem value="No" id="enforce-no" /><Label htmlFor="enforce-no">No</RadioGroupItem><RadioGroupItem value="Trying" id="enforce-trying" /><Label htmlFor="enforce-trying">Trying</Label></RadioGroup>
                     )} />
                 </div>
             </div>
@@ -397,3 +413,5 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
     </div>
   );
 }
+
+    
