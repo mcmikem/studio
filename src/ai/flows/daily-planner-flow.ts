@@ -14,7 +14,6 @@ import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, type DailyPlanne
 const dailyPlannerPrompt = ai.definePrompt(
     {
       name: 'dailyPlannerPrompt',
-      model: 'googleai/gemini-1.5-flash-latest',
       input: { schema: DailyPlannerAIInputSchema },
       output: { schema: DailyPlannerAIOutputSchema },
       prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format for {{userName}}. You are a coach, not just a scheduler.
@@ -54,7 +53,11 @@ export const dailyPlannerAI = ai.defineFlow(
     outputSchema: DailyPlannerAIOutputSchema,
   },
   async (input) => {
-    const {output} = await dailyPlannerPrompt(input);
+    const {output} = await ai.generate({
+        model: 'googleai/gemini-1.5-flash-latest',
+        prompt: (await dailyPlannerPrompt.render({input})).prompt,
+        output: { schema: DailyPlannerAIOutputSchema }
+    });
     
     if (!output) {
       throw new Error('AI failed to generate a plan.');
