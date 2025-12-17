@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -99,6 +100,29 @@ const teamRegistrationSchema = z.object({
 
 type TeamRegistrationFormData = z.infer<typeof teamRegistrationSchema>;
 
+const ManagementRow = ({ role, register, control }: {role: string, register: any, control: any}) => {
+    const fieldName = role.toLowerCase().replace(/\s+/g, '');
+    return (
+       <TableRow>
+        <TableCell className="font-semibold">{role}</TableCell>
+        <TableCell><Input {...register(`${fieldName}Name`)} /></TableCell>
+        <TableCell><Input type="tel" {...register(`${fieldName}Phone`)} /></TableCell>
+        <TableCell>
+            <Controller name={`${fieldName}Attendance`} control={control} render={({field}) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Always">Always</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem><SelectItem value="Rare">Rare</SelectItem></SelectContent></Select>
+            )} />
+        </TableCell>
+        {role !== 'Captain' && role !== 'Vice Captain' && (
+            <TableCell>
+                 <Controller name={`${fieldName}Availability`} control={control} render={({field}) => (
+                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Full-Time">Full-Time</SelectItem><SelectItem value="Part-Time">Part-Time</SelectItem></SelectContent></Select>
+                )} />
+            </TableCell>
+        )}
+       </TableRow>
+    )
+}
+
 export function OFATeamRegistrationForm() {
   const router = useRouter();
   const firestore = useFirestore();
@@ -138,12 +162,9 @@ export function OFATeamRegistrationForm() {
     }
 
     // Clean up undefined values before submitting to Firestore
-    const cleanedData = Object.entries(data).reduce((acc, [key, value]) => {
-      if (value !== undefined) {
-        acc[key as keyof TeamRegistrationFormData] = value;
-      }
-      return acc;
-    }, {} as Partial<TeamRegistrationFormData>);
+    const cleanedData = Object.fromEntries(
+        Object.entries(data).filter(([, value]) => value !== undefined)
+    );
 
     const formData = { ...cleanedData, createdAt: serverTimestamp() };
     try {
@@ -159,29 +180,6 @@ export function OFATeamRegistrationForm() {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
   };
-  
-  const ManagementRow = ({ role, control }: {role: string, control: any}) => {
-    const fieldName = role.toLowerCase().replace(/ /g, '');
-    return (
-       <TableRow>
-        <TableCell className="font-semibold">{role}</TableCell>
-        <TableCell><Input {...register(`${fieldName}Name`)} /></TableCell>
-        <TableCell><Input type="tel" {...register(`${fieldName}Phone`)} /></TableCell>
-        <TableCell>
-            <Controller name={`${fieldName}Attendance`} control={control} render={({field}) => (
-                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Always">Always</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem><SelectItem value="Rare">Rare</SelectItem></SelectContent></Select>
-            )} />
-        </TableCell>
-        {role !== 'Captain' && role !== 'Vice Captain' && (
-            <TableCell>
-                 <Controller name={`${fieldName}Availability`} control={control} render={({field}) => (
-                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Full-Time">Full-Time</SelectItem><SelectItem value="Part-Time">Part-Time</SelectItem></SelectContent></Select>
-                )} />
-            </TableCell>
-        )}
-       </TableRow>
-    )
-  }
 
   return (
     <div className="space-y-4">
@@ -239,11 +237,11 @@ export function OFATeamRegistrationForm() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            <ManagementRow role="Head Coach" control={control} />
-                            <ManagementRow role="Assistant Coach" control={control} />
-                            <ManagementRow role="Team Manager" control={control} />
-                            <ManagementRow role="Captain" control={control} />
-                            <ManagementRow role="Vice Captain" control={control} />
+                            <ManagementRow role="Head Coach" register={register} control={control} />
+                            <ManagementRow role="Assistant Coach" register={register} control={control} />
+                            <ManagementRow role="Team Manager" register={register} control={control} />
+                            <ManagementRow role="Captain" register={register} control={control} />
+                            <ManagementRow role="Vice Captain" register={register} control={control} />
                         </TableBody>
                     </Table>
                 </div>
