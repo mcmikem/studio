@@ -10,8 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp, doc } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Swords } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -20,6 +20,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import type { OFATeam } from '@/lib/types';
+import { useEffect } from 'react';
 
 const ageGroups = ["U-13", "U-15", "U-17", "U-19"];
 const trainingDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -101,7 +103,7 @@ const teamRegistrationSchema = z.object({
 type TeamRegistrationFormData = z.infer<typeof teamRegistrationSchema>;
 
 const ManagementRow = ({ role, register, control }: {role: string, register: any, control: any}) => {
-    const fieldName = role.toLowerCase().replace(/\s+/g, '');
+    const fieldName = role.toLowerCase().replace(/\s/g, '');
     return (
        <TableRow>
         <TableCell className="font-semibold">{role}</TableCell>
@@ -109,7 +111,7 @@ const ManagementRow = ({ role, register, control }: {role: string, register: any
         <TableCell><Input type="tel" {...register(`${fieldName}Phone`)} /></TableCell>
         <TableCell>
             <Controller name={`${fieldName}Attendance`} control={control} render={({field}) => (
-                <Select onValueChange={field.onChange} defaultValue={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Always">Always</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem><SelectItem value="Rare">Rare</SelectItem></SelectContent></Select>
+                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Always">Always</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem><SelectItem value="Rare">Rare</SelectItem></SelectContent></Select>
             )} />
         </TableCell>
         {role !== 'Captain' && role !== 'Vice Captain' && (
@@ -123,10 +125,17 @@ const ManagementRow = ({ role, register, control }: {role: string, register: any
     )
 }
 
-export function OFATeamRegistrationForm() {
+interface OFATeamRegistrationFormProps {
+    team?: OFATeam | null;
+    onSuccess?: () => void;
+}
+
+
+export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistrationFormProps) {
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const isEditMode = !!team;
 
   const {
     register,
@@ -137,7 +146,7 @@ export function OFATeamRegistrationForm() {
     reset,
   } = useForm<TeamRegistrationFormData>({
     resolver: zodResolver(teamRegistrationSchema),
-    defaultValues: {
+    defaultValues: isEditMode ? team : {
       equipment: equipmentItems.map(item => ({ item, qty: 0, condition: 'Good', needLevel: 'Low' })),
       needs: supportAreas.map(area => ({ area, priority: 1 })),
       headCoachAttendance: 'Always',
@@ -155,52 +164,74 @@ export function OFATeamRegistrationForm() {
     }
   });
 
+  useEffect(() => {
+    if (isEditMode && team) {
+      reset(team);
+    }
+  }, [team, isEditMode, reset]);
+
+
   const onSubmit = async (data: TeamRegistrationFormData) => {
     if (!firestore) {
       toast({ variant: 'destructive', title: 'Database connection failed.' });
       return;
     }
 
-    // Clean up undefined values before submitting to Firestore
     const cleanedData = Object.fromEntries(
-        Object.entries(data).filter(([, value]) => value !== undefined)
+        Object.entries(data).filter(([, value]) => value !== undefined && value !== null)
     );
+    
+    if (isEditMode && team) {
+        const docRef = doc(firestore, 'ofa-teams', team.id);
+        await updateDocumentNonBlocking(docRef, cleanedData);
+        toast({ title: 'Team Updated!', description: `${data.teamName} has been updated.`});
+        if (onSuccess) onSuccess();
 
-    const formData = { ...cleanedData, createdAt: serverTimestamp() };
-    try {
-      await addDocumentNonBlocking(collection(firestore, 'ofa-teams'), formData);
-      toast({
-        title: 'Team Registered!',
-        description: `${data.teamName} has been successfully registered for the OFA.`,
-      });
-      reset();
-      router.push('/meal/ofa');
-    } catch (error: any) {
-      console.error("Submission Error:", error)
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+    } else {
+        const formData = { ...cleanedData, createdAt: serverTimestamp() };
+        try {
+          await addDocumentNonBlocking(collection(firestore, 'ofa-teams'), formData);
+          toast({
+            title: 'Team Registered!',
+            description: `${data.teamName} has been successfully registered for the OFA.`,
+          });
+          reset();
+           if (onSuccess) {
+              onSuccess();
+          } else {
+              router.push('/meal/ofa');
+          }
+        } catch (error: any) {
+          console.error("Submission Error:", error)
+          toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+        }
     }
   };
 
   return (
     <div className="space-y-4">
-      <Button variant="outline" asChild>
-        <Link href="/meal/ofa">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to OFA Hub
-        </Link>
-      </Button>
+      {!isEditMode && (
+         <Button variant="outline" asChild>
+            <Link href="/meal/ofa">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to OFA Hub
+            </Link>
+        </Button>
+      )}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Swords className="h-6 w-6" />
-            OFA Team Registration Form
-          </CardTitle>
-          <CardDescription>
-            Official onboarding form for teams joining the Omuto Football Alliance.
-          </CardDescription>
-        </CardHeader>
+        {!isEditMode && (
+             <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Swords className="h-6 w-6" />
+                    OFA Team Registration Form
+                </CardTitle>
+                <CardDescription>
+                    Official onboarding form for teams joining the Omuto Football Alliance.
+                </CardDescription>
+            </CardHeader>
+        )}
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-8">
+          <CardContent className="pt-6 space-y-8">
             {/* Section A */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">Section A: Team Identity</h3>
@@ -269,7 +300,7 @@ export function OFATeamRegistrationForm() {
                              <Slider defaultValue={[3]} min={1} max={5} step={1} onValueChange={(vals) => field.onChange(vals[0])} />
                         )} />
                     </div>
-                    <div className="flex items-center space-x-2"><Controller name="useWarmups" control={control} render={({field}) => (<Checkbox id="useWarmups" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="useWarmups">Players use warm-ups & drills?</Label></div>
+                    <div className="flex items-center space-x-2"><Controller name="useWarmups" control={control} render={({field}) => (<Checkbox id="useWarmups" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="useWarmups">Players use warm-ups &amp; drills?</Label></div>
                     <div className="flex items-center space-x-2"><Controller name="trackPlayerProgress" control={control} render={({field}) => (<Checkbox id="trackPlayerProgress" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="trackPlayerProgress">Team tracks player progress?</Label></div>
                 </div>
             </div>
@@ -324,7 +355,7 @@ export function OFATeamRegistrationForm() {
                         <div key={area} className="space-y-2">
                              <Label>{area}</Label>
                             <Controller name={`needs.${index}.priority`} control={control} render={({field}) => (
-                                <div className="flex items-center gap-4"><Slider defaultValue={[1]} min={1} max={5} step={1} onValueChange={(vals) => field.onChange(vals[0])} /><span className="font-bold w-12 text-center">{watch(`needs.${index}.priority`)}</span></div>
+                                <div className="flex items-center gap-4"><Slider defaultValue={[3]} min={1} max={5} step={1} onValueChange={(vals) => field.onChange(vals[0])} /><span className="font-bold w-12 text-center">{watch(`needs.${index}.priority`)}</span></div>
                             )} />
                         </div>
                     ))}
@@ -358,7 +389,7 @@ export function OFATeamRegistrationForm() {
           <CardFooter>
             <Button type="submit" disabled={isSubmitting} className="w-full">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Register Team
+              {isEditMode ? 'Save Changes' : 'Register Team'}
             </Button>
           </CardFooter>
         </form>
