@@ -29,16 +29,12 @@ const getInitials = (name?: string) => {
 
 export function TeamPerformanceLeaderboard({ users, isLoading }: TeamPerformanceLeaderboardProps) {
 
-  const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
-
   const activitiesQuery = useMemoFirebase((db) => {
       return query(
           collection(db, 'activities'),
-          where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
-          orderBy('loggedAt', 'desc'),
-          limit(200) // Add a limit to prevent fetching too many documents
+          orderBy('loggedAt', 'desc')
       );
-  }, [thirtyDaysAgo]);
+  }, []);
   const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery, { listen: false });
   
   const thisWeekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
@@ -104,7 +100,7 @@ export function TeamPerformanceLeaderboard({ users, isLoading }: TeamPerformance
             <Trophy className="text-yellow-500" />
             Team Performance Leaderboard
         </CardTitle>
-        <CardDescription>Top contributors by engagement in the last 30 days.</CardDescription>
+        <CardDescription>Top contributors by engagement (all time).</CardDescription>
       </CardHeader>
       <CardContent>
          <div className="space-y-4">
@@ -141,7 +137,7 @@ export function TeamPerformanceLeaderboard({ users, isLoading }: TeamPerformance
                     <EmptyState
                         icon={UsersIcon}
                         title="No Performance Data"
-                        description="No team activities have been logged in the last 30 days."
+                        description="No team activities have been logged yet."
                         className="min-h-0"
                     />
                  )
