@@ -130,6 +130,25 @@ function TeamDetailDashboard() {
                     <DetailItem label="School Attendance Enforcement" value={team.enforceSchoolAttendance} />
                 </CardContent>
             </Card>
+            <Card>
+                <CardHeader><CardTitle>Equipment Status</CardTitle></CardHeader>
+                <CardContent>
+                     <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Item</TableHead><TableHead>Quantity</TableHead><TableHead>Condition</TableHead><TableHead>Need Level</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {team.equipment?.map(e => (
+                                    <TableRow key={e.item}><TableCell>{e.item}</TableCell><TableCell>{e.qty || 0}</TableCell><TableCell>{e.condition}</TableCell><TableCell>{e.needLevel}</TableCell></TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
         <div className="lg:col-span-1 space-y-6">
             <Card>
@@ -149,6 +168,16 @@ function TeamDetailDashboard() {
                     <DetailItem label="Community Support" value={team.communitySupport} />
                     <DetailItem label="Parent Engagement" value={team.parentEngagement} />
                     <DetailItem label="Volunteers" value={team.hasVolunteers ? `Yes (${team.volunteerCount || 'N/A'})` : 'No'} />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader><CardTitle>Needs Assessment</CardTitle></CardHeader>
+                <CardContent>
+                     <ul className="space-y-2">
+                        {team.needs?.sort((a,b) => (b.priority || 0) - (a.priority || 0)).map(n => (
+                            <li key={n.area} className="flex justify-between items-center text-sm"><span>{n.area}</span><span className="font-bold">{n.priority}/5</span></li>
+                        ))}
+                     </ul>
                 </CardContent>
             </Card>
         </div>

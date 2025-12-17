@@ -7,7 +7,7 @@ import { doc } from 'firebase/firestore';
 import type { OFAPlayer } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ArrowLeft, User, Edit } from 'lucide-react';
+import { ArrowLeft, User, Edit, Heart, BookOpen, Shield, Phone, Smile, Frown, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -40,63 +40,16 @@ const playerEditSchema = z.object({
 
 type PlayerEditFormData = z.infer<typeof playerEditSchema>;
 
-function EditPlayerForm({ player, onFinished }: { player: OFAPlayer, onFinished: () => void }) {
-    const firestore = useFirestore();
-    const { toast } = useToast();
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<PlayerEditFormData>({
-        resolver: zodResolver(playerEditSchema),
-        defaultValues: {
-            name: player.name,
-            ageCategory: player.ageCategory,
-            school: player.school,
-            class: player.class,
-            guardianContact: player.guardianContact,
-            careerDream: player.careerDream,
-            skillGoal: player.skillGoal,
-            schoolGoal: player.schoolGoal,
-            behaviourGoal: player.behaviourGoal,
-        }
-    });
-
-    const onSubmit = async (data: PlayerEditFormData) => {
-        if (!firestore) return;
-        const playerRef = doc(firestore, 'ofa-players', player.id);
-        try {
-            await updateDocumentNonBlocking(playerRef, data);
-            toast({ title: "Player Updated", description: `${player.name}'s details have been saved.`});
-            onFinished();
-        } catch (error) {
-            console.error("Failed to update player:", error);
-            toast({ variant: 'destructive', title: "Update Failed", description: "Could not save changes."});
-        }
-    }
-
+function InfoPill({ label, value, icon: Icon }: { label: string, value: string | number | null | undefined, icon?: React.ElementType }) {
+    if (!value) return null;
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="name">Player's Name</Label>
-                <Input id="name" {...register('name')} />
-                {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
-            </div>
-            {/* Add other editable fields here as needed */}
-             <div className="space-y-2">
-                <Label htmlFor="school">School</Label>
-                <Input id="school" {...register('school')} />
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="class">Class</Label>
-                <Input id="class" {...register('class')} />
-            </div>
-            <DialogFooter>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                </Button>
-            </DialogFooter>
-        </form>
-    );
+        <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+            {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+            <span className="text-sm font-medium">{label}:</span>
+            <span className="text-sm text-muted-foreground">{value}</span>
+        </div>
+    )
 }
-
 
 function PlayerDetailDashboard() {
   const params = useParams();
@@ -142,48 +95,51 @@ function PlayerDetailDashboard() {
          <Button asChild variant="outline">
             <Link href="/data/ofa/players"><ArrowLeft className="mr-2 h-4 w-4" />Back to Players List</Link>
           </Button>
-           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogTrigger asChild>
-                <Button><Edit className="mr-2 h-4 w-4" /> Edit Player</Button>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Edit {player.name}</DialogTitle>
-                </DialogHeader>
-                <EditPlayerForm player={player} onFinished={() => setIsEditDialogOpen(false)} />
-            </DialogContent>
-           </Dialog>
       </header>
 
       <Card>
         <CardHeader className="flex flex-col items-center text-center">
             <Avatar className="h-24 w-24 mb-4 border-2" data-ai-hint="person avatar">
-                <AvatarImage src={player.photoUrl} alt={player.name} />
+                <AvatarImage src={player.photoUrl || ''} alt={player.name} />
                 <AvatarFallback className="text-3xl">{getInitials(player.name)}</AvatarFallback>
             </Avatar>
             <CardTitle className="text-2xl">{player.name}</CardTitle>
             <CardDescription>{player.teamName} &bull; <Badge variant="secondary">{player.ageCategory}</Badge></CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+                <InfoPill label="Position" value={player.playingPosition} />
+                <InfoPill label="School" value={player.school} />
+                <InfoPill label="Class" value={player.class} />
+                <InfoPill label="Guardian Contact" value={player.guardianContact} icon={Phone} />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <Card>
-                    <CardHeader><CardTitle className="text-base">Personal Info</CardTitle></CardHeader>
-                    <CardContent className="text-sm space-y-2">
-                        <p><strong>School:</strong> {player.school || 'N/A'}</p>
-                        <p><strong>Class:</strong> {player.class || 'N/A'}</p>
-                        <p><strong>Guardian Contact:</strong> {player.guardianContact || 'N/A'}</p>
+                    <CardHeader><CardTitle className="text-base flex items-center gap-2"><Sparkles /> Player Development</CardTitle></CardHeader>
+                    <CardContent className="text-sm space-y-4">
+                        <InfoPill label="Strengths" value={player.strengths} icon={Smile} />
+                        <InfoPill label="Weaknesses" value={player.weaknesses} icon={Frown} />
+                        <InfoPill label="Medical Notes" value={player.medicalConditions} icon={Heart} />
                     </CardContent>
                  </Card>
                   <Card>
-                    <CardHeader><CardTitle className="text-base">Development Goals</CardTitle></CardHeader>
-                    <CardContent className="text-sm space-y-2">
-                        <p><strong>Career Dream:</strong> {player.careerDream || 'N/A'}</p>
-                        <p><strong>Skill Goal:</strong> {player.skillGoal || 'N/A'}</p>
-                        <p><strong>School Goal:</strong> {player.schoolGoal || 'N/A'}</p>
-                        <p><strong>Behaviour Goal:</strong> {player.behaviourGoal || 'N/A'}</p>
+                    <CardHeader><CardTitle className="text-base flex items-center gap-2"><BookOpen /> Personal Goals</CardTitle></CardHeader>
+                    <CardContent className="text-sm space-y-4">
+                        <InfoPill label="Career Dream" value={player.careerDream} />
+                        <InfoPill label="Skill Goal" value={player.skillGoal} />
+                        <InfoPill label="School Goal" value={player.schoolGoal} />
+                        <InfoPill label="Behaviour Goal" value={player.behaviourGoal} />
                     </CardContent>
                  </Card>
             </div>
+             <Card>
+                <CardHeader><CardTitle className="text-base">Performance</CardTitle></CardHeader>
+                <CardContent className="flex flex-wrap gap-4">
+                    <InfoPill label="School Attendance" value={player.schoolAttendance} />
+                    <InfoPill label="Academic Performance" value={player.academicPerformance} />
+                </CardContent>
+             </Card>
         </CardContent>
       </Card>
     </div>
