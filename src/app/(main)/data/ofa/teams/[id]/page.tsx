@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams } from 'next/navigation';
@@ -15,11 +16,11 @@ import { Progress } from '@/components/ui/progress';
 import { Label } from '@/components/ui/label';
 
 function DetailItem({ label, value }: { label: string, value: string | number | undefined | null }) {
-    if (!value) return null;
+    if (value === undefined || value === null || value === '') return null;
     return (
         <div className="space-y-1">
             <p className="text-sm font-medium text-muted-foreground">{label}</p>
-            <p className="font-semibold">{value}</p>
+            <p className="font-semibold">{String(value)}</p>
         </div>
     );
 }
@@ -102,26 +103,28 @@ function TeamDetailDashboard() {
             <Card>
                 <CardHeader><CardTitle>Management Structure</CardTitle></CardHeader>
                 <CardContent>
-                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Role</TableHead><TableHead>Name</TableHead><TableHead>Phone</TableHead><TableHead>Attendance</TableHead><TableHead>Availability</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {managementData.map(m => (
-                                <TableRow key={m.role}><TableCell>{m.role}</TableCell><TableCell>{m.name}</TableCell><TableCell>{m.phone}</TableCell><TableCell>{m.attendance}</TableCell><TableCell>{m.availability || '-'}</TableCell></TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                     <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Role</TableHead><TableHead>Name</TableHead><TableHead>Phone</TableHead><TableHead>Attendance</TableHead><TableHead>Availability</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {managementData.map(m => (
+                                    <TableRow key={m.role}><TableCell>{m.role}</TableCell><TableCell>{m.name}</TableCell><TableCell>{m.phone || '-'}</TableCell><TableCell>{m.attendance || '-'}</TableCell><TableCell>{m.availability || '-'}</TableCell></TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
              <Card>
                 <CardHeader><CardTitle>Player Development & Education</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Players</p><p className="text-2xl font-bold">{team.totalPlayers}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">% in School</p><p className="text-2xl font-bold">{team.percentageInSchool}%</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Players</p><p className="text-2xl font-bold">{team.totalPlayers || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">% in School</p><p className="text-2xl font-bold">{team.percentageInSchool || 0}%</p></div>
                     </div>
                     <DetailItem label="Main Academic Challenges" value={team.mainAcademicChallenges?.join(', ')} />
                     <DetailItem label="School Attendance Enforcement" value={team.enforceSchoolAttendance} />
