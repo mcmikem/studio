@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase, useUser, useFirebaseApp } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, Timestamp } from 'firebase/firestore';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -84,19 +84,18 @@ function BeneficiaryRegistrationForm() {
             photoURL = await uploadFile(firebaseApp, data.photo, path);
         }
 
-        const beneficiaryData: Partial<Beneficiary> = {
+        const beneficiaryData: Omit<Beneficiary, 'id'> = {
             name: data.name,
             dob: data.dob,
             gender: data.gender,
             village: data.village,
             programEnrolled: data.programEnrolled,
             createdAt: serverTimestamp() as Timestamp,
+            ...(photoURL && { photoURL }),
+            ...(data.school && { school: data.school }),
+            ...(data.phone && { phone: data.phone }),
+            ...(data.guardianContact && { guardianContact: data.guardianContact }),
         };
-
-        if (photoURL) beneficiaryData.photoURL = photoURL;
-        if (data.school) beneficiaryData.school = data.school;
-        if (data.phone) beneficiaryData.phone = data.phone;
-        if (data.guardianContact) beneficiaryData.guardianContact = data.guardianContact;
 
         await addDocumentNonBlocking(collection(firestore, 'beneficiaries'), beneficiaryData);
         toast({
@@ -222,5 +221,3 @@ export default function BeneficiaryRegistrationPage() {
         </Suspense>
     )
 }
-
-    

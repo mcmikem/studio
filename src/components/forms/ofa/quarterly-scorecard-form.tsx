@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller, useWatch } from 'react-hook-form';
@@ -189,4 +188,3 @@ export function QuarterlyScorecardForm() {
     </div>
   );
 }
-

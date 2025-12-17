@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm } from 'react-hook-form';
@@ -13,7 +12,6 @@ import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
 
 const environmentalClubSchema = z.object({
@@ -30,7 +28,6 @@ export function EnvironmentalClubForm() {
   const router = useRouter();
   const firestore = useFirestore();
   const { user } = useUser();
-  const { profile } = useUserProfile(user);
   const { toast } = useToast();
 
   const {
