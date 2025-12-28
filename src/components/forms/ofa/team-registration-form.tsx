@@ -23,7 +23,6 @@ import { Slider } from '@/components/ui/slider';
 import type { OFATeam, User } from '@/lib/types';
 import { useEffect } from 'react';
 import { OFATeamSchema, OFATeamFormData } from '@/lib/types';
-import { DialogFooter } from '@/components/ui/dialog';
 
 type ManagementRole = 'Head Coach' | 'Assistant Coach' | 'Team Manager' | 'Captain' | 'Vice Captain';
 
@@ -154,7 +153,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
   const formId = `ofa-team-form-${team?.id || 'new'}`;
 
   return (
-    <>
+    <div className="space-y-4">
       {!isEditMode && (
           <Button variant="outline" asChild className="mb-4">
               <Link href="/meal/ofa">
@@ -163,10 +162,10 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
               </Link>
           </Button>
         )}
-      <form id={formId} onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Card>
+      <Card>
+        <CardHeader>
             {!isEditMode && (
-                <CardHeader>
+                <>
                   <CardTitle className="flex items-center gap-2">
                       <Swords className="h-6 w-6" />
                       OFA Team Registration Form
@@ -174,8 +173,10 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   <CardDescription>
                       Official onboarding form for teams joining the Omuto Football Alliance.
                   </CardDescription>
-                </CardHeader>
+                </>
             )}
+        </CardHeader>
+        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
             <CardContent className="pt-6 space-y-8">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold border-b pb-2">Section A: Team Identity</h3>
@@ -333,8 +334,8 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                     {isEditMode ? 'Save Changes' : 'Register Team'}
                 </Button>
             </CardFooter>
+        </form>
         </Card>
-      </form>
-    </>
+    </div>
   );
 }
