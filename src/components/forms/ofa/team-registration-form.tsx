@@ -240,7 +240,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                                <Slider defaultValue={[3]} min={1} max={5} step={1} onValueChange={(vals) => field.onChange(vals[0])} />
                           )} />
                       </div>
-                      <div className="flex items-center space-x-2"><Controller name="useWarmups" control={control} render={({field}) => (<Checkbox id="useWarmups" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="useWarmups">Players use warm-ups &amp; drills?</Label></div>
+                      <div className="flex items-center space-x-2"><Controller name="useWarmups" control={control} render={({field}) => (<Checkbox id="useWarmups" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="useWarmups">Players use warm-ups & drills?</Label></div>
                       <div className="flex items-center space-x-2"><Controller name="trackPlayerProgress" control={control} render={({field}) => (<Checkbox id="trackPlayerProgress" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="trackPlayerProgress">Team tracks player progress?</Label></div>
                   </div>
               </div>
@@ -262,7 +262,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   </div>
                   <div className="space-y-2"><Label>Does team enforce school attendance?</Label>
                        <Controller name="enforceSchoolAttendance" control={control} render={({field}) => (
-                           <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2">
+                            <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2">
                               <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="enforce-yes" /><Label htmlFor="enforce-yes">Yes</Label></div>
                               <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="enforce-no" /><Label htmlFor="enforce-no">No</Label></div>
                               <div className="flex items-center space-x-2"><RadioGroupItem value="Trying" id="enforce-trying" /><Label htmlFor="enforce-trying">Trying</Label></div>
@@ -304,7 +304,15 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="space-y-2"><Label>Community Support</Label><Controller name="communitySupport" control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem></SelectContent></Select>)} /></div>
                       <div className="space-y-2"><Label>Parent Engagement</Label><Controller name="parentEngagement" control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem><SelectItem value="Weak Engagement">Weak Engagement</SelectItem></SelectContent></Select>)} /></div>
-                      <div className="space-y-2"><Label>Have local volunteers?</Label><Controller name="hasVolunteers" control={control} render={({field}) => (<RadioGroup onValueChange={(val) => field.onChange(val === 'true')} className="flex gap-4 pt-2"><RadioGroupItem value="true" id="v-yes" /><Label htmlFor="v-yes">Yes</Label><RadioGroupItem value="false" id="v-no" /><Label htmlFor="v-no">No</Label></RadioGroup>)} /></div>
+                      <div className="space-y-2">
+                        <Label>Have local volunteers?</Label>
+                        <Controller name="hasVolunteers" control={control} render={({field}) => (
+                           <RadioGroup onValueChange={(val) => field.onChange(val === 'true')} className="flex gap-4 pt-2">
+                              <RadioGroupItem value="true" id="v-yes" /><Label htmlFor="v-yes">Yes</Label>
+                              <RadioGroupItem value="false" id="v-no" /><Label htmlFor="v-no">No</Label>
+                          </RadioGroup>
+                        )} />
+                      </div>
                    </div>
                    {watch('hasVolunteers') && <div className="space-y-2 pt-2"><Label>How many volunteers?</Label><Input type="number" {...register('volunteerCount')} /></div>}
               </div>

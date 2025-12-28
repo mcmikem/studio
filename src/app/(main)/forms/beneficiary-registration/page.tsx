@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useState, useRef } from 'react';
 
 const beneficiarySchema = z.object({
   name: z.string().min(3, 'Beneficiary name is required.'),
