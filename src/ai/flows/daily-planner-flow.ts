@@ -11,7 +11,11 @@ import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, type DailyPlannerAIInput, type DailyPlannerAIOutput } from '@/lib/types';
 
-const dailyPlannerPrompt = `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format for {{userName}}. You are a coach, not just a scheduler.
+const dailyPlannerPrompt = ai.definePrompt({
+    name: 'dailyPlannerPrompt',
+    input: { schema: DailyPlannerAIInputSchema },
+    output: { schema: DailyPlannerAIOutputSchema },
+    prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format for {{userName}}. You are a coach, not just a scheduler.
 
       Here is the organizational knowledge base to draw from:
       ---
@@ -37,7 +41,8 @@ const dailyPlannerPrompt = `You are an expert productivity coach for Omuto Found
       2.  **Multi-Win Connections:** Explicitly connect the daily mission to AT LEAST TWO specific weekly priorities (if available) or organizational Key Results from the provided list. Use the "Integrated Activity Framework" and "Individual Accountability" sections of the knowledge base to find these connections. For example, if the mission is 'Finalize Dignity Pads production', a connection would be 'Contributes to KR1: Clear October Backlogs'. This is critical for strategic alignment.
       3.  **Materials:** List specific, tangible items needed (e.g., "Updated partners spreadsheet," "Camera with charged battery").
       4.  **Challenges:** Proactively identify at least one potential challenge from the "Risk Management" section of the knowledge base that is relevant to the user's mission. Provide the concrete mitigation strategy listed in the plan. This is active risk management. Example: "Challenge: Partner may be unavailable. Mitigation: Send a confirmation WhatsApp message one hour before the meeting."
-      5.  **Best Practice:** Provide ONE single, highly relevant piece of advice from the knowledge base that helps the staff member think more strategically about their task today.`;
+      5.  **Best Practice:** Provide ONE single, highly relevant piece of advice from the knowledge base that helps the staff member think more strategically about their task today.`,
+});
 
 
 export const dailyPlannerAI = ai.defineFlow(
@@ -47,12 +52,7 @@ export const dailyPlannerAI = ai.defineFlow(
     outputSchema: DailyPlannerAIOutputSchema,
   },
   async (input) => {
-    const {output} = await ai.generate({
-        model: 'googleai/gemini-1.5-flash-latest',
-        prompt: dailyPlannerPrompt,
-        input: input,
-        output: { schema: DailyPlannerAIOutputSchema }
-    });
+    const {output} = await dailyPlannerPrompt(input);
     
     if (!output) {
       throw new Error('AI failed to generate a plan.');
