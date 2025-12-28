@@ -10,6 +10,7 @@ import { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from 
 import { getFirebaseAdmin } from '@/firebase/server';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/google-genai';
+import { formatDateSafe } from '@/lib/utils';
 
 const getActivitiesForProgramToolObject = ai.defineTool(
     {
@@ -32,11 +33,20 @@ const getActivitiesForProgramToolObject = ai.defineTool(
             return [];
         }
         
+        // Sanitize data for AI, converting Timestamps to strings
         return snapshot.docs.map(doc => {
             const data = doc.data();
+            const sanitizedData: Record<string, any> = {};
+            for (const key in data) {
+                if (data[key] && typeof data[key].toDate === 'function') {
+                    sanitizedData[key] = formatDateSafe(data[key]);
+                } else {
+                    sanitizedData[key] = data[key];
+                }
+            }
             return {
                 id: doc.id,
-                ...data,
+                ...sanitizedData,
             };
         });
     }
