@@ -267,19 +267,17 @@ function ProjectDashboard() {
                                     <TableHead>Name</TableHead>
                                     <TableHead className="hidden md:table-cell">Phone</TableHead>
                                     <TableHead className="hidden sm:table-cell">Village</TableHead>
-                                    <TableHead>Business Stage</TableHead>
-                                    <TableHead className="hidden sm:table-cell">Attendance</TableHead>
-                                    <TableHead>Business Score</TableHead>
                                     <TableHead><span className="sr-only">Actions</span></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {sampleParticipants.map(participant => (
+                                {beneficiaries && beneficiaries.length > 0 ? (
+                                    beneficiaries.map(participant => (
                                     <TableRow key={participant.id}>
                                         <TableCell>
                                             <div className="flex items-center gap-3">
                                                 <Avatar className="h-8 w-8 border">
-                                                    <AvatarImage src={participant.avatar} alt={participant.name} />
+                                                    <AvatarImage src={participant.photoURL || undefined} alt={participant.name} />
                                                     <AvatarFallback>{getInitials(participant.name)}</AvatarFallback>
                                                 </Avatar>
                                                 <span className="font-medium">{participant.name}</span>
@@ -287,14 +285,6 @@ function ProjectDashboard() {
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell text-muted-foreground">{participant.phone}</TableCell>
                                         <TableCell className="hidden sm:table-cell text-muted-foreground">{participant.village}</TableCell>
-                                        <TableCell><Badge variant="secondary">{participant.businessStage}</Badge></TableCell>
-                                        <TableCell className="hidden sm:table-cell">{participant.attendance}%</TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                 <Progress value={participant.businessScore} className="h-2" />
-                                                 <span className="font-semibold text-sm">{participant.businessScore}</span>
-                                            </div>
-                                        </TableCell>
                                         <TableCell>
                                              <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -308,7 +298,11 @@ function ProjectDashboard() {
                                             </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
-                                ))}
+                                ))) : (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="h-24 text-center">No participants enrolled yet.</TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </div>
@@ -324,17 +318,18 @@ function ProjectDashboard() {
                             <CardDescription>Click on a participant to toggle their attendance status.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                            {sampleParticipants.map(participant => (
+                            {beneficiaries && beneficiaries.map(participant => (
                                 <button key={participant.id} onClick={() => toggleAttendance(participant.id)} className="group space-y-2">
                                     <div className={cn("p-2 border-2 rounded-lg transition-colors", attendance[participant.id] ? 'border-green-500 bg-green-500/10' : 'border-destructive bg-destructive/10')}>
                                         <Avatar className="h-20 w-20 mx-auto">
-                                            <AvatarImage src={participant.avatar} />
+                                            <AvatarImage src={participant.photoURL || undefined} />
                                             <AvatarFallback>{getInitials(participant.name)}</AvatarFallback>
                                         </Avatar>
                                     </div>
                                     <p className="text-xs font-medium text-center truncate group-hover:text-primary">{participant.name}</p>
                                 </button>
                             ))}
+                             {(!beneficiaries || beneficiaries.length === 0) && <p className="text-sm text-muted-foreground col-span-full text-center py-8">No participants to display.</p>}
                         </CardContent>
                     </Card>
                 </div>
@@ -551,3 +546,5 @@ function ProjectDashboard() {
 export default function ProjectPage() {
     return <ProjectDashboard />;
 }
+
+  
