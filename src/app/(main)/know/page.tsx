@@ -5,7 +5,7 @@
 import * as React from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
-import type { KnowledgeHubSection, KnowledgeHubPitch, KnowledgeHubFAQ } from '@/lib/types';
+import type { KnowledgeHubSection, KnowledgeHubPitch, KnowledgeHubFAQ, KnowledgeHubStory } from '@/lib/types';
 
 import {
   Card,
@@ -21,7 +21,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
-import { Copy, BookOpen, Download, Edit, Loader2, Search } from 'lucide-react';
+import { Copy, BookOpen, Download, Edit, Loader2, Search, MessageSquareQuote } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -62,8 +62,11 @@ export default function KnowPage() {
   const faqsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'knowledgeHubFaqs'), orderBy('order')) : null, [firestore]);
   const { data: faqs, isLoading: isLoadingFaqs } = useCollection<KnowledgeHubFAQ>(faqsQuery);
   
+  const storiesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'knowledgeHubStories'), orderBy('order')) : null, [firestore]);
+  const { data: stories, isLoading: isLoadingStories } = useCollection<KnowledgeHubStory>(storiesQuery);
+
   const canEdit = profile && ['Administrator', 'Executive Director'].includes(profile.role);
-  const isLoading = isLoadingSections || isLoadingPitches || isLoadingFaqs;
+  const isLoading = isLoadingSections || isLoadingPitches || isLoadingFaqs || isLoadingStories;
 
   const handleDownloadPDF = () => {
     if (!contentRef.current) return;
@@ -134,6 +137,15 @@ export default function KnowPage() {
           faq.answer.toLowerCase().includes(lowercasedFilter)
       );
   }, [faqs, searchTerm]);
+  
+   const filteredStories = useMemo(() => {
+      if (!searchTerm) return stories;
+      const lowercasedFilter = searchTerm.toLowerCase();
+      return stories?.filter(story =>
+          story.title.toLowerCase().includes(lowercasedFilter) ||
+          story.content.toLowerCase().includes(lowercasedFilter)
+      );
+  }, [stories, searchTerm]);
 
 
   const renderContent = () => {
@@ -148,7 +160,7 @@ export default function KnowPage() {
     }
     
     const isFiltering = searchTerm.length > 0;
-    const noResults = filteredSections?.length === 0 && filteredPitches?.length === 0 && filteredFaqs?.length === 0;
+    const noResults = filteredSections?.length === 0 && filteredPitches?.length === 0 && filteredFaqs?.length === 0 && filteredStories?.length === 0;
 
     return (
       <>
@@ -195,6 +207,26 @@ export default function KnowPage() {
                     <CopyButton text={pitch.content} />
                   </div>
                   <p className="text-sm text-muted-foreground">{pitch.content}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+         {filteredStories && filteredStories.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Sample Impact Stories</CardTitle>
+              <CardDescription>Short stories to use in communications.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {filteredStories.map(story => (
+                <div key={story.id} className="p-4 bg-muted rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-semibold flex items-center gap-2"><MessageSquareQuote className="h-4 w-4 text-primary" />{story.title}</h4>
+                    <CopyButton text={story.content} />
+                  </div>
+                  <p className="text-sm text-muted-foreground italic">"{story.content}"</p>
                 </div>
               ))}
             </CardContent>

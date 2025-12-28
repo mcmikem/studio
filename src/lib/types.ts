@@ -1161,5 +1161,13 @@ export type KnowledgeHubFAQ = {
   question: string;
   answer: string;
 };
+
+export type KnowledgeHubStory = {
+  id: string;
+  order: number;
+  title: string;
+  content: string;
+};
     
+
 

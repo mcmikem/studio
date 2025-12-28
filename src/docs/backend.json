@@ -33,6 +33,10 @@
             "type": "string",
             "format": "date-time",
             "description": "Server timestamp of when the user profile was created."
+        },
+        "supervisorId": {
+            "type": "string",
+            "description": "The ID of the user's direct supervisor. Optional."
         }
       },
       "required": [
@@ -787,7 +791,6 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Beneficiary",
       "description": "Represents a single beneficiary of Omuto's programs.",
-      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
@@ -798,7 +801,7 @@
         "school": { "type": "string" },
         "phone": { "type": "string" },
         "guardianContact": { "type": "string" },
-        "photoURL": { "type": "string", "format": "uri" },
+        "photoURL": { "type": ["string", "null"], "format": "uri" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "dob", "gender", "village", "programEnrolled", "createdAt"]
@@ -1485,9 +1488,68 @@
         "achievements": { "type": "string" },
         "challenges": { "type": "string" },
         "supportNeeded": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "month": { "type": "string" }
       },
       "required": ["teamId", "teamName", "trainingAttendance", "coachingQuality", "playerDiscipline", "academicAttendance", "parentEngagement", "communityReputation"]
+    },
+    "KnowledgeHubSection": {
+      "title": "Knowledge Hub Section",
+      "description": "A section of content for the 'Quick to Know' page.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string", "description": "Can contain HTML/Markdown for rich text." },
+        "order": { "type": "number", "description": "The display order of the section." },
+        "subsections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "content": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["title", "content", "order"]
+    },
+    "KnowledgeHubPitch": {
+      "title": "Knowledge Hub Pitch",
+      "description": "A specific pitch or boilerplate text.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "content", "order"]
+    },
+    "KnowledgeHubFAQ": {
+      "title": "Knowledge Hub FAQ",
+      "description": "A frequently asked question and its answer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "question": { "type": "string" },
+        "answer": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["question", "answer", "order"]
+    },
+    "KnowledgeHubStory": {
+      "title": "Knowledge Hub Story",
+      "description": "A sample impact story.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "content", "order"]
     }
   },
   "auth": {
@@ -1497,326 +1559,73 @@
     ]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": {
-        "$ref": "#/entities/User"
-      },
-      "description": "Stores user profile information."
-    },
-    "/users/{userId}/tasks/{taskId}": {
-        "schema": {
-            "$ref": "#/entities/Task"
-        },
-        "description": "Stores tasks for a specific user."
-    },
-    "/checkins/{checkinId}": {
-      "schema": {
-        "$ref": "#/entities/Checkin"
-      },
-      "description": "Stores daily check-in plans from team members."
-    },
-    "/checkouts/{checkoutId}": {
-      "schema": {
-        "$ref": "#/entities/Checkout"
-      },
-      "description": "Stores daily checkout updates from team members."
-    },
-    "/activities/{activityId}": {
-      "schema": {
-        "$ref": "#/entities/Activity"
-      },
-      "description": "Stores logged activities from the ROI Calculator."
-    },
-    "/programs/{programId}": {
-      "schema": {
-        "$ref": "#/entities/Program"
-      },
-      "description": "Stores Omuto's core programs and initiatives."
-    },
-    "/partnerships/{partnershipId}": {
-      "schema": {
-        "$ref": "#/entities/Partnership"
-      },
-      "description": "Stores information about partner organizations."
-    },
-    "/partnerships/{partnershipId}/meetings/{meetingId}": {
-      "schema": {
-        "$ref": "#/entities/Meeting"
-      },
-      "description": "Stores logged meetings for a specific partner."
-    },
-    "/partnerships/{partnershipId}/healthChecks/{healthCheckId}": {
-      "schema": {
-        "$ref": "#/entities/HealthCheck"
-      },
-      "description": "Stores periodic health check records for a partner."
-    },
-    "/impact-metrics/{metricId}": {
-      "schema": {
-        "$ref": "#/entities/ImpactMetric"
-      },
-      "description": "Stores key performance indicators (KPIs) for the organization."
-    },
-     "/projects/{projectId}": {
-      "schema": {
-        "$ref": "#/entities/Project"
-      },
-      "description": "Stores high-level projects and their associated metrics."
-    },
-    "/events/{eventId}": {
-        "schema": {
-            "$ref": "#/entities/CalendarEvent"
-        },
-        "description": "Stores organizational calendar events."
-    },
-    "/alerts/{alertId}": {
-        "schema": {
-            "$ref": "#/entities/Alert"
-        },
-        "description": "Stores system-wide alerts and notifications."
-    },
-    "/key-results/{keyResultId}": {
-      "schema": {
-        "$ref": "#/entities/KeyResult"
-      },
-      "description": "Stores the key results for the October Operational Plan."
-    },
-    "/expenses/{expenseId}": {
-      "schema": {
-        "$ref": "#/entities/Expense"
-      },
-      "description": "Stores expense reports submitted by users."
-    },
-    "/income/{incomeId}": {
-      "schema": {
-        "$ref": "#/entities/Income"
-      },
-      "description": "Stores all income and revenue transactions."
-    },
-    "/proposals/{proposalId}": {
-      "schema": {
-        "$ref": "#/entities/Proposal"
-      },
-      "description": "Stores grant proposals and funding applications."
-    },
-     "/team-workplans/{teamWorkplanId}": {
-      "schema": {
-        "$ref": "#/entities/TeamWeeklyPlan"
-      },
-      "description": "Stores manager-created team-wide weekly plans."
-    },
-    "/workplans/{workplanId}": {
-      "schema": {
-        "$ref": "#/entities/WeeklyWorkplan"
-      },
-      "description": "Stores individuals' finalized weekly workplans."
-    },
-    "/equipment/{equipmentId}": {
-      "schema": {
-        "$ref": "#/entities/Equipment"
-      },
-      "description": "Stores the inventory of physical equipment."
-    },
-    "/task-templates/{templateId}": {
-      "schema": {
-        "$ref": "#/entities/TaskTemplate"
-      },
-      "description": "Stores reusable task templates and checklists."
-    },
-    "/messages/{messageId}": {
-        "schema": {
-            "$ref": "#/entities/Message"
-        },
-        "description": "Stores team chat messages."
-    },
-    "/users/{userId}/ai-chats/{chatId}": {
-        "schema": {
-            "$ref": "#/entities/Message"
-        },
-        "description": "Stores private AI chat messages for a specific user."
-    },
-    "/testimonies/{testimonyId}": {
-      "schema": {
-        "$ref": "#/entities/Testimony"
-      },
-      "description": "Stores recorded audio, video, or text testimonies."
-    },
-    "/feedback/{feedbackId}": {
-      "schema": {
-        "$ref": "#/entities/Feedback"
-      },
-      "description": "Stores user feedback on AI features, bugs, and feature requests."
-    },
-    "/school-applications/{applicationId}": {
-      "schema": {
-        "$ref": "#/entities/SchoolApplication"
-      },
-      "description": "Stores program applications submitted by schools."
-    },
-    "/school-visits/{visitId}": {
-      "schema": {
-        "$ref": "#/entities/SchoolVisit"
-      },
-      "description": "Stores M&E data from school visits."
-    },
-    "/tree-surveys/{surveyId}": {
-      "schema": {
-        "$ref": "#/entities/TreeSurvivalSurvey"
-      },
-      "description": "Stores data from tree survival follow-up surveys."
-    },
-    "/beneficiaries/{beneficiaryId}": {
-      "schema": {
-        "$ref": "#/entities/Beneficiary"
-      },
-      "description": "Stores profiles of program beneficiaries."
-    },
-    "/attendance-records/{recordId}": {
-      "schema": {
-        "$ref": "#/entities/AttendanceRecord"
-      },
-      "description": "Stores attendance records for events and sessions."
-    },
-    "/baseline-surveys/{surveyId}": {
-      "schema": { "$ref": "#/entities/BaselineSurvey" },
-      "description": "Stores pre-program baseline data for beneficiaries."
-    },
-    "/endline-surveys/{surveyId}": {
-        "schema": { "$ref": "#/entities/EndlineSurvey" },
-        "description": "Stores post-program endline data for beneficiaries."
-    },
-    "/pads-distributions/{distributionId}": {
-      "schema": {
-        "$ref": "#/entities/PadsDistribution"
-      },
-      "description": "Logs for sanitary pad distributions."
-    },
-    "/mhm-trainings/{trainingId}": {
-      "schema": {
-        "$ref": "#/entities/MhmTraining"
-      },
-      "description": "Attendance logs for MHM training sessions."
-    },
-    "/environmental-clubs/{clubId}": {
-        "schema": { "$ref": "#/entities/EnvironmentalClub" },
-        "description": "Registration for GreenSchools environmental clubs."
-    },
-    "/waste-audits/{auditId}": {
-        "schema": { "$ref": "#/entities/WasteAudit" },
-        "description": "Waste audit reports for schools."
-    },
-    "/slf-schools/{schoolId}": {
-        "schema": { "$ref": "#/entities/SLF_School" },
-        "description": "Schools registered for the Student Leaders Forum."
-    },
-    "/slf-prefects/{prefectId}": {
-        "schema": { "$ref": "#/entities/SLF_Prefect" },
-        "description": "Prefects registered for the Student Leaders Forum."
-    },
-    "/slf-trainings/{trainingId}": {
-        "schema": { "$ref": "#/entities/SLF_Training" },
-        "description": "Attendance for SLF training sessions."
-    },
-    "/prefect-performance/{performanceId}": {
-        "schema": { "$ref": "#/entities/PrefectPerformance" },
-        "description": "Monthly performance tracking for prefects."
-    },
-     "/yoskills-circles/{circleId}": {
-      "schema": { "$ref": "#/entities/YoSkillsCircle" },
-      "description": "Entrepreneurship circles in the YoSkills program."
-    },
-    "/yoskills-youth/{youthId}": {
-      "schema": { "$ref": "#/entities/YoSkillsYouth" },
-      "description": "Youth participants in the YoSkills program."
-    },
-    "/yoskills-sessions/{sessionId}": {
-      "schema": { "$ref": "#/entities/YoSkillsSession" },
-      "description": "Attendance records for YoSkills sessions."
-    },
-    "/business-ideas/{ideaId}": {
-      "schema": { "$ref": "#/entities/BusinessIdea" },
-      "description": "Business ideas submitted by YoSkills participants."
-    },
-    "/pitch-scores/{scoreId}": {
-      "schema": { "$ref": "#/entities/PitchScore" },
-      "description": "Scores for business idea pitches."
-    },
-    "/business-progress/{progressId}": {
-      "schema": { "$ref": "#/entities/BusinessProgress" },
-      "description": "Monthly progress reports for YoSkills businesses."
-    },
-    "/ofa-players/{playerId}": {
-        "schema": { "$ref": "#/entities/OFAPlayer" },
-        "description": "Player registrations for Omuto Football Alliance."
-    },
-    "/ofa-matches/{matchId}": {
-        "schema": { "$ref": "#/entities/OFAMatch" },
-        "description": "Match reports for Omuto Football Alliance."
-    },
-    "/ofa-match-summaries/{summaryId}": {
-        "schema": { "$ref": "#/entities/OFAMatchSummary" },
-        "description": "Simplified match reports for Omuto Football Alliance district meets."
-    },
-    "/ofa-advanced-analysis/{analysisId}": {
-        "schema": { "$ref": "#/entities/OFAAdvancedAnalysis" },
-        "description": "Advanced match analysis reports for Omuto Football Alliance tournament stages."
-    },
-    "/ofa-equipment-impact/{trackerId}": {
-        "schema": { "$ref": "#/entities/OFAEquipmentImpact" },
-        "description": "Tracks the impact of equipment provided to OFA teams."
-    },
-    "/ofa-scorecards/{scorecardId}": {
-        "schema": { "$ref": "#/entities/OFAScorecard" },
-        "description": "Quarterly performance scorecards for OFA teams."
-    },
-    "/pulse-content/{contentId}": {
-        "schema": { "$ref": "#/entities/PulseContent" },
-        "description": "Content submissions for Omuto Pulse."
-    },
-    "/essentials-production/{logId}": {
-        "schema": { "$ref": "#/entities/ProductionLog" },
-        "description": "Production logs for Omuto Essentials."
-    },
-    "/essentials-sales/{saleId}": {
-        "schema": { "$ref": "#/entities/Sale" },
-        "description": "Sales records for Omuto Essentials."
-    },
-    "/essentials-inventory/{checkId}": {
-        "schema": { "$ref": "#/entities/InventoryCheck" },
-        "description": "Inventory checks for Omuto Essentials."
-    },
-    "/water-sources/{sourceId}": {
-      "schema": { "$ref": "#/entities/WaterSource" },
-      "description": "Water sources for PureWater initiative."
-    },
-    "/wash-assessments/{assessmentId}": {
-      "schema": { "$ref": "#/entities/WASH_Assessment" },
-      "description": "WASH assessments for schools."
-    },
-    "/yap-chapters/{chapterId}": {
-      "schema": { "$ref": "#/entities/YAP_Chapter" },
-      "description": "YAP chapter registrations."
-    },
-    "/yap-reports/{reportId}": {
-      "schema": { "$ref": "#/entities/YAP_Report" },
-      "description": "YAP monthly chapter reports."
-    },
-    "/seed-grant-applications/{applicationId}": {
-      "schema": { "$ref": "#/entities/SeedGrantApplication" },
-      "description": "Seed grant applications."
-    },
-    "/seed-grant-accountability/{reportId}": {
-      "schema": { "$ref": "#/entities/SeedGrantAccountability" },
-      "description": "Seed grant accountability reports."
-    },
-    "/ofa-teams/{teamId}": {
-      "schema": { "$ref": "#/entities/OFATeam" },
-      "description": "Team registrations for Omuto Football Alliance."
-    },
-    "/ofa-volunteers/{volunteerId}": {
-      "schema": { "$ref": "#/entities/OFAVolunteer" },
-      "description": "Volunteer registrations for Omuto Cup."
-    }
+    "/users/{userId}": { "schema": { "$ref": "#/entities/User" }, "description": "Stores user profile information." },
+    "/users/{userId}/tasks/{taskId}": { "schema": { "$ref": "#/entities/Task" }, "description": "Stores tasks for a specific user." },
+    "/checkins/{checkinId}": { "schema": { "$ref": "#/entities/Checkin" }, "description": "Stores daily check-in plans from team members." },
+    "/checkouts/{checkoutId}": { "schema": { "$ref": "#/entities/Checkout" }, "description": "Stores daily checkout updates from team members." },
+    "/activities/{activityId}": { "schema": { "$ref": "#/entities/Activity" }, "description": "Stores logged activities from the ROI Calculator." },
+    "/programs/{programId}": { "schema": { "$ref": "#/entities/Program" }, "description": "Stores Omuto's core programs and initiatives." },
+    "/partnerships/{partnershipId}": { "schema": { "$ref": "#/entities/Partnership" }, "description": "Stores information about partner organizations." },
+    "/partnerships/{partnershipId}/meetings/{meetingId}": { "schema": { "$ref": "#/entities/Meeting" }, "description": "Stores logged meetings for a specific partner." },
+    "/partnerships/{partnershipId}/healthChecks/{healthCheckId}": { "schema": { "$ref": "#/entities/HealthCheck" }, "description": "Stores periodic health check records for a partner." },
+    "/impact-metrics/{metricId}": { "schema": { "$ref": "#/entities/ImpactMetric" }, "description": "Stores key performance indicators (KPIs) for the organization." },
+     "/projects/{projectId}": { "schema": { "$ref": "#/entities/Project" }, "description": "Stores high-level projects and their associated metrics." },
+    "/events/{eventId}": { "schema": { "$ref": "#/entities/CalendarEvent" }, "description": "Stores organizational calendar events." },
+    "/alerts/{alertId}": { "schema": { "$ref": "#/entities/Alert" }, "description": "Stores system-wide alerts and notifications." },
+    "/key-results/{keyResultId}": { "schema": { "$ref": "#/entities/KeyResult" }, "description": "Stores the key results for the October Operational Plan." },
+    "/expenses/{expenseId}": { "schema": { "$ref": "#/entities/Expense" }, "description": "Stores expense reports submitted by users." },
+    "/income/{incomeId}": { "schema": { "$ref": "#/entities/Income" }, "description": "Stores all income and revenue transactions." },
+    "/proposals/{proposalId}": { "schema": { "$ref": "#/entities/Proposal" }, "description": "Stores grant proposals and funding applications." },
+     "/team-workplans/{teamWorkplanId}": { "schema": { "$ref": "#/entities/TeamWeeklyPlan" }, "description": "Stores manager-created team-wide weekly plans." },
+    "/workplans/{workplanId}": { "schema": { "$ref": "#/entities/WeeklyWorkplan" }, "description": "Stores individuals' finalized weekly workplans." },
+    "/equipment/{equipmentId}": { "schema": { "$ref": "#/entities/Equipment" }, "description": "Stores the inventory of physical equipment." },
+    "/task-templates/{templateId}": { "schema": { "$ref": "#/entities/TaskTemplate" }, "description": "Stores reusable task templates and checklists." },
+    "/messages/{messageId}": { "schema": { "$ref": "#/entities/Message" }, "description": "Stores team chat messages." },
+    "/users/{userId}/ai-chats/{chatId}": { "schema": { "$ref": "#/entities/Message" }, "description": "Stores private AI chat messages for a specific user." },
+    "/testimonies/{testimonyId}": { "schema": { "$ref": "#/entities/Testimony" }, "description": "Stores recorded audio, video, or text testimonies." },
+    "/feedback/{feedbackId}": { "schema": { "$ref": "#/entities/Feedback" }, "description": "Stores user feedback on AI features, bugs, and feature requests." },
+    "/school-applications/{applicationId}": { "schema": { "$ref": "#/entities/SchoolApplication" }, "description": "Stores program applications submitted by schools." },
+    "/school-visits/{visitId}": { "schema": { "$ref": "#/entities/SchoolVisit" }, "description": "Stores M&E data from school visits." },
+    "/tree-surveys/{surveyId}": { "schema": { "$ref": "#/entities/TreeSurvivalSurvey" }, "description": "Stores data from tree survival follow-up surveys." },
+    "/beneficiaries/{beneficiaryId}": { "schema": { "$ref": "#/entities/Beneficiary" }, "description": "Stores profiles of program beneficiaries." },
+    "/attendance-records/{recordId}": { "schema": { "$ref": "#/entities/AttendanceRecord" }, "description": "Stores attendance records for events and sessions." },
+    "/baseline-surveys/{surveyId}": { "schema": { "$ref": "#/entities/BaselineSurvey" }, "description": "Stores pre-program baseline data for beneficiaries." },
+    "/endline-surveys/{surveyId}": { "schema": { "$ref": "#/entities/EndlineSurvey" }, "description": "Stores post-program endline data for beneficiaries." },
+    "/pads-distributions/{distributionId}": { "schema": { "$ref": "#/entities/PadsDistribution" }, "description": "Logs for sanitary pad distributions." },
+    "/mhm-trainings/{trainingId}": { "schema": { "$ref": "#/entities/MhmTraining" }, "description": "Attendance logs for MHM training sessions." },
+    "/environmental-clubs/{clubId}": { "schema": { "$ref": "#/entities/EnvironmentalClub" }, "description": "Registration for GreenSchools environmental clubs." },
+    "/waste-audits/{auditId}": { "schema": { "$ref": "#/entities/WasteAudit" }, "description": "Waste audit reports for schools." },
+    "/slf-schools/{schoolId}": { "schema": { "$ref": "#/entities/SLF_School" }, "description": "Schools registered for the Student Leaders Forum." },
+    "/slf-prefects/{prefectId}": { "schema": { "$ref": "#/entities/SLF_Prefect" }, "description": "Prefects registered for the Student Leaders Forum." },
+    "/slf-trainings/{trainingId}": { "schema": { "$ref": "#/entities/SLF_Training" }, "description": "Attendance for SLF training sessions." },
+    "/prefect-performance/{performanceId}": { "schema": { "$ref": "#/entities/PrefectPerformance" }, "description": "Monthly performance tracking for prefects." },
+     "/yoskills-circles/{circleId}": { "schema": { "$ref": "#/entities/YoSkillsCircle" }, "description": "Entrepreneurship circles in the YoSkills program." },
+    "/yoskills-youth/{youthId}": { "schema": { "$ref": "#/entities/YoSkillsYouth" }, "description": "Youth participants in the YoSkills program." },
+    "/yoskills-sessions/{sessionId}": { "schema": { "$ref": "#/entities/YoSkillsSession" }, "description": "Attendance records for YoSkills sessions." },
+    "/business-ideas/{ideaId}": { "schema": { "$ref": "#/entities/BusinessIdea" }, "description": "Business ideas submitted by YoSkills participants." },
+    "/pitch-scores/{scoreId}": { "schema": { "$ref": "#/entities/PitchScore" }, "description": "Scores for business idea pitches." },
+    "/business-progress/{progressId}": { "schema": { "$ref": "#/entities/BusinessProgress" }, "description": "Monthly progress reports for YoSkills businesses." },
+    "/ofa-players/{playerId}": { "schema": { "$ref": "#/entities/OFAPlayer" }, "description": "Player registrations for Omuto Football Alliance." },
+    "/ofa-matches/{matchId}": { "schema": { "$ref": "#/entities/OFAMatch" }, "description": "Match reports for Omuto Football Alliance." },
+    "/ofa-match-summaries/{summaryId}": { "schema": { "$ref": "#/entities/OFAMatchSummary" }, "description": "Simplified match reports for Omuto Football Alliance district meets." },
+    "/ofa-advanced-analysis/{analysisId}": { "schema": { "$ref": "#/entities/OFAAdvancedAnalysis" }, "description": "Advanced match analysis reports for Omuto Football Alliance tournament stages." },
+    "/ofa-equipment-impact/{trackerId}": { "schema": { "$ref": "#/entities/OFAEquipmentImpact" }, "description": "Tracks the impact of equipment provided to OFA teams." },
+    "/ofa-scorecards/{scorecardId}": { "schema": { "$ref": "#/entities/OFAScorecard" }, "description": "Quarterly performance scorecards for OFA teams." },
+    "/pulse-content/{contentId}": { "schema": { "$ref": "#/entities/PulseContent" }, "description": "Content submissions for Omuto Pulse." },
+    "/essentials-production/{logId}": { "schema": { "$ref": "#/entities/ProductionLog" }, "description": "Production logs for Omuto Essentials." },
+    "/essentials-sales/{saleId}": { "schema": { "$ref": "#/entities/Sale" }, "description": "Sales records for Omuto Essentials." },
+    "/essentials-inventory/{checkId}": { "schema": { "$ref": "#/entities/InventoryCheck" }, "description": "Inventory checks for Omuto Essentials." },
+    "/water-sources/{sourceId}": { "schema": { "$ref": "#/entities/WaterSource" }, "description": "Water sources for PureWater initiative." },
+    "/wash-assessments/{assessmentId}": { "schema": { "$ref": "#/entities/WASH_Assessment" }, "description": "WASH assessments for schools." },
+    "/yap-chapters/{chapterId}": { "schema": { "$ref": "#/entities/YAP_Chapter" }, "description": "YAP chapter registrations." },
+    "/yap-reports/{reportId}": { "schema": { "$ref": "#/entities/YAP_Report" }, "description": "YAP monthly chapter reports." },
+    "/seed-grant-applications/{applicationId}": { "schema": { "$ref": "#/entities/SeedGrantApplication" }, "description": "Seed grant applications." },
+    "/seed-grant-accountability/{reportId}": { "schema": { "$ref": "#/entities/SeedGrantAccountability" }, "description": "Seed grant accountability reports." },
+    "/ofa-teams/{teamId}": { "schema": { "$ref": "#/entities/OFATeam" }, "description": "Team registrations for Omuto Football Alliance." },
+    "/ofa-volunteers/{volunteerId}": { "schema": { "$ref": "#/entities/OFAVolunteer" }, "description": "Volunteer registrations for Omuto Cup." },
+    "/knowledgeHubSections/{sectionId}": { "schema": { "$ref": "#/entities/KnowledgeHubSection" }, "description": "Stores the main content sections for the knowledge hub." },
+    "/knowledgeHubPitches/{pitchId}": { "schema": { "$ref": "#/entities/KnowledgeHubPitch" }, "description": "Stores the copyable pitches and boilerplates." },
+    "/knowledgeHubFaqs/{faqId}": { "schema": { "$ref": "#/entities/KnowledgeHubFAQ" }, "description": "Stores the frequently asked questions." },
+    "/knowledgeHubStories/{storyId}": { "schema": { "$ref": "#/entities/KnowledgeHubStory" }, "description": "Stores sample impact stories." }
   }
 }
-

@@ -47,6 +47,11 @@ const knowledgeHubContent = {
     { order: 2, question: 'How can I volunteer?', answer: 'Register through Omuto Center app or contact the team.' },
     { order: 3, question: 'Do you only work in Mpigi?', answer: 'Our roots are in Mpigi but we collaborate widely where partnerships exist.' },
     { order: 4, question: 'Do you work with schools?', answer: 'Yes — schools are at the heart of our programs.' },
+  ],
+  stories: [
+    { order: 1, title: "Aisha's Story", content: 'Aisha used to think trees were just shade. After joining GreenSchools, she helped plant fruit trees at her school and now leads a group that waters and monitors them. She says, “I feel like I’m growing with the trees.”' },
+    { order: 2, title: "Grace's Story", content: 'Grace missed class because of her periods. After joining RED Campaign sessions and receiving reusable pads, she now attends fully and helps other girls learn hygiene with confidence.' },
+    { order: 3, title: "Musa's Story", content: 'Musa joined Omuto Football Alliance to play. He stayed because he found mentorship, discipline, and teamwork. His new dream is to coach younger players.' },
   ]
 };
 
@@ -76,6 +81,11 @@ async function seedKnowledgeHub(db: Firestore) {
   knowledgeHubContent.faqs.forEach(faq => {
     const docRef = db.collection('knowledgeHubFaqs').doc();
     batch.set(docRef, faq);
+  });
+  
+  knowledgeHubContent.stories.forEach(story => {
+    const docRef = db.collection('knowledgeHubStories').doc();
+    batch.set(docRef, story);
   });
 
   try {
