@@ -21,13 +21,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
-import { Copy, BookOpen, Download, Edit, Loader2 } from 'lucide-react';
+import { Copy, BookOpen, Download, Edit, Loader2, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { useMemo } from 'react';
 
 function CopyButton({ text }: { text: string }) {
   const { toast } = useToast();
@@ -46,6 +48,7 @@ export default function KnowPage() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const [isDownloading, setIsDownloading] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState("");
   const contentRef = React.useRef<HTMLDivElement>(null);
   const firestore = useFirestore();
 
@@ -104,6 +107,35 @@ export default function KnowPage() {
     });
   };
 
+  const filteredSections = useMemo(() => {
+    if (!searchTerm) return sections;
+    const lowercasedFilter = searchTerm.toLowerCase();
+    return sections?.filter(section => 
+        section.title.toLowerCase().includes(lowercasedFilter) ||
+        section.content.toLowerCase().includes(lowercasedFilter) ||
+        section.subsections?.some(sub => sub.title.toLowerCase().includes(lowercasedFilter) || sub.content.toLowerCase().includes(lowercasedFilter))
+    );
+  }, [sections, searchTerm]);
+
+  const filteredPitches = useMemo(() => {
+      if (!searchTerm) return pitches;
+      const lowercasedFilter = searchTerm.toLowerCase();
+      return pitches?.filter(pitch =>
+          pitch.title.toLowerCase().includes(lowercasedFilter) ||
+          pitch.content.toLowerCase().includes(lowercasedFilter)
+      );
+  }, [pitches, searchTerm]);
+
+  const filteredFaqs = useMemo(() => {
+      if (!searchTerm) return faqs;
+      const lowercasedFilter = searchTerm.toLowerCase();
+      return faqs?.filter(faq =>
+          faq.question.toLowerCase().includes(lowercasedFilter) ||
+          faq.answer.toLowerCase().includes(lowercasedFilter)
+      );
+  }, [faqs, searchTerm]);
+
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -114,10 +146,13 @@ export default function KnowPage() {
         </div>
       );
     }
+    
+    const isFiltering = searchTerm.length > 0;
+    const noResults = filteredSections?.length === 0 && filteredPitches?.length === 0 && filteredFaqs?.length === 0;
 
     return (
       <>
-        {sections?.map(section => (
+        {filteredSections && filteredSections.length > 0 && filteredSections.map(section => (
           <Card key={section.id}>
             <CardHeader>
               <CardTitle>{section.title}</CardTitle>
@@ -125,56 +160,72 @@ export default function KnowPage() {
             <CardContent className="prose prose-sm dark:prose-invert max-w-none">
               <div dangerouslySetInnerHTML={{ __html: section.content }} />
               {section.subsections && (
-                 <Accordion type="single" collapsible className="w-full mt-4">
-                  {section.subsections.map((sub, index) => (
-                    <AccordionItem key={index} value={`item-${index}`}>
-                      <AccordionTrigger>{sub.title}</AccordionTrigger>
-                      <AccordionContent>
-                        <div dangerouslySetInnerHTML={{ __html: sub.content }} />
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
+                 <Accordion type="single" collapsible className="w-full mt-4" defaultValue={isFiltering ? `item-${section.id}`: undefined}>
+                  <AccordionItem value={`item-${section.id}`}>
+                    <AccordionTrigger>{section.title === 'Grant Boilerplates' ? 'View Boilerplates' : 'View Details'}</AccordionTrigger>
+                    <AccordionContent className="space-y-4">
+                      {section.subsections.map((sub, index) => (
+                        <div key={index} className="p-4 bg-muted rounded-lg">
+                            <div className="flex justify-between items-center mb-2">
+                                <h4 className="font-semibold">{sub.title}</h4>
+                                <CopyButton text={sub.content} />
+                            </div>
+                            <div dangerouslySetInnerHTML={{ __html: sub.content }} />
+                        </div>
+                      ))}
+                    </AccordionContent>
+                  </AccordionItem>
                  </Accordion>
               )}
             </CardContent>
           </Card>
         ))}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>How to Talk About Omuto</CardTitle>
-            <CardDescription>Copyable pitches for different audiences.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {pitches?.map(pitch => (
-              <div key={pitch.id} className="p-4 bg-muted rounded-lg">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-semibold">{pitch.title}</h4>
-                  <CopyButton text={pitch.content} />
+        {filteredPitches && filteredPitches.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>How to Talk About Omuto</CardTitle>
+              <CardDescription>Copyable pitches for different audiences.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {filteredPitches.map(pitch => (
+                <div key={pitch.id} className="p-4 bg-muted rounded-lg">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-semibold">{pitch.title}</h4>
+                    <CopyButton text={pitch.content} />
+                  </div>
+                  <p className="text-sm text-muted-foreground">{pitch.content}</p>
                 </div>
-                <p className="text-sm text-muted-foreground">{pitch.content}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Frequently Asked Questions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Accordion type="single" collapsible className="w-full">
-              {faqs?.map(faq => (
-                <AccordionItem key={faq.id} value={faq.id}>
-                  <AccordionTrigger>{faq.question}</AccordionTrigger>
-                  <AccordionContent>
-                    {faq.answer}
-                  </AccordionContent>
-                </AccordionItem>
               ))}
-            </Accordion>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {filteredFaqs && filteredFaqs.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Frequently Asked Questions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="multiple" className="w-full" defaultValue={isFiltering ? filteredFaqs.map(f => f.id) : undefined}>
+                {filteredFaqs.map(faq => (
+                  <AccordionItem key={faq.id} value={faq.id}>
+                    <AccordionTrigger>{faq.question}</AccordionTrigger>
+                    <AccordionContent>
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
+        )}
+        
+        {isFiltering && noResults && (
+            <div className="text-center py-16 text-muted-foreground">
+                <p className="font-semibold">No results found for "{searchTerm}"</p>
+            </div>
+        )}
       </>
     );
   };
@@ -203,6 +254,15 @@ export default function KnowPage() {
           </Button>
         </div>
       </header>
+       <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+              placeholder="Search knowledge hub..." 
+              className="pl-10" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
       
       <div ref={contentRef} className="space-y-8">
         {renderContent()}
