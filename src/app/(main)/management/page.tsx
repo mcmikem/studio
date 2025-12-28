@@ -20,18 +20,18 @@ export default function ManagementPage() {
   const effectiveRole = viewAsRole || profile?.role;
 
   const allTabs = [
-    { name: 'Programs', href: '/management/programs', icon: FolderKanban },
-    { name: 'Projects', href: '/management/projects', icon: Briefcase },
-    { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
-    { name: 'Resources', href: '/management/resources', icon: DollarSign, roles: ['Executive Director', 'Resource Mobilization Lead', 'Administrator'] },
-    { name: 'Operational Plan', href: '/management/operational-plan', icon: FileSignature, roles: ['Executive Director', 'Programs & Partnerships Manager', 'Administrator'] },
-    { name: 'Finance', href: '/management/finance', icon: DollarSign, roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'] },
-    { name: 'Expenses', href: '/management/expenses', icon: Receipt, roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Programs & Partnerships Manager', 'Operations & Field Manager'] },
-    { name: 'Metrics', href: '/management/metrics', icon: Target },
-    { name: 'Workplans', href: '/management/workplans', icon: CalendarClock },
-    { name: 'Equipment', href: '/management/equipment', icon: Box },
-    { name: 'Templates', href: '/management/templates', icon: ListChecks },
-    { name: 'Users', href: '/management/users', icon: Users },
+    { name: 'Programs', href: '/management/programs' },
+    { name: 'Projects', href: '/management/projects' },
+    { name: 'Partnerships', href: '/management/partnerships' },
+    { name: 'Resources', href: '/management/resources', roles: ['Executive Director', 'Resource Mobilization Lead', 'Administrator'] },
+    { name: 'Operational Plan', href: '/management/operational-plan', roles: ['Executive Director', 'Programs & Partnerships Manager', 'Administrator'] },
+    { name: 'Finance', href: '/management/finance', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'] },
+    { name: 'Expenses', href: '/management/expenses', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Programs & Partnerships Manager', 'Operations & Field Manager'] },
+    { name: 'Metrics', href: '/management/metrics' },
+    { name: 'Workplans', href: '/management/workplans' },
+    { name: 'Equipment', href: '/management/equipment' },
+    { name: 'Templates', href: '/management/templates' },
+    { name: 'Users', href: '/management/users' },
   ];
 
   const tabs = allTabs.filter(tab => {
@@ -41,28 +41,7 @@ export default function ManagementPage() {
 
   return (
     <div className="flex flex-col gap-6">
-       <div className="border-b border-border">
-        <div className="flex items-center gap-x-4 gap-y-2 p-2 flex-wrap">
-            {tabs.map((tab) => (
-              <Link
-                key={tab.name}
-                href={tab.href}
-                className={cn(
-                  'flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md',
-                  pathname === tab.href // Use strict equality for the root management page
-                    ? 'border-primary text-primary bg-primary/10'
-                    : 'border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                )}
-              >
-                <tab.icon className="h-4 w-4" />
-                {tab.name}
-              </Link>
-            ))}
-          </div>
-      </div>
-      <div>
-        <p className="p-8 text-center text-muted-foreground">Select a management module to view its contents.</p>
-      </div>
+      <p className="p-8 text-center text-muted-foreground">Select a management module above to begin.</p>
     </div>
   );
 }
