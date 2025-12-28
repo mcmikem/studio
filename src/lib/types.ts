@@ -453,7 +453,7 @@ export type Beneficiary = {
     school?: string;
     phone?: string;
     guardianContact?: string;
-    photoURL?: string | null;
+    photoURL?: string | null | undefined;
     createdAt: Timestamp;
 }
 
@@ -1139,4 +1139,27 @@ export const TestimonyOutputSchema = z.object({
 });
 export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
 
+// New types for Knowledge Hub
+export type KnowledgeHubSection = {
+  id: string;
+  order: number;
+  title: string;
+  content: string;
+  subsections?: { title: string; content: string; }[];
+};
+
+export type KnowledgeHubPitch = {
+  id: string;
+  order: number;
+  title: string;
+  content: string;
+};
+
+export type KnowledgeHubFAQ = {
+  id: string;
+  order: number;
+  question: string;
+  answer: string;
+};
     
+
