@@ -74,6 +74,8 @@ export function SessionAttendanceForm() {
     const membersQuery = query(collection(firestore, 'yoskills-youth'), where('circleId', '==', circleId), orderBy('name'));
     const snapshot = await getDocs(membersQuery);
     const membersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YoSkillsYouth));
+    
+    // Ensure prefect.name exists before mapping
     const attendees = membersData.map(m => ({ memberId: m.id, memberName: m.name || 'Unnamed Member', present: false }));
     replace(attendees);
   }, [firestore, replace]);
