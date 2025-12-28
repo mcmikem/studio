@@ -188,20 +188,15 @@ const getRecentCheckoutsToolObject = ai.defineTool(
     }
 );
 
-export const omutoAIFlow = ai.defineFlow(
-  {
-    name: 'omutoAIFlow',
-    inputSchema: OmutoAIInputSchema,
-    outputSchema: OmutoAIOutputSchema,
-  },
-  async (input) => {
-    try {
-        const history = input.history || [];
-        console.log(`omutoAIFlow invoked with question: "${input.question}"`);
-
-        const llmResponse = await ai.generate({
-            model: googleAI('gemini-1.5-flash-latest'),
-            prompt: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
+const omutoAIPrompt = ai.definePrompt({
+    name: 'omutoAIPrompt',
+    tools: [
+        searchOmutoToolObject, 
+        createCheckoutToolObject, 
+        getRecentCheckinsToolObject, 
+        getRecentCheckoutsToolObject
+    ],
+    prompt: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
 Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
 
 ## Knowledge Base
@@ -214,16 +209,28 @@ ${KNOWLEDGE_BASE}
 - **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.
 
 ---
-UserId: ${input.userId}.
+UserId: {{userId}}.
 
-User's message: "${input.question}"`,
-            history: history,
-            tools: [
-                searchOmutoToolObject, 
-                createCheckoutToolObject, 
-                getRecentCheckinsToolObject, 
-                getRecentCheckoutsToolObject
-            ],
+User's message: "{{question}}"`
+});
+
+
+export const omutoAIFlow = ai.defineFlow(
+  {
+    name: 'omutoAIFlow',
+    inputSchema: OmutoAIInputSchema,
+    outputSchema: OmutoAIOutputSchema,
+  },
+  async (input) => {
+    try {
+        console.log(`omutoAIFlow invoked with question: "${input.question}"`);
+
+        const llmResponse = await omutoAIPrompt({
+            userId: input.userId,
+            question: input.question
+        }, {
+            history: input.history || [],
+            model: googleAI('gemini-1.5-flash-latest'),
             config: {
                 temperature: 0.2,
             }

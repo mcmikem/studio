@@ -33,10 +33,17 @@ const grantWriterPrompt = ai.definePrompt({
 `
 });
 
-export async function writeConceptNote(input: GrantWriterInput): Promise<GrantWriterOutput> {
+export const writeConceptNote = ai.defineFlow(
+  {
+    name: 'grantWriterFlow',
+    inputSchema: GrantWriterInputSchema,
+    outputSchema: GrantWriterOutputSchema
+  },
+  async (input) => {
     const { output } = await grantWriterPrompt(input);
     if (!output) {
       throw new Error('AI failed to generate a concept note.');
     }
     return output;
-}
+  }
+);
