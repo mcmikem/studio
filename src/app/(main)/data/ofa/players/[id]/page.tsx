@@ -14,14 +14,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
-import { PlayerRegistrationForm } from '@/components/forms/ofa/player-registration-form';
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import {
@@ -53,7 +51,7 @@ const playerEditSchema = z.object({
 
 type PlayerEditFormData = z.infer<typeof playerEditSchema>;
 
-function EditPlayerDialog({ player, onOpenChange }: { player: OFAPlayer, onOpenChange: (open: boolean) => void }) {
+function EditPlayerDialog({ player, onOpenChange, open }: { player: OFAPlayer, onOpenChange: (open: boolean) => void, open: boolean }) {
   const { toast } = useToast();
   const firestore = useFirestore();
   const { register, handleSubmit, control, formState: { isSubmitting } } = useForm<PlayerEditFormData>({
@@ -86,58 +84,60 @@ function EditPlayerDialog({ player, onOpenChange }: { player: OFAPlayer, onOpenC
   };
 
   return (
-     <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>Edit Player: {player.name}</DialogTitle>
-          <DialogDescription>
-            Quickly update the key details for this player.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Player Name</Label><Input {...register('name')} /></div>
-                <div className="space-y-2"><Label>Playing Position</Label>
-                    <Controller name="playingPosition" control={control} render={({field}) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
-                    )} />
-                </div>
-            </div>
-             <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-2"><Label>School</Label><Input {...register('school')} /></div>
-                 <div className="space-y-2"><Label>Class</Label><Input {...register('class')} /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-2"><Label>Guardian Contact</Label><Input {...register('guardianContact')} /></div>
-            </div>
-             <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-2"><Label>School Attendance</Label>
-                     <Controller name="schoolAttendance" control={control} render={({field}) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
-                    )} />
-                 </div>
-                 <div className="space-y-2"><Label>Academic Performance</Label>
-                      <Controller name="academicPerformance" control={control} render={({field}) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
-                    )} />
-                 </div>
-            </div>
-            <div className="space-y-2">
-                <Label>Personal Goals</Label>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+         <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Edit Player: {player.name}</DialogTitle>
+              <DialogDescription>
+                Quickly update the key details for this player.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
-                    <Input {...register('skillGoal')} placeholder="Skill Goal" />
-                    <Input {...register('schoolGoal')} placeholder="School Goal" />
-                    <Input {...register('behaviourGoal')} placeholder="Behaviour Goal" />
-                    <Input {...register('careerDream')} placeholder="Career Dream" />
+                    <div className="space-y-2"><Label>Player Name</Label><Input {...register('name')} /></div>
+                    <div className="space-y-2"><Label>Playing Position</Label>
+                        <Controller name="playingPosition" control={control} render={({field}) => (
+                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
+                        )} />
+                    </div>
                 </div>
-            </div>
-            <DialogFooter>
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
-                </Button>
-            </DialogFooter>
-        </form>
-    </DialogContent>
+                 <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2"><Label>School</Label><Input {...register('school')} /></div>
+                     <div className="space-y-2"><Label>Class</Label><Input {...register('class')} /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2"><Label>Guardian Contact</Label><Input {...register('guardianContact')} /></div>
+                </div>
+                 <div className="grid grid-cols-2 gap-4">
+                     <div className="space-y-2"><Label>School Attendance</Label>
+                         <Controller name="schoolAttendance" control={control} render={({field}) => (
+                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
+                        )} />
+                     </div>
+                     <div className="space-y-2"><Label>Academic Performance</Label>
+                          <Controller name="academicPerformance" control={control} render={({field}) => (
+                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
+                        )} />
+                     </div>
+                </div>
+                <div className="space-y-2">
+                    <Label>Personal Goals</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                        <Input {...register('skillGoal')} placeholder="Skill Goal" />
+                        <Input {...register('schoolGoal')} placeholder="School Goal" />
+                        <Input {...register('behaviourGoal')} placeholder="Behaviour Goal" />
+                        <Input {...register('careerDream')} placeholder="Career Dream" />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save Changes
+                    </Button>
+                </DialogFooter>
+            </form>
+        </DialogContent>
+    </Dialog>
   )
 }
 
@@ -283,7 +283,7 @@ function PlayerDetailDashboard() {
         </CardContent>
       </Card>
       
-      {isEditDialogOpen && <EditPlayerDialog player={player} onOpenChange={setIsEditDialogOpen} />}
+      {isEditDialogOpen && player && <EditPlayerDialog player={player} open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />}
     </div>
   );
 }
@@ -291,3 +291,5 @@ function PlayerDetailDashboard() {
 export default function PlayerDetailPage() {
     return <PlayerDetailDashboard />;
 }
+
+    
