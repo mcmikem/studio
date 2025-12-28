@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy, where, getDocs } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Calendar } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
+import { useMemoFirebase } from '@/firebase/provider';
 
 const memberSchema = z.object({
   memberId: z.string(),
@@ -75,7 +76,6 @@ export function SessionAttendanceForm() {
     const snapshot = await getDocs(membersQuery);
     const membersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as YoSkillsYouth));
     
-    // Ensure prefect.name exists before mapping
     const attendees = membersData.map(m => ({ memberId: m.id, memberName: m.name || 'Unnamed Member', present: false }));
     replace(attendees);
   }, [firestore, replace]);
