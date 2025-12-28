@@ -8,8 +8,6 @@ import { ai } from '@/ai/genkit';
 import type { QualitativeAnalysisInput, QualitativeAnalysisOutput } from '@/lib/types';
 import { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from '@/lib/types';
 import { getFirebaseAdmin } from '@/firebase/server';
-import { collection, query, where } from 'firebase/firestore';
-import { getDocs } from 'firebase/firestore';
 import { z } from 'zod';
 import { googleAI } from '@genkit-ai/google-genai';
 
@@ -24,14 +22,12 @@ const getActivitiesForProgramToolObject = ai.defineTool(
     },
     async ({ programId }) => {
         const { firestore } = getFirebaseAdmin();
-        const activitiesRef = collection(firestore, 'activities');
-        const q = query(
-            activitiesRef,
-            where('primaryGoalType', '==', 'Program'),
-            where('primaryGoalId', '==', programId)
-        );
+        const activitiesRef = firestore.collection('activities');
+        const q = activitiesRef
+            .where('primaryGoalType', '==', 'Program')
+            .where('primaryGoalId', '==', programId);
 
-        const snapshot = await getDocs(q);
+        const snapshot = await q.get();
         if (snapshot.empty) {
             return [];
         }
@@ -81,3 +77,5 @@ export const analyzeProgramQualitativeData = ai.defineFlow(
         return output;
     }
 );
+
+    

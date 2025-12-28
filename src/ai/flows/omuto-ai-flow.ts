@@ -13,7 +13,7 @@ import type { OmutoAIInput, OmutoAIOutput, SearchResultItem } from '@/lib/types'
 import { SearchResultItemSchema, OmutoAIInputSchema, OmutoAIOutputSchema } from '@/lib/types';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
-import { collection, query, where, getDocs, doc, addDoc, getDoc, serverTimestamp, orderBy, limit, Timestamp } from 'firebase-admin/firestore';
+import { Timestamp } from 'firebase-admin/firestore';
 import { googleAI } from '@genkit-ai/google-genai';
 
 const { firestore } = getFirebaseAdmin();
@@ -123,7 +123,7 @@ const createCheckoutToolObject = ai.defineTool(
                 name: userProfile.name,
                 role: userProfile.role,
                 avatar: userProfile.photoURL || '',
-                timestamp: serverTimestamp(),
+                timestamp: Timestamp.now(),
             };
 
             await firestore.collection('checkouts').add(checkoutData);
