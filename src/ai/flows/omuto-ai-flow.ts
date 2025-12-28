@@ -13,7 +13,7 @@ import type { OmutoAIInput, OmutoAIOutput, SearchResultItem } from '@/lib/types'
 import { SearchResultItemSchema, OmutoAIInputSchema, OmutoAIOutputSchema } from '@/lib/types';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
-import { collection, query, where, getDocs, doc, addDoc, getDoc, serverTimestamp, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, addDoc, getDoc, serverTimestamp, orderBy, limit, Timestamp } from 'firebase-admin/firestore';
 import { googleAI } from '@genkit-ai/google-genai';
 
 const { firestore } = getFirebaseAdmin();
@@ -28,9 +28,9 @@ const findUsersByNameToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ name }) => {
-        const usersRef = collection(firestore, 'users');
-        const q = query(usersRef, where('name', '>=', name), where('name', '<=', name + '\uf8ff'));
-        const snapshot = await getDocs(q);
+        const usersRef = firestore.collection('users');
+        const q = usersRef.where('name', '>=', name).where('name', '<=', name + '\uf8ff');
+        const snapshot = await q.get();
         if (snapshot.empty) return [];
         return snapshot.docs.map(doc => ({ id: doc.id, type: 'User', title: doc.data().name, url: `/profile?userId=${doc.id}` }));
     }
@@ -44,9 +44,9 @@ const findProgramsByNameToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
-        const programsRef = collection(firestore, 'programs');
-        const q = query(programsRef, where('title', '>=', title), where('title', '<=', title + '\uf8ff'));
-        const snapshot = await getDocs(q);
+        const programsRef = firestore.collection('programs');
+        const q = programsRef.where('title', '>=', title).where('title', '<=', title + '\uf8ff');
+        const snapshot = await q.get();
         if (snapshot.empty) return [];
         return snapshot.docs.map(doc => ({ id: doc.id, type: 'Program', title: doc.data().title, url: `/management/programs` }));
     }
@@ -60,9 +60,9 @@ const findExpensesByTitleToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
-        const expensesRef = collection(firestore, 'expenses');
-        const q = query(expensesRef, where('title', '>=', title), where('title', '<=', title + '\uf8ff'));
-        const snapshot = await getDocs(q);
+        const expensesRef = firestore.collection('expenses');
+        const q = expensesRef.where('title', '>=', title).where('title', '<=', title + '\uf8ff');
+        const snapshot = await q.get();
         if (snapshot.empty) return [];
         return snapshot.docs.map(doc => ({ id: doc.id, type: 'Expense', title: doc.data().title, url: `/management/expenses?highlight=${doc.id}` }));
     }
@@ -103,10 +103,10 @@ const createCheckoutToolObject = ai.defineTool(
     },
     async ({ userId, task, learning, tomorrowPlan }) => {
         try {
-            const userRef = doc(firestore, 'users', userId);
-            const userSnap = await getDoc(userRef);
+            const userRef = firestore.collection('users').doc(userId);
+            const userSnap = await userRef.get();
 
-            if (!userSnap.exists()) {
+            if (!userSnap.exists) {
                 return { success: false, message: `Could not find user with ID ${userId}.`};
             }
             const userProfile = userSnap.data();
@@ -126,7 +126,7 @@ const createCheckoutToolObject = ai.defineTool(
                 timestamp: serverTimestamp(),
             };
 
-            await addDoc(collection(firestore, 'checkouts'), checkoutData);
+            await firestore.collection('checkouts').add(checkoutData);
             
             return { success: true, message: `Successfully submitted the checkout report for ${userProfile.name}.` };
         } catch (error: any) {
@@ -144,13 +144,13 @@ const getRecentCheckinsToolObject = ai.defineTool(
         outputSchema: z.array(z.object({ name: z.string(), primaryMission: z.string() }))
     },
     async ({ count }) => {
-        const checkinsRef = collection(firestore, 'checkins');
+        const checkinsRef = firestore.collection('checkins');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const startOfToday = Timestamp.fromDate(today);
 
-        const q = query(checkinsRef, where('timestamp', '>=', startOfToday), orderBy('timestamp', 'desc'), limit(count));
-        const snapshot = await getDocs(q);
+        const q = checkinsRef.where('timestamp', '>=', startOfToday).orderBy('timestamp', 'desc').limit(count);
+        const snapshot = await q.get();
         if (snapshot.empty) return [];
         return snapshot.docs.map(doc => {
             const data = doc.data();
@@ -172,9 +172,9 @@ const getRecentCheckoutsToolObject = ai.defineTool(
         }))
     },
     async ({ count }) => {
-        const checkoutsRef = collection(firestore, 'checkouts');
-        const q = query(checkoutsRef, orderBy('timestamp', 'desc'), limit(count));
-        const snapshot = await getDocs(q);
+        const checkoutsRef = firestore.collection('checkouts');
+        const q = checkoutsRef.orderBy('timestamp', 'desc').limit(count);
+        const snapshot = await q.get();
         if (snapshot.empty) return [];
         return snapshot.docs.map(doc => {
             const data = doc.data();
@@ -252,3 +252,5 @@ export const omutoAIFlow = ai.defineFlow(
     }
   }
 );
+
+    
