@@ -202,15 +202,99 @@ function SchoolApplicationForm() {
                 {errors.interestedPrograms && <p className="text-sm text-destructive">{errors.interestedPrograms.message}</p>}
             </div>
             
-            {/* Other fields will go here, this is enough to fix the syntax error */}
+            <div className="space-y-4">
+                <h3 className="font-semibold border-b pb-1">Contextual Information</h3>
+                <div className="space-y-2">
+                    <Label htmlFor="existingHealthClubs">Briefly describe any existing health clubs or initiatives in your school.</Label>
+                    <Textarea id="existingHealthClubs" {...register('existingHealthClubs')} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="sustainabilityPlan" className="font-bold">How will your school ensure these programs continue to benefit students after Omuto's initial support?</Label>
+                    <Textarea id="sustainabilityPlan" {...register('sustainabilityPlan')} />
+                    {errors.sustainabilityPlan && <p className="text-sm text-destructive">{errors.sustainabilityPlan.message}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label className="font-bold">Select number of teachers willing to actively support these programs</Label>
+                    <Controller name="teacherSupport" control={control} render={({ field }) => (
+                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-6 pt-2">
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="1" id="t1" /><Label htmlFor="t1">1</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="2" id="t2" /><Label htmlFor="t2">2</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="3" id="t3" /><Label htmlFor="t3">3</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="More than 3" id="t4" /><Label htmlFor="t4">More than 3</Label></div>
+                        </RadioGroup>
+                    )} />
+                </div>
+            </div>
 
-        </CardContent>
-        <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {(interestedPrograms.length > 0) && (
+                <div className="space-y-6">
+                    <h3 className="text-lg font-semibold border-b pb-2">Program Specific Questions</h3>
+                    {interestedPrograms.includes('YAC') && (
+                        <div className="space-y-2 p-4 border rounded-md">
+                            <Label htmlFor="yacGoals" className="font-bold">What are your specific goals for implementing a Young Alive Club?</Label>
+                            <Textarea id="yacGoals" {...register('yacGoals')} />
+                        </div>
+                    )}
+                    {interestedPrograms.includes('RED') && (
+                        <div className="space-y-6 p-4 border rounded-md">
+                            <div className="space-y-2">
+                                <Label htmlFor="redMhmResources" className="font-bold">Does your school currently have any menstrual hygiene management resources or programs?</Label>
+                                <Textarea id="redMhmResources" {...register('redMhmResources')} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="redPovertyImpact" className="font-bold">How does period poverty impact girls' education at your school?</Label>
+                                <Textarea id="redPovertyImpact" {...register('redPovertyImpact')} />
+                            </div>
+                        </div>
+                    )}
+                    {interestedPrograms.includes('GreenSchools') && (
+                        <div className="space-y-6 p-4 border rounded-md">
+                            <div className="space-y-2">
+                                <Label htmlFor="greenExistingClubs" className="font-bold">Does your school have any existing environmental clubs or initiatives?</Label>
+                                <Textarea id="greenExistingClubs" {...register('greenExistingClubs')} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="font-bold">Do you have access to land or a space suitable for a school garden?</Label>
+                                <Controller name="greenGardenAccess" control={control} render={({ field }) => (
+                                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="garden-yes" /><Label htmlFor="garden-yes">Yes</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="garden-no" /><Label htmlFor="garden-no">No</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="Maybe" id="garden-maybe" /><Label htmlFor="garden-maybe">Maybe</Label></div>
+                                    </RadioGroup>
+                                )} />
+                            </div>
+                        </div>
+                    )}
+                    {interestedPrograms.includes('Debate') && (
+                        <div className="space-y-6 p-4 border rounded-md">
+                            <div className="space-y-2">
+                                <Label htmlFor="debateStudentCount" className="font-bold">How many students would be interested in participating in debate competitions?</Label>
+                                <Input id="debateStudentCount" {...register('debateStudentCount')} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="font-bold">Does your school have a debate club or any experience with debate activities?</Label>
+                                <Controller name="debateClubExists" control={control} render={({ field }) => (
+                                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="debate-yes" /><Label htmlFor="debate-yes">Yes</Label></div>
+                                        <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="debate-no" /><Label htmlFor="debate-no">No</Label></div>
+                                    </RadioGroup>
+                                )} />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            <div className="space-y-2">
+                <Label htmlFor="additionalInfo">Please provide any other information you feel is relevant to your application, such as specific challenges or opportunities related to these programs in your school context.</Label>
+                <Textarea id="additionalInfo" {...register('additionalInfo')} />
+            </div>
+
+            <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Submit Application
             </Button>
-        </CardFooter>
+        </CardContent>
       </form>
     </Card>
   );
