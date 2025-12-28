@@ -879,66 +879,74 @@ export type SeedGrantAccountability = {
   createdAt: Timestamp;
 };
 
-export type OFATeam = {
-  id: string;
-  teamName: string;
-  teamPhotoUrl?: string;
-  subcounty: string;
-  parish?: string;
-  village?: string;
-  yearOfEstablishment?: string;
-  homePitchName?: string;
-  teamColours?: string;
-  motto?: string;
-  headCoachName?: string;
-  headCoachPhone?: string;
-  headCoachAttendance?: 'Always' | 'Sometimes' | 'Rare';
-  headCoachAvailability?: 'Full-Time' | 'Part-Time';
-  assistantCoachName?: string;
-  assistantCoachPhone?: string;
-  assistantCoachAttendance?: 'Always' | 'Sometimes' | 'Rare';
-  assistantCoachAvailability?: 'Full-Time' | 'Part-Time';
-  teamManagerName?: string;
-  teamManagerPhone?: string;
-  teamManagerAttendance?: 'Always' | 'Sometimes' | 'Rare';
-  teamManagerAvailability?: 'Full-Time' | 'Part-Time';
-  captainName?: string;
-  captainPhone?: string;
-  captainAttendance?: 'Always' | 'Sometimes' | 'Rare';
-  viceCaptainName?: string;
-  viceCaptainPhone?: string;
-  viceCaptainAttendance?: 'Always' | 'Sometimes' | 'Rare';
-  trainingDaysPerWeek?: number;
-  avgTrainingAttendance?: 'High' | 'Medium' | 'Low';
-  punctualityScore?: number;
-  disciplineScore?: number;
-  useWarmups?: boolean;
-  trackPlayerProgress?: boolean;
-  totalPlayers?: number;
-  u13?: number;
-  u15?: number;
-  u17?: number;
-  u19?: number;
-  percentageInSchool?: number;
-  mainAcademicChallenges?: string[];
-  enforceSchoolAttendance?: 'Yes' | 'No' | 'Trying';
-  equipment?: {
-    item: string;
-    qty?: number;
-    condition?: 'Good' | 'Worn' | 'Poor';
-    needLevel?: 'Low' | 'Medium' | 'High';
-  }[];
-  needs?: {
-    area: string;
-    priority?: number;
-  }[];
-  communitySupport?: 'Yes' | 'No' | 'Sometimes';
-  parentEngagement?: 'Yes' | 'No' | 'Weak Engagement';
-  hasVolunteers?: boolean;
-  volunteerCount?: number;
-  agreedToRules: boolean;
-  createdAt: Timestamp;
+export const OFATeamSchema = z.object({
+  id: z.string().optional(),
+  teamName: z.string().min(3, "Team name is required."),
+  teamPhotoUrl: z.string().url().optional(),
+  subcounty: z.string().min(3, "Subcounty is required."),
+  parish: z.string().optional(),
+  village: z.string().optional(),
+  yearOfEstablishment: z.string().optional(),
+  homePitchName: z.string().optional(),
+  teamColours: z.string().optional(),
+  motto: z.string().optional(),
+  headCoachName: z.string().optional(),
+  headCoachPhone: z.string().optional(),
+  headCoachAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
+  headCoachAvailability: z.enum(['Full-Time', 'Part-Time']).optional(),
+  assistantCoachName: z.string().optional(),
+  assistantCoachPhone: z.string().optional(),
+  assistantCoachAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
+  assistantCoachAvailability: z.enum(['Full-Time', 'Part-Time']).optional(),
+  teamManagerName: z.string().optional(),
+  teamManagerPhone: z.string().optional(),
+  teamManagerAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
+  teamManagerAvailability: z.enum(['Full-Time', 'Part-Time']).optional(),
+  captainName: z.string().optional(),
+  captainPhone: z.string().optional(),
+  captainAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
+  viceCaptainName: z.string().optional(),
+  viceCaptainPhone: z.string().optional(),
+  viceCaptainAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional(),
+  trainingDaysPerWeek: z.coerce.number().optional(),
+  avgTrainingAttendance: z.enum(['High', 'Medium', 'Low']).optional(),
+  punctualityScore: z.coerce.number().optional(),
+  disciplineScore: z.coerce.number().optional(),
+  useWarmups: z.boolean().optional(),
+  trackPlayerProgress: z.boolean().optional(),
+  totalPlayers: z.coerce.number().optional(),
+  u13: z.coerce.number().optional(),
+  u15: z.coerce.number().optional(),
+  u17: z.coerce.number().optional(),
+  u19: z.coerce.number().optional(),
+  percentageInSchool: z.coerce.number().optional(),
+  mainAcademicChallenges: z.array(z.string()).optional(),
+  enforceSchoolAttendance: z.enum(['Yes', 'No', 'Trying']).optional(),
+  equipment: z.array(z.object({
+    item: z.string(),
+    qty: z.coerce.number().optional(),
+    condition: z.string().optional(),
+    needLevel: z.string().optional(),
+  })).optional(),
+  needs: z.array(z.object({
+    area: z.string(),
+    priority: z.coerce.number().optional(),
+  })).optional(),
+  communitySupport: z.enum(['Yes', 'No', 'Sometimes']).optional(),
+  parentEngagement: z.enum(['Yes', 'No', 'Weak Engagement']).optional(),
+  hasVolunteers: z.boolean().optional(),
+  volunteerCount: z.coerce.number().optional(),
+  agreedToRules: z.boolean().refine(val => val === true, {
+    message: "You must agree to the rules to register a team.",
+  }),
+});
+export type OFATeamFormData = z.infer<typeof OFATeamSchema>;
+
+export type OFATeam = z.infer<typeof OFATeamSchema> & {
+    id: string;
+    createdAt: Timestamp;
 };
+
 
 export type OFAVolunteer = {
   id: string;
