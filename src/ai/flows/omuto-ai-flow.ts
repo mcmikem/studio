@@ -77,9 +77,9 @@ const searchOmutoToolObject = ai.defineTool(
     },
     async ({ query }) => {
         console.log(`Searching Omuto for: ${query}`);
-        const users = await findUsersByNameToolObject.fn({ name: query });
-        const programs = await findProgramsByNameToolObject.fn({ title: query });
-        const expenses = await findExpensesByTitleToolObject.fn({ title: query });
+        const users = await findUsersByNameToolObject({ name: query });
+        const programs = await findProgramsByNameToolObject({ title: query });
+        const expenses = await findExpensesByTitleToolObject({ title: query });
 
         const combined = [...users, ...programs, ...expenses];
         const uniqueResults = Array.from(new Map(combined.map(item => [item.id, item])).values());
@@ -225,12 +225,19 @@ export const omutoAIFlow = ai.defineFlow(
     try {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
-        const llmResponse = await omutoAIPrompt({
-            userId: input.userId,
-            question: input.question
-        }, {
-            history: input.history || [],
+        const llmResponse = await ai.generate({
             model: googleAI.model('gemini-1.5-pro-latest'),
+            prompt: omutoAIPrompt.compile({
+                userId: input.userId,
+                question: input.question
+            }),
+            history: input.history || [],
+            tools: [
+                searchOmutoToolObject, 
+                createCheckoutToolObject, 
+                getRecentCheckinsToolObject, 
+                getRecentCheckoutsToolObject
+            ],
             config: {
                 temperature: 0.2,
             }
