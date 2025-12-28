@@ -38,6 +38,7 @@ import {
   Trophy,
   Bug,
   Database,
+  Book,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -82,6 +83,9 @@ const navConfig = {
     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
   ],
+  knowledgeHub: [
+      { href: '/know', icon: Book, label: 'Quick to Know' }
+  ],
   meal: [
       { href: '/meal', icon: ClipboardEdit, label: 'MEAL Hub (Forms)' },
   ],
@@ -106,17 +110,17 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
-  'Executive Director': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Resource Mobilization Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Operations & Field Manager': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Media & Finance Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Media & Communications Lead': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Field Coordinator': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
-  'Intern': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
-  'Volunteer': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
-  'default': ['workspace', 'teamHub', 'meal', 'dataHub', 'reports'],
+  'Administrator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
+  'Executive Director': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Resource Mobilization Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Operations & Field Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Media & Finance Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Media & Communications Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Field Coordinator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports'],
+  'Intern': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports'],
+  'Volunteer': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports'],
+  'default': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports'],
 };
 
 
@@ -202,6 +206,7 @@ export function AppSidebar() {
       <SidebarContent data-mobile={isMobile}>
         {renderNavSection('workspace', 'Workspace')}
         {renderNavSection('teamHub', 'Team Hub')}
+        {renderNavSection('knowledgeHub', 'Knowledge Hub')}
         {renderNavSection('meal', 'MEAL (Forms)')}
         {renderNavSection('dataHub', 'Data Hub')}
         {renderNavSection('reports', 'Reports & Analytics')}
