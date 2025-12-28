@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Link from 'next/link';
@@ -47,6 +46,10 @@ export default function ManagementLayout({
     { name: 'Programs', href: '/management/programs' },
     { name: 'Projects', href: '/management/projects' },
     { name: 'Partnerships', href: '/management/partnerships' },
+    { name: 'Resources', href: '/management/resources', roles: ['Executive Director', 'Resource Mobilization Lead', 'Administrator'] },
+    { name: 'Operational Plan', href: '/management/operational-plan', roles: ['Executive Director', 'Programs & Partnerships Manager', 'Administrator'] },
+    { name: 'Finance', href: '/management/finance', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'] },
+    { name: 'Expenses', href: '/management/expenses', roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator', 'Programs & Partnerships Manager', 'Operations & Field Manager'] },
     { name: 'Metrics', href: '/management/metrics' },
     { name: 'Workplans', href: '/management/workplans' },
     { name: 'Equipment', href: '/management/equipment' },
@@ -55,11 +58,8 @@ export default function ManagementLayout({
   ];
 
   const tabs = allTabs.filter(tab => {
-    if ('roles' in tab) {
-        // @ts-ignore
-        return tab.roles.includes(effectiveRole || '');
-    }
-    return true;
+    if (!tab.roles) return true;
+    return tab.roles.includes(effectiveRole || '');
   });
 
   return (
@@ -86,3 +86,5 @@ export default function ManagementLayout({
     </div>
   );
 }
+
+    

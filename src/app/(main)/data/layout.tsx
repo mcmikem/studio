@@ -1,4 +1,6 @@
 
+'use client';
+
 export default function DataLayout({
   children,
 }: {
@@ -11,3 +13,5 @@ export default function DataLayout({
   );
 }
 
+
+    

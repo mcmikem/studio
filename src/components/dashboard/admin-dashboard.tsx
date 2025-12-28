@@ -48,12 +48,14 @@ export function AdminDashboard({ profile }: DashboardProps) {
   }, [firestore]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
-  const isLoading = isLoadingUsers || isLoadingCheckins || isLoadingPartnerships || isLoadingCheckouts;
+  const isLoading = isLoadingUsers || isLoadingCheckins || isLoadingPartnerships || isLoadingCheckouts || isLoadingPrograms;
 
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-2">
         {isLoading ? (
             <>
+                <Skeleton className="h-96" />
+                <Skeleton className="h-96" />
                 <Skeleton className="h-96" />
                 <Skeleton className="h-96" />
             </>
@@ -73,5 +75,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
     </DashboardGrid>
   )
 }
+
+    
 
     
