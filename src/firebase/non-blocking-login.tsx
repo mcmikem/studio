@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -39,7 +40,7 @@ import {
 } from '@/lib/data';
 
 // This maps specific emails to roles and names within the Omuto organization.
-const approvedUsers: Record<string, { name: string; role: string }> = {
+const approvedUsers: Record<string, { name: string; role: string, supervisorId?: string }> = {
   'mcmike@omuto.org': { name: 'McMike Mutumba', role: 'Executive Director' },
   'programs@omuto.org': {
     name: 'Dianah Nansikombi',
@@ -61,8 +62,8 @@ const approvedUsers: Record<string, { name: string; role: string }> = {
     name: 'John Paul Akera',
     role: 'Resource Mobilization Lead',
   },
-  'volunteer@omuto.org': { name: 'Volunteer User', role: 'Volunteer' },
-  'intern@omuto.org': { name: 'Intern User', role: 'Intern' },
+  'volunteer@omuto.org': { name: 'Volunteer User', role: 'Volunteer', supervisorId: 'programs@omuto.org' },
+  'intern@omuto.org': { name: 'Intern User', role: 'Intern', supervisorId: 'operations@omuto.org' },
   'info@omuto.org': { name: 'Omuto Admin', role: 'Administrator' },
 };
 
@@ -145,33 +146,34 @@ async function seedInitialData(db: Firestore) {
   }
 }
 
-async function seedUserTasks(db: Firestore, userId: string) {
-  console.log('Seeding user-specific tasks for new user.');
+async function seedUserTasks(db: Firestore, userId: string, role: string) {
+  console.log(`Seeding initial tasks for new ${role}.`);
   const userTasksCollection = collection(db, 'users', userId, 'tasks');
-  const initialTasks = [
-    {
-      title: 'Complete your profile information',
-      completed: false,
-      createdAt: serverTimestamp(),
-    },
-    {
-      title: 'Review the November Operational Plan',
-      completed: false,
-      createdAt: serverTimestamp(),
-    },
-    {
-      title: 'Explore your new dashboard',
-      completed: false,
-      createdAt: serverTimestamp(),
-    },
+  let initialTasks = [
+    { title: 'Update your profile picture', completed: false, createdAt: serverTimestamp() },
+    { title: "Introduce yourself in the #team-space channel", completed: false, createdAt: serverTimestamp() },
   ];
+
+  if (role === 'Intern' || role === 'Volunteer') {
+      initialTasks.push(
+          { title: "Read the Intern & Volunteer Guide in the 'Help' section", completed: false, createdAt: serverTimestamp() },
+          { title: "Ask the AI Coach: 'What are the main programs at Omuto?'", completed: false, createdAt: serverTimestamp() },
+          { title: "Schedule a 15-min intro meeting with your supervisor", completed: false, createdAt: serverTimestamp() }
+      );
+  } else {
+       initialTasks.push(
+          { title: 'Review the November Operational Plan', completed: false, createdAt: serverTimestamp() },
+          { title: 'Explore your new dashboard and management tools', completed: false, createdAt: serverTimestamp() },
+       );
+  }
+
   const userBatch = writeBatch(db);
   initialTasks.forEach((task) => {
     const taskRef = doc(userTasksCollection);
     userBatch.set(taskRef, task);
   });
   await userBatch.commit();
-  console.log('Initial tasks seeded for new user.');
+  console.log(`Initial tasks for ${role} seeded successfully.`);
 }
 
 async function createUserProfile(userCredential: UserCredential, db: Firestore) {
@@ -200,6 +202,7 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
     role: userData.role,
     photoURL: user.photoURL || '',
     createdAt: serverTimestamp(),
+    supervisorId: userData.supervisorId || '',
   };
 
   // Always set/update the profile to ensure role is correct.
@@ -215,7 +218,7 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
     if (programsSnapshot.empty) {
       await seedInitialData(db);
     }
-    await seedUserTasks(db, user.uid);
+    await seedUserTasks(db, user.uid, userData.role);
   }
 
   return userCredential;
@@ -277,3 +280,4 @@ export function initiatePasswordReset(authInstance: Auth, email: string) {
     throw error;
   });
 }
+

@@ -5,13 +5,14 @@ import type { User, Checkin } from '@/lib/types';
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, MessageCircle } from 'lucide-react';
+import { Clock, MessageCircle, Sparkles, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp } from 'firebase/firestore';
 import { startOfDay } from 'date-fns';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
+import { SupervisorCard } from './supervisor-card';
 
 const TeamDeployment = dynamic(() => import('./team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
@@ -33,6 +34,26 @@ function QuickActionsCard() {
   );
 }
 
+function FirstQuestCard() {
+    return (
+        <Card className="bg-primary/10 border-primary/20">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Sparkles /> Your First Quest!</CardTitle>
+                <CardDescription>Get to know Omuto better by using your AI Coach.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="font-semibold mb-2">Your Mission:</p>
+                <p className="mb-4">Go to the AI Coach and ask: <span className="italic font-medium">"What are the main programs at Omuto Foundation?"</span></p>
+                <Button asChild>
+                    <Link href="/chat">
+                        Start Your Quest
+                    </Link>
+                </Button>
+            </CardContent>
+        </Card>
+    )
+}
+
 interface DashboardProps {
   profile: User;
 }
@@ -49,18 +70,15 @@ export function InternVolunteerDashboard({ profile }: DashboardProps) {
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
   return (
-    <DashboardGrid className="mt-6">
-        <QuickActionsCard />
-        <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
-        <Card className="min-h-96">
-          <CardHeader>
-            <CardTitle>My Tasks &amp; Impact</CardTitle>
-            <CardDescription>
-              Coming Soon: A view of your assigned tasks and the impact you're
-              making.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+    <DashboardGrid className="mt-6 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
+            <QuickActionsCard />
+            <SupervisorCard profile={profile} />
+        </div>
+         <div className="flex flex-col gap-6">
+            <FirstQuestCard />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+         </div>
     </DashboardGrid>
   );
 }

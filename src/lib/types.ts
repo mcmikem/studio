@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -202,6 +203,7 @@ export type User = {
     role: string;
     photoURL?: string;
     createdAt?: Timestamp;
+    supervisorId?: string;
 }
 
 export type KeyResult = {
