@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -23,6 +22,7 @@ import { Slider } from '@/components/ui/slider';
 import type { OFATeam, User } from '@/lib/types';
 import { useEffect } from 'react';
 import { OFATeamSchema, OFATeamFormData } from '@/lib/types';
+import Image from 'next/image';
 
 type ManagementRole = 'Head Coach' | 'Assistant Coach' | 'Team Manager' | 'Captain' | 'Vice Captain';
 
@@ -92,10 +92,10 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
   useEffect(() => {
     if (isEditMode && team) {
       reset(team);
-    } else {
+    } else if (!isEditMode) {
         reset({
           equipment: equipmentItems.map(item => ({ item, qty: 0, condition: 'Good', needLevel: 'Low' })),
-          needs: supportAreas.map((area, index) => ({ area, priority: team?.needs?.[index]?.priority || 1 })),
+          needs: supportAreas.map((area) => ({ area, priority: 1 })),
           headCoachAttendance: 'Always',
           assistantCoachAttendance: 'Always',
           teamManagerAttendance: 'Always',
@@ -308,7 +308,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                       <div className="space-y-2">
                         <Label>Have local volunteers?</Label>
                         <Controller name="hasVolunteers" control={control} render={({field}) => (
-                           <RadioGroup onValueChange={(val) => field.onChange(val === 'true')} className="flex gap-4 pt-2">
+                           <RadioGroup onValueChange={(val) => field.onChange(val === 'true')} value={String(field.value)} className="flex gap-4 pt-2">
                               <RadioGroupItem value="true" id="v-yes" /><Label htmlFor="v-yes">Yes</Label>
                               <RadioGroupItem value="false" id="v-no" /><Label htmlFor="v-no">No</Label>
                           </RadioGroup>
