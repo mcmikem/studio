@@ -10,7 +10,11 @@ import { KNOWLEDGE_BASE } from '@/lib/data';
 import type { GrantWriterInput, GrantWriterOutput } from '@/lib/types';
 import { GrantWriterInputSchema, GrantWriterOutputSchema } from '@/lib/types';
 
-const grantWriterPrompt = `You are a professional grant writer for an NGO called Omuto Foundation.
+const grantWriterPrompt = ai.definePrompt({
+    name: 'grantWriterPrompt',
+    input: { schema: GrantWriterInputSchema },
+    output: { schema: GrantWriterOutputSchema },
+    prompt: `You are a professional grant writer for an NGO called Omuto Foundation.
   Use the following knowledge base:
   ---
   ${KNOWLEDGE_BASE}
@@ -26,7 +30,8 @@ const grantWriterPrompt = `You are a professional grant writer for an NGO called
   - Keep it concise and impactful.
   
   Now, draft a concept note for a proposal titled "**{{proposalTitle}}**" to be sent to **{{partnerName}}**. The amount we are requesting is **{{amountRequested}} UGX**.
-`;
+`
+});
 
 export const writeConceptNote = ai.defineFlow(
   {
@@ -35,12 +40,7 @@ export const writeConceptNote = ai.defineFlow(
     outputSchema: GrantWriterOutputSchema,
   },
   async (input) => {
-    const {output} = await ai.generate({
-        model: 'googleai/gemini-1.5-flash-latest',
-        prompt: grantWriterPrompt,
-        input,
-        output: { schema: GrantWriterOutputSchema }
-    });
+    const {output} = await grantWriterPrompt(input);
 
     if (!output) {
       throw new Error('AI failed to generate a concept note.');
