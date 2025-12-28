@@ -230,7 +230,7 @@ export const omutoAIFlow = ai.defineFlow(
             question: input.question
         }, {
             history: input.history || [],
-            model: googleAI('gemini-1.5-flash-latest'),
+            model: googleAI.model('gemini-1.5-pro-latest'),
             config: {
                 temperature: 0.2,
             }

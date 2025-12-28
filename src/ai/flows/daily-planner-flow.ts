@@ -10,11 +10,13 @@
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
 import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, type DailyPlannerAIInput, type DailyPlannerAIOutput } from '@/lib/types';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const dailyPlannerPrompt = ai.definePrompt({
     name: 'dailyPlannerPrompt',
     input: { schema: DailyPlannerAIInputSchema },
     output: { schema: DailyPlannerAIOutputSchema },
+    model: googleAI.model('gemini-1.5-pro-latest'),
     prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format for {{userName}}. You are a coach, not just a scheduler.
 
       Here is the organizational knowledge base to draw from:
