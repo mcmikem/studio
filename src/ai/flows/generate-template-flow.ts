@@ -8,14 +8,9 @@
 import { ai } from '@/ai/genkit';
 import type { GenerateTemplateInput, GenerateTemplateOutput } from '@/lib/types';
 import { GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from '@/lib/types';
-import { googleAI } from '@genkit-ai/google-genai';
 
 
-const templateGeneratorPrompt = ai.definePrompt({
-    name: 'templateGeneratorPrompt',
-    input: { schema: GenerateTemplateInputSchema },
-    output: { schema: GenerateTemplateOutputSchema },
-    prompt: `You are an expert at creating Standard Operating Procedures (SOPs) and checklists for an NGO.
+const templateGeneratorPrompt = `You are an expert at creating Standard Operating Procedures (SOPs) and checklists for an NGO.
   Your task is to take a user's description of a process and turn it into a structured JSON object that conforms to the provided schema.
 
   **Instructions:**
@@ -27,8 +22,7 @@ const templateGeneratorPrompt = ai.definePrompt({
   Now, generate the JSON object for the following process:
 
   "{{description}}"
-  `,
-});
+  `;
 
 
 export const generateTemplate = ai.defineFlow(
@@ -38,7 +32,12 @@ export const generateTemplate = ai.defineFlow(
         outputSchema: GenerateTemplateOutputSchema
     },
     async (input) => {
-        const {output} = await templateGeneratorPrompt(input);
+        const {output} = await ai.generate({
+            model: 'googleai/gemini-1.5-flash-latest',
+            prompt: templateGeneratorPrompt,
+            input,
+            output: { schema: GenerateTemplateOutputSchema }
+        });
 
         if (!output) {
             throw new Error('AI failed to generate the template.');
