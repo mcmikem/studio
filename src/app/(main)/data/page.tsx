@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, BarChart3, Users, CheckCircle, FileText, Swords } from 'lucide-react';
+import { ArrowRight, BarChart3, Users, CheckCircle, FileText, Swords, Leaf, Heart, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 const dataHubSections = [
@@ -43,6 +43,30 @@ const dataHubSections = [
                 title: 'Omuto Football Alliance (OFA)',
                 description: 'Access all data related to OFA teams, players, matches, and performance.',
                 icon: Swords,
+            },
+             {
+                href: '/data/red-campaign',
+                title: 'RED Campaign',
+                description: 'View MHM training, school visit, and pad distribution data.',
+                icon: Heart,
+            },
+            {
+                href: '/data/greenschools',
+                title: 'GreenSchools Campaign',
+                description: 'Analyze tree survival surveys, waste audits, and club registrations.',
+                icon: Leaf,
+            },
+            {
+                href: '/data/yoskills',
+                title: 'YoSkills Entrepreneurship',
+                description: 'Track circles, youth participants, business ideas, and pitch scores.',
+                icon: Zap,
+            },
+             {
+                href: '/data/slf',
+                title: 'Student Leaders Forum (SLF)',
+                description: 'Review school registrations, prefect data, and performance reports.',
+                icon: Users,
             },
         ]
     }
