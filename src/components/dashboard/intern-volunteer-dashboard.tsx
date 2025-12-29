@@ -16,6 +16,8 @@ import { SupervisorCard } from './supervisor-card';
 import { DashboardHeader } from './dashboard-header';
 import { SmartReminders } from './smart-reminders';
 import { DailyActions } from './daily-actions';
+import { useMemo } from 'react';
+import { useUser } from '@/firebase';
 
 const TeamDeployment = dynamic(() => import('./team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
