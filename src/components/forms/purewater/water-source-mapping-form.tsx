@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -64,9 +65,9 @@ export function WaterSourceMappingForm() {
   return (
     <div className="space-y-4">
       <Button variant="outline" asChild>
-        <Link href="/meal/purewater">
+        <Link href="/meal">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to PureWater Hub
+          Back to MEAL Hub
         </Link>
       </Button>
       <Card>

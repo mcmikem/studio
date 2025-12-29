@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, BarChart3, Users, CheckCircle, FileText, Swords, Leaf, Heart, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, Users, CheckCircle, FileText, Swords, Leaf, Heart, Zap, Droplets, Store, Wind, Trophy } from 'lucide-react';
 import Link from 'next/link';
 
 const dataHubSections = [
@@ -67,6 +67,24 @@ const dataHubSections = [
                 title: 'Student Leaders Forum (SLF)',
                 description: 'Review school registrations, prefect data, and performance reports.',
                 icon: Users,
+            },
+             {
+                href: '/meal/purewater', // Corrected path
+                title: 'PureWater Initiative',
+                description: 'Data for water source mapping and WASH assessments.',
+                icon: Droplets,
+            },
+            {
+                href: '/meal/yap', // Corrected path
+                title: 'Youth Action Pathway (YAP)',
+                description: 'Data for chapters and seed grant applications.',
+                icon: Users,
+            },
+            {
+                href: '/essentials', // Corrected path
+                title: 'Omuto Essentials',
+                description: 'Data for production, sales, and inventory.',
+                icon: Store,
             },
         ]
     }
