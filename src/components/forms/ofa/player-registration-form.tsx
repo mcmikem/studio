@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useFirebaseApp, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useFirebaseApp, useUser, useCollection } from '@/firebase';
+import { collection, serverTimestamp, query, orderBy, writeBatch, doc } from 'firebase/firestore';
 import { Loader2, ArrowLeft, UserPlus, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -22,6 +22,7 @@ import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { OFAPlayerSchema, OFAPlayer, OFAPlayerFormData } from '@/lib/types';
 import Image from 'next/image';
+import { useMemoFirebase } from '@/firebase/provider';
 
 export function PlayerRegistrationForm() {
   const router = useRouter();
@@ -72,6 +73,8 @@ export function PlayerRegistrationForm() {
         return;
     }
 
+    const batch = writeBatch(firestore);
+
     try {
         let photoUrl: string | null = null;
         if (data.photo && data.photo instanceof File) {
@@ -79,7 +82,10 @@ export function PlayerRegistrationForm() {
             photoUrl = await uploadFile(firebaseApp, data.photo, path);
         }
 
-        const playerData: Partial<OFAPlayer> = {
+        // 1. Create OFA Player document
+        const playerRef = doc(collection(firestore, 'ofa-players'));
+        let playerData: Partial<OFAPlayer> = {
+            id: playerRef.id,
             name: data.name,
             teamId: data.teamId,
             teamName: selectedTeam.teamName,
@@ -87,7 +93,6 @@ export function PlayerRegistrationForm() {
             createdAt: serverTimestamp(),
         };
 
-        // Only add optional fields if they have a value
         if (data.age !== null && data.age !== undefined) playerData.age = data.age;
         if (photoUrl) playerData.photoUrl = photoUrl;
         if (data.playingPosition) playerData.playingPosition = data.playingPosition;
@@ -104,12 +109,30 @@ export function PlayerRegistrationForm() {
         if (data.skillGoal) playerData.skillGoal = data.skillGoal;
         if (data.schoolGoal) playerData.schoolGoal = data.schoolGoal;
         if (data.behaviourGoal) playerData.behaviourGoal = data.behaviourGoal;
+        batch.set(playerRef, playerData);
 
-        await addDocumentNonBlocking(collection(firestore, 'ofa-players'), playerData);
+
+        // 2. Create Beneficiary document
+        const beneficiaryRef = doc(collection(firestore, 'beneficiaries'));
+        const beneficiaryData = {
+            id: beneficiaryRef.id,
+            name: data.name,
+            dob: '',
+            gender: 'Male', // Default, can be improved
+            village: selectedTeam.village || selectedTeam.teamName,
+            programEnrolled: 'Omuto Football Alliance',
+            school: data.school,
+            phone: data.guardianContact || '',
+            photoURL: photoUrl,
+            createdAt: serverTimestamp(),
+        };
+        batch.set(beneficiaryRef, beneficiaryData);
+        
+        await batch.commit();
 
         toast({
             title: 'Player Registered!',
-            description: `${data.name} has been added to the league.`,
+            description: `${data.name} has been added to the league and the main beneficiary database.`,
         });
         reset();
         setPhotoPreview(null);
@@ -137,7 +160,7 @@ export function PlayerRegistrationForm() {
             OFA Player Registration
           </CardTitle>
           <CardDescription>
-            Create a player profile for database and talent tracking.
+            Create a player profile for database and talent tracking. This will also create a master beneficiary record.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>

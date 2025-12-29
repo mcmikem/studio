@@ -1,54 +1,53 @@
-
 'use client';
 
 import { Suspense } from 'react';
-import { Loader2, Trophy, Swords, Wind, ArrowLeft } from 'lucide-react';
+import { Loader2, Users, FileText, Swords, BarChart, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-const talentHubs = [
+const ofaDataViews = [
   {
-    href: '/meal/ofa',
-    title: 'Omuto Football Alliance',
-    description: 'Manage teams, players, and matches for the league.',
+    href: '/meal/data/ofa/teams',
+    title: 'Registered Teams',
+    description: 'View all teams registered in the Omuto Football Alliance.',
     icon: Swords,
   },
   {
-    href: '/talents/omuto-cup',
-    title: 'Omuto Cup (Event)',
-    description: 'Data collection and management for the tournament.',
-    icon: Trophy,
+    href: '/meal/data/ofa/players',
+    title: 'Registered Players',
+    description: 'Browse the database of all registered players.',
+    icon: Users,
   },
   {
-    href: '/pulse',
-    title: 'Omuto Pulse',
-    description: 'Submit content for the media platform.',
-    icon: Wind,
+    href: '/meal/data/ofa/matches',
+    title: 'Match Results',
+    description: 'See the results and details of all logged matches.',
+    icon: FileText,
+  },
+  {
+    href: '/meal/data/ofa/scorecards',
+    title: 'Quarterly Scorecards',
+    description: 'Review the performance scorecards for all teams.',
+    icon: BarChart,
   },
 ];
 
-function TalentsHubPage() {
+function OFAPage() {
     return (
         <div className="space-y-6">
             <header>
-                <Button variant="outline" asChild className="mb-4">
-                    <Link href="/meal">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to MEAL Hub
-                    </Link>
-                </Button>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Talents</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">OFA Data Hub</h1>
                 <p className="text-muted-foreground">
-                    A hub for all talent development programs including sports and media.
+                    View and analyze all data collected for the Omuto Football Alliance.
                 </p>
             </header>
              <Card>
                 <CardHeader>
-                    <CardTitle>Talent Programs</CardTitle>
+                    <CardTitle>OFA Data Views</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {talentHubs.map(form => (
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {ofaDataViews.map(form => (
                          <Link key={form.href} href={form.href} className="block">
                             <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
                                 <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
@@ -65,10 +64,10 @@ function TalentsHubPage() {
     )
 }
 
-export default function TalentsPage() {
+export default function OFADataHubPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <TalentsHubPage />
+            <OFAPage />
         </Suspense>
     )
 }

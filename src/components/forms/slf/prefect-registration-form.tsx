@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -11,8 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, serverTimestamp, query, orderBy, writeBatch, doc } from 'firebase/firestore';
 import { Loader2, ArrowLeft, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -20,6 +18,7 @@ import type { SLF_School } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo } from 'react';
+import { useMemoFirebase } from '@/firebase/provider';
 
 const prefectSchema = z.object({
   schoolId: z.string().min(1, 'Please select a school.'),
@@ -62,13 +61,33 @@ export function PrefectRegistrationForm() {
 
     const schoolName = schools?.find(s => s.id === data.schoolId)?.schoolName || 'Unknown School';
 
-    const formData = { ...data, schoolName, createdAt: serverTimestamp() };
+    const batch = writeBatch(firestore);
+
+    // 1. Create Prefect Document
+    const prefectRef = doc(collection(firestore, 'slf-prefects'));
+    const prefectData = { ...data, schoolName, createdAt: serverTimestamp(), id: prefectRef.id };
+    batch.set(prefectRef, prefectData);
+
+    // 2. Create Beneficiary Document
+    const beneficiaryRef = doc(collection(firestore, 'beneficiaries'));
+    const beneficiaryData = {
+        id: beneficiaryRef.id,
+        name: data.name,
+        dob: '',
+        gender: data.gender,
+        village: schoolName, // Use school as village for context
+        programEnrolled: 'Student Leaders Forum',
+        school: schoolName,
+        phone: data.phone,
+        createdAt: serverTimestamp(),
+    };
+    batch.set(beneficiaryRef, beneficiaryData);
 
     try {
-      await addDocumentNonBlocking(collection(firestore, 'slf-prefects'), formData);
+      await batch.commit();
       toast({
         title: 'Prefect Registered!',
-        description: `${data.name} from ${schoolName} has been successfully registered.`,
+        description: `${data.name} from ${schoolName} has been successfully registered and added to the beneficiary database.`,
       });
       reset();
       router.push('/meal/slf');
@@ -92,7 +111,7 @@ export function PrefectRegistrationForm() {
             SLF Prefect Registration
           </CardTitle>
           <CardDescription>
-            Register a new prefect from a participating school.
+            Register a new prefect from a participating school. This will also create a master beneficiary record.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -87,13 +86,10 @@ const navConfig = {
       { href: '/know', icon: Book, label: 'Quick to Know' }
   ],
   meal: [
-      { href: '/meal', icon: ClipboardEdit, label: 'MEAL Hub (Forms)' },
-  ],
-  dataHub: [
-      { href: '/data', icon: Database, label: 'Data Hub' },
+      { href: '/meal', icon: BarChart3, label: 'MEAL Hub' },
   ],
   reports: [
-     { href: '/reports', icon: BarChart3, label: 'Reports Hub' },
+     { href: '/reports', icon: AreaChart, label: 'Reports Hub' },
      { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
      { href: '/testimonies', icon: Video, label: 'Testimony Library' },
   ],
@@ -102,18 +98,18 @@ const navConfig = {
   ],
   system: [
     { href: '/help', icon: LifeBuoy, label: 'Help & Support' },
-    { href: '/forms/system/feedback', icon: Bug, label: 'Feedback' },
+    { href: '/system/feedback', icon: Bug, label: 'Feedback' },
   ]
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
-  'Executive Director': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Resource Mobilization Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Operations & Field Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Media & Finance Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Media & Communications Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
+  'Administrator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management', 'system'],
+  'Executive Director': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
+  'Resource Mobilization Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
+  'Operations & Field Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
+  'Media & Finance Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
+  'Media & Communications Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
   'Field Coordinator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
   'Intern': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
   'Volunteer': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
@@ -204,9 +200,8 @@ export function AppSidebar() {
         {renderNavSection('workspace', 'Workspace')}
         {renderNavSection('teamHub', 'Team Hub')}
         {renderNavSection('knowledgeHub', 'Knowledge Hub')}
-        {renderNavSection('meal', 'MEAL Hub (Forms)')}
-        {renderNavSection('dataHub', 'Data Hub')}
-        {renderNavSection('reports', 'Reports & Analytics')}
+        {renderNavSection('meal', 'MEAL')}
+        {renderNavSection('reports', 'Reports')}
         {renderNavSection('management', 'Management')}
         <Separator className="my-2" />
         {renderNavSection('system', 'System')}
