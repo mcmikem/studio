@@ -410,42 +410,43 @@ export default function KnowPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-        <div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-                <BookOpen className="h-8 w-8" />
-                Quick to Know About Omuto
-            </h1>
-            <p className="text-muted-foreground">
-            A knowledge hub to help you learn and share accurate information about Omuto Foundation.
-            </p>
+    <div className="space-y-6">
+      <header>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div>
+                <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+                    <BookOpen className="h-8 w-8" />
+                    Quick to Know About Omuto
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                A knowledge hub to help you learn and share accurate information about Omuto Foundation.
+                </p>
+            </div>
+             <div className="flex gap-2 flex-shrink-0">
+                {canEdit && (
+                    isEditMode ? (
+                    <>
+                        <Button variant="outline" onClick={() => setIsEditMode(false)}>
+                        <X className="mr-2 h-4 w-4" /> Cancel
+                        </Button>
+                        <Button onClick={handleSaveChanges} disabled={isDownloading}>
+                        {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                        Save Changes
+                        </Button>
+                    </>
+                    ) : (
+                        <Button variant="outline" onClick={() => setIsEditMode(true)}>
+                        <Edit className="mr-2 h-4 w-4" /> Edit Page
+                        </Button>
+                    )
+                )}
+                <Button onClick={handleDownloadPDF} disabled={isDownloading}>
+                    {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
+                    Download as PDF
+                </Button>
+            </div>
         </div>
-        <div className="flex gap-2">
-          {canEdit && (
-            isEditMode ? (
-              <>
-                <Button variant="outline" onClick={() => setIsEditMode(false)}>
-                  <X className="mr-2 h-4 w-4" /> Cancel
-                </Button>
-                <Button onClick={handleSaveChanges} disabled={isDownloading}>
-                  {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                  Save Changes
-                </Button>
-              </>
-            ) : (
-                <Button variant="outline" onClick={() => setIsEditMode(true)}>
-                  <Edit className="mr-2 h-4 w-4" /> Edit Page
-                </Button>
-            )
-          )}
-          <Button onClick={handleDownloadPDF} disabled={isDownloading}>
-            {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-            Download as PDF
-          </Button>
-        </div>
-      </header>
-       <div className="relative">
+         <div className="relative pt-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
               placeholder="Search knowledge hub..." 
@@ -454,6 +455,7 @@ export default function KnowPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+      </header>
       
       <div ref={contentRef} className="space-y-8">
         {renderContent()}

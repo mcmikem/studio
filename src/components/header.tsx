@@ -170,20 +170,13 @@ export function AppHeader() {
     )}>
        <div className="flex items-center gap-4">
         <SidebarTrigger className={cn(
-            "lg:hidden text-foreground",
+            "text-foreground",
         )} />
-        <Button variant="outline" className="gap-2 hidden sm:flex" onClick={() => setOpen(true)}>
-            <Search className="h-4 w-4" />
-            Search...
-            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-                <span className="text-xs">⌘</span>K
-            </kbd>
-        </Button>
       </div>
       <div className={cn(
-        "flex items-center gap-2"
+        "flex items-center gap-1.5"
       )}>
-        <Button variant="ghost" size="icon" className="sm:hidden" onClick={() => setOpen(true)}><Search className="h-5 w-5" /></Button>
+        <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setOpen(true)}><Search className="h-5 w-5" /></Button>
         {canViewAs && <ViewAsMenu />}
         <QuickAddMenu />
         <NotificationsMenu />
@@ -270,5 +263,3 @@ function UserMenu() {
     </DropdownMenu>
   );
 }
-
-    
