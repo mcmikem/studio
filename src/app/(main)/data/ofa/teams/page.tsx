@@ -29,7 +29,7 @@ import { useCollection, useFirestore, useMemoFirebase, deleteDocumentNonBlocking
 import { collection, query, orderBy, limit, doc } from 'firebase/firestore';
 import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Swords, ArrowRight, Edit, Trash2 } from 'lucide-react';
+import { Swords, ArrowRight, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -42,6 +42,7 @@ import { OFATeamRegistrationForm } from '@/components/forms/ofa/team-registratio
 export default function TeamsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
+  const [editingTeam, setEditingTeam] = useState<OFATeam | null>(null);
   
   const teamsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -65,14 +66,20 @@ export default function TeamsPage() {
   return (
     <>
     <div className="space-y-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Swords className="h-8 w-8" />
-          Registered OFA Teams
-        </h1>
-        <p className="text-muted-foreground">
-          A directory of all teams participating in the Omuto Football Alliance.
-        </p>
+       <header>
+            <Button variant="outline" asChild className="mb-4">
+                <Link href="/data/ofa">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to OFA Data Hub
+                </Link>
+            </Button>
+            <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Swords className="h-8 w-8" />
+            Registered OFA Teams
+            </h1>
+            <p className="text-muted-foreground">
+            A directory of all teams participating in the Omuto Football Alliance.
+            </p>
       </header>
       <Card>
         <CardContent className="pt-6">
@@ -96,6 +103,7 @@ export default function TeamsPage() {
                             <Button asChild variant="secondary" className="w-full">
                                 <Link href={`/data/ofa/teams/${team.id}`}>View Details <ArrowRight className="ml-2 h-4 w-4" /></Link>
                             </Button>
+                            <Button variant="outline" size="icon" onClick={() => setEditingTeam(team)}><Edit className="h-4 w-4"/></Button>
                              <AlertDialog>
                                 <AlertDialogTrigger asChild><Button variant="destructive" size="icon"><Trash2 className="h-4 w-4"/></Button></AlertDialogTrigger>
                                  <AlertDialogContent>
@@ -157,6 +165,9 @@ export default function TeamsPage() {
                             <Button asChild variant="outline" size="sm">
                                 <Link href={`/data/ofa/teams/${team.id}`}>View</Link>
                             </Button>
+                            <Button variant="ghost" size="icon" onClick={() => setEditingTeam(team)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
@@ -197,6 +208,15 @@ export default function TeamsPage() {
         </CardContent>
       </Card>
     </div>
-    </>
+      <Dialog open={!!editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+            <DialogHeader>
+                <DialogTitle>Edit Team: {editingTeam?.teamName}</DialogTitle>
+                <DialogDescription>Update the registration details for this team.</DialogDescription>
+            </DialogHeader>
+            <OFATeamRegistrationForm team={editingTeam} onSuccess={() => setEditingTeam(null)} />
+        </DialogContent>
+   </Dialog>
+   </>
   );
 }
