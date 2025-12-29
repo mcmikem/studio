@@ -1,5 +1,4 @@
 
-      
 'use client';
 
 import {
@@ -44,7 +43,7 @@ const generalMneForms = [
         icon: CheckCircle,
     },
     {
-        href: '/record-testimony',
+        href: '/meal/record-testimony',
         title: 'Impact Story Capture',
         description: 'Record a success story with before/after details and media.',
         icon: Trophy,
@@ -121,5 +120,3 @@ export default function MealPage() {
         </div>
     );
 }
-
-    
