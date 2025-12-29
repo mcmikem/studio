@@ -89,8 +89,8 @@ export default function TeamsPage() {
                             <CardDescription>{team.subcounty}</CardDescription>
                         </CardHeader>
                         <CardContent className="text-sm">
-                            <p><strong>Coach:</strong> {team.headCoachName}</p>
-                            <p><strong>Players:</strong> {team.totalPlayers}</p>
+                            <p><strong>Coach:</strong> {team.headCoachName || 'N/A'}</p>
+                            <p><strong>Players:</strong> {team.totalPlayers || 0}</p>
                         </CardContent>
                         <CardFooter className="flex gap-2">
                             <Button asChild variant="secondary" className="w-full">
@@ -150,8 +150,8 @@ export default function TeamsPage() {
                     <TableRow key={team.id}>
                       <TableCell className="font-medium">{team.teamName}</TableCell>
                       <TableCell className="hidden md:table-cell">{team.subcounty}</TableCell>
-                      <TableCell>{team.headCoachName}</TableCell>
-                      <TableCell className="hidden sm:table-cell">{team.totalPlayers}</TableCell>
+                      <TableCell>{team.headCoachName || 'N/A'}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{team.totalPlayers || 0}</TableCell>
                        <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                             <Button asChild variant="outline" size="sm">
