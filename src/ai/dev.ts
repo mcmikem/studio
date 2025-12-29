@@ -11,6 +11,11 @@ dotenv.config({ path: '.env' });
 
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
+import { getFirebaseAdmin } from '@/firebase/server';
+
+// Ensure the admin instance is initialized and data is seeded on startup.
+getFirebaseAdmin();
+
 
 // This is where the server-side configuration is done.
 // The `ai` object is augmented with the plugin.
