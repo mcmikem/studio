@@ -1168,6 +1168,14 @@ export type KnowledgeHubStory = {
   title: string;
   content: string;
 };
+
+export type KnowledgeHubCTA = {
+  id: string;
+  order: number;
+  title: string;
+  description: string;
+  buttonLabel: string;
+};
     
 
 
@@ -1178,3 +1186,4 @@ export type KnowledgeHubStory = {
     
 
     
+

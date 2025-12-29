@@ -1405,7 +1405,7 @@
       "properties": {
         "id": { "type": "string" },
         "teamName": { "type": "string" },
-        "teamPhotoUrl": { "type": ["string", "null"], "format": "uri" },
+        "teamPhotoUrl": { "type": "string", "format": "uri" },
         "subcounty": { "type": "string" },
         "parish": { "type": "string" },
         "village": { "type": "string" },
@@ -1550,6 +1550,19 @@
         "order": { "type": "number" }
       },
       "required": ["title", "content", "order"]
+    },
+    "KnowledgeHubCTA": {
+      "title": "Knowledge Hub CTA",
+      "description": "A Call to Action for the knowledge hub.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "buttonLabel": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "description", "buttonLabel", "order"]
     }
   },
   "auth": {
@@ -1626,6 +1639,8 @@
     "/knowledgeHubSections/{sectionId}": { "schema": { "$ref": "#/entities/KnowledgeHubSection" }, "description": "Stores the main content sections for the knowledge hub." },
     "/knowledgeHubPitches/{pitchId}": { "schema": { "$ref": "#/entities/KnowledgeHubPitch" }, "description": "Stores the copyable pitches and boilerplates." },
     "/knowledgeHubFaqs/{faqId}": { "schema": { "$ref": "#/entities/KnowledgeHubFAQ" }, "description": "Stores the frequently asked questions." },
-    "/knowledgeHubStories/{storyId}": { "schema": { "$ref": "#/entities/KnowledgeHubStory" }, "description": "Stores sample impact stories." }
+    "/knowledgeHubStories/{storyId}": { "schema": { "$ref": "#/entities/KnowledgeHubStory" }, "description": "Stores sample impact stories." },
+    "/knowledgeHubCtas/{ctaId}": { "schema": { "$ref": "#/entities/KnowledgeHubCTA" }, "description": "Stores calls to action for the knowledge hub." }
   }
 }
+

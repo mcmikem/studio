@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, doc, writeBatch } from 'firebase/firestore';
-import type { KnowledgeHubSection, KnowledgeHubPitch, KnowledgeHubFAQ, KnowledgeHubStory } from '@/lib/types';
+import type { KnowledgeHubSection, KnowledgeHubPitch, KnowledgeHubFAQ, KnowledgeHubStory, KnowledgeHubCTA } from '@/lib/types';
 
 import {
   Card,
@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { useMemo, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { CallsToAction } from '@/components/know/calls-to-action';
 
 
 function CopyButton({ text }: { text: string }) {
@@ -61,6 +62,7 @@ export default function KnowPage() {
   const [editablePitches, setEditablePitches] = useState<KnowledgeHubPitch[]>([]);
   const [editableFaqs, setEditableFaqs] = useState<KnowledgeHubFAQ[]>([]);
   const [editableStories, setEditableStories] = useState<KnowledgeHubStory[]>([]);
+  const [editableCtas, setEditableCtas] = useState<KnowledgeHubCTA[]>([]);
 
   // State to track deletions
   const [itemsToDelete, setItemsToDelete] = useState<{ collection: string, id: string }[]>([]);
@@ -79,9 +81,12 @@ export default function KnowPage() {
   
   const storiesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'knowledgeHubStories'), orderBy('order')) : null, [firestore]);
   const { data: stories, isLoading: isLoadingStories } = useCollection<KnowledgeHubStory>(storiesQuery);
+  
+  const ctasQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'knowledgeHubCtas'), orderBy('order')) : null, [firestore]);
+  const { data: ctas, isLoading: isLoadingCtas } = useCollection<KnowledgeHubCTA>(ctasQuery);
 
   const canEdit = profile && ['Administrator', 'Executive Director'].includes(profile.role);
-  const isLoading = isLoadingSections || isLoadingPitches || isLoadingFaqs || isLoadingStories;
+  const isLoading = isLoadingSections || isLoadingPitches || isLoadingFaqs || isLoadingStories || isLoadingCtas;
 
   // Sync firestore data to local editable state when not in edit mode
   React.useEffect(() => {
@@ -90,8 +95,9 @@ export default function KnowPage() {
       if (pitches) setEditablePitches(JSON.parse(JSON.stringify(pitches)));
       if (faqs) setEditableFaqs(JSON.parse(JSON.stringify(faqs)));
       if (stories) setEditableStories(JSON.parse(JSON.stringify(stories)));
+      if (ctas) setEditableCtas(JSON.parse(JSON.stringify(ctas)));
     }
-  }, [sections, pitches, faqs, stories, isEditMode]);
+  }, [sections, pitches, faqs, stories, ctas, isEditMode]);
 
 
   const handleSaveChanges = async () => {
@@ -104,34 +110,25 @@ export default function KnowPage() {
     const batch = writeBatch(firestore);
 
     try {
-        // Handle updates and creations
-        [...editableSections, ...editablePitches, ...editableFaqs, ...editableStories].forEach((item, index) => {
-            let collectionName = '';
-            if ('subsections' in item) collectionName = 'knowledgeHubSections';
-            else if ('question' in item) collectionName = 'knowledgeHubFaqs';
-            else if ('content' in item && 'order' in item && 'title' in item) {
-                // Differentiate between pitch and story
-                if (editablePitches.some(p => p.id === item.id) || !item.id.startsWith('temp-')) collectionName = 'knowledgeHubPitches';
-                if (editableStories.some(s => s.id === item.id) || !item.id.startsWith('temp-')) collectionName = 'knowledgeHubStories';
-                // A bit of a guess for new items, let's assume pitch if not sure
-                if(!collectionName) {
-                   if (editablePitches.some(p=>p.id === item.id)) collectionName = 'knowledgeHubPitches'
-                   else if (editableStories.some(s=>s.id === item.id)) collectionName = 'knowledgeHubStories'
-                   else if ('question' in item) collectionName = 'knowledgeHubFaqs'
-                   else collectionName = 'knowledgeHubSections'
+        // Helper to process a list of items for batch update/create
+        const processItems = (items: any[], collectionName: string) => {
+            items.forEach((item, index) => {
+                const itemWithOrder = { ...item, order: index };
+                if (item.id.startsWith('temp-')) { // New item
+                    const docRef = doc(collection(firestore, collectionName));
+                    batch.set(docRef, itemWithOrder);
+                } else { // Existing item
+                    const ref = doc(firestore, collectionName, item.id);
+                    batch.update(ref, itemWithOrder);
                 }
-            }
-
-
-            if (item.id.startsWith('temp-')) { // New item
-                const docRef = doc(collection(firestore, collectionName));
-                const newItem = { ...item, id: docRef.id, order: index }; // Assign final order
-                batch.set(docRef, newItem);
-            } else { // Existing item
-                const ref = doc(firestore, collectionName, item.id);
-                batch.update(ref, { ...item, order: index });
-            }
-        });
+            });
+        }
+        
+        processItems(editableSections, 'knowledgeHubSections');
+        processItems(editablePitches, 'knowledgeHubPitches');
+        processItems(editableFaqs, 'knowledgeHubFaqs');
+        processItems(editableStories, 'knowledgeHubStories');
+        processItems(editableCtas, 'knowledgeHubCtas');
         
         // Handle deletions
         itemsToDelete.forEach(item => {
@@ -162,6 +159,7 @@ export default function KnowPage() {
     else if (type === 'pitches') setStateAction(setEditablePitches, editablePitches);
     else if (type === 'faqs') setStateAction(setEditableFaqs, editableFaqs);
     else if (type === 'stories') setStateAction(setEditableStories, editableStories);
+    else if (type === 'ctas') setStateAction(setEditableCtas, editableCtas);
   };
   
   const handleAddItem = (type: string) => {
@@ -170,24 +168,21 @@ export default function KnowPage() {
     if (type === 'pitches') setEditablePitches(prev => [...prev, { ...newItem, title: '', content: '' } as any]);
     if (type === 'faqs') setEditableFaqs(prev => [...prev, { ...newItem, question: '', answer: '' } as any]);
     if (type === 'stories') setEditableStories(prev => [...prev, { ...newItem, title: '', content: '' } as any]);
+    if (type === 'ctas') setEditableCtas(prev => [...prev, { ...newItem, title: '', description: '', buttonLabel: '' } as any]);
   };
   
   const handleDeleteItem = (type: string, id: string, index: number) => {
-    const removeItem = (setter: React.Dispatch<React.SetStateAction<any[]>>, items: any[]) => {
+    const removeItem = (setter: React.Dispatch<React.SetStateAction<any[]>>, items: any[], collectionName: string) => {
       setter(items.filter((_, i) => i !== index));
       if (!id.startsWith('temp-')) {
-          let collectionName = '';
-           if (type === 'sections') collectionName = 'knowledgeHubSections';
-           if (type === 'pitches') collectionName = 'knowledgeHubPitches';
-           if (type === 'faqs') collectionName = 'knowledgeHubFaqs';
-           if (type === 'stories') collectionName = 'knowledgeHubStories';
           setItemsToDelete(prev => [...prev, { collection: collectionName, id }]);
       }
     };
-    if (type === 'sections') removeItem(setEditableSections, editableSections);
-    if (type === 'pitches') removeItem(setEditablePitches, editablePitches);
-    if (type === 'faqs') removeItem(setEditableFaqs, editableFaqs);
-    if (type === 'stories') removeItem(setEditableStories, editableStories);
+    if (type === 'sections') removeItem(setEditableSections, editableSections, 'knowledgeHubSections');
+    if (type === 'pitches') removeItem(setEditablePitches, editablePitches, 'knowledgeHubPitches');
+    if (type === 'faqs') removeItem(setEditableFaqs, editableFaqs, 'knowledgeHubFaqs');
+    if (type === 'stories') removeItem(setEditableStories, editableStories, 'knowledgeHubStories');
+    if (type === 'ctas') removeItem(setEditableCtas, editableCtas, 'knowledgeHubCtas');
   };
 
 
@@ -257,6 +252,16 @@ export default function KnowPage() {
           story.content.toLowerCase().includes(lowercasedFilter)
       );
   }, [editableStories, searchTerm]);
+  
+  const filteredCtas = useMemo(() => {
+      if (!searchTerm) return editableCtas;
+      const lowercasedFilter = searchTerm.toLowerCase();
+      return editableCtas?.filter(cta =>
+          cta.title.toLowerCase().includes(lowercasedFilter) ||
+          cta.description.toLowerCase().includes(lowercasedFilter)
+      );
+  }, [editableCtas, searchTerm]);
+
 
   const renderContent = () => {
     if (isLoading) {
@@ -270,7 +275,7 @@ export default function KnowPage() {
     }
     
     const isFiltering = searchTerm.length > 0;
-    const noResults = filteredSections?.length === 0 && filteredPitches?.length === 0 && filteredFaqs?.length === 0 && filteredStories?.length === 0;
+    const noResults = filteredSections?.length === 0 && filteredPitches?.length === 0 && filteredFaqs?.length === 0 && filteredStories?.length === 0 && filteredCtas?.length === 0;
 
     return (
       <>
@@ -347,6 +352,8 @@ export default function KnowPage() {
             </CardContent>
           </Card>
         )}
+        
+        {filteredCtas && filteredCtas.length > 0 && <CallsToAction ctas={filteredCtas} isEditMode={isEditMode} handleContentChange={handleContentChange} handleAddItem={() => handleAddItem('ctas')} handleDeleteItem={(id, index) => handleDeleteItem('ctas', id, index)} />}
 
         {filteredFaqs && filteredFaqs.length > 0 && (
           <Card>
