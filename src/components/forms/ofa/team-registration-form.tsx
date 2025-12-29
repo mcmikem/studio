@@ -164,7 +164,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
               </Link>
           </Button>
         )}
-      <Card className="flex-grow flex flex-col">
+      <Card className="flex-grow flex flex-col overflow-hidden">
         {!isEditMode && (
             <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -176,7 +176,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   </CardDescription>
             </CardHeader>
         )}
-        <form id={formId} onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-grow">
+        <form id={formId} onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
           <ScrollArea className="flex-grow">
             <CardContent className="pt-6 space-y-8">
               <div className="space-y-4">
@@ -330,7 +330,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
               </div>
             </CardContent>
           </ScrollArea>
-             <CardFooter className="flex-shrink-0 pt-6">
+             <CardFooter className="flex-shrink-0 p-6 pt-6 border-t">
                  <Button type="submit" form={formId} disabled={isSubmitting} className="w-full">
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isEditMode ? 'Save Changes' : 'Register Team'}
@@ -341,5 +341,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
     </div>
   );
 }
+
+    
 
     

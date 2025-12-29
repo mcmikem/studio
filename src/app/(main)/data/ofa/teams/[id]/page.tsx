@@ -119,8 +119,8 @@ function TeamDetailDashboard() {
       </header>
 
        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-            <DialogHeader>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
+            <DialogHeader className="p-6 pb-0">
                 <DialogTitle>Edit Team: {team.teamName}</DialogTitle>
                 <DialogDescription>Update the registration details for this team.</DialogDescription>
             </DialogHeader>
@@ -246,5 +246,7 @@ function TeamDetailDashboard() {
 export default function TeamDetailPage() {
     return <TeamDetailDashboard />;
 }
+
+    
 
     
