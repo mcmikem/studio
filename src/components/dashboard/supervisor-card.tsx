@@ -18,12 +18,11 @@ interface SupervisorCardProps {
 export function SupervisorCard({ profile }: SupervisorCardProps) {
   const firestore = useFirestore();
 
-  const supervisorId = profile.supervisorId || 'mcmike@omuto.org';
+  // Use the supervisorId from the profile, or default to a known ID for demo purposes
+  const supervisorId = profile.supervisorId || 'operations@omuto.org'; 
 
   const supervisorDocRef = useMemoFirebase(() => {
     if (!firestore || !supervisorId) return null;
-    // Note: We're assuming the supervisorId is the user's document ID.
-    // If it's an email, we'd need a query.
     return doc(firestore, 'users', supervisorId);
   }, [firestore, supervisorId]);
 

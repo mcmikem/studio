@@ -11,8 +11,8 @@ import { formatCurrency } from "@/lib/utils"
 import { EmptyState } from "../ui/empty-state"
 
 const metricIcons: { [key: string]: React.ElementType } = {
-  "Cycle of Dignity Fundraising": HandCoins,
   "Girls Supported (RED)": Users,
+  "Cycle of Dignity Fundraising": HandCoins,
   "Schools Supported": Target,
   "Trees Planted (GreenSchools)": Trees,
   default: Target,

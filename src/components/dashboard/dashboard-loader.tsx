@@ -13,6 +13,7 @@ import { InternVolunteerDashboard } from './intern-volunteer-dashboard';
 import DefaultDashboard from './default-dashboard'; // Fixed import to use default
 import { MediaFinanceDashboard } from './media-finance-dashboard';
 import type { User as UserProfile } from '@/lib/types';
+import { DashboardHeader } from './dashboard-header';
 
 interface DashboardProps {
   user: any; 
@@ -25,6 +26,8 @@ const dashboardMap: Record<string, React.ComponentType<DashboardProps>> = {
   'Programs & Partnerships Manager': ProgramManagerDashboard as any,
   'Operations & Field Manager': FieldStaffDashboard as any,
   'Media & Communications Lead': MediaFinanceDashboard as any,
+  'Media & Finance Lead': MediaFinanceDashboard as any,
+  'Field Coordinator': FieldStaffDashboard as any,
   'Intern': InternVolunteerDashboard as any,
   'Volunteer': InternVolunteerDashboard as any,
 };
@@ -36,10 +39,7 @@ export function DashboardLoader() {
   if (isUserLoading || isProfileLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-            <Skeleton className="h-10 w-48" />
-            <Skeleton className="h-10 w-32" />
-        </div>
+        <Skeleton className="h-32" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-32 w-full" />

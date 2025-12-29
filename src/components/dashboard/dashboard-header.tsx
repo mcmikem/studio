@@ -17,7 +17,6 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
   }, []);
  
   return (
-    <>
       <Card className="relative rounded-2xl overflow-hidden p-6 flex flex-col justify-center min-h-[150px] bg-card text-card-foreground">
           {headerImage && (
               <>
@@ -38,6 +37,5 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
             </h1>
         </div>
       </Card>
-    </>
   )
 }

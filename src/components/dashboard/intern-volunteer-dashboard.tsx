@@ -13,6 +13,9 @@ import { startOfDay } from 'date-fns';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
 import { SupervisorCard } from './supervisor-card';
+import { DashboardHeader } from './dashboard-header';
+import { SmartReminders } from './smart-reminders';
+import { DailyActions } from './daily-actions';
 
 const TeamDeployment = dynamic(() => import('./team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
@@ -60,25 +63,31 @@ interface DashboardProps {
 
 export function InternVolunteerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
+  const { user } = useUser();
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
   const checkinsQuery = useMemoFirebase((db) => {
-    if(!firestore) return null;
-    return query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
-  }, [firestore]);
+    if(!firestore || !user) return null;
+    return query(collection(db, 'checkins'), where('userId', '==', user.uid), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
+  }, [firestore, user]);
   const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
 
+  const dailyCheckin = useMemo(() => checkins?.[0], [checkins]);
+
   return (
-    <DashboardGrid className="mt-6 lg:grid-cols-2">
-        <div className="flex flex-col gap-6">
-            <QuickActionsCard />
-            <SupervisorCard profile={profile} />
+    <div className="flex flex-col gap-6">
+      <DashboardHeader profile={profile} />
+       <DashboardGrid className="lg:grid-cols-3">
+        <div className="lg:col-span-2 flex flex-col gap-6">
+           <SmartReminders profile={profile} />
+           <DailyActions checkin={dailyCheckin} isLoadingCheckin={isLoadingCheckins} />
         </div>
          <div className="flex flex-col gap-6">
+            <SupervisorCard profile={profile} />
             <FirstQuestCard />
-            <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
          </div>
     </DashboardGrid>
+    </div>
   );
 }
