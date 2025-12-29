@@ -8,6 +8,7 @@ import * as path from 'path';
 
 let adminApp: App | null = null;
 let firestoreInstance: Firestore | null = null;
+let isSeeding = false; // Add a flag to prevent concurrent seeding operations
 
 const knowledgeHubContent = {
   sections: [
@@ -19,7 +20,7 @@ const knowledgeHubContent = {
     { 
       order: 2, 
       title: 'Quick Facts', 
-      content: '<ul><li><strong>District:</strong> Mpigi</li><li><strong>Country:</strong> Uganda</li><li><strong>Type:</strong> Youth-led organization</li><li><strong>Primary beneficiaries:</strong> children, adolescents, and young people</li><li><strong>Key focus:</strong> schools, youth groups, sports teams, communities</li><li><strong>Recent wins:</strong> planted over 1,300 trees, launched donor nursery beds, established youth entrepreneurship circles, trained student leaders, produced reusable dignity pads.</li></ul>' 
+      content: '<ul><li><strong>District:</strong> Mpigi</li><li><strong>Country:</strong> Uganda</li><li><strong>Type:</strong> Youth-led organization</li><li><strong>Primary beneficiaries:</strong> children, adolescents, and young people</li><li><strong>Key focus:</strong> schools, youth groups, sports teams, communities</li><li><strong>Current core team:</strong> Executive Director, Programs & Partnerships Manager, Operations & Field Manager, Media & Communications Lead</li><li><strong>Signature approach:</strong> leadership, practical skills, campaigns, community action</li><li><strong>Recent wins:</strong> planted over 1,300 trees, launched donor nursery beds, established youth entrepreneurship circles, trained student leaders, produced reusable dignity pads.</li></ul>' 
     },
     { 
       order: 3, 
@@ -76,47 +77,55 @@ const knowledgeHubContent = {
 
 
 async function seedKnowledgeHub(db: Firestore) {
-  console.log('Checking if Knowledge Hub data needs seeding...');
-  const sectionsSnapshot = await db.collection('knowledgeHubSections').limit(1).get();
-  
-  if (!sectionsSnapshot.empty) {
-    console.log('Knowledge Hub data already exists. Skipping seed.');
+  if (isSeeding) {
+    console.log('Seeding is already in progress. Skipping.');
     return;
   }
-
-  console.log('Seeding Knowledge Hub data...');
-  const batch = db.batch();
-
-  knowledgeHubContent.sections.forEach(section => {
-    const docRef = db.collection('knowledgeHubSections').doc();
-    batch.set(docRef, section);
-  });
-
-  knowledgeHubContent.pitches.forEach(pitch => {
-    const docRef = db.collection('knowledgeHubPitches').doc();
-    batch.set(docRef, pitch);
-  });
-  
-  knowledgeHubContent.faqs.forEach(faq => {
-    const docRef = db.collection('knowledgeHubFaqs').doc();
-    batch.set(docRef, faq);
-  });
-  
-  knowledgeHubContent.stories.forEach(story => {
-    const docRef = db.collection('knowledgeHubStories').doc();
-    batch.set(docRef, story);
-  });
-  
-  knowledgeHubContent.ctas.forEach(cta => {
-    const docRef = db.collection('knowledgeHubCtas').doc();
-    batch.set(docRef, cta);
-  });
+  isSeeding = true;
+  console.log('Checking if Knowledge Hub data needs seeding...');
 
   try {
+    const sectionsSnapshot = await db.collection('knowledgeHubSections').limit(1).get();
+    if (!sectionsSnapshot.empty) {
+      console.log('Knowledge Hub data already exists. Skipping seed.');
+      isSeeding = false;
+      return;
+    }
+
+    console.log('Seeding Knowledge Hub data...');
+    const batch = db.batch();
+
+    knowledgeHubContent.sections.forEach(section => {
+      const docRef = db.collection('knowledgeHubSections').doc();
+      batch.set(docRef, section);
+    });
+
+    knowledgeHubContent.pitches.forEach(pitch => {
+      const docRef = db.collection('knowledgeHubPitches').doc();
+      batch.set(docRef, pitch);
+    });
+    
+    knowledgeHubContent.faqs.forEach(faq => {
+      const docRef = db.collection('knowledgeHubFaqs').doc();
+      batch.set(docRef, faq);
+    });
+    
+    knowledgeHubContent.stories.forEach(story => {
+      const docRef = db.collection('knowledgeHubStories').doc();
+      batch.set(docRef, story);
+    });
+    
+    knowledgeHubContent.ctas.forEach(cta => {
+      const docRef = db.collection('knowledgeHubCtas').doc();
+      batch.set(docRef, cta);
+    });
+
     await batch.commit();
     console.log('Knowledge Hub data seeded successfully.');
   } catch (error) {
     console.error('Error seeding Knowledge Hub data: ', error);
+  } finally {
+    isSeeding = false;
   }
 }
 
@@ -159,6 +168,7 @@ export function getFirebaseAdmin() {
   }
 
   firestoreInstance = getFirestore(adminApp);
-  seedKnowledgeHub(firestoreInstance).catch(console.error); // Seed the knowledge hub data
+  // Trigger seeding asynchronously. Do not await it here to avoid blocking.
+  seedKnowledgeHub(firestoreInstance).catch(console.error);
   return { firestore: firestoreInstance };
 }
