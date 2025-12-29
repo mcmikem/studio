@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { Suspense, useState, useRef } from 'react';
@@ -13,13 +11,15 @@ import { collection, serverTimestamp, query, orderBy, Timestamp } from 'firebase
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, UserPlus, Upload } from 'lucide-react';
+import { Loader2, UserPlus, Upload, ArrowLeft } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Program, Beneficiary } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const beneficiarySchema = z.object({
   name: z.string().min(3, 'Beneficiary name is required.'),
@@ -214,12 +214,19 @@ function BeneficiaryRegistrationForm() {
   );
 }
 
+
 export default function BeneficiaryRegistrationPage() {
     return (
         <Suspense>
-            <BeneficiaryRegistrationForm />
+            <div className="space-y-4">
+                <Button variant="outline" asChild>
+                    <Link href="/meal">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to MEAL Hub
+                    </Link>
+                </Button>
+                <BeneficiaryRegistrationForm />
+            </div>
         </Suspense>
     )
 }
-
-    
