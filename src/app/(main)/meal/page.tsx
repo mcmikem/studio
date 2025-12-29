@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -7,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, BarChart3, Users, CheckCircle, FileText, Swords, Leaf, Heart, Zap, Droplets, Store, Wind, Trophy } from 'lucide-react';
+import { ArrowRight, BarChart3, Users, CheckCircle, FileText, Swords, Leaf, Heart, Zap, Droplets, Store, Wind, Trophy, Building } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -37,9 +38,58 @@ export default function MealPage() {
                 </p>
             </header>
 
+             <Card>
+                <CardHeader>
+                    <CardTitle>Core M&amp;E Tools</CardTitle>
+                    <CardDescription>Cross-cutting tools for beneficiary tracking, data collection, and impact stories.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <Link href="/meal/beneficiary-registration" className="block">
+                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
+                            <Users className="h-8 w-8 text-primary flex-shrink-0" />
+                            <div>
+                                <p className="font-semibold">Beneficiary Registration</p>
+                                <p className="text-sm text-muted-foreground">Onboard a new participant into the central database.</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                        </div>
+                    </Link>
+                    <Link href="/meal/attendance" className="block">
+                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
+                            <CheckCircle className="h-8 w-8 text-primary flex-shrink-0" />
+                            <div>
+                                <p className="font-semibold">Session Attendance</p>
+                                <p className="text-sm text-muted-foreground">Track participants reached in any session or event.</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                        </div>
+                    </Link>
+                     <Link href="/meal/record-testimony" className="block">
+                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
+                            <Trophy className="h-8 w-8 text-primary flex-shrink-0" />
+                            <div>
+                                <p className="font-semibold">Impact Story Capture</p>
+                                <p className="text-sm text-muted-foreground">Record a success story with before/after details and media.</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                        </div>
+                    </Link>
+                     <Link href="/meal/activity" className="block">
+                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
+                            <BarChart3 className="h-8 w-8 text-primary flex-shrink-0" />
+                            <div>
+                                <p className="font-semibold">General Activity (ROI)</p>
+                                <p className="text-sm text-muted-foreground">Log any activity and calculate its financial and social return.</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                        </div>
+                    </Link>
+                </CardContent>
+            </Card>
+
             <Card>
                 <CardHeader>
-                    <CardTitle>Program-Specific Tools</CardTitle>
+                    <CardTitle>Program-Specific Hubs</CardTitle>
                     <CardDescription>Select a program to add new data or view existing reports.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -66,41 +116,21 @@ export default function MealPage() {
 
              <Card>
                 <CardHeader>
-                    <CardTitle>General M&amp;E Forms</CardTitle>
-                    <CardDescription>Cross-cutting forms for beneficiary-level data and general activities.</CardDescription>
+                    <CardTitle>School Applications</CardTitle>
+                     <CardDescription>Onboard new schools interested in partnering with Omuto Foundation.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Link href="/meal/activity" className="block">
+                 <CardContent>
+                    <Link href="/forms/school" className="block">
                         <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <BarChart3 className="h-8 w-8 text-primary flex-shrink-0" />
+                            <Building className="h-8 w-8 text-primary flex-shrink-0" />
                             <div>
-                                <p className="font-semibold">General Activity (ROI)</p>
-                                <p className="text-sm text-muted-foreground">Log any activity and calculate its financial and social return.</p>
+                                <p className="font-semibold">School Program Application</p>
+                                <p className="text-sm text-muted-foreground">The main intake form for schools to apply for Omuto programs.</p>
                             </div>
                             <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
                         </div>
                     </Link>
-                    <Link href="/meal/attendance" className="block">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <Users className="h-8 w-8 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="font-semibold">Session Attendance</p>
-                                <p className="text-sm text-muted-foreground">Track participants reached in any session or event.</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                        </div>
-                    </Link>
-                     <Link href="/meal/record-testimony" className="block">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <Trophy className="h-8 w-8 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="font-semibold">Impact Story Capture</p>
-                                <p className="text-sm text-muted-foreground">Record a success story with before/after details and media.</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                        </div>
-                    </Link>
-                </CardContent>
+                 </CardContent>
             </Card>
 
         </div>
