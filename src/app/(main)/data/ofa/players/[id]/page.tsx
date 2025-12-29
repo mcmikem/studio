@@ -97,7 +97,7 @@ function EditPlayerDialog({ player, onOpenChange, open }: { player: OFAPlayer, o
                     <div className="space-y-2"><Label>Player Name</Label><Input {...register('name')} /></div>
                     <div className="space-y-2"><Label>Playing Position</Label>
                         <Controller name="playingPosition" control={control} render={({field}) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
+                            <Select onValueChange={field.onChange} value={field.value ?? undefined}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Goalkeeper">Goalkeeper</SelectItem><SelectItem value="Defender">Defender</SelectItem><SelectItem value="Midfielder">Midfielder</SelectItem><SelectItem value="Forward">Forward</SelectItem></SelectContent></Select>
                         )} />
                     </div>
                 </div>
@@ -111,12 +111,12 @@ function EditPlayerDialog({ player, onOpenChange, open }: { player: OFAPlayer, o
                  <div className="grid grid-cols-2 gap-4">
                      <div className="space-y-2"><Label>School Attendance</Label>
                          <Controller name="schoolAttendance" control={control} render={({field}) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
+                            <Select onValueChange={field.onChange} value={field.value ?? undefined}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
                         )} />
                      </div>
                      <div className="space-y-2"><Label>Academic Performance</Label>
                           <Controller name="academicPerformance" control={control} render={({field}) => (
-                            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
+                            <Select onValueChange={field.onChange} value={field.value ?? undefined}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Fair">Fair</SelectItem><SelectItem value="Poor">Poor</SelectItem><SelectItem value="Not Applicable">Not Applicable</SelectItem></SelectContent></Select>
                         )} />
                      </div>
                 </div>
@@ -291,5 +291,3 @@ function PlayerDetailDashboard() {
 export default function PlayerDetailPage() {
     return <PlayerDetailDashboard />;
 }
-
-    

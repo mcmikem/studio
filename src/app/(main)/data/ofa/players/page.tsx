@@ -101,7 +101,7 @@ export default function PlayersPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                          <AvatarImage src={player.photoUrl} alt={player.name} />
+                          <AvatarImage src={player.photoUrl || ''} alt={player.name} />
                           <AvatarFallback>{getInitials(player.name)}</AvatarFallback>
                         </Avatar>
                         <div>

@@ -83,7 +83,7 @@ export default function BeneficiariesPage() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                          <AvatarImage src={beneficiary.photoURL} alt={beneficiary.name} />
+                          <AvatarImage src={beneficiary.photoURL || ''} alt={beneficiary.name} />
                           <AvatarFallback>{getInitials(beneficiary.name)}</AvatarFallback>
                         </Avatar>
                         <div>
