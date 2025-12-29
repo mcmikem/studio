@@ -119,15 +119,13 @@ function TeamDetailDashboard() {
       </header>
 
        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0">
-            <DialogHeader className="p-6 pb-0">
-                <DialogTitle>Edit Team: {team.teamName}</DialogTitle>
-                <DialogDescription>Update the registration details for this team.</DialogDescription>
-            </DialogHeader>
-            <div className="flex-grow overflow-hidden">
+            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+                <DialogHeader>
+                    <DialogTitle>Edit Team: {team.teamName}</DialogTitle>
+                    <DialogDescription>Update the registration details for this team.</DialogDescription>
+                </DialogHeader>
                 <OFATeamRegistrationForm team={team} onSuccess={() => setIsEditDialogOpen(false)} />
-            </div>
-        </DialogContent>
+            </DialogContent>
        </Dialog>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -246,7 +244,3 @@ function TeamDetailDashboard() {
 export default function TeamDetailPage() {
     return <TeamDetailDashboard />;
 }
-
-    
-
-    
