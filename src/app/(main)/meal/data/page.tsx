@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -84,6 +85,18 @@ const dataHubSections = [
                 title: 'Omuto Essentials',
                 description: 'Data for production, sales, and inventory.',
                 icon: Store,
+            },
+            {
+                href: '/meal/data/pulse',
+                title: 'Omuto Pulse',
+                description: 'View all submitted content for the Omuto Pulse media platform.',
+                icon: Wind,
+            },
+             {
+                href: '/meal/data/omuto-cup',
+                title: 'Omuto Cup',
+                description: 'Data from tournament and volunteer registrations.',
+                icon: Trophy,
             },
         ]
     }

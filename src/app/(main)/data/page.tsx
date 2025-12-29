@@ -16,19 +16,19 @@ const dataHubSections = [
         title: 'Core M&E Data',
         links: [
             {
-                href: '/data/beneficiaries',
+                href: '/meal/data/beneficiaries',
                 title: 'Beneficiary Database',
                 description: 'View and manage all registered program beneficiaries.',
                 icon: Users,
             },
             {
-                href: '/data/attendance',
+                href: '/meal/data/attendance',
                 title: 'Attendance Records',
                 description: 'Browse all submitted attendance sheets from events and sessions.',
                 icon: CheckCircle,
             },
             {
-                href: '/data/surveys',
+                href: '/meal/data/surveys',
                 title: 'Survey Results',
                 description: 'Analyze baseline and endline survey data to measure impact.',
                 icon: FileText,
@@ -39,52 +39,64 @@ const dataHubSections = [
         title: 'Program-Specific Data',
         links: [
             {
-                href: '/data/ofa',
+                href: '/meal/data/ofa',
                 title: 'Omuto Football Alliance (OFA)',
                 description: 'Access all data related to OFA teams, players, matches, and performance.',
                 icon: Swords,
             },
              {
-                href: '/data/red-campaign',
+                href: '/meal/data/red-campaign',
                 title: 'RED Campaign',
                 description: 'View MHM training, school visit, and pad distribution data.',
                 icon: Heart,
             },
             {
-                href: '/data/greenschools',
+                href: '/meal/data/greenschools',
                 title: 'GreenSchools Campaign',
                 description: 'Analyze tree survival surveys, waste audits, and club registrations.',
                 icon: Leaf,
             },
             {
-                href: '/data/yoskills',
+                href: '/meal/data/yoskills',
                 title: 'YoSkills Entrepreneurship',
                 description: 'Track circles, youth participants, business ideas, and pitch scores.',
                 icon: Zap,
             },
              {
-                href: '/data/slf',
+                href: '/meal/data/slf',
                 title: 'Student Leaders Forum (SLF)',
                 description: 'Review school registrations, prefect data, and performance reports.',
                 icon: Users,
             },
              {
-                href: '/meal/purewater', // Corrected path
+                href: '/meal/data/purewater',
                 title: 'PureWater Initiative',
                 description: 'Data for water source mapping and WASH assessments.',
                 icon: Droplets,
             },
             {
-                href: '/meal/yap', // Corrected path
+                href: '/meal/data/yap',
                 title: 'Youth Action Pathway (YAP)',
                 description: 'Data for chapters and seed grant applications.',
                 icon: Users,
             },
             {
-                href: '/essentials', // Corrected path
+                href: '/meal/data/essentials',
                 title: 'Omuto Essentials',
                 description: 'Data for production, sales, and inventory.',
                 icon: Store,
+            },
+             {
+                href: '/meal/data/pulse',
+                title: 'Omuto Pulse',
+                description: 'View all submitted content for the Omuto Pulse media platform.',
+                icon: Wind,
+            },
+             {
+                href: '/meal/data/omuto-cup',
+                title: 'Omuto Cup',
+                description: 'Data from tournament and volunteer registrations.',
+                icon: Trophy,
             },
         ]
     }
