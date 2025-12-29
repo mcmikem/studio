@@ -190,7 +190,7 @@ const getRecentCheckoutsToolObject = ai.defineTool(
 
 const omutoAIPrompt = ai.definePrompt({
     name: 'omutoAIPrompt',
-    models: [googleAI.model('gemini-1.5-pro-latest')],
+    model: googleAI.model('gemini-1.5-pro-latest'),
     tools: [
         searchOmutoToolObject, 
         createCheckoutToolObject, 
