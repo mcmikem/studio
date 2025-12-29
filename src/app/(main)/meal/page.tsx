@@ -16,7 +16,7 @@ const programSections = [
     { href: '/meal/ofa', title: 'Omuto Football Alliance', icon: Swords, dataHref: '/meal/data/ofa' },
     { href: '/meal/red-campaign', title: 'RED Campaign', icon: Heart, dataHref: '/meal/data/red-campaign' },
     { href: '/meal/greenschools', title: 'GreenSchools', icon: Leaf, dataHref: '/meal/data/greenschools' },
-    { href: '/meal/yoskills', title: 'YoSkills', icon: Zap, dataHref: '/meal/data/yoskills' },
+    { href: '/meal/yoskills', title: 'YoSkills Entrepreneurship', icon: Zap, dataHref: '/meal/data/yoskills' },
     { href: '/meal/slf', title: 'Student Leaders Forum', icon: Users, dataHref: '/meal/data/slf' },
     { href: '/meal/purewater', title: 'PureWater Initiative', icon: Droplets, dataHref: '/meal/data/purewater' },
     { href: '/meal/yap', title: 'Youth Action Pathway (YAP)', icon: Users, dataHref: '/meal/data/yap' },
@@ -94,7 +94,7 @@ export default function MealPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {programSections.map(form => (
-                        <Card key={form.href} className="hover:shadow-md transition-shadow">
+                        <Card key={form.title} className="hover:shadow-md transition-shadow">
                              <CardHeader>
                                 <CardTitle className="flex items-center gap-2 text-base">
                                      <form.icon className="h-6 w-6 text-primary" />
