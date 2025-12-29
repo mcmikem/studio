@@ -1,4 +1,5 @@
 
+      
 'use client';
 
 import {
@@ -13,19 +14,19 @@ import Link from 'next/link';
 
 const generalMneForms = [
     {
-        href: '/forms/program-logs/general',
+        href: '/meal/activity',
         title: 'General Activity (ROI)',
         description: 'Log any activity and calculate its financial and social return.',
         icon: BarChart3,
     },
     {
-        href: '/forms/attendance',
+        href: '/meal/attendance',
         title: 'Session Attendance',
         description: 'Track participants reached in any session or event.',
         icon: Users,
     },
     {
-        href: '/forms/beneficiary-registration',
+        href: '/meal/beneficiary-registration',
         title: 'Beneficiary Registration',
         description: 'Create a new profile for a program beneficiary.',
         icon: UserPlus,
@@ -59,7 +60,7 @@ const programSpecificForms = [
   { href: '/meal/yap', title: 'Youth Action Pathway (YAP)', description: 'Manage YAP chapters and seed grant applications.', icon: Users },
   { href: '/meal/ofa', title: 'Omuto Football Alliance', description: 'Manage teams, players, and matches for the league.', icon: Swords },
   { href: '/meal/essentials', title: 'Omuto Essentials', description: 'Manage production, sales, and inventory.', icon: Store },
-  { href: '/pulse', title: 'Omuto Pulse', description: 'Submit content for the media platform.', icon: Wind },
+  { href: '/meal/pulse', title: 'Omuto Pulse', description: 'Submit content for the media platform.', icon: Wind },
 ];
 
 
@@ -120,3 +121,5 @@ export default function MealPage() {
         </div>
     );
 }
+
+    
