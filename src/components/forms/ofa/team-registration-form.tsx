@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -341,7 +340,3 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
     </div>
   );
 }
-
-    
-
-    

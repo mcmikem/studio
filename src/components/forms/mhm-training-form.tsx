@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -14,9 +12,9 @@ import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Droplets, PlusCircle, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const participantSchema = z.object({
   name: z.string().min(3, "Name is required."),
@@ -124,23 +122,30 @@ export function MhmTrainingForm() {
 
             <div className="space-y-4">
               <h3 className="text-lg font-semibold border-b pb-2">Participants</h3>
-               {fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-2 items-end border p-3 rounded-lg relative">
-                    <div className="space-y-1">
-                        <Label htmlFor={`participants.${index}.name`}>Name</Label>
-                        <Input {...register(`participants.${index}.name`)} />
-                    </div>
-                     <div className="space-y-1">
-                        <Label htmlFor={`participants.${index}.age`}>Age</Label>
-                        <Input type="number" {...register(`participants.${index}.age`)} />
-                    </div>
-                     <div className="space-y-1">
-                        <Label htmlFor={`participants.${index}.class`}>Class</Label>
-                        <Input {...register(`participants.${index}.class`)} />
-                    </div>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
-                </div>
-               ))}
+               <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Age</TableHead>
+                    <TableHead>Class</TableHead>
+                    <TableHead><span className="sr-only">Actions</span></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fields.map((field, index) => (
+                    <TableRow key={field.id}>
+                      <TableCell><Input {...register(`participants.${index}.name`)} placeholder="Participant's Name" /></TableCell>
+                      <TableCell><Input type="number" {...register(`participants.${index}.age`)} placeholder="Age"/></TableCell>
+                      <TableCell><Input {...register(`participants.${index}.class`)} placeholder="e.g. P.7" /></TableCell>
+                      <TableCell>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+               </Table>
                <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', age: 0, class: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Participant</Button>
                {errors.participants && <p className="text-sm text-destructive">{errors.participants.message}</p>}
             </div>
