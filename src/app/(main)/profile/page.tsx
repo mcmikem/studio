@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -289,7 +288,7 @@ function ProfilePageContent() {
         <div className="flex flex-col gap-6">
         <header>
             <h1 className="font-headline text-3xl font-bold tracking-tight">
-            My Profile & Tasks
+            My Profile &amp; Tasks
             </h1>
             <p className="text-muted-foreground">
             Your personal information, tasks, and activity.
@@ -297,7 +296,7 @@ function ProfilePageContent() {
         </header>
         <Tabs defaultValue={tab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile">Profile & Activity</TabsTrigger>
+            <TabsTrigger value="profile">Profile &amp; Activity</TabsTrigger>
             <TabsTrigger value="tasks">Task Management</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             </TabsList>
@@ -332,7 +331,3 @@ export default function ProfilePage() {
     </Suspense>
   );
 }
-
-    
-
-    
