@@ -5,8 +5,7 @@
 
 @layer base {
   :root {
-    /* Omuto Website Palette - Modern & Youthful */
-    --background: 220 20% 97%; /* Lighter, cleaner grey */
+    --background: 220 20% 97%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -15,16 +14,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
  
-    --primary: 16 100% 55%; /* #FF5722 - A slightly deeper red-orange for accessibility */
+    --primary: 213 94% 57%; /* New vibrant blue */
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 220 15% 90%; /* Neutral secondary */
+    --secondary: 220 15% 90%;
     --secondary-foreground: 222 47% 11%;
  
     --muted: 220 15% 94%;
     --muted-foreground: 220 10% 40%;
  
-    --accent: 213 94% 57%; /* #358BFF - A vibrant, clear blue */
+    --accent: 16 100% 55%; /* Previous primary, now accent */
     --accent-foreground: 0 0% 100%;
  
     --destructive: 0 84.2% 60.2%;
@@ -32,24 +31,24 @@
 
     --border: 220 15% 88%;
     --input: 220 15% 92%;
-    --ring: 213 94% 57%;
+    --ring: 213 94% 57%; /* Ring matches new primary */
  
     --radius: 0.75rem;
 
-    --chart-1: 16 100% 55%;
-    --chart-2: 213 94% 57%;
+    --chart-1: 213 94% 57%;
+    --chart-2: 16 100% 55%;
     --chart-3: 45 93% 47%;
     --chart-4: 173 58% 39%;
     --chart-5: 27 87% 67%;
     
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 55%;
+    --sidebar-primary: 213 94% 57%; /* New vibrant blue */
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 16 100% 55%;
+    --sidebar-ring: 213 94% 57%;
   }
 
   .dark {
@@ -62,7 +61,7 @@
     --popover: 222 47% 11%;
     --popover-foreground: 0 0% 100%;
  
-    --primary: 16 100% 55%;
+    --primary: 213 94% 57%; /* New vibrant blue */
     --primary-foreground: 0 0% 100%;
  
     --secondary: 222 47% 20%;
@@ -71,7 +70,7 @@
     --muted: 222 47% 18%;
     --muted-foreground: 220 10% 60%;
  
-    --accent: 213 94% 57%;
+    --accent: 16 100% 55%;
     --accent-foreground: 0 0% 100%;
  
     --destructive: 0 63% 31%;
@@ -83,12 +82,12 @@
  
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 55%;
+    --sidebar-primary: 213 94% 57%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 15%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 16 100% 55%;
+    --sidebar-ring: 213 94% 57%;
   }
 }
 

@@ -1,4 +1,5 @@
 import type {Config} from 'tailwindcss';
+import { GeistSans } from 'geist/font/sans';
 
 export default {
   darkMode: ['class'],
@@ -11,7 +12,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['var(--font-inter)', 'sans-serif'],
-        headline: ['var(--font-space-grotesk)', 'sans-serif'],
+        headline: ['var(--font-geist-sans)', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

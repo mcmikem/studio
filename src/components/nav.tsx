@@ -62,7 +62,7 @@ import Image from 'next/image';
 
 const OmutoLogo = () => (
     <div className="flex items-center gap-2" data-ai-hint="logo">
-        <Image src="/logo.svg" alt="Omuto Foundation Logo" width={32} height={32} />
+        <Image src="/logo.svg" alt="Omuto Foundation Logo" width={28} height={28} />
         <span className="font-headline text-lg font-bold">Omuto Central</span>
     </div>
 );

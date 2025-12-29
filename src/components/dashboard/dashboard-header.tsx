@@ -18,7 +18,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
  
   return (
     <>
-      <Card className="relative rounded-2xl overflow-hidden p-6 flex flex-col justify-center min-h-[150px]">
+      <Card className="relative rounded-2xl overflow-hidden p-6 flex flex-col justify-center min-h-[150px] bg-card text-card-foreground">
           {headerImage && (
               <>
                   <Image
@@ -28,7 +28,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
                       className="object-cover"
                       data-ai-hint={headerImage.imageHint}
                   />
-                  <div className="absolute inset-0 bg-accent/80 mix-blend-multiply" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20" />
               </>
           )}
         <div className="relative z-10 text-white">
