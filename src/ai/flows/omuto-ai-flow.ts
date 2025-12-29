@@ -190,7 +190,7 @@ const getRecentCheckoutsToolObject = ai.defineTool(
 
 const omutoAIPrompt = ai.definePrompt({
     name: 'omutoAIPrompt',
-    model: googleAI.model('gemini-1.5-pro-latest'),
+    models: [googleAI.model('gemini-1.5-pro-latest')],
     tools: [
         searchOmutoToolObject, 
         createCheckoutToolObject, 
@@ -235,7 +235,7 @@ export const omutoAIFlow = ai.defineFlow(
             }
         });
         
-        const answer = llmResponse.text();
+        const answer = llmResponse.text;
         
         if (!answer) {
             console.error("AI did not return a text response.", { llmResponse });
