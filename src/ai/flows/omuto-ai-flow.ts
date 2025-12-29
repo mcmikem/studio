@@ -224,12 +224,12 @@ export const omutoAIFlow = ai.defineFlow(
     try {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
-        const llmResponse = await omutoAIPrompt({
+        const llmResponse = await omutoAIPrompt.invoke({
+            history: input.history || [],
             input: {
                 userId: input.userId,
                 question: input.question
             },
-            history: input.history || [],
             config: {
                 temperature: 0.2,
             }
@@ -251,5 +251,3 @@ export const omutoAIFlow = ai.defineFlow(
     }
   }
 );
-
-    
