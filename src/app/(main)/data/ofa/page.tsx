@@ -34,12 +34,12 @@ const ofaDataViews = [
   },
 ];
 
-function OFADataHubPage() {
+function OFAPage() {
     return (
         <div className="space-y-6">
             <header>
                  <Button variant="outline" asChild className="mb-4">
-                    <Link href="/data/beneficiaries">
+                    <Link href="/data">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Data Hub
                     </Link>
@@ -71,10 +71,10 @@ function OFADataHubPage() {
     )
 }
 
-export default function OFAPage() {
+export default function OFADataHubPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <OFADataHubPage />
+            <OFAPage />
         </Suspense>
     )
 }

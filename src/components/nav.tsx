@@ -90,7 +90,7 @@ const navConfig = {
       { href: '/meal', icon: ClipboardEdit, label: 'MEAL Hub (Forms)' },
   ],
   dataHub: [
-      { href: '/data/beneficiaries', icon: Database, label: 'Data Hub' },
+      { href: '/data', icon: Database, label: 'Data Hub' },
   ],
   reports: [
      { href: '/reports', icon: BarChart3, label: 'Reports Hub' },
