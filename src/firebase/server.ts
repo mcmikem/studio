@@ -1,14 +1,11 @@
 
-
 import { initializeApp, getApps, getApp, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { firebaseConfig } from './config';
-import * as fs from 'fs';
-import * as path from 'path';
 
 let adminApp: App | null = null;
 let firestoreInstance: Firestore | null = null;
-let isSeeding = false; // Add a flag to prevent concurrent seeding operations
+let isSeeding = false; 
 
 const knowledgeHubContent = {
   sections: [
@@ -147,14 +144,9 @@ export function getFirebaseAdmin() {
     adminApp = existingApp;
   } else {
     try {
-      const serviceAccountPath = path.resolve(process.cwd(), 'secrets/serviceAccountKey.json');
-      if (!fs.existsSync(serviceAccountPath)) {
-        throw new Error("Firebase service account key not found at secrets/serviceAccountKey.json. Ensure the file exists and is correctly placed.");
-      }
-      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
-      
+      // In App Hosting, GOOGLE_APPLICATION_CREDENTIALS is set automatically.
+      // We don't need to read the file manually.
       adminApp = initializeApp({
-        credential: cert(serviceAccount),
         projectId: firebaseConfig.projectId,
       }, appName);
   
