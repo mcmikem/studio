@@ -2,7 +2,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { BeneficiaryRegistrationForm } from '@/components/forms/beneficiary-registration-form';
+import { BeneficiaryRegistrationForm } from '@/components/forms/beneficiary-registration/page';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
