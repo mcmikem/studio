@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams } from 'next/navigation';
@@ -59,19 +60,6 @@ function StatCard({ title, value, icon: Icon }: { title: string; value: string |
         </Card>
     )
 }
-
-const sampleParticipants = [
-    { id: '1', name: 'Aisha Nakato', phone: '077****123', village: 'Kitebi', businessStage: 'Ideation', attendance: 95, businessScore: 78, avatar: 'https://i.imgur.com/5Ke5QZ0.jpeg' },
-    { id: '2', name: 'Brian Okello', phone: '078****456', village: 'Buwama Town', businessStage: 'Operating', attendance: 88, businessScore: 92, avatar: 'https://i.imgur.com/7D7Q42G.jpeg' },
-    { id: '3', name: 'Cathy Nabulya', phone: '075****789', village: 'Nsangi', businessStage: 'Growth', attendance: 98, businessScore: 95, avatar: 'https://i.imgur.com/8a2eO2J.jpeg' },
-    { id: '4', name: 'David Semakula', phone: '070****101', village: 'Maya', businessStage: 'Ideation', attendance: 82, businessScore: 65, avatar: 'https://i.imgur.com/4Jz2h2X.jpeg' },
-    { id: '5', name: 'Esther Akongo', phone: '079****212', village: 'Nkozi', businessStage: 'Operating', attendance: 91, businessScore: 85, avatar: 'https://i.imgur.com/3Y2a0yI.jpeg' },
-    { id: '6', name: 'Frank Mubiru', phone: '071****313', village: 'Kitebi', businessStage: 'Operating', attendance: 93, businessScore: 88, avatar: 'https://i.imgur.com/O3GqA4m.jpeg' },
-    { id: '7', name: 'Grace Nabwire', phone: '072****414', village: 'Buwama Town', businessStage: 'Growth', attendance: 99, businessScore: 97, avatar: 'https://i.imgur.com/C1zAl4P.jpeg' },
-    { id: '8', name: 'Henry Ssebugwawo', phone: '073****515', village: 'Nsangi', businessStage: 'Ideation', attendance: 85, businessScore: 70, avatar: 'https://i.imgur.com/w2k2jCH.jpeg' },
-    { id: '9', name: 'Irene Kansiime', phone: '074****616', village: 'Maya', businessStage: 'Operating', attendance: 92, businessScore: 89, avatar: 'https://i.imgur.com/nJgqL6p.jpeg' },
-    { id: '10', name: 'John Okoth', phone: '076****717', village: 'Nkozi', businessStage: 'Growth', attendance: 96, businessScore: 94, avatar: 'https://i.imgur.com/Q2z2a4U.jpeg' },
-];
 
 const sampleModules = ["Intro to Finance", "Budgeting 101", "Savings & Investment", "Digital Finance Tools", "Business Planning"];
 const sampleTrainers = ["Dianah Nansikombi", "Kasirye Constantine", "Guest Speaker"];
@@ -547,4 +535,4 @@ export default function ProjectPage() {
     return <ProjectDashboard />;
 }
 
-  
+    
