@@ -224,8 +224,7 @@ export const omutoAIFlow = ai.defineFlow(
     try {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
-        const llmResponse = await ai.generate({
-            prompt: omutoAIPrompt,
+        const llmResponse = await omutoAIPrompt.generate({
             history: input.history || [],
             input: {
                 userId: input.userId,
@@ -236,7 +235,7 @@ export const omutoAIFlow = ai.defineFlow(
             }
         });
         
-        const answer = llmResponse.text;
+        const answer = llmResponse.text();
         
         if (!answer) {
             console.error("AI did not return a text response.", { llmResponse });
