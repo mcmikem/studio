@@ -11,8 +11,16 @@ let firestoreInstance: Firestore | null = null;
 
 const knowledgeHubContent = {
   sections: [
-    { order: 1, title: 'Mission & Vision', content: '<p><strong>Mission:</strong> To empower young people to learn, lead, and create sustainable change in their communities.</p><p><strong>Vision:</strong> A world where every young person has the skills, confidence, and opportunity to thrive and transform their community.</p><p>Omuto Foundation is a youth-led nonprofit based in Mpigi District, Uganda. We work with schools and communities to build youth leadership, entrepreneurship, education access, sports development, environmental conservation, and creative expression. Our approach is simple: young people are not just beneficiaries — they are leaders and solution-builders.</p>' },
-    { order: 2, title: 'Quick Facts', content: '<ul><li><strong>District:</strong> Mpigi</li><li><strong>Country:</strong> Uganda</li><li><strong>Type:</strong> Youth-led organization</li><li><strong>Primary beneficiaries:</strong> children, adolescents, and young people</li><li><strong>Key focus:</strong> schools, youth groups, sports teams, communities</li><li><strong>Recent wins:</strong> planted over 1,300 trees, launched donor nursery beds, established youth entrepreneurship circles, trained student leaders, produced reusable dignity pads.</li></ul>' },
+    { 
+      order: 1, 
+      title: 'Mission & Vision', 
+      content: '<p><strong>Mission:</strong> To empower young people to learn, lead, and create sustainable change in their communities.</p><p><strong>Vision:</strong> A world where every young person has the skills, confidence, and opportunity to thrive and transform their community.</p><p>Omuto Foundation is a youth-led nonprofit based in Mpigi District, Uganda. We work with schools and communities to build youth leadership, entrepreneurship, education access, sports development, environmental conservation, and creative expression. Our approach is simple: young people are not just beneficiaries — they are leaders and solution-builders.</p>' 
+    },
+    { 
+      order: 2, 
+      title: 'Quick Facts', 
+      content: '<ul><li><strong>District:</strong> Mpigi</li><li><strong>Country:</strong> Uganda</li><li><strong>Type:</strong> Youth-led organization</li><li><strong>Primary beneficiaries:</strong> children, adolescents, and young people</li><li><strong>Key focus:</strong> schools, youth groups, sports teams, communities</li><li><strong>Recent wins:</strong> planted over 1,300 trees, launched donor nursery beds, established youth entrepreneurship circles, trained student leaders, produced reusable dignity pads.</li></ul>' 
+    },
     { 
       order: 3, 
       title: 'Programs & Projects', 
@@ -22,7 +30,10 @@ const knowledgeHubContent = {
         { title: 'Student Leaders Forum (SLF)', content: '<p>Training platform for student leaders to drive school and community change. Includes RED Campaign, GreenSchools, and PureWater Initiative.</p>' },
         { title: 'RED Campaign', content: '<p>Supports menstrual health education, dignity, and confidence for girls.</p><strong>Impact Message:</strong> No girl should miss school because of her period.' },
         { title: 'GreenSchools Campaign', content: '<p>Greening schools to build greener communities and futures. Activities include tree planting, environmental clubs, and climate action training.</p><strong>Success Metric:</strong> 1,300+ trees planted and monitored.' },
-        { title: 'Omuto Talents Project', content: '<p>Uses football and media to build discipline, leadership, and opportunity.</p><strong>Components:</strong> Omuto Football Alliance (OFA), Omuto Cup, Omuto Pulse.' },
+        { title: 'PureWater Initiative', content: '<p>Promotes safe water, hygiene, and sanitation awareness among students.</p>'},
+        { title: 'YoSkills Entrepreneurship Circles', content: '<p>Peer-based entrepreneurship and work-readiness learning spaces.</p>'},
+        { title: 'Youth Action Pathway', content: '<p>Guides motivated youth from idea to full community social action project.</p>'},
+        { title: 'Omuto Talents Project (OFA & Omuto Pulse)', content: '<p>Uses football and media to build discipline, leadership, and opportunity.</p>'},
         { title: 'Omuto Essentials (Social Enterprise)', content: '<p>Produces locally made youth-friendly products to support programs and create jobs (e.g., reusable dignity pads, soaps).</p>' },
       ]
     },
@@ -49,9 +60,17 @@ const knowledgeHubContent = {
     { order: 4, question: 'Do you work with schools?', answer: 'Yes — schools are at the heart of our programs.' },
   ],
   stories: [
-    { order: 1, title: "Aisha's Story", content: 'Aisha used to think trees were just shade. After joining GreenSchools, she helped plant fruit trees at her school and now leads a group that waters and monitors them. She says, “I feel like I’m growing with the trees.”' },
-    { order: 2, title: "Grace's Story", content: 'Grace missed class because of her periods. After joining RED Campaign sessions and receiving reusable pads, she now attends fully and helps other girls learn hygiene with confidence.' },
-    { order: 3, title: "Musa's Story", content: 'Musa joined Omuto Football Alliance to play. He stayed because he found mentorship, discipline, and teamwork. His new dream is to coach younger players.' },
+    { order: 1, title: "Aisha's Story (GreenSchools)", content: 'Aisha used to think trees were just shade. After joining GreenSchools, she helped plant fruit trees at her school and now leads a group that waters and monitors them. She says, “I feel like I’m growing with the trees.”' },
+    { order: 2, title: "Grace's Story (RED Campaign)", content: 'Grace missed class because of her periods. After joining RED Campaign sessions and receiving reusable pads, she now attends fully and helps other girls learn hygiene with confidence.' },
+    { order: 3, title: "Musa's Story (OFA)", content: 'Musa joined Omuto Football Alliance to play. He stayed because he found mentorship, discipline, and teamwork. His new dream is to coach younger players.' },
+  ],
+  ctas: [
+      { order: 1, title: 'Sponsor a School Nursery Bed', description: 'Help a school grow its own trees and food.', buttonLabel: 'Sponsor a Nursery Bed' },
+      { order: 2, title: 'Support Dignity Kits', description: 'Provide reusable pads and MHM education to a girl.', buttonLabel: 'Support a Girl' },
+      { order: 3, title: 'Partner with OFA', description: 'Support a local youth football team.', buttonLabel: 'Become a Partner' },
+      { order: 4, title: 'Invite Omuto to Your School', description: 'Bring our leadership and skills programs to your students.', buttonLabel: 'Contact Us' },
+      { order: 5, title: 'Volunteer or Mentor', description: 'Share your skills and experience with our youth.', buttonLabel: 'Get Involved' },
+      { order: 6, title: 'Support Entrepreneurship', description: 'Help a youth circle start a small business.', buttonLabel: 'Support a Circle' },
   ]
 };
 
@@ -86,6 +105,11 @@ async function seedKnowledgeHub(db: Firestore) {
   knowledgeHubContent.stories.forEach(story => {
     const docRef = db.collection('knowledgeHubStories').doc();
     batch.set(docRef, story);
+  });
+  
+  knowledgeHubContent.ctas.forEach(cta => {
+    const docRef = db.collection('knowledgeHubCtas').doc();
+    batch.set(docRef, cta);
   });
 
   try {

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -148,10 +149,14 @@ export default function KnowPage() {
     }
   }
   
-  const handleContentChange = (type: string, index: number, field: string, value: string) => {
+  const handleContentChange = (type: string, index: number, field: string, value: string, subIndex?: number) => {
     const setStateAction = (setter: React.Dispatch<React.SetStateAction<any[]>>, items: any[]) => {
-      const newItems = [...items];
-      (newItems[index] as any)[field] = value;
+      const newItems = JSON.parse(JSON.stringify(items));
+      if (subIndex !== undefined) {
+        newItems[index].subsections[subIndex][field] = value;
+      } else {
+        (newItems[index] as any)[field] = value;
+      }
       setter(newItems);
     };
 
@@ -286,17 +291,33 @@ export default function KnowPage() {
                     {isEditMode && <Button size="sm" variant="outline" onClick={() => handleAddItem('sections')}><PlusCircle className="mr-2 h-4 w-4" /> Add Section</Button>}
                 </CardHeader>
                  <CardContent className="space-y-4">
-                    {filteredSections.map((section, index) => (
-                    <Card key={section.id} className="p-4">
-                         <div className="flex justify-between items-center mb-2">
-                             {isEditMode ? <Input value={section.title} onChange={(e) => handleContentChange('sections', index, 'title', e.target.value)} /> : <CardTitle className="text-lg">{section.title}</CardTitle>}
-                             {isEditMode && <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDeleteItem('sections', section.id, index)}><Trash2 className="h-4 w-4" /></Button>}
-                        </div>
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                            {isEditMode ? <Textarea value={section.content} onChange={(e) => handleContentChange('sections', index, 'content', e.target.value)} className="min-h-24"/> : <div dangerouslySetInnerHTML={{ __html: section.content }} />}
-                        </div>
-                    </Card>
-                    ))}
+                     <Accordion type="multiple" className="w-full" defaultValue={filteredSections.map(s => s.id)}>
+                        {filteredSections.map((section, index) => (
+                        <AccordionItem key={section.id} value={section.id}>
+                            <AccordionTrigger>
+                                {isEditMode ? <Input className="mr-4" value={section.title} onChange={(e) => handleContentChange('sections', index, 'title', e.target.value)} /> : section.title}
+                                {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={() => handleDeleteItem('sections', section.id, index)}><Trash2 className="h-4 w-4" /></Button>}
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4">
+                               <div className="prose prose-sm dark:prose-invert max-w-none">
+                                {isEditMode ? <Textarea value={section.content} onChange={(e) => handleContentChange('sections', index, 'content', e.target.value)} className="min-h-24"/> : <div dangerouslySetInnerHTML={{ __html: section.content }} />}
+                               </div>
+                               {section.subsections && section.subsections.length > 0 && (
+                                   <div className="space-y-3 pl-4 border-l-2">
+                                       {section.subsections.map((sub, subIndex) => (
+                                            <div key={subIndex}>
+                                                {isEditMode ? <Input value={sub.title} onChange={(e) => handleContentChange('sections', index, 'title', e.target.value, subIndex)} className="font-semibold" /> : <h4 className="font-semibold">{sub.title}</h4>}
+                                                 <div className="prose prose-sm dark:prose-invert max-w-none">
+                                                    {isEditMode ? <Textarea value={sub.content} onChange={(e) => handleContentChange('sections', index, 'content', e.target.value, subIndex)} /> : <div dangerouslySetInnerHTML={{ __html: sub.content }} />}
+                                                </div>
+                                            </div>
+                                       ))}
+                                   </div>
+                               )}
+                            </AccordionContent>
+                        </AccordionItem>
+                        ))}
+                    </Accordion>
                 </CardContent>
             </Card>
         )}
