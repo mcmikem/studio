@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, LogIn, LogOut, Receipt, Megaphone, Trophy, Store, Bug, BarChart3, Wand } from 'lucide-react';
+import { ArrowRight, LogOut, Receipt, Megaphone, Wand, BarChart3, Bug } from 'lucide-react';
 import Link from 'next/link';
 
 const formSections = [

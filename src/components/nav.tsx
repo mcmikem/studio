@@ -204,7 +204,7 @@ export function AppSidebar() {
         {renderNavSection('workspace', 'Workspace')}
         {renderNavSection('teamHub', 'Team Hub')}
         {renderNavSection('knowledgeHub', 'Knowledge Hub')}
-        {renderNavSection('meal', 'MEAL (Forms)')}
+        {renderNavSection('meal', 'MEAL Hub (Forms)')}
         {renderNavSection('dataHub', 'Data Hub')}
         {renderNavSection('reports', 'Reports & Analytics')}
         {renderNavSection('management', 'Management')}
