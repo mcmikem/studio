@@ -14,7 +14,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, Timestamp, getDocs } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
 import type { Activity } from '@/lib/types';
-import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingUp, ArrowRight } from 'lucide-react';
+import { Download, Loader2, BarChart, DollarSign, GitCommitHorizontal, TrendingUp, ArrowRight, Wand } from 'lucide-react';
 import { format } from 'date-fns';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -138,93 +138,6 @@ function MonthlyActivityReport() {
     )
 }
 
-function FinancialOverview({ activities }: { activities: Activity[] | null }) {
-    
-  const { totalSpent, totalValue, isLoading } = useMemo(() => {
-    if (!activities) return { totalSpent: 0, totalValue: 0, isLoading: true };
-    
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
-    const monthlyActivities = activities.filter(act => {
-        // Ensure loggedAt is a valid date before comparison
-        if (!act.loggedAt || typeof act.loggedAt.toDate !== 'function') return false;
-        return act.loggedAt.toDate() >= startOfMonth;
-    });
-
-    const spent = monthlyActivities.reduce((sum, activity) => sum + activity.actualCost, 0);
-    const value = monthlyActivities.reduce((sum, activity) => sum + activity.totalValue, 0);
-    
-    return { totalSpent: spent, totalValue: value, isLoading: false };
-  }, [activities]);
-
-  const monthlyBudget = 2000000 // Mock budget for now
-  const remainingBudget = monthlyBudget - totalSpent
-
-  return (
-      <Card>
-          <CardHeader>
-              <CardTitle>This Month's Financial Snapshot</CardTitle>
-              <CardDescription>A summary of spending and value generation for the current month.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Skeleton className="h-32" />
-                    <Skeleton className="h-32" />
-                    <Skeleton className="h-32" />
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="flex flex-col justify-between">
-                        <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-primary">
-                            <DollarSign />
-                            Monthly Spending
-                        </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <p className="text-3xl font-bold">{formatCurrency(totalSpent)}</p>
-                        <p className="text-sm text-muted-foreground">
-                            of {formatCurrency(monthlyBudget)} spent
-                        </p>
-                        </CardContent>
-                    </Card>
-                    <Card className="flex flex-col justify-between">
-                        <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-green-500">
-                            <TrendingUp />
-                            Value Generated
-                        </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <p className="text-3xl font-bold">{formatCurrency(totalValue)}</p>
-                        <p className="text-sm text-muted-foreground">
-                            from this month's activities
-                        </p>
-                        </CardContent>
-                    </Card>
-                    <Card className="flex flex-col justify-between">
-                        <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-blue-500">
-                            <DollarSign />
-                            Remaining Budget
-                        </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <p className="text-3xl font-bold">
-                            {formatCurrency(remainingBudget)}
-                        </p>
-                        <p className="text-sm text-muted-foreground">for the rest of the month</p>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-          </CardContent>
-      </Card>
-  )
-}
-
 export default function ReportsPage() {
   const activitiesQuery = useMemoFirebase((db) => {
     const startOfMonth = new Date();
@@ -260,12 +173,13 @@ export default function ReportsPage() {
         <CardContent>
             <Button asChild>
                 <Link href="/reports/deep-dive">
-                    Launch Program Deep Dive <ArrowRight className="ml-2 h-4 w-4" />
+                    <Wand className="mr-2 h-4 w-4" />
+                    Launch Program Deep Dive
+                    <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
             </Button>
         </CardContent>
       </Card>
-      <FinancialOverview activities={activities} />
       <MonthlyActivityReport />
     </div>
   );
