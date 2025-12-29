@@ -1405,7 +1405,7 @@
       "properties": {
         "id": { "type": "string" },
         "teamName": { "type": "string" },
-        "teamPhotoUrl": { "type": "string", "format": "uri" },
+        "teamPhotoUrl": { "type": ["string", "null"], "format": "uri" },
         "subcounty": { "type": "string" },
         "parish": { "type": "string" },
         "village": { "type": "string" },

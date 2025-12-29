@@ -453,7 +453,7 @@ export type Beneficiary = {
     school?: string;
     phone?: string;
     guardianContact?: string;
-    photoURL?: string | null | undefined;
+    photoURL?: string | null;
     createdAt: Timestamp;
 }
 

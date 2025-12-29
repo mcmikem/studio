@@ -194,5 +194,3 @@ export function DailyActions({ checkin, isLoadingCheckin }: DailyActionsProps) {
 
   return null;
 }
-
-    
