@@ -135,6 +135,6 @@ export function getFirebaseAdmin() {
   }
 
   firestoreInstance = getFirestore(adminApp);
-  seedKnowledgeHub(firestoreInstance); // Seed the knowledge hub data
+  seedKnowledgeHub(firestoreInstance).catch(console.error); // Seed the knowledge hub data
   return { firestore: firestoreInstance };
 }
