@@ -8,13 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase, useUser, useFirebaseApp } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, Timestamp, writeBatch, doc } from 'firebase/firestore';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2, UserPlus, Upload, ArrowLeft } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Program, Beneficiary } from '@/lib/types';
+import type { Program, Beneficiary, OFATeam, SLF_School } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
@@ -43,6 +43,7 @@ function BeneficiaryRegistrationForm() {
   const { toast } = useToast();
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -105,6 +106,7 @@ function BeneficiaryRegistrationForm() {
         });
         reset();
         setPhotoPreview(null);
+        router.push('/meal/data/beneficiaries');
     } catch (error: any) {
         console.error("Firestore submission failed:", error);
         toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
