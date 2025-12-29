@@ -58,6 +58,7 @@ const programSpecificForms = [
   { href: '/meal/purewater', title: 'PureWater Initiative', description: 'Forms for water source mapping and WASH assessments.', icon: Droplets },
   { href: '/meal/yap', title: 'Youth Action Pathway (YAP)', description: 'Manage YAP chapters and seed grant applications.', icon: Users },
   { href: '/meal/ofa', title: 'Omuto Football Alliance', description: 'Manage teams, players, and matches for the league.', icon: Swords },
+  { href: '/meal/omuto-cup', title: 'Omuto Cup (Event)', description: 'Data collection and management for the tournament.', icon: Trophy },
   { href: '/meal/essentials', title: 'Omuto Essentials', description: 'Manage production, sales, and inventory.', icon: Store },
   { href: '/meal/pulse', title: 'Omuto Pulse', description: 'Submit content for the media platform.', icon: Wind },
 ];

@@ -53,7 +53,7 @@ export function TournamentRegistrationForm() {
         description: `Team ${data.teamName} has been registered for the tournament.`,
       });
       reset();
-      router.push('/talents/omuto-cup');
+      router.push('/meal/omuto-cup');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -62,7 +62,7 @@ export function TournamentRegistrationForm() {
   return (
     <div className="space-y-4">
        <Button variant="outline" asChild>
-            <Link href="/talents/omuto-cup">
+            <Link href="/meal/omuto-cup">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Omuto Cup Hub
             </Link>
