@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -23,6 +24,7 @@ import type { OFATeam, User } from '@/lib/types';
 import { useEffect } from 'react';
 import { OFATeamSchema, OFATeamFormData } from '@/lib/types';
 import Image from 'next/image';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type ManagementRole = 'Head Coach' | 'Assistant Coach' | 'Team Manager' | 'Captain' | 'Vice Captain';
 
@@ -153,19 +155,18 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
   const formId = `ofa-team-form-${team?.id || 'new'}`;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full flex flex-col">
       {!isEditMode && (
-          <Button variant="outline" asChild className="mb-4">
+          <Button variant="outline" asChild className="mb-4 flex-shrink-0">
               <Link href="/meal/ofa">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back to OFA Hub
               </Link>
           </Button>
         )}
-      <Card>
-        <CardHeader>
-            {!isEditMode && (
-                <>
+      <Card className="flex-grow flex flex-col">
+        {!isEditMode && (
+            <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                       <Swords className="h-6 w-6" />
                       OFA Team Registration Form
@@ -173,10 +174,10 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   <CardDescription>
                       Official onboarding form for teams joining the Omuto Football Alliance.
                   </CardDescription>
-                </>
-            )}
-        </CardHeader>
-        <form id={formId} onSubmit={handleSubmit(onSubmit)}>
+            </CardHeader>
+        )}
+        <form id={formId} onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-grow">
+          <ScrollArea className="flex-grow">
             <CardContent className="pt-6 space-y-8">
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold border-b pb-2">Section A: Team Identity</h3>
@@ -328,7 +329,8 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                    {errors.agreedToRules && <p className="text-sm text-destructive">{errors.agreedToRules.message}</p>}
               </div>
             </CardContent>
-             <CardFooter>
+          </ScrollArea>
+             <CardFooter className="flex-shrink-0 pt-6">
                  <Button type="submit" form={formId} disabled={isSubmitting} className="w-full">
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isEditMode ? 'Save Changes' : 'Register Team'}
@@ -339,3 +341,5 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
     </div>
   );
 }
+
+    
