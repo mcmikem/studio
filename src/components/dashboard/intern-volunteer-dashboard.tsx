@@ -5,31 +5,27 @@ import type { User, Checkin } from '@/lib/types';
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, MessageCircle, Sparkles, UserCheck } from 'lucide-react';
+import { Clock, MessageCircle, Sparkles, UserCheck, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, where, Timestamp } from 'firebase/firestore';
-import { startOfDay } from 'date-fns';
-import dynamic from 'next/dynamic';
-import { Skeleton } from '../ui/skeleton';
 import { SupervisorCard } from './supervisor-card';
 import { DashboardHeader } from './dashboard-header';
 import { SmartReminders } from './smart-reminders';
-import { DailyActions } from './daily-actions';
-import { useMemo } from 'react';
-import { useUser } from '@/firebase';
-
-const TeamDeployment = dynamic(() => import('./team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
+import { MyTasksSummary } from './my-tasks-summary';
 
 function QuickActionsCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Your Daily Tasks</CardTitle>
-        <CardDescription>Log your work and share your progress with the team.</CardDescription>
+        <CardTitle>Quick Actions</CardTitle>
+        <CardDescription>Your most common daily tasks.</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <Button size="lg" asChild>
+          <Link href="/meal/activity">
+            <BarChart3 className="mr-2 h-4 w-4" /> Log My Hours (Activity)
+          </Link>
+        </Button>
+        <Button size="lg" variant="secondary" asChild>
           <Link href="/forms/check-out">
             <MessageCircle className="mr-2 h-4 w-4" /> Submit End-of-Day Note
           </Link>
@@ -64,28 +60,16 @@ interface DashboardProps {
 }
 
 export function InternVolunteerDashboard({ profile }: DashboardProps) {
-  const firestore = useFirestore();
-  const { user } = useUser();
-
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
-  const checkinsQuery = useMemoFirebase((db) => {
-    if(!firestore || !user) return null;
-    return query(collection(db, 'checkins'), where('userId', '==', user.uid), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
-  }, [firestore, user]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
-
-  const dailyCheckin = useMemo(() => checkins?.[0], [checkins]);
-
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
        <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
            <SmartReminders profile={profile} />
-           <DailyActions checkin={dailyCheckin} isLoadingCheckin={isLoadingCheckins} />
+           <MyTasksSummary />
         </div>
          <div className="flex flex-col gap-6">
+            <QuickActionsCard />
             <SupervisorCard profile={profile} />
             <FirstQuestCard />
          </div>
