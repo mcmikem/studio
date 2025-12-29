@@ -1,7 +1,7 @@
 
 'use client';
 
-import ManagementLayoutComponent from '@/components/management/management-layout';
+import ManagementLayoutComponent from '@/components/management/layout';
 
 export default function ManagementLayout({
   children,
