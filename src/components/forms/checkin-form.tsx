@@ -17,16 +17,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Loader2, ArrowRight } from 'lucide-react';
-import type { DailyPlannerAIOutput } from '@/lib/types';
+import { DailyPlannerAIOutputSchema } from '@/lib/types';
 import { Separator } from '../ui/separator';
 
 const checkinSchema = z.object({
-  primaryMission: z.string(),
-  mood: z.string(),
-  details: z.any(),
+  primaryMission: z.string().min(1, "Primary mission is required."),
+  mood: z.string().min(1, "Mood is required."),
+  details: DailyPlannerAIOutputSchema, // Use the schema directly
 });
 
 function CheckinFormComponent() {
@@ -38,7 +38,12 @@ function CheckinFormComponent() {
     const { profile } = useUserProfile(user);
 
     const { handleSubmit, setValue, watch, formState: { isSubmitting } } = useForm({
-        resolver: zodResolver(checkinSchema)
+        resolver: zodResolver(checkinSchema),
+        defaultValues: {
+            primaryMission: '',
+            mood: '',
+            details: undefined, // Initialize as undefined
+        }
     });
 
     const planDataString = searchParams.get('plan');
@@ -54,18 +59,18 @@ function CheckinFormComponent() {
                 console.error("Failed to parse plan data:", error);
                 toast({
                     variant: "destructive",
-                    title: "Error",
-                    description: "Could not load the plan data. Please try again."
+                    title: "Error loading plan",
+                    description: "There was an issue loading your daily plan. Please try generating it again."
                 });
-                router.push('/daily-plan');
+                // No longer navigate away, allow user to stay on page or navigate manually
             }
         }
-    }, [planDataString, setValue, toast, router]);
+    }, [planDataString, setValue, toast]);
     
-    const submittedPlan = watch('details') as DailyPlannerAIOutput | null;
+    const submittedPlan = watch('details');
     const primaryMission = watch('primaryMission');
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: z.infer<typeof checkinSchema>) => {
         if (!firestore || !user || !profile) {
             toast({
                 variant: 'destructive',
@@ -86,21 +91,28 @@ function CheckinFormComponent() {
 
         const checkinsCollection = collection(firestore, 'checkins');
         
-        await addDocumentNonBlocking(checkinsCollection, checkinData)
-          .then(() => {
+        try {
+            await addDocumentNonBlocking(checkinsCollection, checkinData);
             toast({
                 title: 'Check-in Submitted!',
                 description: 'Your plan for the day is now visible to the team.',
             });
             router.push('/');
-          })
-          .catch((error) => {
+        } catch (error) {
             console.error("Failed to submit check-in:", error);
-          });
+            toast({
+                variant: 'destructive',
+                title: 'Submission Error',
+                description: 'Could not submit your check-in. Please try again.',
+            });
+        }
     };
 
+    const shouldRenderPlan = useMemo(() => {
+        return planDataString && submittedPlan && primaryMission;
+    }, [planDataString, submittedPlan, primaryMission]);
 
-    if (!planDataString || !submittedPlan) {
+    if (!shouldRenderPlan) {
         return (
              <Card>
                 <CardHeader>

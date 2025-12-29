@@ -3,7 +3,7 @@
 'use client';
 
 import * as React from 'react';
-import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc, writeBatch } from 'firebase/firestore';
 import type { KnowledgeHubSection, KnowledgeHubPitch, KnowledgeHubFAQ, KnowledgeHubStory, KnowledgeHubCTA } from '@/lib/types';
 
@@ -295,8 +295,10 @@ export default function KnowPage() {
                         {filteredSections.map((section, index) => (
                         <AccordionItem key={section.id} value={section.id}>
                             <AccordionTrigger>
-                                {isEditMode ? <Input className="mr-4" value={section.title} onChange={(e) => handleContentChange('sections', index, 'title', e.target.value)} /> : section.title}
-                                {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={() => handleDeleteItem('sections', section.id, index)}><Trash2 className="h-4 w-4" /></Button>}
+                               <div className="flex-1 flex justify-between items-center mr-4">
+                                {isEditMode ? <Input value={section.title} onChange={(e) => handleContentChange('sections', index, 'title', e.target.value)} onClick={e => e.stopPropagation()} /> : <span className="text-left">{section.title}</span>}
+                                {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={(e) => {e.stopPropagation(); handleDeleteItem('sections', section.id, index);}}><Trash2 className="h-4 w-4" /></Button>}
+                               </div>
                             </AccordionTrigger>
                             <AccordionContent className="space-y-4">
                                <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -374,7 +376,15 @@ export default function KnowPage() {
           </Card>
         )}
         
-        {filteredCtas && filteredCtas.length > 0 && <CallsToAction ctas={filteredCtas} isEditMode={isEditMode} handleContentChange={handleContentChange} handleAddItem={() => handleAddItem('ctas')} handleDeleteItem={(id, index) => handleDeleteItem('ctas', id, index)} />}
+        {filteredCtas && filteredCtas.length > 0 && (
+            <CallsToAction 
+                ctas={filteredCtas} 
+                isEditMode={isEditMode} 
+                handleContentChange={handleContentChange} 
+                handleAddItem={() => handleAddItem('ctas')} 
+                handleDeleteItem={(id, index) => handleDeleteItem('ctas', id, index)} 
+            />
+        )}
 
         {filteredFaqs && filteredFaqs.length > 0 && (
           <Card>
@@ -387,8 +397,10 @@ export default function KnowPage() {
                 {filteredFaqs.map((faq, index) => (
                   <AccordionItem key={faq.id} value={faq.id}>
                     <AccordionTrigger>
-                        {isEditMode ? <Input className="mr-4" value={faq.question} onChange={(e) => handleContentChange('faqs', index, 'question', e.target.value)} /> : faq.question}
-                        {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={() => handleDeleteItem('faqs', faq.id, index)}><Trash2 className="h-4 w-4" /></Button>}
+                      <div className="flex-1 flex justify-between items-center mr-4">
+                        {isEditMode ? <Input value={faq.question} onClick={(e) => e.stopPropagation()} onChange={(e) => handleContentChange('faqs', index, 'question', e.target.value)} /> : <span className="text-left">{faq.question}</span>}
+                        {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={(e) => { e.stopPropagation(); handleDeleteItem('faqs', faq.id, index);}}><Trash2 className="h-4 w-4" /></Button>}
+                      </div>
                     </AccordionTrigger>
                     <AccordionContent>
                       {isEditMode ? <Textarea value={faq.answer} onChange={(e) => handleContentChange('faqs', index, 'answer', e.target.value)} /> : faq.answer}

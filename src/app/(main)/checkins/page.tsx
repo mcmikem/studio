@@ -70,7 +70,7 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                     <div className="space-y-3">
                         <h4 className="font-semibold text-sm flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Connections</h4>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                            {checkin.details.multiWinConnections.map((connection, index) => (
+                            {checkin.details?.multiWinConnections?.map((connection, index) => (
                                 <li key={index}>{connection}</li>
                             ))}
                         </ul>
@@ -78,7 +78,7 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                     
                     <div className="space-y-3">
                         <h4 className="font-semibold text-sm flex items-center gap-2"><BrainCircuit className="h-4 w-4" /> AI Best Practice Tip</h4>
-                        <p className="text-sm text-muted-foreground italic">"{checkin.details.bestPractice}"</p>
+                        <p className="text-sm text-muted-foreground italic">"{checkin.details?.bestPractice}"</p>
                     </div>
                     
                     <Accordion type="single" collapsible className="w-full">
@@ -86,7 +86,7 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                             <AccordionTrigger>View Detailed Time Blocks</AccordionTrigger>
                             <AccordionContent className="space-y-2 pt-2">
                                 <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                                    {checkin.details.timeBlocks.map((block, index) => (
+                                    {checkin.details?.timeBlocks?.map((block, index) => (
                                         <li key={index}><strong>{block.startTime} - {block.endTime}:</strong> {block.description}</li>
                                     ))}
                                 </ul>

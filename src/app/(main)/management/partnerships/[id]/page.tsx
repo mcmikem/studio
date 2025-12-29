@@ -83,6 +83,7 @@ function HealthCheckForm({ partner, onFormSubmit }: { partner: Partnership; onFo
       communication: 3, delivery: 3, alignment: 3, value: 3,
       recommendation: "Continue",
       nextReviewDate: format(addMonths(new Date(), 3), 'yyyy-MM-dd'),
+      issues: "",
     },
   });
 
@@ -91,17 +92,29 @@ function HealthCheckForm({ partner, onFormSubmit }: { partner: Partnership; onFo
     const healthCheckCollection = collection(firestore, 'partnerships', partner.id, 'healthChecks');
     const partnerRef = doc(firestore, 'partnerships', partner.id);
     
+    // Explicitly casting ratings to numbers to fix TypeScript comparison error TS2365
+    const communication = Number(data.communication);
+    const delivery = Number(data.delivery);
+    const alignment = Number(data.alignment);
+    const value = Number(data.value);
+
     const newHealthCheck: Omit<HealthCheck, 'id'> = {
       partnerId: partner.id,
       partnerName: partner.name,
       checkDate: serverTimestamp() as Timestamp,
       createdAt: serverTimestamp() as Timestamp,
       checkedBy: profile.name,
-      ...data,
+      communication,
+      delivery,
+      alignment,
+      value,
+      issues: data.issues || "",
+      recommendation: data.recommendation,
+      nextReviewDate: data.nextReviewDate,
     };
     
     // Determine overall health status
-    const avgRating = (data.communication + data.delivery + data.alignment + data.value) / 4;
+    const avgRating = (communication + delivery + alignment + value) / 4;
     let newHealthStatus: Partnership['health'] = 'Strong';
     if (avgRating < 2.5) newHealthStatus = 'At Risk';
     else if (avgRating < 4) newHealthStatus = 'Needs Attention';
@@ -118,7 +131,7 @@ function HealthCheckForm({ partner, onFormSubmit }: { partner: Partnership; onFo
   };
 
   const StarRating = ({ name, label }: { name: keyof HealthCheckFormData, label: string }) => {
-    const rating = watch(name);
+    const rating = Number(watch(name));
     return (
       <div className="flex justify-between items-center">
         <Label>{label}</Label>

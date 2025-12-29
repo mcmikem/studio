@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useState, useMemo, useEffect, Suspense } from 'react';
+import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -29,7 +28,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, useNumberInputHandler } from '@/lib/utils'; // Import useNumberInputHandler
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const multipliers = [
@@ -38,6 +37,37 @@ const multipliers = [
   { id: 'content', label: 'Capturing content for fundraising', value: 50000 },
   { id: 'process', label: 'Testing new process for replication', value: 30000 },
 ];
+
+interface Costs {
+  transport: number;
+  staffTime: number;
+  materials: number;
+}
+
+interface ActivityData {
+  title: string;
+  userId: string;
+  userName: string;
+  ecosystem_phase: 'Identify & Inspire' | 'Equip & Empower' | 'Activate & Sustain';
+  estimatedCost: number;
+  actualCost: number;
+  directValue: number;
+  indirectValue: number;
+  totalValue: number;
+  estimatedRoi: number;
+  finalRoi: number;
+  loggedAt: any; // serverTimestamp
+  primaryGoalType: 'Metric' | 'Program';
+  primaryGoalId: string;
+  primaryGoalQuantity: number;
+  keyResultId: string;
+  memorableMoment: string;
+  challengesLearned: string;
+  beneficiaryQuote: string;
+  parents_attended?: number;
+  teachers_attended?: number;
+  trees_planted?: number;
+}
 
 function ActivityReportFormComponent() {
   const router = useRouter();
@@ -53,10 +83,12 @@ function ActivityReportFormComponent() {
   const [currentTab, setCurrentTab] = useState("planning");
 
   const [activityName, setActivityName] = useState('');
-  const [ecosystemPhase, setEcosystemPhase] = useState<"Identify & Inspire" | "Equip & Empower" | "Activate & Sustain">('Identify & Inspire');
-  const [transportCost, setTransportCost] = useState(15000);
-  const [staffTimeCost, setStaffTimeCost] = useState(20000);
-  const [materialsCost, setMaterialsCost] = useState(10000);
+  const [ecosystemPhase, setEcosystemPhase] = useState<'Identify & Inspire' | 'Equip & Empower' | 'Activate & Sustain'>('Identify & Inspire');
+  const [costs, setCosts] = useState<Costs>({
+    transport: 15000,
+    staffTime: 20000,
+    materials: 10000,
+  });
   const [selectedMultipliers, setSelectedMultipliers] = useState<string[]>([]);
   const [actualCost, setActualCost] = useState(45000);
   
@@ -64,7 +96,6 @@ function ActivityReportFormComponent() {
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [goalQuantity, setGoalQuantity] = useState(0);
   const [keyResultId, setKeyResultId] = useState<string | null>(null);
-
 
   // New state for program-specific fields
   const [parentsAttended, setParentsAttended] = useState(0);
@@ -94,6 +125,7 @@ function ActivityReportFormComponent() {
   }, [firestore]);
   const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
 
+  const overallLoading = isLoadingMetrics || isLoadingPrograms || isLoadingKeyResults;
 
   const selectedMetric = useMemo(() => {
     if (goalType !== 'Metric') return null;
@@ -120,8 +152,8 @@ function ActivityReportFormComponent() {
   }, [goalType, programIdFromUrl]);
 
   const preActivityCost = useMemo(
-    () => transportCost + staffTimeCost + materialsCost,
-    [transportCost, staffTimeCost, materialsCost]
+    () => costs.transport + costs.staffTime + costs.materials,
+    [costs]
   );
   
   useEffect(() => {
@@ -163,11 +195,25 @@ function ActivityReportFormComponent() {
     return ((totalValue - actualCost) / actualCost) * 100;
   }, [totalValue, actualCost]);
 
-  const handleMultiplierChange = (id: string, checked: boolean) => {
+  const handleMultiplierChange = useCallback((id: string, checked: boolean) => {
     setSelectedMultipliers((prev) =>
       checked ? [...prev, id] : prev.filter((mId) => mId !== id)
     );
-  };
+  }, []);
+
+  const handleCostChange = useCallback((field: keyof Costs, value: string) => {
+    setCosts(prev => ({
+      ...prev,
+      [field]: value === '' ? 0 : Number(value),
+    }));
+  }, []);
+
+  // Refactored number input handlers using the custom hook
+  const handleGoalQuantityChange = useNumberInputHandler(setGoalQuantity);
+  const handleParentsAttendedChange = useNumberInputHandler(setParentsAttended);
+  const handleTeachersAttendedChange = useNumberInputHandler(setTeachersAttended);
+  const handleTreesPlantedChange = useNumberInputHandler(setTreesPlanted);
+  const handleActualCostChange = useNumberInputHandler(setActualCost);
 
   const handleLogActivity = async () => {
     if (!activityName.trim() || !user || !firestore || !selectedGoalId || !profile || !keyResultId) {
@@ -180,7 +226,7 @@ function ActivityReportFormComponent() {
     }
     setLoading(true);
 
-    const activityData: any = {
+    const activityData: ActivityData = {
       title: activityName,
       userId: user.uid,
       userName: profile.name,
@@ -250,13 +296,12 @@ function ActivityReportFormComponent() {
   };
   
   const renderGoalSelectors = () => {
-    const isLoading = isLoadingMetrics || isLoadingPrograms;
     if (goalType === 'Metric') {
         return (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                 <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="primary-metric">Primary Metric</Label>
-                    {isLoading ? <Skeleton className="h-10 w-full" /> : (
+                    {overallLoading ? <Skeleton className="h-10 w-full" /> : (
                         <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
                             <SelectTrigger id="primary-metric">
                                 <SelectValue placeholder="Select a metric..." />
@@ -271,7 +316,7 @@ function ActivityReportFormComponent() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="metric-quantity">Quantity ({selectedMetric?.unit || 'units'})</Label>
-                    <Input id="metric-quantity" type="number" placeholder="e.g., 50" value={goalQuantity} onChange={e => setGoalQuantity(Number(e.target.value))} disabled={!selectedGoalId} />
+                    <Input id="metric-quantity" type="number" placeholder="e.g., 50" value={goalQuantity} onChange={e => handleGoalQuantityChange(e.target.value)} disabled={!selectedGoalId} />
                 </div>
              </div>
         )
@@ -281,7 +326,7 @@ function ActivityReportFormComponent() {
              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
                 <div className="sm:col-span-2 space-y-2">
                     <Label htmlFor="primary-program">Program</Label>
-                    {isLoading ? <Skeleton className="h-10 w-full" /> : (
+                    {overallLoading ? <Skeleton className="h-10 w-full" /> : (
                         <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined} disabled={!!programIdFromUrl}>
                             <SelectTrigger id="primary-program">
                                 <SelectValue placeholder="Select a program..." />
@@ -296,7 +341,7 @@ function ActivityReportFormComponent() {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="program-quantity">Objectives</Label>
-                    <Input id="program-quantity" type="number" placeholder="e.g., 1" value={goalQuantity} onChange={e => setGoalQuantity(Number(e.target.value))} disabled={!selectedGoalId} />
+                    <Input id="program-quantity" type="number" placeholder="e.g., 1" value={goalQuantity} onChange={e => handleGoalQuantityChange(e.target.value)} disabled={!selectedGoalId} />
                 </div>
              </div>
         )
@@ -360,11 +405,11 @@ function ActivityReportFormComponent() {
                     <div className="grid grid-cols-2 gap-4 mt-4 p-4 border rounded-md">
                         <div className="space-y-2">
                             <Label htmlFor="parents-attended">Parents Attended</Label>
-                            <Input id="parents-attended" type="number" placeholder="e.g., 25" value={parentsAttended} onChange={e => setParentsAttended(Number(e.target.value))} />
+                            <Input id="parents-attended" type="number" placeholder="e.g., 25" value={parentsAttended} onChange={e => handleParentsAttendedChange(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="teachers-attended">Teachers Attended</Label>
-                            <Input id="teachers-attended" type="number" placeholder="e.g., 5" value={teachersAttended} onChange={e => setTeachersAttended(Number(e.target.value))} />
+                            <Input id="teachers-attended" type="number" placeholder="e.g., 5" value={teachersAttended} onChange={e => handleTeachersAttendedChange(e.target.value)} />
                         </div>
                     </div>
                 )}
@@ -373,7 +418,7 @@ function ActivityReportFormComponent() {
                     <div className="mt-4 p-4 border rounded-md">
                         <div className="space-y-2">
                             <Label htmlFor="trees-planted">Trees Planted</Label>
-                            <Input id="trees-planted" type="number" placeholder="e.g., 150" value={treesPlanted} onChange={e => setTreesPlanted(Number(e.target.value))} />
+                            <Input id="trees-planted" type="number" placeholder="e.g., 150" value={treesPlanted} onChange={e => handleTreesPlantedChange(e.target.value)} />
                         </div>
                     </div>
                 )}
@@ -398,9 +443,9 @@ function ActivityReportFormComponent() {
                  <CardContent className="space-y-6 px-0">
                     <h3 className="font-semibold text-lg">Estimated Costs</h3>
                     <div className="space-y-4">
-                        <div className="space-y-2"><Label htmlFor="transportCost">Transport</Label><Input id="transportCost" type="number" step="1000" value={transportCost} onChange={(e) => setTransportCost(Number(e.target.value))} /></div>
-                        <div className="space-y-2"><Label htmlFor="staffTimeCost">Staff Time</Label><Input id="staffTimeCost" type="number" step="1000" value={staffTimeCost} onChange={(e) => setStaffTimeCost(Number(e.target.value))} /></div>
-                        <div className="space-y-2"><Label htmlFor="materialsCost">Materials</Label><Input id="materialsCost" type="number" step="1000" value={materialsCost} onChange={(e) => setMaterialsCost(Number(e.target.value))} /></div>
+                        <div className="space-y-2"><Label htmlFor="transportCost">Transport</Label><Input id="transportCost" type="number" step="1000" value={costs.transport} onChange={(e) => handleCostChange('transport', e.target.value)} /></div>
+                        <div className="space-y-2"><Label htmlFor="staffTimeCost">Staff Time</Label><Input id="staffTimeCost" type="number" step="1000" value={costs.staffTime} onChange={(e) => handleCostChange('staffTime', e.target.value)} /></div>
+                        <div className="space-y-2"><Label htmlFor="materialsCost">Materials</Label><Input id="materialsCost" type="number" step="1000" value={costs.materials} onChange={(e) => handleCostChange('materials', e.target.value)} /></div>
                     </div>
                     <div className="text-right font-bold text-lg p-2 bg-muted rounded-md">Total Estimated Cost: {formatCurrency(preActivityCost)}</div>
                     <Separator />
@@ -443,7 +488,7 @@ function ActivityReportFormComponent() {
 
                  <div className="space-y-2">
                     <Label htmlFor="key-result">Link to Key Result</Label>
-                    {isLoadingKeyResults ? <Skeleton className="h-10 w-full" /> : (
+                    {overallLoading ? <Skeleton className="h-10 w-full" /> : (
                         <Select onValueChange={setKeyResultId} value={keyResultId || undefined}>
                             <SelectTrigger id="key-result">
                                 <SelectValue placeholder="Select a Key Result..." />
@@ -459,7 +504,7 @@ function ActivityReportFormComponent() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="actualCost">Actual Final Cost</Label>
-                  <Input id="actualCost" type="number" value={actualCost} onChange={(e) => setActualCost(Number(e.target.value))} placeholder="e.g., 42000"/>
+                  <Input id="actualCost" type="number" value={actualCost} onChange={(e) => handleActualCostChange(e.target.value)} placeholder="e.g., 42000"/>
                 </div>
 
                 <Separator />

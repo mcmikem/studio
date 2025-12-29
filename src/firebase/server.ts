@@ -1,7 +1,9 @@
 
-import { initializeApp, getApps, getApp, cert, type App } from 'firebase-admin/app';
+import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { firebaseConfig } from './config';
+import fs from 'fs';
+import path from 'path';
 
 let adminApp: App | null = null;
 let firestoreInstance: Firestore | null = null;
@@ -137,30 +139,42 @@ export function getFirebaseAdmin() {
     return { firestore: firestoreInstance };
   }
 
-  const appName = 'firebase-admin-app-e9d6a3c2'; // Use a unique name to avoid conflicts
+  const appName = 'firebase-admin-app-e9d6a3c2'; 
   const existingApp = getApps().find(app => app.name === appName);
   
   if (existingApp) {
     adminApp = existingApp;
   } else {
     try {
-      // In App Hosting, GOOGLE_APPLICATION_CREDENTIALS is set automatically.
-      // We don't need to read the file manually.
-      adminApp = initializeApp({
-        projectId: firebaseConfig.projectId,
-      }, appName);
+      if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+        adminApp = initializeApp({
+          projectId: firebaseConfig.projectId,
+        }, appName);
+      } else {
+        // Fallback for local development using serviceAccountKey.json
+        const serviceAccountPath = path.join(process.cwd(), 'secrets', 'serviceAccountKey.json');
+        if (fs.existsSync(serviceAccountPath)) {
+          const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+          adminApp = initializeApp({
+            credential: cert(serviceAccount),
+            projectId: firebaseConfig.projectId,
+          }, appName);
+        } else {
+          // Final fallback - try initializing without explicit credentials (last resort)
+           adminApp = initializeApp({
+            projectId: firebaseConfig.projectId,
+          }, appName);
+        }
+      }
   
       console.log("Firebase Admin SDK initialized successfully.");
     } catch (e) {
       console.error("Critical Error: Failed to initialize Firebase Admin SDK.", e);
-      // In a server environment, this is a fatal error.
-      // We throw to prevent the application from running in a broken state.
       throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
     }
   }
 
   firestoreInstance = getFirestore(adminApp);
-  // Trigger seeding asynchronously. Do not await it here to avoid blocking.
   seedKnowledgeHub(firestoreInstance).catch(console.error);
   return { firestore: firestoreInstance };
 }

@@ -9,8 +9,10 @@ import type { QualitativeAnalysisInput, QualitativeAnalysisOutput } from '@/lib/
 import { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from '@/lib/types';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { z } from 'zod';
-import { googleAI } from '@genkit-ai/google-genai';
 import { formatDateSafe } from '@/lib/utils';
+
+// Export type for external use
+export type { QualitativeAnalysisOutput };
 
 const getActivitiesForProgramToolObject = ai.defineTool(
     {
@@ -54,7 +56,7 @@ const getActivitiesForProgramToolObject = ai.defineTool(
 
 const qualitativeAnalysisPrompt = ai.definePrompt({
     name: 'qualitativeAnalysisPrompt',
-    model: googleAI.model('gemini-1.5-pro-latest'),
+    model: 'googleai/gemini-1.5-flash', 
     input: { schema: QualitativeAnalysisInputSchema },
     tools: [getActivitiesForProgramToolObject],
     output: { schema: QualitativeAnalysisOutputSchema },
@@ -87,5 +89,3 @@ export const analyzeProgramQualitativeData = ai.defineFlow(
         return output;
     }
 );
-
-    

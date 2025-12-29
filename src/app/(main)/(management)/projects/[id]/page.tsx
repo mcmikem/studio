@@ -3,26 +3,26 @@
 
 import { useParams } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { collection, doc, query, where, orderBy } from 'firebase/firestore';
-import type { Project, Expense, Partnership } from '@/lib/types';
+import { collection, doc, query, where, orderBy, limit } from 'firebase/firestore'; 
+import type { Project, Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, ArrowLeft, DollarSign, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, CheckCircle, XCircle, BarChart, CheckSquare, Clock, File, Video, BookOpen, Banknote, BookUser, Store } from 'lucide-react';
+import { ArrowLeft, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, XCircle, BookOpen, File, Video, Banknote, BookUser, Store, CheckSquare } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { formatCurrency, formatDateSafe, getInitials } from '@/lib/utils';
+import { formatDateSafe, getInitials } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
 
@@ -101,7 +101,7 @@ function ProjectDashboard() {
   const { data: project, isLoading: isLoadingProject } = useDoc<Project>(projectDocRef);
   
   const partnerQuery = useMemoFirebase(() => {
-      if (!firestore || !project) return null;
+      if (!firestore || !project || !project.partner) return null;
       return query(collection(firestore, 'partnerships'), where('name', '==', project.partner), limit(1));
   }, [firestore, project]);
   const { data: partnerData } = useCollection<Partnership>(partnerQuery);
@@ -312,7 +312,7 @@ function ProjectDashboard() {
                             </div>
                              <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                                 <span className="font-medium flex items-center gap-2"><XCircle className="text-destructive"/> Absent</span>
-                                <span className="font-bold text-2xl">{100-presentPercentage.toFixed(0)}%</span>
+                                <span className="font-bold text-2xl">{(100 - presentPercentage).toFixed(0)}%</span>
                             </div>
                             <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                                 <span className="font-medium">Late Count</span>
@@ -468,7 +468,7 @@ function ProjectDashboard() {
                     <CardDescription>Track long-term skill adoption and impact at 6 and 12 months.</CardDescription>
                 </CardHeader>
                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                         <StatCard title="Active Businesses" value="78%" icon={Store} />
                         <StatCard title="Recorded Profits" value="65%" icon={DollarSign} />
                         <StatCard title="Using Bookkeeping" value="85%" icon={BookUser} />
@@ -487,6 +487,8 @@ function ProjectDashboard() {
     </div>
   );
 }
+
+const DollarSign = ({ className }: { className?: string }) => <Banknote className={className} />;
 
 export default function ProjectPage() {
     return <ProjectDashboard />;

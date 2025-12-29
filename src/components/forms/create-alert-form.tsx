@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -144,7 +143,7 @@ export function CreateAlertForm() {
           placeholder="e.g., /management/expenses"
           {...register('action')}
         />
-         {errors.action && <p className="text-sm text-destructive">{`${errors.action.message}`}</p>}
+         {errors.action && <p className="text-sm text-destructive">{errors.action.message}</p>}
         <p className="text-xs text-muted-foreground">The page users will be sent to when they click 'View'.</p>
       </div>
 

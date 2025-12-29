@@ -3,6 +3,7 @@ import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { format as formatFns, formatDistanceToNow, isValid, parseISO } from "date-fns";
 import type { Timestamp } from "firebase/firestore";
+import { useCallback } from 'react';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -82,4 +83,11 @@ export const getInitials = (name?: string) => {
         return parts[0][0] + parts[parts.length - 1][0];
     }
     return name.substring(0, 2).toUpperCase();
+};
+
+// Custom hook to handle number input changes
+export const useNumberInputHandler = (setter: (value: number) => void) => {
+  return useCallback((value: string) => {
+    setter(value === '' ? 0 : Number(value));
+  }, [setter]);
 };

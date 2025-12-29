@@ -81,7 +81,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   const { data: projects, isLoading: isLoadingProjects } = useCollection<Project>(projectsQuery);
 
   const isEditMode = !!expense;
-  const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
+  const financeRoles = ['Administrator', 'Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Programs & Partnerships Manager'];
   const canSubmitForOthers = profile && financeRoles.includes(profile.role);
 
   const {
@@ -101,9 +101,10 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
       type: 'Reimbursement',
       date: format(new Date(), 'yyyy-MM-dd'),
       title: '',
-      items: [{ description: '', category: 'Transport', amount: 0 }],
+      items: [{ description: '', category: 'Transport', amount: 0 }], // Ensure all properties are present
       totalAmount: 0,
-      submittedFor: user?.uid
+      submittedFor: user?.uid,
+      otherUserName: '',
     },
   });
 
@@ -425,5 +426,3 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
       </form>
   );
 }
-
-    

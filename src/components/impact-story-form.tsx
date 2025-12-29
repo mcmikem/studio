@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import {
   generateImpactStory,
-  ImpactStoryInput,
+  type ImpactStoryInput,
 } from "@/ai/flows/impact-story-generator";
 import { Button } from "@/components/ui/button";
 import {
@@ -189,8 +189,8 @@ function ImpactStoryGeneratorContent() {
           
           {dataToDisplay && (
              <Card className="bg-muted/50 p-4">
-                 <CardTitle className="text-lg">{isCheckout ? `Update from ${dataToDisplay.name}` : (dataToDisplay as Activity).title}</CardTitle>
-                 <CardDescription>Logged by {isCheckout ? dataToDisplay.name : (dataToDisplay as Activity).userName}</CardDescription>
+                 <CardTitle className="text-lg">{isCheckout ? `Update from ${(dataToDisplay as Checkout).name}` : (dataToDisplay as Activity).title}</CardTitle>
+                 <CardDescription>Logged by {isCheckout ? (dataToDisplay as Checkout).name : (dataToDisplay as Activity).userName}</CardDescription>
                  <CardContent className="text-sm pt-4 space-y-1">
                     {isCheckout ? (
                        <>
@@ -265,7 +265,7 @@ function ImpactStoryGeneratorContent() {
 
 export function ImpactStoryGenerator() {
   return (
-    <Suspense>
+    <Suspense fallback={<Skeleton className="h-96 w-full" />}>
       <ImpactStoryGeneratorContent />
     </Suspense>
   )

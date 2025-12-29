@@ -9,7 +9,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { FieldValue } from 'firebase-admin/firestore';
-import type { AlertInput } from '@/lib/types';
 import { AlertInputSchema } from '@/lib/types';
 
 export const createAlert = ai.defineFlow(

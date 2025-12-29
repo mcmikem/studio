@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -53,70 +52,16 @@ const checkoutTaskSchema = z.object({
 });
 
 const checkoutSchema = z.object({
-  tasks: z.array(checkoutTaskSchema).min(1, 'Please review your tasks.'),
+  // Made tasks optional for general checkout flow
+  tasks: z.array(checkoutTaskSchema).optional(), 
+  // Added accomplishment field for general checkout
+  accomplishment: z.string().optional(),
   learning: z.string().optional(),
-  tomorrowPlan: z.string().min(5, "Please set a priority for tomorrow.").optional(),
+  tomorrowPlan: z.string().min(5, "Please set a priority for tomorrow."),
 });
 
 type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
-function GeneralCheckoutForm({
-  onSubmit,
-  isSubmitting,
-}: {
-  onSubmit: (data: any) => void,
-  isSubmitting: boolean,
-}) {
-  const { register, handleSubmit: handleGeneralSubmit, formState: { errors: generalErrors } } = useForm({
-    defaultValues: {
-      accomplishment: '',
-      learning: '',
-      tomorrowPlan: '',
-    },
-  });
-
-  const onGeneralSubmit = (data: any) => {
-    // Adapt the general form data to the structure expected by the main onSubmit function
-    const adaptedData = {
-      tasks: [{ description: data.accomplishment, status: 'Done' as const }],
-      learning: data.learning,
-      tomorrowPlan: data.tomorrowPlan,
-    };
-    onSubmit(adaptedData);
-  };
-  
-  return (
-    <form onSubmit={handleGeneralSubmit(onGeneralSubmit)} className="space-y-6">
-        <div className="space-y-2">
-            <Label htmlFor="accomplishment" className="text-base font-semibold">What was your main accomplishment today?</Label>
-            <Textarea id="accomplishment" {...register('accomplishment', { required: 'This field is required.'})} placeholder="e.g., I finalized the partnership MoU with Spouts of Water." className="min-h-[100px]"/>
-            {generalErrors.accomplishment && <p className="text-sm text-destructive">{generalErrors.accomplishment.message}</p>}
-        </div>
-        <div className="space-y-2">
-            <Label htmlFor="learning" className="text-base font-semibold">What was your key learning or adaptation?</Label>
-            <Textarea id="learning" placeholder="Optional: What should we do differently next time? What surprised you?" className="min-h-[100px]" {...register('learning')} />
-        </div>
-        <div className="space-y-2">
-            <Label htmlFor="tomorrowPlan" className="text-base font-semibold">What is your #1 priority for tomorrow?</Label>
-            <Textarea id="tomorrowPlan" placeholder="e.g., Begin outreach to 5 new potential partners." className="min-h-[100px]" {...register('tomorrowPlan', { required: 'Please set a priority for tomorrow.'})} />
-             {generalErrors.tomorrowPlan && <p className="text-sm text-destructive">{generalErrors.tomorrowPlan.message}</p>}
-        </div>
-         <Button
-            size="lg"
-            className="w-full"
-            type="submit"
-            disabled={isSubmitting}
-        >
-            {isSubmitting ? (
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-            <LogOut className="mr-2 h-5 w-5" />
-            )}
-            Submit General Checkout
-        </Button>
-    </form>
-  )
-}
 
 export function CheckoutForm() {
   const { toast } = useToast();
@@ -135,19 +80,21 @@ export function CheckoutForm() {
     register,
     watch,
     trigger,
-    formState: { errors, isSubmitting, isValid },
+    setValue,
+    formState: { errors, isSubmitting },
     reset,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     mode: 'onChange',
     defaultValues: {
       tasks: [],
+      accomplishment: '',
       learning: '',
       tomorrowPlan: '',
     },
   });
   
-  const { fields } = useFieldArray({
+  const { fields, replace } = useFieldArray({
     control,
     name: "tasks",
   });
@@ -176,12 +123,12 @@ export function CheckoutForm() {
         const checkinData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Checkin;
         setDailyCheckin(checkinData);
         
-        const tasksFromCheckin = checkinData.details.timeBlocks.map(block => ({
+        const tasksFromCheckin = checkinData.details?.timeBlocks.map(block => ({
             description: block.description,
             status: 'Done' as 'Done' | 'Not Done',
             reason: '',
-        }));
-        reset({ tasks: tasksFromCheckin, learning: '', tomorrowPlan: '' });
+        })) || [];
+        replace(tasksFromCheckin); // Use replace to set the tasks array
 
       } else {
         setDailyCheckin(null);
@@ -192,7 +139,7 @@ export function CheckoutForm() {
     } finally {
       setIsLoadingCheckin(false);
     }
-  }, [user, firestore, reset, toast]);
+  }, [user, firestore, replace, toast]);
 
   useEffect(() => {
     fetchCheckin();
@@ -209,11 +156,29 @@ export function CheckoutForm() {
       return;
     }
 
+    let finalTasks = data.tasks || [];
+
+    if (!dailyCheckin && data.accomplishment) {
+        // If no daily check-in, create a single task from accomplishment
+        finalTasks = [{
+            description: data.accomplishment,
+            status: 'Done',
+            reason: '',
+        }];
+    } else if (!dailyCheckin && !data.accomplishment) {
+        toast({
+            variant: 'destructive',
+            title: 'Missing Information',
+            description: 'Please provide your main accomplishment for the day.',
+        });
+        return;
+    }
+
     const checkoutData = {
       name: profile.name,
       role: profile.role,
       avatar: user.photoURL || '',
-      tasks: data.tasks,
+      tasks: finalTasks,
       learning: data.learning || "",
       tomorrowPlan: data.tomorrowPlan || "",
       timestamp: serverTimestamp(),
@@ -223,24 +188,34 @@ export function CheckoutForm() {
     const checkoutsCollection = collection(firestore, 'checkouts');
     
     try {
-        await addDocumentNonBlocking(checkoutsCollection, checkoutData)
+        await addDocumentNonBlocking(checkoutsCollection, checkoutData);
         
-        await createAlert({
-            type: 'Info',
-            priority: 'Low',
-            message: `${profile.name} has submitted their end-of-day report.`,
-            action: '/stream',
-            creatorId: user.uid,
-        });
+        try {
+            await createAlert({
+                type: 'Info',
+                priority: 'Low',
+                message: `${profile.name} has submitted their end-of-day report.`,
+                action: '/stream',
+                creatorId: user.uid,
+            });
+        } catch (alertError) {
+            console.error("Failed to create alert:", alertError);
+            // Optionally show a toast for alert creation failure, but don't block checkout submission
+        }
 
         toast({
             title: 'Check-out Submitted!',
             description: 'Your impact report has been saved to the Team Stream.',
         });
-        reset({tasks: [], learning: '', tomorrowPlan: ''}); // Clear form on success
+        reset({tasks: [], accomplishment: '', learning: '', tomorrowPlan: ''}); // Clear form on success
         router.push('/stream');
     } catch(e) {
         console.error("Failed to submit checkout", e)
+        toast({
+            variant: 'destructive',
+            title: 'Submission Error',
+            description: 'Could not submit your checkout. Please try again.',
+        });
     }
   };
   
@@ -254,24 +229,58 @@ export function CheckoutForm() {
       )
   }
 
+  // Render general checkout fields if no dailyCheckin
   if (!dailyCheckin) {
       return (
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>No Check-in Found For Today</AlertTitle>
-            <AlertDescription className="mt-4">
-                You can submit a general checkout report below.
+            <AlertDescription className="mt-4 mb-6">
+                It looks like you didn't check in today. Please submit a general checkout report below.
             </AlertDescription>
-            <div className="mt-6">
-                <GeneralCheckoutForm onSubmit={onSubmit} isSubmitting={isSubmitting} />
-            </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-2">
+                    <Label htmlFor="accomplishment" className="text-base font-semibold">What was your main accomplishment today?</Label>
+                    <Textarea 
+                        id="accomplishment" 
+                        {...register('accomplishment', { required: 'This field is required.'})} 
+                        placeholder="e.g., I finalized the partnership MoU with Spouts of Water." 
+                        className="min-h-[100px]"
+                    />
+                    {errors.accomplishment && <p className="text-sm text-destructive">{errors.accomplishment.message}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="learning" className="text-base font-semibold">What was your key learning or adaptation?</Label>
+                    <Textarea id="learning" placeholder="Optional: What should we do differently next time? What surprised you?" className="min-h-[100px]" {...register('learning')} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="tomorrowPlan" className="text-base font-semibold">What is your #1 priority for tomorrow?</Label>
+                    <Textarea id="tomorrowPlan" placeholder="e.g., Begin outreach to 5 new potential partners." className="min-h-[100px]" {...register('tomorrowPlan', { required: 'Please set a priority for tomorrow.'})} />
+                    {errors.tomorrowPlan && <p className="text-sm text-destructive">{errors.tomorrowPlan.message}</p>}
+                </div>
+                <Button
+                    size="lg"
+                    className="w-full"
+                    type="submit"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? (
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    ) : (
+                        <LogOut className="mr-2 h-5 w-5" />
+                    )}
+                    Submit General Checkout
+                </Button>
+            </form>
          </Alert>
       )
   }
 
   const handleNextStep = async () => {
-    const allTasksReviewed = watch('tasks').every(task => task.status === 'Done' || task.status === 'Not Done');
-    if (allTasksReviewed) {
+    // Trigger validation for all tasks to ensure all are marked
+    const isValidTasks = await trigger('tasks');
+
+    if (isValidTasks) {
         setStep(1);
     } else {
         toast({
@@ -380,7 +389,7 @@ export function CheckoutForm() {
                     size="lg"
                     className="w-full"
                     type="submit"
-                    disabled={isSubmitting || !isValid}
+                    disabled={isSubmitting}
                 >
                     {isSubmitting ? (
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />

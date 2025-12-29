@@ -9,7 +9,12 @@ import { ai } from '@/ai/genkit';
 import type { ParseWorkplanInput, ParseWorkplanOutput } from '@/lib/types';
 import { ParseWorkplanInputSchema, ParseWorkplanOutputSchema } from '@/lib/types';
 
-const workplanParserPrompt = `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format that conforms to the provided schema.
+const workplanParserPrompt = ai.definePrompt({
+    name: 'workplanParserPrompt',
+    input: { schema: ParseWorkplanInputSchema },
+    output: { schema: ParseWorkplanOutputSchema },
+    model: 'googleai/gemini-1.5-flash',
+    prompt: `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format that conforms to the provided schema.
 
   **Instructions:**
   1.  **Extract Key Priorities:** Identify each distinct task or activity.
@@ -24,7 +29,8 @@ const workplanParserPrompt = `You are an expert administrative assistant. Your t
   ---
   {{textPlan}}
   ---
-  `;
+  `,
+});
 
 export const parseWorkplan = ai.defineFlow(
   {
@@ -33,13 +39,7 @@ export const parseWorkplan = ai.defineFlow(
     outputSchema: ParseWorkplanOutputSchema,
   },
   async (input) => {
-    const {output} = await ai.generate({
-        model: 'googleai/gemini-1.5-flash-latest',
-        prompt: workplanParserPrompt,
-        input: input,
-        output: { schema: ParseWorkplanOutputSchema }
-    });
-
+    const { output } = await workplanParserPrompt(input);
 
     if (!output) {
       throw new Error('AI failed to parse the workplan.');

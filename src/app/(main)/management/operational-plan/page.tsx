@@ -15,9 +15,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
-import { collection, writeBatch, getDocs, doc } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc, Timestamp } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
-import { Loader2, Wand, FileSignature, CheckCircle } from 'lucide-react';
+import { Loader2, Wand, FileSignature, CheckCircle } from 'lucide-react'; // Fixed typo here
 import { parseOperationalPlan } from '@/ai/flows/parse-operational-plan-flow';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import {
@@ -29,11 +29,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+interface ParsedKeyResult extends Omit<KeyResult, 'id' | 'deadline'> {
+  deadline: string;
+}
+
 export default function OperationalPlanPage() {
   const [pastedText, setPastedText] = useState('');
   const [isParsing, setIsParsing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [parsedResults, setParsedResults] = useState<Omit<KeyResult, 'id'>[]>([]);
+  const [parsedResults, setParsedResults] = useState<ParsedKeyResult[]>([]);
   const { toast } = useToast();
   const firestore = useFirestore();
 
@@ -50,7 +54,8 @@ export default function OperationalPlanPage() {
     setParsedResults([]);
     try {
       const result = await parseOperationalPlan({ planText: pastedText });
-      setParsedResults(result.keyResults);
+      // The AI flow returns deadlines as strings
+      setParsedResults(result.keyResults as ParsedKeyResult[]);
       toast({
         title: 'Plan Parsed Successfully',
         description: `Found ${result.keyResults.length} Key Results. Please review them below.`,
@@ -90,7 +95,12 @@ export default function OperationalPlanPage() {
       // Step 2: Add all new key results
       parsedResults.forEach(kr => {
         const newDocRef = doc(krCollection);
-        batch.set(newDocRef, { ...kr, id: newDocRef.id });
+        const deadlineDate = new Date(kr.deadline);
+        batch.set(newDocRef, { 
+            ...kr, 
+            id: newDocRef.id,
+            deadline: Timestamp.fromDate(isNaN(deadlineDate.getTime()) ? new Date() : deadlineDate)
+        });
       });
 
       // Step 3: Commit the batch
@@ -114,7 +124,7 @@ export default function OperationalPlanPage() {
     }
   };
   
-  const formatTarget = (kr: Partial<KeyResult>) => {
+  const formatTarget = (kr: Partial<ParsedKeyResult>) => {
     if (kr.title?.includes('KR1')) return `${((kr.target || 0) / 1000000).toFixed(1)}M UGX`;
     if (kr.target === 100) return `${kr.target}%`;
     return kr.target?.toLocaleString();

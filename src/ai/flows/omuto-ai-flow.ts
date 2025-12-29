@@ -14,7 +14,6 @@ import { SearchResultItemSchema, OmutoAIInputSchema, OmutoAIOutputSchema } from 
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { Timestamp } from 'firebase-admin/firestore';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const { firestore } = getFirebaseAdmin();
 
@@ -77,9 +76,11 @@ const searchOmutoToolObject = ai.defineTool(
     },
     async ({ query }) => {
         console.log(`Searching Omuto for: ${query}`);
-        const users = await findUsersByNameToolObject({ name: query });
-        const programs = await findProgramsByNameToolObject({ title: query });
-        const expenses = await findExpensesByTitleToolObject({ title: query });
+        const [users, programs, expenses] = await Promise.all([
+            findUsersByNameToolObject({ name: query }),
+            findProgramsByNameToolObject({ title: query }),
+            findExpensesByTitleToolObject({ title: query })
+        ]);
 
         const combined = [...users, ...programs, ...expenses];
         const uniqueResults = Array.from(new Map(combined.map(item => [item.id, item])).values());
@@ -190,7 +191,7 @@ const getRecentCheckoutsToolObject = ai.defineTool(
 
 const omutoAIPrompt = ai.definePrompt({
     name: 'omutoAIPrompt',
-    model: googleAI.model('gemini-1.5-pro-latest'),
+    model: 'googleai/gemini-1.5-flash',
     tools: [
         searchOmutoToolObject, 
         createCheckoutToolObject, 
@@ -224,7 +225,7 @@ export const omutoAIFlow = ai.defineFlow(
     try {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
-        const llmResponse = await omutoAIPrompt.invoke({
+        const llmResponse = await omutoAIPrompt({
             history: input.history || [],
             input: {
                 userId: input.userId,

@@ -8,10 +8,12 @@ import { ai } from '@/ai/genkit';
 import type { SmartRemindersOutput, SmartRemindersInput } from '@/lib/types';
 import { SmartRemindersInputSchema, SmartRemindersOutputSchema } from '@/lib/types';
 import { getFirebaseAdmin } from '@/firebase/server';
-import { collection, query, where, orderBy, getDocs, Timestamp, limit } from 'firebase/firestore';
+import { Timestamp } from 'firebase-admin/firestore';
 import { format } from 'date-fns';
 import { z } from 'zod';
-import { googleAI } from '@genkit-ai/google-genai';
+
+// Export type for external use
+export type { SmartRemindersOutput };
 
 const getUpcomingEventsForUserToolObject = ai.defineTool(
     {
@@ -26,14 +28,14 @@ const getUpcomingEventsForUserToolObject = ai.defineTool(
         const sevenDaysFromNow = new Date();
         sevenDaysFromNow.setDate(today.getDate() + 7);
 
-        const eventsQuery = query(
-            collection(firestore, 'events'),
-            where('date', '>=', Timestamp.fromDate(today)),
-            where('date', '<=', Timestamp.fromDate(sevenDaysFromNow)),
-            orderBy('date', 'asc')
-        );
+        // Use Admin SDK query methods
+        const eventsRef = firestore.collection('events');
+        const snapshot = await eventsRef
+            .where('date', '>=', Timestamp.fromDate(today))
+            .where('date', '<=', Timestamp.fromDate(sevenDaysFromNow))
+            .orderBy('date', 'asc')
+            .get();
 
-        const snapshot = await getDocs(eventsQuery);
         return snapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -55,14 +57,15 @@ const getPendingTasksForUserToolObject = ai.defineTool(
     },
     async ({ userId }) => {
         const { firestore } = getFirebaseAdmin();
-        const tasksQuery = query(
-            collection(firestore, 'users', userId, 'tasks'),
-            where('completed', '==', false),
-            orderBy('createdAt', 'desc'),
-            limit(5)
-        );
+        
+        // Use Admin SDK query methods
+        const tasksRef = firestore.collection('users').doc(userId).collection('tasks');
+        const snapshot = await tasksRef
+            .where('completed', '==', false)
+            .orderBy('createdAt', 'desc')
+            .limit(5)
+            .get();
 
-        const snapshot = await getDocs(tasksQuery);
         return snapshot.docs.map(doc => {
             const data = doc.data();
             return {
@@ -76,7 +79,7 @@ const getPendingTasksForUserToolObject = ai.defineTool(
 const smartRemindersPrompt = ai.definePrompt(
     {
         name: 'smartRemindersPrompt',
-        model: googleAI.model('gemini-1.5-flash-latest'),
+        model: 'googleai/gemini-1.5-flash',
         tools: [getUpcomingEventsForUserToolObject, getPendingTasksForUserToolObject],
         output: { schema: SmartRemindersOutputSchema },
         prompt: `You are a proactive, intelligent assistant and performance coach for the Omuto Foundation, a youth-led NGO in Uganda. Your goal is to help team members stay on track by providing smart, actionable reminders based on their current context. Your output must be a JSON object conforming to the schema.
