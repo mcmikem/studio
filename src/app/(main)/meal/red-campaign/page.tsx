@@ -1,24 +1,67 @@
+
 'use client';
 
-import { ProgramActivityForm } from '@/components/forms/program-activity-form';
 import { Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Heart, FileText, CheckSquare, Droplets } from 'lucide-react';
+import Link from 'next/link';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-function RedCampaignFormPage() {
+const redCampaignForms = [
+  {
+    href: '/meal/red-campaign/school-visit',
+    title: 'M&E School Visit',
+    description: 'Log observations and feedback from a school visit.',
+    icon: FileText,
+  },
+  {
+    href: '/meal/red-campaign/mhm-training',
+    title: 'MHM Training Attendance',
+    description: 'Log attendance for a Menstrual Health Management session.',
+    icon: CheckSquare,
+  },
+  {
+    href: '/meal/red-campaign/pads-distribution',
+    title: 'Pads Distribution',
+    description: 'Record the distribution of sanitary pads.',
+    icon: Droplets,
+  },
+];
+
+function RedCampaignHubPage() {
     return (
-        <ProgramActivityForm
-            programTitle="RED Campaign"
-            formDescription="Log a new activity for the RED Campaign. Fill out the sections below to calculate ROI and capture important M&E data."
-            showParentsAttended
-            showTeachersAttended
-        />
+        <div className="space-y-6">
+            <header>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">RED Campaign</h1>
+                <p className="text-muted-foreground">
+                    Data collection forms for the Menstrual Health Management program.
+                </p>
+            </header>
+             <Card>
+                <CardHeader>
+                    <CardTitle>RED Campaign Forms</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {redCampaignForms.map(form => (
+                         <Link key={form.href} href={form.href} className="block">
+                            <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
+                                <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
+                                <div>
+                                    <p className="font-semibold">{form.title}</p>
+                                    <p className="text-sm text-muted-foreground">{form.description}</p>
+                                </div>
+                            </div>
+                        </Link>
+                    ))}
+                </CardContent>
+            </Card>
+        </div>
     )
 }
 
 export default function RedCampaignPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <RedCampaignFormPage />
+            <RedCampaignHubPage />
         </Suspense>
     )
 }

@@ -117,10 +117,10 @@ const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
   'Operations & Field Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
   'Media & Finance Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
   'Media & Communications Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports', 'management'],
-  'Field Coordinator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports'],
-  'Intern': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports'],
-  'Volunteer': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports'],
-  'default': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'dataHub', 'reports'],
+  'Field Coordinator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
+  'Intern': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
+  'Volunteer': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
+  'default': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
 };
 
 

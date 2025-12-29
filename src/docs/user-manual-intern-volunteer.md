@@ -13,13 +13,14 @@ When you log in, you'll land on your personal dashboard. Think of this as your d
 Here you will find:
 *   **A Warm Welcome:** A greeting to get your day started.
 *   **Smart Reminders:** Your AI Coach will analyze your pending tasks and calendar events to give you smart, actionable reminders for the day. This helps you stay on track and focus on what matters most.
-*   **Quick Actions:** A set of buttons for the most common tasks you'll perform.
+*   **Your Supervisor:** Quick access to contact your direct supervisor.
+*   **Your First Quest:** An interactive task to help you learn the app.
 
 ---
 
 ## 2. Your Daily Rhythm: Submitting Your End-of-Day Note
 
-Your most important daily task will be to share your progress.
+Your most important daily task is to share your progress.
 
 ### Submitting Your End-of-Day Note
 At the end of your day, it's essential to submit a quick note. This is how your supervisor and the rest of the team see your progress and learnings. You can find this in the "Forms Hub".

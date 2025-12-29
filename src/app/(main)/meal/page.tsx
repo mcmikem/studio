@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -8,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, BarChart3, UserPlus, Users, CheckCircle, Trophy, Swords, Store, Wind, Droplets, Leaf, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, UserPlus, Users, CheckCircle, Trophy, Swords, Store, Wind, Droplets, Leaf, Zap, Heart } from 'lucide-react';
 import Link from 'next/link';
 
 const generalMneForms = [
@@ -40,7 +39,7 @@ const generalMneForms = [
         href: '/meal/endline-survey',
         title: 'Endline Survey',
         description: 'Capture "after the program" status to measure impact.',
-        icon: Users,
+        icon: CheckCircle,
     },
     {
         href: '/record-testimony',
@@ -51,8 +50,8 @@ const generalMneForms = [
 ];
 
 const programSpecificForms = [
-  { href: '/meal/red-campaign/school-visit', title: 'RED Campaign', description: 'MHM, school visits, and pad distribution forms.', icon: Droplets },
-  { href: '/meal/greenschools/tree-survey', title: 'GreenSchools', description: 'Tree survival, waste audits, and club registration forms.', icon: Leaf },
+  { href: '/meal/red-campaign', title: 'RED Campaign', description: 'MHM, school visits, and pad distribution forms.', icon: Heart },
+  { href: '/meal/greenschools', title: 'GreenSchools', description: 'Tree survival, waste audits, and club registration forms.', icon: Leaf },
   { href: '/meal/yoskills', title: 'YoSkills', description: 'Forms for circles, youth, and business ideas.', icon: Zap },
   { href: '/meal/slf', title: 'Student Leaders Forum', description: 'Manage schools, prefects, and performance for the SLF.', icon: Users },
   { href: '/meal/purewater', title: 'PureWater Initiative', description: 'Forms for water source mapping and WASH assessments.', icon: Droplets },
