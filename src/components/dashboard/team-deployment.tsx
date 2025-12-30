@@ -56,6 +56,7 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
   const [selectedUserStatus, setSelectedUserStatus] = useState<TeamStatus | null>(null);
 
   useEffect(() => {
+    // This effect runs only on the client, avoiding hydration mismatch.
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); 
     return () => clearInterval(timer);
@@ -126,9 +127,9 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
           </div>
         ) : teamStatus.length > 0 ? (
            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-5 gap-4">
-            {teamStatus.map((status, index) => {
+            {teamStatus.map((status) => {
                 return (
-                    <button key={status.user?.id || index} onClick={() => setSelectedUserStatus(status)} className="flex flex-col items-center gap-1 text-center group">
+                    <button key={status.user.id} onClick={() => setSelectedUserStatus(status)} className="flex flex-col items-center gap-1 text-center group">
                         <div className="relative">
                             <Avatar className="h-12 w-12 border-2 group-hover:border-primary transition-colors" data-ai-hint="person avatar">
                                 <AvatarImage src={status.user.photoURL} />

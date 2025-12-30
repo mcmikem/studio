@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
@@ -204,35 +205,41 @@ function PlayerDetailDashboard() {
 
   return (
     <div className="space-y-6">
-      <header className="flex justify-between items-center">
-         <Button asChild variant="outline">
-            <Link href="/meal/data/ofa/players"><ArrowLeft className="mr-2 h-4 w-4" />Back to Players List</Link>
-          </Button>
-           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(true)}>
-                <Edit className="mr-2 h-4 w-4" /> Edit
-            </Button>
-             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete
+       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <header className="flex justify-between items-center">
+                <Button asChild variant="outline">
+                    <Link href="/meal/data/ofa/players"><ArrowLeft className="mr-2 h-4 w-4" />Back to Players List</Link>
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete {player.name}'s record. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-      </header>
+                <div className="flex gap-2">
+                    <DialogTrigger asChild>
+                        <Button variant="outline">
+                            <Edit className="mr-2 h-4 w-4" /> Edit
+                        </Button>
+                    </DialogTrigger>
+                    <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete {player.name}'s record. This action cannot be undone.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            </header>
+            <EditPlayerDialog player={player} onOpenChange={setIsEditDialogOpen} />
+        </Dialog>
+
 
       <Card>
         <CardHeader className="flex flex-col items-center text-center">
@@ -279,8 +286,6 @@ function PlayerDetailDashboard() {
              </Card>
         </CardContent>
       </Card>
-      
-      {isEditDialogOpen && player && <EditPlayerDialog player={player} onOpenChange={setIsEditDialogOpen} />}
     </div>
   );
 }

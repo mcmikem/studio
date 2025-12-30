@@ -62,7 +62,6 @@ function CheckinFormComponent() {
                     title: "Error loading plan",
                     description: "There was an issue loading your daily plan. Please try generating it again."
                 });
-                // No longer navigate away, allow user to stay on page or navigate manually
             }
         }
     }, [planDataString, setValue, toast]);

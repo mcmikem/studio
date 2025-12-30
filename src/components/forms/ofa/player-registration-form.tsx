@@ -87,7 +87,6 @@ export function PlayerRegistrationForm() {
         const playerRef = doc(collection(firestore, 'ofa-players'));
         // Using any to bypass FieldValue vs Timestamp type conflict on serverTimestamp()
         let playerData: any = {
-            id: playerRef.id,
             name: data.name,
             teamId: data.teamId,
             teamName: selectedTeam.teamName,
@@ -117,7 +116,6 @@ export function PlayerRegistrationForm() {
         // 2. Create Beneficiary document
         const beneficiaryRef = doc(collection(firestore, 'beneficiaries'));
         const beneficiaryData: any = {
-            id: beneficiaryRef.id,
             name: data.name,
             dob: '',
             gender: 'Male', // Assuming default, can be added to form

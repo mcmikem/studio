@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import {
@@ -17,13 +17,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { useUser, useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
+import { collection, serverTimestamp, Timestamp, query, where } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, Heart, ArrowLeft } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import type { Program } from '@/lib/types';
+import { useMemo } from 'react';
+import { useMemoFirebase } from '@/firebase/provider';
+
 
 const schoolVisitSchema = z.object({
   schoolName: z.string().min(3, "School name is required."),
@@ -42,6 +46,14 @@ export function SchoolVisitForm() {
   const { profile } = useUserProfile(user);
   const firestore = useFirestore();
   const { toast } = useToast();
+  
+  const redCampaignQuery = useMemoFirebase((db) => {
+    if (!db) return null;
+    return query(collection(db, 'programs'), where('title', '==', 'RED Campaign'), limit(1));
+  }, [firestore]);
+
+  const { data: redCampaignData } = useCollection<Program>(redCampaignQuery);
+  const redCampaignId = redCampaignData?.[0]?.id;
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<VisitFormData>({
     resolver: zodResolver(schoolVisitSchema),
@@ -56,10 +68,15 @@ export function SchoolVisitForm() {
       toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to submit a report.' });
       return;
     }
+    
+    if (!redCampaignId) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not find the RED Campaign program ID.' });
+        return;
+    }
 
     const visitData = {
       ...data,
-      programId: 'RED Campaign', // Hardcoded for this specific form
+      programId: redCampaignId,
       userId: user.uid,
       userName: profile.name,
       createdAt: serverTimestamp() as Timestamp,
