@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import type { User } from "@/lib/types"
@@ -13,6 +14,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
   const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
+    // This effect runs only on the client, avoiding hydration mismatch.
     setCurrentDate(format(new Date(), 'eeee, MMMM d, yyyy'));
   }, []);
  

@@ -27,9 +27,9 @@ function OmutoCupHubPage() {
         <div className="space-y-6">
             <header>
                  <Button variant="outline" asChild className="mb-4">
-                    <Link href="/talents">
+                    <Link href="/meal">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Talents Hub
+                        Back to MEAL Hub
                     </Link>
                 </Button>
                 <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Cup (Event)</h1>

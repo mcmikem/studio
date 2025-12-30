@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useMemo, useEffect, useState, useCallback } from 'react';
@@ -19,7 +20,7 @@ export function MyWeeklyPlan() {
   const [isLoading, setIsLoading] = useState(true);
 
   const weeklyPlanQuery = useMemoFirebase((db) => {
-    if (!user?.uid) return null;
+    if (!user?.uid || !db) return null;
     const start = startOfWeek(new Date(), { weekStartsOn: 1 });
     start.setHours(0,0,0,0);
     const weekStartTimestamp = Timestamp.fromDate(start);

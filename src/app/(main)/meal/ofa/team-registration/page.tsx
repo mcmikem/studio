@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Suspense } from 'react';
@@ -18,3 +19,4 @@ function TeamRegistrationPageContent() {
 export default function TeamRegistrationPage() {
     return <TeamRegistrationPageContent />;
 }
+

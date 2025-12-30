@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -23,9 +24,9 @@ export function KeyResultsTracker() {
     setCurrentMonth(format(new Date(), 'MMMM yyyy'));
   }, []);
 
-  const keyResultsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'key-results'), orderBy('priority'), orderBy('deadline'));
+  const keyResultsQuery = useMemoFirebase((db) => {
+    if (!db) return null;
+    return query(collection(db, 'key-results'), orderBy('priority'), orderBy('deadline'));
   }, [firestore]);
 
   const { data: keyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
