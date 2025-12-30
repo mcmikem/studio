@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -81,28 +80,13 @@ function TestimonyCard({ testimony }: { testimony: Testimony }) {
              {hasTranscription && (
                  <AccordionItem value="full-transcript">
                     <AccordionTrigger>View Full Transcript</AccordionTrigger>
-                    <AccordionContent className="prose prose-sm dark:prose-invert max-w-full">
-                       <p>{testimony.transcription}</p>
+                    <AccordionContent>
+                        <p className="prose prose-sm dark:prose-invert max-w-full">{testimony.transcription}</p>
                     </AccordionContent>
                 </AccordionItem>
             )}
           </Accordion>
       </CardContent>
-      {(hasAudio || hasVideo) && (
-         <CardFooter>
-          <div className="flex gap-2">
-            {testimony.mediaUrls?.map(url => {
-                 if (url.includes('audio')) {
-                    return <audio key={url} controls src={url}>Your browser does not support the audio element.</audio>
-                }
-                if (url.includes('video')) {
-                    return <video key={url} controls src={url} className="w-full rounded-md">Your browser does not support the video element.</video>
-                }
-                return null;
-            })}
-          </div>
-        </CardFooter>
-      )}
     </Card>
   );
 }

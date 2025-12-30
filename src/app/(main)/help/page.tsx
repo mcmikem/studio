@@ -172,7 +172,7 @@ const InternVolunteerManual = () => (
         <h3>2. Your Daily Rhythm: The End-of-Day Note</h3>
         <p>Your most important daily task is to submit your end-of-day note. This is how your supervisor and the rest of the team see your progress and learnings.</p>
         <ul>
-            <li><strong>How:</strong> Click "Submit End-of-Day Note" from your dashboard or find the form in the "Forms Hub".</li>
+            <li><strong>How:</strong> Click "Forms Hub" in the sidebar, then select "Daily Check-out". Briefly describe what you accomplished and one new thing you learned.</li>
             <li><strong>What to Write:</strong> The form is simple. Just describe what you accomplished and one new thing you learned. That's it!</li>
             <li><strong>Why:</strong> This keeps everyone in sync and helps us celebrate your contributions and growth! It's a key part of our culture of learning.</li>
         </ul>
