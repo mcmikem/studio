@@ -205,11 +205,11 @@ export const MultiSelect = React.forwardRef<
             <CommandList>
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup>
-                {options.map((option) => {
+                {options.map((option, index) => {
                   const isSelected = selectedValues.includes(option.value)
                   return (
                     <CommandItem
-                      key={option.value}
+                      key={`${option.value}-${index}`}
                       onSelect={() => toggleOption(option.value)}
                       style={{
                         pointerEvents: "auto",

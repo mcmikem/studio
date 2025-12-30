@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -65,9 +66,9 @@ export default function ManagementLayoutComponent({
 
   return (
     <div className="flex flex-col gap-6">
-       <div className="border-b border-border -mx-4 sm:-mx-6 px-4 sm:px-6">
+       <div className="border-b border-border -mx-4 sm:-mx-6">
         <ScrollArea className="w-full">
-          <div className="flex items-center gap-x-2">
+          <div className="flex items-center gap-x-2 px-4 sm:px-6">
               {tabs.map((tab) => (
                 <Link
                   key={tab.name}
@@ -84,7 +85,7 @@ export default function ManagementLayoutComponent({
                 </Link>
               ))}
             </div>
-             <ScrollBar orientation="horizontal" />
+             <ScrollBar orientation="horizontal" className="invisible" />
           </ScrollArea>
       </div>
       <div>{children}</div>

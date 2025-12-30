@@ -159,9 +159,9 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
     <div className="space-y-4 h-full flex flex-col">
       {!isEditMode && (
           <Button variant="outline" asChild className="mb-4 flex-shrink-0">
-              <Link href="/meal/ofa">
+              <Link href="/meal">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to OFA Hub
+                  Back to MEAL Hub
               </Link>
           </Button>
         )}
