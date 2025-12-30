@@ -69,7 +69,6 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
             icon={BarChart3}
             title="No Activity Logged"
             description="Log an activity via the Forms Hub to see your performance here."
-            className="min-h-0 py-10"
           >
               <Link href="/forms/program-logs/general" className='mt-4 text-primary underline'>Log your first activity</Link>
           </EmptyState>

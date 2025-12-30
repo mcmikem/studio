@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -33,7 +34,7 @@ export function PlayerRegistrationForm() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const teamsQuery = useMemoFirebase(() => {
+  const teamsQuery = useMemoFirebase((db) => {
     if (!firestore) return null;
     return query(collection(firestore, 'ofa-teams'), orderBy('teamName'));
   }, [firestore]);
@@ -115,18 +116,19 @@ export function PlayerRegistrationForm() {
 
         // 2. Create Beneficiary document
         const beneficiaryRef = doc(collection(firestore, 'beneficiaries'));
-        const beneficiaryData = {
+        const beneficiaryData: any = {
             id: beneficiaryRef.id,
             name: data.name,
             dob: '',
-            gender: 'Male' as const,
+            gender: 'Male', // Assuming default, can be added to form
             village: selectedTeam.village || selectedTeam.teamName,
             programEnrolled: 'Omuto Football Alliance',
-            school: data.school || '',
-            phone: data.guardianContact || '',
-            photoURL: photoUrl,
             createdAt: serverTimestamp(),
         };
+        if(data.school) beneficiaryData.school = data.school;
+        if(data.guardianContact) beneficiaryData.phone = data.guardianContact;
+        if(photoUrl) beneficiaryData.photoURL = photoUrl;
+
         batch.set(beneficiaryRef, beneficiaryData);
         
         await batch.commit();
