@@ -13,7 +13,7 @@ function DashboardPageContent() {
 
   const isLoading = isAuthLoading || isProfileLoading;
 
-  if (isLoading || !user) {
+  if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -21,7 +21,17 @@ function DashboardPageContent() {
     );
   }
   
-  if (!profile) {
+  if (!user && !isLoading) {
+      // Allow DashboardLoader to handle the "no user" / default state if intended,
+      // or redirect to login. For now, we render it as it likely handles the default view.
+       return (
+        <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
+            <DashboardLoader />
+        </Suspense>
+      );
+  }
+
+  if (user && !profile) {
      return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -32,7 +42,7 @@ function DashboardPageContent() {
 
   return (
     <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
-        <DashboardLoader profile={profile} />
+        <DashboardLoader />
     </Suspense>
   );
 }

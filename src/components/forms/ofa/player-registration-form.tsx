@@ -10,17 +10,17 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useFirebaseApp, useUser, useCollection } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy, writeBatch, doc } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, writeBatch, doc, Timestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, UserPlus, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { uploadFile } from '@/firebase/storage';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
-import type { OFATeam } from '@/lib/types';
+import type { OFATeam, OFAPlayer } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { OFAPlayerSchema, OFAPlayer, OFAPlayerFormData } from '@/lib/types';
+import { OFAPlayerSchema, OFAPlayerFormData } from '@/lib/types';
 import Image from 'next/image';
 import { useMemoFirebase } from '@/firebase/provider';
 
@@ -84,7 +84,8 @@ export function PlayerRegistrationForm() {
 
         // 1. Create OFA Player document
         const playerRef = doc(collection(firestore, 'ofa-players'));
-        let playerData: Partial<OFAPlayer> = {
+        // Using any to bypass FieldValue vs Timestamp type conflict on serverTimestamp()
+        let playerData: any = {
             id: playerRef.id,
             name: data.name,
             teamId: data.teamId,
@@ -118,10 +119,10 @@ export function PlayerRegistrationForm() {
             id: beneficiaryRef.id,
             name: data.name,
             dob: '',
-            gender: 'Male', // Default, can be improved
+            gender: 'Male' as const,
             village: selectedTeam.village || selectedTeam.teamName,
             programEnrolled: 'Omuto Football Alliance',
-            school: data.school,
+            school: data.school || '',
             phone: data.guardianContact || '',
             photoURL: photoUrl,
             createdAt: serverTimestamp(),
@@ -136,7 +137,7 @@ export function PlayerRegistrationForm() {
         });
         reset();
         setPhotoPreview(null);
-        router.push('/data/ofa/players');
+        router.push('/meal/ofa');
 
     } catch (error: any) {
         console.error("Error during form submission:", error);
@@ -170,7 +171,7 @@ export function PlayerRegistrationForm() {
                 <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="mr-2 h-4 w-4" /> Upload Photo
                 </Button>
-                <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange}/>
+                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange}/>
                 {photoPreview && <Avatar className="h-24 w-24"><AvatarImage src={photoPreview} /></Avatar>}
             </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

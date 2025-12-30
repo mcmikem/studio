@@ -1,216 +1,142 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useUser, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import {
-  collection,
-  query,
-  orderBy,
-  doc,
-  serverTimestamp,
-} from 'firebase/firestore';
-import type { Task } from '@/lib/types';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useState } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, serverTimestamp, doc, where } from 'firebase/firestore';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle } from 'lucide-react';
-import { Separator } from '../ui/separator';
-import { Badge } from '../ui/badge';
+import { Trash2, Plus, ListTodo, Loader2 } from 'lucide-react';
+import type { Task } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import { formatDateSafe } from '@/lib/utils';
-import confetti from 'canvas-confetti';
 
-const taskSchema = z.object({
-  title: z.string().min(3, 'Task title must be at least 3 characters.'),
-  dueDate: z.string().optional(),
-});
 
-function NewTaskForm() {
-  const { user } = useUser();
+export function UserTasks({ userId }: { userId: string }) {
   const firestore = useFirestore();
-  const { toast } = useToast();
+  const { user } = useUser();
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<z.infer<typeof taskSchema>>({
-    resolver: zodResolver(taskSchema),
-  });
+  const tasksQuery = useMemoFirebase(() => {
+      if (!firestore || !userId) return null;
+      return query(
+          collection(firestore, 'users', userId, 'tasks'),
+          orderBy('createdAt', 'desc')
+      );
+  }, [firestore, userId]);
 
-  const onSubmit = async (data: z.infer<typeof taskSchema>) => {
-    if (!user || !firestore) return;
+  const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
 
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim() || !firestore || !user) return;
+
+    setIsAdding(true);
     const tasksCollection = collection(firestore, 'users', user.uid, 'tasks');
-    const newTask: Partial<Task> = {
-      title: data.title,
+    
+    // Casting to any to avoid FieldValue/Timestamp type conflict in UI
+    const newTask: any = {
+      title: newTaskTitle,
       completed: false,
       createdAt: serverTimestamp(),
     };
-    if (data.dueDate) {
-        newTask.dueDate = data.dueDate;
+
+    try {
+      await addDocumentNonBlocking(tasksCollection, newTask);
+      setNewTaskTitle('');
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsAdding(false);
     }
-    
-    await addDocumentNonBlocking(tasksCollection, newTask)
-    .then(() => {
-        toast({
-        title: 'Task Added!',
-        });
-        reset({ title: '', dueDate: '' });
-    });
   };
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex items-start gap-2">
-      <div className="flex-grow space-y-1">
-        <Input {...register('title')} placeholder="Add a new task..." />
-        {errors.title && (
-          <p className="text-sm text-destructive">{`${errors.title.message}`}</p>
-        )}
-      </div>
-      <div className="space-y-1">
-         <Input {...register('dueDate')} type="date" />
-      </div>
-      <Button type="submit" disabled={isSubmitting} size="icon">
-        {isSubmitting ? <Loader2 className="animate-spin" /> : <PlusCircle />}
-      </Button>
-    </form>
-  );
-}
+  const toggleTask = async (task: Task) => {
+    if (!firestore || !user) return;
+    const taskRef = doc(firestore, 'users', user.uid, 'tasks', task.id);
+    await updateDocumentNonBlocking(taskRef, { completed: !task.completed });
+  };
 
-export function UserTasks() {
-  const { user } = useUser();
-
-  const tasksQuery = useMemoFirebase((db) => {
-    if (!user) return null;
-    return query(
-      collection(db, 'users', user.uid, 'tasks'),
-      orderBy('createdAt', 'desc')
-    );
-  }, [user?.uid]);
-
-  const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
-  const firestore = useFirestore();
-
-  const handleTaskToggle = (taskId: string, completed: boolean) => {
-    if (!user || !firestore) return;
+  const deleteTask = async (taskId: string) => {
+    if (!firestore || !user) return;
     const taskRef = doc(firestore, 'users', user.uid, 'tasks', taskId);
-    updateDocumentNonBlocking(taskRef, { completed: completed });
-    
-    if (completed) {
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
-    }
+    await deleteDocumentNonBlocking(taskRef);
   };
 
-  const { pendingTasks, completedTasks } = useMemo(() => {
-    const pending: Task[] = [];
-    const completed: Task[] = [];
-    if (tasks) {
-      for (const task of tasks) {
-        if (task.completed) {
-          completed.push(task);
-        } else {
-          pending.push(task);
-        }
-      }
-    }
-    return { pendingTasks: pending, completedTasks: completed };
-  }, [tasks]);
-
+  const isOwnProfile = user?.uid === userId;
 
   return (
-    <Card className="mt-4">
+    <Card>
       <CardHeader>
-        <CardTitle>My Personal Tasks</CardTitle>
-        <CardDescription>
-          Add, view, and manage all of your personal to-do items here.
-        </CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          <ListTodo className="h-5 w-5" />
+          Tasks &amp; To-Dos
+        </CardTitle>
+        <CardDescription>Personal task management.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <NewTaskForm />
+      <CardContent className="space-y-4">
+        {isOwnProfile && (
+          <form onSubmit={handleAddTask} className="flex gap-2">
+            <Input
+              placeholder="Add a new task..."
+              value={newTaskTitle}
+              onChange={(e) => setNewTaskTitle(e.target.value)}
+              disabled={isAdding}
+            />
+            <Button type="submit" size="icon" disabled={isAdding || !newTaskTitle.trim()}>
+              {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+            </Button>
+          </form>
+        )}
 
-        <Separator />
-
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Pending Tasks</h3>
-          <div className="space-y-2">
-            {isLoading &&
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 p-2">
-                  <Skeleton className="h-5 w-5" />
-                  <Skeleton className="h-5 w-4/5" />
-                </div>
-              ))}
-            {pendingTasks.length > 0 ? (
-              pendingTasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-muted">
+        <div className="space-y-2">
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)
+          ) : tasks && tasks.length > 0 ? (
+            tasks.map((task) => (
+              <div
+                key={task.id}
+                className="flex items-center justify-between p-3 border rounded-lg bg-background hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
                   <Checkbox
-                    id={`task-${task.id}`}
                     checked={task.completed}
-                    onCheckedChange={(checked) =>
-                      handleTaskToggle(task.id, !!checked)
-                    }
+                    onCheckedChange={() => toggleTask(task)}
+                    disabled={!isOwnProfile}
                   />
-                  <label htmlFor={`task-${task.id}`} className="flex-grow text-sm cursor-pointer">
-                    {task.title}
-                  </label>
-                  {task.dueDate && <Badge variant="outline">{formatDateSafe(task.dueDate, "dateOnly")}</Badge>}
+                  <div className="grid gap-0.5">
+                    <span className={task.completed ? 'line-through text-muted-foreground' : ''}>
+                      {task.title}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                        Added {formatDateSafe(task.createdAt)}
+                    </span>
+                  </div>
                 </div>
-              ))
-            ) : (
-                !isLoading && <p className="text-sm text-muted-foreground p-2">No pending tasks. Well done!</p>
-            )}
-          </div>
-        </div>
-
-        <Separator />
-        
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Completed Tasks</h3>
-           <div className="space-y-2">
-            {isLoading &&
-              Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 p-2">
-                  <Skeleton className="h-5 w-5" />
-                  <Skeleton className="h-5 w-4/5" />
-                </div>
-              ))}
-            {completedTasks.length > 0 ? (
-              completedTasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-3 p-2 rounded-md">
-                  <Checkbox
-                    id={`task-${task.id}`}
-                    checked={task.completed}
-                    onCheckedChange={(checked) =>
-                      handleTaskToggle(task.id, !!checked)
-                    }
-                  />
-                  <label htmlFor={`task-${task.id}`} className="flex-grow text-sm text-muted-foreground line-through cursor-pointer">
-                    {task.title}
-                  </label>
-                </div>
-              ))
-            ) : (
-                !isLoading && <p className="text-sm text-muted-foreground p-2">No tasks completed yet.</p>
-            )}
-          </div>
+                {isOwnProfile && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive"
+                    onClick={() => deleteTask(task.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ))
+          ) : (
+            <EmptyState
+              icon={ListTodo}
+              title="No tasks yet"
+              description={isOwnProfile ? "Start by adding your first task above." : "This user hasn't added any tasks yet."}
+              className="min-h-0 py-8"
+            />
+          )}
         </div>
       </CardContent>
     </Card>

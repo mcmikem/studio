@@ -3,7 +3,7 @@
 
 import * as React from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ProgressRing } from '@/components/ui/progress-ring';
@@ -71,7 +71,9 @@ export function KeyResultsTracker() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {keyResults.map(kr => {
               const progress = kr.target > 0 ? (kr.currentProgress / kr.target) * 100 : 0;
-              const deadlinePast = isPast(new Date(kr.deadline));
+              // Ensure deadline is treated as a Date object if it's a Timestamp
+              const deadlineDate = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
+              const deadlinePast = isPast(deadlineDate);
 
               return (
                 <Card key={kr.id} className="flex flex-col justify-between">

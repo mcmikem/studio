@@ -221,7 +221,7 @@ function UserProfileCard() {
                       )}
                     </div>
                 </div>
-                 <Input 
+                 <input 
                   type="file" 
                   ref={fileInputRef} 
                   onChange={handleFileChange} 
@@ -311,7 +311,7 @@ function ProfilePageContent() {
                 </div>
             </TabsContent>
             <TabsContent value="tasks">
-                <UserTasks />
+                <UserTasks userId={user.uid} />
             </TabsContent>
             <TabsContent value="performance">
                  <div className="mt-4">

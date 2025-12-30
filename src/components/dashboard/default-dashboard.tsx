@@ -28,7 +28,7 @@ const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan
 });
 
 interface DashboardProps {
-  profile: User;
+  profile?: User;
 }
 
 export default function DefaultDashboard({ profile }: DashboardProps) {

@@ -35,7 +35,7 @@ const multiSelectVariants = cva(
           "border-secondary-foreground/10 text-secondary-foreground bg-secondary/10 hover:bg-secondary/20",
         destructive:
           "border-destructive-foreground/10 text-destructive-foreground bg-destructive/10 hover:bg-destructive/20",
-        inverted:
+        outline: // Changed inverted to outline for valid Badge variant
             "border-background/10 text-background bg-background/10 hover:bg-background/20",
       },
     },
@@ -264,5 +264,3 @@ export const MultiSelect = React.forwardRef<
 )
 
 MultiSelect.displayName = "MultiSelect"
-
-    
