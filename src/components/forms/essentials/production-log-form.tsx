@@ -77,7 +77,7 @@ export function ProductionLogForm() {
         description: `Batch ${data.batchNumber} has been added to the records.`,
       });
       reset();
-      router.push('/essentials');
+      router.push('/meal/essentials');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -86,7 +86,7 @@ export function ProductionLogForm() {
   return (
     <div className="space-y-4">
        <Button variant="outline" asChild>
-            <Link href="/essentials">
+            <Link href="/meal/essentials">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Essentials Hub
             </Link>

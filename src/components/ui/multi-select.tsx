@@ -19,9 +19,9 @@ import {
   CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
   CommandSeparator,
+  CommandItem,
 } from "@/components/ui/command"
 
 const multiSelectVariants = cva(
@@ -137,7 +137,7 @@ export const MultiSelect = React.forwardRef<
                     return (
                       <Badge
                         key={value}
-                        variant={variant}
+                        variant={variant as any}
                         className={cn(multiSelectVariants({ variant, className }))}
                       >
                         {Icon && (
@@ -156,7 +156,7 @@ export const MultiSelect = React.forwardRef<
                   })}
                   {selectedValues.length > maxCount && (
                     <Badge
-                      variant={variant}
+                      variant={variant as any}
                       className={cn(
                         "bg-foreground/10 text-foreground/70",
                         multiSelectVariants({ variant, className })

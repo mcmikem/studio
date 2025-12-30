@@ -10,7 +10,7 @@ import { format } from 'date-fns';
  
 export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
-  const [currentDate, setCurrentDate] = useState('');
+  const [currentDate, setCurrentDate] = useState<string | null>(null);
 
   useEffect(() => {
     // This effect runs only on the client, avoiding hydration mismatch.

@@ -486,7 +486,7 @@ export default function HelpPage() {
                 <CardContent className="flex flex-col sm:flex-row gap-4">
                      <Dialog open={isBugDialogOpen} onOpenChange={setIsBugDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="w-full sm:w-auto" disabled={!profile}>
+                            <Button key="bug-report" className="w-full sm:w-auto" disabled={!profile}>
                                 <Bug className="mr-2 h-4 w-4" /> Report a Bug
                             </Button>
                         </DialogTrigger>
@@ -500,7 +500,7 @@ export default function HelpPage() {
                     </Dialog>
                      <Dialog open={isFeatureDialogOpen} onOpenChange={setIsFeatureDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="w-full sm:w-auto" disabled={!profile}>
+                            <Button key="feature-request" variant="outline" className="w-full sm:w-auto" disabled={!profile}>
                                 <MessageSquare className="mr-2 h-4 w-4" /> Request a Feature
                             </Button>
                         </DialogTrigger>

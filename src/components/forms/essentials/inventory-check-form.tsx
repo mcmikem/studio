@@ -64,7 +64,7 @@ export function InventoryCheckForm() {
         description: `The stock count for ${data.product} has been recorded.`,
       });
       reset();
-      router.push('/essentials');
+      router.push('/meal/essentials');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -73,7 +73,7 @@ export function InventoryCheckForm() {
   return (
     <div className="space-y-4">
        <Button variant="outline" asChild>
-            <Link href="/essentials">
+            <Link href="/meal/essentials">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Essentials Hub
             </Link>
