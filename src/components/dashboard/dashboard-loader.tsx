@@ -5,40 +5,37 @@ import React from 'react';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AdminDashboard } from './admin-dashboard';
-import { ExecutiveDashboard } from './executive-dashboard';
-import { ProgramManagerDashboard } from './program-manager-dashboard';
-import { FieldStaffDashboard } from './field-staff-dashboard';
-import { InternVolunteerDashboard } from './intern-volunteer-dashboard';
-import DefaultDashboard from './default-dashboard'; // Fixed import to use default
-import { MediaFinanceDashboard } from './media-finance-dashboard';
-import type { User as UserProfile } from '@/lib/types';
-import { DashboardHeader } from './dashboard-header';
+import dynamic from 'next/dynamic';
+import type { User as UserProfileType } from '@/lib/types';
 
-interface DashboardProps {
-  user: any; 
-  profile: UserProfile;
+// Define the shape of the dashboard props
+export interface DashboardProps {
+  profile: UserProfileType;
 }
 
+// Dynamically import all dashboard components
+const AdminDashboard = dynamic(() => import('./admin-dashboard').then(mod => mod.AdminDashboard), { loading: () => <DashboardSkeleton /> });
+const ExecutiveDashboard = dynamic(() => import('./executive-dashboard').then(mod => mod.ExecutiveDashboard), { loading: () => <DashboardSkeleton /> });
+const ProgramManagerDashboard = dynamic(() => import('./program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardSkeleton /> });
+const FieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardSkeleton /> });
+const InternVolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardSkeleton /> });
+const DefaultDashboard = dynamic(() => import('./default-dashboard'), { loading: () => <DashboardSkeleton /> });
+const MediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardSkeleton /> });
+
 const dashboardMap: Record<string, React.ComponentType<DashboardProps>> = {
-  'Administrator': AdminDashboard as any,
-  'Executive Director': ExecutiveDashboard as any,
-  'Programs & Partnerships Manager': ProgramManagerDashboard as any,
-  'Operations & Field Manager': FieldStaffDashboard as any,
-  'Media & Communications Lead': MediaFinanceDashboard as any,
-  'Media & Finance Lead': MediaFinanceDashboard as any,
-  'Field Coordinator': FieldStaffDashboard as any,
-  'Intern': InternVolunteerDashboard as any,
-  'Volunteer': InternVolunteerDashboard as any,
+  'Administrator': AdminDashboard,
+  'Executive Director': ExecutiveDashboard,
+  'Programs & Partnerships Manager': ProgramManagerDashboard,
+  'Operations & Field Manager': FieldStaffDashboard,
+  'Media & Communications Lead': MediaFinanceDashboard,
+  'Media & Finance Lead': MediaFinanceDashboard,
+  'Field Coordinator': FieldStaffDashboard,
+  'Intern': InternVolunteerDashboard,
+  'Volunteer': InternVolunteerDashboard,
 };
 
-export function DashboardLoader() {
-  const { user, isUserLoading } = useUser();
-  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
-
-  if (isUserLoading || isProfileLoading) {
-    return (
-      <div className="space-y-6">
+const DashboardSkeleton = () => (
+    <div className="space-y-6">
         <Skeleton className="h-32" />
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Skeleton className="h-32 w-full" />
@@ -51,7 +48,14 @@ export function DashboardLoader() {
           <Skeleton className="h-[400px] md:col-span-3" />
         </div>
       </div>
-    );
+)
+
+export function DashboardLoader() {
+  const { user, isUserLoading } = useUser();
+  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
+
+  if (isUserLoading || (user && isProfileLoading)) {
+    return <DashboardSkeleton />;
   }
 
   if (!user || !profile) {
@@ -60,5 +64,5 @@ export function DashboardLoader() {
 
   const DashboardComponent = dashboardMap[profile.role] || DefaultDashboard;
 
-  return <DashboardComponent user={user} profile={profile} />;
+  return <DashboardComponent profile={profile} />;
 }

@@ -28,7 +28,7 @@ export const FirebaseContext = createContext<FirebaseContextState | undefined>(u
 // --- Provider Component ---
 
 interface FirebaseProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
@@ -47,9 +47,11 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   
   useEffect(() => {
     // This effect runs once on component mount to initialize Firebase services.
-    if (!services) {
+    if (typeof window !== 'undefined' && !services) {
       const initializedServices = initializeFirebase();
-      setServices(initializedServices);
+      if (initializedServices) {
+        setServices(initializedServices);
+      }
     }
   }, [services]);
 
