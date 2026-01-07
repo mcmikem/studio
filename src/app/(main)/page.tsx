@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 import { DashboardLoader } from '@/components/dashboard/dashboard-loader';
 import { Suspense } from 'react';
 
-function DashboardPageContent() {
+export default function HomePage() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { profile, isLoading: isProfileLoading } = useUserProfile(user);
 
@@ -43,9 +43,4 @@ function DashboardPageContent() {
         <DashboardLoader />
     </Suspense>
   );
-}
-
-
-export default function HomePage() {
-    return <DashboardPageContent />;
 }
