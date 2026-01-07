@@ -2,8 +2,6 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@/firebase';
-import { useUserProfile } from '@/hooks/use-user-profile';
 import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
 import type { User as UserProfileType } from '@/lib/types';
@@ -19,7 +17,7 @@ const ExecutiveDashboard = dynamic(() => import('./executive-dashboard').then(mo
 const ProgramManagerDashboard = dynamic(() => import('./program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardSkeleton /> });
 const FieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardSkeleton /> });
 const InternVolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardSkeleton /> });
-const DefaultDashboard = dynamic(() => import('./default-dashboard'), { loading: () => <DashboardSkeleton /> });
+const DefaultDashboard = dynamic(() => import('./default-dashboard').then(mod => mod.DefaultDashboard), { loading: () => <DashboardSkeleton /> });
 const MediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardSkeleton /> });
 
 const dashboardMap: Record<string, React.ComponentType<DashboardProps>> = {
@@ -50,15 +48,9 @@ const DashboardSkeleton = () => (
       </div>
 )
 
-export function DashboardLoader() {
-  const { user, isUserLoading } = useUser();
-  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
-
-  if (isUserLoading || (user && isProfileLoading)) {
-    return <DashboardSkeleton />;
-  }
-
-  if (!user || !profile) {
+export function DashboardLoader({ profile }: { profile: UserProfileType | null }) {
+  if (!profile) {
+    // This case should ideally be handled by the parent, but as a fallback:
     return <DefaultDashboard />;
   }
 
