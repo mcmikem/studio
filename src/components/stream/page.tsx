@@ -70,13 +70,7 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
                             </div>
                         </div>
                     ))}
-                     {(tasksArray.length === 0 && checkout.tasks?.[0]?.description) && (
-                        <div className="flex items-start gap-3">
-                            <Check className="h-4 w-4 mt-1 text-green-500 flex-shrink-0" />
-                            <p className="text-sm text-muted-foreground">{checkout.tasks[0].description}</p>
-                        </div>
-                     )}
-                     {(tasksArray.length === 0 && !checkout.tasks?.[0]?.description) && (
+                     {tasksArray.length === 0 && (
                         <p className="text-sm text-muted-foreground italic">No specific tasks were reported.</p>
                     )}
                   </div>
@@ -154,5 +148,3 @@ export default function StreamPage() {
         </Suspense>
     )
 }
-
-    

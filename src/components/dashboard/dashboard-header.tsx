@@ -27,6 +27,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
                       fill
                       className="object-cover"
                       data-ai-hint={headerImage.imageHint}
+                      priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20" />
               </>

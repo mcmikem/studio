@@ -32,6 +32,7 @@ export const formatDateSafe = (
     }
 
     if (!isValid(date)) {
+      // If still invalid, return a placeholder
       return "Invalid Date";
     }
 
@@ -45,6 +46,7 @@ export const formatDateSafe = (
     return formatFns(date, "dd MMM yyyy");
 
   } catch (e) {
+    console.error("formatDateSafe error:", e, "with input:", dateValue);
     return "Invalid Date";
   }
 };
