@@ -3,7 +3,7 @@
 
 import type { User, Checkout, Checkin } from "@/lib/types"
 import { DashboardGrid } from "./dashboard-grid"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
+import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
 import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
 import { startOfDay } from "date-fns"
 import { useMemo } from "react"

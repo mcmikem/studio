@@ -2,7 +2,7 @@
 
 "use client"
 
-import type { User, Activity, Checkin } from "@/lib/types"
+import type { User, Activity, Checkin, Partnership } from "@/lib/types"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
 import { useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp } from "firebase/firestore"
@@ -41,7 +41,7 @@ const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deploym
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const partnershipsQuery = useMemoFirebase((db) => db ? query(collection(db, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection(partnershipsQuery);
+  const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
 
   
   const activitiesQuery = useMemoFirebase((db) => {

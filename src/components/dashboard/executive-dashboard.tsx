@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Activity, Checkin, Program, Checkout } from "@/lib/types"
+import type { User, Activity, Checkin, Program, Checkout, ImpactMetric } from "@/lib/types"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
 import { useCollection, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
@@ -11,7 +11,6 @@ import { useFirestore } from "@/firebase"
 import dynamic from 'next/dynamic'
 import { Skeleton } from "../ui/skeleton"
 import { QuickStatsSummary } from "./quick-stats-summary"
-import type { ImpactMetric } from "@/lib/types"
 import { DashboardHeader } from "./dashboard-header"
 import type { DashboardProps } from "./dashboard-loader"
 
