@@ -9,7 +9,6 @@ import { startOfDay } from "date-fns"
 import { useMemo } from "react"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
-import type { DashboardProps } from "./dashboard-loader"
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), {
   loading: () => <Skeleton className="h-64" />,
@@ -29,7 +28,7 @@ const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan
 });
 
 
-export default function DefaultDashboard({ profile }: DashboardProps) {
+export default function DefaultDashboard() {
   const firestore = useFirestore();
 
   const checkoutsQuery = useMemo(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)) : null, [firestore]);
