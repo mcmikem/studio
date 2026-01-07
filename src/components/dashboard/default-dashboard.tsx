@@ -36,38 +36,22 @@ export function DefaultDashboard() {
   const [checkins, setCheckins] = useState<Checkin[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (firestore) {
-      const checkoutQuery = query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5));
-      const usersQuery = query(collection(firestore, 'users'), orderBy('name'));
-      const checkinsQuery = query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))));
+  const checkoutsQuery = useMemoFirebase((db) => db ? query(collection(db, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)) : null);
+  const usersQuery = useMemoFirebase((db) => db ? query(collection(db, 'users'), orderBy('name')) : null);
+  const checkinsQuery = useMemoFirebase((db) => db ? query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null);
 
-      const unsubCheckout = useCollection<Checkout>(checkoutQuery, {
-        listen: true,
-        onData: setCheckouts,
-      });
-      const unsubUsers = useCollection<User>(usersQuery, {
-        listen: false,
-        onData: setUsers,
-      });
-      const unsubCheckins = useCollection<Checkin>(checkinsQuery, {
-        listen: true,
-        onData: setCheckins,
-      });
-
-      Promise.all([unsubUsers]).then(() => setIsLoading(false));
-
-      // Cleanup subscriptions on unmount
-      return () => {
-        if (typeof unsubCheckout === 'function') unsubCheckout();
-        if (typeof unsubCheckins === 'function') unsubCheckins();
-      };
-    } else {
-        setIsLoading(false);
-    }
-  // The useCollection hook itself doesn't need to be in deps, just firestore
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firestore]);
+  useCollection<Checkout>(checkoutsQuery, { listen: true, onData: (data) => {
+    setCheckouts(data);
+    if(users && checkins) setIsLoading(false);
+  }});
+  useCollection<User>(usersQuery, { listen: false, onData: (data) => {
+      setUsers(data);
+      if(checkouts && checkins) setIsLoading(false);
+  }});
+  useCollection<Checkin>(checkinsQuery, { listen: true, onData: (data) => {
+      setCheckins(data);
+      if(checkouts && users) setIsLoading(false);
+  }});
 
 
   return (
