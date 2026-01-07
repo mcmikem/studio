@@ -10,6 +10,7 @@ import { subDays, startOfDay } from "date-fns"
 import { useFirestore } from "@/firebase"
 import dynamic from 'next/dynamic'
 import { Skeleton } from '@/components/ui/skeleton'
+import type { DashboardProps } from "./dashboard-loader"
 
 const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), {
   loading: () => <Skeleton className="h-64" />,
@@ -37,9 +38,6 @@ const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deploym
 });
 
 
-interface DashboardProps {
-  profile: User;
-}
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const partnershipsQuery = useMemoFirebase((db) => db ? query(collection(db, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);

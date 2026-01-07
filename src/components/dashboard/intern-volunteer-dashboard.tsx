@@ -1,16 +1,17 @@
 
 'use client';
 
-import type { User, Checkin } from '@/lib/types';
+import type { User } from '@/lib/types';
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, MessageCircle, Sparkles, UserCheck, BarChart3 } from 'lucide-react';
+import { MessageCircle, Sparkles, BarChart3 } from 'lucide-react';
 import Link from 'next/link';
 import { SupervisorCard } from './supervisor-card';
 import { DashboardHeader } from './dashboard-header';
 import { SmartReminders } from './smart-reminders';
 import { MyTasksSummary } from './my-tasks-summary';
+import type { DashboardProps } from './dashboard-loader';
 
 function QuickActionsCard() {
   return (
@@ -55,9 +56,6 @@ function FirstQuestCard() {
     )
 }
 
-interface DashboardProps {
-  profile: User;
-}
 
 export function InternVolunteerDashboard({ profile }: DashboardProps) {
   return (

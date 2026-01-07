@@ -9,6 +9,7 @@ import { startOfDay } from "date-fns"
 import { useMemo } from "react"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
+import type { DashboardProps } from "./dashboard-loader"
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), {
   loading: () => <Skeleton className="h-64" />,
@@ -27,9 +28,6 @@ const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan
   ssr: false,
 });
 
-interface DashboardProps {
-  profile?: User;
-}
 
 export default function DefaultDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();

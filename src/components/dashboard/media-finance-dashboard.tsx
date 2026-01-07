@@ -7,7 +7,6 @@ import {
   Wallet,
   Camera,
   Wand,
-  CheckCheck,
   Video,
 } from "lucide-react"
 import {
@@ -20,14 +19,6 @@ import {
 } from "../ui/card"
 import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
 import { useMemo } from "react"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../ui/table"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { formatDateSafe } from "@/lib/utils"
@@ -36,6 +27,7 @@ import { collection, query, orderBy, limit, Timestamp, where } from "firebase/fi
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
 import { startOfDay } from "date-fns"
+import type { DashboardProps } from "./dashboard-loader"
 
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
@@ -206,10 +198,6 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
       </CardContent>
     </Card>
   )
-}
-
-interface DashboardProps {
-  profile: User;
 }
 
 export function MediaFinanceDashboard({ profile }: DashboardProps) {

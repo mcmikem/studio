@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Program, Checkout, ImpactMetric, Partnership, Checkin, Expense } from "@/lib/types"
+import type { User, Program, Checkout, Partnership, Checkin } from "@/lib/types"
 import { NotificationsList } from "@/components/notifications/notifications-list"
 import { ProgramsOverview } from "@/components/dashboard/programs-overview"
 import { ManagementQuickLinks } from "@/components/dashboard/management-quick-links"
@@ -20,11 +20,8 @@ import { BellRing, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Skeleton } from "../ui/skeleton"
+import type { DashboardProps } from "./dashboard-loader"
 
-
-interface DashboardProps {
-  profile: User;
-}
 
 export function AdminDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
@@ -75,7 +72,3 @@ export function AdminDashboard({ profile }: DashboardProps) {
     </DashboardGrid>
   )
 }
-
-    
-
-    

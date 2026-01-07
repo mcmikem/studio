@@ -13,6 +13,7 @@ import { Skeleton } from "../ui/skeleton"
 import { QuickStatsSummary } from "./quick-stats-summary"
 import type { ImpactMetric } from "@/lib/types"
 import { DashboardHeader } from "./dashboard-header"
+import type { DashboardProps } from "./dashboard-loader"
 
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
@@ -22,10 +23,6 @@ const KeyResultsTracker = dynamic(() => import('@/components/plan/key-results-tr
 const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), { loading: () => <Skeleton className="h-96" />, ssr: false });
 
-
-interface DashboardProps {
-  profile: User;
-}
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
     const firestore = useFirestore();

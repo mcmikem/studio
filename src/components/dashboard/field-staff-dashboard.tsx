@@ -11,10 +11,8 @@ import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
 import { TeamDeployment } from '@/components/dashboard/team-deployment';
 import { startOfDay } from 'date-fns';
 import { useMemo } from 'react';
+import type { DashboardProps } from './dashboard-loader';
 
-interface DashboardProps {
-  profile: User;
-}
 
 export function FieldStaffDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
