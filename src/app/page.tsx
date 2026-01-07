@@ -1,13 +1,14 @@
+
 'use client';
 
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Loader2 } from 'lucide-react';
-import { DashboardLoader } from '@/components/dashboard/dashboard-loader';
 import { Suspense } from 'react';
 import { DefaultDashboard } from '@/components/dashboard/default-dashboard';
+import { DashboardLoader } from '@/components/dashboard/dashboard-loader';
 
-export default function HomePage() {
+export default function App() {
   const { user, isUserLoading } = useUser();
   const { profile, isLoading: isProfileLoading } = useUserProfile(user);
 

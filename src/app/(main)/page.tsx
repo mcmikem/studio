@@ -1,46 +1,23 @@
 
 'use client';
 
-import { useUser } from '@/firebase';
-import { useUserProfile } from '@/hooks/use-user-profile';
-import { Loader2 } from 'lucide-react';
-import { DashboardLoader } from '@/components/dashboard/dashboard-loader';
 import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
+import { DashboardLoader, type DashboardProps } from '@/components/dashboard/dashboard-loader';
 
-export default function HomePage() {
-  const { user, isUserLoading: isAuthLoading } = useUser();
-  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
-
-  const isLoading = isAuthLoading || isProfileLoading;
-
-  if (isLoading) {
+export default function HomePage({ profile }: DashboardProps) {
+  if (!profile) {
+    // This can be a fallback or a default view if profile is somehow null
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin text-primary" />
-      </div>
-    );
-  }
-  
-  if (!user && !isLoading) {
-       return (
-        <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
-            <DashboardLoader />
-        </Suspense>
-      );
-  }
-
-  if (user && !profile) {
-     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-16 w-16 animate-spin text-primary" />
-        <p className="ml-4">Finalizing account setup...</p>
+        <p>No profile data available.</p>
       </div>
     );
   }
 
   return (
     <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
-        <DashboardLoader />
+        <DashboardLoader profile={profile} />
     </Suspense>
   );
 }
