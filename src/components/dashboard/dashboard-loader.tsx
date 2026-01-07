@@ -49,11 +49,12 @@ const DashboardSkeleton = () => (
 )
 
 export function DashboardLoader({ profile }: { profile: UserProfileType | null }) {
+  // If there's no profile after the initial load, show the public/default dashboard.
   if (!profile) {
-    // This case should ideally be handled by the parent, but as a fallback:
     return <DefaultDashboard />;
   }
 
+  // Otherwise, select the correct dashboard based on the user's role.
   const DashboardComponent = dashboardMap[profile.role] || DefaultDashboard;
 
   return <DashboardComponent profile={profile} />;
