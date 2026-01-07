@@ -22,8 +22,6 @@ function DashboardPageContent() {
   }
   
   if (!user && !isLoading) {
-      // Allow DashboardLoader to handle the "no user" / default state if intended,
-      // or redirect to login. For now, we render it as it likely handles the default view.
        return (
         <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
             <DashboardLoader />
