@@ -36,22 +36,48 @@ export function DefaultDashboard() {
   const [checkins, setCheckins] = useState<Checkin[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Queries are memoized but not executed immediately.
   const checkoutsQuery = useMemoFirebase((db) => db ? query(collection(db, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)) : null);
   const usersQuery = useMemoFirebase((db) => db ? query(collection(db, 'users'), orderBy('name')) : null);
   const checkinsQuery = useMemoFirebase((db) => db ? query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null);
 
-  useCollection<Checkout>(checkoutsQuery, { listen: true, onData: (data) => {
-    setCheckouts(data);
-    if(users && checkins) setIsLoading(false);
-  }});
-  useCollection<User>(usersQuery, { listen: false, onData: (data) => {
-      setUsers(data);
-      if(checkouts && checkins) setIsLoading(false);
-  }});
-  useCollection<Checkin>(checkinsQuery, { listen: true, onData: (data) => {
-      setCheckins(data);
-      if(checkouts && users) setIsLoading(false);
-  }});
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Defer data fetching until after the initial render.
+    const fetchData = async () => {
+        if (!firestore) {
+            setIsLoading(false);
+            return;
+        };
+
+        try {
+            const [checkoutsSnap, usersSnap, checkinsSnap] = await Promise.all([
+                checkoutsQuery ? useCollection<Checkout>(checkoutsQuery, { listen: false }) : Promise.resolve({ data: [] }),
+                usersQuery ? useCollection<User>(usersQuery, { listen: false }) : Promise.resolve({ data: [] }),
+                checkinsQuery ? useCollection<Checkin>(checkinsQuery, { listen: false }) : Promise.resolve({ data: [] }),
+            ]);
+
+            if (isMounted) {
+                setCheckouts((checkoutsSnap as any).data || []);
+                setUsers((usersSnap as any).data || []);
+                setCheckins((checkinsSnap as any).data || []);
+            }
+        } catch (error) {
+            console.error("Error fetching dashboard data:", error);
+        } finally {
+            if (isMounted) {
+                setIsLoading(false);
+            }
+        }
+    };
+    
+    fetchData();
+
+    return () => {
+        isMounted = false;
+    };
+  }, [firestore, checkoutsQuery, usersQuery, checkinsQuery]);
 
 
   return (
