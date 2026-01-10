@@ -4,6 +4,11 @@ import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
 import { GeistSans } from 'geist/font/sans'
 import { Inter } from 'next/font/google'
+import { AppSidebar } from '@/components/nav';
+import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { AppHeader } from '@/components/header';
+import { MobileBottomNav } from '@/components/mobile-nav';
+import { ViewAsBanner } from '@/components/view-as-banner';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -12,7 +17,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${GeistSans.variable}`}>
       <body>
         <Providers>
-          {children}
+           <SidebarProvider>
+            <Sidebar>
+                <AppSidebar />
+            </Sidebar>
+            <SidebarInset>
+                <div className="relative flex flex-col flex-1 h-full">
+                    <AppHeader />
+                    <ViewAsBanner />
+                    <main className="flex-1 p-4 lg:p-6 mb-20 md:mb-0 overflow-y-auto">
+                        {children}
+                    </main>
+                    <MobileBottomNav />
+                </div>
+            </SidebarInset>
+        </SidebarProvider>
         </Providers>
         <Toaster />
       </body>

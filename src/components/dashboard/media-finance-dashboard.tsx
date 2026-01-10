@@ -1,4 +1,3 @@
-
 "use client"
 
 import type { Expense, Activity, Income, Testimony } from "@/lib/types"
@@ -198,11 +197,11 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
 
 interface MediaFinanceDashboardProps extends DashboardProps {
     data: DashboardData;
-    isLoading: boolean;
 }
 
-export function MediaFinanceDashboard({ profile, data, isLoading }: MediaFinanceDashboardProps) {
+export function MediaFinanceDashboard({ profile, data }: MediaFinanceDashboardProps) {
   const { allExpenses, allIncome, activities, testimonies } = data;
+  const isLoading = !allExpenses || !allIncome || !activities || !testimonies;
 
   return (
        <DashboardGrid className="mt-6 lg:grid-cols-3">

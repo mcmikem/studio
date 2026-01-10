@@ -1,7 +1,5 @@
-
 'use client';
 
-import type { User } from '@/lib/types';
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -55,7 +53,6 @@ function FirstQuestCard() {
         </Card>
     )
 }
-
 
 export function InternVolunteerDashboard({ profile }: DashboardProps) {
   return (

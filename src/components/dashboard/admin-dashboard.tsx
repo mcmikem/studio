@@ -1,12 +1,11 @@
-
 "use client"
 
-import type { User as UserProfileType, Program, Checkout, Partnership, Checkin } from "@/lib/types"
+import type { User as UserProfileType } from "@/lib/types"
 import { ManagementQuickLinks } from "@/components/dashboard/management-quick-links"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { Skeleton } from "../ui/skeleton"
 import dynamic from 'next/dynamic'
 import type { DashboardProps, DashboardData } from "./dashboard-loader"
+import { Skeleton } from "../ui/skeleton";
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), { loading: () => <Skeleton className="h-64" />, ssr: false });
@@ -15,11 +14,11 @@ const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program
 
 interface AdminDashboardProps extends DashboardProps {
     data: DashboardData;
-    isLoading: boolean;
 }
 
-export function AdminDashboard({ profile, data, isLoading }: AdminDashboardProps) {
+export function AdminDashboard({ profile, data }: AdminDashboardProps) {
   const { users, checkins, partnerships, checkouts } = data;
+  const isLoading = !users || !checkins || !partnerships || !checkouts;
 
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-2">

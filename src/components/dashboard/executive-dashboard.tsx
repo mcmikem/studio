@@ -1,12 +1,11 @@
-
 'use client';
 
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { Skeleton } from "../ui/skeleton"
 import dynamic from 'next/dynamic'
 import { QuickStatsSummary } from "./quick-stats-summary"
 import { DashboardHeader } from "./dashboard-header"
 import type { DashboardProps, DashboardData } from "./dashboard-loader"
+import { Skeleton } from "../ui/skeleton";
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const ApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
@@ -17,11 +16,11 @@ const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-fee
 
 interface ExecutiveDashboardProps extends DashboardProps {
     data: DashboardData;
-    isLoading: boolean;
 }
 
-export function ExecutiveDashboard({ profile, data, isLoading }: ExecutiveDashboardProps) {
+export function ExecutiveDashboard({ profile, data }: ExecutiveDashboardProps) {
     const { activities, users, checkins, programs, metrics, checkouts } = data;
+    const isLoading = !activities || !users || !checkins || !programs || !metrics || !checkouts;
 
     return (
       <div className="flex flex-col gap-6">

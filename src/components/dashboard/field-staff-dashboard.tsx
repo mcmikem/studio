@@ -1,46 +1,40 @@
-
 'use client';
 
-import type { User, Checkout, Checkin } from '@/lib/types';
-import { TeamPulse } from '@/components/dashboard/team-activity-feed';
-import { MyWeeklyPlan } from '@/components/dashboard/my-weekly-plan';
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
-import { DashboardCalendar } from '@/components/dashboard/dashboard-calendar';
-import { TeamDeployment } from '@/components/dashboard/team-deployment';
-import { startOfDay } from 'date-fns';
-import { useMemo } from 'react';
-import type { DashboardProps } from './dashboard-loader';
+import dynamic from 'next/dynamic'
+import type { DashboardProps, DashboardData } from './dashboard-loader';
+import { Skeleton } from '../ui/skeleton';
 
+const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
+const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan').then(mod => mod.MyWeeklyPlan), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
+const DashboardCalendar = dynamic(() => import('@/components/dashboard/dashboard-calendar').then(mod => mod.DashboardCalendar), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
+const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
 
-export function FieldStaffDashboard({ profile }: DashboardProps) {
-  const firestore = useFirestore();
-  const { user } = useUser();
+interface FieldStaffDashboardProps extends DashboardProps {
+    data: DashboardData;
+}
 
-  const checkoutsQuery = useMemo(
-    () =>
-      firestore
-        ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10))
-        : null,
-    [firestore]
-  );
-  const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
-
-  const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
-
-  const checkinsQuery = useMemoFirebase((db) => {
-    if(!firestore) return null;
-    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
-  }, [firestore]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
+export function FieldStaffDashboard({ profile, data }: FieldStaffDashboardProps) {
+  const { checkouts, users, checkins } = data;
+  const isLoading = !checkouts || !users || !checkins;
 
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-2">
         <MyWeeklyPlan />
         <DashboardCalendar />
-        <TeamDeployment users={users} checkins={checkins} isLoading={isLoadingUsers || isLoadingCheckins} />
+        <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
         <TeamPulse checkouts={checkouts} />
     </DashboardGrid>
   );

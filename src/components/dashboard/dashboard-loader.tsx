@@ -1,10 +1,10 @@
-
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import type { User as UserProfileType, Activity, Checkin, Program, Checkout, ImpactMetric, Partnership } from '@/lib/types';
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import type { User as UserProfileType, Activity, Checkin, Program, Checkout, ImpactMetric, Partnership, Expense, Income, Testimony } from '@/lib/types';
+import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, Timestamp, limit, getDocs } from 'firebase/firestore';
 import { subDays, startOfDay } from 'date-fns';
 import { DefaultDashboard } from './default-dashboard';
@@ -34,32 +34,34 @@ const FieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then
 const InternVolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
 const MediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
 
-const dashboardMap: Record<string, React.ComponentType<{ profile: UserProfileType; data: DashboardData; isLoading: boolean; }>> = {
+const dashboardMap: Record<string, React.ComponentType<{ profile: UserProfileType; data: DashboardData; }>> = {
   'Administrator': AdminDashboard,
   'Executive Director': ExecutiveDashboard,
   'Programs & Partnerships Manager': ProgramManagerDashboard,
   'Operations & Field Manager': FieldStaffDashboard,
-  'Media & Communications Lead': MediaFinanceDashboard,
   'Media & Finance Lead': MediaFinanceDashboard,
+  'Media & Communications Lead': MediaFinanceDashboard,
   'Field Coordinator': FieldStaffDashboard,
   'Intern': InternVolunteerDashboard,
   'Volunteer': InternVolunteerDashboard,
 };
 
-export function DashboardLoader({ profile }: { profile: UserProfileType | null }) {
+export function DashboardLoader() {
+  const { user, isUserLoading } = useUser();
+  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
   const firestore = useFirestore();
   const [data, setData] = useState<DashboardData>({
     activities: null, users: null, checkins: null, programs: null, 
     checkouts: null, metrics: null, partnerships: null, allExpenses: null, 
     allIncome: null, testimonies: null
   });
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
     if (!firestore) return;
 
     const fetchData = async () => {
-        setIsLoading(true);
+        setIsDataLoading(true);
         try {
             const thirtyDaysAgo = subDays(new Date(), 30);
             const todayStart = startOfDay(new Date());
@@ -69,7 +71,7 @@ export function DashboardLoader({ profile }: { profile: UserProfileType | null }
                 users: query(collection(firestore, 'users'), orderBy('name')),
                 checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))),
                 programs: query(collection(firestore, 'programs')),
-                checkouts: query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)),
+                checkouts: query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)),
                 metrics: query(collection(firestore, 'impact-metrics'), orderBy('metric')),
                 partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')),
                 allExpenses: query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')),
@@ -98,23 +100,24 @@ export function DashboardLoader({ profile }: { profile: UserProfileType | null }
         } catch (error) {
             console.error("Failed to fetch dashboard data:", error);
         } finally {
-            setIsLoading(false);
+            setIsDataLoading(false);
         }
     };
 
     fetchData();
   }, [firestore]);
 
-
-  if (!profile) {
-    return <DefaultDashboard data={data} isLoading={isLoading} />;
-  }
-  
-  const DashboardComponent = dashboardMap[profile.role] || DefaultDashboard;
+  const isLoading = isUserLoading || isProfileLoading || isDataLoading;
 
   if (isLoading) {
       return <DashboardSkeleton />;
   }
 
-  return <DashboardComponent profile={profile} data={data} isLoading={isLoading} />;
+  if (!profile) {
+    return <DefaultDashboard data={data} />;
+  }
+  
+  const DashboardComponent = dashboardMap[profile.role] || DefaultDashboard;
+
+  return <DashboardComponent profile={profile} data={data} />;
 }

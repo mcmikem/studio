@@ -1,11 +1,10 @@
-
 'use client';
 
 import { DashboardGrid } from "./dashboard-grid"
-import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
 import { DashboardHeader } from "./dashboard-header"
 import type { DashboardData } from "./dashboard-loader"
+import { Skeleton } from "../ui/skeleton";
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), {
   loading: () => <Skeleton className="h-64" />,
@@ -26,10 +25,9 @@ const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan
 
 interface DefaultDashboardProps {
   data: DashboardData;
-  isLoading: boolean;
 }
 
-export function DefaultDashboard({ data, isLoading }: DefaultDashboardProps) {
+export function DefaultDashboard({ data }: DefaultDashboardProps) {
   const { users, checkins, checkouts } = data;
 
   return (
@@ -41,7 +39,7 @@ export function DefaultDashboard({ data, isLoading }: DefaultDashboardProps) {
                 <MyWeeklyPlan />
             </div>
             <div className="flex flex-col gap-6">
-                <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
+                <TeamDeployment users={users} checkins={checkins} isLoading={!users || !checkins} />
                 <TeamPulse checkouts={checkouts} />
             </div>
         </DashboardGrid>

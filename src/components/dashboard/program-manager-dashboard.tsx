@@ -1,10 +1,9 @@
-
 'use client';
 
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { Skeleton } from '@/components/ui/skeleton'
 import dynamic from 'next/dynamic'
 import type { DashboardProps, DashboardData } from "./dashboard-loader"
+import { Skeleton } from '../ui/skeleton';
 
 const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), {
   loading: () => <Skeleton className="h-64" />,
@@ -33,11 +32,11 @@ const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deploym
 
 interface ProgramManagerDashboardProps extends DashboardProps {
     data: DashboardData;
-    isLoading: boolean;
 }
 
-export function ProgramManagerDashboard({ profile, data, isLoading }: ProgramManagerDashboardProps) {
+export function ProgramManagerDashboard({ profile, data }: ProgramManagerDashboardProps) {
   const { partnerships, activities, users, checkins } = data;
+  const isLoading = !partnerships || !activities || !users || !checkins;
 
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-2">
