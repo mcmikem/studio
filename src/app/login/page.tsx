@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -17,6 +16,7 @@ import { FirebaseError } from 'firebase/app';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 
 const GoogleIcon = () => (
@@ -200,13 +200,13 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
-            <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Central</h1>
+            <Image src="/logo.svg" alt="Omuto Foundation Logo" width={80} height={80} data-ai-hint="logo" />
         </div>
         
         <Card>
             <CardHeader>
-                <CardTitle>Welcome to Your Mission Control</CardTitle>
-                <CardDescription>Enter your credentials to access the platform.</CardDescription>
+                <CardTitle>Welcome to Omuto Central</CardTitle>
+                <CardDescription>Enter your credentials to access your Mission Control.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <Alert>

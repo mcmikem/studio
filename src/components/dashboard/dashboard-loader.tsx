@@ -1,12 +1,8 @@
-
 'use client';
 
-import React, { Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
+import React from 'react';
 import dynamic from 'next/dynamic';
 import type { User as UserProfileType } from '@/lib/types';
-import { useUser } from '@/firebase';
-import { useUserProfile } from '@/hooks/use-user-profile';
 import { DefaultDashboard } from './default-dashboard';
 
 // Define the shape of the dashboard props
@@ -14,13 +10,13 @@ export interface DashboardProps {
   profile: UserProfileType;
 }
 
-// Dynamically import all dashboard components
-const AdminDashboard = dynamic(() => import('./admin-dashboard').then(mod => mod.AdminDashboard), { loading: () => <DashboardSkeleton /> });
-const ExecutiveDashboard = dynamic(() => import('./executive-dashboard').then(mod => mod.ExecutiveDashboard), { loading: () => <DashboardSkeleton /> });
-const ProgramManagerDashboard = dynamic(() => import('./program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardSkeleton /> });
-const FieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardSkeleton /> });
-const InternVolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardSkeleton /> });
-const MediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardSkeleton /> });
+const DashboardSkeleton = dynamic(() => import('./dashboard-skeleton').then(mod => mod.DashboardSkeleton));
+const AdminDashboard = dynamic(() => import('./admin-dashboard').then(mod => mod.AdminDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
+const ExecutiveDashboard = dynamic(() => import('./executive-dashboard').then(mod => mod.ExecutiveDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
+const ProgramManagerDashboard = dynamic(() => import('./program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
+const FieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
+const InternVolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
+const MediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
 
 const dashboardMap: Record<string, React.ComponentType<DashboardProps>> = {
   'Administrator': AdminDashboard,
@@ -34,30 +30,7 @@ const dashboardMap: Record<string, React.ComponentType<DashboardProps>> = {
   'Volunteer': InternVolunteerDashboard,
 };
 
-const DashboardSkeleton = () => (
-    <div className="space-y-6">
-        <Skeleton className="h-32" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Skeleton className="h-[400px] md:col-span-4" />
-          <Skeleton className="h-[400px] md:col-span-3" />
-        </div>
-      </div>
-)
-
-export function DashboardLoader() {
-  const { user, isUserLoading } = useUser();
-  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
-
-  if (isUserLoading || isProfileLoading) {
-    return <DashboardSkeleton />;
-  }
-
+export function DashboardLoader({ profile }: { profile: UserProfileType | null }) {
   if (!profile) {
     return <DefaultDashboard />;
   }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { MobileBottomNav } from '@/components/mobile-nav';

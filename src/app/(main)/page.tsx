@@ -1,14 +1,27 @@
-
 'use client';
 
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import { DashboardLoader } from '@/components/dashboard/dashboard-loader';
+import { useUser } from '@/firebase';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { DefaultDashboard } from '@/components/dashboard/default-dashboard';
 
-export default function HomePage() {
+export default function MainHomePage() {
+  const { user, isUserLoading } = useUser();
+  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
+
+  if (isUserLoading || isProfileLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
-        <DashboardLoader />
+      <DashboardLoader profile={profile} />
     </Suspense>
   );
 }
