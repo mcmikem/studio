@@ -10,6 +10,8 @@ import { useMemo, useState, useEffect } from "react"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
 import { DashboardHeader } from "./dashboard-header"
+import { getDocs } from 'firebase/firestore';
+
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), {
   loading: () => <Skeleton className="h-64" />,
@@ -36,48 +38,48 @@ export function DefaultDashboard() {
   const [checkins, setCheckins] = useState<Checkin[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Queries are memoized but not executed immediately.
-  const checkoutsQuery = useMemoFirebase((db) => db ? query(collection(db, 'checkouts'), orderBy('timestamp', 'desc'), limit(5)) : null);
-  const usersQuery = useMemoFirebase((db) => db ? query(collection(db, 'users'), orderBy('name')) : null);
-  const checkinsQuery = useMemoFirebase((db) => db ? query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date())))) : null);
-
   useEffect(() => {
     let isMounted = true;
     
-    // Defer data fetching until after the initial render.
-    const fetchData = async () => {
-        if (!firestore) {
-            setIsLoading(false);
-            return;
-        };
+    async function fetchData() {
+      if (!firestore) {
+        if(isMounted) setIsLoading(false);
+        return;
+      }
+      
+      setIsLoading(true);
 
-        try {
-            const [checkoutsSnap, usersSnap, checkinsSnap] = await Promise.all([
-                checkoutsQuery ? useCollection<Checkout>(checkoutsQuery, { listen: false }) : Promise.resolve({ data: [] }),
-                usersQuery ? useCollection<User>(usersQuery, { listen: false }) : Promise.resolve({ data: [] }),
-                checkinsQuery ? useCollection<Checkin>(checkinsQuery, { listen: false }) : Promise.resolve({ data: [] }),
-            ]);
+      try {
+        const checkoutsQuery = query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5));
+        const usersQuery = query(collection(firestore, 'users'), orderBy('name'));
+        const checkinsQuery = query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))));
+        
+        const [checkoutsSnap, usersSnap, checkinsSnap] = await Promise.all([
+          getDocs(checkoutsQuery),
+          getDocs(usersQuery),
+          getDocs(checkinsQuery),
+        ]);
 
-            if (isMounted) {
-                setCheckouts((checkoutsSnap as any).data || []);
-                setUsers((usersSnap as any).data || []);
-                setCheckins((checkinsSnap as any).data || []);
-            }
-        } catch (error) {
-            console.error("Error fetching dashboard data:", error);
-        } finally {
-            if (isMounted) {
-                setIsLoading(false);
-            }
+        if (isMounted) {
+          setCheckouts(checkoutsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Checkout[]);
+          setUsers(usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as User[]);
+          setCheckins(checkinsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Checkin[]);
         }
-    };
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
     
     fetchData();
 
     return () => {
-        isMounted = false;
+      isMounted = false;
     };
-  }, [firestore, checkoutsQuery, usersQuery, checkinsQuery]);
+  }, [firestore]);
 
 
   return (
