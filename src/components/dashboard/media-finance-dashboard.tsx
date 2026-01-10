@@ -1,7 +1,7 @@
 
 "use client"
 
-import type { User, Expense, Activity, Income, Testimony, Checkin } from "@/lib/types"
+import type { Expense, Activity, Income, Testimony } from "@/lib/types"
 import {
   ArrowRight,
   Wallet,
@@ -17,20 +17,16 @@ import {
   CardTitle,
   CardFooter,
 } from "../ui/card"
-import { useCollection, useFirestore, useUser, useMemoFirebase } from "@/firebase"
 import { useMemo } from "react"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
-import { collection, query, orderBy, limit, Timestamp, where } from "firebase/firestore"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
-import { startOfDay } from "date-fns"
-import type { DashboardProps } from "./dashboard-loader"
+import type { DashboardProps, DashboardData } from "./dashboard-loader"
 
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
-const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -200,35 +196,13 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
   )
 }
 
-export function MediaFinanceDashboard({ profile }: DashboardProps) {
-  const firestore = useFirestore();
+interface MediaFinanceDashboardProps extends DashboardProps {
+    data: DashboardData;
+    isLoading: boolean;
+}
 
-  const allExpensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const { data: allExpenses } = useCollection<Expense>(allExpensesQuery, { listen: false });
-  
-  const allIncomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const { data: allIncome } = useCollection<Income>(allIncomeQuery, { listen: false });
-
-  const activitiesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'), limit(10));
-  }, [firestore]);
-  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery);
-  
-  const testimoniesQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'), limit(5));
-  }, [firestore]);
-  const { data: testimonies, isLoading: isLoadingTestimonies } = useCollection<Testimony>(testimoniesQuery);
-  
-  const usersQuery = useMemo(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
-  const checkinsQuery = useMemoFirebase((db) => {
-    if(!db) return null;
-    return query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
-  }, [firestore]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
-
+export function MediaFinanceDashboard({ profile, data, isLoading }: MediaFinanceDashboardProps) {
+  const { allExpenses, allIncome, activities, testimonies } = data;
 
   return (
        <DashboardGrid className="mt-6 lg:grid-cols-3">
@@ -239,8 +213,8 @@ export function MediaFinanceDashboard({ profile }: DashboardProps) {
             <DynamicApprovalQueue />
         </div>
          <div className="lg:col-span-2 flex flex-col gap-6">
-             <MediaOpportunities activities={activities} isLoading={isLoadingActivities} />
-             <LatestTestimonies testimonies={testimonies} isLoading={isLoadingTestimonies} />
+             <MediaOpportunities activities={activities} isLoading={isLoading} />
+             <LatestTestimonies testimonies={testimonies} isLoading={isLoading} />
         </div>
       </DashboardGrid>
   )

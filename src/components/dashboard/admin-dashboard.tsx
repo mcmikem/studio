@@ -1,51 +1,25 @@
 
 "use client"
 
-import type { User, Program, Checkout, Partnership, Checkin } from "@/lib/types"
-import { NotificationsList } from "@/components/notifications/notifications-list"
-import { ProgramsOverview } from "@/components/dashboard/programs-overview"
+import type { User as UserProfileType, Program, Checkout, Partnership, Checkin } from "@/lib/types"
 import { ManagementQuickLinks } from "@/components/dashboard/management-quick-links"
 import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
-import { TeamPulse } from "@/components/dashboard/team-activity-feed"
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase"
-import { collection, query, orderBy, limit, where, Timestamp } from "firebase/firestore"
-import { DashboardCalendar } from "@/components/dashboard/dashboard-calendar"
-import { PartnershipPipeline } from "@/components/dashboard/program-manager/partnership-pipeline"
-import { TeamDeployment } from "@/components/dashboard/team-deployment"
-import { QuickAddTask } from "@/components/dashboard/quick-add-task"
-import { startOfDay } from "date-fns"
-import { useMemo } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { BellRing, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import { Skeleton } from "../ui/skeleton"
-import type { DashboardProps } from "./dashboard-loader"
+import dynamic from 'next/dynamic'
+import type { DashboardProps, DashboardData } from "./dashboard-loader"
 
+const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const DashboardCalendar = dynamic(() => import('@/components/dashboard/dashboard-calendar').then(mod => mod.DashboardCalendar), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
-export function AdminDashboard({ profile }: DashboardProps) {
-  const firestore = useFirestore();
-  const { user } = useUser();
+interface AdminDashboardProps extends DashboardProps {
+    data: DashboardData;
+    isLoading: boolean;
+}
 
-  const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs'), orderBy('deadline')) : null, [firestore]);
-  const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery);
-
-  const checkoutsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)) : null, [firestore]);
-  const { data: checkouts, isLoading: isLoadingCheckouts } = useCollection<Checkout>(checkoutsQuery);
-
-  const partnershipsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const { data: partnerships, isLoading: isLoadingPartnerships } = useCollection<Partnership>(partnershipsQuery);
-
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
-  const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
-
-  const checkinsQuery = useMemoFirebase((db) => {
-    if(!firestore) return null;
-    return query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))))
-  }, [firestore]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery);
-
-  const isLoading = isLoadingUsers || isLoadingCheckins || isLoadingPartnerships || isLoadingCheckouts || isLoadingPrograms;
+export function AdminDashboard({ profile, data, isLoading }: AdminDashboardProps) {
+  const { users, checkins, partnerships, checkouts } = data;
 
   return (
     <DashboardGrid className="mt-6 lg:grid-cols-2">

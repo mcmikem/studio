@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Suspense } from 'react';
@@ -23,7 +24,7 @@ export default function HomePage() {
 
   return (
     <Suspense fallback={<div className="flex h-full items-center justify-center"><Loader2 className="h-16 w-16 animate-spin text-primary" /></div>}>
-      {profile ? <DashboardLoader profile={profile} /> : <DefaultDashboard />}
+      <DashboardLoader profile={profile} />
     </Suspense>
   );
 }
