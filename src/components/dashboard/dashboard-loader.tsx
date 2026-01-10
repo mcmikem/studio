@@ -1,15 +1,13 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import dynamic from 'next/dynamic';
-import type { User as UserProfileType, User, Checkin, Checkout } from '@/lib/types';
+import type { User as UserProfileType } from '@/lib/types';
+import { useUser } from '@/firebase';
+import { useUserProfile } from '@/hooks/use-user-profile';
 import { DefaultDashboard } from './default-dashboard';
-import { useFirestore } from '@/firebase';
-import { getDocs, collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
-import { startOfDay } from 'date-fns';
-
 
 // Define the shape of the dashboard props
 export interface DashboardProps {
@@ -52,71 +50,18 @@ const DashboardSkeleton = () => (
       </div>
 )
 
-export function DashboardLoader({ profile }: { profile: UserProfileType | null }) {
-  const firestore = useFirestore();
-  const [defaultDashboardData, setDefaultDashboardData] = useState<{
-    users: User[] | null;
-    checkins: Checkin[] | null;
-    checkouts: Checkout[] | null;
-    isLoading: boolean;
-  }>({ users: null, checkins: null, checkouts: null, isLoading: true });
+export function DashboardLoader() {
+  const { user, isUserLoading } = useUser();
+  const { profile, isLoading: isProfileLoading } = useUserProfile(user);
 
-  useEffect(() => {
-    // Only fetch data if we're going to render the DefaultDashboard
-    if (profile) {
-      setDefaultDashboardData(prev => ({ ...prev, isLoading: false }));
-      return;
-    }
-
-    let isMounted = true;
-    
-    async function fetchDefaultData() {
-      if (!firestore) {
-        if(isMounted) setDefaultDashboardData({ users: null, checkins: null, checkouts: null, isLoading: false });
-        return;
-      }
-      
-      try {
-        const checkoutsQuery = query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5));
-        const usersQuery = query(collection(firestore, 'users'), orderBy('name'));
-        const checkinsQuery = query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(startOfDay(new Date()))));
-        
-        const [checkoutsSnap, usersSnap, checkinsSnap] = await Promise.all([
-          getDocs(checkoutsQuery),
-          getDocs(usersQuery),
-          getDocs(checkinsQuery),
-        ]);
-
-        if (isMounted) {
-          setDefaultDashboardData({
-            checkouts: checkoutsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Checkout[],
-            users: usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as User[],
-            checkins: checkinsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Checkin[],
-            isLoading: false,
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching default dashboard data:", error);
-         if (isMounted) {
-            setDefaultDashboardData({ users: null, checkins: null, checkouts: null, isLoading: false });
-         }
-      }
-    }
-    
-    fetchDefaultData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [profile, firestore]);
-
-  if (!profile) {
-    if (defaultDashboardData.isLoading) {
-      return <DashboardSkeleton />;
-    }
-    return <DefaultDashboard {...defaultDashboardData} />;
+  if (isUserLoading || isProfileLoading) {
+    return <DashboardSkeleton />;
   }
 
+  if (!profile) {
+    return <DefaultDashboard />;
+  }
+  
   const DashboardComponent = dashboardMap[profile.role] || DefaultDashboard;
 
   return <DashboardComponent profile={profile} />;
