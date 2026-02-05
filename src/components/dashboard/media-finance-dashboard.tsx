@@ -24,6 +24,7 @@ import { DashboardGrid } from "./dashboard-grid"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
 import type { DashboardProps, DashboardData } from "./dashboard-loader"
+import { DashboardHeader } from "./dashboard-header"
 
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
 
@@ -204,6 +205,8 @@ export function MediaFinanceDashboard({ profile, data }: MediaFinanceDashboardPr
   const isLoading = !allExpenses || !allIncome || !activities || !testimonies;
 
   return (
+    <div className="flex flex-col gap-6">
+       <DashboardHeader profile={profile} />
        <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-3">
             <BudgetHealth expenses={allExpenses} income={allIncome} />
@@ -216,5 +219,6 @@ export function MediaFinanceDashboard({ profile, data }: MediaFinanceDashboardPr
              <LatestTestimonies testimonies={testimonies} isLoading={isLoading} />
         </div>
       </DashboardGrid>
+    </div>
   )
 }

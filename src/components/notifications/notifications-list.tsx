@@ -47,42 +47,79 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
     const threeDaysAgo = Timestamp.fromDate(subDays(new Date(), 3));
     const lim = isPage ? 50 : 5;
     
-    const q = query(
+    // We split the query into two simple queries to avoid composite index requirements
+    // Query 1: Alerts specifically for this user
+    const userAlertsQuery = query(
         collection(firestore, 'alerts'),
-        and(
-            or(
-                where('targetUserIds', 'array-contains', user.uid),
-                where('targetUserIds', '==', [])
-            ),
-            where('createdAt', '>=', threeDaysAgo)
-        ),
+        where('targetUserIds', 'array-contains', user.uid),
         orderBy('createdAt', 'desc'),
         limit(lim)
     );
 
-    const unsubscribe = onUnreadStatusChange
-      ? onSnapshot(q, (snapshot) => {
-          const fetchedAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
-          setAlerts(fetchedAlerts);
-          setIsLoading(false);
-        }, (error) => {
-          console.error("Failed to subscribe to alerts:", error);
-          setIsLoading(false);
-        })
-      : () => {};
+    // Query 2: Broadcast alerts (targetUserIds is empty array)
+    const broadcastAlertsQuery = query(
+        collection(firestore, 'alerts'),
+        where('targetUserIds', '==', []),
+        orderBy('createdAt', 'desc'),
+        limit(lim)
+    );
 
-      if (!onUnreadStatusChange) {
-        getDocs(q).then(snapshot => {
-             const fetchedAlerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
-             setAlerts(fetchedAlerts);
-             setIsLoading(false);
-        }).catch(error => {
-             console.error("Failed to fetch alerts:", error);
-             setIsLoading(false);
+    // Function to merge and set alerts
+    const mergeAlerts = (userDocs: any[], broadcastDocs: any[]) => {
+        const allAlerts = [...userDocs, ...broadcastDocs].map(doc => ({ id: doc.id, ...doc.data() } as AlertType));
+        // Filter by date client-side to be safe and avoid index issues with inequalities
+        const recentAlerts = allAlerts.filter(a => a.createdAt && a.createdAt >= threeDaysAgo);
+        // Sort by date desc
+        recentAlerts.sort((a, b) => {
+            const dateA = a.createdAt?.seconds || 0;
+            const dateB = b.createdAt?.seconds || 0;
+            return dateB - dateA;
         });
-      }
+        setAlerts(recentAlerts.slice(0, lim));
+        setIsLoading(false);
+    };
 
-    return () => onUnreadStatusChange && unsubscribe();
+    if (onUnreadStatusChange) {
+        // Real-time listeners
+        const unsubscribeUser = onSnapshot(userAlertsQuery, 
+            (userSnap) => {
+                // Fetch broadcast alerts once (or set up another listener if needed, but two listeners is fine)
+                getDocs(broadcastAlertsQuery).then(broadcastSnap => {
+                    mergeAlerts(userSnap.docs, broadcastSnap.docs);
+                });
+            }, 
+            (error) => {
+                console.error("Failed to subscribe to user alerts:", error);
+                setIsLoading(false);
+            }
+        );
+
+        const unsubscribeBroadcast = onSnapshot(broadcastAlertsQuery,
+            (broadcastSnap) => {
+                 getDocs(userAlertsQuery).then(userSnap => {
+                    mergeAlerts(userSnap.docs, broadcastSnap.docs);
+                });
+            },
+            (error) => console.error("Failed to subscribe to broadcast alerts", error)
+        );
+
+        return () => {
+            unsubscribeUser();
+            unsubscribeBroadcast();
+        };
+
+    } else {
+        // One-time fetch
+        Promise.all([getDocs(userAlertsQuery), getDocs(broadcastAlertsQuery)])
+            .then(([userSnap, broadcastSnap]) => {
+                mergeAlerts(userSnap.docs, broadcastSnap.docs);
+            })
+            .catch(error => {
+                console.error("Failed to fetch alerts:", error);
+                setIsLoading(false);
+            });
+    }
+
   }, [user, firestore, isPage, onUnreadStatusChange]);
 
   const unreadCount = useMemo(() => {

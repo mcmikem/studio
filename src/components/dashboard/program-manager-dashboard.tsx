@@ -4,6 +4,7 @@ import { DashboardGrid } from "@/components/dashboard/dashboard-grid"
 import dynamic from 'next/dynamic'
 import type { DashboardProps, DashboardData } from "./dashboard-loader"
 import { Skeleton } from '../ui/skeleton';
+import { DashboardHeader } from "./dashboard-header"
 
 const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), {
   loading: () => <Skeleton className="h-64" />,
@@ -39,14 +40,17 @@ export function ProgramManagerDashboard({ profile, data }: ProgramManagerDashboa
   const isLoading = !partnerships || !activities || !users || !checkins;
 
   return (
-    <DashboardGrid className="mt-6 lg:grid-cols-2">
-        <PartnershipPipeline partnerships={partnerships} isLoading={isLoading} />
-        <QuickInsights activities={activities} />
-        <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
-        <DashboardCalendar />
-        <div className="lg:col-span-2">
-            <MyWeeklyPlan />
-        </div>
-    </DashboardGrid>
+    <div className="flex flex-col gap-6">
+        <DashboardHeader profile={profile} />
+        <DashboardGrid className="mt-6 lg:grid-cols-2">
+            <PartnershipPipeline partnerships={partnerships} isLoading={isLoading} />
+            <QuickInsights activities={activities} />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
+            <DashboardCalendar />
+            <div className="lg:col-span-2">
+                <MyWeeklyPlan />
+            </div>
+        </DashboardGrid>
+    </div>
   );
 }

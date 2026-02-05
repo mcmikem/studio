@@ -34,10 +34,32 @@ import { createAlert } from '@/ai/flows/create-alert-flow';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import type { Expense, User, Project } from '@/lib/types';
 
+const expenseCategories = [
+    "Allowances and Stipends", 
+    "Community Support", 
+    "Food", 
+    "Fuel", 
+    "IGA Expense", 
+    "Kibanja", 
+    "Meetings", 
+    "Media", 
+    "Miscellaneous", 
+    "Mobile Money Charges", 
+    "Office Dev't", 
+    "Phone", 
+    "Printing & Photocopy", 
+    "Professional Services", 
+    "Projects", 
+    "Registration", 
+    "Rent", 
+    "Stationery", 
+    "Transport", 
+    "Withdraw"
+] as const;
 
 const expenseItemSchema = z.object({
   description: z.string().min(3, 'Item description is required.'),
-  category: z.enum(["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"]),
+  category: z.enum(expenseCategories),
   amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
 });
 
@@ -362,13 +384,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <SelectTrigger id={`items.${index}.category`}><SelectValue placeholder="Category..." /></SelectTrigger>
                                   <SelectContent>
-                                    {[
-                                        "Transport", "Rent", "Office Dev't", "Projects", "Stationery",
-                                        "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy",
-                                        "Phone", "Food", "Mobile Money Charges", "IGA Expense",
-                                        "Allowances and stipends", "Kibanja", "Professional Services",
-                                        "community support", "miscellaneous", "Withdraw"
-                                    ].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                    {expenseCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                   </SelectContent>
                                 </Select>
                               )}

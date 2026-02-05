@@ -1,5 +1,4 @@
 
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -101,12 +100,20 @@ export type Program = {
 export const PartnershipSchema = z.object({
   id: z.string(),
   name: z.string(),
-  type: z.enum(["NGO", "Government", "Corporate", "Individual"]),
+  type: z.enum(["NGO", "Government", "Corporate", "Individual", "School", "CBO", "Faith-Based"]),
   focusAreas: z.array(z.string()).optional(),
   contactPerson: z.string(),
   contactRole: z.string().optional(),
   contactPhone: z.string().optional(),
-  contactEmail: z.string().email(),
+  contactEmail: z.string().email().optional(),
+  schoolDetails: z.object({
+      headTeacher: z.string().optional(),
+      studentPopulation: z.number().optional(),
+      level: z.enum(["Primary", "Secondary", "Tertiary", "Vocational"]).optional(),
+      programs: z.array(z.string()).optional(),
+      championTeacher: z.string().optional(),
+      championTeacherContact: z.string().optional(),
+  }).optional(),
   offers: z.array(z.string()).optional(),
   receives: z.array(z.string()).optional(),
   financialValue: z.number().optional(),
@@ -116,14 +123,15 @@ export const PartnershipSchema = z.object({
   resourcePotential: z.enum(["High", "Medium", "Low"]).optional(),
   riskLevel: z.enum(["High", "Medium", "Low"]).optional(),
   priority: z.enum(["Immediate", "Short-term", "Long-term"]).optional(),
-  status: z.enum(["Prospecting", "Negotiation", "Active", "Stalled"]),
+  status: z.enum(["Prospecting", "Negotiation", "Active", "Stalled", "Terminated"]),
   health: z.enum(["Strong", "Needs Attention", "At Risk"]).optional(),
   nextStep: z.string(),
-  createdAt: z.any(), // Allow any for schema validation, will be Timestamp
-  lastContacted: z.any(), // Allow any for schema validation, will be Timestamp
+  nextActionDate: z.any().optional(),
+  createdAt: z.any(),
+  lastContacted: z.any(),
 });
-export type Partnership = z.infer<typeof PartnershipSchema>;
 
+export type Partnership = z.infer<typeof PartnershipSchema>;
 
 export type Activity = {
     id: string;
@@ -242,6 +250,7 @@ export type Expense = {
     title: string;
     projectId?: string;
     projectName?: string;
+    submittedFor?: string;
 };
 
 export type Income = {
@@ -1186,5 +1195,6 @@ export type KnowledgeHubCTA = {
     
 
     
+
 
 

@@ -10,10 +10,6 @@ const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deploym
   loading: () => <Skeleton className="h-64" />,
   ssr: false,
 });
-const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), {
-  loading: () => <Skeleton className="h-64" />,
-  ssr: false,
-});
 const DashboardCalendar = dynamic(() => import('@/components/dashboard/dashboard-calendar').then(mod => mod.DashboardCalendar), {
   loading: () => <Skeleton className="h-64" />,
   ssr: false,
@@ -40,7 +36,6 @@ export function DefaultDashboard({ data }: DefaultDashboardProps) {
             </div>
             <div className="flex flex-col gap-6">
                 <TeamDeployment users={users} checkins={checkins} isLoading={!users || !checkins} />
-                <TeamPulse checkouts={checkouts} />
             </div>
         </DashboardGrid>
     </div>

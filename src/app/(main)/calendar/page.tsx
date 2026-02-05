@@ -3,10 +3,24 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { format, isSameDay, addDays, subDays } from 'date-fns';
+import { 
+    format, 
+    isSameDay, 
+    addDays, 
+    subDays, 
+    startOfMonth, 
+    endOfMonth, 
+    startOfWeek, 
+    endOfWeek, 
+    eachDayOfInterval, 
+    addMonths, 
+    subMonths,
+    isSameMonth,
+    isToday
+} from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarIcon, PlusCircle, Clock, ChevronLeft, ChevronRight, CheckCircle, User } from 'lucide-react';
+import { Calendar as CalendarIcon, PlusCircle, ChevronLeft, ChevronRight, MapPin, User, Clock } from 'lucide-react';
 import { useCollection, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,19 +33,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { CalendarEvent as EventType } from '@/lib/types';
-import { EmptyState } from '@/components/ui/empty-state';
-import { cn, formatDateSafe } from '@/lib/utils';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 
 const categoryColors: { [key: string]: string } = {
-    "Team Meetings": "bg-blue-500/10 text-blue-500 border-blue-500",
-    "Field Visits": "bg-green-500/10 text-green-500 border-green-500",
-    "Campaigns/Events": "bg-red-500/10 text-red-500 border-red-500",
-    "Deadlines": "bg-purple-500/10 text-purple-500 border-purple-500",
-    "Social Days": "bg-orange-500/10 text-orange-500 border-orange-500",
+    "Team Meetings": "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+    "Field Visits": "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800",
+    "Campaigns/Events": "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
+    "Deadlines": "bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800",
+    "Social Days": "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800",
 };
-
 
 const eventSchema = z.object({
     title: z.string().min(3, "Title is required."),
@@ -121,182 +132,186 @@ function NewEventForm({ onFormSubmit, defaultDate }: { onFormSubmit: () => void,
 }
 
 export default function CalendarPage() {
+    const [currentMonth, setCurrentMonth] = useState<Date | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    
     const firestore = useFirestore();
 
     useEffect(() => {
-        // Safe to set the date on the client side after mount
+        setCurrentMonth(new Date());
         setSelectedDate(new Date());
     }, []);
 
     const eventsQuery = useMemo(() => {
         if (!firestore) return null;
+        // Ideally filter by month range here, but getting all and filtering client side is ok for small datasets
         return query(collection(firestore, 'events'), orderBy('date', 'asc'));
     }, [firestore]);
 
     const { data: events, isLoading } = useCollection<EventType>(eventsQuery);
 
-    const selectedDayEvents = useMemo(() => {
-        if (!events || !selectedDate) return [];
-        return events.filter(event => isSameDay(event.date.toDate(), selectedDate));
-    }, [events, selectedDate]);
-    
-    if (!selectedDate) {
-        return (
-            <div className="flex flex-col gap-6 h-full">
-                <header><Skeleton className="h-20 w-full" /></header>
-                <Card className="flex-grow"><CardContent><Skeleton className="h-full w-full" /></CardContent></Card>
-            </div>
-        )
-    }
+    const calendarDays = useMemo(() => {
+        if (!currentMonth) return [];
+        const monthStart = startOfMonth(currentMonth);
+        const monthEnd = endOfMonth(monthStart);
+        const startDate = startOfWeek(monthStart);
+        const endDate = endOfWeek(monthEnd);
+        return eachDayOfInterval({ start: startDate, end: endDate });
+    }, [currentMonth]);
+
+    const getEventsForDay = (day: Date) => {
+        if (!events) return [];
+        return events.filter(event => isSameDay(event.date.toDate(), day));
+    };
+
+    const handleDayClick = (day: Date) => {
+        setSelectedDate(day);
+        setIsSheetOpen(true);
+    };
+
+    if (!currentMonth) return <Skeleton className="h-96 w-full" />;
+
+    const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
     <div className="flex flex-col gap-6 h-full">
-        <header className='flex-shrink-0'>
-            <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-            <CalendarIcon className="h-8 w-8" />
-            Team Calendar
-            </h1>
-            <p className="text-muted-foreground">
-            A shared calendar for all team events, deadlines, and key dates.
-            </p>
+        <header className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+            <div>
+                <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+                <CalendarIcon className="h-8 w-8" />
+                Team Calendar
+                </h1>
+                <p className="text-muted-foreground">
+                Plan and track upcoming activities.
+                </p>
+            </div>
+            <div className="flex items-center gap-2">
+                 <Button variant="outline" onClick={() => setCurrentMonth(new Date())}>Today</Button>
+                 <div className="flex items-center bg-card border rounded-md">
+                     <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
+                         <ChevronLeft className="h-4 w-4" />
+                     </Button>
+                     <span className="w-32 text-center font-semibold">{format(currentMonth, "MMMM yyyy")}</span>
+                     <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
+                         <ChevronRight className="h-4 w-4" />
+                     </Button>
+                 </div>
+                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Event
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Add New Event</DialogTitle>
+                            <DialogDescription>Create a new event for the calendar.</DialogDescription>
+                        </DialogHeader>
+                        <NewEventForm onFormSubmit={() => setIsDialogOpen(false)} defaultDate={selectedDate || new Date()} />
+                    </DialogContent>
+                </Dialog>
+            </div>
         </header>
 
-        <Card className='flex-shrink-0'>
-             <CardHeader className='pb-4'>
-                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                     <div className="flex-grow text-center sm:text-left">
-                        <CardTitle>{format(selectedDate, "eeee, MMMM d")}</CardTitle>
-                     </div>
-                     <div className="flex items-center gap-2">
-                         <Button variant="outline" size="icon" onClick={() => setSelectedDate(subDays(selectedDate, 1))}>
-                             <ChevronLeft className="h-4 w-4" />
-                         </Button>
-                         <Button variant="outline" onClick={() => setSelectedDate(new Date())}>
-                            Today
-                         </Button>
-                         <Button variant="outline" size="icon" onClick={() => setSelectedDate(addDays(selectedDate, 1))}>
-                             <ChevronRight className="h-4 w-4" />
-                         </Button>
-                     </div>
-                </div>
-            </CardHeader>
+        <Card className="flex-grow flex flex-col overflow-hidden">
+            {/* Calendar Header Row */}
+            <div className="grid grid-cols-7 border-b text-center text-sm font-medium bg-muted/40">
+                {weekDays.map(day => (
+                    <div key={day} className="py-2">{day}</div>
+                ))}
+            </div>
+            
+            {/* Calendar Grid */}
+            <div className="flex-grow grid grid-cols-7 grid-rows-5 md:grid-rows-6 h-[600px] md:h-auto">
+                {calendarDays.map((day, dayIdx) => {
+                    const dayEvents = getEventsForDay(day);
+                    const isCurrentMonth = isSameMonth(day, currentMonth);
+                    const isDayToday = isToday(day);
+
+                    return (
+                        <div 
+                            key={day.toString()} 
+                            onClick={() => handleDayClick(day)}
+                            className={cn(
+                                "border-b border-r p-2 min-h-[100px] relative transition-colors hover:bg-muted/30 cursor-pointer flex flex-col gap-1",
+                                !isCurrentMonth && "bg-muted/20 text-muted-foreground",
+                                isDayToday && "bg-primary/5"
+                            )}
+                        >
+                            <div className="flex justify-between items-start">
+                                <span className={cn(
+                                    "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full",
+                                    isDayToday && "bg-primary text-primary-foreground"
+                                )}>
+                                    {format(day, 'd')}
+                                </span>
+                            </div>
+                            
+                            <div className="flex-grow flex flex-col gap-1 overflow-hidden mt-1">
+                                {dayEvents.slice(0, 3).map(event => (
+                                    <div 
+                                        key={event.id} 
+                                        className={cn(
+                                            "text-[10px] px-1.5 py-0.5 rounded-sm truncate font-medium border border-l-2",
+                                            categoryColors[event.category] || "bg-gray-100 border-gray-200"
+                                        )}
+                                        title={event.title}
+                                    >
+                                        {event.title}
+                                    </div>
+                                ))}
+                                {dayEvents.length > 3 && (
+                                    <span className="text-[10px] text-muted-foreground pl-1">
+                                        + {dayEvents.length - 3} more
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
         </Card>
 
-        <div className="flex-grow">
-            <Card className="h-full">
-                <CardHeader className="flex flex-row items-center justify-between">
-                     <div>
-                        <CardTitle>Daily Agenda</CardTitle>
-                        <CardDescription>
-                            Events scheduled for {format(selectedDate, "MMMM d")}.
-                        </CardDescription>
-                    </div>
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            New Event
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Add New Calendar Event</DialogTitle>
-                                <DialogDescription>Fill in the details for the new event.</DialogDescription>
-                            </DialogHeader>
-                            <NewEventForm onFormSubmit={() => setIsDialogOpen(false)} defaultDate={selectedDate} />
-                        </DialogContent>
-                    </Dialog>
-                </CardHeader>
-                <CardContent>
-                    {/* Mobile View */}
-                    <div className="space-y-4 sm:hidden">
-                        {isLoading && Array.from({length: 2}).map((_, i) => (
-                           <Card key={i}><CardContent className="pt-6"><Skeleton className="h-20 w-full" /></CardContent></Card>
-                        ))}
-                        {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
-                            selectedDayEvents.map((event) => (
-                                <Card key={event.id}>
-                                    <CardHeader>
-                                        <CardTitle>{event.title}</CardTitle>
-                                        <Badge variant="outline" className={cn("w-fit", categoryColors[event.category])}>
-                                            {event.category}
-                                        </Badge>
-                                    </CardHeader>
-                                    <CardContent className="space-y-2 text-sm">
-                                        <div className="flex items-center text-muted-foreground">
-                                            <User className="h-4 w-4 mr-2" />
-                                            <span>{event.responsible} at {event.location}</span>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))
-                        ) : (
-                             !isLoading && (
-                                <EmptyState 
-                                    icon={CheckCircle}
-                                    title="No Events Today"
-                                    description="Your schedule is clear. Select another day or add a new event."
-                                    className="min-h-0 py-24"
-                                />
-                            )
-                        )}
-                    </div>
-                    
-                    {/* Desktop View */}
-                    <div className="hidden sm:block">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Event</TableHead>
-                                    <TableHead>Responsible</TableHead>
-                                    <TableHead>Location</TableHead>
-                                    <TableHead>Category</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                             <TableBody>
-                                {isLoading && Array.from({length: 3}).map((_, i) => (
-                                    <TableRow key={i}>
-                                        <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                        <TableCell><Skeleton className="h-6 w-28" /></TableCell>
-                                    </TableRow>
-                                ))}
-                                {!isLoading && selectedDayEvents && selectedDayEvents.length > 0 ? (
-                                    selectedDayEvents.map((event) => (
-                                        <TableRow key={event.id}>
-                                            <TableCell className="font-medium">{event.title}</TableCell>
-                                            <TableCell>{event.responsible}</TableCell>
-                                            <TableCell>{event.location}</TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className={cn("self-center", categoryColors[event.category])}>
-                                                    {event.category}
-                                                </Badge>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    !isLoading && (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="h-48 text-center">
-                                                <EmptyState 
-                                                    icon={CheckCircle}
-                                                    title="No Events Today"
-                                                    description="Your schedule is clear. Select another day or add a new event."
-                                                    className="min-h-0"
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                )}
-                             </TableBody>
-                        </Table>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetContent>
+                <SheetHeader className="mb-6">
+                    <SheetTitle>{selectedDate ? format(selectedDate, "EEEE, MMMM do") : 'Event Details'}</SheetTitle>
+                    <SheetDescription>
+                         Scheduled events for this day.
+                    </SheetDescription>
+                </SheetHeader>
+                
+                <div className="space-y-4">
+                     {selectedDate && getEventsForDay(selectedDate).length > 0 ? (
+                        getEventsForDay(selectedDate).map(event => (
+                            <div key={event.id} className="border rounded-lg p-4 space-y-3 relative overflow-hidden">
+                                <div className={cn("absolute left-0 top-0 bottom-0 w-1", categoryColors[event.category]?.split(' ')[0].replace('bg-', 'bg-') || "bg-gray-200")}></div>
+                                <div className="flex justify-between items-start">
+                                    <h4 className="font-semibold">{event.title}</h4>
+                                    <Badge variant="outline" className={cn("text-xs", categoryColors[event.category])}>{event.category}</Badge>
+                                </div>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <MapPin className="h-3 w-3" /> {event.location}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <User className="h-3 w-3" /> {event.responsible}
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                     ) : (
+                         <div className="text-center py-10 text-muted-foreground">
+                            <p>No events scheduled.</p>
+                            <Button variant="link" onClick={() => { setIsSheetOpen(false); setIsDialogOpen(true); }}>Add Event</Button>
+                         </div>
+                     )}
+                </div>
+            </SheetContent>
+        </Sheet>
     </div>
   );
 }

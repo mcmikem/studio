@@ -10,16 +10,28 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb, User } from 'lucide-react';
-import { useCollection, useFirestore, useUser } from '@/firebase';
+import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb, Trash2 } from 'lucide-react';
+import { useCollection, useFirestore, useUser, deleteDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, orderBy, serverTimestamp, addDoc, limit } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, addDoc, limit, getDocs, doc } from 'firebase/firestore';
 import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
 import { omutoAIFlow } from '@/ai/flows/omuto-ai-flow';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
 
 function MessageItem({ message }: { message: Message }) {
   const { user } = useUser();
@@ -67,6 +79,7 @@ export default function ChatPage() {
   const firestore = useFirestore();
   const { user } = useUser();
   const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
+  const { toast } = useToast();
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -146,6 +159,33 @@ export default function ChatPage() {
       setNewMessage(command);
   }
 
+  const handleClearChat = async () => {
+      if (!firestore || !user) return;
+      
+      try {
+          const q = query(collection(firestore, 'users', user.uid, 'ai-chats'));
+          const snapshot = await getDocs(q);
+          
+          const deletePromises = snapshot.docs.map(docSnapshot => 
+              deleteDocumentNonBlocking(doc(firestore, 'users', user.uid, 'ai-chats', docSnapshot.id))
+          );
+          
+          await Promise.all(deletePromises);
+          
+          toast({
+              title: "Chat Cleared",
+              description: "Your conversation history has been removed.",
+          });
+      } catch (error) {
+          console.error("Failed to clear chat:", error);
+          toast({
+              variant: "destructive",
+              title: "Error",
+              description: "Could not clear chat history.",
+          });
+      }
+  }
+
   const isSendDisabled = !newMessage.trim() || isSending || isLoadingProfile || !profile;
 
   return (
@@ -154,7 +194,28 @@ export default function ChatPage() {
         <CardContent className="flex-1 flex flex-col p-0">
           <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
             <div className="space-y-6">
-              <div className='text-center space-y-2 py-8'>
+              <div className='text-center space-y-2 py-8 relative'>
+                 <div className="absolute right-0 top-0">
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive">
+                                <Trash2 className="h-4 w-4 mr-2" /> Clear Chat
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Clear Conversation?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete all messages in your current AI chat history.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleClearChat}>Clear Chat</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                 </div>
                 <div className='inline-flex items-center justify-center'>
                     <Wand className="h-6 w-6 mr-2 text-primary" />
                     <h1 className="font-headline text-3xl font-bold tracking-tight">

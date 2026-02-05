@@ -24,6 +24,12 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -37,14 +43,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useCollection, useFirestore, useMemoFirebase, useUser, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, doc, where } from 'firebase/firestore';
-import type { Expense, User, ExpenseItem } from '@/lib/types';
+import type { Expense, User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Check, X, Receipt, CheckCheck, Undo2, Edit, Trash2, Eye, AlertTriangle } from 'lucide-react';
+import { Check, X, Receipt, CheckCheck, Undo2, Edit, Trash2, Eye, AlertTriangle, FileText, Banknote } from 'lucide-react';
 import { useMemo, useEffect, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis } from 'recharts';
 import {
   ChartContainer,
   ChartTooltip,
@@ -64,12 +70,6 @@ const statusColors: { [key: string]: string } = {
   Rejected: 'border-red-500 bg-red-500/10 text-red-500',
 };
 
-const typeColors: { [key: string]: string } = {
-    Requisition: 'border-blue-500 bg-blue-500/10 text-blue-500',
-    Reimbursement: 'border-purple-500 bg-purple-500/10 text-purple-500',
-};
-
-
 function ExpenseDetailsDialog({ expense, isOpen, onOpenChange }: { expense: Expense, isOpen: boolean, onOpenChange: (open: boolean) => void }) {
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -77,7 +77,7 @@ function ExpenseDetailsDialog({ expense, isOpen, onOpenChange }: { expense: Expe
                 <DialogHeader>
                     <DialogTitle>{expense.title}</DialogTitle>
                     <DialogDescription>
-                        Expense report from {expense.userName} on {formatDateSafe(expense.date, 'dateOnly')}.
+                        {expense.type} report from {expense.userName} on {formatDateSafe(expense.date, 'dateOnly')}.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -109,6 +109,154 @@ function ExpenseDetailsDialog({ expense, isOpen, onOpenChange }: { expense: Expe
     )
 }
 
+function ExpensesTable({ 
+    expenses, 
+    isLoading, 
+    highlightedExpenseId, 
+    currentUser, 
+    canApprove, 
+    canManageFinances, 
+    handleStatusUpdate, 
+    setViewingExpense, 
+    setEditingExpense, 
+    handleDelete 
+}: any) {
+    const highlightClass = "ring-2 ring-primary bg-primary/5";
+
+    return (
+        <div className="rounded-md border">
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>User</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                            <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                            <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
+                        </TableRow>
+                    ))}
+                    {expenses && expenses.length > 0 ? (
+                        expenses.map((expense: Expense) => (
+                            <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
+                                <TableCell className="font-medium">
+                                    <div className="flex flex-col">
+                                        <span>{expense.userName}</span>
+                                        {expense.submittedFor && expense.submittedFor !== expense.userId && (
+                                            <span className="text-xs text-muted-foreground">via {expense.userName}</span>
+                                        )}
+                                    </div>
+                                </TableCell>
+                                <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col">
+                                        <span className="font-medium">{expense.title}</span>
+                                        <span className="text-xs text-muted-foreground">{expense.items.length} item(s)</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="font-bold">{formatCurrency(expense.totalAmount)}</TableCell>
+                                <TableCell>
+                                    <Badge variant="outline" className={statusColors[expense.status]}>
+                                        {expense.status}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex justify-end items-center gap-1">
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewingExpense(expense)}>
+                                            <Eye className="h-4 w-4" />
+                                            <span className="sr-only">View</span>
+                                        </Button>
+                                        
+                                        {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                                            <div className="flex gap-1">
+                                                <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-100 h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}>
+                                                    <Check className="h-4 w-4" />
+                                                    <span className="sr-only">Approve</span>
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-100 h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}>
+                                                    <X className="h-4 w-4" />
+                                                    <span className="sr-only">Reject</span>
+                                                </Button>
+                                            </div>
+                                        )}
+                                        
+                                        {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                                            <Button variant="ghost" size="icon" onClick={() => handleStatusUpdate(expense, 'Pending')} title="Reverse to Pending">
+                                                <Undo2 className="h-4 w-4" />
+                                                <span className="sr-only">Reverse</span>
+                                            </Button>
+                                        )}
+                                        
+                                        {canManageFinances && expense.status === 'Approved' && (
+                                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>
+                                                Disburse
+                                            </Button>
+                                        )}
+                                        
+                                        {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
+                                            <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}>
+                                                <CheckCheck className="mr-1 h-3 w-3"/> Acknowledge
+                                            </Button>
+                                        )}
+
+                                        {canManageFinances && (
+                                            <>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}>
+                                                    <Edit className="h-4 w-4" />
+                                                    <span className="sr-only">Edit</span>
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                                            <Trash2 className="h-4 w-4" />
+                                                            <span className="sr-only">Delete</span>
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Delete Report?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Are you sure you want to delete "{expense.title}"? This cannot be undone.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDelete(expense)}>Delete</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </>
+                                        )}
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))
+                    ) : (
+                        !isLoading && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                                    No records found in this category.
+                                </TableCell>
+                            </TableRow>
+                        )
+                    )}
+                </TableBody>
+            </Table>
+        </div>
+    );
+}
+
 
 function ExpensesContent() {
   const firestore = useFirestore();
@@ -120,6 +268,7 @@ function ExpensesContent() {
   
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [viewingExpense, setViewingExpense] = useState<Expense | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
 
   const expensesQuery = useMemoFirebase(() => {
     if (!firestore || !profile) return null;
@@ -145,9 +294,19 @@ function ExpensesContent() {
   }, [firestore]);
   const { data: financeUsers } = useCollection<User>(financeUsersQuery);
 
+  const filteredExpenses = useMemo(() => {
+      if (!expenses) return { all: [], requisitions: [], reimbursements: [] };
+      return {
+          all: expenses,
+          requisitions: expenses.filter(e => e.type === 'Requisition'),
+          reimbursements: expenses.filter(e => e.type === 'Reimbursement'),
+      };
+  }, [expenses]);
+
   const chartData = useMemo(() => {
     if (!expenses) return [];
     
+    // Filter based on active tab concept if needed, but usually charts show overall health
     const relevantExpenses = expenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
     
     const categoryTotals = relevantExpenses.reduce((acc, expense) => {
@@ -162,10 +321,10 @@ function ExpensesContent() {
         return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(categoryTotals).map(([name, total]) => ({
-      name,
-      total,
-    }));
+    return Object.entries(categoryTotals)
+        .map(([name, total]) => ({ name, total }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5); // Top 5 categories
   }, [expenses]);
   
   const chartConfig = {
@@ -205,8 +364,9 @@ function ExpensesContent() {
           title: `Expense ${status}`,
           description: `The expense report has been marked as ${status.toLowerCase()}.`,
         });
-
-        let messageToUser = '';
+        
+        // ... (Alert logic remains the same) ...
+         let messageToUser = '';
         let targetUserIds: string[] | undefined;
         let priority: 'High' | 'Medium' | 'Low' = 'Medium';
         let action = '/my-finances';
@@ -234,22 +394,6 @@ function ExpensesContent() {
               });
             }
         }
-
-        if (status === 'Approved' && financeUsers) {
-            const financeTeamIds = financeUsers.map(u => u.id).filter(id => id !== currentUser.uid);
-            if (financeTeamIds.length > 0) {
-              await createAlert({
-                  type: 'Reminder',
-                  priority: 'High',
-                  message: `An expense report for ${expense.userName} (${formatCurrency(expense.totalAmount)}) is approved and needs disbursement.`,
-                  action: `/management/expenses?highlight=${expense.id}`,
-                  creatorId: currentUser.uid,
-                  targetUserIds: financeTeamIds,
-              });
-            }
-        }
-
-
     } catch (error) {
          toast({
             variant: "destructive",
@@ -272,8 +416,6 @@ function ExpensesContent() {
     })
   };
   
-  const highlightClass = "ring-2 ring-primary bg-primary/5";
-
   if (error) {
       return (
            <Card>
@@ -281,9 +423,6 @@ function ExpensesContent() {
                 <CardTitle className="flex items-center gap-2 text-destructive"><AlertTriangle/>Permission Denied</CardTitle>
                 <CardDescription>Your current role does not have permission to view all expense reports.</CardDescription>
             </CardHeader>
-             <CardContent>
-                <p className="text-sm">Please contact an administrator if you believe this is an error.</p>
-            </CardContent>
         </Card>
       )
   }
@@ -294,160 +433,79 @@ function ExpensesContent() {
       <header>
         <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
           <Receipt className="h-8 w-8" />
-          Expense Management
+          Finance & Bookkeeping
         </h1>
         <p className="text-muted-foreground">
-          Review, approve, disburse, and track all team expense reports.
+          Manage requisitions, track reimbursements, and monitor spending.
         </p>
       </header>
+      
        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
             <Card>
-                <CardHeader>
-                  <CardTitle>Expense Report History</CardTitle>
-                  <CardDescription>This view shows all reports, including 'Pending', 'Approved', 'Disbursed', and 'Acknowledged'.</CardDescription>
+                <CardHeader className="pb-2">
+                  <CardTitle>Transactions</CardTitle>
+                  <CardDescription>Manage your financial records.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="hidden sm:block">
-                        <Table>
-                        <TableHeader>
-                            <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Title</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading &&
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}>
-                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
-                                </TableRow>
-                            ))}
-                            {expenses && expenses.length > 0 ? (
-                            expenses.map((expense) => (
-                                <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
-                                <TableCell className="font-medium">{expense.userName}</TableCell>
-                                <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
-                                <TableCell>{expense.title}</TableCell>
-                                <TableCell>{formatCurrency(expense.totalAmount)}</TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className={statusColors[expense.status]}>
-                                        {expense.status}
-                                    </Badge>
-                                </TableCell>
-                                 <TableCell className="text-right">
-                                    <div className="flex justify-end items-center gap-1">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewingExpense(expense)}><Eye className="h-4 w-4" /></Button>
-                                        {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
-                                          <div className="flex gap-1">
-                                              <Button variant="ghost" size="icon" className="text-primary hover:text-primary h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4" /></Button>
-                                              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4" /></Button>
-                                          </div>
-                                        )}
-                                        {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
-                                          <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
-                                            <Undo2 className="mr-2 h-4 w-4" /> Reverse
-                                          </Button>
-                                        )}
-                                        {canManageFinances && expense.status === 'Approved' && (
-                                             <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
-                                        )}
-                                        {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
-                                             <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge Receipt</Button>
-                                        )}
-                                        {canManageFinances && (
-                                            <>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}><Edit className="h-4 w-4" /></Button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                            <AlertDialogDescription>This action cannot be undone. This will permanently delete the expense report "{expense.title}".</AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleDelete(expense)}>Delete</AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </>
-                                        )}
-                                    </div>
-                                </TableCell>
-                                </TableRow>
-                            ))
-                            ) : (
-                            !isLoading && (
-                                <TableRow>
-                                <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
-                                    <div className="flex flex-col items-center justify-center gap-2">
-                                    <Receipt className="h-12 w-12" />
-                                    <span className="text-lg font-semibold">No Expenses Found</span>
-                                    <p className="text-sm">No reports have been submitted yet.</p>
-                                    </div>
-                                </TableCell>
-                                </TableRow>
-                            )
-                            )}
-                        </TableBody>
-                        </Table>
-                    </div>
-                    <div className="sm:hidden space-y-4">
-                        {expenses?.map(expense => (
-                            <Card key={`mobile-${expense.id}`} id={`mobile-expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
-                                <CardHeader>
-                                    <CardTitle>{expense.title}</CardTitle>
-                                    <CardDescription>{expense.userName} - {formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                     <div className="flex justify-between items-center">
-                                        <span className="text-2xl font-bold">{formatCurrency(expense.totalAmount)}</span>
-                                        <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
-                                    </div>
-                                     <div className="flex justify-end items-center gap-1 flex-wrap">
-                                        <Button variant="outline" size="sm" onClick={() => setViewingExpense(expense)}><Eye className="mr-2 h-4 w-4"/>View Details</Button>
-                                        {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
-                                          <div className="flex gap-1">
-                                              <Button size="sm" className="bg-green-500 hover:bg-green-600" onClick={() => handleStatusUpdate(expense, 'Approved')}><Check className="h-4 w-4 mr-1" />Approve</Button>
-                                              <Button size="sm" variant="destructive" onClick={() => handleStatusUpdate(expense, 'Rejected')}><X className="h-4 w-4 mr-1" />Reject</Button>
-                                          </div>
-                                        )}
-                                        {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
-                                          <Button variant="outline" size="sm" onClick={() => handleStatusUpdate(expense, 'Pending')}>
-                                            <Undo2 className="mr-2 h-4 w-4" /> Reverse
-                                          </Button>
-                                        )}
-                                        {canManageFinances && expense.status === 'Approved' && (
-                                             <Button size="sm" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Mark Disbursed</Button>
-                                        )}
-                                        {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
-                                             <Button size="sm" variant="secondary" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}><CheckCheck className="mr-2 h-4 w-4"/>Acknowledge</Button>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                    <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <TabsList className="grid w-full grid-cols-3 mb-4">
+                            <TabsTrigger value="all">All Records</TabsTrigger>
+                            <TabsTrigger value="requisitions">Requisitions</TabsTrigger>
+                            <TabsTrigger value="reimbursements">Reimbursements</TabsTrigger>
+                        </TabsList>
+                        
+                        <TabsContent value="all">
+                             <ExpensesTable 
+                                expenses={filteredExpenses.all} 
+                                isLoading={isLoading} 
+                                highlightedExpenseId={highlightedExpenseId}
+                                currentUser={currentUser}
+                                canApprove={canApprove}
+                                canManageFinances={canManageFinances}
+                                handleStatusUpdate={handleStatusUpdate}
+                                setViewingExpense={setViewingExpense}
+                                setEditingExpense={setEditingExpense}
+                                handleDelete={handleDelete}
+                            />
+                        </TabsContent>
+                        <TabsContent value="requisitions">
+                             <ExpensesTable 
+                                expenses={filteredExpenses.requisitions} 
+                                isLoading={isLoading} 
+                                highlightedExpenseId={highlightedExpenseId}
+                                currentUser={currentUser}
+                                canApprove={canApprove}
+                                canManageFinances={canManageFinances}
+                                handleStatusUpdate={handleStatusUpdate}
+                                setViewingExpense={setViewingExpense}
+                                setEditingExpense={setEditingExpense}
+                                handleDelete={handleDelete}
+                            />
+                        </TabsContent>
+                         <TabsContent value="reimbursements">
+                             <ExpensesTable 
+                                expenses={filteredExpenses.reimbursements} 
+                                isLoading={isLoading} 
+                                highlightedExpenseId={highlightedExpenseId}
+                                currentUser={currentUser}
+                                canApprove={canApprove}
+                                canManageFinances={canManageFinances}
+                                handleStatusUpdate={handleStatusUpdate}
+                                setViewingExpense={setViewingExpense}
+                                setEditingExpense={setEditingExpense}
+                                handleDelete={handleDelete}
+                            />
+                        </TabsContent>
+                    </Tabs>
                 </CardContent>
             </Card>
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
              <Card>
                 <CardHeader>
-                    <CardTitle>Spending by Category</CardTitle>
-                    <CardDescription>Based on all 'Disbursed' and 'Acknowledged' expenses.</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><Banknote className="h-5 w-5" /> Spending Breakdown</CardTitle>
+                    <CardDescription>Top 5 Categories (Disbursed)</CardDescription>
                 </CardHeader>
                 <CardContent>
                      {isLoading && <Skeleton className="w-full h-64" />}
@@ -455,7 +513,7 @@ function ExpensesContent() {
                         <ChartContainer config={chartConfig} className="w-full h-64">
                             <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 10, right: 30 }}>
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))' }} width={80} />
+                                <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }} width={100} />
                                 <ChartTooltip
                                     cursor={false}
                                     content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)}/>}
@@ -467,9 +525,31 @@ function ExpensesContent() {
                     {!isLoading && chartData.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
                             <Receipt className="h-12 w-12" />
-                            <p className="mt-4 font-semibold">No spending data to show.</p>
+                            <p className="mt-4 font-semibold">No spending data available.</p>
                         </div>
                     )}
+                </CardContent>
+            </Card>
+
+             <Card className="bg-muted/50">
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium">Quick Guide</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 text-sm">
+                    <div className="flex items-start gap-2">
+                        <FileText className="h-4 w-4 mt-0.5 text-blue-500" />
+                        <div>
+                            <span className="font-semibold block">Requisition</span>
+                            Request funds *before* spending. Needs approval and disbursement.
+                        </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <Receipt className="h-4 w-4 mt-0.5 text-purple-500" />
+                        <div>
+                            <span className="font-semibold block">Reimbursement</span>
+                            Claim funds *after* spending personal money. Needs receipts.
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -478,7 +558,7 @@ function ExpensesContent() {
     <Dialog open={!!editingExpense} onOpenChange={(open) => !open && setEditingExpense(null)}>
         <DialogContent className="max-w-2xl">
             <DialogHeader>
-                <DialogTitle>Edit Expense Report</DialogTitle>
+                <DialogTitle>Edit Transaction</DialogTitle>
                 <DialogDescription>
                     Update the details for "{editingExpense?.title}".
                 </DialogDescription>

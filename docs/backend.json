@@ -104,12 +104,23 @@
       "description": "Represents a partnership with another organization, including intake and assessment data.",
       "properties": {
         "name": { "type": "string", "description": "The name of the partner organization." },
-        "type": { "type": "string", "enum": ["NGO", "Government", "Corporate", "Individual"], "description": "The type of partner organization." },
+        "type": { "type": "string", "enum": ["NGO", "Government", "Corporate", "Individual", "School", "CBO", "Faith-Based"], "description": "The type of partner organization." },
         "focusAreas": { "type": "array", "items": { "type": "string" }, "description": "Key operational areas of the partner (e.g., Education, Health)." },
         "contactPerson": { "type": "string", "description": "The primary contact at the partner organization." },
         "contactRole": { "type": "string", "description": "The role of the primary contact." },
         "contactPhone": { "type": "string", "description": "The phone number of the primary contact." },
         "contactEmail": { "type": "string", "format": "email", "description": "The email address of the primary contact." },
+        "schoolDetails": {
+          "type": "object",
+          "properties": {
+            "headTeacher": { "type": "string" },
+            "studentPopulation": { "type": "number" },
+            "level": { "type": "string", "enum": ["Primary", "Secondary", "Tertiary", "Vocational"] },
+            "programs": { "type": "array", "items": { "type": "string" } },
+            "championTeacher": { "type": "string" },
+            "championTeacherContact": { "type": "string" }
+          }
+        },
         "offers": { "type": "array", "items": { "type": "string" }, "description": "What the partner offers (e.g., Funding, Expertise)." },
         "receives": { "type": "array", "items": { "type": "string" }, "description": "What Omuto offers in return (e.g., Community Access, Implementation)." },
         "financialValue": { "type": "number", "description": "The estimated annual financial value (UGX) of the partnership." },
@@ -119,13 +130,14 @@
         "resourcePotential": { "type": "string", "enum": ["High", "Medium", "Low"], "description": "The potential for resource mobilization." },
         "riskLevel": { "type": "string", "enum": ["High", "Medium", "Low"], "description": "The assessed risk level of the partnership." },
         "priority": { "type": "string", "enum": ["Immediate", "Short-term", "Long-term"], "description": "The engagement priority." },
-        "status": { "type": "string", "enum": ["Prospecting", "Negotiation", "Active", "Stalled"], "description": "The current status of the partnership." },
+        "status": { "type": "string", "enum": ["Prospecting", "Negotiation", "Active", "Stalled", "Terminated"], "description": "The current status of the partnership." },
         "health": { "type": "string", "enum": ["Strong", "Needs Attention", "At Risk"], "description": "The overall health of the partnership." },
         "nextStep": { "type": "string", "description": "The next actionable step for this partnership." },
+        "nextActionDate": { "type": "string", "format": "date-time", "description": "The due date for the next action." },
         "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp of when the partnership was created." },
         "lastContacted": { "type": "string", "format": "date-time", "description": "Server timestamp of the last interaction with the partner." }
       },
-      "required": ["name", "type", "contactPerson", "contactEmail", "status", "nextStep", "createdAt", "lastContacted"]
+      "required": ["name", "type", "contactPerson", "status", "nextStep", "createdAt", "lastContacted"]
     },
     "Activity": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1538,6 +1550,31 @@
         "order": { "type": "number" }
       },
       "required": ["question", "answer", "order"]
+    },
+    "KnowledgeHubStory": {
+      "title": "Knowledge Hub Story",
+      "description": "A sample impact story.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "content", "order"]
+    },
+    "KnowledgeHubCTA": {
+      "title": "Knowledge Hub CTA",
+      "description": "A Call to Action for the knowledge hub.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "buttonLabel": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["title", "description", "buttonLabel", "order"]
     }
   },
   "auth": {
@@ -1613,8 +1650,8 @@
     "/ofa-volunteers/{volunteerId}": { "schema": { "$ref": "#/entities/OFAVolunteer" }, "description": "Volunteer registrations for Omuto Cup." },
     "/knowledgeHubSections/{sectionId}": { "schema": { "$ref": "#/entities/KnowledgeHubSection" }, "description": "Stores the main content sections for the knowledge hub." },
     "/knowledgeHubPitches/{pitchId}": { "schema": { "$ref": "#/entities/KnowledgeHubPitch" }, "description": "Stores the copyable pitches and boilerplates." },
-    "/knowledgeHubFaqs/{faqId}": { "schema": { "$ref": "#/entities/KnowledgeHubFAQ" }, "description": "Stores the frequently asked questions." }
+    "/knowledgeHubFaqs/{faqId}": { "schema": { "$ref": "#/entities/KnowledgeHubFAQ" }, "description": "Stores the frequently asked questions." },
+    "/knowledgeHubStories/{storyId}": { "schema": { "$ref": "#/entities/KnowledgeHubStory" }, "description": "Stores sample impact stories." },
+    "/knowledgeHubCtas/{ctaId}": { "schema": { "$ref": "#/entities/KnowledgeHubCTA" }, "description": "Stores calls to action for the knowledge hub." }
   }
 }
-
-

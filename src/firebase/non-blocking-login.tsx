@@ -151,7 +151,6 @@ async function seedUserTasks(db: Firestore, userId: string, role: string) {
   const userTasksCollection = collection(db, 'users', userId, 'tasks');
   let initialTasks = [
     { title: 'Update your profile picture', completed: false, createdAt: serverTimestamp() },
-    { title: "Introduce yourself in the #team-space channel", completed: false, createdAt: serverTimestamp() },
   ];
 
   if (role === 'Intern' || role === 'Volunteer') {

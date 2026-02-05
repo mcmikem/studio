@@ -1,339 +1,79 @@
 
-'use client';
+"use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
-import type { Partnership } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Handshake, PlusCircle, Edit, Trash2, ArrowRight, AlertTriangle, CheckCircle, Clock, DollarSign, TrendingUp, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { useState, useMemo } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import Link from 'next/link';
-import { isPast, subDays, startOfMonth, isAfter } from 'date-fns';
-import { formatCurrency } from '@/lib/utils';
-import { PartnershipForm } from '@/components/management/partnerships/partnership-form';
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PlusCircle } from "lucide-react";
+import { PartnershipList } from "@/components/management/partnerships/partnership-list";
+import { SchoolList } from "@/components/management/partnerships/school-list";
+import { PartnershipForm } from "@/components/forms/partnership-form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
+// Placeholder for the Kanban Pipeline component (will be more complex)
+const PartnershipPipelineKanban = () => (
+  <div className="p-4 border rounded-md h-[600px] flex items-center justify-center text-gray-500">
+    Partnership Pipeline (Kanban Board) - (Using All Partners List for now, will be replaced with Kanban)
+    <PartnershipList />
+  </div>
+);
 
-const statusColors: { [key: string]: string } = {
-    "Active": "border-green-500 bg-green-500/10 text-green-500",
-    "Negotiation": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
-    "Prospecting": "border-blue-500 bg-blue-500/10 text-blue-500",
-    "Stalled": "border-red-500 bg-red-500/10 text-red-500",
-};
+export default function PartnershipsManagementPage() {
+  const [activeTab, setActiveTab] = useState("pipeline");
+  const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
 
-const healthColors: { [key: string]: string } = {
-    "Strong": "border-green-500 bg-green-500/10 text-green-500",
-    "Needs Attention": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
-    "At Risk": "border-red-500 bg-red-500/10 text-red-500",
-};
-
-function UrgentActions({ partnerships, isLoading }: { partnerships: Partnership[] | null, isLoading: boolean }) {
-    const actions = useMemo(() => {
-        if (!partnerships) return { overdue: [], upcoming: [], recent: [] };
-        
-        const overdue: Partnership[] = [];
-        const upcoming: Partnership[] = [];
-        const sevenDaysAgo = subDays(new Date(), 7);
-        const today = new Date();
-
-        const activeOrNegotiating = partnerships.filter(p => p.status === 'Active' || p.status === 'Negotiation');
-
-        activeOrNegotiating.forEach(p => {
-            const nextStepLower = p.nextStep.toLowerCase();
-            if (nextStepLower.includes("due") || nextStepLower.includes("deadline")) {
-                 overdue.push(p);
-            }
-            if (nextStepLower.includes("meeting") || nextStepLower.includes("call") || nextStepLower.includes("review")) {
-                 upcoming.push(p);
-            }
-        });
-        
-        const recent = partnerships.filter(p => p.createdAt && p.createdAt.toDate && isAfter(p.createdAt.toDate(), sevenDaysAgo));
-
-        return { overdue, upcoming, recent };
-    }, [partnerships]);
-    
-    if (isLoading) {
-        return <Skeleton className="h-48 w-full" />;
-    }
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Urgent Actions</CardTitle>
-                <CardDescription>Automated alerts for your pipeline.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                {actions.overdue.length > 0 && (
-                    <div className="space-y-2">
-                        <h4 className="font-semibold text-sm flex items-center gap-2 text-red-500"><AlertTriangle /> Overdue</h4>
-                        {actions.overdue.map(p => (
-                            <Link key={p.id} href={`/management/partnerships/${p.id}`} className="block p-2 bg-red-500/10 rounded-md hover:bg-red-500/20 text-sm">
-                                <strong>{p.name}:</strong> {p.nextStep}
-                            </Link>
-                        ))}
-                    </div>
-                )}
-                 {actions.upcoming.length > 0 && (
-                    <div className="space-y-2">
-                        <h4 className="font-semibold text-sm flex items-center gap-2 text-yellow-500"><Clock /> Upcoming</h4>
-                        {actions.upcoming.map(p => (
-                             <Link key={p.id} href={`/management/partnerships/${p.id}`} className="block p-2 bg-yellow-500/10 rounded-md hover:bg-yellow-500/20 text-sm">
-                                 <strong>{p.name}:</strong> {p.nextStep}
-                            </Link>
-                        ))}
-                    </div>
-                )}
-                {actions.recent.length > 0 && (
-                     <div className="space-y-2">
-                        <h4 className="font-semibold text-sm flex items-center gap-2 text-green-500"><CheckCircle /> Recent Wins</h4>
-                        {actions.recent.map(p => (
-                           <Link key={p.id} href={`/management/partnerships/${p.id}`} className="block p-2 bg-green-500/10 rounded-md hover:bg-green-500/20 text-sm">
-                                New partnership started with <strong>{p.name}</strong>!
-                            </Link>
-                        ))}
-                    </div>
-                )}
-                {actions.overdue.length === 0 && actions.upcoming.length === 0 && actions.recent.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">No urgent actions or recent wins.</p>
-                )}
-            </CardContent>
-        </Card>
-    );
-}
-
-function PartnershipStats({ partnerships, isLoading }: { partnerships: Partnership[] | null, isLoading: boolean }) {
-    const stats = useMemo(() => {
-        if (!partnerships) {
-            return {
-                pipelineValue: 0,
-                newThisMonth: 0,
-                activeThisMonth: 0,
-                atRiskCount: 0,
-            };
-        }
-        
-        const monthStart = startOfMonth(new Date());
-
-        const pipelineValue = partnerships
-            .filter(p => (p.status === 'Prospecting' || p.status === 'Negotiation') && p.financialValue)
-            .reduce((sum, p) => sum + p.financialValue!, 0);
-            
-        const newThisMonth = partnerships.filter(p => p.createdAt?.toDate() >= monthStart).length;
-        
-        const activeThisMonth = partnerships.filter(p => p.lastContacted?.toDate() >= monthStart).length;
-        
-        const atRiskCount = partnerships.filter(p => p.health === 'At Risk').length;
-        
-        return { pipelineValue, newThisMonth, activeThisMonth, atRiskCount };
-
-    }, [partnerships]);
-    
-    if (isLoading) {
-        return <Skeleton className="h-44 w-full" />;
-    }
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Pipeline Snapshot</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-x-4 gap-y-6">
-                <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground flex items-center gap-2"><DollarSign className="h-4 w-4" /> Pipeline Value</p>
-                    <p className="text-2xl font-bold">{formatCurrency(stats.pipelineValue)}</p>
-                </div>
-                <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Activity (This Month)</p>
-                    <p className="text-2xl font-bold">{stats.newThisMonth} <span className="text-sm font-normal text-muted-foreground">New</span> / {stats.activeThisMonth} <span className="text-sm font-normal text-muted-foreground">Engaged</span></p>
-                </div>
-                 <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> At-Risk Partners</p>
-                    <p className="text-2xl font-bold">{stats.atRiskCount}</p>
-                </div>
-                <div className="space-y-1">
-                    <p className="text-sm text-muted-foreground flex items-center gap-2"><Users className="h-4 w-4" /> Total Active</p>
-                    <p className="text-2xl font-bold">{partnerships?.filter(p => p.status === 'Active').length}</p>
-                </div>
-            </CardContent>
-        </Card>
-    )
-}
-
-export default function PartnershipsPage() {
-  const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
-  const [editingPartnership, setEditingPartnership] = useState<Partnership | null>(null);
-
-  const firestore = useFirestore();
-  const partnershipsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
-  const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
-
-  const handleDelete = (partnershipId: string) => {
-    if (!firestore) return;
-    const partnershipRef = doc(firestore, 'partnerships', partnershipId);
-    deleteDocumentNonBlocking(partnershipRef);
-    toast({
-        title: "Partnership Deleted",
-        description: "The partner has been removed from your database.",
-    });
+  const handleAddPartner = () => {
+    setShowAddPartnerForm(true);
   };
 
-  const { toast } = useToast();
-  
-  const pipeline = useMemo(() => {
-    const initial: Partial<Record<Partnership['status'], Partnership[]>> = { Prospecting: [], Negotiation: [], Active: [], Stalled: [] };
-    if (!partnerships) return initial;
-    
-    return partnerships.reduce((acc, p) => {
-        if (p.status && acc[p.status]) {
-            acc[p.status]!.push(p);
-        }
-        return acc;
-    }, initial as Record<Partnership['status'], Partnership[]>);
+  const handleFormSuccess = () => {
+    setShowAddPartnerForm(false);
+    // In a real app, you would refresh the data for the lists
+  };
 
-  }, [partnerships]);
-  
-  const pipelineStages: (keyof typeof pipeline)[] = ['Active', 'Negotiation', 'Prospecting', 'Stalled'];
+  const handleFormCancel = () => {
+    setShowAddPartnerForm(false);
+  };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div>
-            <CardTitle className="flex items-center gap-2"><Handshake className="h-6 w-6" />Partnership Pipeline</CardTitle>
-            <CardDescription>Manage your organization's partnerships and strategic alliances.</CardDescription>
-          </div>
-          <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Partner
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>New Partner Intake Form</DialogTitle>
-                <DialogDescription>
-                  Enter the details of the new partner organization.
-                </DialogDescription>
-              </DialogHeader>
-              <PartnershipForm onFormSubmit={() => setIsNewDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div className="lg:col-span-2">
-                    <PartnershipStats partnerships={partnerships} isLoading={isLoading} />
-                </div>
-                <div>
-                     <UrgentActions partnerships={partnerships} isLoading={isLoading} />
-                </div>
-            </div>
+    <div className="flex-1 space-y-4 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Partnerships Management</h2>
+        <div className="flex items-center space-x-2">
+          <Button onClick={handleAddPartner}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Partner
+          </Button>
+        </div>
+      </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {pipelineStages.map(stage => (
-                    <div key={stage}>
-                        <h3 className="font-semibold flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className={`${statusColors[stage]} text-sm`}>{stage}</Badge>
-                            <span className="text-sm text-muted-foreground">({pipeline[stage]?.length || 0})</span>
-                        </h3>
-                        {isLoading && <div className="space-y-2"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div>}
-                        <div className="space-y-2">
-                            {pipeline[stage] && pipeline[stage]!.map(partner => (
-                                <Card key={partner.id} className="p-3 hover:bg-muted/50 transition-colors">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="font-semibold text-sm">{partner.name}</p>
-                                            <p className="text-xs text-muted-foreground">{partner.nextStep}</p>
-                                        </div>
-                                        <div className="flex gap-1">
-                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingPartnership(partner)}>
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-7 w-7">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            This action cannot be undone. This will permanently delete the partnership with "{partner.name}".
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(partner.id)}>Delete</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <Button asChild variant="link" className="p-0 h-auto">
-                                            <Link href={`/management/partnerships/${partner.id}`} className="text-xs">
-                                                View Profile <ArrowRight className="ml-1 h-3 w-3" />
-                                            </Link>
-                                        </Button>
-                                        {partner.health && <Badge variant="outline" className={healthColors[partner.health]}>{partner.health}</Badge>}
-                                    </div>
-                                </Card>
-                            ))}
-                            {!isLoading && (!pipeline[stage] || pipeline[stage]!.length === 0) && (
-                                <div className="text-center text-xs text-muted-foreground p-4 border-2 border-dashed rounded-lg">No partners in this stage.</div>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </CardContent>
-      </Card>
-      
-       <Dialog open={!!editingPartnership} onOpenChange={(open) => !open && setEditingPartnership(null)}>
-         <DialogContent className="sm:max-w-2xl">
-            <DialogHeader>
-                <DialogTitle>Edit Partnership</DialogTitle>
-                <DialogDescription>Update the details for {editingPartnership ? `"${editingPartnership.name}"` : ''}.</DialogDescription>
-            </DialogHeader>
-            {editingPartnership && <PartnershipForm partnership={editingPartnership} onFormSubmit={() => setEditingPartnership(null)} />}
+      <Dialog open={showAddPartnerForm} onOpenChange={setShowAddPartnerForm}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add New Partnership</DialogTitle>
+            <DialogDescription>
+              Fill out the form below to add a new partner to your pipeline.
+            </DialogDescription>
+          </DialogHeader>
+          <PartnershipForm onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
         </DialogContent>
       </Dialog>
+
+      <Tabs defaultValue="pipeline" className="space-y-4" onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="pipeline">Pipeline (Kanban)</TabsTrigger>
+          <TabsTrigger value="schools">Schools</TabsTrigger>
+          <TabsTrigger value="all">All Partners</TabsTrigger>
+        </TabsList>
+        <TabsContent value="pipeline" className="space-y-4">
+          <PartnershipPipelineKanban />
+        </TabsContent>
+        <TabsContent value="schools" className="space-y-4">
+          <SchoolList />
+        </TabsContent>
+        <TabsContent value="all" className="space-y-4">
+          <PartnershipList />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

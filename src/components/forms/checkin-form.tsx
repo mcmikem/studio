@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { DailyPlannerAIOutputSchema } from '@/lib/types';
 import { Separator } from '../ui/separator';
+import { createAlert } from '@/ai/flows/create-alert-flow';
 
 const checkinSchema = z.object({
   primaryMission: z.string().min(1, "Primary mission is required."),
@@ -92,6 +93,20 @@ function CheckinFormComponent() {
         
         try {
             await addDocumentNonBlocking(checkinsCollection, checkinData);
+            
+             // Create an alert for the check-in
+             try {
+                await createAlert({
+                    type: 'Info',
+                    priority: 'Low',
+                    message: `${profile.name} has checked in: "${data.primaryMission}"`,
+                    action: '/checkins',
+                    creatorId: user.uid,
+                });
+            } catch (alertError) {
+                console.error("Failed to create alert for check-in:", alertError);
+            }
+
             toast({
                 title: 'Check-in Submitted!',
                 description: 'Your plan for the day is now visible to the team.',

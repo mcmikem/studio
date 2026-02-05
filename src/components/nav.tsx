@@ -38,6 +38,7 @@ import {
   Bug,
   Database,
   Book,
+  Goal,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -69,6 +70,7 @@ const OmutoLogo = () => (
 const navConfig = {
   workspace: [
     { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { href: '/operational-plan', icon: Goal, label: 'Operational Plan' },
     { href: '/chat', icon: Sparkles, label: 'AI Coach' },
     { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
     { href: '/workplan', icon: CalendarCheck, label: 'My Weekly Plan' },
@@ -76,7 +78,6 @@ const navConfig = {
     { href: '/my-finances', icon: Wallet, label: 'My Finances' },
   ],
   teamHub: [
-    { href: '/team-space', icon: Users, label: 'Team Space' },
     { href: '/checkins', icon: LogIn, label: 'Check-in Stream' },
     { href: '/stream', icon: Rss, label: 'Check-out Stream' },
     { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },

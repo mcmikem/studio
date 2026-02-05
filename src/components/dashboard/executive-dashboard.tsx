@@ -12,7 +12,6 @@ const ApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queu
 const EcosystemPulse = dynamic(() => import('@/components/dashboard/ecosystem-pulse').then(mod => mod.EcosystemPulse), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const KeyResultsTracker = dynamic(() => import('@/components/plan/key-results-tracker').then(mod => mod.KeyResultsTracker), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), { loading: () => <Skeleton className="h-64" />, ssr: false });
-const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), { loading: () => <Skeleton className="h-96" />, ssr: false });
 
 interface ExecutiveDashboardProps extends DashboardProps {
     data: DashboardData;
@@ -42,7 +41,7 @@ export function ExecutiveDashboard({ profile, data }: ExecutiveDashboardProps) {
                   />
               </div>
                 <div className="flex flex-col gap-6">
-                  <TeamPulse checkouts={checkouts} />
+                  
               </div>
           </DashboardGrid>
       </div>

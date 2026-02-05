@@ -4,11 +4,8 @@ import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import dynamic from 'next/dynamic'
 import type { DashboardProps, DashboardData } from './dashboard-loader';
 import { Skeleton } from '../ui/skeleton';
+import { DashboardHeader } from "./dashboard-header"
 
-const TeamPulse = dynamic(() => import('@/components/dashboard/team-activity-feed').then(mod => mod.TeamPulse), {
-  loading: () => <Skeleton className="h-64" />,
-  ssr: false,
-});
 const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan').then(mod => mod.MyWeeklyPlan), {
   loading: () => <Skeleton className="h-64" />,
   ssr: false,
@@ -31,11 +28,13 @@ export function FieldStaffDashboard({ profile, data }: FieldStaffDashboardProps)
   const isLoading = !checkouts || !users || !checkins;
 
   return (
-    <DashboardGrid className="mt-6 lg:grid-cols-2">
-        <MyWeeklyPlan />
-        <DashboardCalendar />
-        <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
-        <TeamPulse checkouts={checkouts} />
-    </DashboardGrid>
+    <div className="flex flex-col gap-6">
+        <DashboardHeader profile={profile} />
+        <DashboardGrid className="mt-6 lg:grid-cols-2">
+            <MyWeeklyPlan />
+            <DashboardCalendar />
+            <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
+        </DashboardGrid>
+    </div>
   );
 }
