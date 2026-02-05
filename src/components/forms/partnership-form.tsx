@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PartnershipSchema as ServerPartnershipSchema, type Partnership } from "@/lib/types"; // Import the schema and type
+import { PartnershipSchema as ServerPartnershipSchema, type Partnership } from "@/lib/types"; 
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -36,7 +36,6 @@ const PartnershipFormSchema = ServerPartnershipSchema.omit({
     lastContacted: true,
     health: true
 }).extend({
-    // Make these optional for the form, they will be set on submission
     nextActionDate: z.string().optional(),
 });
 
@@ -66,13 +65,15 @@ const valueOptions = [
 ];
 
 interface PartnershipFormProps {
-  initialData?: Partnership; // Optional: for editing existing partnerships
+  initialData?: Partnership; 
   onSuccess: (data: any) => void;
   onCancel: () => void;
 }
 
 export function PartnershipForm({ initialData, onSuccess, onCancel }: PartnershipFormProps) {
   const firestore = useFirestore();
+  const { toast } = useToast();
+
   const form = useForm<PartnershipFormData>({
     resolver: zodResolver(PartnershipFormSchema),
     defaultValues: initialData || {
@@ -120,7 +121,6 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
 
     onSuccess(data);
   }
-  const { toast } = useToast();
 
   return (
     <Form {...form}>
@@ -154,7 +154,7 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {ServerPartnershipSchema.shape.type.options.map((typeOption) => (
+                  {PartnershipSchema.shape.type.options.map((typeOption: string) => (
                     <SelectItem key={typeOption} value={typeOption}>
                       {typeOption}
                     </SelectItem>
@@ -252,7 +252,7 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {ServerPartnershipSchema.shape.schoolDetails.unwrap().shape.level.options.map((levelOption: string) => (
+                      {PartnershipSchema.shape.schoolDetails.unwrap().shape.level.options.map((levelOption: string) => (
                         <SelectItem key={levelOption} value={levelOption}>
                           {levelOption}
                         </SelectItem>
@@ -325,7 +325,7 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {ServerPartnershipSchema.shape.status.options.map((statusOption: string) => (
+                    {PartnershipSchema.shape.status.options.map((statusOption: string) => (
                       <SelectItem key={statusOption} value={statusOption}>
                         {statusOption}
                       </SelectItem>

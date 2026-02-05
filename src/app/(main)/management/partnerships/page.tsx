@@ -10,10 +10,9 @@ import { SchoolList } from "@/components/management/partnerships/school-list";
 import { PartnershipForm } from "@/components/forms/partnership-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
-// Placeholder for the Kanban Pipeline component (will be more complex)
 const PartnershipPipelineKanban = () => (
   <div className="p-4 border rounded-md h-[600px] flex items-center justify-center text-gray-500">
-    Partnership Pipeline (Kanban Board) - (Using All Partners List for now, will be replaced with Kanban)
+    Partnership Pipeline (Kanban Board) - (Using PartnershipList for now)
     <PartnershipList />
   </div>
 );
@@ -28,7 +27,7 @@ export default function PartnershipsManagementPage() {
 
   const handleFormSuccess = () => {
     setShowAddPartnerForm(false);
-    // In a real app, you would refresh the data for the lists
+    // In a real app with Firestore listeners, the lists will update automatically.
   };
 
   const handleFormCancel = () => {
@@ -36,7 +35,7 @@ export default function PartnershipsManagementPage() {
   };
 
   return (
-    <div className="flex-1 space-y-4 pt-6">
+    <div className="flex-1 space-y-4">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Partnerships Management</h2>
         <div className="flex items-center space-x-2">
@@ -47,7 +46,7 @@ export default function PartnershipsManagementPage() {
       </div>
 
       <Dialog open={showAddPartnerForm} onOpenChange={setShowAddPartnerForm}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Add New Partnership</DialogTitle>
             <DialogDescription>

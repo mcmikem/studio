@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTable } from "@/components/ui/data-table"; 
-import { Partnership } from "@/lib/types";
+import { type Partnership } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
@@ -63,7 +63,6 @@ export const columns: ColumnDef<Partnership>[] = [
           title: "Edit Partnership",
           description: `Editing ${partnership.name} (ID: ${partnership.id})`,
         });
-        // Implement actual edit logic, e.g., open a dialog with the form
       };
 
       const handleDelete = () => {
@@ -72,7 +71,6 @@ export const columns: ColumnDef<Partnership>[] = [
           description: `Deleting ${partnership.name} (ID: ${partnership.id})`,
           variant: "destructive",
         });
-        // Implement actual delete logic
       };
 
       return (
