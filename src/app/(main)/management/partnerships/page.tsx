@@ -27,7 +27,6 @@ export default function PartnershipsManagementPage() {
 
   const handleFormSuccess = () => {
     setShowAddPartnerForm(false);
-    // In a real app with Firestore listeners, the lists will update automatically.
   };
 
   const handleFormCancel = () => {

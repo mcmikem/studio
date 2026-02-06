@@ -45,7 +45,7 @@ export const columns: ColumnDef<Partnership>[] = [
           <span>{partnership.nextStep}</span>
           {partnership.nextActionDate && (
             <span className="text-sm text-muted-foreground">
-              ({new Date(partnership.nextActionDate as string).toLocaleDateString()})
+              ({new Date(partnership.nextActionDate as any).toLocaleDateString()})
             </span>
           )}
         </div>

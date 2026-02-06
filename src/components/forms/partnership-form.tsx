@@ -29,6 +29,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, Timestamp, doc } from "firebase/firestore";
+import { DialogFooter } from "../ui/dialog";
+import { Loader2 } from "lucide-react";
 
 const PartnershipFormSchema = ServerPartnershipSchema.omit({
     id: true,
@@ -91,6 +93,8 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
     },
   });
 
+  const { isSubmitting } = form.formState;
+
   const watchPartnershipType = form.watch("type");
   const isSchool = watchPartnershipType === "School";
 
@@ -124,260 +128,61 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 p-4">
-        <h3 className="text-lg font-medium">General Partnership Details</h3>
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Partnership Name</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Green Earth NGO" {...field} />
-              </FormControl>
-              <FormDescription>The official name of the partner organization or individual.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <ScrollArea className="h-[70vh] p-4">
+            <div className="space-y-6">
+                <h3 className="text-lg font-medium">General Partnership Details</h3>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Partnership Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Green Earth NGO" {...field} />
+                      </FormControl>
+                      <FormDescription>The official name of the partner organization or individual.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-        <FormField
-          control={form.control}
-          name="type"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Partnership Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a partnership type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {PartnershipSchema.shape.type.options.map((typeOption: string) => (
-                    <SelectItem key={typeOption} value={typeOption}>
-                      {typeOption}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>Categorize the type of partner.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="contactPerson"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contact Person</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Jane Doe" {...field} />
-              </FormControl>
-              <FormDescription>Primary contact person at the partnership.</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="contactEmail"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contact Email</FormLabel>
-              <FormControl>
-                <Input type="email" placeholder="e.g., jane.doe@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="contactPhone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Contact Phone</FormLabel>
-              <FormControl>
-                <Input type="tel" placeholder="e.g., +256 770 123456" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {isSchool && (
-          <div className="space-y-6 border-t pt-8 mt-8">
-            <h3 className="text-lg font-medium">School Specific Details</h3>
-            <FormField
-              control={form.control}
-              name="schoolDetails.headTeacher"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Head Teacher</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Mr. John Smith" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="schoolDetails.studentPopulation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Student Population</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 500" {...field} onChange={event => field.onChange(+event.target.value)} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="schoolDetails.level"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>School Level</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select school level" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {PartnershipSchema.shape.schoolDetails.unwrap().shape.level.options.map((levelOption: string) => (
-                        <SelectItem key={levelOption} value={levelOption}>
-                          {levelOption}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="schoolDetails.championTeacher"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Champion Teacher</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Ms. Alice Brown" {...field} />
-                  </FormControl>
-                  <FormDescription>Teacher responsible for specific programs (e.g., Green Schools).</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="schoolDetails.championTeacherContact"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Champion Teacher Contact</FormLabel>
-                  <FormControl>
-                    <Input type="tel" placeholder="e.g., +256 780 987654" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="schoolDetails.programs"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Enrolled Programs</FormLabel>
-                    <MultiSelect
-                        options={[{label: "GreenSchools", value: "GreenSchools"}, {label: "OFA", value: "OFA"}, {label: "RED Campaign", value: "RED Campaign"}]}
-                        onValueChange={field.onChange}
-                        defaultValue={field.value || []}
-                        placeholder="Select programs..."
-                    />
-                  <FormDescription>Programs the school is currently enrolled in.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
-
-        <div className="space-y-6 border-t pt-8 mt-8">
-          <h3 className="text-lg font-medium">Pipeline & Action Details</h3>
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select partnership status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {PartnershipSchema.shape.status.options.map((statusOption: string) => (
-                      <SelectItem key={statusOption} value={statusOption}>
-                        {statusOption}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription>Current stage of the partnership in the pipeline.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="nextStep"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Next Step</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="e.g., Schedule follow-up meeting to discuss MoU" {...field} />
-                </FormControl>
-                <FormDescription>What is the immediate next action for this partnership?</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="nextActionDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Next Action Date</FormLabel>
-                <FormControl>
-                  <Input type="date" {...field} />
-                </FormControl>
-                <FormDescription>Due date for the next action.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-
-        <div className="flex justify-end space-x-2">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Partnership Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a partnership type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PartnershipSchema.shape.type.options.map((typeOption: string) => (
+                            <SelectItem key={typeOption} value={typeOption}>
+                              {typeOption}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>Categorize the type of partner.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+            </ScrollArea>
+        <DialogFooter>
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {initialData ? "Save Changes" : "Create Partnership"}
           </Button>
-        </div>
+        </DialogFooter>
       </form>
     </Form>
   );
