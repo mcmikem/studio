@@ -1,4 +1,5 @@
 
+
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { format as formatFns, formatDistanceToNow, isValid, parseISO } from "date-fns";
@@ -87,9 +88,12 @@ export const getInitials = (name?: string) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-// Custom hook to handle number input changes
+// Custom hook to handle number input changes, ensuring it returns a number
 export const useNumberInputHandler = (setter: (value: number) => void) => {
-  return useCallback((value: string) => {
+  return useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
     setter(value === '' ? 0 : Number(value));
   }, [setter]);
 };
+
+    

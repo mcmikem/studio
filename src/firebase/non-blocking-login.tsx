@@ -26,18 +26,7 @@ import {
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from './errors';
-import {
-  samplePrograms,
-  samplePartnerships,
-  sampleProjects,
-  sampleImpactMetrics,
-  sampleAlerts,
-  sampleCalendarEvents,
-  sampleTeamWeeklyPlans,
-  sampleHistoricalIncome,
-  sampleHistoricalExpenses,
-  sampleTaskTemplates,
-} from '@/lib/data';
+
 
 // This maps specific emails to roles and names within the Omuto organization.
 const approvedUsers: Record<string, { name: string; role: string, supervisorId?: string }> = {
@@ -74,77 +63,6 @@ export const isEmailApproved = (email: string | null): boolean => {
   return approvedEmailKeys.some(key => key.toLowerCase() === lowercasedEmail);
 };
 
-const sampleKeyResults = [
-    { title: 'NOV-KR1', description: 'Clear October Backlogs (tree planting, documentary, data)', currentProgress: 0, target: 100, deadline: '2025-11-07', priority: 'High' },
-    { title: 'NOV-KR2', description: 'Launch Omuto Essentials & Sell 50+ Products', currentProgress: 0, target: 50, deadline: '2025-11-28', priority: 'High' },
-    { title: 'NOV-KR3', description: 'Secure 3 OFA Partnership Commitments (MOUs)', currentProgress: 0, target: 3, deadline: '2025-11-21', priority: 'High' },
-    { title: 'NOV-KR4', description: 'Achieve 100% Omuto Central Adoption & Coordination', currentProgress: 0, target: 100, deadline: '2025-11-28', priority: 'Medium' },
-];
-
-
-async function seedInitialData(db: Firestore) {
-  console.log('Checking if initial data seeding is needed...');
-  const programsSnapshot = await getDocs(
-    query(collection(db, 'programs'), limit(1))
-  );
-  if (!programsSnapshot.empty) {
-    console.log('Core data already exists. Skipping initial seed.');
-    return;
-  }
-
-  // This is the very first user signup. Seed the entire database.
-  console.log('Seeding all initial data...');
-  const batch = writeBatch(db);
-
-  const collectionsToSeed = [
-    { name: 'programs', data: samplePrograms },
-    { name: 'partnerships', data: samplePartnerships },
-    { name: 'key-results', data: sampleKeyResults },
-    { name: 'projects', data: sampleProjects },
-    { name: 'impact-metrics', data: sampleImpactMetrics },
-    { name: 'alerts', data: sampleAlerts },
-    { name: 'events', data: sampleCalendarEvents },
-    { name: 'team-workplans', data: sampleTeamWeeklyPlans },
-    { name: 'income', data: sampleHistoricalIncome },
-    { name: 'expenses', data: sampleHistoricalExpenses },
-    { name: 'task-templates', data: sampleTaskTemplates },
-    {
-      name: 'proposals',
-      data: [
-        {
-          title: 'GlobalGiving Youth Empowerment Grant',
-          partnerName: 'GlobalGiving',
-          amountRequested: 5000000,
-          status: 'Submitted',
-          submissionDate: '2025-09-15',
-          createdAt: new Date(),
-        },
-        {
-          title: 'Local District Education Fund',
-          partnerName: 'Mpigi District',
-          amountRequested: 2500000,
-          status: 'Draft',
-          submissionDate: '2025-10-20',
-          createdAt: new Date(),
-        },
-      ],
-    },
-  ];
-
-  for (const coll of collectionsToSeed) {
-    for (const item of coll.data) {
-      const docRef = doc(collection(db, coll.name));
-      batch.set(docRef, item);
-    }
-  }
-
-  try {
-    await batch.commit();
-    console.log('Initial data seeded successfully.');
-  } catch (error) {
-    console.error('Error seeding data: ', error);
-  }
-}
 
 async function seedUserTasks(db: Firestore, userId: string, role: string) {
   console.log(`Seeding initial tasks for new ${role}.`);
@@ -209,14 +127,7 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
 
   // Only seed data if the user profile is being created for the first time.
   if (!docSnap.exists()) {
-    console.log('New user detected. Seeding data...');
-    // Check if any core data exists. If not, this is the very first user.
-    const programsSnapshot = await getDocs(
-      query(collection(db, 'programs'), limit(1))
-    );
-    if (programsSnapshot.empty) {
-      await seedInitialData(db);
-    }
+    console.log('New user detected. Seeding user-specific tasks...');
     await seedUserTasks(db, user.uid, userData.role);
   }
 
@@ -280,3 +191,4 @@ export function initiatePasswordReset(authInstance: Auth, email: string) {
   });
 }
 
+    

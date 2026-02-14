@@ -103,6 +103,7 @@
       "type": "object",
       "description": "Represents a partnership with another organization, including intake and assessment data.",
       "properties": {
+        "id": { "type": "string" },
         "name": { "type": "string", "description": "The name of the partner organization." },
         "type": { "type": "string", "enum": ["NGO", "Government", "Corporate", "Individual", "School", "CBO", "Faith-Based"], "description": "The type of partner organization." },
         "focusAreas": { "type": "array", "items": { "type": "string" }, "description": "Key operational areas of the partner (e.g., Education, Health)." },
@@ -422,19 +423,27 @@
       "type": "object",
       "description": "Represents a high-level project with its own dashboard and metrics.",
       "properties": {
+        "id": { "type": "string" },
         "name": { "type": "string" },
         "manager": { "type": "string" },
         "districts": { "type": "string" },
-        "status": { "type": "string", "enum": ["Active", "Moderate", "At Risk", "Delayed"] },
+        "status": { "type": "string", "enum": ["Active", "Moderate", "At Risk", "Delayed", "Completed"] },
         "completion": { "type": "number" },
         "nextMilestone": { "type": "string" },
+        "partner": { "type": "string" },
+        "participants": { "type": "number" },
+        "attendanceRate": { "type": "number" },
+        "learningImprovement": { "type": "number" },
+        "adoptionRate": { "type": "number" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
         "createdAt": {
             "type": "string",
             "format": "date-time",
             "description": "Server timestamp of when the project was created."
         }
       },
-      "required": ["name", "manager", "status", "completion", "nextMilestone", "createdAt"]
+      "required": ["id", "name", "manager", "status", "completion", "nextMilestone", "createdAt"]
     },
     "ImpactMetric": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -531,6 +540,7 @@
         "id": { "type": "string" },
         "userId": { "type": "string" },
         "userName": { "type": "string" },
+        "submittedFor": { "type": "string", "description": "The ID of the user the expense is for, if different from the submitter." },
         "date": { "type": "string", "format": "date" },
         "title": { "type": "string", "description": "The overall title of the expense report (e.g., Mpigi Field Visit)." },
         "type": {
@@ -545,7 +555,7 @@
             "type": "object",
             "properties": {
               "description": { "type": "string" },
-              "category": { "type": "string", "enum": ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"] },
+              "category": { "type": "string", "enum": ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and Stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"] },
               "amount": { "type": "number" }
             },
             "required": ["description", "category", "amount"]
@@ -1503,7 +1513,7 @@
         "createdAt": { "type": "string", "format": "date-time" },
         "month": { "type": "string" }
       },
-      "required": ["teamId", "teamName", "trainingAttendance", "coachingQuality", "playerDiscipline", "academicAttendance", "parentEngagement", "communityReputation"]
+      "required": ["teamId", "teamName", "month", "trainingAttendance", "coachingQuality", "playerDiscipline", "academicAttendance", "parentEngagement", "communityReputation"]
     },
     "KnowledgeHubSection": {
       "title": "Knowledge Hub Section",
@@ -1655,3 +1665,6 @@
     "/knowledgeHubCtas/{ctaId}": { "schema": { "$ref": "#/entities/KnowledgeHubCTA" }, "description": "Stores calls to action for the knowledge hub." }
   }
 }
+      
+
+    
