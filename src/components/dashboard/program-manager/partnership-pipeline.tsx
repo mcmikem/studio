@@ -27,7 +27,7 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
         
         let urgent = null;
         for (const p of activeOrPotential) {
-            if (urgentKeywords.some(kw => p.nextStep.toLowerCase().includes(kw))) {
+            if (p.nextStep && urgentKeywords.some(kw => p.nextStep.toLowerCase().includes(kw))) {
                 urgent = p;
                 break;
             }
@@ -36,7 +36,7 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
         let upcoming = null;
         if (!urgent) {
             for (const p of activeOrPotential) {
-                if (upcomingKeywords.some(kw => p.nextStep.toLowerCase().includes(kw))) {
+                if (p.nextStep && upcomingKeywords.some(kw => p.nextStep.toLowerCase().includes(kw))) {
                     upcoming = p;
                     break;
                 }
