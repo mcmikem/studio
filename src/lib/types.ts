@@ -110,7 +110,7 @@ export const PartnershipSchema = z.object({
       headTeacher: z.string().optional(),
       studentPopulation: z.number().optional(),
       level: z.enum(["Primary", "Secondary", "Tertiary", "Vocational"]).optional(),
-      programs: z.array(z.string()).optional(), // e.g., ["Green Schools", "OFA"]
+      programs: z.array(z.string()).optional(),
       championTeacher: z.string().optional(),
       championTeacherContact: z.string().optional(),
   }).optional(),
@@ -1123,7 +1123,7 @@ export const QualitativeAnalysisInputSchema = z.object({
   startDate: z.string().describe('The start date of the range to analyze (YYYY-MM-DD).'),
   endDate: z.string().describe('The end date of the range to analyze (YYYY-MM-DD).'),
 });
-export type QualitativeAnalysisInput = z.infer<typeof QualitativeAnalysisInputSchema>;
+export type QualitativeAnalysisInput = z.infer<typeof QualitativeAnalysisInput>;
 
 
 export const QualitativeAnalysisOutputSchema = z.object({

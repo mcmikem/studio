@@ -7,8 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle } from "lucide-react";
 import { PartnershipList } from "@/components/management/partnerships/partnership-list";
 import { SchoolList } from "@/components/management/partnerships/school-list";
-import { PartnershipForm } from "@/components/forms/partnership-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { PartnershipForm } from '@/components/management/partnerships/partnership-form';
 
 const PartnershipPipelineKanban = () => (
   <div className="p-4 border rounded-md h-[600px] flex items-center justify-center text-gray-500">
