@@ -145,12 +145,8 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
         <ScrollArea className="h-[70vh] p-4 -mx-4">
             <div className="space-y-6 px-2">
                 <h3 className="text-lg font-medium">Core Identity</h3>
-                <FormField control={form.control} name="name" render={({ field }) => (
-                    <FormItem><FormLabel>Partner Name</FormLabel><FormControl><Input placeholder="e.g., Green Earth NGO" {...field} /></FormControl><FormMessage /></FormItem>
-                )}/>
-                <FormField control={form.control} name="type" render={({ field }) => (
-                    <FormItem><FormLabel>Partner Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.type as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>
-                )}/>
+                <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Partner Name</FormLabel><FormControl><Input placeholder="e.g., Green Earth NGO" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Partner Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.type as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField control={form.control} name="contactPerson" render={({ field }) => (<FormItem><FormLabel>Contact Person</FormLabel><FormControl><Input placeholder="e.g., Jane Doe" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                     <FormField control={form.control} name="contactRole" render={({ field }) => (<FormItem><FormLabel>Role</FormLabel><FormControl><Input placeholder="e.g., Programs Manager" {...field} /></FormControl><FormMessage /></FormItem>)}/>
