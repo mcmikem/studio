@@ -33,7 +33,6 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
-
 // This schema is for form validation and is slightly different from the server-side one
 const PartnershipFormSchema = ServerPartnershipSchema.omit({
     id: true,
@@ -106,16 +105,20 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
   const watchPartnershipType = form.watch("type");
   const isSchool = watchPartnershipType === "School";
 
-  function onSubmit(data: PartnershipFormData) {
+  async function onSubmit(data: PartnershipFormData) {
     if (!firestore) {
       toast({ variant: 'destructive', title: 'Firestore not available' });
       return;
     }
     
     // Sanitize data to remove undefined values before sending to Firestore
-    const cleanedData = Object.fromEntries(
-        Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== '')
-    );
+    const cleanedData: Partial<PartnershipFormData> = {};
+    for (const key in data) {
+        if (data[key as keyof typeof data] !== undefined) {
+            (cleanedData as any)[key] = data[key as keyof typeof data];
+        }
+    }
+
 
     const submissionData: Partial<Partnership> = {
         ...cleanedData,
@@ -126,13 +129,13 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
     if(initialData?.id) {
         // Update
         const docRef = doc(firestore, 'partnerships', initialData.id);
-        updateDocumentNonBlocking(docRef, submissionData);
+        await updateDocumentNonBlocking(docRef, submissionData);
         toast({ title: `Updated ${data.name}` });
     } else {
         // Create
         submissionData.createdAt = serverTimestamp() as Timestamp;
         submissionData.health = 'Strong';
-        addDocumentNonBlocking(collection(firestore, 'partnerships'), submissionData);
+        await addDocumentNonBlocking(collection(firestore, 'partnerships'), submissionData);
         toast({ title: `Created ${data.name}` });
     }
 

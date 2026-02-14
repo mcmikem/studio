@@ -9,7 +9,9 @@ import { PartnershipList } from "@/components/management/partnerships/partnershi
 import { SchoolList } from "@/components/management/partnerships/school-list";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PartnershipForm } from '@/components/forms/partnership-form';
+import type { Partnership } from '@/lib/types';
 
+// Placeholder for the Kanban Pipeline component (will be more complex)
 const PartnershipPipelineKanban = () => (
   <div className="p-4 border rounded-md h-[600px] flex items-center justify-center text-gray-500">
     Partnership Pipeline (Kanban Board) - Coming Soon!
@@ -18,28 +20,50 @@ const PartnershipPipelineKanban = () => (
 
 export default function PartnershipsManagementPage() {
   const [activeTab, setActiveTab] = useState("all");
-  const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingPartner, setEditingPartner] = useState<Partnership | undefined>(undefined);
+
+  const handleAddNew = () => {
+    setEditingPartner(undefined);
+    setIsFormOpen(true);
+  };
+  
+  const handleEdit = (partner: Partnership) => {
+    setEditingPartner(partner);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSuccess = () => {
+    setIsFormOpen(false);
+    setEditingPartner(undefined);
+    // Data will refetch automatically due to useCollection hook
+  };
 
   return (
     <div className="flex-1 space-y-4">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Partnerships Management</h2>
         <div className="flex items-center space-x-2">
-          <Button onClick={() => setShowAddPartnerForm(true)}>
+          <Button onClick={handleAddNew}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Partner
           </Button>
         </div>
       </div>
 
-      <Dialog open={showAddPartnerForm} onOpenChange={setShowAddPartnerForm}>
+      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Add New Partnership</DialogTitle>
+            <DialogTitle>{editingPartner ? 'Edit Partnership' : 'Add New Partnership'}</DialogTitle>
             <DialogDescription>
-              Fill out the form below to add a new partner to your pipeline.
+              {editingPartner ? `Update the details for ${editingPartner.name}.` : 'Fill out the form below to add a new partner to your pipeline.'}
             </DialogDescription>
           </DialogHeader>
-          <PartnershipForm onSuccess={() => setShowAddPartnerForm(false)} onCancel={() => setShowAddPartnerForm(false)} />
+          <PartnershipForm 
+            key={editingPartner?.id || 'new'}
+            initialData={editingPartner} 
+            onSuccess={handleFormSuccess} 
+            onCancel={() => setIsFormOpen(false)} 
+          />
         </DialogContent>
       </Dialog>
 
@@ -53,10 +77,10 @@ export default function PartnershipsManagementPage() {
           <PartnershipPipelineKanban />
         </TabsContent>
         <TabsContent value="schools" className="space-y-4">
-          <SchoolList />
+          <SchoolList onEdit={handleEdit} />
         </TabsContent>
         <TabsContent value="all" className="space-y-4">
-          <PartnershipList />
+          <PartnershipList onEdit={handleEdit} />
         </TabsContent>
       </Tabs>
     </div>
