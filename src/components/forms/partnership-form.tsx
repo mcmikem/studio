@@ -29,8 +29,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, Timestamp, doc } from "firebase/firestore";
-import { DialogFooter } from "../ui/dialog";
+import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+
 
 // This schema is for form validation and is slightly different from the server-side one
 const PartnershipFormSchema = ServerPartnershipSchema.omit({
@@ -69,7 +71,7 @@ const valueOptions = [
 
 interface PartnershipFormProps {
   initialData?: Partnership; 
-  onSuccess: (data: any) => void;
+  onSuccess: () => void;
   onCancel: () => void;
 }
 
@@ -88,6 +90,11 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
       focusAreas: [],
       offers: [],
       receives: [],
+      financialValue: 0,
+      strategicFit: 3,
+      priority: 'Short-term',
+      riskLevel: 'Low',
+      resourcePotential: 'Medium',
       schoolDetails: {
         programs: [],
       },
@@ -104,11 +111,16 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
       toast({ variant: 'destructive', title: 'Firestore not available' });
       return;
     }
+    
+    // Sanitize data to remove undefined values before sending to Firestore
+    const cleanedData = Object.fromEntries(
+        Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== '')
+    );
 
     const submissionData: Partial<Partnership> = {
-        ...data,
+        ...cleanedData,
         lastContacted: serverTimestamp() as Timestamp,
-        ...(data.nextActionDate && { nextActionDate: Timestamp.fromDate(new Date(data.nextActionDate)) })
+        ...(cleanedData.nextActionDate && { nextActionDate: Timestamp.fromDate(new Date(cleanedData.nextActionDate as string)) })
     };
 
     if(initialData?.id) {
@@ -124,58 +136,81 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
         toast({ title: `Created ${data.name}` });
     }
 
-    onSuccess(data);
+    onSuccess();
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <ScrollArea className="h-[70vh] p-4">
-            <div className="space-y-6">
-                <h3 className="text-lg font-medium">General Partnership Details</h3>
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Partnership Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Green Earth NGO" {...field} />
-                      </FormControl>
-                      <FormDescription>The official name of the partner organization or individual.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <ScrollArea className="h-[70vh] p-4 -mx-4">
+            <div className="space-y-6 px-2">
+                <h3 className="text-lg font-medium">Core Identity</h3>
+                <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Partner Name</FormLabel><FormControl><Input placeholder="e.g., Green Earth NGO" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Partner Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.type as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="contactPerson" render={({ field }) => (<FormItem><FormLabel>Contact Person</FormLabel><FormControl><Input placeholder="e.g., Jane Doe" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="contactRole" render={({ field }) => (<FormItem><FormLabel>Role</FormLabel><FormControl><Input placeholder="e.g., Programs Manager" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField control={form.control} name="contactEmail" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="e.g., jane.doe@example.com" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="contactPhone" render={({ field }) => (<FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Partnership Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                {isSchool && (
+                    <div className="space-y-4 pt-4 border-t">
+                        <h3 className="text-lg font-medium">School Details</h3>
+                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField control={form.control} name="schoolDetails.headTeacher" render={({ field }) => (<FormItem><FormLabel>Head Teacher</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                            <FormField control={form.control} name="schoolDetails.studentPopulation" render={({ field }) => (<FormItem><FormLabel>Student Population</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} /></FormControl><FormMessage /></FormItem>)}/>
+                         </div>
+                         <FormField control={form.control} name="schoolDetails.level" render={({ field }) => (<FormItem><FormLabel>School Level</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.schoolDetails.unwrap().shape.level.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                    </div>
+                )}
+                
+                <div className="space-y-4 pt-4 border-t">
+                    <h3 className="text-lg font-medium">Value Exchange</h3>
+                     <FormField control={form.control} name="focusAreas" render={({ field }) => (<FormItem><FormLabel>Focus Areas</FormLabel><FormControl><MultiSelect options={focusAreaOptions} onValueChange={field.onChange} defaultValue={field.value || []} placeholder="Select areas..." /></FormControl><FormMessage /></FormItem>)}/>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                         <FormField control={form.control} name="offers" render={({ field }) => (<FormItem><FormLabel>What They Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={field.value || []} placeholder="e.g., Funding..." /></FormControl><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="receives" render={({ field }) => (<FormItem><FormLabel>What We Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={field.value || []} placeholder="e.g., Community Access..." /></FormControl><FormMessage /></FormItem>)}/>
+                    </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t">
+                    <h3 className="text-lg font-medium">Internal Assessment</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField control={form.control} name="financialValue" render={({ field }) => (<FormItem><FormLabel>Annual Financial Value (UGX)</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value,10))} /></FormControl><FormMessage /></FormItem>)}/>
+                        <FormField control={form.control} name="inKindValue" render={({ field }) => (<FormItem><FormLabel>In-Kind Value</FormLabel><FormControl><Input placeholder="e.g., Volunteers, venue" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    </div>
+                    <FormField control={form.control} name="strategicValue" render={({ field }) => (<FormItem><FormLabel>Strategic Value</FormLabel><FormControl><Textarea placeholder="e.g., Access to a new district, enhances our brand credibility..." {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="strategicFit" render={({ field: { value, onChange } }) => (
+                      <FormItem>
+                        <FormLabel>Strategic Fit (1-5)</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a partnership type" />
-                          </SelectTrigger>
+                          <div className="flex items-center gap-4">
+                            <Slider defaultValue={[value || 3]} min={1} max={5} step={1} onValueChange={(vals) => onChange(vals[0])} />
+                            <span className="font-bold text-lg w-10 text-center">{value}</span>
+                          </div>
                         </FormControl>
-                        <SelectContent>
-                          {PartnershipFormSchema.shape.type.options.map((typeOption: string) => (
-                            <SelectItem key={typeOption} value={typeOption}>
-                              {typeOption}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>Categorize the type of partner.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                         <FormField control={form.control} name="resourcePotential" render={({ field }) => (<FormItem><FormLabel>Resource Potential</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.resourcePotential.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="riskLevel" render={({ field }) => (<FormItem><FormLabel>Risk Level</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.riskLevel.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="priority" render={({ field }) => (<FormItem><FormLabel>Priority</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.priority.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                     </div>
+                </div>
+
+                <div className="space-y-4 pt-4 border-t">
+                    <h3 className="text-lg font-medium">Action Plan</h3>
+                     <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.status as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                     <FormField control={form.control} name="nextStep" render={({ field }) => (<FormItem><FormLabel>Next Step</FormLabel><FormControl><Textarea placeholder="e.g., Schedule follow-up meeting to discuss MoU..." {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                     <FormField control={form.control} name="nextActionDate" render={({ field }) => (<FormItem><FormLabel>Next Action Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                </div>
             </div>
-            </ScrollArea>
-        <DialogFooter>
+        </ScrollArea>
+        <DialogFooter className="pt-6 border-t px-6 pb-6">
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
