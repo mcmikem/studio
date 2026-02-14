@@ -111,13 +111,9 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
       return;
     }
     
-    // Sanitize data to remove undefined values before sending to Firestore
-    const cleanedData: Partial<PartnershipFormData> = {};
-    for (const key in data) {
-        if (data[key as keyof typeof data] !== undefined) {
-            (cleanedData as any)[key] = data[key as keyof typeof data];
-        }
-    }
+    const cleanedData = Object.fromEntries(
+      Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== '')
+    );
 
 
     const submissionData: Partial<Partnership> = {

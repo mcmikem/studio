@@ -32,15 +32,12 @@ import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { createAlert } from '@/ai/flows/create-alert-flow';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
-import type { Expense, User, Project } from '@/lib/types';
-
-const expenseCategories = [
-    "Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and Stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"
-] as const;
+import type { Expense, User, Project, ExpenseItem } from '@/lib/types';
+import { expenseItemCategories } from '@/lib/types';
 
 const expenseItemSchema = z.object({
-  description: z.string().min(3, 'Item description is required.'),
-  category: z.enum(expenseCategories),
+  description: z.string().min(1, 'Item description is required.'),
+  category: z.enum(expenseItemCategories),
   amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
 });
 
@@ -366,7 +363,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                   <SelectTrigger id={`items.${index}.category`}><SelectValue placeholder="Category..." /></SelectTrigger>
                                   <SelectContent>
-                                    {expenseCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                    {expenseItemCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                   </SelectContent>
                                 </Select>
                               )}
@@ -424,5 +421,3 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
       </form>
   );
 }
-
-    

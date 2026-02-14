@@ -90,10 +90,7 @@ export const getInitials = (name?: string) => {
 
 // Custom hook to handle number input changes, ensuring it returns a number
 export const useNumberInputHandler = (setter: (value: number) => void) => {
-  return useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  return useCallback((value: string) => {
     setter(value === '' ? 0 : Number(value));
   }, [setter]);
 };
-
-    

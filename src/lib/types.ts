@@ -243,9 +243,13 @@ export const KeyResultAISchema = z.object({
 });
 export type KeyResultAI = z.infer<typeof KeyResultAISchema>;
 
+export const expenseItemCategories = [
+    "Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"
+] as const;
+
 export type ExpenseItem = {
     description: string;
-    category: "Transport" | "Rent" | "Office Dev't" | "Projects" | "Stationery" | "Registration" | "Meetings" | "Media" | "Fuel" | "Printing & Photocopy" | "Phone" | "Food" | "Mobile Money Charges" | "IGA Expense" | "Allowances and Stipends" | "Kibanja" | "Professional Services" | "community support" | "miscellaneous" | "Withdraw";
+    category: typeof expenseItemCategories[number];
     amount: number;
 }
 
@@ -1135,7 +1139,7 @@ export const QualitativeAnalysisInputSchema = z.object({
   startDate: z.string().describe('The start date of the range to analyze (YYYY-MM-DD).'),
   endDate: z.string().describe('The end date of the range to analyze (YYYY-MM-DD).'),
 });
-export type QualitativeAnalysisInput = z.infer<typeof QualitativeAnalysisInput>;
+export type QualitativeAnalysisInput = z.infer<typeof QualitativeAnalysisInputSchema>;
 
 
 export const QualitativeAnalysisOutputSchema = z.object({
@@ -1197,5 +1201,3 @@ export type KnowledgeHubCTA = {
   description: string;
   buttonLabel: string;
 };
-
-    

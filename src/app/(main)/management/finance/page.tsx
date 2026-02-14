@@ -54,7 +54,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp, doc } from 'firebase/firestore';
-import type { Income, Expense, User } from '@/lib/types';
+import type { Income, Expense, User, ExpenseItem } from '@/lib/types';
+import { expenseItemCategories } from '@/lib/types';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
 import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -77,8 +78,6 @@ const incomeSchema = z.object({
 });
 
 type IncomeFormData = z.infer<typeof incomeSchema>;
-
-const expenseItemCategories = ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"] as const;
 
 const directExpenseSchema = z.object({
   title: z.string().min(3, 'A title for the expense is required.'),
