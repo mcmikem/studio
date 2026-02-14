@@ -29,7 +29,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, Timestamp, doc } from "firebase/firestore";
-import { DialogFooter } from "../../ui/dialog";
+import { DialogFooter } from "../ui/dialog";
 import { Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
@@ -111,11 +111,14 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
       toast({ variant: 'destructive', title: 'Firestore not available' });
       return;
     }
+    
+    // Sanitize data to remove undefined values before sending to Firestore
+    const cleanedData = JSON.parse(JSON.stringify(data));
 
     const submissionData: Partial<Partnership> = {
-        ...data,
+        ...cleanedData,
         lastContacted: serverTimestamp() as Timestamp,
-        ...(data.nextActionDate && { nextActionDate: Timestamp.fromDate(new Date(data.nextActionDate)) })
+        ...(cleanedData.nextActionDate && { nextActionDate: Timestamp.fromDate(new Date(cleanedData.nextActionDate)) })
     };
 
     if(initialData?.id) {
