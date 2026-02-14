@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from 'react';
@@ -8,18 +9,11 @@ import { PlusCircle } from "lucide-react";
 import { PartnershipList } from "@/components/management/partnerships/partnership-list";
 import { SchoolList } from "@/components/management/partnerships/school-list";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { PartnershipForm } from '@/components/forms/partnership-form';
+import { PartnershipForm } from '@/components/management/partnerships/partnership-form';
 import type { Partnership } from '@/lib/types';
 
-// Placeholder for the Kanban Pipeline component (will be more complex)
-const PartnershipPipelineKanban = () => (
-  <div className="p-4 border rounded-md h-[600px] flex items-center justify-center text-gray-500">
-    Partnership Pipeline (Kanban Board) - Coming Soon!
-  </div>
-);
-
 export default function PartnershipsManagementPage() {
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("pipeline");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partnership | undefined>(undefined);
 
@@ -36,7 +30,6 @@ export default function PartnershipsManagementPage() {
   const handleFormSuccess = () => {
     setIsFormOpen(false);
     setEditingPartner(undefined);
-    // Data will refetch automatically due to useCollection hook
   };
 
   return (
@@ -67,14 +60,14 @@ export default function PartnershipsManagementPage() {
         </DialogContent>
       </Dialog>
 
-      <Tabs defaultValue="all" className="space-y-4" onValueChange={setActiveTab}>
+      <Tabs defaultValue="pipeline" className="space-y-4" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
           <TabsTrigger value="schools">Schools</TabsTrigger>
           <TabsTrigger value="all">All Partners</TabsTrigger>
         </TabsList>
         <TabsContent value="pipeline" className="space-y-4">
-          <PartnershipPipelineKanban />
+          <PartnershipList onEdit={handleEdit} />
         </TabsContent>
         <TabsContent value="schools" className="space-y-4">
           <SchoolList onEdit={handleEdit} />
@@ -86,3 +79,5 @@ export default function PartnershipsManagementPage() {
     </div>
   );
 }
+
+      

@@ -1,4 +1,5 @@
 
+
       
 'use client';
 
@@ -29,3 +30,5 @@ function PulsePage() {
 export default PulsePage;
 
     
+
+      

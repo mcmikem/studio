@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -100,33 +101,44 @@ export type Program = {
 export const PartnershipSchema = z.object({
   id: z.string(),
   name: z.string(),
-  type: z.enum(["NGO", "Government", "Corporate", "Individual", "School", "CBO", "Faith-Based"]),
+  type: z.enum(["NGO", "Government", "Corporate", "Individual", "School", "CBO", "Faith-Based"]), // Added School, CBO, Faith-Based
   focusAreas: z.array(z.string()).optional(),
+
+  // Contacts
   contactPerson: z.string(),
   contactRole: z.string().optional(),
   contactPhone: z.string().optional(),
-  contactEmail: z.string().email().optional(),
+  contactEmail: z.string().email().optional(), // Made email optional as some rural schools might not have one
+
+  // School Specifics
   schoolDetails: z.object({
       headTeacher: z.string().optional(),
       studentPopulation: z.number().optional(),
       level: z.enum(["Primary", "Secondary", "Tertiary", "Vocational"]).optional(),
-      programs: z.array(z.string()).optional(),
+      programs: z.array(z.string()).optional(), // e.g., ["Green Schools", "OFA"]
       championTeacher: z.string().optional(),
       championTeacherContact: z.string().optional(),
   }).optional(),
+
+  // Value Exchange
   offers: z.array(z.string()).optional(),
   receives: z.array(z.string()).optional(),
   financialValue: z.number().optional(),
   inKindValue: z.string().optional(),
   strategicValue: z.string().optional(),
   strategicFit: z.number().optional(),
+
+  // Pipeline
   resourcePotential: z.enum(["High", "Medium", "Low"]).optional(),
   riskLevel: z.enum(["High", "Medium", "Low"]).optional(),
   priority: z.enum(["Immediate", "Short-term", "Long-term"]).optional(),
   status: z.enum(["Prospecting", "Negotiation", "Active", "Stalled", "Terminated"]),
   health: z.enum(["Strong", "Needs Attention", "At Risk"]).optional(),
+
+  // Actions
   nextStep: z.string(),
-  nextActionDate: z.any().optional(),
+  nextActionDate: z.any().optional(), // Timestamp or Date string
+
   createdAt: z.any(),
   lastContacted: z.any(),
 });
@@ -729,7 +741,7 @@ export const OFAScorecardSchema = z.object({
   challenges: z.string().optional(),
   supportNeeded: z.string().optional(),
   createdAt: z.any(),
-  month: z.string(),
+  month: z.string().min(1, "Month is required."),
 });
 export type OFAScorecard = z.infer<typeof OFAScorecardSchema>;
 
@@ -1202,3 +1214,6 @@ export type KnowledgeHubCTA = {
 
 
     
+
+
+      
