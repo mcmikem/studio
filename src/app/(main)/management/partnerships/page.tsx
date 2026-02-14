@@ -8,7 +8,7 @@ import { PlusCircle } from "lucide-react";
 import { PartnershipList } from "@/components/management/partnerships/partnership-list";
 import { SchoolList } from "@/components/management/partnerships/school-list";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { PartnershipForm } from '@/components/management/partnerships/partnership-form';
+import { PartnershipForm } from '@/components/forms/partnership-form';
 
 const PartnershipPipelineKanban = () => (
   <div className="p-4 border rounded-md h-[600px] flex items-center justify-center text-gray-500">
@@ -20,20 +20,12 @@ export default function PartnershipsManagementPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
 
-  const handleAddPartner = () => {
-    setShowAddPartnerForm(true);
-  };
-
-  const handleFormSuccess = () => {
-    setShowAddPartnerForm(false);
-  };
-
   return (
     <div className="flex-1 space-y-4">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Partnerships Management</h2>
         <div className="flex items-center space-x-2">
-          <Button onClick={handleAddPartner}>
+          <Button onClick={() => setShowAddPartnerForm(true)}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Partner
           </Button>
         </div>
@@ -47,7 +39,7 @@ export default function PartnershipsManagementPage() {
               Fill out the form below to add a new partner to your pipeline.
             </DialogDescription>
           </DialogHeader>
-          <PartnershipForm onSuccess={handleFormSuccess} onCancel={() => setShowAddPartnerForm(false)} />
+          <PartnershipForm onSuccess={() => setShowAddPartnerForm(false)} onCancel={() => setShowAddPartnerForm(false)} />
         </DialogContent>
       </Dialog>
 

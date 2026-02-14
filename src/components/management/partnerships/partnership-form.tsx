@@ -29,7 +29,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, Timestamp, doc } from "firebase/firestore";
-import { DialogFooter } from "../ui/dialog";
+import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
@@ -113,12 +113,14 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
     }
     
     // Sanitize data to remove undefined values before sending to Firestore
-    const cleanedData = JSON.parse(JSON.stringify(data));
+    const cleanedData = Object.fromEntries(
+        Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== '')
+    );
 
     const submissionData: Partial<Partnership> = {
         ...cleanedData,
         lastContacted: serverTimestamp() as Timestamp,
-        ...(cleanedData.nextActionDate && { nextActionDate: Timestamp.fromDate(new Date(cleanedData.nextActionDate)) })
+        ...(cleanedData.nextActionDate && { nextActionDate: Timestamp.fromDate(new Date(cleanedData.nextActionDate as string)) })
     };
 
     if(initialData?.id) {
@@ -147,7 +149,7 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
                     <FormItem><FormLabel>Partner Name</FormLabel><FormControl><Input placeholder="e.g., Green Earth NGO" {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
                 <FormField control={form.control} name="type" render={({ field }) => (
-                    <FormItem><FormLabel>Partner Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{PartnershipFormSchema.shape.type.options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Partner Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.type as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>
                 )}/>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField control={form.control} name="contactPerson" render={({ field }) => (<FormItem><FormLabel>Contact Person</FormLabel><FormControl><Input placeholder="e.g., Jane Doe" {...field} /></FormControl><FormMessage /></FormItem>)}/>
@@ -206,7 +208,7 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
 
                 <div className="space-y-4 pt-4 border-t">
                     <h3 className="text-lg font-medium">Action Plan</h3>
-                     <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{PartnershipFormSchema.shape.status.options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                     <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.status as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
                      <FormField control={form.control} name="nextStep" render={({ field }) => (<FormItem><FormLabel>Next Step</FormLabel><FormControl><Textarea placeholder="e.g., Schedule follow-up meeting to discuss MoU..." {...field} /></FormControl><FormMessage /></FormItem>)}/>
                      <FormField control={form.control} name="nextActionDate" render={({ field }) => (<FormItem><FormLabel>Next Action Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
