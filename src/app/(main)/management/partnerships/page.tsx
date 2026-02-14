@@ -12,13 +12,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 
 const PartnershipPipelineKanban = () => (
   <div className="p-4 border rounded-md h-[600px] flex items-center justify-center text-gray-500">
-    Partnership Pipeline (Kanban Board) - (Using PartnershipList for now)
-    <PartnershipList />
+    Partnership Pipeline (Kanban Board) - Coming Soon!
   </div>
 );
 
 export default function PartnershipsManagementPage() {
-  const [activeTab, setActiveTab] = useState("pipeline");
+  const [activeTab, setActiveTab] = useState("all");
   const [showAddPartnerForm, setShowAddPartnerForm] = useState(false);
 
   const handleAddPartner = () => {
@@ -26,10 +25,6 @@ export default function PartnershipsManagementPage() {
   };
 
   const handleFormSuccess = () => {
-    setShowAddPartnerForm(false);
-  };
-
-  const handleFormCancel = () => {
     setShowAddPartnerForm(false);
   };
 
@@ -52,13 +47,13 @@ export default function PartnershipsManagementPage() {
               Fill out the form below to add a new partner to your pipeline.
             </DialogDescription>
           </DialogHeader>
-          <PartnershipForm onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
+          <PartnershipForm onSuccess={handleFormSuccess} onCancel={() => setShowAddPartnerForm(false)} />
         </DialogContent>
       </Dialog>
 
-      <Tabs defaultValue="pipeline" className="space-y-4" onValueChange={setActiveTab}>
+      <Tabs defaultValue="all" className="space-y-4" onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="pipeline">Pipeline (Kanban)</TabsTrigger>
+          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
           <TabsTrigger value="schools">Schools</TabsTrigger>
           <TabsTrigger value="all">All Partners</TabsTrigger>
         </TabsList>

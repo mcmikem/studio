@@ -32,6 +32,7 @@ import { collection, serverTimestamp, Timestamp, doc } from "firebase/firestore"
 import { DialogFooter } from "../ui/dialog";
 import { Loader2 } from "lucide-react";
 
+// This schema is for form validation and is slightly different from the server-side one
 const PartnershipFormSchema = ServerPartnershipSchema.omit({
     id: true,
     createdAt: true,
@@ -187,5 +188,3 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
     </Form>
   );
 }
-
-    
