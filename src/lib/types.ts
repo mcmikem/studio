@@ -1197,23 +1197,5 @@ export type KnowledgeHubCTA = {
   description: string;
   buttonLabel: string;
 };
-    
-
-
-
-
-  
 
     
-
-    
-
-
-
-
-
-
-    
-
-
-      

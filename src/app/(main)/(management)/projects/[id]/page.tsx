@@ -27,7 +27,6 @@ import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { EmptyState } from '@/components/ui/empty-state';
 
-
 const statusColors: { [key: string]: string } = {
   Active: 'border-green-500 bg-green-500/10 text-green-500',
   Moderate: 'border-yellow-500 bg-yellow-500/10 text-yellow-500',
@@ -51,10 +50,27 @@ function StatCard({ title, value, icon: Icon }: { title: string; value: string |
     )
 }
 
+const initialParticipants = [
+    { id: '1', name: 'Aisha Nakato', phone: '077****123', village: 'Kitebi', businessStage: 'Ideation', attendance: 95, businessScore: 78, avatar: 'https://i.imgur.com/5Ke5QZ0.jpeg' },
+    { id: '2', name: 'Brian Okello', phone: '078****456', village: 'Buwama Town', businessStage: 'Operating', attendance: 88, businessScore: 92, avatar: 'https://i.imgur.com/7D7Q42G.jpeg' },
+    { id: '3', name: 'Cathy Nabulya', phone: '075****789', village: 'Nsangi', businessStage: 'Growth', attendance: 98, businessScore: 95, avatar: 'https://i.imgur.com/8a2eO2J.jpeg' },
+];
+
+const sampleModules = ["Intro to Finance", "Budgeting 101", "Savings & Investment", "Digital Finance Tools", "Business Planning"];
+const sampleTrainers = ["Dianah Nansikombi", "Kasirye Constantine", "Guest Speaker"];
+
+
 function ProjectDashboard() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
+  const [isParticipantDialogOpen, setIsParticipantDialogOpen] = useState(false);
+  const [participants, setParticipants] = useState(initialParticipants);
+
+  const addParticipant = (newParticipant: any) => {
+    setParticipants(prev => [...prev, { ...newParticipant, id: String(prev.length + 1) }]);
+  };
 
   const projectDocRef = useMemoFirebase(() => {
     if (!firestore || !id) return null;
@@ -177,16 +193,88 @@ function ProjectDashboard() {
         </TabsContent>
         <TabsContent value="participants">
             <Card>
-                <CardHeader>
-                    <CardTitle>Project Participants</CardTitle>
-                     <CardDescription>Enroll and manage all beneficiaries for this project.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                        <CardTitle>Project Participants ({participants.length})</CardTitle>
+                        <CardDescription>Enroll and manage all beneficiaries for this project.</CardDescription>
+                    </div>
+                     <Dialog open={isParticipantDialogOpen} onOpenChange={setIsParticipantDialogOpen}>
+                        <DialogTrigger asChild>
+                             <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Participant</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader><DialogTitle>Add New Participant</DialogTitle></DialogHeader>
+                            {/* In a real app this would be a full form */}
+                             <div className="space-y-4 py-4">
+                                <p>A simple form placeholder to demonstrate functionality.</p>
+                                <Input placeholder="Participant Name" id="new-name" />
+                            </div>
+                            <DialogFooter>
+                                <Button onClick={() => {
+                                    addParticipant({ name: (document.getElementById('new-name') as HTMLInputElement).value, businessStage: 'Ideation', attendance: 0, businessScore: 0, avatar: 'https://i.imgur.com/w2k2jCH.jpeg' });
+                                    setIsParticipantDialogOpen(false);
+                                }}>Save Participant</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                     </Dialog>
                 </CardHeader>
                 <CardContent>
-                    <EmptyState
-                        icon={Users}
-                        title="No Participants Enrolled"
-                        description="This project does not have any participants yet. Enroll them to see them here."
-                    />
+                    {participants.length > 0 ? (
+                         <div className="border rounded-md">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Name</TableHead>
+                                        <TableHead>Business Stage</TableHead>
+                                        <TableHead>Attendance</TableHead>
+                                        <TableHead>Business Score</TableHead>
+                                        <TableHead><span className="sr-only">Actions</span></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {participants.map(participant => (
+                                        <TableRow key={participant.id}>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-8 w-8 border">
+                                                        <AvatarImage src={participant.avatar} alt={participant.name} />
+                                                        <AvatarFallback>{getInitials(participant.name)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="font-medium">{participant.name}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell><Badge variant="secondary">{participant.businessStage}</Badge></TableCell>
+                                            <TableCell>{participant.attendance}%</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <Progress value={participant.businessScore} className="h-2" />
+                                                    <span className="font-semibold text-sm">{participant.businessScore}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuItem>View Profile</DropdownMenuItem>
+                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    ) : (
+                         <EmptyState
+                            icon={Users}
+                            title="No Participants Enrolled"
+                            description="This project does not have any participants yet. Enroll them to see them here."
+                        />
+                    )}
                 </CardContent>
             </Card>
         </TabsContent>
@@ -207,16 +295,47 @@ function ProjectDashboard() {
         </TabsContent>
         <TabsContent value="sessions">
            <Card>
-                <CardHeader>
-                    <CardTitle>Training Sessions</CardTitle>
-                    <CardDescription>Log and view all training sessions delivered for this project.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between">
+                     <div>
+                        <CardTitle>Training Sessions</CardTitle>
+                        <CardDescription>Log and view all training sessions delivered for this project.</CardDescription>
+                     </div>
+                      <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Session Record</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add Trainer Session Record</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                    <Label>Module</Label>
+                                    <Select><SelectTrigger><SelectValue placeholder="Select a module..." /></SelectTrigger><SelectContent>{sampleModules.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Trainer</Label>
+                                    <Select><SelectTrigger><SelectValue placeholder="Select a trainer..." /></SelectTrigger><SelectContent>{sampleTrainers.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label>Observations</Label>
+                                    <Textarea placeholder="Any notes from the session..." />
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button onClick={() => setIsSessionDialogOpen(false)}>Save Session</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </CardHeader>
                  <CardContent>
-                    <EmptyState
-                        icon={BookOpen}
-                        title="No Sessions Logged"
-                        description="Log a training session to see details and module effectiveness."
-                    />
+                    <Table>
+                        <TableHeader><TableRow><TableHead>Module</TableHead><TableHead>Trainer</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                            <TableRow><TableCell>Intro to Finance</TableCell><TableCell>Dianah Nansikombi</TableCell><TableCell>Dec 1, 2025</TableCell></TableRow>
+                            <TableRow><TableCell>Budgeting 101</TableCell><TableCell>Kasirye Constantine</TableCell><TableCell>Dec 3, 2025</TableCell></TableRow>
+                        </TableBody>
+                    </Table>
                 </CardContent>
             </Card>
         </TabsContent>
