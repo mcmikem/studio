@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
@@ -18,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
-import { collection, serverTimestamp, Timestamp, query, where } from 'firebase/firestore';
+import { collection, serverTimestamp, Timestamp, query, where, limit } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, Heart, ArrowLeft } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
@@ -54,7 +55,7 @@ function FirstQuestCard() {
     )
 }
 
-export function InternVolunteerDashboard({ profile }: DashboardProps) {
+export function InternVolunteerDashboard({ profile, data }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
@@ -72,3 +73,5 @@ export function InternVolunteerDashboard({ profile }: DashboardProps) {
     </div>
   );
 }
+
+    

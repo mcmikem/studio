@@ -160,7 +160,7 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {PartnershipSchema.shape.type.options.map((typeOption: string) => (
+                          {PartnershipFormSchema.shape.type.options.map((typeOption: string) => (
                             <SelectItem key={typeOption} value={typeOption}>
                               {typeOption}
                             </SelectItem>
@@ -187,3 +187,5 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
     </Form>
   );
 }
+
+    

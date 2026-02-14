@@ -35,26 +35,7 @@ import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import type { Expense, User, Project } from '@/lib/types';
 
 const expenseCategories = [
-    "Allowances and Stipends", 
-    "Community Support", 
-    "Food", 
-    "Fuel", 
-    "IGA Expense", 
-    "Kibanja", 
-    "Meetings", 
-    "Media", 
-    "Miscellaneous", 
-    "Mobile Money Charges", 
-    "Office Dev't", 
-    "Phone", 
-    "Printing & Photocopy", 
-    "Professional Services", 
-    "Projects", 
-    "Registration", 
-    "Rent", 
-    "Stationery", 
-    "Transport", 
-    "Withdraw"
+    "Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and Stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"
 ] as const;
 
 const expenseItemSchema = z.object({
@@ -118,12 +99,13 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
     defaultValues: isEditMode && expense ? {
         ...expense,
         date: formatDateSafe(expense.date, 'iso'),
+        items: expense.items.map(item => ({...item})), // Ensure items are plain objects
         submittedFor: expense.userId
     } : {
       type: 'Reimbursement',
       date: format(new Date(), 'yyyy-MM-dd'),
       title: '',
-      items: [{ description: '', category: 'Transport', amount: 0 }], // Ensure all properties are present
+      items: [{ description: '', category: 'Transport', amount: 0 }],
       totalAmount: 0,
       submittedFor: user?.uid,
       otherUserName: '',
@@ -442,3 +424,5 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
       </form>
   );
 }
+
+    

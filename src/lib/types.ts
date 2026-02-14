@@ -110,7 +110,7 @@ export const PartnershipSchema = z.object({
       headTeacher: z.string().optional(),
       studentPopulation: z.number().optional(),
       level: z.enum(["Primary", "Secondary", "Tertiary", "Vocational"]).optional(),
-      programs: z.array(z.string()).optional(),
+      programs: z.array(z.string()).optional(), // e.g., ["Green Schools", "OFA"]
       championTeacher: z.string().optional(),
       championTeacherContact: z.string().optional(),
   }).optional(),
@@ -233,7 +233,7 @@ export type KeyResultAI = z.infer<typeof KeyResultAISchema>;
 
 export type ExpenseItem = {
     description: string;
-    category: "Transport" | "Rent" | "Office Dev't" | "Projects" | "Stationery" | "Registration" | "Meetings" | "Media" | "Fuel" | "Printing & Photocopy" | "Phone" | "Food" | "Mobile Money Charges" | "IGA Expense" | "Allowances and stipends" | "Kibanja" | "Professional Services" | "community support" | "miscellaneous" | "Withdraw";
+    category: "Transport" | "Rent" | "Office Dev't" | "Projects" | "Stationery" | "Registration" | "Meetings" | "Media" | "Fuel" | "Printing & Photocopy" | "Phone" | "Food" | "Mobile Money Charges" | "IGA Expense" | "Allowances and Stipends" | "Kibanja" | "Professional Services" | "community support" | "miscellaneous" | "Withdraw";
     amount: number;
 }
 
@@ -1199,3 +1199,6 @@ export type KnowledgeHubCTA = {
 
 
 
+
+
+    

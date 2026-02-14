@@ -1,8 +1,9 @@
+
 // src/app/api/genkit/[...slug]/route.ts
 import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 import { NextRequest } from 'next/server';
-import { defineFlow, runFlow, getFlow } from 'genkit/flow';
+import { runFlow, getFlow } from 'genkit';
 import { z } from 'zod';
 import { logger } from 'genkit/logging';
 import * as path from 'path';
@@ -20,7 +21,6 @@ genkit({
   plugins: [
     googleAI({ apiKey: process.env.GEMINI_API_KEY }),
   ],
-  logLevel: 'debug',
   enableTracingAndMetrics: true,
 });
 
@@ -57,3 +57,5 @@ export async function POST(req: NextRequest, { params }: { params: { slug: strin
     });
   }
 }
+
+    

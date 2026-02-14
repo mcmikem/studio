@@ -1,9 +1,10 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import type { User as UserProfileType, Activity, Checkin, Program, Checkout, ImpactMetric, Partnership, Expense, Income, Testimony } from '@/lib/types';
-import { useUser, useFirestore, useCollection } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, Timestamp, limit, getDocs } from 'firebase/firestore';
 import { subDays, startOfDay } from 'date-fns';
@@ -12,6 +13,7 @@ import { DashboardSkeleton } from './dashboard-skeleton';
 
 export interface DashboardProps {
   profile: UserProfileType;
+  data: DashboardData;
 }
 
 export interface DashboardData {
@@ -121,3 +123,5 @@ export function DashboardLoader() {
 
   return <DashboardComponent profile={profile} data={data} />;
 }
+
+    

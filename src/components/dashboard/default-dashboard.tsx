@@ -1,3 +1,4 @@
+
 'use client';
 
 import { DashboardGrid } from "./dashboard-grid"
@@ -41,3 +42,5 @@ export function DefaultDashboard({ data }: DefaultDashboardProps) {
     </div>
   )
 }
+
+    
