@@ -115,15 +115,15 @@ export default function ProjectsDirectoryPage() {
   }, [projects, searchTerm, activeTab]);
   
   const stats = useMemo(() => {
-    if (!projects) return { enrolled: 0, sessions: 0, attendance: 0, adoption: 0 };
-    // These are mock stats based on your blueprint. They can be replaced with real data queries.
-    const totalParticipants = projects.reduce((acc, p) => acc + (p.participants || 0), 0) || 50;
-    const totalAttendance = projects.reduce((acc, p) => acc + (p.attendanceRate || 0), 0) / (projects.length || 1) || 88;
-    const totalAdoption = projects.reduce((acc, p) => acc + (p.adoptionRate || 0), 0) / (projects.length || 1) || 62;
+    if (!projects) return { enrolled: 0, attendance: 0, adoption: 0 };
+    
+    const totalParticipants = projects.reduce((acc, p) => acc + (p.participants || 0), 0);
+    const activeProjects = projects.filter(p => p.attendanceRate || p.adoptionRate);
+    const totalAttendance = activeProjects.reduce((acc, p) => acc + (p.attendanceRate || 0), 0) / (activeProjects.length || 1);
+    const totalAdoption = activeProjects.reduce((acc, p) => acc + (p.adoptionRate || 0), 0) / (activeProjects.length || 1);
 
     return {
         enrolled: totalParticipants, 
-        sessions: 12, // Mock
         attendance: Math.round(totalAttendance),
         adoption: Math.round(totalAdoption),
     }
@@ -152,16 +152,11 @@ export default function ProjectsDirectoryPage() {
             <CardTitle>Live Project Stats</CardTitle>
             <CardDescription>Quick view of key performance indicators across all active projects.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-muted rounded-lg text-center">
             <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
             <p className="text-2xl font-bold">{stats.enrolled}</p>
             <p className="text-xs text-muted-foreground">Beneficiaries Enrolled</p>
-          </div>
-          <div className="p-4 bg-muted rounded-lg text-center">
-            <CheckCircle className="h-6 w-6 mx-auto mb-2 text-primary" />
-            <p className="text-2xl font-bold">{stats.sessions}</p>
-            <p className="text-xs text-muted-foreground">Sessions Delivered</p>
           </div>
           <div className="p-4 bg-muted rounded-lg text-center">
             <BarChart2 className="h-6 w-6 mx-auto mb-2 text-primary" />
@@ -220,5 +215,3 @@ export default function ProjectsDirectoryPage() {
     </div>
   );
 }
-
-    
