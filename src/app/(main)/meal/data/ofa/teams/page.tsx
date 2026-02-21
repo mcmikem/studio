@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -94,7 +95,7 @@ export default function TeamsPage() {
                         </CardContent>
                         <CardFooter className="flex gap-2">
                             <Button asChild variant="secondary" className="w-full">
-                                <Link href={`/data/ofa/teams/${team.id}`}>View Details <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                <Link href={`/meal/data/ofa/teams/${team.id}`}>View Details <ArrowRight className="ml-2 h-4 w-4" /></Link>
                             </Button>
                             <Button variant="outline" size="icon" onClick={() => setEditingTeam(team)}><Edit className="h-4 w-4"/></Button>
                              <AlertDialog>
