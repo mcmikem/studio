@@ -49,13 +49,13 @@ const ManagementRow = ({ role, register, control }: { role: ManagementRole, regi
         <TableCell><Input type="tel" {...register(getFieldName('phone'))} /></TableCell>
         <TableCell>
             <Controller name={getFieldName('attendance')} control={control} render={({field}) => (
-                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Always">Always</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem><SelectItem value="Rare">Rare</SelectItem></SelectContent></Select>
+                <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Always">Always</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem><SelectItem value="Rare">Rare</SelectItem></SelectContent></Select>
             )} />
         </TableCell>
         {(role !== 'Captain' && role !== 'Vice Captain') && (
             <TableCell>
                  <Controller name={getFieldName('availability')} control={control} render={({field}) => (
-                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Full-Time">Full-Time</SelectItem><SelectItem value="Part-Time">Part-Time</SelectItem></SelectContent></Select>
+                    <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="Full-Time">Full-Time</SelectItem><SelectItem value="Part-Time">Part-Time</SelectItem></SelectContent></Select>
                 )} />
             </TableCell>
         )}
@@ -227,7 +227,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                       <div className="space-y-2"><Label>Training Days Per Week</Label><Input type="number" {...register('trainingDaysPerWeek')} /></div>
                       <div className="space-y-2"><Label>Average Training Attendance</Label>
                           <Controller name="avgTrainingAttendance" control={control} render={({field}) => (
-                              <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="High">High</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="Low">Low</SelectItem></SelectContent></Select>
+                              <Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="High">High</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="Low">Low</SelectItem></SelectContent></Select>
                           )} />
                       </div>
                        <div className="space-y-2">
@@ -242,8 +242,8 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                                <Slider defaultValue={[3]} min={1} max={5} step={1} onValueChange={(vals) => field.onChange(vals[0])} />
                           )} />
                       </div>
-                      <div className="flex items-center space-x-2"><Controller name="useWarmups" control={control} render={({field}) => (<Checkbox id="useWarmups" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="useWarmups">Players use warm-ups & drills?</Label></div>
-                      <div className="flex items-center space-x-2"><Controller name="trackPlayerProgress" control={control} render={({field}) => (<Checkbox id="trackPlayerProgress" checked={field.value} onCheckedChange={field.onChange} />)} /><Label htmlFor="trackPlayerProgress">Team tracks player progress?</Label></div>
+                      <div className="flex items-center space-x-2"><Controller name="useWarmups" control={control} render={({field}) => (<Checkbox id="useWarmups" checked={field.value || false} onCheckedChange={field.onChange} />)} /><Label htmlFor="useWarmups">Players use warm-ups & drills?</Label></div>
+                      <div className="flex items-center space-x-2"><Controller name="trackPlayerProgress" control={control} render={({field}) => (<Checkbox id="trackPlayerProgress" checked={field.value || false} onCheckedChange={field.onChange} />)} /><Label htmlFor="trackPlayerProgress">Team tracks player progress?</Label></div>
                   </div>
               </div>
               <div className="space-y-4">
@@ -264,7 +264,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                   </div>
                   <div className="space-y-2"><Label>Does team enforce school attendance?</Label>
                        <Controller name="enforceSchoolAttendance" control={control} render={({field}) => (
-                            <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4 pt-2">
+                            <RadioGroup onValueChange={field.onChange} value={field.value || undefined} className="flex gap-4 pt-2">
                               <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="enforce-yes" /><Label htmlFor="enforce-yes">Yes</Label></div>
                               <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="enforce-no" /><Label htmlFor="enforce-no">No</Label></div>
                               <div className="flex items-center space-x-2"><RadioGroupItem value="Trying" id="enforce-trying" /><Label htmlFor="enforce-trying">Trying</Label></div>
@@ -281,8 +281,8 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                                <TableRow key={item}>
                                   <TableCell className="font-semibold">{item}</TableCell>
                                   <TableCell><Input type="number" {...register(`equipment.${index}.qty`)} /></TableCell>
-                                  <TableCell><Controller name={`equipment.${index}.condition`} control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Worn">Worn</SelectItem><SelectItem value="Poor">Poor</SelectItem></SelectContent></Select>)} /></TableCell>
-                                  <TableCell><Controller name={`equipment.${index}.needLevel`} control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent></Select>)} /></TableCell>
+                                  <TableCell><Controller name={`equipment.${index}.condition`} control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Good">Good</SelectItem><SelectItem value="Worn">Worn</SelectItem><SelectItem value="Poor">Poor</SelectItem></SelectContent></Select>)} /></TableCell>
+                                  <TableCell><Controller name={`equipment.${index}.needLevel`} control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Low">Low</SelectItem><SelectItem value="Medium">Medium</SelectItem><SelectItem value="High">High</SelectItem></SelectContent></Select>)} /></TableCell>
                                </TableRow>
                           ))}
                       </TableBody>
@@ -304,8 +304,8 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
               <div className="space-y-4">
                    <h3 className="text-lg font-semibold border-b pb-2">Section G: Community & Volunteer Involvement</h3>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="space-y-2"><Label>Community Support</Label><Controller name="communitySupport" control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem></SelectContent></Select>)} /></div>
-                      <div className="space-y-2"><Label>Parent Engagement</Label><Controller name="parentEngagement" control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem><SelectItem value="Weak Engagement">Weak Engagement</SelectItem></SelectContent></Select>)} /></div>
+                      <div className="space-y-2"><Label>Community Support</Label><Controller name="communitySupport" control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem><SelectItem value="Sometimes">Sometimes</SelectItem></SelectContent></Select>)} /></div>
+                      <div className="space-y-2"><Label>Parent Engagement</Label><Controller name="parentEngagement" control={control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value || undefined}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Yes">Yes</SelectItem><SelectItem value="No">No</SelectItem><SelectItem value="Weak Engagement">Weak Engagement</SelectItem></SelectContent></Select>)} /></div>
                       <div className="space-y-2">
                         <Label>Have local volunteers?</Label>
                         <Controller name="hasVolunteers" control={control} render={({field}) => (
@@ -322,7 +322,7 @@ export function OFATeamRegistrationForm({ team, onSuccess }: OFATeamRegistration
                    <h3 className="text-lg font-semibold border-b pb-2">Section H: Agreement</h3>
                     <div className="flex items-center space-x-2">
                       <Controller name="agreedToRules" control={control} render={({ field }) => (
-                          <Checkbox id="agreedToRules" checked={field.value} onCheckedChange={field.onChange} />
+                          <Checkbox id="agreedToRules" checked={field.value || false} onCheckedChange={field.onChange} />
                       )} />
                       <Label htmlFor="agreedToRules">Team commits to promote discipline, support player education, track attendance, and participate in OFA mentorship programs.</Label>
                   </div>

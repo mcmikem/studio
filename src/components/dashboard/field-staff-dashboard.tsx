@@ -18,19 +18,32 @@ const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deploym
   loading: () => <Skeleton className="h-64" />,
   ssr: false,
 });
+const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), {
+    loading: () => <Skeleton className="h-64" />,
+    ssr: false,
+});
 
 interface FieldStaffDashboardProps extends DashboardProps {
     data: DashboardData;
 }
 
 export function FieldStaffDashboard({ profile, data }: FieldStaffDashboardProps) {
-  const { checkouts, users, checkins } = data;
+  const { checkouts, users, checkins, activities, testimonies, allExpenses } = data;
   const isLoading = !checkouts || !users || !checkins;
 
   return (
     <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} />
         <DashboardGrid className="mt-6 lg:grid-cols-2">
+            <TeamPerformanceLeaderboard 
+                activities={activities} 
+                users={users} 
+                checkins={checkins} 
+                checkouts={checkouts} 
+                expenses={allExpenses}
+                testimonies={testimonies}
+                isLoading={isLoading} 
+            />
             <MyWeeklyPlan />
             <DashboardCalendar />
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />

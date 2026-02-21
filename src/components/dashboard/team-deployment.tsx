@@ -15,18 +15,15 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import type { User, Checkin } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Users, Target, Clock, AlertTriangle } from 'lucide-react';
+import { Users, Target, Clock, AlertTriangle, ArrowUpRight, Signal } from 'lucide-react';
 import { isWithinInterval, parse, startOfDay, format, isValid } from 'date-fns';
 import { EmptyState } from '@/components/ui/empty-state';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertTitle } from '@/components/ui/alert';
 
 type TeamStatus = {
   user: User;
@@ -56,7 +53,6 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
   const [selectedUserStatus, setSelectedUserStatus] = useState<TeamStatus | null>(null);
 
   useEffect(() => {
-    // This effect runs only on the client, avoiding hydration mismatch.
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); 
     return () => clearInterval(timer);
@@ -82,27 +78,17 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         
         if (userCheckin.details && Array.isArray(userCheckin.details.timeBlocks)) {
           for (const block of userCheckin.details.timeBlocks) {
-            // **CRITICAL FIX**: Add robust guards to prevent parsing invalid data.
-            if (block && typeof block.startTime === 'string' && typeof block.endTime === 'string' && block.startTime.includes(':') && block.endTime.includes(':')) {
+            if (block && typeof block.startTime === 'string' && typeof block.endTime === 'string') {
               try {
                 const now = currentTime;
                 const baseDate = startOfDay(now);
-
                 const startTime = parse(block.startTime, 'hh:mm a', baseDate);
                 const endTime = parse(block.endTime, 'hh:mm a', baseDate);
-        
-                 if (!isValid(startTime) || !isValid(endTime)) {
-                    console.error("Invalid time format in time block:", block);
-                    continue;
-                }
-
-                if (isWithinInterval(now, { start: startTime, end: endTime })) {
+                if (isValid(startTime) && isValid(endTime) && isWithinInterval(now, { start: startTime, end: endTime })) {
                   currentTask = block.description;
                   break;
                 }
-              } catch (e) {
-                console.error("Error parsing time block:", block, e);
-              }
+              } catch (e) {}
             }
           }
         }
@@ -112,96 +98,117 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
     });
   }, [users, checkins, currentTime]);
 
+  const activeCount = teamStatus?.filter(s => s.checkedIn).length || 0;
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Users /> Team Deployment</CardTitle>
-        <CardDescription>
-          A real-time view of who has checked in and what they are working on.
-        </CardDescription>
+    <Card className="rounded-[2.5rem] border-4 border-omuto-navy shadow-comic bg-white overflow-hidden">
+      <CardHeader className="bg-muted/30 border-b-4 border-omuto-navy/10 pb-6 pt-8">
+        <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary rounded-xl shadow-comic-sm">
+                    <Signal className="h-5 w-5 text-white" />
+                </div>
+                <CardTitle className="text-2xl font-black italic uppercase tracking-tighter">Live Deployment</CardTitle>
+            </div>
+            <div className="px-3 py-1 bg-omuto-navy text-white rounded-full font-black text-[10px] uppercase tracking-widest animate-pulse">
+                {activeCount} Active
+            </div>
+        </div>
+        <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest">Real-time HQ Personnel Tracking</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-8">
         {(isLoading || !teamStatus) ? (
-          <div className="grid grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12 w-12 rounded-full" />)}
+          <div className="grid grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-14 w-14 rounded-2xl border-2 border-omuto-navy/10" />)}
           </div>
         ) : teamStatus.length > 0 ? (
-           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-5 gap-4">
+           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-4 gap-6">
             {teamStatus.map((status) => {
                 return (
-                    <button key={status.user.id} onClick={() => setSelectedUserStatus(status)} className="flex flex-col items-center gap-1 text-center group">
+                    <button key={status.user.id} onClick={() => setSelectedUserStatus(status)} className="flex flex-col items-center gap-2 group relative">
                         <div className="relative">
-                            <Avatar className="h-12 w-12 border-2 group-hover:border-primary transition-colors" data-ai-hint="person avatar">
+                            <Avatar className={`h-14 w-14 border-[3px] transition-all duration-300 group-hover:rotate-3 group-hover:shadow-comic-sm ${status.checkedIn ? 'border-omuto-red' : 'border-omuto-navy/10 grayscale opacity-40'}`}>
                                 <AvatarImage src={status.user.photoURL} />
-                                <AvatarFallback>{getInitials(status.user.name)}</AvatarFallback>
+                                <AvatarFallback className="bg-muted font-black text-xs">{getInitials(status.user.name)}</AvatarFallback>
                             </Avatar>
-                            <span className={cn(
-                                "absolute bottom-0 right-0 block h-3.5 w-3.5 rounded-full border-2 border-background",
-                                status.checkedIn ? 'bg-green-500' : 'bg-gray-400'
-                            )} />
+                            {status.checkedIn && (
+                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm" />
+                            )}
                         </div>
-                        <p className="text-xs font-medium truncate w-full group-hover:text-primary">{status.user.name.split(' ')[0]}</p>
+                        <p className={`text-[10px] font-black uppercase tracking-tight truncate w-full ${status.checkedIn ? 'text-omuto-navy' : 'text-omuto-navy/30'}`}>
+                            {status.user.name.split(' ')[0]}
+                        </p>
+                        {status.checkedIn && (
+                             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-omuto-navy text-white text-[8px] font-black px-2 py-0.5 rounded shadow-comic-sm z-10 uppercase">
+                                View Mission
+                            </div>
+                        )}
                     </button>
                 )
             })}
            </div>
         ) : (
-            <EmptyState
-                icon={Users}
-                title="No Staff Found"
-                description="Could not load team member information."
-                className="min-h-0"
-             />
+            <EmptyState icon={Users} title="Scanning Frequencies..." description="No team members located in current grid." className="min-h-0 py-10" />
         )}
       </CardContent>
 
       <Dialog open={!!selectedUserStatus} onOpenChange={() => setSelectedUserStatus(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] border-4 border-omuto-navy p-0 overflow-hidden shadow-comic-lg">
             {selectedUserStatus && (
-                 <>
-                    <DialogHeader>
-                        <div className="flex items-center gap-4">
-                            <Avatar className="h-12 w-12 border" data-ai-hint="person avatar">
-                                <AvatarImage src={selectedUserStatus.user.photoURL} />
-                                <AvatarFallback>{getInitials(selectedUserStatus.user.name)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <DialogTitle>{selectedUserStatus.user.name}</DialogTitle>
-                                <DialogDescription>{selectedUserStatus.user.role}</DialogDescription>
-                            </div>
+                 <div className="flex flex-col">
+                    <div className="p-8 bg-omuto-navy text-white flex items-center gap-6 border-b-4 border-omuto-red">
+                        <Avatar className="h-20 w-20 border-4 border-white shadow-comic-sm -rotate-3">
+                            <AvatarImage src={selectedUserStatus.user.photoURL} />
+                            <AvatarFallback className="bg-white text-omuto-navy font-black text-xl">{getInitials(selectedUserStatus.user.name)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-1">Personnel Detail</p>
+                            <h2 className="text-3xl font-black italic uppercase tracking-tighter leading-none mb-2">{selectedUserStatus.user.name}</h2>
+                            <Badge className="bg-omuto-red text-white border-none font-black text-[10px] uppercase tracking-widest">{selectedUserStatus.user.role}</Badge>
                         </div>
-                    </DialogHeader>
-                    <div className="space-y-4">
+                    </div>
+                    
+                    <div className="p-8 space-y-6 bg-omuto-cream">
                         {selectedUserStatus.checkedIn ? (
                             <>
-                                 <Alert>
-                                    <AlertTitle className="font-semibold flex items-center justify-between">
-                                        Checked In
-                                        <Badge variant="secondary">{selectedUserStatus.checkinTime}</Badge>
-                                    </AlertTitle>
-                                </Alert>
-                                <div className="p-4 bg-muted rounded-lg">
-                                    <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                                        <Target /> Primary Mission Today
+                                <div className="flex items-center justify-between p-4 bg-white border-[3px] border-omuto-navy rounded-2xl shadow-comic-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-green-500/10 rounded-lg text-green-600"><Signal className="h-5 w-5" /></div>
+                                        <span className="font-black text-xs uppercase tracking-widest">Active Link</span>
                                     </div>
-                                    <p className="mt-1">{selectedUserStatus.primaryMission}</p>
+                                    <span className="font-black text-sm italic">{selectedUserStatus.checkinTime}</span>
                                 </div>
-                                 <div className="p-4 bg-muted rounded-lg">
-                                    <div className="flex items-center gap-2 text-sm font-semibold text-accent">
-                                        <Clock /> Current Focus
+
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-primary font-black uppercase text-[10px] tracking-widest">
+                                        <Target className="h-4 w-4" /> Primary Mission Today
                                     </div>
-                                    <p className="mt-1">{selectedUserStatus.currentTask || "Not in a scheduled time block."}</p>
+                                    <div className="p-6 bg-white border-[3px] border-omuto-navy rounded-3xl shadow-comic-sm relative group overflow-hidden">
+                                        <p className="font-bold text-lg leading-tight relative z-10">{selectedUserStatus.primaryMission}</p>
+                                        <Target className="absolute -bottom-4 -right-4 h-20 w-20 opacity-5 group-hover:scale-110 transition-transform" />
+                                    </div>
+                                </div>
+
+                                 <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-omuto-navy font-black uppercase text-[10px] tracking-widest">
+                                        <Clock className="h-4 w-4" /> Real-time Focus
+                                    </div>
+                                    <div className="p-6 bg-omuto-blue/20 border-[3px] border-omuto-navy rounded-3xl shadow-comic-sm">
+                                        <p className="font-black italic text-md text-omuto-navy leading-tight uppercase tracking-tighter">
+                                            {selectedUserStatus.currentTask || "In Transition / Field Commute"}
+                                        </p>
+                                    </div>
                                 </div>
                             </>
                         ) : (
-                            <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-center">
-                                <AlertTriangle className="mx-auto h-8 w-8 text-yellow-500" />
-                                <p className="mt-2 font-semibold">Not Checked In</p>
-                                <p className="text-sm text-muted-foreground">{selectedUserStatus.user.name} has not submitted their daily plan yet.</p>
+                            <div className="p-10 bg-white border-[3px] border-omuto-navy border-dashed rounded-[2.5rem] text-center">
+                                <AlertTriangle className="mx-auto h-12 w-12 text-omuto-red mb-4" />
+                                <h3 className="text-xl font-black uppercase italic tracking-tighter mb-2">Comms Blackout</h3>
+                                <p className="text-sm font-bold text-omuto-navy/50 uppercase leading-relaxed max-w-[200px] mx-auto">This member has not established a frequency (Check-in) yet today.</p>
                             </div>
                         )}
                     </div>
-                </>
+                </div>
             )}
         </DialogContent>
       </Dialog>

@@ -197,7 +197,7 @@ function UserMenu() {
     }
   };
   
-  const getInitials = (name?: string, email?: string) => {
+  const getInitials = (name?: string, email?: string | null) => {
     if (name) {
         const parts = name.split(' ');
         if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {

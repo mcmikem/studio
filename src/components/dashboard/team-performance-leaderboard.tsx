@@ -1,148 +1,154 @@
-
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
-import type { Activity, User, Checkin } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Trophy, Users as UsersIcon } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { Progress } from '../ui/progress';
-import { Skeleton } from '../ui/skeleton';
-import { EmptyState } from '../ui/empty-state';
-import { useMemoFirebase, useCollection } from '@/firebase';
-import { collection, query, where, Timestamp, orderBy, limit } from 'firebase/firestore';
-import { subDays, startOfWeek, endOfWeek } from 'date-fns';
+import { useMemo } from 'react';
+import type { Activity, User, Checkin, Checkout, Partnership, Expense, Testimony } from '@/lib/types';
+import { Trophy, Medal, Zap, Crown } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatCurrency } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 interface TeamPerformanceLeaderboardProps {
+    activities: Activity[] | null;
+    checkins: Checkin[] | null;
+    checkouts: Checkout[] | null;
     users: User[] | null;
     isLoading: boolean;
+    partnerships?: Partnership[] | null;
+    expenses?: Expense[] | null;
+    testimonies?: Testimony[] | null;
 }
 
-const getInitials = (name?: string) => {
-    if (!name) return 'U';
-    const parts = name.split(' ');
-    if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
-        return parts[0][0] + parts[parts.length - 1][0];
-    }
-    return name.substring(0, 2).toUpperCase();
-};
-
-export function TeamPerformanceLeaderboard({ users, isLoading }: TeamPerformanceLeaderboardProps) {
-
-  const activitiesQuery = useMemoFirebase((db) => {
-      return query(
-          collection(db, 'activities'),
-          orderBy('loggedAt', 'desc')
-      );
-  }, []);
-  const { data: activities, isLoading: isLoadingActivities } = useCollection<Activity>(activitiesQuery, { listen: false });
+export function TeamPerformanceLeaderboard({ 
+    activities, 
+    checkins, 
+    checkouts, 
+    users, 
+    isLoading,
+    partnerships,
+    expenses,
+    testimonies 
+}: TeamPerformanceLeaderboardProps) {
   
-  const thisWeekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
-  const checkinsQuery = useMemoFirebase((db) => {
-    return query(
-        collection(db, 'checkins'),
-        where('timestamp', '>=', Timestamp.fromDate(thisWeekStart))
-    );
-  }, [thisWeekStart]);
-  const { data: checkins, isLoading: isLoadingCheckins } = useCollection<Checkin>(checkinsQuery, { listen: false });
+  const leaderboard = useMemo(() => {
+    if (!users) return [];
 
+    const userStats = new Map<string, { 
+      userId: string; 
+      name: string; 
+      photoURL?: string; 
+      role: string;
+      totalScore: number; 
+      activityCount: number;
+    }>();
 
-  const leaderboardData = useMemo(() => {
-    if (!users || isLoading || isLoadingActivities || isLoadingCheckins) {
-      return [];
-    }
+    const getOrInitStats = (userId: string, userName?: string) => {
+        if (userStats.has(userId)) return userStats.get(userId)!;
+        
+        const userProfile = users.find(u => u.id === userId);
+        const stats = {
+            userId,
+            name: userProfile?.name || userName || 'Unknown User',
+            photoURL: userProfile?.photoURL,
+            role: userProfile?.role || 'Staff',
+            totalScore: 0,
+            activityCount: 0,
+        };
+        userStats.set(userId, stats);
+        return stats;
+    };
 
-    const userPerformance = users.map(user => {
-      const userActivities = activities?.filter(a => a.userId === user.id) || [];
-      const userCheckins = checkins?.filter(c => c.userId === user.id) || [];
-      
-      const activityScore = userActivities.length * 10;
-      
-      const checkinScore = userCheckins.reduce((score, checkin) => {
-          if(!checkin.timestamp) return score;
-          const checkinTime = checkin.timestamp.toDate();
-          if (checkinTime.getHours() < 10) {
-              return score + 10;
-          }
-          return score + 5;
-      }, 0);
-      
-      const totalScore = activityScore + checkinScore;
-      
-      return {
-        user,
-        totalScore,
-        activityCount: userActivities.length,
-        checkinCount: userCheckins.length,
-      };
+    activities?.forEach((act) => {
+      const stats = getOrInitStats(act.userId, act.userName);
+      const score = 100 + ((act.totalValue || 0) / 5000); 
+      stats.totalScore += score;
+      stats.activityCount += 1;
     });
 
-    const sortedUsers = userPerformance
-        .filter(p => p.totalScore > 0)
-        .sort((a, b) => b.totalScore - a.totalScore);
-        
-    const maxScore = sortedUsers[0]?.totalScore || 0;
+    checkins?.forEach((cin) => {
+        const stats = getOrInitStats(cin.userId, cin.name);
+        stats.totalScore += 20;
+        stats.activityCount += 1;
+    });
 
-    return sortedUsers.map((p, index) => ({
-      ...p,
-      rank: index + 1,
-      progress: maxScore > 0 ? (p.totalScore / maxScore) * 100 : 0,
-    }));
+    checkouts?.forEach((cout) => {
+        const stats = getOrInitStats(cout.userId, cout.name);
+        stats.totalScore += 50;
+        stats.activityCount += 1;
+    });
 
-  }, [activities, users, checkins, isLoading, isLoadingActivities, isLoadingCheckins]);
+    testimonies?.forEach((test) => {
+        const stats = getOrInitStats(test.userId, test.userName);
+        stats.totalScore += 75;
+        stats.activityCount += 1;
+    });
 
-  const finalIsLoading = isLoading || isLoadingActivities || isLoadingCheckins;
+    expenses?.forEach((exp) => {
+        const stats = getOrInitStats(exp.userId, exp.userName);
+        stats.totalScore += 10;
+        stats.activityCount += 1;
+    });
+
+    return Array.from(userStats.values())
+      .filter(u => u.totalScore > 0)
+      .sort((a, b) => b.totalScore - a.totalScore)
+      .slice(0, 5);
+  }, [activities, checkins, checkouts, users, partnerships, expenses, testimonies]);
+
+  if (isLoading) {
+    return <Skeleton className="h-96 rounded-3xl border-4 border-omuto-navy shadow-comic" />;
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-            <Trophy className="text-yellow-500" />
-            Team Performance Leaderboard
-        </CardTitle>
-        <CardDescription>Top contributors by engagement (all time).</CardDescription>
+    <Card className="rounded-3xl border-4 border-omuto-navy shadow-comic bg-white overflow-hidden">
+      <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-8 border-b-4 border-omuto-red">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+                <Trophy className="h-6 w-6 text-omuto-yellow fill-omuto-yellow" />
+                <CardTitle className="text-3xl font-heading font-black italic tracking-tighter uppercase">Impact Stars</CardTitle>
+            </div>
+            <CardDescription className="text-white/60 font-bold uppercase text-[10px] tracking-widest mt-1">Global Action Ranking</CardDescription>
+          </div>
+          <div className="bg-omuto-red px-4 py-2 border-2 border-white rounded shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
+             <span className="font-black text-xs uppercase tracking-tighter">Live</span>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
-         <div className="space-y-4">
-            {finalIsLoading && (
-                 Array.from({length: 3}).map((_, i) => (
-                    <div key={i} className="flex items-center gap-4">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <div className="flex-1 space-y-2">
-                            <Skeleton className="h-4 w-1/2" />
-                            <Skeleton className="h-3 w-full" />
-                        </div>
-                    </div>
-                 ))
-            )}
-            {!finalIsLoading && leaderboardData.length > 0 ? (
-                leaderboardData.slice(0, 5).map(item => (
-                    <div key={item.user.id}>
-                        <div className="flex items-center gap-4">
-                            <span className="text-lg font-bold w-6 text-center">{item.rank}</span>
-                            <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                                <AvatarImage src={item.user.photoURL} />
-                                <AvatarFallback>{getInitials(item.user.name)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <p className="font-semibold">{item.user.name}</p>
-                                <p className="text-sm text-muted-foreground">{item.totalScore} points ({item.activityCount} logs, {item.checkinCount} check-ins)</p>
-                            </div>
-                        </div>
-                        <Progress value={item.progress} className="h-1 mt-2" />
-                    </div>
-                ))
-            ) : (
-                 !finalIsLoading && (
-                    <EmptyState
-                        icon={UsersIcon}
-                        title="No Performance Data"
-                        description="No team activities have been logged yet."
-                        className="min-h-0"
-                    />
-                 )
-            )}
-         </div>
+      <CardContent className="space-y-3 p-6 bg-omuto-cream/50">
+        {leaderboard.length > 0 ? (
+          leaderboard.map((user, index) => (
+            <div key={user.userId} className={`flex items-center gap-4 p-4 rounded-2xl border-[3px] border-omuto-navy transition-all group ${index === 0 ? 'bg-omuto-yellow shadow-comic-sm' : 'bg-white hover:translate-x-1'}`}>
+              <div className="flex items-center justify-center w-10">
+                {index === 0 ? <Crown className="h-8 w-8 text-omuto-navy animate-bounce" /> : 
+                 <span className="font-black text-xl italic text-omuto-navy/30">#{index + 1}</span>}
+              </div>
+              <div className="relative">
+                <Avatar className="h-12 w-12 border-[3px] border-omuto-navy shadow-sm">
+                    <AvatarImage src={user.photoURL} />
+                    <AvatarFallback className="bg-omuto-navy text-white font-black">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                {index === 0 && <div className="absolute -top-1 -right-1 bg-omuto-red border-2 border-omuto-navy rounded-full p-1"><Zap className="h-2 w-2 text-white fill-white" /></div>}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-base font-black truncate leading-tight italic text-omuto-navy uppercase">{user.name}</p>
+                <p className="text-[10px] text-omuto-navy/60 truncate mt-1 font-black uppercase tracking-widest">{user.role}</p>
+              </div>
+              <div className="text-right">
+                <div className={`px-4 py-1.5 border-[3px] border-omuto-navy font-black text-sm italic rounded-xl ${index === 0 ? 'bg-white' : 'bg-omuto-cream shadow-comic-sm'}`}>
+                    {Math.round(user.totalScore).toLocaleString()}
+                </div>
+                <p className="text-[9px] font-black text-omuto-navy/40 mt-2 uppercase tracking-tighter">{user.activityCount} ACTIONS</p>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-20 bg-white border-[3px] border-omuto-navy border-dashed rounded-3xl">
+             <Zap className="h-16 w-16 mx-auto mb-4 opacity-10 text-omuto-navy" />
+             <p className="text-xs font-black text-omuto-navy/40 uppercase tracking-[0.2em]">Deploying Intelligence...</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

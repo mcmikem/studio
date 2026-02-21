@@ -31,12 +31,17 @@ const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deploym
   ssr: false,
 });
 
+const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), {
+    loading: () => <Skeleton className="h-64" />,
+    ssr: false,
+});
+
 interface ProgramManagerDashboardProps extends DashboardProps {
     data: DashboardData;
 }
 
 export function ProgramManagerDashboard({ profile, data }: ProgramManagerDashboardProps) {
-  const { partnerships, activities, users, checkins } = data;
+  const { partnerships, activities, users, checkins, checkouts, allExpenses, testimonies } = data;
   const isLoading = !partnerships || !activities || !users || !checkins;
 
   return (
@@ -45,6 +50,15 @@ export function ProgramManagerDashboard({ profile, data }: ProgramManagerDashboa
         <DashboardGrid className="mt-6 lg:grid-cols-2">
             <PartnershipPipeline partnerships={partnerships} isLoading={isLoading} />
             <QuickInsights activities={activities} />
+            <TeamPerformanceLeaderboard 
+                    activities={activities} 
+                    users={users} 
+                    checkins={checkins} 
+                    checkouts={checkouts} 
+                    expenses={allExpenses}
+                    testimonies={testimonies}
+                    isLoading={isLoading} 
+            />
             <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
             <DashboardCalendar />
             <div className="lg:col-span-2">

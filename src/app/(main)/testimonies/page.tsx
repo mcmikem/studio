@@ -54,7 +54,7 @@ function TestimonyCard({ testimony }: { testimony: Testimony }) {
                     </AccordionContent>
                 </AccordionItem>
             )}
-            {hasQuotes && (
+            {hasQuotes && testimony.quotes && (
                 <AccordionItem value="quotes">
                     <AccordionTrigger>View Key Quotes</AccordionTrigger>
                     <AccordionContent className="space-y-3">
@@ -67,7 +67,7 @@ function TestimonyCard({ testimony }: { testimony: Testimony }) {
                     </AccordionContent>
                 </AccordionItem>
             )}
-             {hasHashtags && (
+             {hasHashtags && testimony.hashtags && (
                 <AccordionItem value="hashtags">
                     <AccordionTrigger>View Suggested Hashtags</AccordionTrigger>
                     <AccordionContent className="flex flex-wrap gap-2 pt-4">

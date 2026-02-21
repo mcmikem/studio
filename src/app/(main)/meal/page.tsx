@@ -8,131 +8,127 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, BarChart3, Users, CheckCircle, FileText, Swords, Leaf, Heart, Zap, Droplets, Store, Wind, Trophy, Building } from 'lucide-react';
+import { ArrowRight, BarChart3, Users, CheckCircle, FileText, Swords, Leaf, Heart, Zap, Droplets, Store, Wind, Trophy, Building, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const programSections = [
-    { href: '/meal/ofa', title: 'Omuto Football Alliance', icon: Swords, dataHref: '/meal/data/ofa' },
-    { href: '/meal/red-campaign', title: 'RED Campaign', icon: Heart, dataHref: '/meal/data/red-campaign' },
-    { href: '/meal/greenschools', title: 'GreenSchools', icon: Leaf, dataHref: '/meal/data/greenschools' },
-    { href: '/meal/yoskills', title: 'YoSkills Entrepreneurship', icon: Zap, dataHref: '/meal/data/yoskills' },
-    { href: '/meal/slf', title: 'Student Leaders Forum', icon: Users, dataHref: '/meal/data/slf' },
-    { href: '/meal/purewater', title: 'PureWater Initiative', icon: Droplets, dataHref: '/meal/data/purewater' },
-    { href: '/meal/yap', title: 'Youth Action Pathway (YAP)', icon: Users, dataHref: '/meal/data/yap' },
-    { href: '/meal/omuto-cup', title: 'Omuto Cup (Event)', icon: Trophy, dataHref: '/meal/data/omuto-cup' },
-    { href: '/meal/essentials', title: 'Omuto Essentials', icon: Store, dataHref: '/meal/data/essentials' },
-    { href: '/meal/pulse', title: 'Omuto Pulse', icon: Wind, dataHref: '/meal/data/pulse' },
+    { href: '/meal/ofa', title: 'Omuto Football Alliance', icon: Swords, dataHref: '/meal/data/ofa', color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
+    { href: '/meal/red-campaign', title: 'RED Campaign', icon: Heart, dataHref: '/meal/data/red-campaign', color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
+    { href: '/meal/greenschools', title: 'GreenSchools', icon: Leaf, dataHref: '/meal/data/greenschools', color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
+    { href: '/meal/yoskills', title: 'YoSkills Entrepreneurship', icon: Zap, dataHref: '/meal/data/yoskills', color: 'text-omuto-yellow', bg: 'bg-omuto-yellow/10' },
+    { href: '/meal/slf', title: 'Student Leaders Forum', icon: Users, dataHref: '/meal/data/slf', color: 'text-omuto-navy', bg: 'bg-omuto-navy/10' },
+    { href: '/meal/purewater', title: 'PureWater Initiative', icon: Droplets, dataHref: '/meal/data/purewater', color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
+    { href: '/meal/yap', title: 'Youth Action Pathway', icon: Users, dataHref: '/meal/data/yap', color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
+    { href: '/meal/omuto-cup', title: 'Omuto Cup (Event)', icon: Trophy, dataHref: '/meal/data/omuto-cup', color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
+    { href: '/meal/essentials', title: 'Omuto Essentials', icon: Store, dataHref: '/meal/data/essentials', color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
+    { href: '/meal/pulse', title: 'Omuto Pulse', icon: Wind, dataHref: '/meal/data/pulse', color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
 ];
 
 export default function MealPage() {
     return (
-        <div className="space-y-8">
-            <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-                    <BarChart3 className="h-8 w-8" />
-                    MEAL Hub
-                </h1>
-                <p className="text-muted-foreground">
-                    A unified hub for all Monitoring, Evaluation, Accountability, and Learning activities.
-                </p>
+        <div className="space-y-10 pb-10">
+            <header className="flex flex-col gap-2">
+                <div className="flex items-center gap-3 text-omuto-navy">
+                    <div className="p-3 bg-omuto-navy/10 rounded-2xl">
+                        <BarChart3 className="h-8 w-8 text-omuto-red" />
+                    </div>
+                    <div>
+                        <h1 className="font-heading text-4xl font-black tracking-tight">Impact <span className="text-omuto-red">Hub</span></h1>
+                        <p className="text-omuto-navy/60 font-bold uppercase text-[10px] tracking-widest mt-1">Monitoring • Evaluation • Accountability • Learning</p>
+                    </div>
+                </div>
             </header>
 
-             <Card>
-                <CardHeader>
-                    <CardTitle>Core M&amp;E Tools</CardTitle>
-                    <CardDescription>Cross-cutting tools for beneficiary tracking, data collection, and impact stories.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <Link href="/meal/beneficiary-registration" className="block">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <Users className="h-8 w-8 text-primary flex-shrink-0" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                 <Card className="lg:col-span-3 card-comic-hero overflow-hidden">
+                    <CardHeader className="pb-6 bg-muted/30 border-b-lg border-omuto-navy/20">
+                        <div className="flex items-center justify-between">
                             <div>
-                                <p className="font-semibold">Beneficiary Registration</p>
-                                <p className="text-sm text-muted-foreground">Onboard a new participant into the central database.</p>
+                                <CardTitle className="text-2xl font-black tracking-tighter text-omuto-navy">Core <span className="text-omuto-red">M&E</span> Tools</CardTitle>
+                                <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest mt-1">Primary data collection and impact tracking systems.</CardDescription>
                             </div>
-                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
+                            <Badge className="badge-omuto-outline border-omuto-navy/10 text-omuto-navy/60">Cross-Cutting</Badge>
                         </div>
-                    </Link>
-                    <Link href="/meal/attendance" className="block">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <CheckCircle className="h-8 w-8 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="font-semibold">Session Attendance</p>
-                                <p className="text-sm text-muted-foreground">Track participants reached in any session or event.</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                        </div>
-                    </Link>
-                     <Link href="/meal/record-testimony" className="block">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <Trophy className="h-8 w-8 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="font-semibold">Impact Story Capture</p>
-                                <p className="text-sm text-muted-foreground">Record a success story with before/after details and media.</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                        </div>
-                    </Link>
-                     <Link href="/meal/activity" className="block">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <BarChart3 className="h-8 w-8 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="font-semibold">General Activity (ROI)</p>
-                                <p className="text-sm text-muted-foreground">Log any activity and calculate its financial and social return.</p>
-                            </div>
-                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                        </div>
-                    </Link>
-                </CardContent>
-            </Card>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+                        {[
+                            { href: "/meal/beneficiary-registration", title: "Beneficiary Registry", icon: Users, desc: "Onboard new participants." },
+                            { href: "/meal/attendance", title: "Session Attendance", icon: CheckCircle, desc: "Track daily reach." },
+                            { href: "/meal/record-testimony", title: "Impact Story Capture", icon: Trophy, desc: "Document field success." },
+                            { href: "/meal/activity", title: "Activity ROI Log", icon: BarChart3, desc: "Calculate social return." }
+                        ].map((tool) => (
+                            <Link key={tool.href} href={tool.href} className="group">
+                                <div className="flex flex-col gap-4 p-6 card-comic-clean h-full">
+                                    <div className="p-3 bg-omuto-cream rounded-2xl w-fit shadow-comic-sm group-hover:scale-110 transition-transform">
+                                        <tool.icon className="h-6 w-6 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="font-black text-sm text-omuto-navy">{tool.title}</p>
+                                        <p className="text-[10px] text-omuto-navy/60 mt-1 font-bold leading-relaxed uppercase tracking-wide">{tool.desc}</p>
+                                    </div>
+                                    <ArrowRight className="h-4 w-4 text-omuto-navy/30 mt-auto self-end group-hover:text-primary transition-colors group-hover:translate-x-1" />
+                                </div>
+                            </Link>
+                        ))}
+                    </CardContent>
+                </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Program-Specific Hubs</CardTitle>
-                    <CardDescription>Select a program to add new data or view existing reports.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {programSections.map(form => (
-                        <Card key={form.title} className="hover:shadow-md transition-shadow">
-                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-base">
-                                     <form.icon className="h-6 w-6 text-primary" />
-                                     {form.title}
-                                </CardTitle>
-                             </CardHeader>
-                             <CardContent className="flex flex-col gap-2">
-                                <Button asChild variant="outline">
-                                    <Link href={form.href}>Add Data <ArrowRight className="ml-auto h-4 w-4" /></Link>
-                                </Button>
-                                 <Button asChild variant="secondary">
-                                    <Link href={form.dataHref}>View Data <ArrowRight className="ml-auto h-4 w-4" /></Link>
-                                </Button>
-                             </CardContent>
-                        </Card>
-                    ))}
-                </CardContent>
-            </Card>
+                <div className="lg:col-span-3 space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className="font-heading text-2xl font-black tracking-tighter uppercase text-omuto-navy">
+                            Program <span className="text-omuto-red underline decoration-4 underline-offset-4">Channels</span>
+                        </h2>
+                        <span className="text-[10px] font-black uppercase text-omuto-navy/40 tracking-widest">Select a channel</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        {programSections.map(program => (
+                            <Card key={program.title} className="group relative overflow-hidden card-comic-clean hover:-translate-y-1">
+                                <div className={`absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity ${program.color}`}>
+                                    <program.icon className="h-12 w-12" />
+                                </div>
+                                <CardHeader className="pb-3 pt-6 px-6">
+                                    <div className={`p-2 w-fit rounded-xl mb-3 ${program.bg} ${program.color}`}>
+                                        <program.icon className="h-5 w-5" />
+                                    </div>
+                                    <CardTitle className="text-xs font-black leading-tight text-omuto-navy group-hover:text-primary transition-colors uppercase tracking-wider">{program.title}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="flex flex-col gap-2 p-6 pt-0">
+                                    <Button asChild size="sm" className="btn-omuto-secondary h-9 rounded-lg">
+                                        <Link href={program.href}>ADD DATA <ArrowRight className="h-3 w-3" /></Link>
+                                    </Button>
+                                    <Button asChild size="sm" className="btn-omuto bg-white text-omuto-navy/70 h-9 rounded-lg border-omuto-navy/10 shadow-comic-sm hover:bg-omuto-navy/20 hover:text-omuto-navy hover:border-omuto-navy/20">
+                                        <Link href={program.dataHref}>VIEW DATA <ArrowRight className="h-3 w-3" /></Link>
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
 
-             <Card>
-                <CardHeader>
-                    <CardTitle>School Applications</CardTitle>
-                     <CardDescription>Onboard new schools interested in partnering with Omuto Foundation.</CardDescription>
-                </CardHeader>
-                 <CardContent>
-                    <Link href="/forms/school" className="block">
-                        <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                            <Building className="h-8 w-8 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="font-semibold">School Program Application</p>
-                                <p className="text-sm text-muted-foreground">The main intake form for schools to apply for Omuto programs.</p>
+                <Card className="lg:col-span-3 card-comic-hero overflow-hidden">
+                    <CardContent className="p-0">
+                        <Link href="/forms/school" className="group block">
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-8 md:p-10 hover:bg-omuto-cream/50 transition-colors">
+                                <div className="flex items-center gap-6">
+                                    <div className="p-5 bg-primary/10 border-lg border-omuto-navy/20 rounded-2xl group-hover:scale-105 transition-transform">
+                                        <Building className="h-10 w-10 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="font-heading text-xl font-black tracking-tight text-omuto-navy">School Program <span className="text-primary">Intake</span></p>
+                                        <p className="text-sm font-medium max-w-md text-omuto-navy/60 mt-1">Official application and onboarding system for new educational partners and schools.</p>
+                                    </div>
+                                </div>
+                                <div className="btn-omuto-secondary h-14 px-8 text-sm rounded-xl shadow-comic transition-all group-hover:-translate-y-0.5">
+                                    OPEN APPLICATION HUB <ArrowRight className="h-5 w-5" />
+                                </div>
                             </div>
-                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto" />
-                        </div>
-                    </Link>
-                 </CardContent>
-            </Card>
-
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }

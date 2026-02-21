@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Button } from "../ui/button";
 import { Check, X, Wallet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/actions';
 import { formatCurrency } from '@/lib/utils';
 import { Skeleton } from '../ui/skeleton';
 import Link from 'next/link';

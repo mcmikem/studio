@@ -27,6 +27,10 @@ import type { DashboardProps, DashboardData } from "./dashboard-loader"
 import { DashboardHeader } from "./dashboard-header"
 
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
+const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), {
+    loading: () => <Skeleton className="h-64" />,
+    ssr: false,
+});
 
 const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -201,7 +205,7 @@ interface MediaFinanceDashboardProps extends DashboardProps {
 }
 
 export function MediaFinanceDashboard({ profile, data }: MediaFinanceDashboardProps) {
-  const { allExpenses, allIncome, activities, testimonies } = data;
+  const { allExpenses, allIncome, activities, testimonies, checkins, checkouts, users } = data;
   const isLoading = !allExpenses || !allIncome || !activities || !testimonies;
 
   return (
@@ -212,6 +216,15 @@ export function MediaFinanceDashboard({ profile, data }: MediaFinanceDashboardPr
             <BudgetHealth expenses={allExpenses} income={allIncome} />
          </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
+            <TeamPerformanceLeaderboard 
+                activities={activities} 
+                users={users} 
+                checkins={checkins} 
+                checkouts={checkouts} 
+                expenses={allExpenses}
+                testimonies={testimonies}
+                isLoading={isLoading} 
+            />
             <DynamicApprovalQueue />
         </div>
          <div className="lg:col-span-2 flex flex-col gap-6">

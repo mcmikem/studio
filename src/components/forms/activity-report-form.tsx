@@ -1,7 +1,9 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
 import {
+  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -15,7 +17,7 @@ import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Zap, Target, TrendingUp, BarChart3, ArrowRight, Sparkles, MessageCircle, Clock, Wallet } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -28,14 +30,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
-import { formatCurrency, useNumberInputHandler } from '@/lib/utils'; // Import useNumberInputHandler
+import { formatCurrency, useNumberInputHandler } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Badge } from '../ui/badge';
 
 const multipliers = [
-  { id: 'combine', label: 'Combining with another activity', value: 15000 },
-  { id: 'train', label: 'Training volunteer to lead next time', value: 25000 },
-  { id: 'content', label: 'Capturing content for fundraising', value: 50000 },
-  { id: 'process', label: 'Testing new process for replication', value: 30000 },
+  { id: 'combine', label: 'Combining with another activity', value: 15000, icon: Clock },
+  { id: 'train', label: 'Training volunteer to lead next time', value: 25000, icon: Zap },
+  { id: 'content', label: 'Capturing content for fundraising', value: 50000, icon: Target },
+  { id: 'process', label: 'Testing new process for replication', value: 30000, icon: TrendingUp },
 ];
 
 interface Costs {
@@ -56,7 +59,7 @@ interface ActivityData {
   totalValue: number;
   estimatedRoi: number;
   finalRoi: number;
-  loggedAt: any; // serverTimestamp
+  loggedAt: any;
   primaryGoalType: 'Metric' | 'Program';
   primaryGoalId: string;
   primaryGoalQuantity: number;
@@ -73,7 +76,6 @@ function ActivityReportFormComponent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const programIdFromUrl = searchParams.get('programId');
-  const programNameFromUrl = searchParams.get('programName');
 
   const { user } = useUser();
   const { profile } = useUserProfile(user);
@@ -97,32 +99,21 @@ function ActivityReportFormComponent() {
   const [goalQuantity, setGoalQuantity] = useState(0);
   const [keyResultId, setKeyResultId] = useState<string | null>(null);
 
-  // New state for program-specific fields
   const [parentsAttended, setParentsAttended] = useState(0);
   const [teachersAttended, setTeachersAttended] = useState(0);
   const [treesPlanted, setTreesPlanted] = useState(0);
 
-  // New state for narrative fields
   const [memorableMoment, setMemorableMoment] = useState('');
   const [challengesLearned, setChallengesLearned] = useState('');
   const [beneficiaryQuote, setBeneficiaryQuote] = useState('');
 
-  const metricsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'impact-metrics'), orderBy('metric'));
-  }, [firestore]);
+  const metricsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'impact-metrics'), orderBy('metric')) : null, [firestore]);
   const { data: metrics, isLoading: isLoadingMetrics } = useCollection<ImpactMetric>(metricsQuery);
 
-  const programsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'programs'), orderBy('title'));
-  }, [firestore]);
+  const programsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'programs'), orderBy('title')) : null, [firestore]);
   const { data: programs, isLoading: isLoadingPrograms } = useCollection<Program>(programsQuery);
 
-  const keyResultsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'key-results'), orderBy('title'));
-  }, [firestore]);
+  const keyResultsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'key-results'), orderBy('title')) : null, [firestore]);
   const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
 
   const overallLoading = isLoadingMetrics || isLoadingPrograms || isLoadingKeyResults;
@@ -144,13 +135,6 @@ function ActivityReportFormComponent() {
     }
   }, [programIdFromUrl]);
 
-  useEffect(() => {
-    if (goalType === 'Program' && !programIdFromUrl) {
-      setSelectedGoalId(null);
-    }
-    setGoalQuantity(0);
-  }, [goalType, programIdFromUrl]);
-
   const preActivityCost = useMemo(
     () => costs.transport + costs.staffTime + costs.materials,
     [costs]
@@ -159,7 +143,6 @@ function ActivityReportFormComponent() {
   useEffect(() => {
     setActualCost(preActivityCost);
   }, [preActivityCost]);
-
 
   const indirectValue = useMemo(() => {
     return multipliers.reduce(
@@ -179,16 +162,7 @@ function ActivityReportFormComponent() {
     return 0;
   }, [goalType, selectedMetric, selectedProgram, goalQuantity]);
 
-
-  const totalValue = useMemo(
-    () => directValue + indirectValue,
-    [directValue, indirectValue]
-  );
-
-  const estimatedRoi = useMemo(() => {
-    if (preActivityCost === 0) return 0;
-    return ((totalValue - preActivityCost) / preActivityCost) * 100;
-  }, [totalValue, preActivityCost]);
+  const totalValue = useMemo(() => directValue + indirectValue, [directValue, indirectValue]);
 
   const finalRoi = useMemo(() => {
     if (actualCost === 0) return 0;
@@ -196,32 +170,12 @@ function ActivityReportFormComponent() {
   }, [totalValue, actualCost]);
 
   const handleMultiplierChange = useCallback((id: string, checked: boolean) => {
-    setSelectedMultipliers((prev) =>
-      checked ? [...prev, id] : prev.filter((mId) => mId !== id)
-    );
+    setSelectedMultipliers((prev) => checked ? [...prev, id] : prev.filter((mId) => mId !== id));
   }, []);
-
-  const handleCostChange = useCallback((field: keyof Costs, value: string) => {
-    setCosts(prev => ({
-      ...prev,
-      [field]: value === '' ? 0 : Number(value),
-    }));
-  }, []);
-
-  // Refactored number input handlers using the custom hook
-  const handleGoalQuantityChange = useNumberInputHandler(setGoalQuantity);
-  const handleParentsAttendedChange = useNumberInputHandler(setParentsAttended);
-  const handleTeachersAttendedChange = useNumberInputHandler(setTeachersAttended);
-  const handleTreesPlantedChange = useNumberInputHandler(setTreesPlanted);
-  const handleActualCostChange = useNumberInputHandler(setActualCost);
 
   const handleLogActivity = async () => {
     if (!activityName.trim() || !user || !firestore || !selectedGoalId || !profile || !keyResultId) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please provide an activity name, select a primary goal, link to a Key Result, and be logged in to save.',
-      });
+      toast({ variant: 'destructive', title: 'Mission Incomplete', description: 'Missing required data fields.' });
       return;
     }
     setLoading(true);
@@ -236,307 +190,281 @@ function ActivityReportFormComponent() {
       directValue: directValue,
       indirectValue: indirectValue,
       totalValue: totalValue,
-      estimatedRoi: estimatedRoi,
+      estimatedRoi: ((totalValue - preActivityCost) / preActivityCost) * 100,
       finalRoi: finalRoi,
       loggedAt: serverTimestamp(),
       primaryGoalType: goalType,
       primaryGoalId: selectedGoalId,
       primaryGoalQuantity: goalQuantity,
       keyResultId: keyResultId,
-      memorableMoment: memorableMoment,
-      challengesLearned: challengesLearned,
-      beneficiaryQuote: beneficiaryQuote,
+      memorableMoment,
+      challengesLearned,
+      beneficiaryQuote,
     };
 
-    if (selectedProgram?.title === 'RED Campaign') {
-        activityData.parents_attended = parentsAttended;
-        activityData.teachers_attended = teachersAttended;
-    }
-    if (selectedProgram?.title === 'GreenSchools Campaign') {
-        activityData.trees_planted = treesPlanted;
-    }
-
-    const activitiesCollection = collection(firestore, 'activities');
-    
     try {
-        await addDocumentNonBlocking(activitiesCollection, activityData);
-        toast({
-          title: 'Activity Logged!',
-          description: `${activityName} has been saved.`,
-        });
-
-        if (programIdFromUrl) {
-            router.push(`/management/programs/${programIdFromUrl}`);
-        } else {
-             // Reset all fields after logging if not coming from a specific program
-            setActivityName('');
-            setSelectedMultipliers([]);
-            setSelectedGoalId(null);
-            setKeyResultId(null);
-            setGoalQuantity(0);
-            setParentsAttended(0);
-            setTeachersAttended(0);
-            setTreesPlanted(0);
-            setMemorableMoment('');
-            setChallengesLearned('');
-            setBeneficiaryQuote('');
-            setCurrentTab("planning");
-        }
-
+        await addDocumentNonBlocking(collection(firestore, 'activities'), activityData);
+        toast({ title: 'Impact Logged!', description: 'Activity successfully deployed to HQ.' });
+        router.push('/');
     } catch(e) {
-        console.error(e);
-        toast({
-            variant: 'destructive',
-            title: 'Save Error',
-            description: 'Could not log your activity. Please try again.',
-        });
+        toast({ variant: 'destructive', title: 'Sync Failed' });
     } finally {
         setLoading(false);
     }
   };
   
-  const renderGoalSelectors = () => {
-    if (goalType === 'Metric') {
-        return (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                <div className="sm:col-span-2 space-y-2">
-                    <Label htmlFor="primary-metric">Primary Metric</Label>
-                    {overallLoading ? <Skeleton className="h-10 w-full" /> : (
-                        <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
-                            <SelectTrigger id="primary-metric">
-                                <SelectValue placeholder="Select a metric..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {metrics?.map(metric => (
-                                    <SelectItem key={metric.id} value={metric.id}>{metric.metric}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="metric-quantity">Quantity ({selectedMetric?.unit || 'units'})</Label>
-                    <Input id="metric-quantity" type="number" placeholder="e.g., 50" value={goalQuantity} onChange={e => handleGoalQuantityChange(e.target.value)} disabled={!selectedGoalId} />
-                </div>
-             </div>
-        )
-    }
-     if (goalType === 'Program') {
-        return (
-             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                <div className="sm:col-span-2 space-y-2">
-                    <Label htmlFor="primary-program">Program</Label>
-                    {overallLoading ? <Skeleton className="h-10 w-full" /> : (
-                        <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined} disabled={!!programIdFromUrl}>
-                            <SelectTrigger id="primary-program">
-                                <SelectValue placeholder="Select a program..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {programs?.map(program => (
-                                    <SelectItem key={program.id} value={program.id}>{program.title}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="program-quantity">Objectives</Label>
-                    <Input id="program-quantity" type="number" placeholder="e.g., 1" value={goalQuantity} onChange={e => handleGoalQuantityChange(e.target.value)} disabled={!selectedGoalId} />
-                </div>
-             </div>
-        )
-    }
-    return null;
-  }
-  
   return (
-      <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="planning">1. Planning</TabsTrigger>
-              <TabsTrigger value="execution">2. Execution</TabsTrigger>
-              <TabsTrigger value="logging">3. Logging</TabsTrigger>
-          </TabsList>
-          <TabsContent value="planning" className="pt-6">
-               <CardHeader className="px-0">
-                <CardTitle>What are you doing?</CardTitle>
-                <CardDescription>
-                  Define the activity and its primary goal.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 px-0">
-                <div className="space-y-2">
-                  <Label htmlFor="activityName">Activity Name</Label>
-                  <Input
-                    id="activityName"
-                    placeholder="e.g., Tree Planting @ Greenhill"
-                    value={activityName}
-                    onChange={(e) => setActivityName(e.target.value)}
-                  />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="ecosystemPhase">Ecosystem Phase</Label>
-                    <Select onValueChange={(value: "Identify & Inspire" | "Equip & Empower" | "Activate & Sustain") => setEcosystemPhase(value)} value={ecosystemPhase}>
-                        <SelectTrigger id="ecosystemPhase">
-                            <SelectValue placeholder="Select phase..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Identify & Inspire">Identify & Inspire</SelectItem>
-                            <SelectItem value="Equip & Empower">Equip & Empower</SelectItem>
-                            <SelectItem value="Activate & Sustain">Activate & Sustain</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <Separator />
-                <h3 className="font-semibold">Primary Goal</h3>
-                <div className="space-y-2">
-                    <Label htmlFor="goal-type">What type of goal is this?</Label>
-                    <Select onValueChange={(value: 'Metric' | 'Program') => setGoalType(value)} value={goalType} disabled={!!programIdFromUrl}>
-                        <SelectTrigger id="goal-type"><SelectValue placeholder="Select goal type..." /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Metric">KPI Metric (e.g., # of students)</SelectItem>
-                            <SelectItem value="Program">Program Objective (e.g., 1 RED session)</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+    <Card className="card-comic-hero overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-8 md:p-12">
+            <div className="p-3 bg-white border-lg border-omuto-navy/20 shadow-comic-sm rounded-2xl w-fit mb-6 rotate-[-2deg]">
+                <BarChart3 className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="font-heading text-4xl font-black tracking-tighter uppercase leading-none text-omuto-navy">
+                Activity <span className="text-omuto-red underline decoration-4 underline-offset-4">ROI Log</span>
+            </CardTitle>
+            <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">Impact Verification Terminal</CardDescription>
+        </CardHeader>
+        
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+            <div className="bg-muted/20 border-b-lg border-omuto-navy/5 px-8 pt-2">
+                <TabsList className="bg-transparent gap-8 h-14">
+                    {["planning", "execution", "logging"].map((tab, i) => (
+                        <TabsTrigger key={tab} value={tab} className="rounded-none border-b-4 border-transparent data-[state=active]:border-omuto-red data-[state=active]:bg-transparent font-black text-xs uppercase tracking-widest px-0">
+                            {i + 1}. {tab}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+            </div>
 
-                {renderGoalSelectors()}
-                
-                {selectedProgram?.title === 'RED Campaign' && (
-                    <div className="grid grid-cols-2 gap-4 mt-4 p-4 border rounded-md">
-                        <div className="space-y-2">
-                            <Label htmlFor="parents-attended">Parents Attended</Label>
-                            <Input id="parents-attended" type="number" placeholder="e.g., 25" value={parentsAttended} onChange={e => handleParentsAttendedChange(e.target.value)} />
+            <CardContent className="p-8 md:p-12">
+                <TabsContent value="planning" className="mt-0 animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="space-y-10">
+                        <div className="space-y-4">
+                            <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Mission Title</Label>
+                            <Input
+                                placeholder="e.g., Tree Planting @ Greenhill"
+                                value={activityName}
+                                onChange={(e) => setActivityName(e.target.value)}
+                                className="h-16 border-lg rounded-2xl text-xl font-black text-omuto-navy"
+                            />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="teachers-attended">Teachers Attended</Label>
-                            <Input id="teachers-attended" type="number" placeholder="e.g., 5" value={teachersAttended} onChange={e => handleTeachersAttendedChange(e.target.value)} />
-                        </div>
-                    </div>
-                )}
-                
-                {selectedProgram?.title === 'GreenSchools Campaign' && (
-                    <div className="mt-4 p-4 border rounded-md">
-                        <div className="space-y-2">
-                            <Label htmlFor="trees-planted">Trees Planted</Label>
-                            <Input id="trees-planted" type="number" placeholder="e.g., 150" value={treesPlanted} onChange={e => handleTreesPlantedChange(e.target.value)} />
-                        </div>
-                    </div>
-                )}
-                
-                 <div className="p-4 bg-muted rounded-lg">
-                    <div className="flex justify-between items-center text-md">
-                        <span className="text-muted-foreground">Direct Value (from Goal):</span>
-                        <span className="font-bold">{formatCurrency(directValue)}</span>
-                    </div>
-                 </div>
 
-                <Button onClick={() => setCurrentTab("execution")} className="w-full">Next: Plan Execution</Button>
-              </CardContent>
-          </TabsContent>
-           <TabsContent value="execution" className="pt-6">
-                <CardHeader className="px-0">
-                    <CardTitle>How will you execute?</CardTitle>
-                    <CardDescription>
-                    Estimate your costs and find ways to create multiple wins.
-                    </CardDescription>
-                </CardHeader>
-                 <CardContent className="space-y-6 px-0">
-                    <h3 className="font-semibold text-lg">Estimated Costs</h3>
-                    <div className="space-y-4">
-                        <div className="space-y-2"><Label htmlFor="transportCost">Transport</Label><Input id="transportCost" type="number" step="1000" value={costs.transport} onChange={(e) => handleCostChange('transport', e.target.value)} /></div>
-                        <div className="space-y-2"><Label htmlFor="staffTimeCost">Staff Time</Label><Input id="staffTimeCost" type="number" step="1000" value={costs.staffTime} onChange={(e) => handleCostChange('staffTime', e.target.value)} /></div>
-                        <div className="space-y-2"><Label htmlFor="materialsCost">Materials</Label><Input id="materialsCost" type="number" step="1000" value={costs.materials} onChange={(e) => handleCostChange('materials', e.target.value)} /></div>
-                    </div>
-                    <div className="text-right font-bold text-lg p-2 bg-muted rounded-md">Total Estimated Cost: {formatCurrency(preActivityCost)}</div>
-                    <Separator />
-                    <h3 className="font-semibold text-lg">Value Multipliers (Multiple Wins)</h3>
-                    <div className="space-y-3 pt-2">
-                        {multipliers.map((m) => (
-                            <div key={m.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50">
-                            <Checkbox id={m.id} onCheckedChange={(checked) => handleMultiplierChange(m.id, !!checked)} checked={selectedMultipliers.includes(m.id)} />
-                            <Label htmlFor={m.id} className="flex-1 cursor-pointer">{m.label} <span className="text-muted-foreground text-xs">({formatCurrency(m.value)})</span></Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Ecosystem Phase</Label>
+                                <Select onValueChange={(value: any) => setEcosystemPhase(value)} value={ecosystemPhase}>
+                                    <SelectTrigger className="h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Identify & Inspire">Identify & Inspire</SelectItem>
+                                        <SelectItem value="Equip & Empower">Equip & Empower</SelectItem>
+                                        <SelectItem value="Activate & Sustain">Activate & Sustain</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                        ))}
-                    </div>
-                    <div className="p-4 bg-muted rounded-lg">
-                        <div className="flex justify-between items-center text-md">
-                            <span className="text-muted-foreground">Indirect Value (from Multipliers):</span>
-                            <span className="font-bold">{formatCurrency(indirectValue)}</span>
+                            <div className="space-y-4">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Impact Vector</Label>
+                                <Select onValueChange={(value: any) => setGoalType(value)} value={goalType}>
+                                    <SelectTrigger className="h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Metric">KPI Metric</SelectItem>
+                                        <SelectItem value="Program">Program Objective</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {/* Goal Selectors - Metric or Program */}
+                        {goalType === 'Metric' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                                <div className="space-y-2">
+                                    <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Primary Metric</Label>
+                                    {overallLoading ? <Skeleton className="h-14 rounded-2xl border-lg" /> : (
+                                        <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
+                                            <SelectTrigger className="h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue placeholder="Select a metric..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {metrics?.map(metric => (
+                                                    <SelectItem key={metric.id} value={metric.id}>{metric.metric}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Quantity ({selectedMetric?.unit || 'units'})</Label>
+                                    <Input type="number" placeholder="e.g., 50" value={goalQuantity} onChange={e => (e.target.value === '' ? setGoalQuantity(0) : setGoalQuantity(Number(e.target.value)))} disabled={!selectedGoalId} className="h-14 border-lg rounded-2xl font-black text-omuto-navy" />
+                                </div>
+                            </div>
+                        )}
+
+                        {goalType === 'Program' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                                <div className="space-y-2">
+                                    <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Primary Program</Label>
+                                    {overallLoading ? <Skeleton className="h-14 rounded-2xl border-lg" /> : (
+                                        <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined} disabled={!!programIdFromUrl}>
+                                            <SelectTrigger className="h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue placeholder="Select a program..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {programs?.map(program => (
+                                                    <SelectItem key={program.id} value={program.id}>{program.title}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Objectives Completed</Label>
+                                    <Input type="number" placeholder="e.g., 1" value={goalQuantity} onChange={e => (e.target.value === '' ? setGoalQuantity(0) : setGoalQuantity(Number(e.target.value)))} disabled={!selectedGoalId} className="h-14 border-lg rounded-2xl font-black text-omuto-navy" />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Conditional Program-Specific Fields (RED Campaign, GreenSchools) */}
+                        {selectedProgram?.title === 'RED Campaign' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 mt-6 bg-omuto-red/10 border-lg border-omuto-red/20 rounded-3xl">
+                                <div className="space-y-2">
+                                    <Label className="font-black text-[10px] uppercase tracking-widest pl-1 text-omuto-red">Parents Attended</Label>
+                                    <Input type="number" placeholder="e.g., 25" value={parentsAttended} onChange={e => (e.target.value === '' ? setParentsAttended(0) : setParentsAttended(Number(e.target.value)))} className="h-14 border-lg rounded-2xl font-black text-omuto-navy" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="font-black text-[10px] uppercase tracking-widest pl-1 text-omuto-red">Teachers Attended</Label>
+                                    <Input type="number" placeholder="e.g., 5" value={teachersAttended} onChange={e => (e.target.value === '' ? setTeachersAttended(0) : setTeachersAttended(Number(e.target.value)))} className="h-14 border-lg rounded-2xl font-black text-omuto-navy" />
+                                </div>
+                            </div>
+                        )}
+                        
+                        {selectedProgram?.title === 'GreenSchools Campaign' && (
+                            <div className="p-6 mt-6 bg-omuto-teal/10 border-lg border-omuto-teal/20 rounded-3xl">
+                                <div className="space-y-2">
+                                    <Label className="font-black text-[10px] uppercase tracking-widest pl-1 text-omuto-teal">Trees Planted</Label>
+                                    <Input type="number" placeholder="e.g., 150" value={treesPlanted} onChange={e => (e.target.value === '' ? setTreesPlanted(0) : setTreesPlanted(Number(e.target.value)))} className="h-14 border-lg rounded-2xl font-black text-omuto-navy" />
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="p-10 bg-omuto-navy text-white rounded-3xl shadow-comic flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white/10 rounded-2xl"><Target className="h-8 w-8 text-omuto-yellow" /></div>
+                                <div>
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Potential Value</p>
+                                    <p className="font-heading text-4xl font-black tracking-tighter">{formatCurrency(directValue)}</p>
+                                </div>
+                            </div>
+                            <Button onClick={() => setCurrentTab("execution")} className="btn-omuto bg-omuto-red text-white border-lg border-white shadow-comic-sm hover:shadow-comic-sm">
+                                NEXT STEP <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
                         </div>
                     </div>
-                     <Button onClick={() => setCurrentTab("logging")} className="w-full">Next: Log Results</Button>
-                </CardContent>
-          </TabsContent>
-          <TabsContent value="logging" className="pt-6">
-               <CardHeader className="px-0">
-                <CardTitle>How did it go?</CardTitle>
-                <CardDescription>
-                  Enter the final numbers and debrief to log your report.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6 px-0">
-                <div className="space-y-4 pt-2 bg-amber-50 dark:bg-amber-900/10 p-4 rounded-lg">
-                  <div className="flex justify-between items-center text-lg">
-                    <span className="text-muted-foreground">Total Estimated Value:</span>
-                    <span className="font-bold">{formatCurrency(totalValue)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-2xl">
-                    <span className="font-headline">Estimated ROI:</span>
-                    <span className={`font-bold font-headline ${estimatedRoi >= 0 ? 'text-green-500' : 'text-red-500'}`}>{estimatedRoi.toFixed(0)}%</span>
-                  </div>
-                </div>
+                </TabsContent>
 
-                 <div className="space-y-2">
-                    <Label htmlFor="key-result">Link to Key Result</Label>
-                    {overallLoading ? <Skeleton className="h-10 w-full" /> : (
-                        <Select onValueChange={setKeyResultId} value={keyResultId || undefined}>
-                            <SelectTrigger id="key-result">
-                                <SelectValue placeholder="Select a Key Result..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {keyResults?.map(kr => (
-                                    <SelectItem key={kr.id} value={kr.id}>{kr.title}: {kr.description}</SelectItem>
+                <TabsContent value="execution" className="mt-0 animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="space-y-12">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="p-6 bg-muted/20 border-lg border-omuto-navy/20 rounded-3xl">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Transport</Label>
+                                <Input type="number" value={costs.transport} onChange={(e) => setCosts(prev => ({...prev, transport: Number(e.target.value)}))} className="h-14 border-lg rounded-2xl font-black text-omuto-navy mt-2" />
+                            </div>
+                             <div className="p-6 bg-muted/20 border-lg border-omuto-navy/20 rounded-3xl">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Staff Time</Label>
+                                <Input type="number" value={costs.staffTime} onChange={(e) => setCosts(prev => ({...prev, staffTime: Number(e.target.value)}))} className="h-14 border-lg rounded-2xl font-black text-omuto-navy mt-2" />
+                            </div>
+                             <div className="p-6 bg-muted/20 border-lg border-omuto-navy/20 rounded-3xl">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Materials</Label>
+                                <Input type="number" value={costs.materials} onChange={(e) => setCosts(prev => ({...prev, materials: Number(e.target.value)}))} className="h-14 border-lg rounded-2xl font-black text-omuto-navy mt-2" />
+                            </div>
+                        </div>
+
+                        <div className="p-10 bg-omuto-navy rounded-3xl shadow-comic flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white/10 rounded-2xl"><Wallet className="h-8 w-8 text-omuto-yellow" /></div>
+                                <div>
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Estimated Mission Cost</p>
+                                    <p className="font-heading text-4xl font-black text-white tracking-tighter">{formatCurrency(preActivityCost)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <h3 className="font-heading font-black uppercase tracking-tighter text-xl text-omuto-navy">Value Multipliers (Optional)</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {multipliers.map((m) => (
+                                    <div key={m.id} className={`p-6 border-lg rounded-2xl transition-all cursor-pointer flex items-center gap-4 group ${selectedMultipliers.includes(m.id) ? 'border-omuto-red bg-omuto-red text-white shadow-comic-sm -rotate-1' : 'border-omuto-navy/20 hover:border-omuto-navy/40'}`} onClick={() => handleMultiplierChange(m.id, !selectedMultipliers.includes(m.id))}>
+                                        <div className={`p-3 rounded-xl ${selectedMultipliers.includes(m.id) ? 'bg-white/20 text-white' : 'bg-muted/30 text-omuto-navy/60'} group-hover:scale-110 transition-transform`}><m.icon className="h-5 w-5" /></div>
+                                        <div className="flex-1">
+                                            <p className={`font-black text-xs leading-tight uppercase ${selectedMultipliers.includes(m.id) ? 'text-white' : 'text-omuto-navy'}`}>{m.label}</p>
+                                            <p className={`text-[10px] font-bold mt-1 ${selectedMultipliers.includes(m.id) ? 'text-white/70' : 'text-muted-foreground'}`}>+{formatCurrency(m.value)}</p>
+                                        </div>
+                                        <Checkbox checked={selectedMultipliers.includes(m.id)} className="hidden" />
+                                    </div>
                                 ))}
-                            </SelectContent>
-                        </Select>
-                    )}
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="actualCost">Actual Final Cost</Label>
-                  <Input id="actualCost" type="number" value={actualCost} onChange={(e) => handleActualCostChange(e.target.value)} placeholder="e.g., 42000"/>
-                </div>
+                            </div>
+                        </div>
 
-                <Separator />
-                
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Post-Activity Debrief & Story</h3>
-                  <div className="space-y-2"><Label htmlFor="memorableMoment">Memorable Moment</Label><Textarea id="memorableMoment" placeholder="Describe a specific, powerful interaction or observation." value={memorableMoment} onChange={(e) => setMemorableMoment(e.target.value)}/></div>
-                  <div className="space-y-2"><Label htmlFor="challengesLearned">Challenges & Lessons Learned</Label><Textarea id="challengesLearned" placeholder="What was a surprising challenge and how did you overcome it?" value={challengesLearned} onChange={(e) => setChallengesLearned(e.target.value)}/></div>
-                  <div className="space-y-2"><Label htmlFor="beneficiaryQuote">Quote from a Beneficiary</Label><Textarea id="beneficiaryQuote" placeholder='e.g., "I never knew I could make my own pads before today!" - Jane' value={beneficiaryQuote} onChange={(e) => setBeneficiaryQuote(e.target.value)}/></div>
-                </div>
+                        <div className="p-10 bg-omuto-navy rounded-3xl shadow-comic flex flex-col md:flex-row items-center justify-between gap-6">
+                             <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white/10 rounded-2xl"><Sparkles className="h-8 w-8 text-omuto-yellow" /></div>
+                                <div>
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Total Potential Impact</p>
+                                    <p className="font-heading text-4xl font-black text-white tracking-tighter">{formatCurrency(totalValue)}</p>
+                                </div>
+                            </div>
+                            <Button onClick={() => setCurrentTab("logging")} className="btn-omuto bg-omuto-red text-white border-lg border-white shadow-comic-sm hover:shadow-comic-sm">
+                                LOG FINAL STATS <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </TabsContent>
 
-                <Separator />
+                <TabsContent value="logging" className="mt-0 animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="space-y-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="p-8 bg-omuto-yellow border-lg border-omuto-navy rounded-3xl shadow-comic">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/60">Final Return</p>
+                                <p className="font-heading text-5xl font-black tracking-tighter text-omuto-navy">+{finalRoi.toFixed(0)}%</p>
+                            </div>
+                            <div className="space-y-4">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Strategic Alignment</Label>
+                                <Select onValueChange={setKeyResultId} value={keyResultId || undefined}>
+                                    <SelectTrigger className="h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue placeholder="Link to Key Result..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {keyResults?.map(kr => (
+                                            <SelectItem key={kr.id} value={kr.id}>{kr.title}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
 
-                <div className="space-y-4 pt-2 bg-green-50 dark:bg-green-900/10 p-4 rounded-lg">
-                   <div className="flex justify-between items-center text-2xl pt-4">
-                    <span className="font-headline">Final ROI:</span>
-                    <span className={`font-bold font-headline ${finalRoi >= 0 ? 'text-green-500' : 'text-red-500'}`}>{finalRoi.toFixed(0)}%</span>
-                  </div>
-                </div>
-                <Button className="w-full" size="lg" onClick={handleLogActivity} disabled={loading || !activityName.trim()}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Log this Activity &amp; ROI
-                </Button>
-              </CardContent>
-          </TabsContent>
-      </Tabs>
+                        <div className="space-y-6">
+                            <h3 className="font-heading font-black uppercase tracking-tighter text-xl text-omuto-navy">Mission Debrief & Story</h3>
+                            <div className="space-y-2">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1 flex items-center gap-2"><MessageCircle className="h-3 w-3 text-omuto-navy/60" /> Memorable Moment</Label>
+                                <Textarea value={memorableMoment} onChange={e => setMemorableMoment(e.target.value)} className="min-h-[120px] border-lg rounded-2xl p-6 text-omuto-navy font-bold" placeholder="Describe a specific, powerful interaction or observation." />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1 flex items-center gap-2"><Sparkles className="h-3 w-3 text-omuto-navy/60" /> Beneficiary Quote</Label>
+                                <Textarea value={beneficiaryQuote} onChange={e => setBeneficiaryQuote(e.target.value)} className="min-h-[120px] border-lg rounded-2xl p-6 text-omuto-navy font-bold" placeholder='e.g., "I never knew I could make my own pads before today!" - Jane' />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="font-black text-[10px] uppercase tracking-widest pl-1 flex items-center gap-2"><Clock className="h-3 w-3 text-omuto-navy/60" /> Challenges & Learnings</Label>
+                                <Textarea value={challengesLearned} onChange={e => setChallengesLearned(e.target.value)} className="min-h-[120px] border-lg rounded-2xl p-6 text-omuto-navy font-bold" placeholder="What was a surprising challenge and how did you overcome it?" />
+                            </div>
+                        </div>
+
+                        <Button className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm" onClick={handleLogActivity} disabled={loading}>
+                            {loading ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Zap className="mr-3 h-5 w-5 fill-white" />}
+                            DEPLOY IMPACT DATA
+                        </Button>
+                    </div>
+                </TabsContent>
+            </CardContent>
+        </Tabs>
+    </Card>
   );
 }
 
 export function ActivityReportForm() {
     return (
-        <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+        <Suspense fallback={<Skeleton className="h-96 w-full rounded-3xl" />}>
             <ActivityReportFormComponent />
         </Suspense>
     )

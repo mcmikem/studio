@@ -1,64 +1,68 @@
-
 'use server';
 
-/**
- * @fileOverview The AI-powered daily planner flow.
- * This flow takes a user's primary mission, their role, and organizational context
- * to generate a structured, strategic daily plan.
- */
-
 import { ai } from '@/ai/genkit';
-import { KNOWLEDGE_BASE } from '@/lib/data';
-import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema, type DailyPlannerAIInput, type DailyPlannerAIOutput } from '@/lib/types';
+import { z } from 'zod';
+import { KeyResultAISchema } from '@/lib/types';
 
-const dailyPlannerPrompt = ai.definePrompt({
-    name: 'dailyPlannerPrompt',
-    input: { schema: DailyPlannerAIInputSchema },
-    output: { schema: DailyPlannerAIOutputSchema },
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `You are an expert productivity coach for Omuto Foundation, a youth-led NGO in Uganda. Your goal is to generate a structured, strategic daily plan in JSON format for {{userName}}. You are a coach, not just a scheduler.
 
-      Here is the organizational knowledge base to draw from:
-      ---
-      ${KNOWLEDGE_BASE}
-      ---
-      
-      The staff member, {{userName}}, with the role '{{userRole}}' needs a strategic daily plan. Their main focus for today is: "{{primaryMission}}".
-
-      {{#if weeklyPriorities}}
-      Their personal priorities for this week are: {{#each weeklyPriorities}}- {{{this}}} {{/each}}.
-      {{/if}}
-
-      CURRENT ORGANIZATIONAL KEY RESULTS (Summary):
-      {{#if keyResults}}
-      {{#each keyResults}}
-      - {{this.title}}: {{this.description}} (Deadline: {{this.deadline}})
-      {{/each}}
-      {{/if}}
-
-      Your task is to generate a structured JSON object based on the schema provided.
-
-      1.  **Time Blocks:** Break down the user's primary mission into a series of specific, actionable tasks. Assign each task to a logical time block. The 'description' for each time block MUST be a concrete to-do item (e.g., "Draft the first section of the RED Campaign report" or "Call 3 potential partners from the list"). Do NOT put coaching questions or general advice in the description field. Make sure your tasks directly relate to the user's stated primary mission.
-      2.  **Multi-Win Connections:** Explicitly connect the daily mission to AT LEAST TWO specific weekly priorities (if available) or organizational Key Results from the provided list. Use the "Integrated Activity Framework" and "Individual Accountability" sections of the knowledge base to find these connections. For example, if the mission is 'Finalize Dignity Pads production', a connection would be 'Contributes to KR1: Clear October Backlogs'. This is critical for strategic alignment.
-      3.  **Materials:** List specific, tangible items needed (e.g., "Updated partners spreadsheet," "Camera with charged battery").
-      4.  **Challenges:** Proactively identify at least one potential challenge from the "Risk Management" section of the knowledge base that is relevant to the user's mission. Provide the concrete mitigation strategy listed in the plan. This is active risk management. Example: "Challenge: Partner may be unavailable. Mitigation: Send a confirmation WhatsApp message one hour before the meeting."
-      5.  **Best Practice:** Provide ONE single, highly relevant piece of advice from the knowledge base that helps the staff member think more strategically about their task today.`,
+export const DailyPlannerAIInputSchema = z.object({
+  userName: z.string().describe("The name of the user."),
+  userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
+  primaryMission: z.string().describe("The user's stated main focus for the day."),
+  weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
+  keyResults: z.array(KeyResultAISchema).describe("A list of the organization's current Key Results (OKRs)."),
 });
+export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
 
+export const DailyPlannerAIOutputSchema = z.object({
+    timeBlocks: z.array(z.object({
+        startTime: z.string().describe("e.g., '09:00 AM'"),
+        endTime: z.string().describe("e.g., '11:00 AM'"),
+        description: z.string(),
+    })).describe("A detailed, actionable schedule for the day, broken into logical time blocks."),
+    strategicAlignments: z.array(z.object({
+        krTitle: z.string().describe("The title of the Key Result this mission aligns with."),
+        alignmentJustification: z.string().describe("A brief, one-sentence explanation of *how* the daily mission supports this specific Key Result."),
+    })).describe("A list of 1-2 key results that this daily mission directly supports."),
+    materials: z.string().describe("A comma-separated list of what they will need."),
+    challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
+    bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from a knowledge base of best practices for NGO work."),
+});
+export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
 
-export const dailyPlannerAI = ai.defineFlow(
+export const dailyPlannerFlow = ai.defineFlow(
   {
-    name: 'dailyPlannerAIFlow',
+    name: 'dailyPlannerFlow',
     inputSchema: DailyPlannerAIInputSchema,
     outputSchema: DailyPlannerAIOutputSchema,
   },
-  async (input) => {
-    const {output} = await dailyPlannerPrompt(input);
-    
-    if (!output) {
-      throw new Error('AI failed to generate a plan.');
-    }
-    
-    return output;
+  async ({ userName, userRole, primaryMission, weeklyPriorities, keyResults }) => {
+    const prompt = `
+      You are an elite performance coach for a youth-led NGO in rural Uganda called Omuto Foundation.
+      Your client is ${userName}, a ${userRole}.
+      Their primary mission for today is: "${primaryMission}".
+
+      Here is the strategic context:
+      - Their Personal Weekly Priorities: ${JSON.stringify(weeklyPriorities)}
+      - The Organization's Current Key Results (OKRs): ${JSON.stringify(keyResults)}
+
+      Your task is to generate a comprehensive, actionable daily plan in JSON format. The plan must include:
+      1.  **Time Blocks**: A logical, step-by-step schedule for the day. Be specific and action-oriented.
+      2.  **Strategic Alignments**: Identify 1-2 of the most relevant Organizational Key Results that this mission supports. For each, provide a brief justification explaining the connection. This is the most important section to help the user feel connected to the bigger picture.
+      3.  **Materials**: A simple comma-separated list of what they will need.
+      4.  **Challenges**: Anticipate potential obstacles and provide concrete mitigation strategies.
+      5.  **Best Practice**: Offer a single, powerful productivity tip relevant to their role and mission.
+
+      Generate the full JSON output based on this analysis. Ensure the strategic alignment is clear and motivational.
+    `;
+
+    const llmResponse = await ai.generate({
+      prompt: prompt,
+      model: 'googleai/gemini-pro',
+      output: { schema: DailyPlannerAIOutputSchema },
+      config: { temperature: 0.3 }
+    });
+
+    return llmResponse.output!;
   }
 );

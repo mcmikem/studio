@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,34 +14,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Building, ArrowRight, Sparkles } from 'lucide-react';
 
 const programs = [
-    {
-        id: 'YAC',
-        label: 'Young Alive Clubs (Adolescent Health, SRHR & Mental Health)',
-        description: 'Student-led clubs focused on health and well-being, covering topics like sexual and reproductive health, mental health, healthy relationships, and life skills.'
-    },
-    {
-        id: 'RED',
-        label: 'RED Brigade (Menstrual Health Management & Period Poverty)',
-        description: 'Empowers student leaders to fight period poverty, break down menstrual stigma, and ensure girls have the resources and support to manage their periods with dignity.'
-    },
-    {
-        id: 'GreenSchools',
-        label: 'GreenSchools (Environmental Awareness & Sustainability)',
-        description: 'Helps students create a more environmentally conscious school through activities like school gardens, tree planting, recycling initiatives, and creating outdoor learning spaces.'
-    },
-    {
-        id: 'Debate',
-        label: 'Interschool Debate Competitions (SDGs & Youth Issues)',
-        description: 'Encourages critical thinking and public speaking skills as students research, develop arguments, and respectfully debate important topics related to youth development and the Sustainable Development Goals (SDGs).'
-    },
-    {
-        id: 'SLF',
-        label: 'Student Leaders Forum (Leadership Training, Student/School representation)',
-        description: 'The Forum trains student leaders in the school (prefects, class leaders, student Councillors) and two of the leaders represent the school on the Termly forums to discuss issues affecting students and their school'
-    }
+    { id: 'YAC', label: 'Young Alive Clubs', desc: 'Health & Well-being' },
+    { id: 'RED', label: 'RED Brigade', desc: 'Menstrual Health' },
+    { id: 'GreenSchools', label: 'GreenSchools', desc: 'Sustainability' },
+    { id: 'Debate', label: 'Debate Hub', desc: 'Critical Thinking' },
+    { id: 'SLF', label: 'Student Leaders', desc: 'Leadership Training' }
 ]
 
 const schoolApplicationSchema = z.object({
@@ -90,207 +71,163 @@ export function SchoolApplicationForm() {
       return;
     }
     
-    const applicationData = {
-        ...data,
-        createdAt: serverTimestamp()
-    };
+    const applicationData = { ...data, createdAt: serverTimestamp() };
 
     try {
         await addDocumentNonBlocking(collection(firestore, 'school-applications'), applicationData);
-        toast({
-            title: 'Application Submitted!',
-            description: 'Thank you for your interest. We will review your application and be in touch soon.',
-        });
+        toast({ title: 'Application Submitted!', description: 'Thank you. We will review your application soon.' });
     } catch(e) {
         console.error(e);
-        toast({ variant: 'destructive', title: 'Submission Failed', description: 'There was an error submitting your application. Please try again.' });
+        toast({ variant: 'destructive', title: 'Submission Failed', description: 'There was an error. Please try again.' });
     }
   };
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="pt-6 space-y-8">
-          
-          <div className="space-y-4">
-             <div className="space-y-2">
-                <Label htmlFor="email" className="font-bold required-indicator">Email</Label>
-                <Input id="email" type="email" {...register('email')} placeholder="your.email@example.com" />
-                {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+    <Card className="card-comic-hero overflow-hidden">
+      <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-8 md:p-12">
+            <div className="p-3 bg-white border-lg border-omuto-navy/20 shadow-comic-sm rounded-2xl w-fit mb-6 rotate-[-2deg]">
+                <Building className="h-8 w-8 text-primary" />
             </div>
+            <CardTitle className="font-heading text-4xl font-black tracking-tight uppercase leading-none text-omuto-navy">
+                School <span className="text-omuto-red underline decoration-4 underline-offset-4">Application</span>
+            </CardTitle>
+            <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">Official Intake Frequency</CardDescription>
+      </CardHeader>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CardContent className="p-8 md:p-12 space-y-12">
+          
+          {/* Section 1: Contact */}
+          <div className="space-y-6">
+             <div className="flex items-center gap-3">
+                <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Primary Contact</span>
+                <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="contactName" className="font-bold text-[10px] uppercase tracking-widest pl-1">Full Name</Label>
+                    <Input id="contactName" {...register('contactName')} className="h-14 border-lg rounded-2xl focus-visible:ring-omuto-red text-omuto-navy font-bold" />
+                    {errors.contactName && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.contactName.message}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="contactPhone" className="font-bold text-[10px] uppercase tracking-widest pl-1">Phone Number</Label>
+                    <Input id="contactPhone" {...register('contactPhone')} className="h-14 border-lg rounded-2xl focus-visible:ring-omuto-red text-omuto-navy font-bold" />
+                    {errors.contactPhone && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.contactPhone.message}</p>}
+                </div>
+             </div>
           </div>
           
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">School Information</h3>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Section 2: School Detail */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+                <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">School Metadata</span>
+                <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
+             </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="schoolName" className="font-bold">School Name</Label>
-                    <Input id="schoolName" {...register('schoolName')} />
-                     {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName.message}</p>}
+                    <Label htmlFor="schoolName" className="font-bold text-[10px] uppercase tracking-widest pl-1">Official School Name</Label>
+                    <Input id="schoolName" {...register('schoolName')} className="h-14 border-lg rounded-2xl text-omuto-navy font-bold" />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="schoolLocation" className="font-bold">School Location (District, Region)</Label>
-                    <Input id="schoolLocation" {...register('schoolLocation')} />
-                    {errors.schoolLocation && <p className="text-sm text-destructive">{errors.schoolLocation.message}</p>}
+                    <Label htmlFor="schoolLocation" className="font-bold text-[10px] uppercase tracking-widest pl-1">Location / District</Label>
+                    <Input id="schoolLocation" {...register('schoolLocation')} className="h-14 border-lg rounded-2xl text-omuto-navy font-bold" />
                 </div>
              </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="space-y-2">
-                    <Label className="font-bold">School Type</Label>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                 <div className="space-y-3">
+                    <Label className="font-bold text-[10px] uppercase tracking-widest pl-1">Institution Type</Label>
                     <Controller name="schoolType" control={control} render={({ field }) => (
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="Primary" id="primary" /><Label htmlFor="primary">Primary</Label></div>
-                            <div className="flex items-center space-x-2"><RadioGroupItem value="Secondary" id="secondary" /><Label htmlFor="secondary">Secondary</Label></div>
+                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
+                            <div className="flex items-center space-x-2 bg-muted/30 px-6 py-4 rounded-2xl border-lg border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white transition-all cursor-pointer flex-1">
+                                <RadioGroupItem value="Primary" id="primary" className="border-2" />
+                                <Label htmlFor="primary" className="font-black uppercase text-xs cursor-pointer text-omuto-navy">Primary</Label>
+                            </div>
+                            <div className="flex items-center space-x-2 bg-muted/30 px-6 py-4 rounded-2xl border-lg border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white transition-all cursor-pointer flex-1">
+                                <RadioGroupItem value="Secondary" id="secondary" className="border-2" />
+                                <Label htmlFor="secondary" className="font-black uppercase text-xs cursor-pointer text-omuto-navy">Secondary</Label>
+                            </div>
                         </RadioGroup>
                     )} />
-                     {errors.schoolType && <p className="text-sm text-destructive">{errors.schoolType.message}</p>}
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="studentCount" className="font-bold">Number of Students</Label>
-                    <Input id="studentCount" type="number" {...register('studentCount')} />
-                     {errors.studentCount && <p className="text-sm text-destructive">{errors.studentCount.message}</p>}
-                </div>
-             </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="contactName" className="font-bold">Contact Name</Label>
-                    <Input id="contactName" {...register('contactName')} />
-                    {errors.contactName && <p className="text-sm text-destructive">{errors.contactName.message}</p>}
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="contactEmail" className="font-bold">Contact Email</Label>
-                    <Input id="contactEmail" type="email" {...register('contactEmail')} />
-                    {errors.contactEmail && <p className="text-sm text-destructive">{errors.contactEmail.message}</p>}
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="contactPhone" className="font-bold">Contact Phone Number</Label>
-                    <Input id="contactPhone" {...register('contactPhone')} />
-                    {errors.contactPhone && <p className="text-sm text-destructive">{errors.contactPhone.message}</p>}
+                    <Label htmlFor="studentCount" className="font-bold text-[10px] uppercase tracking-widest pl-1">Population</Label>
+                    <Input id="studentCount" type="number" {...register('studentCount')} className="h-14 border-lg rounded-2xl text-omuto-navy font-bold" />
                 </div>
              </div>
           </div>
 
-           <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Programs Interest</h3>
+           {/* Section 3: Programs */}
+           <div className="space-y-6">
+            <div className="flex items-center gap-3">
+                <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Action Pathways</span>
+                <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
+             </div>
              <Controller
                 name="interestedPrograms"
                 control={control}
                 render={({ field }) => (
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {programs.map((item) => (
-                            <div key={item.id} className="flex items-start gap-4 p-4 border rounded-lg">
-                                <Checkbox
-                                    id={item.id}
-                                    checked={field.value?.includes(item.id)}
-                                    onCheckedChange={(checked) => {
-                                        return checked
-                                        ? field.onChange([...(field.value || []), item.id])
-                                        : field.onChange(field.value?.filter((value) => value !== item.id))
-                                    }}
-                                />
-                                <div className="grid gap-1.5 leading-none">
-                                    <label htmlFor={item.id} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{item.label}</label>
-                                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                            <div key={item.id} className="relative group">
+                                <div className={`h-full p-6 border-lg rounded-2xl transition-all cursor-pointer flex flex-col justify-between ${field.value?.includes(item.id) ? 'border-omuto-red bg-omuto-red text-white shadow-comic-sm -rotate-1' : 'border-omuto-navy/20 bg-white hover:border-omuto-navy/40'}`}>
+                                    <Checkbox
+                                        id={item.id}
+                                        checked={field.value?.includes(item.id)}
+                                        className="hidden"
+                                        onCheckedChange={(checked) => {
+                                            return checked
+                                            ? field.onChange([...(field.value || []), item.id])
+                                            : field.onChange(field.value?.filter((value) => value !== item.id))
+                                        }}
+                                    />
+                                    <label htmlFor={item.id} className="flex flex-col gap-1 cursor-pointer h-full">
+                                        <div className="flex items-center justify-between">
+                                            <span className={`font-black uppercase text-sm tracking-tight leading-tight ${field.value?.includes(item.id) ? 'text-white' : 'text-omuto-navy'}`}>{item.label}</span>
+                                            {field.value?.includes(item.id) && <Sparkles className="h-4 w-4 text-omuto-yellow" />}
+                                        </div>
+                                        <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${field.value?.includes(item.id) ? 'text-white/70' : 'text-muted-foreground'}`}>{item.desc}</p>
+                                    </label>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
              />
-             {errors.interestedPrograms && <p className="text-sm text-destructive">{errors.interestedPrograms.message}</p>}
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold border-b pb-2">Contextual Information</h3>
-            <div className="space-y-2">
-                <Label htmlFor="existingHealthClubs">Briefly describe any existing health clubs or initiatives in your school.</Label>
-                <Textarea id="existingHealthClubs" {...register('existingHealthClubs')} />
-            </div>
+          <div className="space-y-6">
+             <div className="flex items-center gap-3">
+                <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Strategy & Capacity</span>
+                <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
+             </div>
              <div className="space-y-2">
-                <Label htmlFor="sustainabilityPlan" className="font-bold">How will your school ensure these programs continue to benefit students after Omuto's initial support?</Label>
-                <Textarea id="sustainabilityPlan" {...register('sustainabilityPlan')} />
-                {errors.sustainabilityPlan && <p className="text-sm text-destructive">{errors.sustainabilityPlan.message}</p>}
+                <Label htmlFor="sustainabilityPlan" className="font-bold text-[10px] uppercase tracking-widest pl-1">Sustainability Strategy</Label>
+                <Textarea id="sustainabilityPlan" {...register('sustainabilityPlan')} className="min-h-[120px] border-lg rounded-2xl p-6 text-omuto-navy font-bold" placeholder="How will your school maintain impact after Omuto's support?" />
+                {errors.sustainabilityPlan && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.sustainabilityPlan.message}</p>}
             </div>
-             <div className="space-y-2">
-                <Label className="font-bold">Select number of teachers willing to actively support these programs</Label>
+             <div className="space-y-4">
+                <Label className="font-bold text-[10px] uppercase tracking-widest pl-1">Teacher Commitment Force</Label>
                  <Controller name="teacherSupport" control={control} render={({ field }) => (
-                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-6 pt-2">
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="1" id="t1" /><Label htmlFor="t1">1</Label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="2" id="t2" /><Label htmlFor="t2">2</Label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="3" id="t3" /><Label htmlFor="t3">3</Label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="More than 3" id="t4" /><Label htmlFor="t4">More than 3</Label></div>
+                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {['1', '2', '3', 'More than 3'].map(val => (
+                             <div key={val} className="flex flex-col items-center gap-2 flex-1">
+                                <RadioGroupItem value={val} id={`t-${val}`} className="hidden" />
+                                <Label htmlFor={`t-${val}`} className="w-full text-center py-4 bg-muted/30 border-lg border-transparent rounded-2xl font-black text-xs cursor-pointer hover:bg-white hover:border-omuto-navy/20 transition-all has-[:checked]:border-omuto-navy has-[:checked]:bg-omuto-yellow has-[:checked]:shadow-comic-sm has-[:checked]:text-omuto-navy">
+                                    {val}
+                                </Label>
+                             </div>
+                        ))}
                     </RadioGroup>
                 )} />
             </div>
           </div>
 
-          {(interestedPrograms.length > 0) && (
-            <div className="space-y-6">
-                <h3 className="text-lg font-semibold border-b pb-2">Program Specific Questions</h3>
-                 {interestedPrograms.includes('YAC') && (
-                    <div className="space-y-2 p-4 border rounded-md">
-                        <Label htmlFor="yacGoals" className="font-bold">What are your specific goals for implementing a Young Alive Club?</Label>
-                        <Textarea id="yacGoals" {...register('yacGoals')} />
-                    </div>
-                )}
-                 {interestedPrograms.includes('RED') && (
-                    <div className="space-y-6 p-4 border rounded-md">
-                        <div className="space-y-2">
-                            <Label htmlFor="redMhmResources" className="font-bold">Does your school currently have any menstrual hygiene management resources or programs?</Label>
-                            <Textarea id="redMhmResources" {...register('redMhmResources')} />
-                        </div>
-                        <div className="space-y-2">
-                             <Label htmlFor="redPovertyImpact" className="font-bold">How does period poverty impact girls' education at your school?</Label>
-                            <Textarea id="redPovertyImpact" {...register('redPovertyImpact')} />
-                        </div>
-                    </div>
-                )}
-                 {interestedPrograms.includes('GreenSchools') && (
-                    <div className="space-y-6 p-4 border rounded-md">
-                        <div className="space-y-2">
-                             <Label htmlFor="greenExistingClubs" className="font-bold">Does your school have any existing environmental clubs or initiatives?</Label>
-                            <Textarea id="greenExistingClubs" {...register('greenExistingClubs')} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold">Do you have access to land or a space suitable for a school garden?</Label>
-                            <Controller name="greenGardenAccess" control={control} render={({ field }) => (
-                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
-                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="garden-yes" /><Label htmlFor="garden-yes">Yes</Label></div>
-                                    <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="garden-no" /><Label htmlFor="garden-no">No</Label></div>
-                                     <div className="flex items-center space-x-2"><RadioGroupItem value="Maybe" id="garden-maybe" /><Label htmlFor="garden-maybe">Maybe</Label></div>
-                                </RadioGroup>
-                            )} />
-                        </div>
-                    </div>
-                )}
-                 {interestedPrograms.includes('Debate') && (
-                    <div className="space-y-6 p-4 border rounded-md">
-                        <div className="space-y-2">
-                             <Label htmlFor="debateStudentCount" className="font-bold">How many students would be interested in participating in debate competitions?</Label>
-                            <Input id="debateStudentCount" {...register('debateStudentCount')} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold">Does your school have a debate club or any experience with debate activities?</Label>
-                             <Controller name="debateClubExists" control={control} render={({ field }) => (
-                                <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
-                                    <div className="flex items-center space-x-2"><RadioGroupItem value="Yes" id="debate-yes" /><Label htmlFor="debate-yes">Yes</Label></div>
-                                    <div className="flex items-center space-x-2"><RadioGroupItem value="No" id="debate-no" /><Label htmlFor="debate-no">No</Label></div>
-                                </RadioGroup>
-                            )} />
-                        </div>
-                    </div>
-                )}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <Label htmlFor="additionalInfo">Please provide any other information you feel is relevant to your application, such as specific challenges or opportunities related to these programs in your school context.</Label>
-            <Textarea id="additionalInfo" {...register('additionalInfo')} />
-          </div>
-
-          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
-             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Submit Application
+          <Button type="submit" size="lg" className="btn-omuto w-full h-16 text-sm tracking-widest">
+             {isSubmitting && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
+            SUBMIT ACTION REQUEST <ArrowRight className="ml-3 h-5 w-5" />
           </Button>
 
         </CardContent>

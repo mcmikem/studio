@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
-import { createAlert as createAlertFlow } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/actions';
 import type { AlertInput } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -66,7 +66,7 @@ export function CreateAlertForm() {
     };
 
     try {
-      await createAlertFlow(alertInput);
+      await createAlert(alertInput);
       toast({
         title: 'Alert Sent!',
         description: 'Your announcement has been broadcast to the team.',

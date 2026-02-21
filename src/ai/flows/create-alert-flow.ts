@@ -1,42 +1,36 @@
 
-'use server';
+'use server'; // Directive to ensure this code only runs on the server
 
-/**
- * @fileOverview A server-side flow to create new alert documents in Firestore.
- */
-
-import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { ai } from '@/ai/genkit';
 import { getFirebaseAdmin } from '@/firebase/server';
-import { FieldValue } from 'firebase-admin/firestore';
-import { AlertInputSchema } from '@/lib/types';
+import { Timestamp } from 'firebase-admin/firestore';
 
-export const createAlert = ai.defineFlow(
-  {
-    name: 'createAlertFlow',
-    inputSchema: AlertInputSchema,
-    outputSchema: z.object({ id: z.string() }),
-  },
-  async (alertData) => {
-    const { firestore } = getFirebaseAdmin();
-    try {
-      const alertsCollection = firestore.collection('alerts');
-      
-      const newAlert = {
-        ...alertData,
-        createdAt: FieldValue.serverTimestamp(),
-        readBy: [],
-        targetUserIds: alertData.targetUserIds || [], // Ensure the field exists
-      };
 
-      const docRef = await alertsCollection.add(newAlert);
-      
-      return { id: docRef.id };
+export const AlertInputSchema = z.object({
+  type: z.enum(['Urgent', 'Reminder', 'Info']),
+  message: z.string(),
+  priority: z.enum(['High', 'Medium', 'Low']),
+  action: z.string(),
+  creatorId: z.string(),
+  targetUserIds: z.array(z.string()).optional(),
+});
+export type AlertInput = z.infer<typeof AlertInputSchema>;
 
-    } catch (e: any) {
-      console.error("Error creating alert:", e);
-      // In a real app, you might want to throw a more specific error
-      throw new Error(`Failed to create alert: ${e.message}`);
+export const createAlertFlow = ai.defineFlow(
+    {
+        name: 'createAlertFlow',
+        inputSchema: AlertInputSchema,
+        outputSchema: z.void(),
+    },
+    async (alertData) => {
+        const { firestore } = getFirebaseAdmin();
+        const alertPayload = {
+            ...alertData,
+            createdAt: Timestamp.now(),
+            readBy: [],
+        };
+        await firestore.collection('alerts').add(alertPayload);
+        console.log("Alert created:", alertData);
     }
-  }
 );

@@ -2,150 +2,158 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { DataTable } from "@/components/ui/data-table"; 
-import { type Partnership } from "@/lib/types";
-import { useToast } from "@/hooks/use-toast";
-import { useCollection, useFirestore, useMemoFirebase, deleteDocumentNonBlocking } from "@/firebase";
-import { collection, query, orderBy, doc } from "firebase/firestore";
-import { Badge } from "@/components/ui/badge";
-import Link from 'next/link';
+import { DataTable } from "@/components/ui/data-table"; // Assuming you have a generic DataTable component
+import { Partnership } from "@/lib/types";
+import { toast } from "@/hooks/use-toast";
 
-const statusColors: { [key: string]: string } = {
-    "Active": "border-green-500 bg-green-500/10 text-green-500",
-    "Negotiation": "border-yellow-500 bg-yellow-500/10 text-yellow-500",
-    "Prospecting": "border-blue-500 bg-blue-500/10 text-blue-500",
-    "Stalled": "border-red-500 bg-red-500/10 text-red-500",
-    "Terminated": "border-gray-500 bg-gray-500/10 text-gray-500",
-};
+// Mock data for demonstration
+const mockPartnerships: Partnership[] = [
+  {
+    id: "p1",
+    name: "Green Earth NGO",
+    type: "NGO",
+    contactPerson: "Jane Doe",
+    contactEmail: "jane.doe@greenearth.org",
+    status: "Active",
+    nextStep: "Review annual report",
+    nextActionDate: new Date(2026, 2, 10).toISOString(),
+    createdAt: new Date(2025, 0, 15).toISOString(),
+    lastContacted: new Date(2026, 1, 28).toISOString(),
+    focusAreas: ["Environment", "Education"],
+    offers: ["Volunteers", "Expertise"],
+    receives: ["Funding", "Access to schools"],
+  },
+  {
+    id: "p2",
+    name: "St. Mary's Primary School",
+    type: "School",
+    contactPerson: "Mr. John Smith",
+    contactEmail: "headteacher@stmarys.org",
+    status: "Negotiation",
+    nextStep: "Finalize MoU for Green Schools program",
+    nextActionDate: new Date(2026, 2, 5).toISOString(),
+    createdAt: new Date(2025, 10, 1).toISOString(),
+    lastContacted: new Date(2026, 1, 20).toISOString(),
+    schoolDetails: {
+      headTeacher: "Mr. John Smith",
+      studentPopulation: 450,
+      level: "Primary",
+      programs: ["Green Schools"],
+      championTeacher: "Ms. Alice Brown",
+    },
+    focusAreas: ["Education"],
+  },
+  {
+    id: "p3",
+    name: "Ministry of Education",
+    type: "Government",
+    contactPerson: "Hon. David Mutebi",
+    contactEmail: "info@moes.gov.ug",
+    status: "Prospecting",
+    nextStep: "Initial meeting to discuss potential collaboration",
+    nextActionDate: new Date(2026, 2, 15).toISOString(),
+    createdAt: new Date(2026, 0, 5).toISOString(),
+    lastContacted: new Date(2026, 0, 20).toISOString(),
+    focusAreas: ["Policy", "Education"],
+  },
+];
 
-interface PartnershipListProps {
-    onEdit: (partner: Partnership) => void;
-}
+export const columns: ColumnDef<Partnership>[] = [
+  {
+    accessorKey: "name",
+    header: "Partner Name",
+  },
+  {
+    accessorKey: "type",
+    header: "Type",
+  },
+  {
+    accessorKey: "contactPerson",
+    header: "Contact Person",
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+  },
+  {
+    accessorKey: "nextStep",
+    header: "Next Step",
+    cell: ({ row }) => {
+      const partnership = row.original;
+      return (
+        <div className="flex flex-col">
+          <span>{partnership.nextStep}</span>
+          {partnership.nextActionDate && (
+            <span className="text-sm text-muted-foreground">
+              ({new Date(partnership.nextActionDate).toLocaleDateString()})
+            </span>
+          )}
+        </div>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const partnership = row.original;
 
-export function PartnershipList({ onEdit }: PartnershipListProps) {
-    const firestore = useFirestore();
-    const { toast } = useToast();
+      const handleEdit = () => {
+        toast({
+          title: "Edit Partnership",
+          description: `Editing ${partnership.name} (ID: ${partnership.id})`,
+        });
+        // Implement actual edit logic, e.g., open a dialog with the form
+      };
 
-    const partnershipsQuery = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'));
-    }, [firestore]);
+      const handleDelete = () => {
+        toast({
+          title: "Delete Partnership",
+          description: `Deleting ${partnership.name} (ID: ${partnership.id})`,
+          variant: "destructive",
+        });
+        // Implement actual delete logic
+      };
 
-    const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(partnership.id)}>
+              Copy partnership ID
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleEdit}>Edit</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
+];
 
-    const handleDelete = async (partnerId: string, partnerName: string) => {
-        if (!firestore) return;
-        try {
-            await deleteDocumentNonBlocking(doc(firestore, 'partnerships', partnerId));
-            toast({
-                title: "Partner Deleted",
-                description: `${partnerName} has been removed from your list.`
-            });
-        } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: "Error",
-                description: "Could not delete the partner. Please try again."
-            });
-        }
-    }
+export function PartnershipList() {
+  // In a real application, fetch data from an API or context
+  const partnerships = mockPartnerships; // Using mock data for now
 
-    const columns: ColumnDef<Partnership>[] = [
-      {
-        accessorKey: "name",
-        header: "Partner",
-        cell: ({ row }) => (
-            <Link href={`/management/partnerships/${row.original.id}`} className="font-medium text-primary hover:underline">
-                {row.getValue("name")}
-            </Link>
-        )
-      },
-      {
-        accessorKey: "type",
-        header: "Type",
-      },
-      {
-        accessorKey: "contactPerson",
-        header: "Contact Person",
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => {
-            const status = row.getValue("status") as string;
-            return <Badge variant="outline" className={statusColors[status]}>{status}</Badge>
-        }
-      },
-      {
-        accessorKey: "nextStep",
-        header: "Next Step",
-      },
-      {
-        id: "actions",
-        cell: ({ row }) => {
-          const partnership = row.original;
-          return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onSelect={() => onEdit(partnership)}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit
-                </DropdownMenuItem>
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                        </DropdownMenuItem>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the partnership record for <strong>{partnership.name}</strong>.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(partnership.id, partnership.name)}>Continue</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          );
-        },
-      },
-    ];
-
-    return (
-        <DataTable columns={columns} data={partnerships || []} isLoading={isLoading} />
-    );
+  return (
+    <div className="rounded-md border">
+      <DataTable columns={columns} data={partnerships} />
+    </div>
+  );
 }

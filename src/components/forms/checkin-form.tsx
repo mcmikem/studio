@@ -20,7 +20,7 @@ import { collection, serverTimestamp } from 'firebase/firestore';
 import { Suspense, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { Loader2, ArrowRight } from 'lucide-react';
-import { DailyPlannerAIOutputSchema } from '@/lib/types';
+import { DailyPlannerAIOutputSchema, type DailyPlannerAIOutput } from '@/lib/types';
 import { Separator } from '../ui/separator';
 import { createAlert } from '@/ai/flows/create-alert-flow';
 
@@ -30,6 +30,8 @@ const checkinSchema = z.object({
   details: DailyPlannerAIOutputSchema, // Use the schema directly
 });
 
+type CheckinFormValues = z.infer<typeof checkinSchema>;
+
 function CheckinFormComponent() {
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -38,12 +40,13 @@ function CheckinFormComponent() {
     const { user } = useUser();
     const { profile } = useUserProfile(user);
 
-    const { handleSubmit, setValue, watch, formState: { isSubmitting } } = useForm({
+    const { handleSubmit, setValue, watch, formState: { isSubmitting } } = useForm<CheckinFormValues>({
         resolver: zodResolver(checkinSchema),
         defaultValues: {
             primaryMission: '',
             mood: '',
-            details: undefined, // Initialize as undefined
+            // We need to cast this because zodResolver expect a complete object
+            details: undefined as unknown as DailyPlannerAIOutput, 
         }
     });
 
@@ -70,7 +73,7 @@ function CheckinFormComponent() {
     const submittedPlan = watch('details');
     const primaryMission = watch('primaryMission');
 
-    const onSubmit = async (data: z.infer<typeof checkinSchema>) => {
+    const onSubmit = async (data: CheckinFormValues) => {
         if (!firestore || !user || !profile) {
             toast({
                 variant: 'destructive',

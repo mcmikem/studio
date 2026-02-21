@@ -1,33 +1,19 @@
 'use client';
 
 import {
-  ClipboardList,
   Home,
   Sparkles,
   Briefcase,
   AreaChart,
   Bell,
-  User as UserIcon,
-  Handshake,
-  ClipboardEdit,
-  FileText,
-  Wand,
-  Rss,
-  CalendarCheck,
   LogIn,
   Calendar as CalendarIcon,
-  ListChecks,
   Video,
-  DollarSign,
-  Box,
   BarChart3,
   Wallet,
   LayoutDashboard,
   Users,
   CheckCircle,
-  TrendingUp,
-  Receipt,
-  FileSignature,
   LifeBuoy,
   Heart,
   Swords,
@@ -36,9 +22,9 @@ import {
   Wind,
   Trophy,
   Bug,
-  Database,
   Book,
   Goal,
+  Zap,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -61,60 +47,55 @@ import Image from 'next/image';
 
 
 const OmutoLogo = () => (
-    <div className="flex items-center gap-2" data-ai-hint="logo">
-        <Image src="/logo.svg" alt="Omuto Foundation Logo" width={28} height={28} />
-        <span className="font-headline text-lg font-bold">Omuto Central</span>
+    <div className="flex items-center gap-3 px-2 py-6" data-ai-hint="logo">
+        <div className="p-1 border-lg border-omuto-navy shadow-comic-sm bg-white rounded-lg">
+            <Image src="/logo.svg" alt="Omuto Foundation Logo" width={36} height={36} />
+        </div>
+        <div className="flex flex-col">
+            <span className="font-heading font-black text-xl tracking-tight leading-none text-omuto-navy">OMUTO</span>
+            <span className="text-[11px] font-black text-omuto-red tracking-[0.25em] uppercase leading-none mt-1">Central</span>
+        </div>
     </div>
 );
 
 const navConfig = {
   workspace: [
-    { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { href: '/operational-plan', icon: Goal, label: 'Operational Plan' },
+    { href: '/', icon: LayoutDashboard, label: 'Mission Control' },
+    { href: '/management/operational-plan', icon: Goal, label: 'Strategy Map' },
     { href: '/chat', icon: Sparkles, label: 'AI Coach' },
-    { href: '/daily-plan', icon: Sparkles, label: 'AI Daily Planner' },
-    { href: '/workplan', icon: CalendarCheck, label: 'My Weekly Plan' },
-    { href: '/profile?tab=tasks', icon: CheckCircle, label: 'My Tasks' },
-    { href: '/my-finances', icon: Wallet, label: 'My Finances' },
+    { href: '/daily-plan', icon: Zap, label: 'Daily Planner' },
+    { href: '/workplan', icon: CheckCircle, label: 'Weekly Goals' },
+    { href: '/profile?tab=tasks', icon: Bell, label: 'Task List' },
+    { href: '/my-finances', icon: Wallet, label: 'Finances' },
   ],
   teamHub: [
-    { href: '/checkins', icon: LogIn, label: 'Check-in Stream' },
-    { href: '/stream', icon: Rss, label: 'Check-out Stream' },
-    { href: '/calendar', icon: CalendarIcon, label: 'Team Calendar' },
-    { href: '/notifications', icon: Bell, label: 'Notifications' },
-  ],
-  knowledgeHub: [
-      { href: '/know', icon: Book, label: 'Quick to Know' }
+    { href: '/team-performance', icon: Trophy, label: 'Impact Stars' },
+    { href: '/checkins', icon: LogIn, label: 'Morning Call' },
+    { href: '/stream', icon: Wind, label: 'Evening Report' },
+    { href: '/calendar', icon: CalendarIcon, label: 'HQ Calendar' },
+    { href: '/notifications', icon: Bell, label: 'System Alerts' },
   ],
   meal: [
-      { href: '/meal', icon: BarChart3, label: 'MEAL Hub' },
+      { href: '/meal', icon: BarChart3, label: 'Impact Hub' },
   ],
   reports: [
-     { href: '/reports', icon: AreaChart, label: 'Reports Hub' },
-     { href: '/activity-log', icon: AreaChart, label: 'Activity Log' },
-     { href: '/testimonies', icon: Video, label: 'Testimony Library' },
+     { href: '/reports', icon: AreaChart, label: 'Field Data' },
+     { href: '/testimonies', icon: Video, label: 'Success Stories' },
   ],
   management: [
-    { href: '/management', icon: Briefcase, label: 'Overview' },
+    { href: '/management', icon: Briefcase, label: 'Ops Desk' },
   ],
   system: [
-    { href: '/help', icon: LifeBuoy, label: 'Help & Support' },
-    { href: '/system/feedback', icon: Bug, label: 'Feedback' },
+    { href: '/help', icon: LifeBuoy, label: 'User Manual' },
+    { href: '/system/feedback', icon: Bug, label: 'Report Bug' },
   ]
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management', 'system'],
-  'Executive Director': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
-  'Resource Mobilization Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
-  'Operations & Field Manager': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
-  'Media & Finance Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
-  'Media & Communications Lead': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports', 'management'],
-  'Field Coordinator': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
-  'Intern': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
-  'Volunteer': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
-  'default': ['workspace', 'teamHub', 'knowledgeHub', 'meal', 'reports'],
+  'Administrator': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'system'],
+  'Executive Director': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'reports', 'management'],
+  'default': ['workspace', 'teamHub', 'meal', 'reports'],
 };
 
 
@@ -127,26 +108,15 @@ export function AppSidebar() {
   
   if (isProfileLoading || !realProfile) {
     return (
-        <>
-            <SidebarHeader>
-                <OmutoLogo />
-            </SidebarHeader>
-            <SidebarContent>
-                 <div className="flex flex-col gap-4 p-2">
-                    <SidebarMenuSkeleton showIcon />
-                    <SidebarMenuSkeleton showIcon />
-                    <Separator className="my-2" />
-                    <SidebarMenuSkeleton showIcon />
-                    <SidebarMenuSkeleton showIcon />
-                    <SidebarMenuSkeleton showIcon />
-                </div>
-            </SidebarContent>
-        </>
+        <div className="p-6 space-y-6 h-full bg-omuto-cream border-r-lg border-omuto-navy/20">
+            <OmutoLogo />
+            <SidebarMenuSkeleton showIcon />
+            <SidebarMenuSkeleton showIcon />
+        </div>
     )
   }
 
   const effectiveRole = viewAsRole || realProfile?.role || 'default';
-
 
   const handleLinkClick = () => {
     if (isMobile) {
@@ -165,25 +135,28 @@ export function AppSidebar() {
 
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
     if (!allowedSections.includes(sectionName)) return null;
-    
     let navItems = navConfig[sectionName];
 
-    if (!navItems || navItems.length === 0) return null;
-
     return (
-      <SidebarGroup data-mobile={isMobile}>
-        <SidebarGroupLabel data-mobile={isMobile}>{title}</SidebarGroupLabel>
-        <SidebarMenu>
+      <SidebarGroup className="px-4">
+        <SidebarGroupLabel className="px-3 font-heading font-black text-[10px] uppercase tracking-[0.2em] text-omuto-navy/40 mb-2">{title}</SidebarGroupLabel>
+        <SidebarMenu className="gap-1">
           {navItems.map(item => (
              <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 href={item.href}
                 isActive={isActive(item.href)}
-                tooltip={item.label}
                 onClick={handleLinkClick}
+                className={`
+                    rounded-lg border-md border-transparent transition-all h-11 px-4
+                    ${isActive(item.href) 
+                        ? 'bg-omuto-red text-white border-omuto-navy shadow-comic-sm hover:bg-omuto-red hover:text-white' 
+                        : 'bg-white text-omuto-navy/70 hover:bg-omuto-cream/50 hover:border-omuto-navy/20'
+                    }
+                `}
               >
-                <item.icon />
-                <span>{item.label}</span>
+                <item.icon className={`h-4 w-4 ${isActive(item.href) ? 'text-white' : 'text-omuto-navy'}`} />
+                <span className="font-bold text-sm tracking-tight">{item.label}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -193,26 +166,34 @@ export function AppSidebar() {
   };
 
   return (
-    <>
+    <div className="flex flex-col h-full bg-omuto-cream border-r-lg border-omuto-navy/20 halftone-bg">
       <SidebarHeader>
         <OmutoLogo />
       </SidebarHeader>
-      <SidebarContent data-mobile={isMobile}>
-        {renderNavSection('workspace', 'Workspace')}
-        {renderNavSection('teamHub', 'Team Hub')}
-        {renderNavSection('knowledgeHub', 'Knowledge Hub')}
-        {renderNavSection('meal', 'MEAL')}
-        {renderNavSection('reports', 'Reports')}
-        {renderNavSection('management', 'Management')}
-        <Separator className="my-2" />
-        {renderNavSection('system', 'System')}
+      <SidebarContent className="no-scrollbar pt-2">
+        {renderNavSection('workspace', 'Command Center')}
+        <div className="h-5" />
+        {renderNavSection('teamHub', 'Network')}
+        <div className="h-5" />
+        {renderNavSection('meal', 'Impact')}
+        <div className="h-5" />
+        {renderNavSection('reports', 'Analysis')}
+        <div className="h-5" />
+        {renderNavSection('management', 'Operations')}
+        <Separator className="mx-7 my-5 bg-omuto-navy/10 border-none h-[2px]" />
+        {renderNavSection('system', 'Platform')}
       </SidebarContent>
-      <SidebarFooter>
-        <Separator className="my-2" />
-        <div className="p-2 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Omuto Foundation
+      <SidebarFooter className="p-6 border-t-lg border-omuto-navy/10 bg-white">
+        <div className="flex items-center gap-4">
+             <div className="p-2 bg-omuto-yellow border-md border-omuto-navy/20 shadow-comic-sm rounded-xl rotate-2">
+                <Sparkles className="h-4 w-4 text-omuto-navy" />
+            </div>
+            <div>
+                <p className="text-[10px] font-black uppercase tracking-tight leading-none text-omuto-navy/50">Core Engine</p>
+                <p className="text-sm font-black text-omuto-navy mt-1 uppercase">AI V2.0</p>
+            </div>
         </div>
       </SidebarFooter>
-    </>
+    </div>
   );
 }

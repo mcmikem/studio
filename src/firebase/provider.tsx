@@ -1,20 +1,15 @@
 
 'use client';
 
-import React, { createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
+import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { type FirebaseApp } from 'firebase/app';
 import { type Firestore } from 'firebase/firestore';
 import { type Auth, onAuthStateChanged, type User } from 'firebase/auth';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
-import { initializeFirebase } from '@/firebase/index';
-
-// --- Context and State Definitions ---
-
-interface FirebaseServices {
-    firebaseApp: FirebaseApp;
-    firestore: Firestore;
-    auth: Auth;
-}
+import { initializeFirebase, type FirebaseServices } from '@/firebase/client';
+import { useCollection as useCollectionHook } from './firestore/use-collection';
+import { useDoc as useDocHook } from './firestore/use-doc';
+import { addDocumentNonBlocking as addDocNonBlocking, updateDocumentNonBlocking as updateDocNonBlocking, deleteDocumentNonBlocking as deleteDocNonBlocking } from './non-blocking-updates';
 
 interface FirebaseContextState {
   services: FirebaseServices | null;
@@ -25,14 +20,11 @@ interface FirebaseContextState {
 
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
-// --- Provider Component ---
-
 interface FirebaseProviderProps {
   children: React.ReactNode;
 }
 
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) => {
-  // Use useState to ensure Firebase initializes only once on the client.
   const [services, setServices] = useState<FirebaseServices | null>(null);
 
   const [userAuthState, setUserAuthState] = useState<{
@@ -46,7 +38,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   });
   
   useEffect(() => {
-    // This effect runs once on component mount to initialize Firebase services.
     if (typeof window !== 'undefined' && !services) {
       const initializedServices = initializeFirebase();
       if (initializedServices) {
@@ -55,11 +46,8 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     }
   }, [services]);
 
-  // Effect for listening to authentication state changes.
   useEffect(() => {
     if (!services?.auth) {
-      // If services are not yet available, we are technically still loading.
-      // This state is important for the initial render.
       setUserAuthState(prevState => ({ ...prevState, isUserLoading: true }));
       return;
     };
@@ -79,7 +67,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   }, [services]);
 
   const contextValue = useMemo((): FirebaseContextState => {
-    // The user is loading if either the auth state is being determined OR firebase services are not yet initialized.
     const isLoading = userAuthState.isUserLoading || !services;
     return {
       services: services,
@@ -96,9 +83,6 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     </FirebaseContext.Provider>
   );
 };
-
-
-// --- Hooks ---
 
 export const useFirebaseServices = () => {
   const context = useContext(FirebaseContext);
@@ -144,13 +128,6 @@ export const useUser = () => {
   };
 };
 
-/**
- * Creates a stable query reference that is memoized and only re-created when dependencies change.
- * Crucially, it waits for the Firestore instance to be available before creating the query.
- * @param createQuery A function that receives the Firestore instance and returns a Firestore Query.
- * @param deps A dependency array to control when the query is re-created.
- * @returns A memoized Firestore Query or null if Firestore is not yet available.
- */
 export const useMemoFirebase = <T, >(
   createQuery: (db: Firestore) => T | null,
   deps: React.DependencyList = []
@@ -167,3 +144,9 @@ export const useMemoFirebase = <T, >(
 
   return memoizedQuery;
 };
+
+export const useCollection = useCollectionHook;
+export const useDoc = useDocHook;
+export const addDocumentNonBlocking = addDocNonBlocking;
+export const updateDocumentNonBlocking = updateDocNonBlocking;
+export const deleteDocumentNonBlocking = deleteDocNonBlocking;

@@ -1,39 +1,24 @@
 
-'use client';
+// 1. Export core firebase app instances
+export { app, auth, db, storage, messaging, initializeFirebase, requestNotificationPermission } from './client';
 
-// This file serves as a barrel file for exporting all necessary Firebase
-// functionality to the rest of the application. It simplifies imports.
+// 2. Export Provider Hooks (The main way components interact with Firebase)
+// We explicitely exclude re-exporting the utility functions here to avoid conflict
+export { 
+    FirebaseProvider, 
+    useFirebaseServices, 
+    useAuth, 
+    useFirestore, 
+    useFirebaseApp, 
+    useUser, 
+    useMemoFirebase,
+    useCollection,
+    useDoc
+} from './provider';
 
-import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
-import { getFirestore, type Firestore } from 'firebase/firestore';
-import { getAuth, type Auth } from 'firebase/auth';
-import { firebaseConfig } from './config';
-
-// This function is now designed to be called safely on the client.
-// It ensures that Firebase is initialized only once.
-export function initializeFirebase() {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-
-  let firebaseApp: FirebaseApp;
-  if (!getApps().length) {
-    firebaseApp = initializeApp(firebaseConfig);
-  } else {
-    firebaseApp = getApp();
-  }
-
-  const auth = getAuth(firebaseApp);
-  const firestore = getFirestore(firebaseApp);
-  
-  return { firebaseApp, auth, firestore };
-}
-
-export * from './provider';
-export * from './firestore/use-collection';
-export * from './firestore/use-doc';
-export * from './non-blocking-login';
-export * from './non-blocking-updates';
-export * from './errors';
-export * from './error-emitter';
-export * from './storage';
+// 3. Export Utility functions directly from their source
+export { 
+    addDocumentNonBlocking, 
+    updateDocumentNonBlocking, 
+    deleteDocumentNonBlocking 
+} from './non-blocking-updates';

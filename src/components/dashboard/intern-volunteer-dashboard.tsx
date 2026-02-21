@@ -10,7 +10,14 @@ import { SupervisorCard } from './supervisor-card';
 import { DashboardHeader } from './dashboard-header';
 import { SmartReminders } from './smart-reminders';
 import { MyTasksSummary } from './my-tasks-summary';
-import type { DashboardProps } from './dashboard-loader';
+import type { DashboardProps, DashboardData } from './dashboard-loader';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '../ui/skeleton';
+
+const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), {
+    loading: () => <Skeleton className="h-64" />,
+    ssr: false,
+});
 
 function QuickActionsCard() {
   return (
@@ -55,12 +62,24 @@ function FirstQuestCard() {
     )
 }
 
-export function InternVolunteerDashboard({ profile, data }: DashboardProps) {
+export function InternVolunteerDashboard({ profile, data }: { profile: any, data: DashboardData }) {
+  const { activities, users, checkins, checkouts, allExpenses, testimonies } = data;
+  const isLoading = !activities || !users || !checkins;
+
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
        <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-6">
+           <TeamPerformanceLeaderboard 
+                activities={activities} 
+                users={users} 
+                checkins={checkins} 
+                checkouts={checkouts} 
+                expenses={allExpenses}
+                testimonies={testimonies}
+                isLoading={isLoading} 
+            />
            <SmartReminders profile={profile} />
            <MyTasksSummary />
         </div>
@@ -73,5 +92,3 @@ export function InternVolunteerDashboard({ profile, data }: DashboardProps) {
     </div>
   );
 }
-
-    

@@ -5,112 +5,126 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 47% 11%;
+    /* STRICT BRAND PALETTE FROM BLUEPRINT */
+    --background: 48 40% 96%; /* #F9F8F3 - Omuto Cream */
+    --foreground: 215 25% 15%; /* #1D2631 - Omuto Navy */
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 215 25% 15%;
  
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 215 25% 15%;
  
-    --primary: 213 94% 57%; /* New vibrant blue */
+    --primary: 16 100% 61%; /* #FF6B35 - Vibrant Red-Orange */
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 220 15% 90%;
-    --secondary-foreground: 222 47% 11%;
- 
-    --muted: 220 15% 94%;
-    --muted-foreground: 220 10% 40%;
- 
-    --accent: 16 100% 55%; /* Previous primary, now accent */
-    --accent-foreground: 0 0% 100%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 15% 88%;
-    --input: 220 15% 92%;
-    --ring: 213 94% 57%; /* Ring matches new primary */
- 
-    --radius: 0.75rem;
-
-    --chart-1: 213 94% 57%;
-    --chart-2: 16 100% 55%;
-    --chart-3: 45 93% 47%;
-    --chart-4: 173 58% 39%;
-    --chart-5: 27 87% 67%;
-    
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 213 94% 57%; /* New vibrant blue */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 15%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 213 94% 57%;
-  }
-
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 0 0% 100%;
-
-    --card: 222 47% 15%;
-    --card-foreground: 0 0% 100%;
- 
-    --popover: 222 47% 11%;
-    --popover-foreground: 0 0% 100%;
- 
-    --primary: 213 94% 57%; /* New vibrant blue */
-    --primary-foreground: 0 0% 100%;
- 
-    --secondary: 222 47% 20%;
+    --secondary: 215 25% 15%; /* #1D2631 - Accent Navy */
     --secondary-foreground: 0 0% 100%;
  
-    --muted: 222 47% 18%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 0 0% 90%;
+    --muted-foreground: 215 25% 35%; /* Darkened for accessibility/contrast */
  
-    --accent: 16 100% 55%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 42 100% 68%; /* #FFCF5D - Omuto Yellow */
+    --accent-foreground: 215 25% 15%;
  
-    --destructive: 0 63% 31%;
+    --destructive: 0 84% 40%; /* Slightly lighter red for destructive actions */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 47% 25%;
-    --input: 222 47% 25%;
-    --ring: 213 94% 57%;
+    --border: 215 25% 15%; 
+    --input: 215 25% 15%;
+    --ring: 16 100% 61%;
  
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 213 94% 57%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 15%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 222 47% 15%;
-    --sidebar-ring: 213 94% 57%;
+    --radius: 0.75rem; /* Standard border radius */
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-omuto-navy/10;
   }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+    /* Subtle halftone texture for brand feel */
+    background-image: radial-gradient(circle at 1.5px 1.5px, rgba(29, 38, 49, 0.05) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-black uppercase tracking-tight; /* REMOVED GLOBAL ITALIC */
+  }
+}
+
+@layer components {
+  /* CARDS - Tiered for visual hierarchy */
+  .card-comic-hero {
+    @apply bg-white border-lg border-omuto-navy rounded-2xl shadow-comic transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-lg;
+  }
+
+  .card-comic-clean {
+    @apply bg-white border-md border-omuto-navy/20 rounded-xl transition-all duration-300 hover:border-omuto-navy/40 hover:bg-white;
+  }
+
+  /* BUTTONS - Clear & Action-Oriented */
+  .btn-omuto {
+    @apply h-11 px-6 bg-omuto-navy text-white border-lg border-omuto-navy font-bold uppercase tracking-wider text-xs rounded-lg shadow-comic-sm transition-all hover:bg-primary hover:-translate-y-0.5 active:translate-y-0 active:shadow-none;
+  }
+
+  .btn-omuto-secondary {
+    @apply h-11 px-6 bg-white text-omuto-navy border-lg border-omuto-navy font-bold uppercase tracking-wider text-xs rounded-lg shadow-comic-sm transition-all hover:bg-muted hover:-translate-y-0.5;
+  }
+
+  /* BADGES - Distinct & Readable */
+  .badge-omuto-solid {
+    @apply px-4 py-1.5 bg-omuto-navy text-white border-md border-omuto-navy rounded-full font-black uppercase text-[10px] tracking-widest shadow-comic-sm;
+  }
+  
+  .badge-omuto-outline {
+    @apply px-4 py-1.5 bg-white text-omuto-navy border-md border-omuto-navy rounded-full font-black uppercase text-[10px] tracking-widest shadow-comic-sm;
+  }
+
+  /* TABLES - Data-Focused Clarity */
+  .data-table-omuto {
+    @apply border-lg border-omuto-navy/20 bg-white rounded-xl overflow-hidden shadow-sm;
+  }
+  
+  .data-table-omuto thead {
+    @apply bg-muted/40 text-omuto-navy border-b-lg border-omuto-navy/20;
+  }
+  
+  .data-table-omuto tr {
+    @apply border-b border-omuto-navy/5 last:border-0 hover:bg-background/50 transition-colors;
   }
 }
 
 @layer utilities {
-  .animated-glowing-border {
-    animation: glowing 3s ease-in-out infinite;
+  .shadow-comic {
+    box-shadow: 4px 4px 0 rgba(29, 38, 49, 1);
+  }
+  
+  .shadow-comic-lg {
+    box-shadow: 6px 6px 0 rgba(29, 38, 49, 1);
   }
 
-  @keyframes glowing {
-    0%, 100% {
-      box-shadow: 0 0 5px hsl(var(--primary) / 0.5), 0 0 10px hsl(var(--primary) / 0.3);
-    }
-    50% {
-       box-shadow: 0 0 15px hsl(var(--primary) / 0.8), 0 0 25px hsl(var(--primary) / 0.5);
-    }
+  .shadow-comic-sm {
+    box-shadow: 2px 2px 0 rgba(29, 38, 49, 1);
+  }
+
+  .comic-text-shadow {
+    text-shadow: 2px 2px 0 rgba(29, 38, 49, 0.1);
+  }
+  
+  .halftone-bg {
+    background-image: radial-gradient(circle at 1.5px 1.5px, rgba(29, 38, 49, 0.05) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
   }
 }

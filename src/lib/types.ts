@@ -1,5 +1,4 @@
 
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -145,6 +144,7 @@ export const PartnershipSchema = z.object({
 
 export type Partnership = z.infer<typeof PartnershipSchema>;
 
+
 export type Activity = {
     id: string;
     title: string;
@@ -244,7 +244,11 @@ export const KeyResultAISchema = z.object({
 export type KeyResultAI = z.infer<typeof KeyResultAISchema>;
 
 export const expenseItemCategories = [
-    "Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"
+    "Transport", "Rent", "Office Dev't", "Projects", "Stationery", 
+    "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", 
+    "Phone", "Food", "Mobile Money Charges", "IGA Expense", 
+    "Allowances and stipends", "Kibanja", "Professional Services", 
+    "community support", "miscellaneous", "Withdraw"
 ] as const;
 
 export type ExpenseItem = {
@@ -266,7 +270,7 @@ export type Expense = {
     title: string;
     projectId?: string;
     projectName?: string;
-    submittedFor?: string;
+    submittedFor?: string; // Adding the missing field
 };
 
 export type Income = {
@@ -745,7 +749,7 @@ export const OFAScorecardSchema = z.object({
   challenges: z.string().optional(),
   supportNeeded: z.string().optional(),
   createdAt: z.any(),
-  month: z.string().min(1, "Month is required."),
+  month: z.string(),
 });
 export type OFAScorecard = z.infer<typeof OFAScorecardSchema>;
 

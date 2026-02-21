@@ -1,74 +1,98 @@
 
-
 'use client';
 
-import { Home, ClipboardEdit, Rss, User, Menu } from 'lucide-react';
+import { Home, ClipboardEdit, Rss, User, Menu, Plus, Zap, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useSidebar } from './ui/sidebar';
-import { useUser } from '@/firebase';
-import { useUserProfile } from '@/hooks/use-user-profile';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { getInitials } from '@/lib/utils';
-
-const navItems = [
-  { href: '/forms', label: 'Forms', icon: ClipboardEdit },
-  { href: '/stream', label: 'Stream', icon: Rss },
-  { href: '/profile', label: 'Profile', icon: User },
-];
+import { useState } from 'react';
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
-  const { user } = useUser();
-  const { profile } = useUserProfile(user);
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
-  const HomeIcon = () => (
-    <Link href="/" className={cn(
-        'inline-flex flex-col items-center justify-center px-5 group relative',
-         pathname === '/' ? 'text-accent' : 'text-muted-foreground'
-    )}>
-        {pathname === '/' && <div className="absolute top-0 h-1 w-8 bg-accent rounded-b-full" />}
-        <Avatar className="h-7 w-7 mb-1 border-2" data-ai-hint="user avatar">
-            <AvatarImage src={user?.photoURL || ''} alt={profile?.name || ''} />
-            <AvatarFallback>{getInitials(profile?.name)}</AvatarFallback>
-        </Avatar>
-      <span className="text-xs">Home</span>
-    </Link>
-  );
+  const isActive = (path: string) => {
+    if (path === '/' && pathname === '/') return true;
+    if (path !== '/' && pathname.startsWith(path)) return true;
+    return false;
+  }
+
+  const actions = [
+      { href: '/daily-plan', label: 'Morning Check-in', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
+      { href: '/forms/check-out', label: 'Evening Report', icon: LogOut, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
+      { href: '/meal/activity', label: 'Log ROI Impact', icon: BarChart3, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
+      { href: '/forms/expense', label: 'Expense Request', icon: Receipt, color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
+      { href: '/chat', label: 'Ask AI Coach', icon: MessageCircle, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
+  ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 z-50 w-full h-20 bg-card border-t border-border/20 shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.3)]">
-      <div className="grid h-full max-w-lg grid-cols-5 mx-auto font-medium">
-        <HomeIcon />
-        {navItems.map((item) => {
-          const isActive = pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'inline-flex flex-col items-center justify-center px-5 group relative',
-                isActive
-                  ? 'text-accent'
-                  : 'text-muted-foreground'
-              )}
-            >
-              {isActive && <div className="absolute top-0 h-1 w-8 bg-accent rounded-b-full" />}
-              <item.icon className="w-6 h-6 mb-1" />
-              <span className="text-xs">{item.label}</span>
+    <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe">
+        
+        {/* Action Menu (Modal overlay) */}
+        {isActionMenuOpen && (
+            <div className="fixed inset-0 bg-omuto-navy/80 backdrop-blur-sm z-[700] animate-in fade-in duration-300" onClick={() => setIsActionMenuOpen(false)}>
+                <div className="absolute bottom-32 left-4 right-4 space-y-3 animate-in slide-in-from-bottom-10 duration-300" onClick={e => e.stopPropagation()}>
+                    <div className="grid grid-cols-1 gap-3">
+                        {actions.map((action) => (
+                             <Link 
+                                key={action.href} 
+                                href={action.href} 
+                                onClick={() => setIsActionMenuOpen(false)}
+                                className="flex items-center gap-4 p-5 bg-white card-comic-clean active:scale-95 transition-all group"
+                             >
+                                <div className={`p-3 rounded-xl ${action.bg} ${action.color} group-hover:scale-110 transition-transform`}>
+                                    <action.icon className="w-6 h-6" />
+                                </div>
+                                <span className="font-black uppercase text-sm tracking-tight text-omuto-navy">{action.label}</span>
+                             </Link>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* The Float Navigation Bar */}
+        <div className="mx-4 mb-6 h-20 bg-white border-xl border-omuto-navy shadow-comic rounded-3xl flex items-center justify-between px-4 relative z-[800]">
+            
+            <Link href="/" className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}>
+                <Home className="w-6 h-6" />
+                <span className="text-[9px] font-black uppercase mt-1">HQ</span>
             </Link>
-          );
-        })}
-         <button
-            onClick={() => setOpenMobile(true)}
-            className="inline-flex flex-col items-center justify-center px-5 text-muted-foreground"
-          >
-            <Menu className="w-6 h-6 mb-1" />
-            <span className="text-xs">More</span>
-          </button>
-      </div>
+
+            <Link href="/meal" className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/meal') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}>
+                <BarChart3 className="w-6 h-6" />
+                <span className="text-[9px] font-black uppercase mt-1">Impact</span>
+            </Link>
+
+            {/* ACTION CENTER TRIGGER */}
+            <button 
+                onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
+                className="flex items-center justify-center -mt-12 group"
+            >
+                <div className={cn(
+                    "w-16 h-16 border-xl border-omuto-navy rounded-full flex items-center justify-center text-white transition-all transform active:scale-90 shadow-comic-sm",
+                    isActionMenuOpen ? "bg-omuto-navy rotate-45" : "bg-omuto-red rotate-0"
+                )}>
+                    {isActionMenuOpen ? <X className="w-8 h-8 stroke-[3px]" /> : <Plus className="w-8 h-8 stroke-[3px]" />}
+                </div>
+                <div className="absolute -bottom-6 w-max bg-omuto-navy text-white text-[8px] font-black px-2 py-0.5 rounded shadow-comic-sm opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest border border-white/20">
+                    Deploy Action
+                </div>
+            </button>
+
+            <Link href="/team-performance" className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/team-performance') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}>
+                <Trophy className="w-6 h-6" />
+                <span className="text-[9px] font-black uppercase mt-1">Stars</span>
+            </Link>
+
+            <button onClick={() => setOpenMobile(true)} className="flex flex-col items-center justify-center flex-1 h-full text-omuto-navy/40">
+                <Menu className="w-6 h-6" />
+                <span className="text-[9px] font-black uppercase mt-1">More</span>
+            </button>
+
+        </div>
     </div>
   );
 }

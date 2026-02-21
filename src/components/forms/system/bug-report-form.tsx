@@ -16,7 +16,7 @@ import { Loader2, ArrowLeft, Bug } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/actions';
 
 const bugReportSchema = z.object({
   type: z.enum(['bug', 'feature']),
@@ -143,5 +143,3 @@ export function BugReportForm() {
     </div>
   );
 }
-
-    
