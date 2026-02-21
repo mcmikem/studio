@@ -1,4 +1,3 @@
-
 'use client';
 
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';

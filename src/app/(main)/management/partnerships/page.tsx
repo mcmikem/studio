@@ -1,46 +1,56 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PlusCircle } from "lucide-react";
 import { PartnershipList } from "@/components/management/partnerships/partnership-list";
 import { SchoolList } from "@/components/management/partnerships/school-list";
-import { PartnershipForm } from "@/components/forms/partnership-form"; // Import the form
-import { Partnership } from "@/lib/types";
+import { PartnershipForm } from "@/components/forms/partnership-form"; 
+import type { Partnership } from "@/lib/types";
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query } from 'firebase/firestore';
 
-// Placeholder for the Kanban Pipeline component (will be more complex)
-const PartnershipPipelineKanban = () => (
-  <div className="p-4 border rounded-md h-[600px] flex items-center justify-center text-gray-500">
-    Partnership Pipeline (Kanban Board) - (Using All Partners List for now, will be replaced with Kanban)
-    <PartnershipList /> {/* Temporarily using PartnershipList here for initial view */}
-  </div>
-);
+const PartnershipPipelineKanban = () => {
+    const firestore = useFirestore();
+    const partnershipsQuery = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'partnerships'));
+    }, [firestore]);
+    const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
+    return <PartnershipList partnerships={partnerships} isLoading={isLoading} onEdit={() => {}} />;
+};
 
 export default function PartnershipsManagementPage() {
-  const [activeTab, setActiveTab] = useState("pipeline");
-  const [showAddPartnerForm, setShowAddPartnerForm] = useState(false); // State to manage form visibility
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingPartner, setEditingPartner] = useState<Partnership | null>(null);
 
   const handleAddPartner = () => {
-    console.log("Add New Partner clicked! (Will open a form/dialog)");
-    setShowAddPartnerForm(true); // Example: show the form if it's a component
+    setEditingPartner(null);
+    setIsDialogOpen(true);
+  };
+  
+  const handleEditPartner = (partner: Partnership) => {
+    setEditingPartner(partner);
+    setIsDialogOpen(true);
   };
 
-  const handleFormSuccess = (newPartnership: Partnership) => {
-    console.log("New partnership added:", newPartnership);
-    setShowAddPartnerForm(false);
-    // In a real app, you would refresh the data for the lists
-    // For now, just close the form
-    // Consider adding a toast or notification here for successful creation
+  const handleFormSuccess = () => {
+    setIsDialogOpen(false);
+    setEditingPartner(null);
   };
 
-  const handleFormCancel = () => {
-    setShowAddPartnerForm(false);
-  };
+  const firestore = useFirestore();
+  const partnershipsQuery = useMemoFirebase(() => {
+      if (!firestore) return null;
+      return query(collection(firestore, 'partnerships'));
+  }, [firestore]);
+  const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
+    <div className="flex-1 space-y-4 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Partnerships Management</h2>
         <div className="flex items-center space-x-2">
@@ -49,20 +59,25 @@ export default function PartnershipsManagementPage() {
           </Button>
         </div>
       </div>
+      
+       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                  <DialogTitle>{editingPartner ? "Edit Partnership" : "Add New Partnership"}</DialogTitle>
+                   <DialogDescription>
+                        {editingPartner ? `Update details for ${editingPartner.name}.` : "Fill in the form to create a new partner profile."}
+                    </DialogDescription>
+              </DialogHeader>
+              <PartnershipForm 
+                initialData={editingPartner} 
+                onSuccess={handleFormSuccess} 
+              />
+          </DialogContent>
+      </Dialog>
 
-      {showAddPartnerForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl max-h-[90vh] overflow-y-auto w-full max-w-2xl">
-            <h3 className="text-xl font-semibold mb-4">Add New Partnership</h3>
-            {/* For demonstration, directly including the form. In a real app, use a Dialog/Modal */}
-            <PartnershipForm onSuccess={handleFormSuccess} onCancel={handleFormCancel} />
-          </div>
-        </div>
-      )}
-
-      <Tabs defaultValue="pipeline" className="space-y-4" onValueChange={setActiveTab}>
+      <Tabs defaultValue="pipeline" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="pipeline">Pipeline (Kanban)</TabsTrigger>
+          <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
           <TabsTrigger value="schools">Schools</TabsTrigger>
           <TabsTrigger value="all">All Partners</TabsTrigger>
         </TabsList>
@@ -73,7 +88,7 @@ export default function PartnershipsManagementPage() {
           <SchoolList />
         </TabsContent>
         <TabsContent value="all" className="space-y-4">
-          <PartnershipList />
+          <PartnershipList partnerships={partnerships} isLoading={isLoading} onEdit={handleEditPartner} />
         </TabsContent>
       </Tabs>
     </div>

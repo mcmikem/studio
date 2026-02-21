@@ -33,8 +33,6 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
-
-// This schema is for form validation and is slightly different from the server-side one
 const PartnershipFormSchema = ServerPartnershipSchema.omit({
     id: true,
     createdAt: true,
@@ -70,12 +68,11 @@ const valueOptions = [
 ];
 
 interface PartnershipFormProps {
-  initialData?: Partnership; 
+  initialData?: Partnership | null; 
   onSuccess: () => void;
-  onCancel: () => void;
 }
 
-export function PartnershipForm({ initialData, onSuccess, onCancel }: PartnershipFormProps) {
+export function PartnershipForm({ initialData, onSuccess }: PartnershipFormProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
 
@@ -112,7 +109,6 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
       return;
     }
     
-    // Sanitize data to remove undefined values before sending to Firestore
     const cleanedData = Object.fromEntries(
         Object.entries(data).filter(([, value]) => value !== undefined && value !== null && value !== '')
     );
@@ -211,9 +207,6 @@ export function PartnershipForm({ initialData, onSuccess, onCancel }: Partnershi
             </div>
         </ScrollArea>
         <DialogFooter className="pt-6 border-t px-6 pb-6">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {initialData ? "Save Changes" : "Create Partnership"}
