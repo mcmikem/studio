@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -21,7 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon, PlusCircle, ChevronLeft, ChevronRight, MapPin, User, Clock } from 'lucide-react';
-import { useCollection, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, addDocumentNonBlocking, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -137,18 +136,15 @@ export default function CalendarPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     
-    const firestore = useFirestore();
-
     useEffect(() => {
         setCurrentMonth(new Date());
         setSelectedDate(new Date());
     }, []);
 
-    const eventsQuery = useMemo(() => {
-        if (!firestore) return null;
+    const eventsQuery = useMemoFirebase((db) => {
         // Ideally filter by month range here, but getting all and filtering client side is ok for small datasets
-        return query(collection(firestore, 'events'), orderBy('date', 'asc'));
-    }, [firestore]);
+        return query(collection(db, 'events'), orderBy('date', 'asc'));
+    }, []);
 
     const { data: events, isLoading } = useCollection<EventType>(eventsQuery);
 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -11,7 +10,7 @@ import {
 } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useUser, useFirestore, useCollection, updateDocumentNonBlocking, useFirebaseApp } from '@/firebase';
+import { useUser, useFirestore, useCollection, updateDocumentNonBlocking, useFirebaseApp, useMemoFirebase } from '@/firebase';
 import { User, Mail, Briefcase, History, Loader2, Upload, ChevronDown, LogOut as LogOutIcon, Settings, ChevronsUpDown, Eye, BarChart3 } from 'lucide-react';
 import { collection, query, where, orderBy, limit, doc } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
@@ -43,18 +42,17 @@ const userRoles = [
 ];
 
 function RecentUserCheckouts() {
-  const firestore = useFirestore();
   const { user } = useUser();
 
-  const checkoutsQuery = useMemo(() => {
-    if (!user || !firestore) return null;
+  const checkoutsQuery = useMemoFirebase((db) => {
+    if (!user) return null;
     return query(
-      collection(firestore, 'checkouts'),
+      collection(db, 'checkouts'),
       where('userId', '==', user.uid),
       orderBy('timestamp', 'desc'),
       limit(5)
     );
-  }, [user, firestore]); 
+  }, [user]); 
 
   const { data: checkouts, isLoading } =
     useCollection<Checkout>(checkoutsQuery);

@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -17,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useCollection, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, doc } from 'firebase/firestore';
 import type { Equipment } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -202,14 +201,13 @@ export default function EquipmentPage() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
 
-  const firestore = useFirestore();
-  const equipmentQuery = useMemo(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'equipment'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+  const equipmentQuery = useMemoFirebase((db) => {
+    return query(collection(db, 'equipment'), orderBy('createdAt', 'desc'));
+  }, []);
   const { data: equipment, isLoading } = useCollection<Equipment>(equipmentQuery);
 
   const { toast } = useToast();
+  const firestore = useFirestore();
 
   const handleDelete = (item: Equipment) => {
     if (!firestore) return;

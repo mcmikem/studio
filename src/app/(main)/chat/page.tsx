@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
@@ -11,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, MessageSquare, Wand, CalendarCheck, BarChart3, Lightbulb, Trash2 } from 'lucide-react';
-import { useCollection, useFirestore, useUser, deleteDocumentNonBlocking } from '@/firebase';
+import { useCollection, useFirestore, useUser, deleteDocumentNonBlocking, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, orderBy, serverTimestamp, addDoc, limit, getDocs, doc } from 'firebase/firestore';
 import type { Message } from '@/lib/types';
@@ -76,7 +75,6 @@ function MessageItem({ message }: { message: Message }) {
 }
 
 export default function ChatPage() {
-  const firestore = useFirestore();
   const { user } = useUser();
   const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
   const { toast } = useToast();
@@ -85,10 +83,10 @@ export default function ChatPage() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   // Use a user-specific sub-collection for AI chats
-  const messagesQuery = useMemo(() => {
-    if (!firestore || !user) return null;
-    return query(collection(firestore, 'users', user.uid, 'ai-chats'), orderBy('createdAt', 'asc'), limit(50));
-  }, [firestore, user]);
+  const messagesQuery = useMemoFirebase((db) => {
+    if (!user) return null;
+    return query(collection(db, 'users', user.uid, 'ai-chats'), orderBy('createdAt', 'asc'), limit(50));
+  }, [user]);
 
   const { data: messages, isLoading: isLoadingMessages } = useCollection<Message>(messagesQuery);
 
@@ -107,6 +105,11 @@ export default function ChatPage() {
     setNewMessage('');
     
     // AI chats are now stored in a user-specific subcollection
+    const firestore = useFirestore();
+    if (!firestore) {
+        setIsSending(false);
+        return;
+    }
     const aiChatsCollection = collection(firestore, 'users', user.uid, 'ai-chats');
     
     const userMessageData = {
@@ -160,6 +163,7 @@ export default function ChatPage() {
   }
 
   const handleClearChat = async () => {
+      const firestore = useFirestore();
       if (!firestore || !user) return;
       
       try {

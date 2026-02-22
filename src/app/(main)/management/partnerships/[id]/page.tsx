@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -281,15 +280,13 @@ function MeetingLogForm({ partner, onFormSubmit }: { partner: Partnership, onFor
 }
 
 function ActivityTimeline({ partnerId }: { partnerId: string }) {
-    const firestore = useFirestore();
-
-    const meetingsQuery = useMemoFirebase(() => {
-        if (!firestore || !partnerId) return null;
+    const meetingsQuery = useMemoFirebase((db) => {
+        if (!partnerId) return null;
         return query(
-            collection(firestore, 'partnerships', partnerId, 'meetings'),
+            collection(db, 'partnerships', partnerId, 'meetings'),
             orderBy('date', 'desc')
         );
-    }, [firestore, partnerId]);
+    }, [partnerId]);
 
     const { data: meetings, isLoading } = useCollection<Meeting>(meetingsQuery);
     
@@ -331,15 +328,14 @@ function ActivityTimeline({ partnerId }: { partnerId: string }) {
 export default function PartnerProfilePage() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const firestore = useFirestore();
   const [isLogMeetingOpen, setIsLogMeetingOpen] = useState(false);
   const [isHealthCheckOpen, setIsHealthCheckOpen] = useState(false);
 
 
-  const partnerDocRef = useMemo(() => {
-    if (!firestore || !id) return null;
-    return doc(firestore, 'partnerships', id);
-  }, [firestore, id]);
+  const partnerDocRef = useMemoFirebase((db) => {
+    if (!id) return null;
+    return doc(db, 'partnerships', id);
+  }, [id]);
   
   const { data: partner, isLoading } = useDoc<Partnership>(partnerDocRef);
 
