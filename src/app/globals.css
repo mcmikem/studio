@@ -52,7 +52,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-black uppercase tracking-tight; /* REMOVED GLOBAL ITALIC */
+    @apply font-heading font-bold tracking-tight;
   }
 }
 
@@ -100,11 +100,11 @@
 
 @layer utilities {
   .shadow-comic {
-    box-shadow: 4px 4px 0 rgba(29, 38, 49, 1);
+    box-shadow: 3px 3px 0 rgba(29, 38, 49, 1);
   }
   
   .shadow-comic-lg {
-    box-shadow: 6px 6px 0 rgba(29, 38, 49, 1);
+    box-shadow: 5px 5px 0 rgba(29, 38, 49, 1);
   }
 
   .shadow-comic-sm {

@@ -1,3 +1,4 @@
+
 import type { Config } from 'tailwindcss';
 
 export default {
@@ -10,11 +11,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        heading: ['Space Grotesk', 'sans-serif'],
-        sketch: ['Gochi Hand', 'cursive'],
-        body: ['Inter', 'sans-serif'], // Ensure Inter is also available for body text
-        headline: ['Space Grotesk', 'sans-serif'], // Keeping for consistency with blueprint
+        sans: ['var(--font-inter)'],
+        heading: ['var(--font-space-grotesk)'],
+        sketch: ['var(--font-gochi-hand)'],
+        body: ['var(--font-inter)'],
+        headline: ['var(--font-space-grotesk)'],
       },
       colors: {
         // Omuto Brand Colors (Strict from blueprint)
@@ -28,39 +29,39 @@ export default {
         'omuto-blue': '#96D9F2',
         
         // Semantic Colors based on Omuto Brand
-        background: '#F9F8F3', // omuto-cream
-        foreground: '#1D2631', // omuto-navy
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
         card: {
-          DEFAULT: '#FFFFFF',
-          foreground: '#1D2631',
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
         },
         popover: {
-          DEFAULT: '#FFFFFF',
-          foreground: '#1D2631',
+          DEFAULT: 'hsl(var(--popover))',
+          foreground: 'hsl(var(--popover-foreground))',
         },
         primary: {
-          DEFAULT: '#EE2726', // omuto-red
-          foreground: '#FFFFFF',
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         secondary: {
-          DEFAULT: '#1D2631', // omuto-navy
-          foreground: '#FFFFFF',
+          DEFAULT: 'hsl(var(--secondary))',
+          foreground: 'hsl(var(--secondary-foreground))',
         },
         muted: {
-          DEFAULT: '#F0F0F0', // light grey
-          foreground: '#1D2631', // omuto-navy for contrast
+          DEFAULT: 'hsl(var(--muted))',
+          foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: '#FFCF5D', // omuto-yellow
-          foreground: '#1D2631', // omuto-navy
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
         },
         destructive: {
-          DEFAULT: '#EE2726', // Using omuto-red for destructive
-          foreground: '#FFFFFF',
+          DEFAULT: 'hsl(var(--destructive))',
+          foreground: 'hsl(var(--destructive-foreground))',
         },
-        border: '#1D2631', // Default border color, subtle variant in global.css
-        input: '#1D2631',
-        ring: '#EE2726',
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
 
         // Chart colors - using Omuto palette
         chart: {
@@ -84,29 +85,29 @@ export default {
         },
       },
       boxShadow: {
-        'comic': '4px 4px 0 rgba(29, 38, 49, 1)', /* Default comic shadow */
-        'comic-sm': '2px 2px 0 rgba(29, 38, 49, 1)', /* Smaller comic shadow */
-        'comic-lg': '6px 6px 0 rgba(29, 38, 49, 1)', /* Larger comic shadow for hover/active */
-        'soft': '0 4px 10px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.02)', /* Softer shadow */
+        'comic': '3px 3px 0 rgba(29, 38, 49, 1)',
+        'comic-lg': '5px 5px 0 rgba(29, 38, 49, 1)',
+        'comic-sm': '2px 2px 0 rgba(29, 38, 49, 1)',
+        'soft': '0 4px 10px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.02)',
       },
       borderWidth: {
-        DEFAULT: '1px', // Default subtle border
+        DEFAULT: '1px',
         '2': '2px',
         '3': '3px',
         '4': '4px',
         '6': '6px',
-        'px': '1px', // Custom addition for explicit 1px usage
-        'md': '2px', // Custom addition for medium border
-        'lg': '3px', // Custom addition for large border
-        'xl': '4px', // Custom addition for extra large border
+        'px': '1px',
+        'md': '2px',
+        'lg': '3px',
+        'xl': '4px',
       },
       borderRadius: {
-        lg: '0.75rem',
-        md: '0.5rem',
-        sm: '0.375rem',
-        'xl': '1rem',
-        '2xl': '1.5rem',
-        '3xl': '2rem',
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+        'xl': 'calc(var(--radius) + 4px)',
+        '2xl': 'calc(var(--radius) + 12px)',
+        '3xl': 'calc(var(--radius) + 20px)',
       },
       keyframes: {
         'accordion-down': {

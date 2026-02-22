@@ -3,7 +3,7 @@ import './globals.css';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
 import { GeistSans } from 'geist/font/sans'
-import { Inter } from 'next/font/google'
+import { Inter, Space_Grotesk, Gochi_Hand } from 'next/font/google'
 import { AppSidebar } from '@/components/nav';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AppHeader } from '@/components/header';
@@ -11,10 +11,13 @@ import { MobileBottomNav } from '@/components/mobile-nav';
 import { ViewAsBanner } from '@/components/view-as-banner';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
+const gochiHand = Gochi_Hand({ subsets: ['latin'], weight: '400', variable: '--font-gochi-hand' });
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${GeistSans.variable}`}>
+    <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${gochiHand.variable} ${GeistSans.variable}`}>
       <body>
         <Providers>
            <SidebarProvider>
