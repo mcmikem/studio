@@ -1,9 +1,8 @@
 'use server';
 
-import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import { ai } from '@/ai/genkit';
 import { KeyResultAISchema } from '@/lib/types';
-
 
 export const DailyPlannerAIInputSchema = z.object({
   userName: z.string().describe("The name of the user."),
@@ -12,7 +11,6 @@ export const DailyPlannerAIInputSchema = z.object({
   weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
   keyResults: z.array(KeyResultAISchema).describe("A list of the organization's current Key Results (OKRs)."),
 });
-export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
 
 export const DailyPlannerAIOutputSchema = z.object({
     timeBlocks: z.array(z.object({
@@ -24,11 +22,10 @@ export const DailyPlannerAIOutputSchema = z.object({
         krTitle: z.string().describe("The title of the Key Result this mission aligns with."),
         alignmentJustification: z.string().describe("A brief, one-sentence explanation of *how* the daily mission supports this specific Key Result."),
     })).describe("A list of 1-2 key results that this daily mission directly supports."),
-    materials: z.string().describe("A comma-separated list of what they will need."),
+    materials: z.string().describe("A comma-separated list of materials or resources needed."),
     challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
     bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from a knowledge base of best practices for NGO work."),
 });
-export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
 
 export const dailyPlannerFlow = ai.defineFlow(
   {
@@ -56,13 +53,11 @@ export const dailyPlannerFlow = ai.defineFlow(
       Generate the full JSON output based on this analysis. Ensure the strategic alignment is clear and motivational.
     `;
 
-    const llmResponse = await ai.generate({
+    const result = await ai.generate({
       prompt: prompt,
-      model: 'googleai/gemini-pro',
       output: { schema: DailyPlannerAIOutputSchema },
-      config: { temperature: 0.3 }
     });
 
-    return llmResponse.output!;
+    return result.output!;
   }
 );

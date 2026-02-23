@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@genkit-ai/google-genai": "^1.20.0",
-    "@genkit-ai/next": "^1.28.0",
+    "@genkit-ai/google-genai": "^1.29.0",
+    "@genkit-ai/next": "^1.29.0",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -46,7 +46,7 @@
     "dotenv": "^16.4.5",
     "firebase": "^12.9.0",
     "geist": "^1.5.1",
-    "genkit": "^1.20.0",
+    "genkit": "^1.29.0",
     "html2canvas": "^1.4.1",
     "json2csv": "^6.0.0-alpha.2",
     "jspdf": "^3.0.4",

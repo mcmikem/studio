@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useParams } from 'next/navigation';
@@ -171,7 +170,7 @@ function ProjectDashboard() {
                         <div className="flex gap-2">
                             <Button variant="outline" disabled><Download className="mr-2 h-4 w-4" /> Download Charter</Button>
                             <Button variant="outline" disabled><LinkIcon className="mr-2 h-4 w-4" /> Share Link</Button>
-                            <Button disabled><Pencil className="mr-2 h-4 w-4" /> Edit Project</Button>
+                            <Button><Pencil className="mr-2 h-4 w-4" /> Edit Project</Button>
                         </div>
                     </div>
                      <div className="md:col-span-1">

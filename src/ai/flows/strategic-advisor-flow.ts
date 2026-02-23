@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -60,7 +61,6 @@ export const strategicAdvisorFlow = ai.defineFlow(
 
     const result = await ai.generate({
       prompt: prompt,
-      model: 'googleai/gemini-pro',
       output: { schema: StrategicAdvisorOutputSchema },
     });
 

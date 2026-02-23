@@ -9,21 +9,12 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 import { getFirebaseAdmin } from '@/firebase/server';
+import { ai } from './genkit';
 
 // Ensure the admin instance is initialized and data is seeded on startup.
 getFirebaseAdmin();
 
-
-// This is where the server-side configuration is done.
-// The `ai` object is augmented with the plugin.
-const ai = genkit({
-    plugins: [
-        googleAI({ apiKey: process.env.GEMINI_API_KEY }),
-    ],
-});
 
 // By importing the flows, we ensure they are attached to the `ai` instance
 // that the dev server will use.

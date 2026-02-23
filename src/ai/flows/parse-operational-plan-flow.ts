@@ -6,15 +6,17 @@
  */
 
 import { ai } from '@/ai/genkit';
-import type { ParsePlanInput, ParsePlanOutput } from '@/lib/types';
+import type { ParsePlanOutput } from '@/lib/types';
 import { ParsePlanInputSchema, ParsePlanOutputSchema } from '@/lib/types';
 
-const planParserPrompt = ai.definePrompt({
-    name: 'planParserPrompt',
-    input: { schema: ParsePlanInputSchema },
-    output: { schema: ParsePlanOutputSchema },
-    model: 'googleai/gemini-1.5-flash',
-    prompt: `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
+export const parseOperationalPlanFlow = ai.defineFlow(
+  {
+    name: 'parseOperationalPlanFlow',
+    inputSchema: ParsePlanInputSchema,
+    outputSchema: ParsePlanOutputSchema,
+  },
+  async (input) => {
+    const prompt = `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
 
   **Instructions:**
   1.  **Identify Key Results:** Scan the text for items explicitly labeled with a KR code (e.g., "OCT-KR1", "NOV-KR1", "Q4-KR3").
@@ -30,19 +32,16 @@ const planParserPrompt = ai.definePrompt({
   
   **Operational Plan Text:**
   ---
-  {{planText}}
+  ${input.planText}
   ---
-  `,
-});
+  `;
 
-export const parseOperationalPlan = ai.defineFlow(
-  {
-    name: 'parseOperationalPlanFlow',
-    inputSchema: ParsePlanInputSchema,
-    outputSchema: ParsePlanOutputSchema,
-  },
-  async (input) => {
-    const { output } = await planParserPrompt(input);
+    const result = await ai.generate({
+        prompt: prompt,
+        output: { schema: ParsePlanOutputSchema },
+    });
+    
+    const output = result.output;
 
     if (!output) {
       throw new Error('AI failed to parse the operational plan.');

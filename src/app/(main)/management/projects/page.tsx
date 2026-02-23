@@ -141,7 +141,7 @@ export default function ProjectsDirectoryPage() {
             A central dashboard for all organizational projects.
           </p>
         </div>
-        <Button size="lg" disabled>
+        <Button size="lg">
           <PlusCircle className="mr-2 h-4 w-4" />
           New Project
         </Button>
@@ -192,7 +192,7 @@ export default function ProjectsDirectoryPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <Skeleton className="h-64 w-full" />
                             <Skeleton className="h-64 w-full" />
-                            <Skeleton className="h-64 w-full" />
+                            <Skeleton className="h-64 w-null" />
                         </div>
                     ) : filteredProjects.length > 0 ? (
                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

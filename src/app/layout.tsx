@@ -9,6 +9,7 @@ import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppHeader } from '@/components/header';
 import { MobileBottomNav } from '@/components/mobile-nav';
 import { ViewAsBanner } from '@/components/view-as-banner';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${spaceGrotesk.variable} ${gochiHand.variable} ${GeistSans.variable}`}>
       <body>
         <Providers>
+           <FirebaseErrorListener />
            <SidebarProvider>
             <Sidebar>
                 <AppSidebar />
