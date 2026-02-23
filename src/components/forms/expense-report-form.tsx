@@ -29,7 +29,7 @@ import { Loader2, FilePlus2, PlusCircle, Trash2, Receipt, Wallet, Sparkles, Arro
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/actions';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import type { Expense, User, Project, ExpenseItem } from '@/lib/types';
 import { expenseItemCategories } from '@/lib/types';
@@ -209,12 +209,12 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
 
   return (
-    <Card className="card-comic-hero overflow-hidden">
+    <Card>
       <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-8 md:p-12">
             <div className="p-3 bg-white border-lg border-omuto-navy/20 shadow-comic-sm rounded-2xl w-fit mb-6 rotate-[-2deg]">
                 <Receipt className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="font-heading text-4xl font-black tracking-tighter uppercase leading-none text-omuto-navy">
+            <CardTitle className="font-heading text-4xl font-bold tracking-tight uppercase leading-none text-omuto-navy">
                 Expense <span className="text-omuto-red underline decoration-4 underline-offset-4">Report</span>
             </CardTitle>
             <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">Financial Accountability Terminal</CardDescription>
@@ -225,29 +225,29 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             {/* 1. Header Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                    <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Action Type</Label>
+                    <Label className="font-bold text-[10px] uppercase tracking-widest pl-1">Action Type</Label>
                     <Controller name="type" control={control} render={({ field }) => (
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col sm:flex-row gap-4">
                             <div className="flex items-center space-x-3 bg-muted/30 px-6 py-4 rounded-2xl border-lg border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white transition-all cursor-pointer flex-1">
                                 <RadioGroupItem value="Requisition" id="req" className="border-2" />
-                                <Label htmlFor="req" className="font-black uppercase text-xs cursor-pointer text-omuto-navy">Requisition</Label>
+                                <Label htmlFor="req" className="font-bold uppercase text-xs cursor-pointer text-omuto-navy">Requisition</Label>
                             </div>
                             <div className="flex items-center space-x-3 bg-muted/30 px-6 py-4 rounded-2xl border-lg border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white transition-all cursor-pointer flex-1">
                                 <RadioGroupItem value="Reimbursement" id="reim" className="border-2" />
-                                <Label htmlFor="reim" className="font-black uppercase text-xs cursor-pointer text-omuto-navy">Reimbursement</Label>
+                                <Label htmlFor="reim" className="font-bold uppercase text-xs cursor-pointer text-omuto-navy">Reimbursement</Label>
                             </div>
                         </RadioGroup>
                     )} />
                 </div>
                 <div className="space-y-4 text-right">
-                    <Label className="font-black text-[10px] uppercase tracking-widest pr-1">Reporting Date</Label>
-                    <Input type="date" {...register('date')} className="h-14 border-lg rounded-2xl text-right font-black text-omuto-navy" />
+                    <Label className="font-bold text-[10px] uppercase tracking-widest pr-1">Reporting Date</Label>
+                    <Input type="date" {...register('date')} className="h-14 border-lg rounded-2xl text-right font-bold text-omuto-navy" />
                 </div>
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="title" className="font-black text-[10px] uppercase tracking-widest pl-1">Mission / Title</Label>
-                <Input id="title" placeholder="e.g., Mpigi Field Distribution" {...register('title')} className="h-16 border-lg rounded-2xl text-xl font-black tracking-tight text-omuto-navy" />
+                <Label htmlFor="title" className="font-bold text-[10px] uppercase tracking-widest pl-1">Mission / Title</Label>
+                <Input id="title" placeholder="e.g., Mpigi Field Distribution" {...register('title')} className="h-16 border-lg rounded-2xl text-xl font-bold tracking-tight text-omuto-navy" />
             </div>
 
             <Separator className="bg-omuto-navy/5" />
@@ -255,7 +255,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             {/* 2. Line Items */}
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                    <h3 className="font-heading font-black uppercase tracking-tighter text-xl text-omuto-navy">Log Entries</h3>
+                    <h3 className="font-heading font-bold uppercase tracking-tighter text-xl text-omuto-navy">Log Entries</h3>
                     <Button type="button" onClick={() => append({ description: '', category: 'Transport', amount: 0 })} className="btn-omuto bg-omuto-navy text-white h-10 px-4">
                         <PlusCircle className="h-4 w-4 mr-2" /> Add Item
                     </Button>
@@ -266,11 +266,11 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                         <div key={field.id} className="relative p-6 bg-muted/20 border-lg border-omuto-navy/20 rounded-3xl animate-in slide-in-from-bottom-2 duration-300">
                              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
                                 <div className="md:col-span-5 space-y-2">
-                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Description</Label>
+                                    <Label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Description</Label>
                                     <Input {...register(`items.${index}.description`)} className="h-12 border-md rounded-xl font-bold bg-white text-omuto-navy" placeholder="What was this for?" />
                                 </div>
                                 <div className="md:col-span-3 space-y-2">
-                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Category</Label>
+                                    <Label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Category</Label>
                                     <Controller
                                         name={`items.${index}.category`}
                                         control={control}
@@ -285,8 +285,8 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                                     />
                                 </div>
                                 <div className="md:col-span-3 space-y-2">
-                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Amount (UGX)</Label>
-                                    <Input type="number" {...register(`items.${index}.amount`)} className="h-12 border-md rounded-xl font-black bg-white text-omuto-navy" />
+                                    <Label className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">Amount (UGX)</Label>
+                                    <Input type="number" {...register(`items.${index}.amount`)} className="h-12 border-md rounded-xl font-bold bg-white text-omuto-navy" />
                                 </div>
                                 <div className="md:col-span-1 flex justify-center pb-1">
                                     <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-10 w-10 rounded-xl hover:bg-omuto-red hover:text-white transition-all text-omuto-navy/60">
@@ -304,8 +304,8 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-white/10 rounded-2xl"><Wallet className="h-8 w-8 text-omuto-yellow" /></div>
                     <div>
-                        <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Validated Total</p>
-                        <p className="font-heading text-4xl font-black text-white tracking-tighter">{formatCurrency(totalAmount)}</p>
+                        <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Validated Total</p>
+                        <p className="font-heading text-4xl font-bold text-white tracking-tighter">{formatCurrency(totalAmount)}</p>
                     </div>
                 </div>
                  <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm">

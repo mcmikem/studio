@@ -66,17 +66,17 @@ function OperationalPlanViewer() {
     if (isLoading) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1,2,3].map(i => <Skeleton key={i} className="h-48 w-full rounded-2xl border-lg" />)}
+                {[1,2,3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
             </div>
         );
     }
 
     if (!keyResults || keyResults.length === 0) {
         return (
-             <Card className="card-comic-hero bg-muted/20">
+             <Card>
                 <CardContent className="flex flex-col items-center justify-center py-20 text-center">
                     <div className="p-6 bg-white border-lg border-omuto-navy/20 rounded-2xl shadow-comic-sm mb-6"><Goal className="h-12 w-12 text-omuto-navy/30" /></div>
-                    <h3 className="text-2xl font-black tracking-tighter uppercase text-omuto-navy">No Active Plan</h3>
+                    <h3 className="text-2xl font-bold tracking-tighter uppercase text-omuto-navy">No Active Plan</h3>
                     <p className="max-w-xs text-omuto-navy/60 font-bold mt-2 uppercase text-[10px] tracking-widest leading-relaxed">
                         An administrator needs to upload the strategic objectives for this period.
                     </p>
@@ -95,7 +95,7 @@ function OperationalPlanViewer() {
               return (
                 <Card 
                     key={kr.id} 
-                    className="group relative overflow-hidden card-comic-clean hover:-translate-y-1"
+                    className="group relative overflow-hidden hover:-translate-y-1"
                     onClick={() => handleKRClick(kr)}
                 >
                   <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
@@ -108,7 +108,7 @@ function OperationalPlanViewer() {
                         </Badge>
                          <ProgressRing progress={progress} size={48} strokeWidth={5} />
                     </div>
-                    <CardTitle className="text-xl font-black tracking-tighter leading-tight text-omuto-navy group-hover:text-primary transition-colors">{kr.title}</CardTitle>
+                    <CardTitle className="text-xl font-bold tracking-tight leading-tight text-omuto-navy group-hover:text-primary transition-colors">{kr.title}</CardTitle>
                     <CardDescription className="font-bold line-clamp-2 mt-1 text-omuto-navy/70">{kr.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
@@ -128,11 +128,11 @@ function OperationalPlanViewer() {
                      <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
                              <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Target</p>
-                             <p className="text-sm font-black text-omuto-navy">{formatTarget(kr)}</p>
+                             <p className="text-sm font-bold text-omuto-navy">{formatTarget(kr)}</p>
                         </div>
                         <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
                              <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Deadline</p>
-                             <p className={`text-sm font-black text-omuto-navy ${deadlinePast ? 'text-destructive' : ''}`}>{formatDateSafe(kr.deadline, 'dateOnly')}</p>
+                             <p className={`text-sm font-bold text-omuto-navy ${deadlinePast ? 'text-destructive' : ''}`}>{formatDateSafe(kr.deadline, 'dateOnly')}</p>
                         </div>
                      </div>
                   </CardContent>
@@ -149,7 +149,7 @@ function OperationalPlanViewer() {
                 <SheetContent className="sm:max-w-xl rounded-l-3xl border-l-lg border-omuto-navy/20 shadow-lg">
                     <SheetHeader className="mb-8 pt-6">
                         <Badge className="badge-omuto-outline mb-4 text-omuto-navy/60">KEY RESULT DETAIL</Badge>
-                        <SheetTitle className="text-3xl font-black tracking-tight text-omuto-navy">{selectedKR?.title}</SheetTitle>
+                        <SheetTitle className="text-3xl font-bold tracking-tight text-omuto-navy">{selectedKR?.title}</SheetTitle>
                         <SheetDescription className="text-md font-bold leading-relaxed text-omuto-navy/70">
                             {selectedKR?.description}
                         </SheetDescription>
@@ -159,11 +159,11 @@ function OperationalPlanViewer() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-5 bg-primary/10 rounded-2xl border-lg border-omuto-navy/20">
                                     <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingUp className="h-3 w-3" /> Target Goal</p>
-                                    <p className="text-2xl font-black text-omuto-navy">{formatTarget(selectedKR)}</p>
+                                    <p className="text-2xl font-bold text-omuto-navy">{formatTarget(selectedKR)}</p>
                                 </div>
                                 <div className="p-5 bg-muted/30 border-lg border-omuto-navy/20 rounded-2xl">
                                     <p className="text-[10px] font-black text-omuto-navy/50 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Calendar className="h-3 w-3" /> Due Date</p>
-                                    <p className="text-xl font-black text-omuto-navy">{formatDateSafe(selectedKR.deadline, 'dateOnly')}</p>
+                                    <p className="text-xl font-bold text-omuto-navy">{formatDateSafe(selectedKR.deadline, 'dateOnly')}</p>
                                 </div>
                             </div>
 
@@ -268,13 +268,13 @@ function OperationalPlanUpdater() {
 
   return (
     <div className="space-y-6">
-      <Card className="card-comic-hero overflow-hidden">
+      <Card className="overflow-hidden">
         <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 pb-10 pt-10 px-8">
             <div className="p-3 bg-white border-lg border-omuto-navy/20 shadow-comic-sm rounded-2xl w-fit mb-4 rotate-[-2deg]">
                 <FileSignature className="h-6 w-6 text-primary" />
             </div>
-          <CardTitle className="text-3xl font-black tracking-tighter uppercase text-omuto-navy">Strategy <span className="text-primary">Input</span></CardTitle>
-          <CardDescription className="text-md font-bold text-omuto-navy/70 mt-2">
+          <CardTitle className="text-3xl font-bold tracking-tighter uppercase text-omuto-navy">Strategy <span className="text-primary">Input</span></CardTitle>
+          <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">
             Paste your raw operational plan text. Omuto AI will extract structured Key Results and activate the trackers.
           </CardDescription>
         </CardHeader>
@@ -298,9 +298,9 @@ function OperationalPlanUpdater() {
       </Card>
 
       {parsedResults.length > 0 && (
-        <Card className="card-comic-hero bg-white overflow-hidden">
+        <Card className="bg-white overflow-hidden">
           <CardHeader className="px-8 pt-8 bg-muted/10 border-b-lg border-omuto-navy/10">
-            <CardTitle className="text-2xl font-black tracking-tighter text-omuto-navy">Extracted <span className="text-primary">Strategy Model</span></CardTitle>
+            <CardTitle className="text-2xl font-bold tracking-tighter text-omuto-navy">Extracted <span className="text-primary">Strategy Model</span></CardTitle>
             <CardDescription className="font-bold text-omuto-navy/50 mt-1">Review the structured data below. Saving will overwrite the previous organizational plan.</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
@@ -316,9 +316,9 @@ function OperationalPlanUpdater() {
                 <TableBody>
                     {parsedResults.map((kr, index) => (
                     <TableRow key={index}>
-                        <TableCell className="font-black text-sm text-omuto-navy">{kr.title}</TableCell>
+                        <TableCell className="font-bold text-sm text-omuto-navy">{kr.title}</TableCell>
                         <TableCell className="text-xs font-bold text-omuto-navy/70 leading-relaxed">{kr.description}</TableCell>
-                        <TableCell className="text-right font-black text-omuto-navy">{kr.target}</TableCell>
+                        <TableCell className="text-right font-bold text-omuto-navy">{kr.target}</TableCell>
                     </TableRow>
                     ))}
                 </TableBody>
@@ -351,7 +351,7 @@ export default function OperationalPlanPage() {
                         <Goal className="h-8 w-8 text-omuto-red" />
                     </div>
                     <div>
-                        <h1 className="font-heading text-4xl font-black tracking-tight">Impact <span className="text-omuto-red">Strategy</span></h1>
+                        <h1 className="font-heading text-4xl font-bold tracking-tight">Impact <span className="text-omuto-red">Strategy</span></h1>
                         <p className="text-omuto-navy/60 font-bold uppercase text-[10px] tracking-widest mt-1">Operational Objectives & Key Result Framework</p>
                     </div>
                 </div>

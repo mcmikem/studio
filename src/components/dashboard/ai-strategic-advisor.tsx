@@ -70,13 +70,13 @@ export function AiStrategicAdvisor() {
   const isLoading = isLoadingData || isLoadingInsights;
 
   return (
-    <Card className="card-comic-hero">
+    <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-omuto-yellow/10 border-md border-omuto-yellow/20 rounded-lg text-omuto-yellow">
             <Sparkles className="h-5 w-5" />
           </div>
-          <CardTitle className="font-heading text-2xl font-black uppercase text-omuto-navy">AI Strategic <span className="text-omuto-red">Advisor</span></CardTitle>
+          <CardTitle className="font-heading text-2xl font-bold uppercase text-omuto-navy">AI Strategic <span className="text-omuto-red">Advisor</span></CardTitle>
         </div>
         <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest mt-1">High-level insights based on real-time data.</CardDescription>
       </CardHeader>
@@ -97,7 +97,7 @@ export function AiStrategicAdvisor() {
                     <Icon className="h-5 w-5 text-omuto-red" />
                 </div>
                 <div>
-                  <h4 className="font-black uppercase text-sm text-omuto-navy leading-tight">{insight.title}</h4>
+                  <h4 className="font-bold uppercase text-sm text-omuto-navy leading-tight">{insight.title}</h4>
                   <p className="text-xs text-omuto-navy/70 mt-1 mb-2">{insight.description}</p>
                   <p className="text-xs font-bold text-omuto-red bg-omuto-red/10 px-2 py-1 rounded-md">{insight.recommendation}</p>
                 </div>

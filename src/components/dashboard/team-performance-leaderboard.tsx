@@ -98,11 +98,11 @@ export function TeamPerformanceLeaderboard({
   }, [activities, checkins, checkouts, users, partnerships, expenses, testimonies]);
 
   if (isLoading) {
-    return <Skeleton className="h-96 rounded-2xl border-md" />;
+    return <Skeleton className="h-96" />;
   }
 
   return (
-    <Card className="rounded-2xl border-md border-omuto-navy/20 shadow-comic bg-white overflow-hidden">
+    <Card>
       <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-8 border-b-4 border-omuto-red">
         <div className="flex items-center justify-between">
           <div>
