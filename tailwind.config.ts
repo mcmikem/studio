@@ -19,8 +19,8 @@ export default {
       },
       colors: {
         // Omuto Brand Colors (Strict from blueprint)
-        'omuto-red': '#EE2726',
-        'omuto-navy': '#1D2631',
+        'omuto-red': '#EC1C24',
+        'omuto-navy': '#231F20',
         'omuto-cream': '#F9F8F3',
         'omuto-yellow': '#FFCF5D',
         'omuto-brown': '#5D261B',
@@ -65,23 +65,23 @@ export default {
 
         // Chart colors - using Omuto palette
         chart: {
-          '1': '#EE2726',
+          '1': '#EC1C24',
           '2': '#FFCF5D',
           '3': '#40D2AF',
           '4': '#3591FF',
-          '5': '#1D2631',
+          '5': '#231F20',
         },
 
         // Sidebar - high contrast light theme
         sidebar: {
           DEFAULT: '#FFFFFF',
-          foreground: '#1D2631',
-          primary: '#EE2726',
+          foreground: '#231F20',
+          primary: '#EC1C24',
           'primary-foreground': '#FFFFFF',
           accent: '#F9F8F3',
-          'accent-foreground': '#EE2726',
-          border: '#1D2631',
-          ring: '#EE2726',
+          'accent-foreground': '#EC1C24',
+          border: '#231F20',
+          ring: '#EC1C24',
         },
       },
       boxShadow: {

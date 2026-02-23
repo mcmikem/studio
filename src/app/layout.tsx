@@ -11,7 +11,7 @@ import { MobileBottomNav } from '@/components/mobile-nav';
 import { ViewAsBanner } from '@/components/view-as-banner';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' })
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 const gochiHand = Gochi_Hand({ subsets: ['latin'], weight: '400', variable: '--font-gochi-hand' });
 

@@ -7,32 +7,32 @@
   :root {
     /* STRICT BRAND PALETTE FROM BLUEPRINT */
     --background: 48 40% 96%; /* #F9F8F3 - Omuto Cream */
-    --foreground: 215 25% 15%; /* #1D2631 - Omuto Navy */
+    --foreground: 340 6% 13%; /* #231F20 - Omuto Black */
 
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 15%;
+    --card-foreground: 340 6% 13%;
  
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 340 6% 13%;
  
-    --primary: 16 100% 61%; /* #FF6B35 - Vibrant Red-Orange */
+    --primary: 358 86% 52%; /* #EC1C24 - Omuto Red */
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 215 25% 15%; /* #1D2631 - Accent Navy */
+    --secondary: 340 6% 13%; /* #231F20 - Accent Black */
     --secondary-foreground: 0 0% 100%;
  
     --muted: 0 0% 90%;
-    --muted-foreground: 215 25% 35%; /* Darkened for accessibility/contrast */
+    --muted-foreground: 340 4% 35%; /* Darkened for accessibility/contrast */
  
     --accent: 42 100% 68%; /* #FFCF5D - Omuto Yellow */
-    --accent-foreground: 215 25% 15%;
+    --accent-foreground: 340 6% 13%;
  
     --destructive: 0 84% 40%; /* Slightly lighter red for destructive actions */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 25% 15%; 
-    --input: 215 25% 15%;
-    --ring: 16 100% 61%;
+    --border: 340 6% 13%; 
+    --input: 340 6% 13%;
+    --ring: 358 86% 52%;
  
     --radius: 0.75rem; /* Standard border radius */
   }
@@ -59,7 +59,7 @@
 @layer components {
   /* CARDS - Tiered for visual hierarchy */
   .card-comic-hero {
-    @apply bg-white border-lg border-omuto-navy rounded-2xl shadow-comic transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-lg;
+    @apply bg-white border-lg border-omuto-navy/10 rounded-2xl shadow-comic transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-lg;
   }
 
   .card-comic-clean {
