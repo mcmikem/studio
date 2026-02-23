@@ -6,7 +6,7 @@ import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import { Sparkles, CalendarDays } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
  
 export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
@@ -17,24 +17,24 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
   }, []);
  
   return (
-      <div className="relative border-lg border-omuto-navy rounded-2xl shadow-comic overflow-hidden p-8 md:p-10 flex flex-col justify-end min-h-[200px] bg-white transition-all group">
+      <div className="relative border-md border-omuto-navy/20 rounded-2xl shadow-comic overflow-hidden p-8 md:p-10 flex flex-col justify-end min-h-[180px] bg-white transition-all group">
           {headerImage && (
               <>
                   <Image
                       src={headerImage.imageUrl}
                       alt="Omuto Impact"
                       fill
-                      className="object-cover opacity-5 grayscale transition-all duration-1000 group-hover:opacity-10 group-hover:grayscale-0"
+                      className="object-cover opacity-10 grayscale-[50%] transition-all duration-1000 group-hover:opacity-15 group-hover:grayscale-0"
                       priority
                   />
               </>
           )}
         <div className="relative z-10 flex flex-col gap-1">
-            <div className="flex items-center gap-2 text-omuto-navy/50 font-black tracking-[0.15em] uppercase text-[9px]">
-                <div className="w-1.5 h-1.5 rounded-full bg-omuto-red" />
+            <div className="flex items-center gap-2 text-omuto-navy/60 font-bold uppercase text-[9px] tracking-widest">
+                <div className="w-1.5 h-1.5 rounded-full bg-omuto-red animate-pulse" />
                 {currentDate || title || `HQ STATUS: ACTIVE`}
             </div>
-            <h1 className="font-heading text-4xl md:text-5xl font-black tracking-tight text-omuto-navy leading-none mt-2">
+            <h1 className="font-heading text-4xl md:text-5xl font-bold tracking-tight text-omuto-navy leading-none mt-2">
                 Hello, <span className="text-primary">{profile?.name.split(' ')[0] || "User"}.</span>
             </h1>
             <div className="flex items-center gap-3 mt-4">

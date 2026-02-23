@@ -22,7 +22,7 @@
     --secondary-foreground: 0 0% 100%;
  
     --muted: 0 0% 90%;
-    --muted-foreground: 340 4% 35%; /* Darkened for accessibility/contrast */
+    --muted-foreground: 340 5% 45%; /* Darkened for accessibility/contrast */
  
     --accent: 42 100% 68%; /* #FFCF5D - Omuto Yellow */
     --accent-foreground: 340 6% 13%;
@@ -59,7 +59,7 @@
 @layer components {
   /* CARDS - Tiered for visual hierarchy */
   .card-comic-hero {
-    @apply bg-white border-lg border-omuto-navy/10 rounded-2xl shadow-comic transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-lg;
+    @apply bg-white border-md border-omuto-navy/10 rounded-2xl shadow-comic transition-all duration-300 hover:-translate-y-0.5 hover:shadow-comic-lg;
   }
 
   .card-comic-clean {
@@ -68,11 +68,11 @@
 
   /* BUTTONS - Clear & Action-Oriented */
   .btn-omuto {
-    @apply h-11 px-6 bg-omuto-navy text-white border-lg border-omuto-navy font-bold uppercase tracking-wider text-xs rounded-lg shadow-comic-sm transition-all hover:bg-primary hover:-translate-y-0.5 active:translate-y-0 active:shadow-none;
+    @apply h-11 px-6 bg-omuto-navy text-white border-md border-omuto-navy font-bold uppercase tracking-wider text-xs rounded-lg shadow-comic-sm transition-all hover:bg-primary hover:-translate-y-0.5 active:translate-y-0 active:shadow-none;
   }
 
   .btn-omuto-secondary {
-    @apply h-11 px-6 bg-white text-omuto-navy border-lg border-omuto-navy font-bold uppercase tracking-wider text-xs rounded-lg shadow-comic-sm transition-all hover:bg-muted hover:-translate-y-0.5;
+    @apply h-11 px-6 bg-white text-omuto-navy border-md border-omuto-navy font-bold uppercase tracking-wider text-xs rounded-lg shadow-comic-sm transition-all hover:bg-muted hover:-translate-y-0.5;
   }
 
   /* BADGES - Distinct & Readable */
@@ -86,11 +86,11 @@
 
   /* TABLES - Data-Focused Clarity */
   .data-table-omuto {
-    @apply border-lg border-omuto-navy/20 bg-white rounded-xl overflow-hidden shadow-sm;
+    @apply border-md border-omuto-navy/20 bg-white rounded-xl overflow-hidden shadow-sm;
   }
   
   .data-table-omuto thead {
-    @apply bg-muted/40 text-omuto-navy border-b-lg border-omuto-navy/20;
+    @apply bg-muted/40 text-omuto-navy border-b-md border-omuto-navy/20;
   }
   
   .data-table-omuto tr {
@@ -100,19 +100,19 @@
 
 @layer utilities {
   .shadow-comic {
-    box-shadow: 3px 3px 0 rgba(29, 38, 49, 1);
+    box-shadow: 3px 3px 0 rgba(29, 38, 49, 0.8);
   }
   
   .shadow-comic-lg {
-    box-shadow: 5px 5px 0 rgba(29, 38, 49, 1);
+    box-shadow: 4px 4px 0 rgba(29, 38, 49, 0.8);
   }
 
   .shadow-comic-sm {
-    box-shadow: 2px 2px 0 rgba(29, 38, 49, 1);
+    box-shadow: 2px 2px 0 rgba(29, 38, 49, 0.8);
   }
 
   .comic-text-shadow {
-    text-shadow: 2px 2px 0 rgba(29, 38, 49, 0.1);
+    text-shadow: 1px 1px 0 rgba(29, 38, 49, 0.1);
   }
   
   .halftone-bg {

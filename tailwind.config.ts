@@ -13,9 +13,7 @@ export default {
       fontFamily: {
         sans: ['var(--font-inter)'],
         heading: ['var(--font-space-grotesk)'],
-        sketch: ['var(--font-gochi-hand)'],
         body: ['var(--font-inter)'],
-        headline: ['var(--font-space-grotesk)'],
       },
       colors: {
         // Omuto Brand Colors (Strict from blueprint)
@@ -85,9 +83,9 @@ export default {
         },
       },
       boxShadow: {
-        'comic': '3px 3px 0 rgba(29, 38, 49, 1)',
-        'comic-lg': '5px 5px 0 rgba(29, 38, 49, 1)',
-        'comic-sm': '2px 2px 0 rgba(29, 38, 49, 1)',
+        'comic': '2px 2px 0 rgba(29, 38, 49, 1)',
+        'comic-lg': '4px 4px 0 rgba(29, 38, 49, 1)',
+        'comic-sm': '1px 1px 0 rgba(29, 38, 49, 1)',
         'soft': '0 4px 10px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.02)',
       },
       borderWidth: {

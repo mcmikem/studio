@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -97,56 +98,56 @@ export function TeamPerformanceLeaderboard({
   }, [activities, checkins, checkouts, users, partnerships, expenses, testimonies]);
 
   if (isLoading) {
-    return <Skeleton className="h-96 rounded-3xl border-4 border-omuto-navy shadow-comic" />;
+    return <Skeleton className="h-96 rounded-2xl border-md" />;
   }
 
   return (
-    <Card className="rounded-3xl border-4 border-omuto-navy shadow-comic bg-white overflow-hidden">
+    <Card className="rounded-2xl border-md border-omuto-navy/20 shadow-comic bg-white overflow-hidden">
       <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-8 border-b-4 border-omuto-red">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
                 <Trophy className="h-6 w-6 text-omuto-yellow fill-omuto-yellow" />
-                <CardTitle className="text-3xl font-heading font-black italic tracking-tighter uppercase">Impact Stars</CardTitle>
+                <CardTitle className="text-2xl font-bold tracking-tight">Impact Stars</CardTitle>
             </div>
-            <CardDescription className="text-white/60 font-bold uppercase text-[10px] tracking-widest mt-1">Global Action Ranking</CardDescription>
+            <CardDescription className="text-white/60 font-medium text-xs mt-1">Monthly Ranking</CardDescription>
           </div>
           <div className="bg-omuto-red px-4 py-2 border-2 border-white rounded shadow-[2px_2px_0px_0px_rgba(255,255,255,0.3)]">
-             <span className="font-black text-xs uppercase tracking-tighter">Live</span>
+             <span className="font-bold text-xs">Live</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-3 p-6 bg-omuto-cream/50">
+      <CardContent className="space-y-4 p-6 bg-omuto-cream/50">
         {leaderboard.length > 0 ? (
           leaderboard.map((user, index) => (
-            <div key={user.userId} className={`flex items-center gap-4 p-4 rounded-2xl border-[3px] border-omuto-navy transition-all group ${index === 0 ? 'bg-omuto-yellow shadow-comic-sm' : 'bg-white hover:translate-x-1'}`}>
+            <div key={user.userId} className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all group ${index === 0 ? 'bg-omuto-yellow border-omuto-navy shadow-comic-sm' : 'bg-white border-omuto-navy/20 hover:border-omuto-navy/40 hover:bg-white'}`}>
               <div className="flex items-center justify-center w-10">
-                {index === 0 ? <Crown className="h-8 w-8 text-omuto-navy animate-bounce" /> : 
-                 <span className="font-black text-xl italic text-omuto-navy/30">#{index + 1}</span>}
+                {index === 0 ? <Crown className="h-7 w-7 text-omuto-navy" /> : 
+                 <span className="font-bold text-lg text-omuto-navy/40">#{index + 1}</span>}
               </div>
               <div className="relative">
-                <Avatar className="h-12 w-12 border-[3px] border-omuto-navy shadow-sm">
+                <Avatar className="h-12 w-12 border-2 border-omuto-navy">
                     <AvatarImage src={user.photoURL} />
-                    <AvatarFallback className="bg-omuto-navy text-white font-black">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="bg-omuto-navy text-white font-bold">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 {index === 0 && <div className="absolute -top-1 -right-1 bg-omuto-red border-2 border-omuto-navy rounded-full p-1"><Zap className="h-2 w-2 text-white fill-white" /></div>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-base font-black truncate leading-tight italic text-omuto-navy uppercase">{user.name}</p>
-                <p className="text-[10px] text-omuto-navy/60 truncate mt-1 font-black uppercase tracking-widest">{user.role}</p>
+                <p className="font-bold text-base truncate leading-tight text-omuto-navy">{user.name}</p>
+                <p className="text-xs text-muted-foreground truncate mt-0.5 font-medium">{user.role}</p>
               </div>
               <div className="text-right">
-                <div className={`px-4 py-1.5 border-[3px] border-omuto-navy font-black text-sm italic rounded-xl ${index === 0 ? 'bg-white' : 'bg-omuto-cream shadow-comic-sm'}`}>
+                <div className="px-3 py-1.5 border-2 border-omuto-navy font-bold text-sm rounded-lg bg-white shadow-comic-sm">
                     {Math.round(user.totalScore).toLocaleString()}
                 </div>
-                <p className="text-[9px] font-black text-omuto-navy/40 mt-2 uppercase tracking-tighter">{user.activityCount} ACTIONS</p>
+                <p className="text-[9px] font-bold text-omuto-navy/50 mt-1 uppercase tracking-wider">{user.activityCount} ACTIONS</p>
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center py-20 bg-white border-[3px] border-omuto-navy border-dashed rounded-3xl">
+          <div className="text-center py-20 bg-white border-2 border-omuto-navy/10 border-dashed rounded-2xl">
              <Zap className="h-16 w-16 mx-auto mb-4 opacity-10 text-omuto-navy" />
-             <p className="text-xs font-black text-omuto-navy/40 uppercase tracking-[0.2em]">Deploying Intelligence...</p>
+             <p className="text-xs font-bold text-omuto-navy/40 uppercase tracking-widest">Awaiting Team Activity...</p>
           </div>
         )}
       </CardContent>

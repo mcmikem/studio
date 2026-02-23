@@ -45,10 +45,10 @@ export function InternVolunteerDashboard({ profile, data }: { profile: any, data
   const isLoading = !activities || !users || !checkins;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <DashboardHeader profile={profile} />
        <DashboardGrid className="lg:grid-cols-3">
-        <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="lg:col-span-2 flex flex-col gap-8">
            <TeamPerformanceLeaderboard 
                 activities={activities} 
                 users={users} 
@@ -59,10 +59,10 @@ export function InternVolunteerDashboard({ profile, data }: { profile: any, data
                 isLoading={isLoading} 
             />
            <SmartReminders profile={profile} />
-           <MyTasksSummary />
         </div>
-         <div className="flex flex-col gap-6">
+         <div className="flex flex-col gap-8">
             <SupervisorCard profile={profile} />
+            <MyTasksSummary />
             <FirstQuestCard />
          </div>
     </DashboardGrid>

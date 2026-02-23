@@ -33,14 +33,17 @@ export function FieldStaffDashboard({ profile, data }: FieldStaffDashboardProps)
   const isLoading = !checkouts || !users || !checkins;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
         <DashboardHeader profile={profile} />
-        <DashboardGrid className="mt-6 lg:grid-cols-3">
-             <div className="lg:col-span-1 flex flex-col gap-6">
+        <DashboardGrid className="mt-2 lg:grid-cols-3">
+             <div className="lg:col-span-1 flex flex-col gap-8">
                 <MyWeeklyPlan />
                 <DashboardCalendar />
             </div>
-            <div className="lg:col-span-2 flex flex-col gap-6">
+            <div className="lg:col-span-1 flex flex-col gap-8">
+                <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
+            </div>
+             <div className="lg:col-span-1 flex flex-col gap-8">
                 <TeamPerformanceLeaderboard 
                     activities={activities} 
                     users={users} 
@@ -50,7 +53,6 @@ export function FieldStaffDashboard({ profile, data }: FieldStaffDashboardProps)
                     testimonies={testimonies}
                     isLoading={isLoading} 
                 />
-                <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
             </div>
         </DashboardGrid>
     </div>

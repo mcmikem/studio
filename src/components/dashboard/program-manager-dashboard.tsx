@@ -41,14 +41,14 @@ export function ProgramManagerDashboard({ profile, data }: ProgramManagerDashboa
   const isLoading = !partnerships || !activities || !users || !checkins;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
         <DashboardHeader profile={profile} />
-        <DashboardGrid className="mt-6 lg:grid-cols-3">
-            <div className="lg:col-span-1 flex flex-col gap-6">
+        <DashboardGrid className="mt-2 lg:grid-cols-3">
+            <div className="lg:col-span-1 flex flex-col gap-8">
                 <PartnershipPipeline partnerships={partnerships} isLoading={isLoading} />
                 <MyWeeklyPlan />
             </div>
-            <div className="lg:col-span-1 flex flex-col gap-6">
+            <div className="lg:col-span-1 flex flex-col gap-8">
                  <TeamPerformanceLeaderboard 
                     activities={activities} 
                     users={users} 
@@ -59,7 +59,7 @@ export function ProgramManagerDashboard({ profile, data }: ProgramManagerDashboa
                     isLoading={isLoading} 
                 />
             </div>
-            <div className="lg:col-span-1 flex flex-col gap-6">
+            <div className="lg:col-span-1 flex flex-col gap-8">
                 <QuickInsights activities={activities} />
                 <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
             </div>
