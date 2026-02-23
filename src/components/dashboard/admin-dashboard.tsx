@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { User as UserProfileType } from "@/lib/types"
@@ -24,17 +25,16 @@ export function AdminDashboard({ profile, data }: AdminDashboardProps) {
   return (
     <div className="flex flex-col gap-6">
         <DashboardHeader profile={profile} />
-        <DashboardGrid className="mt-6 lg:grid-cols-2">
+        <DashboardGrid className="mt-6 lg:grid-cols-3">
             {isLoading ? (
                 <>
-                    <Skeleton className="h-96" />
                     <Skeleton className="h-96" />
                     <Skeleton className="h-96" />
                     <Skeleton className="h-96" />
                 </>
             ) : (
                 <>
-                    <div className="flex flex-col gap-6">
+                    <div className="lg:col-span-1 flex flex-col gap-6">
                          <TeamPerformanceLeaderboard 
                             activities={activities} 
                             users={users} 
@@ -44,10 +44,12 @@ export function AdminDashboard({ profile, data }: AdminDashboardProps) {
                             testimonies={testimonies}
                             isLoading={false} 
                         />
+                    </div>
+                    <div className="lg:col-span-1 flex flex-col gap-6">
                         <TeamDeployment users={users} checkins={checkins} isLoading={false} />
                         <PartnershipPipeline partnerships={partnerships} isLoading={false} />
                     </div>
-                    <div className="flex flex-col gap-6">
+                     <div className="lg:col-span-1 flex flex-col gap-6">
                         <DashboardCalendar />
                         <ManagementQuickLinks />
                     </div>

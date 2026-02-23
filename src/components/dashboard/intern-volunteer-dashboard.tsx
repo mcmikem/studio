@@ -1,9 +1,10 @@
+
 'use client';
 
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Sparkles, BarChart3 } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { SupervisorCard } from './supervisor-card';
 import { DashboardHeader } from './dashboard-header';
@@ -18,28 +19,6 @@ const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/
     ssr: false,
 });
 
-function QuickActionsCard() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
-        <CardDescription>Your most common daily tasks.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-2">
-        <Button size="lg" asChild>
-          <Link href="/meal/activity">
-            <BarChart3 className="mr-2 h-4 w-4" /> Log My Hours (Activity)
-          </Link>
-        </Button>
-        <Button size="lg" variant="secondary" asChild>
-          <Link href="/forms/check-out">
-            <MessageCircle className="mr-2 h-4 w-4" /> Submit End-of-Day Note
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
 
 function FirstQuestCard() {
     return (
@@ -83,7 +62,6 @@ export function InternVolunteerDashboard({ profile, data }: { profile: any, data
            <MyTasksSummary />
         </div>
          <div className="flex flex-col gap-6">
-            <QuickActionsCard />
             <SupervisorCard profile={profile} />
             <FirstQuestCard />
          </div>
