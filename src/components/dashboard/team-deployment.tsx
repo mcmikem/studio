@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -156,6 +155,12 @@ export function TeamDeployment({ users, checkins, isLoading }: TeamDeploymentPro
         <DialogContent className="sm:max-w-md rounded-[2.5rem] border-4 border-omuto-navy p-0 overflow-hidden shadow-comic-lg">
             {selectedUserStatus && (
                  <div className="flex flex-col">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Personnel Detail: {selectedUserStatus.user.name}</DialogTitle>
+                        <DialogDescription>
+                            Current status and mission for {selectedUserStatus.user.name}.
+                        </DialogDescription>
+                    </DialogHeader>
                     <div className="p-8 bg-omuto-navy text-white flex items-center gap-6 border-b-4 border-omuto-red">
                         <Avatar className="h-20 w-20 border-4 border-white shadow-comic-sm -rotate-3">
                             <AvatarImage src={selectedUserStatus.user.photoURL} />
