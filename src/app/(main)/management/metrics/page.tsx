@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+import { useState } from 'react';
+import { useCollection, useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking, useMemoFirebase } from '@/firebase';
 import {
   collection,
   query,
@@ -256,11 +256,9 @@ function MetricCard({ metric }: { metric: ImpactMetric }) {
 export default function MetricsPage() {
   const [isNewDialogOpen, setIsNewDialogOpen] = useState(false);
   
-  const firestore = useFirestore();
-  const metricsQuery = useMemo(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'impact-metrics'), orderBy('metric'));
-  }, [firestore]);
+  const metricsQuery = useMemoFirebase((db) => {
+    return query(collection(db, 'impact-metrics'), orderBy('metric'));
+  }, []);
 
   const { data: metrics, isLoading } = useCollection<ImpactMetric>(metricsQuery);
 

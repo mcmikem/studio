@@ -121,7 +121,7 @@ function TeamWorkplanForm({
           message: '',
           status: 'Draft',
         });
-  }, [existingPlan, reset]);
+  }, [existingPlan]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -371,7 +371,7 @@ export default function TeamWorkplansPage() {
   }, []);
 
   const firestore = useFirestore();
-  const usersQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'users'), orderBy('name')) : null), [firestore]);
+  const usersQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'users'), orderBy('name')) : null), []);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const weekStartDate = currentDate ? startOfWeek(currentDate, { weekStartsOn: 1 }) : new Date();
