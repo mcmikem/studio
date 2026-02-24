@@ -4,28 +4,27 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useUser } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
-import { Loader2, List, ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { collection, serverTimestamp, doc, writeBatch } from 'firebase/firestore';
+import { Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DialogFooter } from '@/components/ui/dialog';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import type { Product } from '@/lib/types';
 
 const inventoryCheckSchema = z.object({
+  productId: z.string().min(1, "Please select a product."),
   date: z.string().min(1, 'Date is required.'),
-  product: z.enum(['Liquid Soap', 'Aloe Wash', 'Other'], {
-    required_error: 'Please select a product.',
-  }),
-  physicalCount: z.coerce.number().min(0, 'Physical count must be zero or more.'),
-  discrepancyReason: z.string().optional(),
+  countedQuantity: z.coerce.number().min(0, 'Count must be zero or more.'),
+  notes: z.string().optional(),
 });
 
 type InventoryCheckFormData = z.infer<typeof inventoryCheckSchema>;
@@ -33,7 +32,15 @@ type InventoryCheckFormData = z.infer<typeof inventoryCheckSchema>;
 export function InventoryCheckForm() {
   const router = useRouter();
   const firestore = useFirestore();
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
   const { toast } = useToast();
+
+  const productsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'products');
+  }, [firestore]);
+  const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
 
   const {
     register,
@@ -45,96 +52,86 @@ export function InventoryCheckForm() {
     resolver: zodResolver(inventoryCheckSchema),
     defaultValues: {
       date: format(new Date(), 'yyyy-MM-dd'),
-      product: 'Liquid Soap',
     },
   });
 
   const onSubmit = async (data: InventoryCheckFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
+    if (!firestore || !profile) return;
+
+    const product = products?.find(p => p.id === data.productId);
+    if (!product) {
+      toast({ variant: 'destructive', title: 'Product not found' });
       return;
     }
 
-    const logData = { ...data, createdAt: serverTimestamp() };
+    const batch = writeBatch(firestore);
+
+    // 1. Create inventory check record
+    const checkRef = doc(collection(firestore, 'inventory-checks'));
+    batch.set(checkRef, {
+      ...data,
+      productName: product.name,
+      checkedBy: profile.name,
+      createdAt: serverTimestamp(),
+    });
+    
+    // 2. Update product stock level
+    const productRef = doc(firestore, 'products', data.productId);
+    const stockFieldToUpdate = product.type === 'finished' ? 'quantity_on_hand' : 'current_stock_quantity';
+    batch.update(productRef, { [stockFieldToUpdate]: data.countedQuantity });
 
     try {
-      await addDocumentNonBlocking(collection(firestore, 'essentials-inventory'), logData);
-      toast({
-        title: 'Inventory Logged!',
-        description: `The stock count for ${data.product} has been recorded.`,
-      });
-      reset();
-      router.push('/meal/essentials');
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+        await batch.commit();
+        toast({ title: 'Inventory Updated!', description: `Stock for ${product.name} has been set to ${data.countedQuantity}.` });
+        reset();
+    } catch (e: any) {
+        toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not update inventory.' });
     }
   };
 
   return (
-    <div className="space-y-4">
-       <Button variant="outline" asChild>
-            <Link href="/meal/essentials">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Essentials Hub
-            </Link>
-        </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <List className="h-6 w-6" />
-            Omuto Essentials Inventory Check
-          </CardTitle>
-          <CardDescription>
-            Perform a stock count of products to track inventory levels.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="date">Date of Count</Label>
-                    <Input id="date" type="date" {...register('date')} />
-                    {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
-                </div>
-                 <div className="space-y-2">
-                  <Label htmlFor="product">Product</Label>
-                   <Controller
-                    name="product"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger id="product">
-                          <SelectValue placeholder="Select product..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Liquid Soap">Liquid Soap</SelectItem>
-                          <SelectItem value="Aloe Wash">Aloe Wash</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.product && <p className="text-sm text-destructive">{errors.product.message}</p>}
-                </div>
-            </div>
-             <div className="space-y-2">
-                <Label htmlFor="physicalCount">Physical Count (Liters/Units)</Label>
-                <Input id="physicalCount" type="number" {...register('physicalCount')} />
-                {errors.physicalCount && <p className="text-sm text-destructive">{errors.physicalCount.message}</p>}
-            </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="productId">Product</Label>
+        {isLoadingProducts ? <Skeleton className="h-10" /> : (
+            <Controller
+            name="productId"
+            control={control}
+            render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger id="productId"><SelectValue placeholder="Select a product..." /></SelectTrigger>
+                    <SelectContent>{products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.type})</SelectItem>)}</SelectContent>
+                </Select>
+            )}
+            />
+        )}
+        {errors.productId && <p className="text-sm text-destructive">{errors.productId.message}</p>}
+      </div>
+
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <div className="space-y-2">
+            <Label htmlFor="countedQuantity">Physical Count</Label>
+            <Input id="countedQuantity" type="number" {...register('countedQuantity')} />
+            {errors.countedQuantity && <p className="text-sm text-destructive">{errors.countedQuantity.message}</p>}
+          </div>
             <div className="space-y-2">
-                <Label htmlFor="discrepancyReason">Reason for Discrepancy (if any)</Label>
-                <Textarea id="discrepancyReason" {...register('discrepancyReason')} placeholder="e.g., Damaged items, samples given out..." />
+                <Label htmlFor="date">Date of Count</Label>
+                <Input id="date" type="date" {...register('date')} />
+                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Inventory Count
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-    </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes (Reason for discrepancy, etc.)</Label>
+        <Textarea id="notes" {...register('notes')} />
+      </div>
+      <DialogFooter>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Update Stock Count
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }
+
+    

@@ -113,6 +113,7 @@ function EssentialsHubPage() {
                     <CardContent className="grid grid-cols-1 gap-2">
                         <Button asChild variant="outline"><Link href="/enterprise/essentials/sales">New Sale</Link></Button>
                         <Button asChild variant="outline"><Link href="/enterprise/essentials/products">Manage Products</Link></Button>
+                        <Button asChild variant="outline"><Link href="/enterprise/essentials/inventory">Inventory Check</Link></Button>
                         <Button asChild variant="outline" disabled><Link href="#">New Production Batch</Link></Button>
                     </CardContent>
                 </Card>
@@ -128,3 +129,5 @@ export default function EssentialsPage() {
         </Suspense>
     )
 }
+
+    

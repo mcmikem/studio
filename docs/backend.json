@@ -6,7 +6,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user within the Omuto Central application. Roles can include Program Manager, Operations, Media, ED, Intern, Volunteer, Essentials Manager, Youth Center Manager, Production Staff, Sales Attendant, Course Facilitator, or Accountant/Finance.",
+      "description": "Represents a user within the Omuto Central application.",
       "properties": {
         "id": {
           "type": "string",
@@ -14,7 +14,7 @@
         },
         "role": {
           "type": "string",
-          "description": "The user's role within the organization (e.g., Program Manager, Operations, Media, ED, Intern, Volunteer)."
+          "description": "The user's role within the organization (e.g., Program Manager, Operations, Media, ED, Intern, Volunteer, Essentials Manager, Youth Center Manager, Production Staff, Sales Attendant, Course Facilitator, Accountant/Finance)."
         },
         "name": {
           "type": "string",
@@ -1289,38 +1289,21 @@
       },
       "required": ["batchNumber", "product", "date", "quantity", "producedBy"]
     },
-    "Sale": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Sale",
-      "description": "A sales record for Omuto Essentials.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "date": { "type": "string", "format": "date" },
-        "salesAgent": { "type": "string" },
-        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
-        "quantity": { "type": "number" },
-        "unitPrice": { "type": "number" },
-        "totalAmount": { "type": "number" },
-        "paymentMethod": { "type": "string", "enum": ["Cash", "Mobile Money"] },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["date", "salesAgent", "product", "quantity", "unitPrice", "totalAmount"]
-    },
     "InventoryCheck": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Inventory Check",
-      "description": "An inventory check for Omuto Essentials.",
+      "description": "Records a physical stock count for a specific product at a specific time, allowing for inventory adjustments.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
+        "productId": { "type": "string", "description": "The ID of the product being checked." },
+        "productName": { "type": "string", "description": "The name of the product being checked." },
         "date": { "type": "string", "format": "date" },
-        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
-        "physicalCount": { "type": "number" },
-        "discrepancyReason": { "type": "string" },
+        "countedQuantity": { "type": "number", "description": "The physical quantity counted." },
+        "notes": { "type": "string", "description": "Reason for any discrepancy or general notes." },
+        "checkedBy": { "type": "string", "description": "Name of the user who performed the check." },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["date", "product", "physicalCount"]
+      "required": ["productId", "productName", "date", "countedQuantity", "checkedBy", "createdAt"]
     },
     "WaterSource": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1756,8 +1739,6 @@
     "/ofa-scorecards/{scorecardId}": { "schema": { "$ref": "#/entities/OFAScorecard" }, "description": "Quarterly performance scorecards for OFA teams." },
     "/pulse-content/{contentId}": { "schema": { "$ref": "#/entities/PulseContent" }, "description": "Content submissions for Omuto Pulse." },
     "/essentials-production/{logId}": { "schema": { "$ref": "#/entities/ProductionLog" }, "description": "Production logs for Omuto Essentials." },
-    "/essentials-sales/{saleId}": { "schema": { "$ref": "#/entities/Sale" }, "description": "Sales records for Omuto Essentials." },
-    "/essentials-inventory/{checkId}": { "schema": { "$ref": "#/entities/InventoryCheck" }, "description": "Inventory checks for Omuto Essentials." },
     "/water-sources/{sourceId}": { "schema": { "$ref": "#/entities/WaterSource" }, "description": "Water sources for PureWater initiative." },
     "/wash-assessments/{assessmentId}": { "schema": { "$ref": "#/entities/WASH_Assessment" }, "description": "WASH assessments for schools." },
     "/yap-chapters/{chapterId}": { "schema": { "$ref": "#/entities/YAP_Chapter" }, "description": "YAP chapter registrations." },
@@ -1775,6 +1756,10 @@
     "/products/{productId}": { "schema": { "$ref": "#/entities/Product" }, "description": "Products, raw materials, or packaging." },
     "/suppliers/{supplierId}": { "schema": { "$ref": "#/entities/Supplier" }, "description": "Suppliers of raw materials." },
     "/production-batches/{batchId}": { "schema": { "$ref": "#/entities/ProductionBatch" }, "description": "Manufacturing batches for products." },
-    "/sales/{saleId}": { "schema": { "$ref": "#/entities/Sale" }, "description": "Sales records for products or services." }
+    "/sales/{saleId}": { "schema": { "$ref": "#/entities/Sale" }, "description": "Sales records for products or services." },
+    "/inventory-checks/{checkId}": { "schema": { "$ref": "#/entities/InventoryCheck" }, "description": "Records a physical stock count for a product." }
   }
 }
+
+
+    
