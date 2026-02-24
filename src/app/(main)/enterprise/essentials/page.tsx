@@ -52,17 +52,54 @@ function EssentialsHubPage() {
         ) : null
     , []);
 
+    const productsQuery = useMemoFirebase((db) => db ? query(collection(db, 'products')) : null, []);
+
     const { data: monthlySales, isLoading: isLoadingSales } = useCollection<Sale>(salesQuery);
     const { data: recentSales, isLoading: isLoadingRecent } = useCollection<Sale>(recentSalesQuery);
+    const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
     
     const stats = useMemo(() => {
-        if (!monthlySales) return { totalRevenue: 0, totalSales: 0 };
+        if (!monthlySales || !products) return { totalRevenue: 0, totalSales: 0, topProduct: 'N/A', lowStockCount: 0 };
+        
         const totalRevenue = monthlySales.reduce((sum, sale) => sum + sale.total_amount, 0);
+
+        const productSales: Record<string, number> = {};
+        monthlySales.forEach(sale => {
+            sale.items.forEach(item => {
+                const productName = item.product_name || 'Unknown Product';
+                if (productSales[productName]) {
+                    productSales[productName] += item.quantity;
+                } else {
+                    productSales[productName] = item.quantity;
+                }
+            });
+        });
+
+        let topProduct = 'N/A';
+        let maxQuantity = 0;
+        for (const productName in productSales) {
+            if (productSales[productName] > maxQuantity) {
+                maxQuantity = productSales[productName];
+                topProduct = productName;
+            }
+        }
+        
+        const lowStockCount = products.filter(p => 
+            (p.type === 'raw' || p.type === 'packaging') && 
+            p.reorder_level &&
+            p.current_stock_quantity !== undefined &&
+            p.current_stock_quantity <= p.reorder_level
+        ).length;
+
         return {
             totalRevenue,
             totalSales: monthlySales.length,
+            topProduct,
+            lowStockCount
         }
-    }, [monthlySales]);
+    }, [monthlySales, products]);
+    
+    const isLoading = isLoadingSales || isLoadingRecent || isLoadingProducts;
 
     const salesColumns: ColumnDef<Sale>[] = [
         {
@@ -90,10 +127,10 @@ function EssentialsHubPage() {
                 description="Manage production, sales, and inventory for the social enterprise."
             />
              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Revenue (This Month)" value={formatCurrency(stats.totalRevenue)} icon={DollarSign} />
-                <StatCard title="Sales (This Month)" value={stats.totalSales.toString()} icon={ShoppingCart} />
-                <StatCard title="Top Product" value="Liquid Soap" icon={TrendingUp} description="Placeholder" />
-                <StatCard title="Low Stock Items" value="2" icon={Package} description="Placeholder" />
+                <StatCard title="Revenue (This Month)" value={isLoading ? '...' : formatCurrency(stats.totalRevenue)} icon={DollarSign} />
+                <StatCard title="Sales (This Month)" value={isLoading ? '...' : stats.totalSales.toString()} icon={ShoppingCart} />
+                <StatCard title="Top Product" value={isLoading ? '...' : stats.topProduct} icon={TrendingUp} description="By units sold this month" />
+                <StatCard title="Low Stock Items" value={isLoading ? '...' : String(stats.lowStockCount)} icon={Package} description="Materials & packaging" />
              </div>
              
              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -129,5 +166,3 @@ export default function EssentialsPage() {
         </Suspense>
     )
 }
-
-    
