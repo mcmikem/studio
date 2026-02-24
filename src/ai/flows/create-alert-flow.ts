@@ -34,3 +34,7 @@ export const createAlertFlow = ai.defineFlow(
         console.log("Alert created:", alertData);
     }
 );
+
+export async function createAlert(input: AlertInput) {
+    return await createAlertFlow(input);
+}

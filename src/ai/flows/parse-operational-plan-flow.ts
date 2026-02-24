@@ -6,8 +6,12 @@
  */
 
 import { ai } from '@/ai/genkit';
-import type { ParsePlanOutput } from '@/lib/types';
+import type { ParsePlanInput, ParsePlanOutput } from '@/lib/types';
 import { ParsePlanInputSchema, ParsePlanOutputSchema } from '@/lib/types';
+
+// Export types and schemas for external use
+export type { ParsePlanInput, ParsePlanOutput };
+export { ParsePlanInputSchema, ParsePlanOutputSchema };
 
 export const parseOperationalPlanFlow = ai.defineFlow(
   {
@@ -52,3 +56,7 @@ export const parseOperationalPlanFlow = ai.defineFlow(
     return { keyResults: sanitizedResults };
   }
 );
+
+export async function parseOperationalPlan(input: ParsePlanInput) {
+    return await parseOperationalPlanFlow(input);
+}

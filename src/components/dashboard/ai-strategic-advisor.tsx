@@ -46,11 +46,17 @@ export function AiStrategicAdvisor() {
       if (activities && checkins && expenses && keyResults) {
         setIsLoadingInsights(true);
         try {
+          // Serialize data to plain objects before sending to server action
+          const plainActivities = JSON.parse(JSON.stringify(activities));
+          const plainCheckins = JSON.parse(JSON.stringify(checkins));
+          const plainExpenses = JSON.parse(JSON.stringify(expenses));
+          const plainKeyResults = JSON.parse(JSON.stringify(keyResults));
+
           const result = await runStrategicAdvisor({
-            activities,
-            checkins,
-            expenses,
-            keyResults,
+            activities: plainActivities,
+            checkins: plainCheckins,
+            expenses: plainExpenses,
+            keyResults: plainKeyResults,
           });
           setInsights(result.insights);
         } catch (error) {

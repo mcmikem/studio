@@ -20,7 +20,7 @@ import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useMemo } from 'react';
 
-export function ProductionBatchForm() {
+export function ProductionLogForm() {
   const router = useRouter();
   const firestore = useFirestore();
   const { user } = useUser();

@@ -8,8 +8,9 @@
 import { ai } from '@/ai/genkit';
 import { ImpactStoryInputSchema, ImpactStoryOutputSchema, type ImpactStoryInput, type ImpactStoryOutput } from '@/lib/types';
 
-// Export types for external use
+// Export types and schemas for external use
 export type { ImpactStoryInput, ImpactStoryOutput };
+export { ImpactStoryInputSchema, ImpactStoryOutputSchema };
 
 export const impactStoryFlow = ai.defineFlow({
     name: 'impactStoryFlow',
@@ -42,3 +43,7 @@ export const impactStoryFlow = ai.defineFlow({
       
       return result.output;
 });
+
+export async function generateImpactStory(input: ImpactStoryInput) {
+    return await impactStoryFlow(input);
+}

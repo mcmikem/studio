@@ -2,8 +2,8 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useDoc, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking, serverTimestamp } from '@/firebase';
-import { collection, doc, query, orderBy } from 'firebase/firestore'; 
+import { useDoc, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking } from '@/firebase';
+import { collection, doc, query, orderBy, where, limit, serverTimestamp } from 'firebase/firestore'; 
 import type { Project, Partnership, ProjectParticipant, ProjectParticipantFormData } from '@/lib/types';
 import { ProjectParticipantFormSchema } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';

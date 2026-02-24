@@ -7,11 +7,12 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import type { TestimonyOutput } from '@/lib/types';
+import type { TestimonyOutput, TestimonyInput } from '@/lib/types';
 import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
 
-// Export type for external use
+// Export types and schemas for external use
 export type { TestimonyOutput };
+export { TestimonyInputSchema, TestimonyOutputSchema };
 
 export const testimonyProcessorFlow = ai.defineFlow(
   {
@@ -29,7 +30,7 @@ export const testimonyProcessorFlow = ai.defineFlow(
         ],
     });
     
-    const transcription = transcriptionResponse.text();
+    const transcription = transcriptionResponse.text;
 
     if (!transcription) {
       throw new Error('AI failed to transcribe the audio.');
@@ -64,3 +65,7 @@ export const testimonyProcessorFlow = ai.defineFlow(
     };
   }
 );
+
+export async function processTestimony(input: TestimonyInput) {
+    return await testimonyProcessorFlow(input);
+}

@@ -78,6 +78,7 @@ export default function ChatPage() {
   const { user } = useUser();
   const { profile, isLoading: isLoadingProfile } = useUserProfile(user);
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -104,12 +105,6 @@ export default function ChatPage() {
     const text = newMessage;
     setNewMessage('');
     
-    // AI chats are now stored in a user-specific subcollection
-    const firestore = useFirestore();
-    if (!firestore) {
-        setIsSending(false);
-        return;
-    }
     const aiChatsCollection = collection(firestore, 'users', user.uid, 'ai-chats');
     
     const userMessageData = {
@@ -163,7 +158,6 @@ export default function ChatPage() {
   }
 
   const handleClearChat = async () => {
-      const firestore = useFirestore();
       if (!firestore || !user) return;
       
       try {
