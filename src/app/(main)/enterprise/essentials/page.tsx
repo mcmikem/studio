@@ -1,7 +1,8 @@
+
 'use client';
 
 import { Suspense, useMemo } from 'react';
-import { Loader2, Package, DollarSign, List, ArrowLeft, TrendingUp, ShoppingCart } from 'lucide-react';
+import { Loader2, Package, DollarSign, List, ArrowLeft, TrendingUp, ShoppingCart, Store } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,19 +37,19 @@ function EssentialsHubPage() {
     const monthStart = useMemo(() => startOfMonth(new Date()), []);
 
     const salesQuery = useMemoFirebase((db) => 
-        query(
+        db ? query(
             collection(db, 'sales'), 
             where('sale_date', '>=', format(monthStart, 'yyyy-MM-dd')),
             orderBy('sale_date', 'desc')
-        )
+        ) : null
     , [monthStart]);
     
     const recentSalesQuery = useMemoFirebase((db) => 
-        query(
+        db ? query(
             collection(db, 'sales'),
             orderBy('createdAt', 'desc'),
             limit(5)
-        )
+        ) : null
     , []);
 
     const { data: monthlySales, isLoading: isLoadingSales } = useCollection<Sale>(salesQuery);
