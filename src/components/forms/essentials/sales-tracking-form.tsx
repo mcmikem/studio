@@ -1,194 +1,181 @@
-
 'use client';
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { SaleFormSchema, type SaleFormData, type Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useUser } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
-import { Loader2, DollarSign, ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking, useUser } from '@/firebase';
+import { collection, serverTimestamp, doc, query, where, writeBatch } from 'firebase/firestore';
+import { Loader2, PlusCircle, Trash2, ArrowLeft } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { DialogFooter } from '@/components/ui/dialog';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
-import Link from 'next/link';
-import { useMemo, useEffect } from 'react';
 import { formatCurrency } from '@/lib/utils';
-
-const salesTrackingSchema = z.object({
-  date: z.string().min(1, 'Date is required.'),
-  salesAgent: z.string().min(2, 'Sales agent name is required.'),
-  product: z.enum(['Liquid Soap', 'Aloe Wash', 'Other'], {
-    required_error: 'Please select a product.',
-  }),
-  quantity: z.coerce.number().min(0.1, 'Quantity must be greater than zero.'),
-  unitPrice: z.coerce.number().min(1, 'Unit price must be greater than zero.'),
-  totalAmount: z.coerce.number(),
-  paymentMethod: z.enum(['Cash', 'Mobile Money']),
-});
-
-type SalesTrackingFormData = z.infer<typeof salesTrackingSchema>;
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useMemo } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 
 export function SalesTrackingForm() {
   const router = useRouter();
   const firestore = useFirestore();
-  const { toast } = useToast();
   const { user } = useUser();
   const { profile } = useUserProfile(user);
+  const { toast } = useToast();
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    setValue,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<SalesTrackingFormData>({
-    resolver: zodResolver(salesTrackingSchema),
+  const productsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'products'), where('type', '==', 'finished'), where('is_active', '==', true));
+  }, [firestore]);
+  const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
+
+  const form = useForm<SaleFormData>({
+    resolver: zodResolver(SaleFormSchema),
     defaultValues: {
-      date: format(new Date(), 'yyyy-MM-dd'),
-      product: 'Liquid Soap',
-      paymentMethod: 'Cash',
-      quantity: 1,
-      unitPrice: 5000,
+      sale_date: format(new Date(), 'yyyy-MM-dd'),
+      payment_method: 'Cash',
+      status: 'completed',
+      items: [{ product_id: '', product_name: '', quantity: 1, unit_price: 0, total: 0 }],
     },
   });
-  
-  useEffect(() => {
-    if (profile) {
-      setValue('salesAgent', profile.name);
-    }
-  }, [profile, setValue]);
 
-  const quantity = watch('quantity');
-  const unitPrice = watch('unitPrice');
-  
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'items',
+  });
+
+  const watchedItems = useWatch({ control: form.control, name: 'items' });
+
   const totalAmount = useMemo(() => {
-    return (quantity || 0) * (unitPrice || 0);
-  }, [quantity, unitPrice]);
+    return watchedItems.reduce((sum, item) => sum + (item.total || 0), 0);
+  }, [watchedItems]);
 
-  useEffect(() => {
-    setValue('totalAmount', totalAmount);
-  }, [totalAmount, setValue]);
-
-  const onSubmit = async (data: SalesTrackingFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
-      return;
+  const handleProductChange = (index: number, productId: string) => {
+    const product = products?.find(p => p.id === productId);
+    if (product) {
+      const quantity = form.getValues(`items.${index}.quantity`) || 1;
+      form.setValue(`items.${index}.product_id`, productId);
+      form.setValue(`items.${index}.product_name`, product.name);
+      form.setValue(`items.${index}.unit_price`, product.default_selling_price || 0);
+      form.setValue(`items.${index}.total`, quantity * (product.default_selling_price || 0));
+      form.trigger(`items`);
     }
+  };
 
-    const logData = { ...data, createdAt: serverTimestamp() };
+  const handleQuantityChange = (index: number, quantity: number) => {
+    const unitPrice = form.getValues(`items.${index}.unit_price`) || 0;
+    form.setValue(`items.${index}.quantity`, quantity);
+    form.setValue(`items.${index}.total`, quantity * unitPrice);
+    form.trigger(`items`);
+  };
 
+  const onSubmit = async (data: SaleFormData) => {
+    if (!firestore || !user) return;
+    const batch = writeBatch(firestore);
+
+    // 1. Create Sale document
+    const saleRef = doc(collection(firestore, 'sales'));
+    batch.set(saleRef, {
+      ...data,
+      total_amount: totalAmount,
+      created_by: user.uid,
+      createdAt: serverTimestamp(),
+      transaction_number: `SALE-${Date.now()}`
+    });
+
+    // 2. Decrement stock for each product sold
+    for (const item of data.items) {
+        const productRef = doc(firestore, 'products', item.product_id);
+        const product = products?.find(p => p.id === item.product_id);
+        if (product) {
+            const newQuantity = (product.quantity_on_hand || 0) - item.quantity;
+            batch.update(productRef, { quantity_on_hand: newQuantity });
+        }
+    }
+    
     try {
-      await addDocumentNonBlocking(collection(firestore, 'essentials-sales'), logData);
-      toast({
-        title: 'Sale Logged!',
-        description: `Sale of ${data.quantity} ${data.product}(s) has been recorded.`,
-      });
-      reset();
-      router.push('/meal/essentials');
-    } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+        await batch.commit();
+        toast({ title: 'Sale Recorded!', description: `Transaction has been successfully logged.` });
+        router.push('/enterprise/essentials');
+    } catch (e: any) {
+        console.error("Error recording sale:", e);
+        toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not record sale.'});
     }
   };
 
   return (
     <div className="space-y-4">
-       <Button variant="outline" asChild>
-            <Link href="/meal/essentials">
+         <Button variant="outline" asChild>
+            <Link href="/enterprise/essentials">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Essentials Hub
             </Link>
         </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-6 w-6" />
-            Omuto Essentials Sales Tracking
-          </CardTitle>
-          <CardDescription>
-            Record a new sale of products to a customer or outlet.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="date">Date of Sale</Label>
-                    <Input id="date" type="date" {...register('date')} />
-                    {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+        <Card>
+            <CardHeader>
+                <CardTitle>Record a New Sale</CardTitle>
+                <CardDescription>Log a sales transaction and automatically update inventory.</CardDescription>
+            </CardHeader>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Sale Date</Label><Input type="date" {...form.register('sale_date')} /></div>
+                    <div className="space-y-2"><Label>Created By</Label><Input value={profile?.name || ''} disabled /></div>
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="salesAgent">Sales Agent/Outlet</Label>
-                    <Input id="salesAgent" {...register('salesAgent')} />
-                    {errors.salesAgent && <p className="text-sm text-destructive">{errors.salesAgent.message}</p>}
+                 <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Customer Name (Optional)</Label><Input {...form.register('customer_name')} /></div>
+                    <div className="space-y-2"><Label>Customer Phone (Optional)</Label><Input {...form.register('customer_phone')} /></div>
                 </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2 md:col-span-1">
-                  <Label htmlFor="product">Product</Label>
-                   <Controller
-                    name="product"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger id="product">
-                          <SelectValue placeholder="Select product..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Liquid Soap">Liquid Soap</SelectItem>
-                          <SelectItem value="Aloe Wash">Aloe Wash</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.product && <p className="text-sm text-destructive">{errors.product.message}</p>}
+                
+                 <div className="space-y-4 pt-4 border-t">
+                    <h3 className="font-semibold">Items</h3>
+                    {fields.map((field, index) => (
+                        <div key={field.id} className="grid grid-cols-12 gap-2 items-end p-2 border rounded-md">
+                            <div className="col-span-12 md:col-span-5 space-y-1"><Label>Product</Label>
+                            {isLoadingProducts ? <Skeleton className="h-10"/> : (
+                                <Controller name={`items.${index}.product_id`} control={form.control} render={({ field }) => (
+                                    <Select onValueChange={(value) => handleProductChange(index, value)} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
+                                )}/>
+                            )}
+                            </div>
+                            <div className="col-span-4 md:col-span-2 space-y-1"><Label>Qty</Label><Input type="number" {...form.register(`items.${index}.quantity`)} onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}/></div>
+                            <div className="col-span-4 md:col-span-2 space-y-1"><Label>Price</Label><Input type="number" readOnly value={form.watch(`items.${index}.unit_price`)}/></div>
+                            <div className="col-span-4 md:col-span-2 space-y-1"><Label>Total</Label><Input readOnly value={form.watch(`items.${index}.total`)} /></div>
+                            <div className="col-span-12 md:col-span-1"><Button variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4"/></Button></div>
+                        </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ product_id: '', product_name: '', quantity: 1, unit_price: 0, total: 0 })}><PlusCircle className="mr-2 h-4 w-4" />Add Item</Button>
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="quantity">Quantity (Liters/Units)</Label>
-                    <Input id="quantity" type="number" {...register('quantity')} />
-                    {errors.quantity && <p className="text-sm text-destructive">{errors.quantity.message}</p>}
+
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2"><Label>Payment Method</Label><Controller name="payment_method" control={form.control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Cash">Cash</SelectItem><SelectItem value="Mobile Money">Mobile Money</SelectItem><SelectItem value="Bank Transfer">Bank Transfer</SelectItem></SelectContent></Select>)}/></div>
+                    <div className="space-y-2"><Label>Status</Label><Controller name="status" control={form.control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="completed">Completed</SelectItem><SelectItem value="pending">Pending</SelectItem></SelectContent></Select>)}/></div>
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="unitPrice">Unit Price (UGX)</Label>
-                    <Input id="unitPrice" type="number" {...register('unitPrice')} />
-                    {errors.unitPrice && <p className="text-sm text-destructive">{errors.unitPrice.message}</p>}
+
+                <div className="p-4 bg-muted rounded-lg flex justify-between items-center">
+                    <span className="font-bold text-lg">Grand Total</span>
+                    <span className="font-bold text-xl">{formatCurrency(totalAmount)}</span>
                 </div>
-            </div>
-            <div className="flex justify-between items-center p-4 rounded-lg bg-muted">
-                <span className="font-semibold">Total Amount</span>
-                <span className="font-bold text-lg">{formatCurrency(totalAmount)}</span>
-            </div>
-            <div className="space-y-2">
-                <Label>Payment Method</Label>
-                <Controller
-                    name="paymentMethod"
-                    control={control}
-                    render={({ field }) => (
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4">
-                            <Label className="flex items-center gap-2 cursor-pointer"><RadioGroupItem value="Cash" />Cash</Label>
-                            <Label className="flex items-center gap-2 cursor-pointer"><RadioGroupItem value="Mobile Money" />Mobile Money</Label>
-                        </RadioGroup>
-                    )}
-                />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Log Sale
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+            </CardContent>
+             <CardFooter>
+                <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+                {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Record Sale
+                </Button>
+            </CardFooter>
+            </form>
+        </Card>
     </div>
-  );
+  )
 }

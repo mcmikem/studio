@@ -246,7 +246,7 @@ export const expenseItemCategories = [
     "Transport", "Rent", "Office Dev't", "Projects", "Stationery", 
     "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", 
     "Phone", "Food", "Mobile Money Charges", "IGA Expense", 
-    "Allowances and stipends", "Kibanja", "Professional Services", 
+    "Allowances and Stipends", "Kibanja", "Professional Services", 
     "community support", "miscellaneous", "Withdraw", "Raw Materials"
 ] as const;
 
@@ -827,17 +827,40 @@ export type ProductionLog = {
   createdAt: Timestamp;
 };
 
-export type Sale = {
-  id: string;
-  date: string;
-  salesAgent: string;
-  product: "Liquid Soap" | "Aloe Wash" | "Other";
-  quantity: number;
-  unitPrice: number;
-  totalAmount: number;
-  paymentMethod: "Cash" | "Mobile Money";
-  createdAt: Timestamp;
-};
+export const SaleItemSchema = z.object({
+    product_id: z.string().min(1, "Product is required."),
+    product_name: z.string(),
+    quantity: z.coerce.number().min(1, "Quantity must be at least 1."),
+    unit_price: z.coerce.number().min(0),
+    total: z.coerce.number(),
+});
+export type SaleItem = z.infer<typeof SaleItemSchema>;
+
+export const SaleSchema = z.object({
+    id: z.string(),
+    transaction_number: z.string(),
+    customer_name: z.string().optional(),
+    customer_phone: z.string().optional(),
+    sale_date: z.string(),
+    total_amount: z.number(),
+    payment_method: z.enum(["Cash", "Mobile Money", "Bank Transfer"]),
+    status: z.enum(["completed", "pending"]),
+    created_by: z.string(),
+    items: z.array(SaleItemSchema),
+    createdAt: z.any(),
+    updatedAt: z.any().optional(),
+});
+
+export const SaleFormSchema = SaleSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    transaction_number: true,
+    created_by: true,
+});
+export type SaleFormData = z.infer<typeof SaleFormSchema>;
+export type Sale = z.infer<typeof SaleSchema>;
+
 
 export type InventoryCheck = {
   id: string;

@@ -21,7 +21,7 @@ const essentialsLinks = [
     icon: ClipboardList,
   },
   {
-    href: '#',
+    href: '/enterprise/essentials/sales',
     title: 'Sales',
     description: 'Record sales transactions for products.',
     icon: DollarSign,
