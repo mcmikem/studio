@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -1305,3 +1306,18 @@ export const PrintingJobFormSchema = PrintingJobSchema.omit({
     operatorId: true,
 });
 export type PrintingJobFormData = z.infer<typeof PrintingJobFormSchema>;
+
+export const ProjectParticipantSchema = z.object({
+  id: z.string(),
+  name: z.string().min(3, 'Name is required'),
+  phone: z.string().optional(),
+  village: z.string().optional(),
+  businessStage: z.enum(["Ideation", "Operating", "Growth"]),
+  attendance: z.number().optional().default(0),
+  businessScore: z.number().optional().default(0),
+  avatar: z.string().url().optional(),
+  createdAt: z.any(),
+});
+export type ProjectParticipant = z.infer<typeof ProjectParticipantSchema>;
+export const ProjectParticipantFormSchema = ProjectParticipantSchema.omit({ id: true, createdAt: true });
+export type ProjectParticipantFormData = z.infer<typeof ProjectParticipantFormSchema>;

@@ -444,6 +444,23 @@
       },
       "required": ["name", "manager", "status", "completion", "nextMilestone", "createdAt"]
     },
+    "ProjectParticipant": {
+      "title": "Project Participant",
+      "description": "A beneficiary enrolled in a specific project.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "village": { "type": "string" },
+        "businessStage": { "type": "string", "enum": ["Ideation", "Operating", "Growth"] },
+        "attendance": { "type": "number" },
+        "businessScore": { "type": "number" },
+        "avatar": { "type": "string", "format": "uri" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "businessStage", "createdAt"]
+    },
     "ImpactMetric": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ImpactMetric",
@@ -831,6 +848,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Attendance Record",
       "description": "Represents a single attendance record for a participant at an event or session.",
+      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "eventName": { "type": "string" },
@@ -1697,6 +1715,7 @@
     "/partnerships/{partnershipId}/healthChecks/{healthCheckId}": { "schema": { "$ref": "#/entities/HealthCheck" }, "description": "Stores periodic health check records for a partner." },
     "/impact-metrics/{metricId}": { "schema": { "$ref": "#/entities/ImpactMetric" }, "description": "Stores key performance indicators (KPIs) for the organization." },
     "/projects/{projectId}": { "schema": { "$ref": "#/entities/Project" }, "description": "Stores high-level projects and their associated metrics." },
+    "/projects/{projectId}/participants/{participantId}": { "schema": { "$ref": "#/entities/ProjectParticipant" }, "description": "Stores participants enrolled in a specific project." },
     "/events/{eventId}": { "schema": { "$ref": "#/entities/CalendarEvent" }, "description": "Stores organizational calendar events." },
     "/alerts/{alertId}": { "schema": { "$ref": "#/entities/Alert" }, "description": "Stores system-wide alerts and notifications." },
     "/key-results/{keyResultId}": { "schema": { "$ref": "#/entities/KeyResult" }, "description": "Stores the key results for the October Operational Plan." },
@@ -1761,3 +1780,4 @@
     "/printing-jobs/{jobId}": { "schema": { "$ref": "#/entities/PrintingJob" }, "description": "Printing jobs at the Youth Center." }
   }
 }
+

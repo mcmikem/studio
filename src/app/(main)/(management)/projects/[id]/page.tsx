@@ -2,12 +2,13 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { collection, doc, query, where, orderBy, limit } from 'firebase/firestore'; 
-import type { Project, Partnership } from '@/lib/types';
+import { useDoc, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking, serverTimestamp } from '@/firebase';
+import { collection, doc, query, orderBy } from 'firebase/firestore'; 
+import type { Project, Partnership, ProjectParticipant, ProjectParticipantFormData } from '@/lib/types';
+import { ProjectParticipantFormSchema } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, Upload, MoreHorizontal, XCircle, BookOpen, File, Video, Banknote, BookUser, Store, CheckSquare, DollarSign } from 'lucide-react';
+import { ArrowLeft, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, MoreHorizontal, CheckSquare, File, BookUser } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,13 +19,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import React, { useState } from 'react';
-import { cn } from '@/lib/utils';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectValue, SelectTrigger } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+
 
 const statusColors: { [key: string]: string } = {
   Active: 'border-green-500 bg-green-500/10 text-green-500',
@@ -49,34 +53,89 @@ function StatCard({ title, value, icon: Icon }: { title: string; value: string |
     )
 }
 
-const initialParticipants = [
-    { id: '1', name: 'Aisha Nakato', phone: '077****123', village: 'Kitebi', businessStage: 'Ideation', attendance: 95, businessScore: 78, avatar: 'https://i.imgur.com/5Ke5QZ0.jpeg' },
-    { id: '2', name: 'Brian Okello', phone: '078****456', village: 'Buwama Town', businessStage: 'Operating', attendance: 88, businessScore: 92, avatar: 'https://i.imgur.com/7D7Q42G.jpeg' },
-    { id: '3', name: 'Cathy Nabulya', phone: '075****789', village: 'Nsangi', businessStage: 'Growth', attendance: 98, businessScore: 95, avatar: 'https://i.imgur.com/8a2eO2J.jpeg' },
-];
+function AddParticipantForm({ projectId, onSuccess }: { projectId: string; onSuccess: () => void; }) {
+  const { toast } = useToast();
+  const firestore = useFirestore();
 
-const sampleModules = ["Intro to Finance", "Budgeting 101", "Savings & Investment", "Digital Finance Tools", "Business Planning"];
-const sampleTrainers = ["Dianah Nansikombi", "Kasirye Constantine", "Guest Speaker"];
+  const { register, handleSubmit, control, formState: { errors, isSubmitting } } = useForm<ProjectParticipantFormData>({
+    resolver: zodResolver(ProjectParticipantFormSchema),
+    defaultValues: {
+      businessStage: 'Ideation',
+    }
+  });
 
+  const onSubmit = async (data: ProjectParticipantFormData) => {
+    if (!firestore) return;
+
+    try {
+      await addDocumentNonBlocking(
+        collection(firestore, 'projects', projectId, 'participants'),
+        { ...data, createdAt: serverTimestamp() }
+      );
+      toast({ title: "Participant Added", description: `${data.name} has been added to the project.` });
+      onSuccess();
+    } catch (e) {
+      console.error("Failed to add participant:", e);
+      toast({ variant: 'destructive', title: 'Error', description: "Could not add participant." });
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-2">
+        <Label>Name</Label>
+        <Input {...register('name')} />
+        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+      </div>
+      <div className="space-y-2">
+        <Label>Phone</Label>
+        <Input {...register('phone')} />
+      </div>
+      <div className="space-y-2">
+        <Label>Village</Label>
+        <Input {...register('village')} />
+      </div>
+       <div className="space-y-2">
+        <Label>Business Stage</Label>
+        <Controller control={control} name="businessStage" render={({ field }) => (
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Ideation">Ideation</SelectItem>
+              <SelectItem value="Operating">Operating</SelectItem>
+              <SelectItem value="Growth">Growth</SelectItem>
+            </SelectContent>
+          </Select>
+        )} />
+      </div>
+      <DialogFooter>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Save Participant
+        </Button>
+      </DialogFooter>
+    </form>
+  )
+}
 
 function ProjectDashboard() {
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const firestore = useFirestore();
-  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
   const [isParticipantDialogOpen, setIsParticipantDialogOpen] = useState(false);
-  const [participants, setParticipants] = useState(initialParticipants);
-
-  const addParticipant = (newParticipant: any) => {
-    setParticipants(prev => [...prev, { ...newParticipant, id: String(prev.length + 1) }]);
-  };
 
   const projectDocRef = useMemoFirebase(() => {
     if (!firestore || !id) return null;
     return doc(firestore, 'projects', id);
   }, [firestore, id]);
+  
+  const participantsQuery = useMemoFirebase(() => {
+    if (!firestore || !id) return null;
+    return query(collection(firestore, 'projects', id, 'participants'), orderBy('createdAt', 'desc'));
+  }, [firestore, id]);
 
   const { data: project, isLoading: isLoadingProject } = useDoc<Project>(projectDocRef);
+  const { data: participants, isLoading: isLoadingParticipants } = useCollection<ProjectParticipant>(participantsQuery);
   
   const partnerQuery = useMemoFirebase(() => {
       if (!firestore || !project || !project.partner) return null;
@@ -150,7 +209,6 @@ function ProjectDashboard() {
           <TabsTrigger value="sessions">Training Sessions</TabsTrigger>
           <TabsTrigger value="resources">Resources</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
-          <TabsTrigger value="follow-up">Follow-Up</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-6">
             <Card>
@@ -194,7 +252,7 @@ function ProjectDashboard() {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                        <CardTitle>Project Participants ({participants.length})</CardTitle>
+                        <CardTitle>Project Participants ({participants?.length || 0})</CardTitle>
                         <CardDescription>Enroll and manage all beneficiaries for this project.</CardDescription>
                     </div>
                      <Dialog open={isParticipantDialogOpen} onOpenChange={setIsParticipantDialogOpen}>
@@ -203,22 +261,14 @@ function ProjectDashboard() {
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader><DialogTitle>Add New Participant</DialogTitle></DialogHeader>
-                            {/* In a real app this would be a full form */}
-                             <div className="space-y-4 py-4">
-                                <p>A simple form placeholder to demonstrate functionality.</p>
-                                <Input placeholder="Participant Name" id="new-name" />
-                            </div>
-                            <DialogFooter>
-                                <Button onClick={() => {
-                                    addParticipant({ name: (document.getElementById('new-name') as HTMLInputElement).value, businessStage: 'Ideation', attendance: 0, businessScore: 0, avatar: 'https://i.imgur.com/w2k2jCH.jpeg' });
-                                    setIsParticipantDialogOpen(false);
-                                }}>Save Participant</Button>
-                            </DialogFooter>
+                            <AddParticipantForm projectId={id} onSuccess={() => setIsParticipantDialogOpen(false)} />
                         </DialogContent>
                      </Dialog>
                 </CardHeader>
                 <CardContent>
-                    {participants.length > 0 ? (
+                    {isLoadingParticipants ? (
+                      <Skeleton className="h-60" />
+                    ) : (participants && participants.length > 0) ? (
                          <div className="border rounded-md">
                             <Table>
                                 <TableHeader>
@@ -236,7 +286,7 @@ function ProjectDashboard() {
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="h-8 w-8 border">
-                                                        <AvatarImage src={participant.avatar} alt={participant.name} />
+                                                        {participant.avatar && <AvatarImage src={participant.avatar} alt={participant.name} />}
                                                         <AvatarFallback>{getInitials(participant.name)}</AvatarFallback>
                                                     </Avatar>
                                                     <span className="font-medium">{participant.name}</span>
@@ -256,9 +306,9 @@ function ProjectDashboard() {
                                                         <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent>
-                                                        <DropdownMenuItem>View Profile</DropdownMenuItem>
-                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-destructive">Remove</DropdownMenuItem>
+                                                        <DropdownMenuItem disabled>View Profile</DropdownMenuItem>
+                                                        <DropdownMenuItem disabled>Edit</DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-destructive" disabled>Remove</DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </TableCell>
@@ -299,42 +349,14 @@ function ProjectDashboard() {
                         <CardTitle>Training Sessions</CardTitle>
                         <CardDescription>Log and view all training sessions delivered for this project.</CardDescription>
                      </div>
-                      <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Session Record</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Add Trainer Session Record</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                                <div className="space-y-2">
-                                    <Label>Module</Label>
-                                    <Select><SelectTrigger><SelectValue placeholder="Select a module..." /></SelectTrigger><SelectContent>{sampleModules.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent></Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Trainer</Label>
-                                    <Select><SelectTrigger><SelectValue placeholder="Select a trainer..." /></SelectTrigger><SelectContent>{sampleTrainers.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent></Select>
-                                </div>
-                                 <div className="space-y-2">
-                                    <Label>Observations</Label>
-                                    <Textarea placeholder="Any notes from the session..." />
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button onClick={() => setIsSessionDialogOpen(false)}>Save Session</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
+                      <Button disabled><PlusCircle className="mr-2 h-4 w-4" /> Add Session Record</Button>
                 </CardHeader>
                  <CardContent>
-                    <Table>
-                        <TableHeader><TableRow><TableHead>Module</TableHead><TableHead>Trainer</TableHead><TableHead>Date</TableHead></TableRow></TableHeader>
-                        <TableBody>
-                            <TableRow><TableCell>Intro to Finance</TableCell><TableCell>Dianah Nansikombi</TableCell><TableCell>Dec 1, 2025</TableCell></TableRow>
-                            <TableRow><TableCell>Budgeting 101</TableCell><TableCell>Kasirye Constantine</TableCell><TableCell>Dec 3, 2025</TableCell></TableRow>
-                        </TableBody>
-                    </Table>
+                     <EmptyState
+                        icon={BookUser}
+                        title="No Sessions Logged"
+                        description="Training session logging for projects is coming soon."
+                    />
                 </CardContent>
             </Card>
         </TabsContent>
@@ -368,21 +390,6 @@ function ProjectDashboard() {
                 </CardContent>
             </Card>
         </TabsContent>
-         <TabsContent value="follow-up">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Follow-Up Tracking</CardTitle>
-                    <CardDescription>Track long-term skill adoption and impact at 6 and 12 months.</CardDescription>
-                </CardHeader>
-                 <CardContent>
-                      <EmptyState
-                        icon={BookUser}
-                        title="Follow-Up Not Started"
-                        description="Long-term tracking will become available after the project's conclusion."
-                    />
-                </CardContent>
-            </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );
@@ -391,5 +398,3 @@ function ProjectDashboard() {
 export default function ProjectPage() {
     return <ProjectDashboard />;
 }
-
-    
