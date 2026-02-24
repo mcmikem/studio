@@ -1,3 +1,4 @@
+
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -816,17 +817,6 @@ export type PulseContent = {
   createdAt: Timestamp;
 };
 
-export type ProductionLog = {
-  id: string;
-  batchNumber: string;
-  product: "Liquid Soap" | "Aloe Wash" | "Other";
-  date: string;
-  quantity: number;
-  materialsUsed?: string;
-  producedBy: string;
-  createdAt: Timestamp;
-};
-
 export const SaleItemSchema = z.object({
     product_id: z.string().min(1, "Product is required."),
     product_name: z.string(),
@@ -851,9 +841,9 @@ export const SaleSchema = z.object({
     updatedAt: z.any().optional(),
 });
 
-export const SaleFormSchema = SaleSchema.omit({
-    id: true,
-    createdAt: true,
+export const SaleFormSchema = SaleSchema.omit({ 
+    id: true, 
+    createdAt: true, 
     updatedAt: true,
     transaction_number: true,
     created_by: true,
@@ -1292,3 +1282,26 @@ export const ProductionBatchFormSchema = ProductionBatchSchema.omit({
 });
 export type ProductionBatchFormData = z.infer<typeof ProductionBatchFormSchema>;
 export type ProductionBatch = z.infer<typeof ProductionBatchSchema>;
+
+export const PrintingJobSchema = z.object({
+    id: z.string(),
+    jobNumber: z.string(),
+    clientName: z.string().min(2, "Client name is required."),
+    clientPhone: z.string().optional(),
+    pages_bw: z.coerce.number().min(0).default(0),
+    pages_color: z.coerce.number().min(0).default(0),
+    totalAmount: z.coerce.number().min(0, "Total must be zero or more."),
+    paymentStatus: z.enum(['Paid', 'Partial', 'Unpaid']),
+    jobDate: z.string(),
+    operatorId: z.string(),
+    createdAt: z.any().optional(),
+});
+export type PrintingJob = z.infer<typeof PrintingJobSchema>;
+
+export const PrintingJobFormSchema = PrintingJobSchema.omit({
+    id: true,
+    createdAt: true,
+    jobNumber: true,
+    operatorId: true,
+});
+export type PrintingJobFormData = z.infer<typeof PrintingJobFormSchema>;

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 
 const youthCenterLinks = [
   {
-    href: '#',
+    href: '/enterprise/youth-center/printing',
     title: 'Printing Jobs',
     description: 'Manage and track all printing service requests.',
     icon: Printer,

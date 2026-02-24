@@ -831,7 +831,6 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Attendance Record",
       "description": "Represents a single attendance record for a participant at an event or session.",
-      "type": "object",
       "properties": {
         "id": { "type": "string" },
         "eventName": { "type": "string" },
@@ -1272,22 +1271,31 @@
       },
       "required": ["creatorName", "contentTitle", "format", "link", "dateCreated"]
     },
-    "ProductionLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Production Log",
-      "description": "A log for Omuto Essentials production.",
+    "ProductionBatch": {
+      "title": "Production Batch",
+      "description": "A record of a manufacturing batch for a finished product.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "batchNumber": { "type": "string" },
-        "product": { "type": "string", "enum": ["Liquid Soap", "Aloe Wash", "Other"] },
-        "date": { "type": "string", "format": "date" },
-        "quantity": { "type": "number" },
-        "materialsUsed": { "type": "string" },
-        "producedBy": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "batch_number": { "type": "string" },
+        "productId": { "type": "string", "description": "FK to Product (finished good)" },
+        "quantity_produced": { "type": "number" },
+        "production_date": { "type": "string", "format": "date" },
+        "supervisorId": { "type": "string" },
+        "status": { "type": "string", "enum": ["planned", "in-progress", "completed"] },
+        "notes": { "type": "string" },
+        "materials_used": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "material_id": { "type": "string" },
+              "quantity_used": { "type": "number" }
+            }
+          }
+        }
       },
-      "required": ["batchNumber", "product", "date", "quantity", "producedBy"]
+      "required": ["batch_number", "productId", "quantity_produced", "production_date", "status"]
     },
     "InventoryCheck": {
       "title": "Inventory Check",
@@ -1622,32 +1630,6 @@
       },
       "required": ["name"]
     },
-    "ProductionBatch": {
-      "title": "Production Batch",
-      "description": "A record of a manufacturing batch for a finished product.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "batch_number": { "type": "string" },
-        "productId": { "type": "string", "description": "FK to Product (finished good)" },
-        "quantity_produced": { "type": "number" },
-        "production_date": { "type": "string", "format": "date" },
-        "supervisorId": { "type": "string" },
-        "status": { "type": "string", "enum": ["planned", "in-progress", "completed"] },
-        "notes": { "type": "string" },
-        "materials_used": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "material_id": { "type": "string" },
-              "quantity_used": { "type": "number" }
-            }
-          }
-        }
-      },
-      "required": ["batch_number", "productId", "quantity_produced", "production_date", "status"]
-    },
     "Sale": {
       "title": "Sale",
       "description": "A sales transaction for products or services.",
@@ -1668,6 +1650,7 @@
             "type": "object",
             "properties": {
               "product_id": { "type": "string" },
+              "product_name": { "type": "string" },
               "quantity": { "type": "number" },
               "unit_price": { "type": "number" },
               "total": { "type": "number" }
@@ -1676,6 +1659,24 @@
         }
       },
       "required": ["transaction_number", "sale_date", "total_amount", "payment_method", "status", "created_by"]
+    },
+    "PrintingJob": {
+      "title": "Printing Job",
+      "description": "Represents a single printing job at the Youth Center.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobNumber": { "type": "string" },
+        "clientName": { "type": "string" },
+        "clientPhone": { "type": "string" },
+        "pages_bw": { "type": "number" },
+        "pages_color": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["Paid", "Partial", "Unpaid"] },
+        "jobDate": { "type": "string", "format": "date-time" },
+        "operatorId": { "type": "string" }
+      },
+      "required": ["jobNumber", "clientName", "totalAmount", "paymentStatus", "jobDate", "operatorId"]
     }
   },
   "auth": {
@@ -1738,7 +1739,6 @@
     "/ofa-equipment-impact/{trackerId}": { "schema": { "$ref": "#/entities/OFAEquipmentImpact" }, "description": "Tracks the impact of equipment provided to OFA teams." },
     "/ofa-scorecards/{scorecardId}": { "schema": { "$ref": "#/entities/OFAScorecard" }, "description": "Quarterly performance scorecards for OFA teams." },
     "/pulse-content/{contentId}": { "schema": { "$ref": "#/entities/PulseContent" }, "description": "Content submissions for Omuto Pulse." },
-    "/essentials-production/{logId}": { "schema": { "$ref": "#/entities/ProductionLog" }, "description": "Production logs for Omuto Essentials." },
     "/water-sources/{sourceId}": { "schema": { "$ref": "#/entities/WaterSource" }, "description": "Water sources for PureWater initiative." },
     "/wash-assessments/{assessmentId}": { "schema": { "$ref": "#/entities/WASH_Assessment" }, "description": "WASH assessments for schools." },
     "/yap-chapters/{chapterId}": { "schema": { "$ref": "#/entities/YAP_Chapter" }, "description": "YAP chapter registrations." },
@@ -1757,9 +1757,7 @@
     "/suppliers/{supplierId}": { "schema": { "$ref": "#/entities/Supplier" }, "description": "Suppliers of raw materials." },
     "/production-batches/{batchId}": { "schema": { "$ref": "#/entities/ProductionBatch" }, "description": "Manufacturing batches for products." },
     "/sales/{saleId}": { "schema": { "$ref": "#/entities/Sale" }, "description": "Sales records for products or services." },
-    "/inventory-checks/{checkId}": { "schema": { "$ref": "#/entities/InventoryCheck" }, "description": "Records a physical stock count for a product." }
+    "/inventory-checks/{checkId}": { "schema": { "$ref": "#/entities/InventoryCheck" }, "description": "Records a physical stock count for a product." },
+    "/printing-jobs/{jobId}": { "schema": { "$ref": "#/entities/PrintingJob" }, "description": "Printing jobs at the Youth Center." }
   }
 }
-
-
-    
