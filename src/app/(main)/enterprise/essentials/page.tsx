@@ -114,7 +114,7 @@ function EssentialsHubPage() {
                         <Button asChild variant="outline"><Link href="/enterprise/essentials/sales">New Sale</Link></Button>
                         <Button asChild variant="outline"><Link href="/enterprise/essentials/products">Manage Products</Link></Button>
                         <Button asChild variant="outline"><Link href="/enterprise/essentials/inventory">Inventory Check</Link></Button>
-                        <Button asChild variant="outline" disabled><Link href="#">New Production Batch</Link></Button>
+                        <Button asChild variant="outline"><Link href="/enterprise/essentials/production">New Production Batch</Link></Button>
                     </CardContent>
                 </Card>
              </div>

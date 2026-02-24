@@ -864,10 +864,12 @@ export type Sale = z.infer<typeof SaleSchema>;
 
 export type InventoryCheck = {
   id: string;
+  productId: string;
+  productName: string;
   date: string;
-  product: "Liquid Soap" | "Aloe Wash" | "Other";
-  physicalCount: number;
-  discrepancyReason?: string;
+  countedQuantity: number;
+  notes?: string;
+  checkedBy: string;
   createdAt: Timestamp;
 };
 
@@ -1266,3 +1268,27 @@ export const ProductFormSchema = ProductSchema.omit({
 });
 export type ProductFormData = z.infer<typeof ProductFormSchema>;
 export type Product = z.infer<typeof ProductSchema>;
+
+export const ProductionBatchMaterialSchema = z.object({
+    material_id: z.string().min(1, "Material must be selected."),
+    quantity_used: z.coerce.number().min(0.01, "Quantity must be greater than 0."),
+});
+
+export const ProductionBatchSchema = z.object({
+    id: z.string(),
+    batch_number: z.string().min(1, "Batch number is required."),
+    productId: z.string().min(1, "Product is required."),
+    quantity_produced: z.coerce.number().min(1, "Quantity must be at least 1."),
+    production_date: z.string().min(1, "Date is required."),
+    supervisorId: z.string().min(1, "Supervisor is required."),
+    status: z.enum(["planned", "in-progress", "completed"]),
+    notes: z.string().optional(),
+    materials_used: z.array(ProductionBatchMaterialSchema).optional(),
+    createdAt: z.any(),
+});
+export const ProductionBatchFormSchema = ProductionBatchSchema.omit({
+    id: true,
+    createdAt: true,
+});
+export type ProductionBatchFormData = z.infer<typeof ProductionBatchFormSchema>;
+export type ProductionBatch = z.infer<typeof ProductionBatchSchema>;
