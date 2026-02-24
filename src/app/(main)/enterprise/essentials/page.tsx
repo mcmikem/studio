@@ -1,78 +1,121 @@
-
 'use client';
 
-import { Suspense } from 'react';
-import { Loader2, Package, DollarSign, List, ArrowLeft,ClipboardList, Users, Warehouse } from 'lucide-react';
+import { Suspense, useMemo } from 'react';
+import { Loader2, Package, DollarSign, List, ArrowLeft, TrendingUp, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
+import type { Sale, Product } from '@/lib/types';
+import { PageHeader } from '@/components/page-header';
+import { DataTable } from '@/components/ui/data-table';
+import { type ColumnDef } from "@tanstack/react-table";
+import { formatCurrency, formatDateSafe } from '@/lib/utils';
+import { startOfMonth, format } from 'date-fns';
 
-const essentialsLinks = [
-  {
-    href: '/enterprise/essentials/products',
-    title: 'Products',
-    description: 'Manage all finished goods and raw materials.',
-    icon: Package,
-  },
-  {
-    href: '#',
-    title: 'Production',
-    description: 'Create and track manufacturing batches.',
-    icon: ClipboardList,
-  },
-  {
-    href: '/enterprise/essentials/sales',
-    title: 'Sales',
-    description: 'Record sales transactions for products.',
-    icon: DollarSign,
-  },
-  {
-    href: '#',
-    title: 'Inventory',
-    description: 'View current stock levels and make adjustments.',
-    icon: Warehouse,
-  },
-  {
-    href: '#',
-    title: 'Suppliers',
-    description: 'Manage suppliers for raw materials.',
-    icon: Users,
-  },
-];
+function StatCard({ title, value, icon: Icon, description }: { title: string; value: string; icon: React.ElementType, description?: string }) {
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                {description && <p className="text-xs text-muted-foreground">{description}</p>}
+            </CardContent>
+        </Card>
+    )
+}
+
 
 function EssentialsHubPage() {
+    const firestore = useFirestore();
+
+    const monthStart = useMemo(() => startOfMonth(new Date()), []);
+
+    const salesQuery = useMemoFirebase((db) => 
+        query(
+            collection(db, 'sales'), 
+            where('sale_date', '>=', format(monthStart, 'yyyy-MM-dd')),
+            orderBy('sale_date', 'desc')
+        )
+    , [monthStart]);
+    
+    const recentSalesQuery = useMemoFirebase((db) => 
+        query(
+            collection(db, 'sales'),
+            orderBy('createdAt', 'desc'),
+            limit(5)
+        )
+    , []);
+
+    const { data: monthlySales, isLoading: isLoadingSales } = useCollection<Sale>(salesQuery);
+    const { data: recentSales, isLoading: isLoadingRecent } = useCollection<Sale>(recentSalesQuery);
+    
+    const stats = useMemo(() => {
+        if (!monthlySales) return { totalRevenue: 0, totalSales: 0 };
+        const totalRevenue = monthlySales.reduce((sum, sale) => sum + sale.total_amount, 0);
+        return {
+            totalRevenue,
+            totalSales: monthlySales.length,
+        }
+    }, [monthlySales]);
+
+    const salesColumns: ColumnDef<Sale>[] = [
+        {
+            accessorKey: 'transaction_number',
+            header: 'Transaction ID',
+            cell: ({row}) => <div className="font-mono text-xs">{row.original.transaction_number}</div>
+        },
+        {
+            accessorKey: 'sale_date',
+            header: 'Date',
+            cell: ({row}) => formatDateSafe(row.original.sale_date, 'dateOnly')
+        },
+        {
+            accessorKey: 'total_amount',
+            header: 'Amount',
+            cell: ({row}) => formatCurrency(row.original.total_amount)
+        }
+    ];
+
     return (
         <div className="space-y-6">
-            <header>
-                 <Button variant="outline" asChild className="mb-4">
-                    <Link href="/enterprise">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Enterprise Hub
-                    </Link>
-                </Button>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Essentials</h1>
-                <p className="text-muted-foreground">
-                    Manage production, sales, and inventory for the social enterprise.
-                </p>
-            </header>
-             <Card>
-                <CardHeader>
-                    <CardTitle>Essentials Modules</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {essentialsLinks.map(form => (
-                         <Link key={form.href} href={form.href} className="block">
-                            <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                                <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
-                                <div>
-                                    <p className="font-semibold">{form.title}</p>
-                                    <p className="text-sm text-muted-foreground">{form.description}</p>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </CardContent>
-            </Card>
+            <PageHeader 
+                icon={Store}
+                title="Omuto Essentials Dashboard"
+                description="Manage production, sales, and inventory for the social enterprise."
+            />
+             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard title="Revenue (This Month)" value={formatCurrency(stats.totalRevenue)} icon={DollarSign} />
+                <StatCard title="Sales (This Month)" value={stats.totalSales.toString()} icon={ShoppingCart} />
+                <StatCard title="Top Product" value="Liquid Soap" icon={TrendingUp} description="Placeholder" />
+                <StatCard title="Low Stock Items" value="2" icon={Package} description="Placeholder" />
+             </div>
+             
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Recent Sales</CardTitle>
+                        <CardDescription>The last 5 sales transactions recorded.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <DataTable columns={salesColumns} data={recentSales || []} isLoading={isLoadingRecent} />
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Quick Actions</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 gap-2">
+                        <Button asChild variant="outline"><Link href="/enterprise/essentials/sales">New Sale</Link></Button>
+                        <Button asChild variant="outline"><Link href="/enterprise/essentials/products">Manage Products</Link></Button>
+                        <Button asChild variant="outline" disabled><Link href="#">New Production Batch</Link></Button>
+                    </CardContent>
+                </Card>
+             </div>
         </div>
     )
 }
