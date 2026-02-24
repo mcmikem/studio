@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 
 const essentialsLinks = [
   {
-    href: '#',
+    href: '/enterprise/essentials/products',
     title: 'Products',
     description: 'Manage all finished goods and raw materials.',
     icon: Package,

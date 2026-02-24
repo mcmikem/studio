@@ -1,4 +1,3 @@
-
 import type { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
@@ -248,7 +247,7 @@ export const expenseItemCategories = [
     "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", 
     "Phone", "Food", "Mobile Money Charges", "IGA Expense", 
     "Allowances and stipends", "Kibanja", "Professional Services", 
-    "community support", "miscellaneous", "Withdraw"
+    "community support", "miscellaneous", "Withdraw", "Raw Materials"
 ] as const;
 
 export type ExpenseItem = {
@@ -1205,3 +1204,42 @@ export type KnowledgeHubCTA = {
   description: string;
   buttonLabel: string;
 };
+
+// Enterprise System Types
+export const ProductCategorySchema = z.object({
+    id: z.string(),
+    name: z.string().min(2, "Category name is required."),
+    description: z.string().optional(),
+    is_active: z.boolean().default(true),
+});
+export type ProductCategory = z.infer<typeof ProductCategorySchema>;
+
+export const ProductSchema = z.object({
+    id: z.string(),
+    name: z.string().min(3, "Product name is required."),
+    categoryId: z.string().min(1, "Category is required."),
+    sku: z.string().optional(),
+    description: z.string().optional(),
+    unit: z.string().min(1, "Unit is required (e.g., kg, piece, liter)."),
+    default_selling_price: z.coerce.number().min(0).optional(),
+    image_url: z.string().url().optional(),
+    is_active: z.boolean().default(true),
+    type: z.enum(["finished", "raw", "packaging"]),
+    current_stock_quantity: z.coerce.number().optional(),
+    reorder_level: z.coerce.number().optional(),
+    supplierId: z.string().optional(),
+    cost_per_unit: z.coerce.number().optional(),
+    last_restocked_at: z.any().optional(),
+    quantity_on_hand: z.coerce.number().optional(),
+    location: z.string().optional(),
+    createdAt: z.any(),
+    updatedAt: z.any().optional(),
+});
+export const ProductFormSchema = ProductSchema.omit({ 
+    id: true, 
+    createdAt: true, 
+    updatedAt: true,
+    last_restocked_at: true,
+});
+export type ProductFormData = z.infer<typeof ProductFormSchema>;
+export type Product = z.infer<typeof ProductSchema>;
