@@ -57,7 +57,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { formatDateSafe, cn, formatCurrency } from '@/lib/utils';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/actions';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { ExpenseReportForm } from '@/components/forms/expense-report-form';
 
@@ -588,3 +588,5 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
+
+    
