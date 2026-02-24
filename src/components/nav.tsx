@@ -79,6 +79,9 @@ const navConfig = {
   meal: [
       { href: '/meal', icon: BarChart3, label: 'Impact Hub' },
   ],
+  enterprise: [
+    { href: '/enterprise', icon: Store, label: 'Enterprise Hub' },
+  ],
   reports: [
      { href: '/reports', icon: AreaChart, label: 'Field Data' },
      { href: '/testimonies', icon: Video, label: 'Success Stories' },
@@ -93,9 +96,13 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'system'],
-  'Executive Director': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'reports', 'management'],
+  'Administrator': ['workspace', 'teamHub', 'meal', 'enterprise', 'reports', 'management', 'system'],
+  'Executive Director': ['workspace', 'teamHub', 'meal', 'enterprise', 'reports', 'management', 'system'],
+  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
+  'Operations & Field Manager': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
+  'Media & Finance Lead': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
+  'Media & Communications Lead': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
+  'Resource Mobilization Lead': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
   'default': ['workspace', 'teamHub', 'meal', 'reports'],
 };
 
@@ -177,6 +184,8 @@ export function AppSidebar() {
         {renderNavSection('teamHub', 'Network')}
         <div className="h-5" />
         {renderNavSection('meal', 'Impact')}
+        <div className="h-5" />
+        {renderNavSection('enterprise', 'Enterprise')}
         <div className="h-5" />
         {renderNavSection('reports', 'Analysis')}
         <div className="h-5" />

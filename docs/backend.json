@@ -6,7 +6,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user within the Omuto Central application.",
+      "description": "Represents a user within the Omuto Central application. Roles can include Program Manager, Operations, Media, ED, Intern, Volunteer, Essentials Manager, Youth Center Manager, Production Staff, Sales Attendant, Course Facilitator, or Accountant/Finance.",
       "properties": {
         "id": {
           "type": "string",
@@ -442,7 +442,7 @@
             "description": "Server timestamp of when the project was created."
         }
       },
-      "required": ["id", "name", "manager", "status", "completion", "nextMilestone", "createdAt"]
+      "required": ["name", "manager", "status", "completion", "nextMilestone", "createdAt"]
     },
     "ImpactMetric": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -554,7 +554,7 @@
             "type": "object",
             "properties": {
               "description": { "type": "string" },
-              "category": { "type": "string", "enum": ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and Stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw"] },
+              "category": { "type": "string", "enum": ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and Stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw", "Raw Materials"] },
               "amount": { "type": "number" }
             },
             "required": ["description", "category", "amount"]
@@ -1584,6 +1584,115 @@
         "order": { "type": "number" }
       },
       "required": ["title", "description", "buttonLabel", "order"]
+    },
+    "ProductCategory": {
+      "title": "Product Category",
+      "description": "A category for products, e.g., 'Body & Hygiene', 'Food'.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "is_active": { "type": "boolean", "default": true }
+      },
+      "required": ["name", "is_active"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Represents a single product, which can be a finished good, raw material, or packaging.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "sku": { "type": "string" },
+        "description": { "type": "string" },
+        "unit": { "type": "string", "description": "e.g., 'piece', 'bottle', 'kg'" },
+        "default_selling_price": { "type": "number" },
+        "image_url": { "type": "string", "format": "uri" },
+        "is_active": { "type": "boolean", "default": true },
+        "type": { "type": "string", "enum": ["finished", "raw", "packaging"] },
+        "current_stock_quantity": { "type": "number", "description": "Stock for raw materials/packaging" },
+        "reorder_level": { "type": "number" },
+        "supplierId": { "type": "string" },
+        "cost_per_unit": { "type": "number" },
+        "last_restocked_at": { "type": "string", "format": "date-time" },
+        "quantity_on_hand": { "type": "number", "description": "Stock for finished goods" },
+        "location": { "type": "string", "description": "e.g., Main Store, Youth Center" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "categoryId", "sku", "type", "is_active"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "A supplier of raw materials.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "contact_person": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "address": { "type": "string" },
+        "is_active": { "type": "boolean", "default": true }
+      },
+      "required": ["name"]
+    },
+    "ProductionBatch": {
+      "title": "Production Batch",
+      "description": "A record of a manufacturing batch for a finished product.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "batch_number": { "type": "string" },
+        "productId": { "type": "string", "description": "FK to Product (finished good)" },
+        "quantity_produced": { "type": "number" },
+        "production_date": { "type": "string", "format": "date" },
+        "supervisorId": { "type": "string" },
+        "status": { "type": "string", "enum": ["planned", "in-progress", "completed"] },
+        "notes": { "type": "string" },
+        "materials_used": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "material_id": { "type": "string" },
+              "quantity_used": { "type": "number" }
+            }
+          }
+        }
+      },
+      "required": ["batch_number", "productId", "quantity_produced", "production_date", "status"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "A sales transaction for products or services.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "transaction_number": { "type": "string" },
+        "customer_name": { "type": "string" },
+        "customer_phone": { "type": "string" },
+        "sale_date": { "type": "string", "format": "date" },
+        "total_amount": { "type": "number" },
+        "payment_method": { "type": "string", "enum": ["Cash", "Mobile Money", "Bank Transfer"] },
+        "status": { "type": "string", "enum": ["completed", "pending"] },
+        "created_by": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "product_id": { "type": "string" },
+              "quantity": { "type": "number" },
+              "unit_price": { "type": "number" },
+              "total": { "type": "number" }
+            }
+          }
+        }
+      },
+      "required": ["transaction_number", "sale_date", "total_amount", "payment_method", "status", "created_by"]
     }
   },
   "auth": {
@@ -1603,14 +1712,14 @@
     "/partnerships/{partnershipId}/meetings/{meetingId}": { "schema": { "$ref": "#/entities/Meeting" }, "description": "Stores logged meetings for a specific partner." },
     "/partnerships/{partnershipId}/healthChecks/{healthCheckId}": { "schema": { "$ref": "#/entities/HealthCheck" }, "description": "Stores periodic health check records for a partner." },
     "/impact-metrics/{metricId}": { "schema": { "$ref": "#/entities/ImpactMetric" }, "description": "Stores key performance indicators (KPIs) for the organization." },
-     "/projects/{projectId}": { "schema": { "$ref": "#/entities/Project" }, "description": "Stores high-level projects and their associated metrics." },
+    "/projects/{projectId}": { "schema": { "$ref": "#/entities/Project" }, "description": "Stores high-level projects and their associated metrics." },
     "/events/{eventId}": { "schema": { "$ref": "#/entities/CalendarEvent" }, "description": "Stores organizational calendar events." },
     "/alerts/{alertId}": { "schema": { "$ref": "#/entities/Alert" }, "description": "Stores system-wide alerts and notifications." },
     "/key-results/{keyResultId}": { "schema": { "$ref": "#/entities/KeyResult" }, "description": "Stores the key results for the October Operational Plan." },
     "/expenses/{expenseId}": { "schema": { "$ref": "#/entities/Expense" }, "description": "Stores expense reports submitted by users." },
     "/income/{incomeId}": { "schema": { "$ref": "#/entities/Income" }, "description": "Stores all income and revenue transactions." },
     "/proposals/{proposalId}": { "schema": { "$ref": "#/entities/Proposal" }, "description": "Stores grant proposals and funding applications." },
-     "/team-workplans/{teamWorkplanId}": { "schema": { "$ref": "#/entities/TeamWeeklyPlan" }, "description": "Stores manager-created team-wide weekly plans." },
+    "/team-workplans/{teamWorkplanId}": { "schema": { "$ref": "#/entities/TeamWeeklyPlan" }, "description": "Stores manager-created team-wide weekly plans." },
     "/workplans/{workplanId}": { "schema": { "$ref": "#/entities/WeeklyWorkplan" }, "description": "Stores individuals' finalized weekly workplans." },
     "/equipment/{equipmentId}": { "schema": { "$ref": "#/entities/Equipment" }, "description": "Stores the inventory of physical equipment." },
     "/task-templates/{templateId}": { "schema": { "$ref": "#/entities/TaskTemplate" }, "description": "Stores reusable task templates and checklists." },
@@ -1633,7 +1742,7 @@
     "/slf-prefects/{prefectId}": { "schema": { "$ref": "#/entities/SLF_Prefect" }, "description": "Prefects registered for the Student Leaders Forum." },
     "/slf-trainings/{trainingId}": { "schema": { "$ref": "#/entities/SLF_Training" }, "description": "Attendance for SLF training sessions." },
     "/prefect-performance/{performanceId}": { "schema": { "$ref": "#/entities/PrefectPerformance" }, "description": "Monthly performance tracking for prefects." },
-     "/yoskills-circles/{circleId}": { "schema": { "$ref": "#/entities/YoSkillsCircle" }, "description": "Entrepreneurship circles in the YoSkills program." },
+    "/yoskills-circles/{circleId}": { "schema": { "$ref": "#/entities/YoSkillsCircle" }, "description": "Entrepreneurship circles in the YoSkills program." },
     "/yoskills-youth/{youthId}": { "schema": { "$ref": "#/entities/YoSkillsYouth" }, "description": "Youth participants in the YoSkills program." },
     "/yoskills-sessions/{sessionId}": { "schema": { "$ref": "#/entities/YoSkillsSession" }, "description": "Attendance records for YoSkills sessions." },
     "/business-ideas/{ideaId}": { "schema": { "$ref": "#/entities/BusinessIdea" }, "description": "Business ideas submitted by YoSkills participants." },
@@ -1661,8 +1770,11 @@
     "/knowledgeHubPitches/{pitchId}": { "schema": { "$ref": "#/entities/KnowledgeHubPitch" }, "description": "Stores the copyable pitches and boilerplates." },
     "/knowledgeHubFaqs/{faqId}": { "schema": { "$ref": "#/entities/KnowledgeHubFAQ" }, "description": "Stores the frequently asked questions." },
     "/knowledgeHubStories/{storyId}": { "schema": { "$ref": "#/entities/KnowledgeHubStory" }, "description": "Stores sample impact stories." },
-    "/knowledgeHubCtas/{ctaId}": { "schema": { "$ref": "#/entities/KnowledgeHubCTA" }, "description": "Stores calls to action for the knowledge hub." }
+    "/knowledgeHubCtas/{ctaId}": { "schema": { "$ref": "#/entities/KnowledgeHubCTA" }, "description": "Stores calls to action for the knowledge hub." },
+    "/product-categories/{categoryId}": { "schema": { "$ref": "#/entities/ProductCategory" }, "description": "Product categories for Omuto Essentials." },
+    "/products/{productId}": { "schema": { "$ref": "#/entities/Product" }, "description": "Products, raw materials, or packaging." },
+    "/suppliers/{supplierId}": { "schema": { "$ref": "#/entities/Supplier" }, "description": "Suppliers of raw materials." },
+    "/production-batches/{batchId}": { "schema": { "$ref": "#/entities/ProductionBatch" }, "description": "Manufacturing batches for products." },
+    "/sales/{saleId}": { "schema": { "$ref": "#/entities/Sale" }, "description": "Sales records for products or services." }
   }
 }
-
-    
