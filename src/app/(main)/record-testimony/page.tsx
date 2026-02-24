@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Camera, Mic, Video, StopCircle, Loader2, AlertTriangle, FileText, Save, Upload, Wand } from 'lucide-react';
+import { Camera, Mic, Video, StopCircle, Loader2, AlertTriangle, FileText, Save, Upload, Wand, ArrowLeft } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,6 @@ import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFi
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { serverTimestamp, collection, query, orderBy } from 'firebase/firestore';
 import { uploadFile } from '@/firebase/storage';
-import { processTestimony, TestimonyOutput } from '@/ai/flows/testimony-processor-flow';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Program } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 const impactStorySchema = z.object({
   title: z.string().min(5, "A title for the story is required."),
@@ -111,16 +111,22 @@ export default function RecordTestimonyPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Video className="h-8 w-8" />
-          Capture Impact Story
-        </h1>
-        <p className="text-muted-foreground">
-          Record a success story with before/after details, quotes, and media.
-        </p>
-      </header>
+       <Button variant="outline" asChild className="self-start">
+        <Link href="/meal">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to MEAL Hub
+        </Link>
+      </Button>
       <Card>
+        <CardHeader>
+            <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+                <Video className="h-8 w-8" />
+                Capture Impact Story
+            </h1>
+            <p className="text-muted-foreground">
+                Record a success story with before/after details, quotes, and media.
+            </p>
+        </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
             <CardContent className="pt-6 space-y-6">
                 <div className="space-y-2">

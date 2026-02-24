@@ -19,8 +19,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { Suspense, useEffect } from 'react';
 import { Loader2, ArrowRight } from 'lucide-react';
-import { dailyPlannerFlow, DailyPlannerAIOutputSchema } from '@/ai/flows/daily-planner-flow';
-import type { DailyPlannerAIOutput } from '@/lib/types';
+import { DailyPlannerAIOutputSchema, type DailyPlannerAIOutput } from '@/lib/types';
 import Link from 'next/link';
 
 const plannerCheckinSchema = z.object({
