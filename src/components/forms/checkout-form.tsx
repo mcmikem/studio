@@ -43,7 +43,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import type { Checkin } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
 import { Progress } from '../ui/progress';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { createAlert } from '@/ai/actions';
 
 const checkoutTaskSchema = z.object({
   description: z.string(),
@@ -199,8 +199,7 @@ export function CheckoutForm() {
                 creatorId: user.uid,
             });
         } catch (alertError) {
-            console.error("Failed to create alert:", alertError);
-            // Optionally show a toast for alert creation failure, but don't block checkout submission
+            console.error("Failed to create alert for checkout:", alertError);
         }
 
         toast({

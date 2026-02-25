@@ -70,7 +70,8 @@ export default function PartnershipsManagementPage() {
               </DialogHeader>
               <PartnershipForm 
                 initialData={editingPartner} 
-                onSuccess={handleFormSuccess} 
+                onSuccess={handleFormSuccess}
+                onCancel={() => setIsDialogOpen(false)}
               />
           </DialogContent>
       </Dialog>

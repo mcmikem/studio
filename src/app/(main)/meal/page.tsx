@@ -22,7 +22,6 @@ const programSections = [
     { href: '/meal/purewater', title: 'PureWater Initiative', icon: Droplets, dataHref: '/meal/data/purewater', color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
     { href: '/meal/yap', title: 'Youth Action Pathway', icon: Users, dataHref: '/meal/data/yap', color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
     { href: '/meal/omuto-cup', title: 'Omuto Cup (Event)', icon: Trophy, dataHref: '/meal/data/omuto-cup', color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
-    { href: '/meal/essentials', title: 'Omuto Essentials', icon: Store, dataHref: '/meal/data/essentials', color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
     { href: '/meal/pulse', title: 'Omuto Pulse', icon: Wind, dataHref: '/meal/data/pulse', color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
 ];
 
