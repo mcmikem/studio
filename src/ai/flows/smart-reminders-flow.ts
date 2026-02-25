@@ -5,8 +5,12 @@
  * @fileOverview A flow to generate dynamic, context-aware reminders for a user.
  */
 import { ai } from '@/ai/genkit';
-import type { SmartRemindersOutput, SmartRemindersInput } from '@/lib/types';
-import { SmartRemindersInputSchema, SmartRemindersOutputSchema } from '@/lib/types';
+import {
+  type SmartRemindersOutput,
+  type SmartRemindersInput,
+  SmartRemindersInputSchema,
+  SmartRemindersOutputSchema,
+} from '@/lib/types';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { Timestamp } from 'firebase-admin/firestore';
 import { format } from 'date-fns';
