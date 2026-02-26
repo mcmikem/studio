@@ -10,17 +10,14 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { useUserProfile } from '@/hooks/use-user-profile';
-import { collection, query, orderBy } from 'firebase/firestore';
 import { Suspense, useEffect } from 'react';
+import Link from 'next/link';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { DailyPlannerAIOutputSchema, type DailyPlannerAIOutput } from '@/lib/types';
-import Link from 'next/link';
+import { Separator } from '../ui/separator';
 
 const plannerCheckinSchema = z.object({
   primaryMission: z.string().min(1, "Primary mission is required."),
@@ -33,9 +30,6 @@ type PlannerCheckinFormData = z.infer<typeof plannerCheckinSchema>;
 function PlannerCheckinFormComponent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const { toast } = useToast();
-    const { user } = useUser();
-    const { profile } = useUserProfile(user);
 
     const { handleSubmit, setValue, watch } = useForm<PlannerCheckinFormData>({
         resolver: zodResolver(plannerCheckinSchema)
@@ -101,7 +95,7 @@ function PlannerCheckinFormComponent() {
 
 export function PlannerCheckinForm() {
     return (
-        <Suspense fallback={<Loader2 className="h-8 w-8 animate-spin" />}>
+        <Suspense fallback={<Card><CardContent><Loader2 className="h-8 w-8 animate-spin" /></CardContent></Card>}>
             <PlannerCheckinFormComponent />
         </Suspense>
     )

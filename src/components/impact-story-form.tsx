@@ -2,10 +2,8 @@
 "use client";
 
 import { useState, useMemo, useEffect, Suspense } from "react";
-import {
-  generateImpactStory,
-  type ImpactStoryInput,
-} from "@/ai/flows/impact-story-generator";
+import { runImpactStoryGenerator } from "@/ai/actions";
+import type { ImpactStoryInput } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -115,7 +113,7 @@ function ImpactStoryGeneratorContent() {
     setGeneratedStory("");
 
     try {
-      const result = await generateImpactStory(input);
+      const result = await runImpactStoryGenerator(input);
       setGeneratedStory(result.impactStory);
     } catch (error) {
       console.error("Error generating story:", error);

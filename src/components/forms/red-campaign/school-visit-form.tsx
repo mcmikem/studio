@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useUser, useFirestore, addDocumentNonBlocking, useCollection } from '@/firebase';
+import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, Timestamp, query, where, limit } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, Heart, ArrowLeft } from 'lucide-react';
@@ -26,7 +26,6 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 import type { Program } from '@/lib/types';
 import { useMemo } from 'react';
-import { useMemoFirebase } from '@/firebase/provider';
 
 
 const schoolVisitSchema = z.object({

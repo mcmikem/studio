@@ -1724,7 +1724,7 @@
     "/proposals/{proposalId}": { "schema": { "$ref": "#/entities/Proposal" }, "description": "Stores grant proposals and funding applications." },
     "/team-workplans/{teamWorkplanId}": { "schema": { "$ref": "#/entities/TeamWeeklyPlan" }, "description": "Stores manager-created team-wide weekly plans." },
     "/workplans/{workplanId}": { "schema": { "$ref": "#/entities/WeeklyWorkplan" }, "description": "Stores individuals' finalized weekly workplans." },
-    "/equipment/{equipmentId}": { "schema": { "$ref": "#/entities/Equipment" }, "description": "Stores the inventory of physical equipment." },
+    "/equipment/{equipmentId}": { "schema": { "$ref": "#/entities/Equipment" }, "description": "Stores the inventory of physical assets." },
     "/task-templates/{templateId}": { "schema": { "$ref": "#/entities/TaskTemplate" }, "description": "Stores reusable task templates and checklists." },
     "/messages/{messageId}": { "schema": { "$ref": "#/entities/Message" }, "description": "Stores team chat messages." },
     "/users/{userId}/ai-chats/{chatId}": { "schema": { "$ref": "#/entities/Message" }, "description": "Stores private AI chat messages for a specific user." },

@@ -9,7 +9,7 @@ import type { Activity, Testimony } from '@/lib/types';
 import { Camera, FileText, CheckSquare, Sparkles, Wand, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { runImpactStoryGenerator, runTestimonyProcessor } from '@/ai/actions';
+import { generateImpactStory, processTestimony } from '@/ai/actions';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -32,7 +32,7 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
             let draft;
             if (item.type === 'activity') {
                 const activity = item.source as Activity;
-                draft = await runImpactStoryGenerator({
+                draft = await generateImpactStory({
                     activityName: activity.title,
                     activityDescription: `An activity on ${new Date(activity.loggedAt.seconds * 1000).toDateString()}`,
                     activityImpact: `Value: ${activity.totalValue}, ROI: ${activity.finalRoi}%`,
@@ -46,7 +46,7 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
                 // Note: This assumes testimony.mediaUrls[0] is a valid media URI.
                 // In a real app, you would handle this more robustly.
                 if (testimony.mediaUrls && testimony.mediaUrls[0]) {
-                     draft = await runTestimonyProcessor({ mediaUri: testimony.mediaUrls[0] });
+                     draft = await processTestimony({ mediaUri: testimony.mediaUrls[0] });
                 } else {
                     throw new Error("Testimony has no media to process.");
                 }
@@ -61,11 +61,11 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
     };
 
     return (
-        <Card>
+        <Card className="card-comic-clean">
             <CardHeader className="pb-4">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <CardTitle className="text-sm font-black flex items-center gap-2">
                     {item.type === 'activity' ? <Camera className="h-4 w-4" /> : <FileText className="h-4 w-4" />}
-                    {(item.source as Activity).title}
+                    {item.source.title}
                 </CardTitle>
                 <CardDescription className="text-xs font-bold uppercase tracking-wider">
                     {item.type === 'activity' ? 'From Activity Log' : 'From Testimony Library'}
@@ -80,7 +80,7 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
                 )}
                  {item.status === 'review' && item.aiDraft && (
                     <div className="space-y-3">
-                        <h4 className="text-xs font-bold uppercase text-omuto-navy/50">AI Generated Draft</h4>
+                        <h4 className="text-xs font-black uppercase text-omuto-navy/50">AI Generated Draft</h4>
                         <Textarea 
                             defaultValue={item.type === 'activity' ? item.aiDraft.impactStory : item.aiDraft.summary}
                             className="h-48 border-lg"
@@ -128,13 +128,13 @@ export default function ContentCommandPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-heading text-3xl font-bold tracking-tight">Content Command</h1>
+                <h1 className="font-headline text-3xl font-bold tracking-tight">Content Command</h1>
                 <p className="text-muted-foreground">Automated pipeline for turning field data into media content.</p>
             </header>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 {/* Incoming Feed */}
-                <Card>
+                <Card className="bg-white/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Wand className="text-primary h-5 w-5" /> Incoming Feed
@@ -150,7 +150,7 @@ export default function ContentCommandPage() {
                 </Card>
 
                 {/* AI Drafts for Review */}
-                <Card>
+                <Card className="bg-white/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Sparkles className="text-omuto-yellow h-5 w-5" /> AI Drafts for Review

@@ -21,7 +21,7 @@ interface ExecutiveDashboardProps extends DashboardProps {
 
 export function ExecutiveDashboard({ profile, data }: ExecutiveDashboardProps) {
     const { activities, users, checkins, programs, metrics, checkouts, allExpenses, testimonies, partnerships } = data;
-    const isLoading = !activities || !users || !checkins || !programs || !metrics || !checkouts;
+    const isLoading = !activities || !users || !checkins || !programs || !metrics || !checkouts || !partnerships;
 
     return (
       <div className="flex flex-col gap-8">

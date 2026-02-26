@@ -42,6 +42,7 @@ export function AdminDashboard({ profile, data }: AdminDashboardProps) {
                             checkouts={checkouts} 
                             expenses={allExpenses}
                             testimonies={testimonies}
+                            partnerships={partnerships}
                             isLoading={false} 
                         />
                     </div>

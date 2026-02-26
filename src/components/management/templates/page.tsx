@@ -43,7 +43,7 @@ import { PlusCircle, Edit, Trash2, ListChecks, Loader2, Wand } from 'lucide-reac
 import type { TaskTemplate } from '@/lib/types';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Textarea } from '@/components/ui/textarea';
-import { generateTemplate } from '@/ai/flows/generate-template-flow';
+import { generateTemplate } from '@/ai/actions';
 
 const templateSchema = z.object({
   title: z.string().min(3, 'Template title is required.'),
@@ -91,11 +91,11 @@ function TemplateForm({
 
     if (template) {
         const templateRef = doc(firestore, 'task-templates', template.id);
-        updateDocumentNonBlocking(templateRef, templateData);
+        await updateDocumentNonBlocking(templateRef, templateData);
         toast({ title: 'Template Updated!', description: `"${data.title}" has been updated.` });
     } else {
         const templatesCollection = collection(firestore, 'task-templates');
-        addDocumentNonBlocking(templatesCollection, { ...templateData, createdAt: serverTimestamp() });
+        await addDocumentNonBlocking(templatesCollection, { ...templateData, createdAt: serverTimestamp() });
         toast({ title: 'Template Created!', description: `"${data.title}" is now available for use.` });
     }
 

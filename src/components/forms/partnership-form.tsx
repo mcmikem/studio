@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PartnershipSchema as ServerPartnershipSchema, type Partnership } from "@/lib/types"; 
+import { PartnershipSchema, type Partnership } from "@/lib/types"; 
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MultiSelect } from "@/components/ui/multi-select";
@@ -33,7 +33,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
-const PartnershipFormSchema = ServerPartnershipSchema.omit({
+const PartnershipFormSchema = PartnershipSchema.omit({
     id: true,
     createdAt: true,
     lastContacted: true,
