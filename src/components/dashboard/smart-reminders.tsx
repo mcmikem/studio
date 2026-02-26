@@ -2,7 +2,8 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { generateSmartReminders, type SmartRemindersOutput } from '@/ai/flows/smart-reminders-flow';
+import { generateSmartReminders } from '@/ai/actions';
+import type { SmartRemindersOutput } from '@/lib/types';
 import type { User } from '@/lib/types';
 import { Loader2, Wand } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

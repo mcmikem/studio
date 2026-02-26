@@ -1,4 +1,3 @@
-
 'use server';
 
 import { createAlert as createAlertAction, AlertInputSchema } from './flows/create-alert-flow';
@@ -13,6 +12,7 @@ import { analyzeProgramQualitativeData as analyzeProgramQualitativeDataFlow, Qua
 import { findGrants as findGrantsFlow, GrantFinderInputSchema } from './flows/grant-finder-flow';
 import type { GrantFinderOutput } from '@/lib/types';
 import { omutoAIFlow as omutoAIFlowFlow, OmutoAIInputSchema, OmutoAIOutputSchema } from './flows/omuto-ai-flow';
+import { generateSmartReminders as generateSmartRemindersFlow, SmartRemindersInputSchema, SmartRemindersOutputSchema } from './flows/smart-reminders-flow';
 import { z } from 'zod';
 
 export async function runDailyPlanner(input: z.infer<typeof DailyPlannerAIInputSchema>): Promise<z.infer<typeof DailyPlannerAIOutputSchema>> {
@@ -58,4 +58,8 @@ export async function findGrants(input: z.infer<typeof GrantFinderInputSchema>):
 
 export async function runOmutoAIFlow(input: z.infer<typeof OmutoAIInputSchema>): Promise<z.infer<typeof OmutoAIOutputSchema>> {
     return await omutoAIFlowFlow(input);
+}
+
+export async function generateSmartReminders(input: z.infer<typeof SmartRemindersInputSchema>): Promise<z.infer<typeof SmartRemindersOutputSchema>> {
+    return await generateSmartRemindersFlow(input);
 }

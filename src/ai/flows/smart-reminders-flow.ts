@@ -18,6 +18,7 @@ import { z } from 'zod';
 
 // Export type for external use
 export type { SmartRemindersOutput };
+export { SmartRemindersInputSchema, SmartRemindersOutputSchema };
 
 const getUpcomingEventsForUserToolObject = ai.defineTool(
     {
