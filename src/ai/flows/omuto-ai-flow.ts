@@ -7,7 +7,6 @@
 
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import type { OmutoAIInput, OmutoAIOutput, SearchResultItem } from '@/lib/types';
 import { SearchResultItemSchema, OmutoAIInputSchema, OmutoAIOutputSchema } from '@/lib/types';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
@@ -193,7 +192,7 @@ const getRecentCheckoutsToolObject = ai.defineTool(
 
 const omutoAIPrompt = ai.definePrompt({
     name: 'omutoAIPrompt',
-    model: 'googleai/gemini-1.5-flash',
+    model: 'googleai/gemini-pro',
     tools: [
         searchOmutoToolObject, 
         createCheckoutToolObject, 

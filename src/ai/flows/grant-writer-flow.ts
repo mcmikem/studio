@@ -7,14 +7,13 @@
 
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import type { GrantWriterInput, GrantWriterOutput } from '@/lib/types';
 import { GrantWriterInputSchema, GrantWriterOutputSchema } from '@/lib/types';
 
 const grantWriterPrompt = ai.definePrompt({
     name: 'grantWriterPrompt',
     input: { schema: GrantWriterInputSchema },
     output: { schema: GrantWriterOutputSchema },
-    model: 'googleai/gemini-1.5-flash', // Correct model string
+    model: 'googleai/gemini-pro',
     prompt: `You are a professional grant writer for an NGO called Omuto Foundation.
   Use the following knowledge base:
   ---

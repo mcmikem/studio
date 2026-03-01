@@ -3,7 +3,6 @@
  * @fileOverview An AI flow to analyze the qualitative data from program activities.
  */
 import { ai } from '@/ai/genkit';
-import type { QualitativeAnalysisInput, QualitativeAnalysisOutput } from '@/lib/types';
 import { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from '@/lib/types';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { z } from 'zod';
@@ -51,7 +50,7 @@ const getActivitiesForProgramToolObject = ai.defineTool(
 
 const qualitativeAnalysisPrompt = ai.definePrompt({
     name: 'qualitativeAnalysisPrompt',
-    model: 'googleai/gemini-1.5-flash', 
+    model: 'googleai/gemini-pro', 
     input: { schema: QualitativeAnalysisInputSchema },
     tools: [getActivitiesForProgramToolObject],
     output: { schema: QualitativeAnalysisOutputSchema },

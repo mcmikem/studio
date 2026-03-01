@@ -6,8 +6,6 @@
  */
 import { ai } from '@/ai/genkit';
 import {
-  type SmartRemindersOutput,
-  type SmartRemindersInput,
   SmartRemindersInputSchema,
   SmartRemindersOutputSchema,
 } from '@/lib/types';
@@ -78,7 +76,7 @@ const getPendingTasksForUserToolObject = ai.defineTool(
 const smartRemindersPrompt = ai.definePrompt(
     {
         name: 'smartRemindersPrompt',
-        model: 'googleai/gemini-1.5-flash',
+        model: 'googleai/gemini-pro',
         tools: [getUpcomingEventsForUserToolObject, getPendingTasksForUserToolObject],
         output: { schema: SmartRemindersOutputSchema },
         prompt: `You are a proactive, intelligent assistant and performance coach for the Omuto Foundation, a youth-led NGO in Uganda. Your goal is to help team members stay on track by providing smart, actionable reminders based on their current context. Your output must be a JSON object conforming to the schema.

@@ -6,14 +6,14 @@
  */
 
 import { ai } from '@/ai/genkit';
-import type { ParseWorkplanInput, ParseWorkplanOutput } from '@/lib/types';
-import { ParseWorkplanInputSchema, ParseWorkplanOutputSchema } from '@/lib/types';
+import { ParseWorkplanInputSchema, ParseWorkplanOutputSchema, type ParseWorkplanInput, type ParseWorkplanOutput } from '@/lib/types';
+
 
 const workplanParserPrompt = ai.definePrompt({
     name: 'workplanParserPrompt',
     input: { schema: ParseWorkplanInputSchema },
     output: { schema: ParseWorkplanOutputSchema },
-    model: 'googleai/gemini-1.5-flash',
+    model: 'googleai/gemini-pro',
     prompt: `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format that conforms to the provided schema.
 
   **Instructions:**
