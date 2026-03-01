@@ -17,7 +17,7 @@ import { useFirestore, useUser, useCollection, useMemoFirebase, addDocumentNonBl
 import { collection, writeBatch, getDocs, doc, Timestamp, query, orderBy, where } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
 import { Loader2, Wand, FileSignature, CheckCircle, Goal, MessageSquare, Target, Sparkles, TrendingUp, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { runParseOperationalPlan } from '@/ai/actions';
+import { parseOperationalPlan } from '@/ai/actions';
 import {
   Table,
   TableBody,
@@ -191,7 +191,7 @@ function OperationalPlanUpdater() {
     setIsParsing(true);
     setParsedResults([]);
     try {
-      const result = await runParseOperationalPlan({ planText: pastedText });
+      const result = await parseOperationalPlan({ planText: pastedText });
       setParsedResults(result.keyResults as ParsedKeyResult[]);
       toast({
         title: 'Plan Parsed Successfully',

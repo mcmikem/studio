@@ -8,21 +8,13 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Rss, LogOut, BookOpen, Lightbulb, Check, X, Wind } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
-import { formatDateSafe } from '@/lib/utils';
+import { formatDateSafe, getInitials } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -35,15 +27,6 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
     const completedTasks = tasksArray.filter(t => t.status === 'Done');
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
     
-     const getInitials = (name?: string) => {
-        if (!name) return 'U';
-        const parts = name.split(' ');
-        if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
-            return parts[0][0] + parts[parts.length - 1][0];
-        }
-        return name.substring(0, 2).toUpperCase();
-    };
-
     return (
         <Card>
              <CardHeader className="flex flex-row items-start gap-4 pb-4">
@@ -181,15 +164,6 @@ function CheckoutStream() {
 }
 
 function StreamPageContent() {
-    const getInitials = (name?: string) => {
-        if (!name) return 'U';
-        const parts = name.split(' ');
-        if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
-            return parts[0][0] + parts[parts.length - 1][0];
-        }
-        return name.substring(0, 2).toUpperCase();
-    };
-
     return (
         <div className="flex flex-col gap-6">
             <header>

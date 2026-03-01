@@ -43,7 +43,7 @@ import { PlusCircle, Edit, Trash2, ListChecks, Loader2, Wand } from 'lucide-reac
 import type { TaskTemplate } from '@/lib/types';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Textarea } from '@/components/ui/textarea';
-import { runGenerateTemplate } from '@/ai/actions';
+import { generateTemplate } from '@/ai/actions';
 
 const templateSchema = z.object({
   title: z.string().min(3, 'Template title is required.'),
@@ -154,7 +154,7 @@ function NewTemplateDialog() {
         }
         setIsLoading(true);
         try {
-            const result = await runGenerateTemplate({ description });
+            const result = await generateTemplate({ description });
             setAiGeneratedData({
                 title: result.title,
                 checklistItems: result.checklistItems.map(item => ({ value: item }))

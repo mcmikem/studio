@@ -9,7 +9,7 @@ import type { Activity, Testimony } from '@/lib/types';
 import { Camera, FileText, CheckSquare, Sparkles, Wand, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { runImpactStoryGenerator, runTestimonyProcessor } from '@/ai/actions';
+import { generateImpactStory, processTestimony } from '@/ai/actions';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -32,7 +32,7 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
             let draft;
             if (item.type === 'activity') {
                 const activity = item.source as Activity;
-                draft = await runImpactStoryGenerator({
+                draft = await generateImpactStory({
                     activityName: activity.title,
                     activityDescription: `An activity on ${new Date(activity.loggedAt.seconds * 1000).toDateString()}`,
                     activityImpact: `Value: ${activity.totalValue}, ROI: ${activity.finalRoi}%`,
@@ -46,7 +46,7 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
                 // Note: This assumes testimony.mediaUrls[0] is a valid media URI.
                 // In a real app, you would handle this more robustly.
                 if (testimony.mediaUrls && testimony.mediaUrls[0]) {
-                     draft = await runTestimonyProcessor({ mediaUri: testimony.mediaUrls[0] });
+                     draft = await processTestimony({ mediaUri: testimony.mediaUrls[0] });
                 } else {
                     throw new Error("Testimony has no media to process.");
                 }

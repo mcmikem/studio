@@ -205,8 +205,7 @@ const omutoAIPrompt = ai.definePrompt({
         getRecentCheckinsToolObject, 
         getRecentCheckoutsToolObject
     ],
-    system: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
-Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
+    system: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda. Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
 
 ## Tool Usage Instructions & Dynamic Knowledge
 
@@ -227,7 +226,8 @@ export const omutoAIFlow = ai.defineFlow(
     try {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
-        const llmResponse = await omutoAIPrompt.generate({
+        const llmResponse = await ai.generate({
+            prompt: omutoAIPrompt,
             history: input.history || [],
             input: {
                 userId: input.userId,
@@ -238,7 +238,7 @@ export const omutoAIFlow = ai.defineFlow(
             }
         });
         
-        const answer = llmResponse.text();
+        const answer = llmResponse.text;
         
         if (!answer) {
             console.error("AI did not return a text response.", { llmResponse });

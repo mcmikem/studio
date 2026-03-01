@@ -3,7 +3,6 @@
 
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -17,9 +16,8 @@ import { useRouter } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
 import { createAlert } from '@/ai/actions';
-import { SystemFeedbackSchema } from '@/lib/types';
-
-type SystemFeedbackFormData = z.infer<typeof SystemFeedbackSchema>;
+import { SystemFeedbackSchema, type SystemFeedbackFormData } from '@/lib/types';
+import { Input } from '@/components/ui/input';
 
 export function SystemFeedbackForm() {
   const router = useRouter();
@@ -60,7 +58,6 @@ export function SystemFeedbackForm() {
     try {
       await addDocumentNonBlocking(collection(firestore, 'system-feedback'), feedbackData);
       
-      // Create an alert for management when a bug or feature request is submitted
       const managementUsersQuery = query(collection(firestore, 'users'), where('role', 'in', ['Executive Director', 'Administrator']));
       const managementSnapshot = await getDocs(managementUsersQuery);
       const managerIds = managementSnapshot.docs.map(d => d.id);

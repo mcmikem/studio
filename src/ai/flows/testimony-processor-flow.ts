@@ -25,7 +25,7 @@ export const testimonyProcessorFlow = ai.defineFlow(
         ],
     });
     
-    const transcription = transcriptionResponse.text();
+    const transcription = transcriptionResponse.text;
 
     if (!transcription) {
       throw new Error('AI failed to transcribe the audio.');

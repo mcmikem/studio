@@ -88,4 +88,11 @@ export async function createAlert(input: AlertInput) {
     return await createAlertFlow(input);
 }
 
+export async function runImpactStoryGenerator(input: ImpactStoryInput) {
+  return impactStoryFlow(input);
+}
+
+export async function runTestimonyProcessor(input: TestimonyInput) {
+  return testimonyProcessorFlow(input);
+}
   

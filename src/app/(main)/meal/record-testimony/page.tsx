@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -14,7 +15,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { serverTimestamp, collection, query, orderBy } from 'firebase/firestore';
 import { uploadFile } from '@/firebase/storage';
 import { processTestimony } from '@/ai/actions';
-import { TestimonyOutput } from '@/ai/flows/testimony-processor-flow';
+import type { TestimonyOutput } from '@/lib/types';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

@@ -28,7 +28,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { parseWorkplan } from '@/ai/flows/parse-workplan-flow';
+import { parseWorkplanFlow } from '@/ai/flows/parse-workplan-flow';
 import { createAlert } from '@/ai/actions';
 
 const priorityItemSchema = z.object({
@@ -121,7 +121,7 @@ function TeamWorkplanForm({
           message: '',
           status: 'Draft',
         });
-  }, [existingPlan]);
+  }, [existingPlan, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -144,7 +144,7 @@ function TeamWorkplanForm({
         }
         setIsParsing(true);
         try {
-            const parsedData = await parseWorkplan({ textPlan: pastedText });
+            const parsedData = await parseWorkplanFlow({ textPlan: pastedText });
             
             const validPriorities = parsedData.keyPriorities.map(p => {
                 const validResponsible = Array.isArray(p.responsible)
