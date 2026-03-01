@@ -1,4 +1,5 @@
 
+
 /**
  * @fileOverview The main conversational AI agent for Omuto Central.
  * This flow acts as an expert assistant, knowledgeable about all aspects
@@ -7,7 +8,7 @@
 
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import { SearchResultItemSchema, OmutoAIInputSchema, OmutoAIOutputSchema } from '@/lib/types';
+import { SearchResultItem, OmutoAIInput, OmutoAIOutput } from '@/lib/types';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -19,7 +20,7 @@ const findUsersByNameToolObject = ai.defineTool(
         name: 'findUsersByName',
         description: 'Finds staff members by their name.',
         inputSchema: z.object({ name: z.string().describe("The name of the staff member to search for.") }),
-        outputSchema: z.array(SearchResultItemSchema),
+        outputSchema: z.array(SearchResultItem),
     },
     async ({ name }) => {
         const { firestore } = getFirebaseAdmin();
@@ -36,7 +37,7 @@ const findProgramsByNameToolObject = ai.defineTool(
         name: 'findProgramsByName',
         description: 'Finds programs by their title.',
         inputSchema: z.object({ title: z.string().describe("The title of the program to search for.") }),
-        outputSchema: z.array(SearchResultItemSchema),
+        outputSchema: z.array(SearchResultItem),
     },
     async ({ title }) => {
         const { firestore } = getFirebaseAdmin();
@@ -53,7 +54,7 @@ const findExpensesByTitleToolObject = ai.defineTool(
         name: 'findExpensesByTitle',
         description: 'Finds expense reports by their title.',
         inputSchema: z.object({ title: z.string().describe("The title of the expense report to search for.") }),
-        outputSchema: z.array(SearchResultItemSchema),
+        outputSchema: z.array(SearchResultItem),
     },
     async ({ title }) => {
         const { firestore } = getFirebaseAdmin();
@@ -70,7 +71,7 @@ const searchOmutoToolObject = ai.defineTool(
         name: 'searchOmuto',
         description: 'Performs a global search across users, programs, and expenses to find information within the Omuto Central app.',
         inputSchema: z.object({ query: z.string().describe("The user's natural language search query.") }),
-        outputSchema: z.array(SearchResultItemSchema),
+        outputSchema: z.array(SearchResultItem),
     },
     async ({ query }) => {
         console.log(`Searching Omuto for: ${query}`);
@@ -210,23 +211,21 @@ ${KNOWLEDGE_BASE}
 - **searchOmuto**: If the user asks a question about a person, program, project, or expense, use this tool to find the information from the database. This is your primary way of accessing organizational knowledge.
 - **createCheckout**: If the user asks to "check out", "submit my report", or a similar phrase, you MUST use this tool. Extract the 'task' (what they did today), 'learning' (what they learned), and 'tomorrowPlan' (what they will do tomorrow) from their message. The user ID is provided in the prompt. If any piece of information is missing, ask a clarifying question before using the tool. For example: "I can submit that for you. What was your key learning today?"
 - **getRecentCheckins / getRecentCheckouts**: You have the ability to get real-time updates from the team. If the user asks what the team is doing, what they did yesterday, who has checked in, or for a summary of recent activity, use these tools to get the latest data and then summarize it for the user. This is how you "learn" about the team's current state.`,
-    prompt: `UserId: {{userId}}.
-
-User's message: "{{question}}"`
+    input: { schema: z.object({ userId: z.string(), question: z.string() })},
 });
 
 
 export const omutoAIFlow = ai.defineFlow(
   {
     name: 'omutoAIFlow',
-    inputSchema: OmutoAIInputSchema,
-    outputSchema: OmutoAIOutputSchema,
+    inputSchema: OmutoAIInput,
+    outputSchema: OmutoAIOutput,
   },
   async (input) => {
     try {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
-        const llmResponse = await omutoAIPrompt({
+        const llmResponse = await omutoAIPrompt.generate({
             history: input.history || [],
             input: {
                 userId: input.userId,
@@ -237,7 +236,7 @@ export const omutoAIFlow = ai.defineFlow(
             }
         });
         
-        const answer = llmResponse.text;
+        const answer = llmResponse.text();
         
         if (!answer) {
             console.error("AI did not return a text response.", { llmResponse });
@@ -253,3 +252,5 @@ export const omutoAIFlow = ai.defineFlow(
     }
   }
 );
+
+  

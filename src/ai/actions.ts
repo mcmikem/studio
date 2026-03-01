@@ -4,116 +4,118 @@
 import { createAlertFlow } from './flows/create-alert-flow';
 import { dailyPlannerFlow } from './flows/daily-planner-flow';
 import { strategicAdvisorFlow } from './flows/strategic-advisor-flow';
-import { impactStoryFlow } from './flows/impact-story-generator';
-import { testimonyProcessorFlow } from './flows/testimony-processor-flow';
-import { parseOperationalPlanFlow } from './flows/parse-operational-plan-flow';
-import { generateTemplateFlow } from './flows/generate-template-flow';
-import { parseWorkplanFlow } from './flows/parse-workplan-flow';
+import { generateImpactStory as impactStoryFlow } from './flows/impact-story-generator';
+import { processTestimony as testimonyProcessorFlow } from './flows/testimony-processor-flow';
+import { parseOperationalPlan as parseOperationalPlanFlow } from './flows/parse-operational-plan-flow';
+import { generateTemplate as generateTemplateFlow } from './flows/generate-template-flow';
+import { parseWorkplan as parseWorkplanFlow } from './flows/parse-workplan-flow';
 import { analyzeProgramQualitativeDataFlow } from './flows/qualitative-analysis-flow';
-import { findGrantsFlow } from './flows/grant-finder-flow';
+import { findGrants as findGrantsFlow } from './flows/grant-finder-flow';
 import { omutoAIFlow } from './flows/omuto-ai-flow';
 import { generateSmartReminders } from './flows/smart-reminders-flow';
 import {
-    AlertInputSchema,
-    DailyPlannerAIInputSchema,
-    DailyPlannerAIOutputSchema,
-    StrategicAdvisorInputSchema,
-    StrategicAdvisorOutputSchema,
-    ImpactStoryInputSchema,
-    ImpactStoryOutputSchema,
-    TestimonyInputSchema,
-    TestimonyOutputSchema,
-    ParsePlanInputSchema,
-    ParsePlanOutputSchema,
-    GenerateTemplateInputSchema,
-    GenerateTemplateOutputSchema,
-    ParseWorkplanInputSchema,
-    ParseWorkplanOutputSchema,
-    QualitativeAnalysisInputSchema,
-    QualitativeAnalysisOutputSchema,
-    GrantFinderInputSchema,
-    GrantFinderOutputSchema,
-    OmutoAIInputSchema,
-    OmutoAIOutputSchema,
-    SmartRemindersInputSchema,
-    SmartRemindersOutputSchema,
+    AlertInput,
+    DailyPlannerAIInput,
+    DailyPlannerAIOutput,
+    StrategicAdvisorInput,
+    StrategicAdvisorOutput,
+    ImpactStoryInput,
+    ImpactStoryOutput,
+    TestimonyInput,
+    TestimonyOutput,
+    ParsePlanInput,
+    ParsePlanOutput,
+    GenerateTemplateInput,
+    GenerateTemplateOutput,
+    ParseWorkplanInput,
+    ParseWorkplanOutput,
+    QualitativeAnalysisInput,
+    QualitativeAnalysisOutput,
+    GrantFinderInput,
+    GrantFinderOutput,
+    OmutoAIInput,
+    OmutoAIOutput,
+    SmartRemindersInput,
+    SmartRemindersOutput,
 } from '@/lib/types';
 import { z } from 'zod';
 
 
-export async function runDailyPlanner(input: z.infer<typeof DailyPlannerAIInputSchema>): Promise<z.infer<typeof DailyPlannerAIOutputSchema>> {
+export async function runDailyPlanner(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
     return await dailyPlannerFlow(input);
 }
 
-export async function runStrategicAdvisor(input: z.infer<typeof StrategicAdvisorInputSchema>): Promise<z.infer<typeof StrategicAdvisorOutputSchema>> {
+export async function runStrategicAdvisor(input: StrategicAdvisorInput): Promise<StrategicAdvisorOutput> {
     const plainInput = JSON.parse(JSON.stringify(input));
     return await strategicAdvisorFlow(plainInput);
 }
 
-export async function runImpactStoryGenerator(input: z.infer<typeof ImpactStoryInputSchema>): Promise<z.infer<typeof ImpactStoryOutputSchema>> {
+export async function runImpactStoryGenerator(input: ImpactStoryInput): Promise<ImpactStoryOutput> {
     return await impactStoryFlow(input);
 }
 
-export async function generateImpactStory(input: z.infer<typeof ImpactStoryInputSchema>) {
+export async function generateImpactStory(input: ImpactStoryInput) {
     return await impactStoryFlow(input);
 }
 
-export async function runTestimonyProcessor(input: z.infer<typeof TestimonyInputSchema>): Promise<z.infer<typeof TestimonyOutputSchema>> {
+export async function runTestimonyProcessor(input: TestimonyInput): Promise<TestimonyOutput> {
     return await testimonyProcessorFlow(input);
 }
 
-export async function processTestimony(input: z.infer<typeof TestimonyInputSchema>) {
+export async function processTestimony(input: TestimonyInput) {
     return await testimonyProcessorFlow(input);
 }
 
-export async function runParseOperationalPlan(input: z.infer<typeof ParsePlanInputSchema>): Promise<z.infer<typeof ParsePlanOutputSchema>> {
+export async function runParseOperationalPlan(input: ParsePlanInput): Promise<ParsePlanOutput> {
     return await parseOperationalPlanFlow(input);
 }
 
-export async function parseOperationalPlan(input: z.infer<typeof ParsePlanInputSchema>) {
+export async function parseOperationalPlan(input: ParsePlanInput) {
     return await parseOperationalPlanFlow(input);
 }
 
-export async function runGenerateTemplate(input: z.infer<typeof GenerateTemplateInputSchema>): Promise<z.infer<typeof GenerateTemplateOutputSchema>> {
+export async function runGenerateTemplate(input: GenerateTemplateInput): Promise<GenerateTemplateOutput> {
     return await generateTemplateFlow(input);
 }
 
-export async function generateTemplate(input: z.infer<typeof GenerateTemplateInputSchema>) {
+export async function generateTemplate(input: GenerateTemplateInput) {
     return await generateTemplateFlow(input);
 }
 
-export async function runParseWorkplan(input: z.infer<typeof ParseWorkplanInputSchema>): Promise<z.infer<typeof ParseWorkplanOutputSchema>> {
+export async function runParseWorkplan(input: ParseWorkplanInput): Promise<ParseWorkplanOutput> {
     return await parseWorkplanFlow(input);
 }
 
-export async function runQualitativeAnalysis(input: z.infer<typeof QualitativeAnalysisInputSchema>): Promise<z.infer<typeof QualitativeAnalysisOutputSchema>> {
+export async function runQualitativeAnalysis(input: QualitativeAnalysisInput): Promise<QualitativeAnalysisOutput> {
     return await analyzeProgramQualitativeDataFlow(input);
 }
 
-export async function analyzeProgramQualitativeData(input: z.infer<typeof QualitativeAnalysisInputSchema>) {
+export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput) {
     return await analyzeProgramQualitativeDataFlow(input);
 }
 
-export async function runGrantFinder(input: z.infer<typeof GrantFinderInputSchema>): Promise<z.infer<typeof GrantFinderOutputSchema>> {
+export async function runGrantFinder(input: GrantFinderInput): Promise<GrantFinderOutput> {
     return await findGrantsFlow(input);
 }
 
-export async function findGrants(input: z.infer<typeof GrantFinderInputSchema>) {
+export async function findGrants(input: GrantFinderInput) {
     return await findGrantsFlow(input);
 }
 
-export async function runOmutoAI(input: z.infer<typeof OmutoAIInputSchema>): Promise<z.infer<typeof OmutoAIOutputSchema>> {
+export async function runOmutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
     return await omutoAIFlow(input);
 }
 
-export async function omutoAI(input: z.infer<typeof OmutoAIInputSchema>) {
+export async function omutoAI(input: OmutoAIInput) {
     return await omutoAIFlow(input);
 }
 
-export async function runSmartReminders(input: z.infer<typeof SmartRemindersInputSchema>): Promise<z.infer<typeof SmartRemindersOutputSchema>> {
+export async function runSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     return await generateSmartReminders(input);
 }
 
-export async function createAlert(input: z.infer<typeof AlertInputSchema>) {
+export async function createAlert(input: AlertInput) {
     return await createAlertFlow(input);
 }
+
+  

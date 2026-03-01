@@ -736,25 +736,6 @@ export type OFAMatch = {
   createdAt: Timestamp;
 };
 
-export const OFAScorecardSchema = z.object({
-  id: z.string(),
-  teamId: z.string(),
-  teamName: z.string(),
-  trainingAttendance: z.number(),
-  coachingQuality: z.number(),
-  playerDiscipline: z.number(),
-  academicAttendance: z.number(),
-  parentEngagement: z.number(),
-  communityReputation: z.number(),
-  achievements: z.string().optional(),
-  challenges: z.string().optional(),
-  supportNeeded: z.string().optional(),
-  createdAt: z.any(),
-  month: z.string(),
-});
-export type OFAScorecard = z.infer<typeof OFAScorecardSchema>;
-
-
 export type OFAMatchSummary = {
   id: string;
   region: string;
@@ -817,451 +798,6 @@ export type PulseContent = {
   dateCreated: string;
   createdAt: Timestamp;
 };
-
-export const SaleItemSchema = z.object({
-    product_id: z.string().min(1, "Product is required."),
-    product_name: z.string(),
-    quantity: z.coerce.number().min(1, "Quantity must be at least 1."),
-    unit_price: z.coerce.number().min(0),
-    total: z.coerce.number(),
-});
-export type SaleItem = z.infer<typeof SaleItemSchema>;
-
-export const SaleSchema = z.object({
-    id: z.string(),
-    transaction_number: z.string(),
-    customer_name: z.string().optional(),
-    customer_phone: z.string().optional(),
-    sale_date: z.string(),
-    total_amount: z.number(),
-    payment_method: z.enum(["Cash", "Mobile Money", "Bank Transfer"]),
-    status: z.enum(["completed", "pending"]),
-    created_by: z.string(),
-    items: z.array(SaleItemSchema),
-    createdAt: z.any(),
-    updatedAt: z.any().optional(),
-});
-
-export const SaleFormSchema = SaleSchema.omit({ 
-    id: true, 
-    createdAt: true, 
-    updatedAt: true,
-    transaction_number: true,
-    created_by: true,
-});
-export type SaleFormData = z.infer<typeof SaleFormSchema>;
-export type Sale = z.infer<typeof SaleSchema>;
-
-
-export type InventoryCheck = {
-  id: string;
-  productId: string;
-  productName: string;
-  date: string;
-  countedQuantity: number;
-  notes?: string;
-  checkedBy: string;
-  createdAt: Timestamp;
-};
-
-export type WaterSource = {
-  id: string;
-  sourceName: string;
-  type: "Borehole" | "Spring" | "Tap" | "Rainwater";
-  gpsCoordinates?: string;
-  functional: boolean;
-  photoUrl?: string;
-  createdAt: Timestamp;
-};
-
-export type WASH_Assessment = {
-  id: string;
-  school: string;
-  handwashingStations: number;
-  soapAvailable: boolean;
-  latrineCondition: "Good" | "Fair" | "Poor";
-  assessorComments?: string;
-  createdAt: Timestamp;
-};
-
-export type YAP_Chapter = {
-  id: string;
-  chapterName: string;
-  location: string;
-  leader: string;
-  membersCount: number;
-  createdAt: Timestamp;
-};
-
-export type YAP_Report = {
-  id: string;
-  chapterId: string;
-  month: string;
-  activities: string;
-  attendance: number;
-  outcomes: string;
-  challenges?: string;
-  createdAt: Timestamp;
-};
-
-export type SeedGrantApplication = {
-  id: string;
-  applicantName: string;
-  projectTitle: string;
-  budgetSummaryUrl?: string;
-  amountRequested: number;
-  startDate: string;
-  endDate: string;
-  createdAt: Timestamp;
-};
-
-export type SeedGrantAccountability = {
-  id: string;
-  grantId: string;
-  totalSpent: number;
-  receiptUrls: string[];
-  outputDescription: string;
-  createdAt: Timestamp;
-};
-
-export const OFATeamSchema = z.object({
-  id: z.string().optional(),
-  teamName: z.string().min(3, "Team name is required."),
-  teamPhotoUrl: z.string().url().optional().nullable(),
-  subcounty: z.string().min(3, "Subcounty is required."),
-  parish: z.string().optional().nullable(),
-  village: z.string().optional().nullable(),
-  yearOfEstablishment: z.string().optional().nullable(),
-  homePitchName: z.string().optional().nullable(),
-  teamColours: z.string().optional().nullable(),
-  motto: z.string().optional().nullable(),
-  headCoachName: z.string().optional().nullable(),
-  headCoachPhone: z.string().optional().nullable(),
-  headCoachAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional().nullable(),
-  headCoachAvailability: z.enum(['Full-Time', 'Part-Time']).optional().nullable(),
-  assistantCoachName: z.string().optional().nullable(),
-  assistantCoachPhone: z.string().optional().nullable(),
-  assistantCoachAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional().nullable(),
-  assistantCoachAvailability: z.enum(['Full-Time', 'Part-Time']).optional().nullable(),
-  teamManagerName: z.string().optional().nullable(),
-  teamManagerPhone: z.string().optional().nullable(),
-  teamManagerAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional().nullable(),
-  teamManagerAvailability: z.enum(['Full-Time', 'Part-Time']).optional().nullable(),
-  captainName: z.string().optional().nullable(),
-  captainPhone: z.string().optional().nullable(),
-  captainAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional().nullable(),
-  viceCaptainName: z.string().optional().nullable(),
-  viceCaptainPhone: z.string().optional().nullable(),
-  viceCaptainAttendance: z.enum(['Always', 'Sometimes', 'Rare']).optional().nullable(),
-  trainingDaysPerWeek: z.coerce.number().optional().nullable(),
-  avgTrainingAttendance: z.enum(['High', 'Medium', 'Low']).optional().nullable(),
-  punctualityScore: z.coerce.number().optional().nullable(),
-  disciplineScore: z.coerce.number().optional().nullable(),
-  useWarmups: z.boolean().optional().nullable(),
-  trackPlayerProgress: z.boolean().optional().nullable(),
-  totalPlayers: z.coerce.number().optional().nullable(),
-  u13: z.coerce.number().optional().nullable(),
-  u15: z.coerce.number().optional().nullable(),
-  u17: z.coerce.number().optional().nullable(),
-  u19: z.coerce.number().optional().nullable(),
-  percentageInSchool: z.coerce.number().optional().nullable(),
-  mainAcademicChallenges: z.array(z.string()).optional().nullable(),
-  enforceSchoolAttendance: z.enum(['Yes', 'No', 'Trying']).optional().nullable(),
-  equipment: z.array(z.object({
-    item: z.string(),
-    qty: z.coerce.number().optional(),
-    condition: z.string().optional(),
-    needLevel: z.string().optional(),
-  })).optional().nullable(),
-  needs: z.array(z.object({
-    area: z.string(),
-    priority: z.coerce.number().optional(),
-  })).optional().nullable(),
-  communitySupport: z.enum(['Yes', 'No', 'Sometimes']).optional().nullable(),
-  parentEngagement: z.enum(['Yes', 'No', 'Weak Engagement']).optional().nullable(),
-  hasVolunteers: z.boolean().optional().nullable(),
-  volunteerCount: z.coerce.number().optional().nullable(),
-  agreedToRules: z.boolean().refine(val => val === true, {
-    message: "You must agree to the rules to register a team.",
-  }),
-});
-export type OFATeamFormData = z.infer<typeof OFATeamSchema>;
-
-export type OFATeam = z.infer<typeof OFATeamSchema> & {
-    id: string;
-    createdAt: Timestamp;
-};
-
-
-export type OFAVolunteer = {
-  id: string;
-  name: string;
-  role: string;
-  contact: string;
-  createdAt: Timestamp;
-};
-
-
-// Flow-specific types, centralized here
-export const AlertInputSchema = z.object({
-  type: z.enum(['Urgent', 'Reminder', 'Info']),
-  message: z.string(),
-  priority: z.enum(['High', 'Medium', 'Low']),
-  action: z.string(),
-  creatorId: z.string().describe("The ID of the user creating the alert."),
-  targetUserIds: z.array(z.string()).optional().describe("An array of user IDs to target with this notification. If empty, it's a broadcast."),
-});
-export type AlertInput = z.infer<typeof AlertInputSchema>;
-
-export const GenerateTemplateInputSchema = z.object({
-  description: z.string().describe('A natural language description of the checklist or template needed.'),
-});
-export type GenerateTemplateInput = z.infer<typeof GenerateTemplateInputSchema>;
-
-export const GenerateTemplateOutputSchema = z.object({
-  title: z.string().describe('A clear and concise title for the generated template.'),
-  checklistItems: z.array(z.string()).describe('A list of specific, actionable checklist items.'),
-});
-export type GenerateTemplateOutput = z.infer<typeof GenerateTemplateOutputSchema>;
-
-
-export const GrantFinderInputSchema = z.object({
-  query: z.string().describe('The user\'s search query for grant opportunities (e.g., "youth empowerment uganda").'),
-});
-export type GrantFinderInput = z.infer<typeof GrantFinderInputSchema>;
-
-
-export const GrantOpportunitySchema = z.object({
-  title: z.string(),
-  funder: z.string(),
-  description: z.string(),
-  amount: z.number(),
-  deadline: z.string().describe("Formatted as YYYY-MM-DD"),
-});
-export const GrantFinderOutputSchema = z.object({
-  opportunities: z.array(GrantOpportunitySchema).describe('A list of potential grant opportunities found.'),
-});
-export type GrantFinderOutput = z.infer<typeof GrantFinderOutputSchema>;
-
-
-export const GrantWriterInputSchema = z.object({
-  partnerName: z.string().describe("The name of the potential funder or partner."),
-  amountRequested: z.number().describe("The amount of funding being requested in UGX."),
-  proposalTitle: z.string().describe("The title of the proposal project."),
-});
-export type GrantWriterInput = z.infer<typeof GrantWriterInputSchema>;
-
-export const GrantWriterOutputSchema = z.object({
-  conceptNote: z.string().describe("A concise and persuasive concept note for the proposal, written in markdown format. It should include sections for Introduction, Problem Statement, Proposed Solution (linking to Omuto's ecosystem model), and Budget Overview."),
-});
-export type GrantWriterOutput = z.infer<typeof GrantWriterOutputSchema>;
-
-export const ImpactStoryInputSchema = z.object({
-  activityName: z.string().describe('The name of the activity.'),
-  activityDescription: z.string().describe('A detailed description of the activity.'),
-  activityImpact: z.string().describe('The measurable impact of the activity (e.g., number of trees planted, people reached).'),
-  userName: z.string().describe('The name of a user involved in the activity, to add a personal touch.'),
-  userQuote: z.string().optional().describe('A quote from a user or beneficiary about the activity.'),
-  memorableMoment: z.string().optional().describe('A specific, powerful interaction or observation from the activity.'),
-  challengesLearned: z.string().optional().describe('Surprising challenges and how they were overcome.'),
-});
-export type ImpactStoryInput = z.infer<typeof ImpactStoryInputSchema>;
-
-export const ImpactStoryOutputSchema = z.object({
-  impactStory: z.string().describe('A compelling narrative generated from the activity data.'),
-});
-export type ImpactStoryOutput = z.infer<typeof ImpactStoryOutputSchema>;
-
-
-export const HistoryMessageSchema = z.object({
-  role: z.enum(['user', 'model']),
-  content: z.array(z.object({ text: z.string() })),
-});
-
-export const OmutoAIInputSchema = z.object({
-  question: z.string().describe("The user's current question or message."),
-  history: z.array(HistoryMessageSchema).optional().describe('The chat history between the user and the AI.'),
-  userId: z.string().describe("The user's unique ID."), // Added for context
-});
-export type OmutoAIInput = z.infer<typeof OmutoAIInputSchema>;
-
-export const OmutoAIOutputSchema = z.object({
-  answer: z.string().describe('The AI-generated answer to the user\'s question.'),
-});
-export type OmutoAIOutput = z.infer<typeof OmutoAIOutputSchema>;
-
-export const DailyPlannerAIInputSchema = z.object({
-  userName: z.string().describe("The name of the user."),
-  userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
-  primaryMission: z.string().describe("The user's stated main focus for the day."),
-  weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
-  keyResults: z.array(KeyResultAISchema).describe("A list of the organization's current Key Results (OKRs)."),
-});
-export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
-
-
-export const DailyPlannerAIOutputSchema = z.object({
-    timeBlocks: z.array(z.object({
-        startTime: z.string().describe("e.g., '09:00 AM'"),
-        endTime: z.string().describe("e.g., '11:00 AM'"),
-        description: z.string(),
-    })).describe("A detailed, actionable schedule for the day."),
-    strategicAlignments: z.array(z.object({
-        krTitle: z.string().describe("The title of the Key Result this mission aligns with."),
-        alignmentJustification: z.string().describe("A brief, one-sentence explanation of *how* the daily mission supports this specific Key Result."),
-    })).describe("A list of 1-2 key results that this daily mission directly supports."),
-    materials: z.string().describe("A comma-separated list of materials or resources needed."),
-    challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
-    bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from the provided knowledge base."),
-});
-export type DailyPlannerAIOutput = z.infer<typeof DailyPlannerAIOutputSchema>;
-
-export const ParsePlanInputSchema = z.object({
-  planText: z.string().describe('The full, unstructured text of the monthly or quarterly operational plan.'),
-});
-export type ParsePlanInput = z.infer<typeof ParsePlanInputSchema>;
-
-const ParsePlanKeyResultSchema = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  description: z.string(),
-  currentProgress: z.number(),
-  target: z.number(),
-  deadline: z.string(),
-  priority: z.enum(['High', 'Medium', 'Low']),
-});
-
-export const ParsePlanOutputSchema = z.object({
-  keyResults: z.array(ParsePlanKeyResultSchema).describe('A list of all Key Results extracted from the plan text.'),
-});
-export type ParsePlanOutput = z.infer<typeof ParsePlanOutputSchema>;
-
-
-export const ParseWorkplanInputSchema = z.object({
-  textPlan: z.string().describe('The unstructured, raw text of a weekly plan.'),
-});
-export type ParseWorkplanInput = z.infer<typeof ParseWorkplanInputSchema>;
-
-export const PriorityItemSchema = z.object({
-    activity: z.string().describe('The specific task or activity to be done.'),
-    priority: z.enum(['High', 'Medium', 'Low']).describe('The priority level of the activity.'),
-    responsible: z.array(z.string()).describe('A list of names or roles responsible for the activity.'),
-    deadline: z.string().optional().describe('The deadline for the activity, if mentioned (YYYY-MM-DD format).'),
-});
-
-export const ParseWorkplanOutputSchema = z.object({
-  keyPriorities: z.array(PriorityItemSchema).describe('A list of structured priority items extracted from the text.'),
-  message: z.string().describe('A one or two-sentence summary of the overall focus or goal for the week.'),
-});
-export type ParseWorkplanOutput = z.infer<typeof ParseWorkplanOutputSchema>;
-
-export const QualitativeAnalysisInputSchema = z.object({
-  programId: z.string().describe('The ID of the program to analyze.'),
-  programName: z.string().describe('The name of the program being analyzed.'),
-  startDate: z.string().describe('The start date of the range to analyze (YYYY-MM-DD).'),
-  endDate: z.string().describe('The end date of the range to analyze (YYYY-MM-DD).'),
-});
-export type QualitativeAnalysisInput = z.infer<typeof QualitativeAnalysisInputSchema>;
-
-
-export const QualitativeAnalysisOutputSchema = z.object({
-  summary: z.string().describe("A high-level executive summary of the program's qualitative performance during the period."),
-  recurringSuccesses: z.array(z.string()).describe("A list of common themes and successes identified from the reports."),
-  commonChallenges: z.array(z.string()).describe("A list of recurring challenges or issues faced by the team."),
-  keyLearnings: z.array(z.string()).describe("A list of actionable learnings and recommendations for improvement."),
-});
-export type QualitativeAnalysisOutput = z.infer<typeof QualitativeAnalysisOutputSchema>;
-
-
-export const TestimonyInputSchema = z.object({
-  mediaUri: z.string().describe("A data URI of the audio or video file. Must be in a format supported by Gemini, like webm."),
-});
-export type TestimonyInput = z.infer<typeof TestimonyInputSchema>;
-
-export const TestimonyOutputSchema = z.object({
-  transcription: z.string().describe("The full transcription of the testimony."),
-  summary: z.string().describe("A concise one-paragraph summary of the testimony."),
-  quotes: z.array(z.string()).describe("A list of 2-3 powerful, impactful quotes from the testimony."),
-  hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags for social media (e.g., #Empowerment, #CommunityImpact)."),
-});
-export type TestimonyOutput = z.infer<typeof TestimonyOutputSchema>;
-
-// New types for Knowledge Hub
-export type KnowledgeHubSection = {
-  id: string;
-  order: number;
-  title: string;
-  content: string;
-  subsections?: { title: string; content: string; }[];
-};
-
-export type KnowledgeHubPitch = {
-  id: string;
-  order: number;
-  title: string;
-  content: string;
-};
-
-export type KnowledgeHubFAQ = {
-  id: string;
-  order: number;
-  question: string;
-  answer: string;
-};
-
-export type KnowledgeHubStory = {
-  id: string;
-  order: number;
-  title: string;
-  content: string;
-};
-
-export type KnowledgeHubCTA = {
-  id: string;
-  order: number;
-  title: string;
-  description: string;
-  buttonLabel: string;
-};
-
-// Enterprise System Types
-export const ProductCategorySchema = z.object({
-    id: z.string(),
-    name: z.string().min(2, "Category name is required."),
-    description: z.string().optional(),
-    is_active: z.boolean().default(true),
-});
-export type ProductCategory = z.infer<typeof ProductCategorySchema>;
-
-export const ProductSchema = z.object({
-    id: z.string(),
-    name: z.string().min(3, "Product name is required."),
-    categoryId: z.string().min(1, "Category is required."),
-    sku: z.string().optional(),
-    description: z.string().optional(),
-    unit: z.string().min(1, "Unit is required (e.g., kg, piece, liter)."),
-    default_selling_price: z.coerce.number().min(0).optional(),
-    image_url: z.string().url().optional(),
-    is_active: z.boolean().default(true),
-    type: z.enum(["finished", "raw", "packaging"]),
-    current_stock_quantity: z.coerce.number().optional(),
-    reorder_level: z.coerce.number().optional(),
-    supplierId: z.string().optional(),
-    cost_per_unit: z.coerce.number().optional(),
-    last_restocked_at: z.any().optional(),
-    quantity_on_hand: z.coerce.number().optional(),
-    location: z.string().optional(),
-    createdAt: z.any(),
-    updatedAt: z.any().optional(),
-});
-export const ProductFormSchema = ProductSchema.omit({ 
-    id: true, 
-    createdAt: true, 
-    updatedAt: true,
-    last_restocked_at: true,
-});
-export type ProductFormData = z.infer<typeof ProductFormSchema>;
-export type Product = z.infer<typeof ProductSchema>;
 
 export const ProductionBatchMaterialSchema = z.object({
     material_id: z.string().min(1, "Material must be selected."),
@@ -1376,6 +912,127 @@ export const SystemFeedbackSchema = z.object({
 });
 export type SystemFeedback = z.infer<typeof SystemFeedbackSchema>;
 
+export const OFAScorecardSchema = z.object({
+  id: z.string(),
+  teamId: z.string(),
+  teamName: z.string(),
+  trainingAttendance: z.number(),
+  coachingQuality: z.number(),
+  playerDiscipline: z.number(),
+  academicAttendance: z.number(),
+  parentEngagement: z.number(),
+  communityReputation: z.number(),
+  achievements: z.string().optional(),
+  challenges: z.string().optional(),
+  supportNeeded: z.string().optional(),
+  createdAt: z.any(),
+  month: z.string(),
+});
+export type OFAScorecard = z.infer<typeof OFAScorecardSchema>;
+
+
+export const OFAMatchSummary = z.object({
+  id: z.string(),
+  region: z.string(),
+  teamA: z.string(),
+  teamB: z.string(),
+  finalScore: z.string(),
+  bestPerformers: z.string().optional(),
+  injuries: z.enum(['Yes', 'No']),
+  teamADiscipline: z.number(),
+  teamACards: z.string().optional(),
+  teamBDiscipline: z.number(),
+  teamBCards: z.string().optional(),
+  quickNotes: z.string().optional(),
+  createdAt: z.any(),
+});
+export type OFAMatchSummary = z.infer<typeof OFAMatchSummary>;
+
+
+export const OFAAdvancedAnalysis = z.object({
+  id: z.string(),
+  homeTeam: z.string(),
+  awayTeam: z.string(),
+  homePossession: z.number().optional(),
+  awayPossession: z.number().optional(),
+  homeShots: z.number().optional(),
+  awayShots: z.number().optional(),
+  homeSaves: z.number().optional(),
+  awaySaves: z.number().optional(),
+  homePassSuccess: z.number().optional(),
+  awayPassSuccess: z.number().optional(),
+  homeFormation: z.string().optional(),
+  homeStrengths: z.string().optional(),
+  homeWeaknesses: z.string().optional(),
+  homeAdjustments: z.string().optional(),
+  awayFormation: z.string().optional(),
+  awayStrengths: z.string().optional(),
+  awayWeaknesses: z.string().optional(),
+  awayAdjustments: z.string().optional(),
+  createdAt: z.any(),
+});
+export type OFAAdvancedAnalysis = z.infer<typeof OFAAdvancedAnalysis>;
+
+export const OFAEquipmentImpact = z.object({
+  id: z.string(),
+  teamId: z.string(),
+  item: z.string(),
+  dateGiven: z.string(),
+  beforeSupport: z.string().optional(),
+  thirtyDays: z.string().optional(),
+  sixtyDays: z.string().optional(),
+  ninetyDays: z.string().optional(),
+  realImpact: z.string().optional(),
+  createdAt: z.any(),
+});
+export type OFAEquipmentImpact = z.infer<typeof OFAEquipmentImpact>;
+
+export const PulseContent = z.object({
+  id: z.string(),
+  creatorName: z.string(),
+  contentTitle: z.string(),
+  format: z.enum(["Video", "Podcast", "Article", "Photo"]),
+  link: z.string().url(),
+  description: z.string().optional(),
+  dateCreated: z.string(),
+  createdAt: z.any(),
+});
+export type PulseContent = z.infer<typeof PulseContent>;
+
+export const SaleItemSchema = z.object({
+    product_id: z.string().min(1, "Product is required."),
+    product_name: z.string(),
+    quantity: z.coerce.number().min(1, "Quantity must be at least 1."),
+    unit_price: z.coerce.number().min(0),
+    total: z.coerce.number(),
+});
+export type SaleItem = z.infer<typeof SaleItemSchema>;
+
+export const SaleSchema = z.object({
+    id: z.string(),
+    transaction_number: z.string(),
+    customer_name: z.string().optional(),
+    customer_phone: z.string().optional(),
+    sale_date: z.string(),
+    total_amount: z.number(),
+    payment_method: z.enum(["Cash", "Mobile Money", "Bank Transfer"]),
+    status: z.enum(["completed", "pending"]),
+    created_by: z.string(),
+    items: z.array(SaleItemSchema),
+    createdAt: z.any(),
+    updatedAt: z.any().optional(),
+});
+
+export const SaleFormSchema = SaleSchema.omit({ 
+    id: true, 
+    createdAt: true, 
+    updatedAt: true,
+    transaction_number: true,
+    created_by: true,
+});
+export type SaleFormData = z.infer<typeof SaleFormSchema>;
+export type Sale = z.infer<typeof SaleSchema>;
+  
 export const StrategicAdvisorInputSchema = z.object({
   activities: z.array(z.any()).describe('Array of activity objects from the last 30 days.'),
   checkins: z.array(z.any()).describe('Array of check-in objects from today.'),
@@ -1394,3 +1051,27 @@ export const StrategicAdvisorOutputSchema = z.object({
   })).describe('A list of 3-4 high-level strategic insights.'),
 });
 export type StrategicAdvisorOutput = z.infer<typeof StrategicAdvisorOutputSchema>;
+
+export const DailyPlannerAIV2InputSchema = z.object({
+    userName: z.string().describe("The name of the user."),
+    userRole: z.string().describe("The user's role, e.g., 'Field Coordinator'."),
+    primaryMission: z.string().describe("The user's main objective for the day."),
+    previousTasks: z.array(z.object({
+        description: z.string(),
+        status: z.enum(['Done', 'Not Done']),
+        reason: z.string().optional(),
+    })).describe("The user's tasks from their last checkout."),
+});
+export type DailyPlannerAIV2Input = z.infer<typeof DailyPlannerAIV2InputSchema>;
+
+export const DailyPlannerAIV2OutputSchema = z.object({
+    morningBriefing: z.string().describe("A short, encouraging paragraph that reflects on yesterday's progress and sets the tone for today's mission."),
+    schedule: z.array(z.object({
+        time: z.string().describe("e.g., 09:00 - 11:00"),
+        task: z.string().describe("The specific task to be done."),
+        focus: z.string().describe("The 'why' behind the task, its strategic importance.")
+    })),
+    multiWin: z.string().describe("A suggestion for how to achieve multiple objectives with a single activity."),
+    challenge: z.string().describe("A potential obstacle and a proactive tip to overcome it."),
+});
+export type DailyPlannerAIV2Output = z.infer<typeof DailyPlannerAIV2OutputSchema>;
