@@ -1375,3 +1375,22 @@ export const SystemFeedbackSchema = z.object({
     createdAt: z.any(),
 });
 export type SystemFeedback = z.infer<typeof SystemFeedbackSchema>;
+
+export const StrategicAdvisorInputSchema = z.object({
+  activities: z.array(z.any()).describe('Array of activity objects from the last 30 days.'),
+  checkins: z.array(z.any()).describe('Array of check-in objects from today.'),
+  expenses: z.array(z.any()).describe('Array of expense objects from the last 30 days.'),
+  keyResults: z.array(z.any()).describe('Array of the current operational plan\'s key results.'),
+});
+export type StrategicAdvisorInput = z.infer<typeof StrategicAdvisorInputSchema>;
+
+
+export const StrategicAdvisorOutputSchema = z.object({
+  insights: z.array(z.object({
+    emoji: z.string().describe('An emoji representing the insight (e.g., "📈", "⚠️", "💡").'),
+    title: z.string().describe('A very short, catchy title for the insight.'),
+    description: z.string().describe('A concise, one-sentence description of the key finding.'),
+    recommendation: z.string().describe('A single, actionable recommendation for the leader.'),
+  })).describe('A list of 3-4 high-level strategic insights.'),
+});
+export type StrategicAdvisorOutput = z.infer<typeof StrategicAdvisorOutputSchema>;

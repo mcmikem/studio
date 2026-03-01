@@ -1,25 +1,11 @@
 
+'use server';
+
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
+import { StrategicAdvisorInputSchema, StrategicAdvisorOutputSchema } from '@/lib/types';
 
-export const StrategicAdvisorInputSchema = z.object({
-  activities: z.array(z.any()).describe('Array of activity objects from the last 30 days.'),
-  checkins: z.array(z.any()).describe('Array of check-in objects from today.'),
-  expenses: z.array(z.any()).describe('Array of expense objects from the last 30 days.'),
-  keyResults: z.array(z.any()).describe('Array of the current operational plan\'s key results.'),
-});
-export type StrategicAdvisorInput = z.infer<typeof StrategicAdvisorInputSchema>;
-
-
-export const StrategicAdvisorOutputSchema = z.object({
-  insights: z.array(z.object({
-    emoji: z.string().describe('An emoji representing the insight (e.g., "📈", "⚠️", "💡").'),
-    title: z.string().describe('A very short, catchy title for the insight.'),
-    description: z.string().describe('A concise, one-sentence description of the key finding.'),
-    recommendation: z.string().describe('A single, actionable recommendation for the leader.'),
-  })).describe('A list of 3-4 high-level strategic insights.'),
-});
-export type StrategicAdvisorOutput = z.infer<typeof StrategicAdvisorOutputSchema>;
+export { StrategicAdvisorInputSchema, StrategicAdvisorOutputSchema };
 
 export const strategicAdvisorFlow = ai.defineFlow(
   {
@@ -62,7 +48,11 @@ export const strategicAdvisorFlow = ai.defineFlow(
       prompt: prompt,
       output: { schema: StrategicAdvisorOutputSchema },
     });
+    
+    if (!result.output) {
+      throw new Error("Failed to generate strategic insights.");
+    }
 
-    return result.output!;
+    return result.output;
   }
 );

@@ -57,6 +57,7 @@ export default function ManagementLayoutComponent({
     { name: 'Equipment', href: '/management/equipment', icon: Box },
     { name: 'Templates', href: '/management/templates', icon: ListChecks },
     { name: 'Users', href: '/management/users', icon: Users },
+    { name: 'Feedback', href: '/management/feedback', icon: Bug },
   ];
 
   const tabs = allTabs.filter(tab => {

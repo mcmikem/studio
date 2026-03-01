@@ -12,3 +12,4 @@ import './flows/grant-finder-flow';
 import './flows/grant-writer-flow';
 import './flows/parse-operational-plan-flow';
 import './flows/parse-workplan-flow';
+import './flows/strategic-advisor-flow';

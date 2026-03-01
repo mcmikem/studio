@@ -1,4 +1,6 @@
 
+'use server';
+
 /**
  * @fileOverview A flow to generate dynamic, context-aware reminders for a user.
  */
@@ -15,8 +17,8 @@ import { format } from 'date-fns';
 import { z } from 'zod';
 
 // Export type and schemas for external use
-export type { SmartRemindersOutput, SmartRemindersInput };
-export { SmartRemindersInputSchema, SmartRemindersOutputSchema };
+export { SmartRemindersInputSchema, SmartRemindersOutputSchema, type SmartRemindersInput, type SmartRemindersOutput };
+
 
 const getUpcomingEventsForUserToolObject = ai.defineTool(
     {
@@ -97,7 +99,7 @@ const smartRemindersPrompt = ai.definePrompt(
     }
 );
 
-export const generateSmartRemindersFlow = ai.defineFlow(
+export const generateSmartReminders = ai.defineFlow(
     {
       name: 'generateSmartRemindersFlow',
       inputSchema: SmartRemindersInputSchema,

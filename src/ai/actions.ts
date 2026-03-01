@@ -12,7 +12,7 @@ import { parseWorkplanFlow } from './flows/parse-workplan-flow';
 import { analyzeProgramQualitativeDataFlow, QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from './flows/qualitative-analysis-flow';
 import { findGrantsFlow, GrantFinderInputSchema, GrantFinderOutputSchema } from './flows/grant-finder-flow';
 import { omutoAIFlow, OmutoAIInputSchema, OmutoAIOutputSchema } from './flows/omuto-ai-flow';
-import { generateSmartRemindersFlow, SmartRemindersInputSchema, SmartRemindersOutputSchema } from './flows/smart-reminders-flow';
+import { generateSmartReminders, SmartRemindersInputSchema, SmartRemindersOutputSchema } from './flows/smart-reminders-flow';
 import { z } from 'zod';
 import { ParseWorkplanInputSchema, ParseWorkplanOutputSchema } from '@/lib/types';
 
@@ -21,7 +21,8 @@ export async function runDailyPlanner(input: z.infer<typeof DailyPlannerAIInputS
 }
 
 export async function runStrategicAdvisor(input: z.infer<typeof StrategicAdvisorInputSchema>): Promise<z.infer<typeof StrategicAdvisorOutputSchema>> {
-    return await strategicAdvisorFlow(input);
+    const plainInput = JSON.parse(JSON.stringify(input));
+    return await strategicAdvisorFlow(plainInput);
 }
 
 export async function runImpactStoryGenerator(input: z.infer<typeof ImpactStoryInputSchema>): Promise<z.infer<typeof ImpactStoryOutputSchema>> {
@@ -89,11 +90,7 @@ export async function omutoAI(input: z.infer<typeof OmutoAIInputSchema>) {
 }
 
 export async function runSmartReminders(input: z.infer<typeof SmartRemindersInputSchema>): Promise<z.infer<typeof SmartRemindersOutputSchema>> {
-    return await generateSmartRemindersFlow(input);
-}
-
-export async function generateSmartReminders(input: z.infer<typeof SmartRemindersInputSchema>) {
-    return await generateSmartRemindersFlow(input);
+    return await generateSmartReminders(input);
 }
 
 export async function createAlert(input: z.infer<typeof AlertInputSchema>) {

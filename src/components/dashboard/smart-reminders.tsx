@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { generateSmartReminders } from '@/ai/actions';
+import { runSmartReminders } from '@/ai/actions';
 import type { SmartRemindersOutput } from '@/lib/types';
 import type { User } from '@/lib/types';
 import { Loader2, Wand } from 'lucide-react';
@@ -20,7 +20,7 @@ export function SmartReminders({ profile }: { profile: User }) {
       setIsLoading(true);
       setError(null);
       try {
-        const result = await generateSmartReminders({
+        const result = await runSmartReminders({
           userName: profile.name,
           userRole: profile.role,
           userId: profile.id,
