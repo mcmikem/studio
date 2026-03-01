@@ -9,10 +9,6 @@ import { getFirebaseAdmin } from '@/firebase/server';
 import { z } from 'zod';
 import { formatDateSafe } from '@/lib/utils';
 
-// Export type and schemas for external use
-export type { QualitativeAnalysisInput, QualitativeAnalysisOutput };
-export { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema };
-
 const getActivitiesForProgramToolObject = ai.defineTool(
     {
         name: 'getActivitiesForProgram',

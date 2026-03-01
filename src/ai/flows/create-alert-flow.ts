@@ -3,17 +3,9 @@ import { z } from 'zod';
 import { ai } from '@/ai/genkit';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { Timestamp } from 'firebase-admin/firestore';
+import { AlertInputSchema } from '@/lib/types';
+import type { AlertInput } from '@/lib/types';
 
-
-export const AlertInputSchema = z.object({
-  type: z.enum(['Urgent', 'Reminder', 'Info']),
-  message: z.string(),
-  priority: z.enum(['High', 'Medium', 'Low']),
-  action: z.string(),
-  creatorId: z.string(),
-  targetUserIds: z.array(z.string()).optional(),
-});
-export type AlertInput = z.infer<typeof AlertInputSchema>;
 
 export const createAlertFlow = ai.defineFlow(
     {

@@ -1,18 +1,43 @@
 
 'use server';
 
-import { createAlertFlow, AlertInputSchema } from './flows/create-alert-flow';
-import { dailyPlannerFlow, DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from './flows/daily-planner-flow';
-import { strategicAdvisorFlow, StrategicAdvisorInputSchema, StrategicAdvisorOutputSchema } from './flows/strategic-advisor-flow';
-import { impactStoryFlow, ImpactStoryInputSchema, ImpactStoryOutputSchema } from './flows/impact-story-generator';
-import { testimonyProcessorFlow, TestimonyInputSchema, TestimonyOutputSchema } from './flows/testimony-processor-flow';
-import { parseOperationalPlanFlow, ParsePlanInputSchema, ParsePlanOutputSchema } from './flows/parse-operational-plan-flow';
-import { generateTemplateFlow, GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from './flows/generate-template-flow';
-import { parseWorkplanFlow, ParseWorkplanInputSchema, ParseWorkplanOutputSchema } from './flows/parse-workplan-flow';
-import { analyzeProgramQualitativeDataFlow, QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from './flows/qualitative-analysis-flow';
-import { findGrantsFlow, GrantFinderInputSchema, GrantFinderOutputSchema } from './flows/grant-finder-flow';
-import { omutoAIFlow, OmutoAIInputSchema, OmutoAIOutputSchema } from './flows/omuto-ai-flow';
-import { generateSmartReminders, SmartRemindersInputSchema, SmartRemindersOutputSchema } from './flows/smart-reminders-flow';
+import { createAlertFlow } from './flows/create-alert-flow';
+import { dailyPlannerFlow } from './flows/daily-planner-flow';
+import { strategicAdvisorFlow } from './flows/strategic-advisor-flow';
+import { impactStoryFlow } from './flows/impact-story-generator';
+import { testimonyProcessorFlow } from './flows/testimony-processor-flow';
+import { parseOperationalPlanFlow } from './flows/parse-operational-plan-flow';
+import { generateTemplateFlow } from './flows/generate-template-flow';
+import { parseWorkplanFlow } from './flows/parse-workplan-flow';
+import { analyzeProgramQualitativeDataFlow } from './flows/qualitative-analysis-flow';
+import { findGrantsFlow } from './flows/grant-finder-flow';
+import { omutoAIFlow } from './flows/omuto-ai-flow';
+import { generateSmartReminders } from './flows/smart-reminders-flow';
+import {
+    AlertInputSchema,
+    DailyPlannerAIInputSchema,
+    DailyPlannerAIOutputSchema,
+    StrategicAdvisorInputSchema,
+    StrategicAdvisorOutputSchema,
+    ImpactStoryInputSchema,
+    ImpactStoryOutputSchema,
+    TestimonyInputSchema,
+    TestimonyOutputSchema,
+    ParsePlanInputSchema,
+    ParsePlanOutputSchema,
+    GenerateTemplateInputSchema,
+    GenerateTemplateOutputSchema,
+    ParseWorkplanInputSchema,
+    ParseWorkplanOutputSchema,
+    QualitativeAnalysisInputSchema,
+    QualitativeAnalysisOutputSchema,
+    GrantFinderInputSchema,
+    GrantFinderOutputSchema,
+    OmutoAIInputSchema,
+    OmutoAIOutputSchema,
+    SmartRemindersInputSchema,
+    SmartRemindersOutputSchema,
+} from '@/lib/types';
 import { z } from 'zod';
 
 
@@ -21,7 +46,8 @@ export async function runDailyPlanner(input: z.infer<typeof DailyPlannerAIInputS
 }
 
 export async function runStrategicAdvisor(input: z.infer<typeof StrategicAdvisorInputSchema>): Promise<z.infer<typeof StrategicAdvisorOutputSchema>> {
-    return await strategicAdvisorFlow(input);
+    const plainInput = JSON.parse(JSON.stringify(input));
+    return await strategicAdvisorFlow(plainInput);
 }
 
 export async function runImpactStoryGenerator(input: z.infer<typeof ImpactStoryInputSchema>): Promise<z.infer<typeof ImpactStoryOutputSchema>> {

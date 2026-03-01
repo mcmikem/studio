@@ -16,10 +16,6 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { format } from 'date-fns';
 import { z } from 'zod';
 
-// Export type and schemas for external use
-export { SmartRemindersInputSchema, SmartRemindersOutputSchema, type SmartRemindersInput, type SmartRemindersOutput };
-
-
 const getUpcomingEventsForUserToolObject = ai.defineTool(
     {
         name: 'getUpcomingEventsForUser',

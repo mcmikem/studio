@@ -13,9 +13,6 @@ import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { Timestamp } from 'firebase-admin/firestore';
 
-// Export schemas for external use
-export { OmutoAIInputSchema, OmutoAIOutputSchema };
-
 // --- TOOL DEFINITIONS ---
 
 const findUsersByNameToolObject = ai.defineTool(

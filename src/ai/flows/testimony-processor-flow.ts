@@ -8,10 +8,6 @@ import { z } from 'zod';
 import type { TestimonyOutput, TestimonyInput } from '@/lib/types';
 import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
 
-// Export types and schemas for external use
-export type { TestimonyOutput };
-export { TestimonyInputSchema, TestimonyOutputSchema };
-
 export const testimonyProcessorFlow = ai.defineFlow(
   {
     name: 'testimonyProcessorFlow',

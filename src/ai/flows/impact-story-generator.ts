@@ -6,10 +6,6 @@
 import { ai } from '@/ai/genkit';
 import { ImpactStoryInputSchema, ImpactStoryOutputSchema, type ImpactStoryInput, type ImpactStoryOutput } from '@/lib/types';
 
-// Export types and schemas for external use
-export type { ImpactStoryInput, ImpactStoryOutput };
-export { ImpactStoryInputSchema, ImpactStoryOutputSchema };
-
 export const impactStoryFlow = ai.defineFlow({
     name: 'impactStoryFlow',
     inputSchema: ImpactStoryInputSchema,

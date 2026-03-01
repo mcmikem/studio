@@ -5,8 +5,6 @@ import { z } from 'zod';
 import { ai } from '@/ai/genkit';
 import { StrategicAdvisorInputSchema, StrategicAdvisorOutputSchema } from '@/lib/types';
 
-export { StrategicAdvisorInputSchema, StrategicAdvisorOutputSchema };
-
 export const strategicAdvisorFlow = ai.defineFlow(
   {
     name: 'strategicAdvisorFlow',

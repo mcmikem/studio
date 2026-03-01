@@ -7,10 +7,6 @@ import { ai } from '@/ai/genkit';
 import type { ParsePlanInput, ParsePlanOutput } from '@/lib/types';
 import { ParsePlanInputSchema, ParsePlanOutputSchema } from '@/lib/types';
 
-// Export types and schemas for external use
-export type { ParsePlanInput, ParsePlanOutput };
-export { ParsePlanInputSchema, ParsePlanOutputSchema };
-
 export const parseOperationalPlanFlow = ai.defineFlow(
   {
     name: 'parseOperationalPlanFlow',

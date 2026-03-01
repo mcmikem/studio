@@ -1,30 +1,7 @@
 
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
-import { KeyResultAISchema } from '@/lib/types';
-
-export const DailyPlannerAIInputSchema = z.object({
-  userName: z.string().describe("The name of the user."),
-  userRole: z.string().describe('The role of the staff member (e.g., "Programs & Partnerships Manager").'),
-  primaryMission: z.string().describe("The user's stated main focus for the day."),
-  weeklyPriorities: z.array(z.string()).describe("The user's key priorities for the current week. This may be an empty array if no weekly plan is set."),
-  keyResults: z.array(KeyResultAISchema).describe("A list of the organization's current Key Results (OKRs)."),
-});
-
-export const DailyPlannerAIOutputSchema = z.object({
-    timeBlocks: z.array(z.object({
-        startTime: z.string().describe("e.g., '09:00 AM'"),
-        endTime: z.string().describe("e.g., '11:00 AM'"),
-        description: z.string(),
-    })).describe("A detailed, actionable schedule for the day, broken into logical time blocks."),
-    strategicAlignments: z.array(z.object({
-        krTitle: z.string().describe("The title of the Key Result this mission aligns with."),
-        alignmentJustification: z.string().describe("A brief, one-sentence explanation of *how* the daily mission supports this specific Key Result."),
-    })).describe("A list of 1-2 key results that this daily mission directly supports."),
-    materials: z.string().describe("A comma-separated list of materials or resources needed."),
-    challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
-    bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from a knowledge base of best practices for NGO work."),
-});
+import { KeyResultAISchema, DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
 
 export const dailyPlannerFlow = ai.defineFlow(
   {

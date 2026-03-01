@@ -7,8 +7,6 @@ import { ai } from '@/ai/genkit';
 import type { GenerateTemplateInput, GenerateTemplateOutput } from '@/lib/types';
 import { GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from '@/lib/types';
 
-export { GenerateTemplateInputSchema, GenerateTemplateOutputSchema };
-
 const templateGeneratorPrompt = ai.definePrompt({
   name: 'templateGeneratorPrompt',
   input: { schema: GenerateTemplateInputSchema },

@@ -7,10 +7,6 @@ import type { GrantFinderInput, GrantFinderOutput } from '@/lib/types';
 import { z } from 'zod';
 import { GrantFinderInputSchema, GrantFinderOutputSchema } from '@/lib/types';
 
-// Export type and schemas for external use
-export type { GrantFinderInput, GrantFinderOutput };
-export { GrantFinderInputSchema, GrantFinderOutputSchema };
-
 const findGrantOpportunitiesToolObject = ai.defineTool(
     {
         name: 'findGrantOpportunities',
