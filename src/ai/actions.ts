@@ -8,21 +8,20 @@ import { impactStoryFlow, ImpactStoryInputSchema, ImpactStoryOutputSchema } from
 import { testimonyProcessorFlow, TestimonyInputSchema, TestimonyOutputSchema } from './flows/testimony-processor-flow';
 import { parseOperationalPlanFlow, ParsePlanInputSchema, ParsePlanOutputSchema } from './flows/parse-operational-plan-flow';
 import { generateTemplateFlow, GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from './flows/generate-template-flow';
-import { parseWorkplanFlow } from './flows/parse-workplan-flow';
+import { parseWorkplanFlow, ParseWorkplanInputSchema, ParseWorkplanOutputSchema } from './flows/parse-workplan-flow';
 import { analyzeProgramQualitativeDataFlow, QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from './flows/qualitative-analysis-flow';
 import { findGrantsFlow, GrantFinderInputSchema, GrantFinderOutputSchema } from './flows/grant-finder-flow';
 import { omutoAIFlow, OmutoAIInputSchema, OmutoAIOutputSchema } from './flows/omuto-ai-flow';
 import { generateSmartReminders, SmartRemindersInputSchema, SmartRemindersOutputSchema } from './flows/smart-reminders-flow';
 import { z } from 'zod';
-import { ParseWorkplanInputSchema, ParseWorkplanOutputSchema } from '@/lib/types';
+
 
 export async function runDailyPlanner(input: z.infer<typeof DailyPlannerAIInputSchema>): Promise<z.infer<typeof DailyPlannerAIOutputSchema>> {
     return await dailyPlannerFlow(input);
 }
 
 export async function runStrategicAdvisor(input: z.infer<typeof StrategicAdvisorInputSchema>): Promise<z.infer<typeof StrategicAdvisorOutputSchema>> {
-    const plainInput = JSON.parse(JSON.stringify(input));
-    return await strategicAdvisorFlow(plainInput);
+    return await strategicAdvisorFlow(input);
 }
 
 export async function runImpactStoryGenerator(input: z.infer<typeof ImpactStoryInputSchema>): Promise<z.infer<typeof ImpactStoryOutputSchema>> {
@@ -58,10 +57,6 @@ export async function generateTemplate(input: z.infer<typeof GenerateTemplateInp
 }
 
 export async function runParseWorkplan(input: z.infer<typeof ParseWorkplanInputSchema>): Promise<z.infer<typeof ParseWorkplanOutputSchema>> {
-    return await parseWorkplanFlow(input);
-}
-
-export async function parseWorkplan(input: z.infer<typeof ParseWorkplanInputSchema>) {
     return await parseWorkplanFlow(input);
 }
 

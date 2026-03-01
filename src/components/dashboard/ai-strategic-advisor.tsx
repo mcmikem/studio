@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -46,12 +45,13 @@ export function AiStrategicAdvisor() {
       if (activities && checkins && expenses && keyResults) {
         setIsLoadingInsights(true);
         try {
-          const result = await runStrategicAdvisor({
-            activities: activities,
-            checkins: checkins,
-            expenses: expenses,
-            keyResults: keyResults,
-          });
+          const plainInput = {
+            activities: JSON.parse(JSON.stringify(activities)),
+            checkins: JSON.parse(JSON.stringify(checkins)),
+            expenses: JSON.parse(JSON.stringify(expenses)),
+            keyResults: JSON.parse(JSON.stringify(keyResults)),
+          };
+          const result = await runStrategicAdvisor(plainInput);
           setInsights(result.insights);
         } catch (error) {
           console.error("Failed to get strategic insights:", error);

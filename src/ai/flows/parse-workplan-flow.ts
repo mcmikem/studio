@@ -6,7 +6,11 @@
  */
 
 import { ai } from '@/ai/genkit';
+import type { ParseWorkplanInput, ParseWorkplanOutput } from '@/lib/types';
 import { ParseWorkplanInputSchema, ParseWorkplanOutputSchema } from '@/lib/types';
+
+export type { ParseWorkplanInput, ParseWorkplanOutput };
+export { ParseWorkplanInputSchema, ParseWorkplanOutputSchema };
 
 const workplanParserPrompt = ai.definePrompt({
     name: 'workplanParserPrompt',
