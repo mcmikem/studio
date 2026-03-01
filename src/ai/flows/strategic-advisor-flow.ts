@@ -58,6 +58,7 @@ export const strategicAdvisorFlow = ai.defineFlow(
     `;
 
     const result = await ai.generate({
+      model: 'googleai/gemini-1.5-flash',
       prompt: prompt,
       output: { schema: StrategicAdvisorOutputSchema },
     });
