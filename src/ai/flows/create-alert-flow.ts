@@ -1,6 +1,4 @@
 
-'use server'; // Directive to ensure this code only runs on the server
-
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
 import { getFirebaseAdmin } from '@/firebase/server';
@@ -34,7 +32,3 @@ export const createAlertFlow = ai.defineFlow(
         console.log("Alert created:", alertData);
     }
 );
-
-export async function createAlert(input: AlertInput) {
-    return await createAlertFlow(input);
-}

@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to transcribe and analyze audio/video testimonies.
  */
@@ -65,7 +63,3 @@ export const testimonyProcessorFlow = ai.defineFlow(
     };
   }
 );
-
-export async function processTestimony(input: TestimonyInput) {
-    return await testimonyProcessorFlow(input);
-}

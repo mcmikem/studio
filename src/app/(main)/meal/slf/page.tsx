@@ -1,73 +1,53 @@
 
 'use client';
 
-import { Suspense } from 'react';
-import { Loader2, Users, UserPlus, CheckSquare, BarChart } from 'lucide-react';
-import Link from 'next/link';
+import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Briefcase, ArrowRight, School, User, CheckSquare, BarChart } from 'lucide-react';
+import Link from 'next/link';
 
 const slfForms = [
-  {
-    href: '/meal/slf/school-registration',
-    title: 'School Registration',
-    description: 'Register a new school for the Student Leaders Forum.',
-    icon: Users,
-  },
-  {
-    href: '/meal/slf/prefect-registration',
-    title: 'Prefect Registration',
-    description: 'Register a new prefect from a participating school.',
-    icon: UserPlus,
-  },
-  {
-    href: '/meal/slf/training-attendance',
-    title: 'Training Attendance',
-    description: 'Log attendance for an SLF training session.',
-    icon: CheckSquare,
-  },
-  {
-    href: '/meal/slf/performance-tracking',
-    title: 'Prefect Performance',
-    description: 'Track the monthly performance of a student leader.',
-    icon: BarChart,
-  },
+    { href: '/meal/slf/school-registration', title: 'School Registration', description: 'Register a new school for the SLF program.', icon: School },
+    { href: '/meal/slf/prefect-registration', title: 'Prefect Registration', description: 'Register a new prefect for the SLF program.', icon: User },
+    { href: '/meal/slf/training-attendance', title: 'Training Attendance', description: 'Log attendance for an SLF training session.', icon: CheckSquare },
+    { href: '/meal/slf/performance-tracking', title: 'Performance Tracking', description: 'Track the performance of a prefect.', icon: BarChart },
 ];
 
-function SLFHubPage() {
-    return (
-        <div className="space-y-6">
-            <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Student Leaders Forum (SLF)</h1>
-                <p className="text-muted-foreground">
-                    Data collection and management forms for the SLF program.
-                </p>
-            </header>
-             <Card>
-                <CardHeader>
-                    <CardTitle>SLF Forms</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {slfForms.map(form => (
-                         <Link key={form.href} href={form.href} className="block">
-                            <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                                <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
-                                <div>
-                                    <p className="font-semibold">{form.title}</p>
-                                    <p className="text-sm text-muted-foreground">{form.description}</p>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
-                </CardContent>
-            </Card>
-        </div>
-    )
-}
+export default function SlfHubPage() {
+  return (
+    <div className="space-y-8">
+        <PageHeader 
+            icon={Briefcase}
+            title="Student Leaders Fellowship"
+            description="Data collection for the SLF program."
+            breadcrumbs={[
+                { href: '/meal', name: 'MEAL Hub' },
+                { name: 'SLF' },
+            ]}
+        />
 
-export default function SLFPage() {
-    return (
-        <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <SLFHubPage />
-        </Suspense>
-    )
+        <Card className="bg-background border-lg shadow-comic-sm">
+            <CardHeader>
+                <CardTitle>Data Collection Forms</CardTitle>
+                <CardDescription>Select a form to log data for the SLF program.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {slfForms.map(link => (
+                    <Link key={link.href} href={link.href} className="block group">
+                        <div className="flex items-center gap-4 p-4 border-lg rounded-2xl bg-muted/30 hover:bg-primary/5 hover:border-primary/20 transition-all h-full">
+                            <div className="p-3 bg-white rounded-xl border-lg">
+                                <link.icon className="h-6 w-6 text-yellow-500" />
+                            </div>
+                            <div className="flex-1">
+                                <p className="font-bold tracking-tight">{link.title}</p>
+                                <p className="text-sm text-muted-foreground">{link.description}</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </Link>
+                ))}
+            </CardContent>
+        </Card>
+    </div>
+  );
 }

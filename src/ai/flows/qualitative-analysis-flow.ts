@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to analyze the qualitative data from program activities.
  */
@@ -11,8 +9,9 @@ import { getFirebaseAdmin } from '@/firebase/server';
 import { z } from 'zod';
 import { formatDateSafe } from '@/lib/utils';
 
-// Export type for external use
-export type { QualitativeAnalysisOutput };
+// Export type and schemas for external use
+export type { QualitativeAnalysisInput, QualitativeAnalysisOutput };
+export { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema };
 
 const getActivitiesForProgramToolObject = ai.defineTool(
     {
@@ -75,7 +74,7 @@ const qualitativeAnalysisPrompt = ai.definePrompt({
     Analyze the qualitative data for the '{{programName}}' program from {{startDate}} to {{endDate}}. Use the 'getActivitiesForProgram' tool with programId '{{programId}}'.`,
 });
 
-export const analyzeProgramQualitativeData = ai.defineFlow(
+export const analyzeProgramQualitativeDataFlow = ai.defineFlow(
     {
         name: 'analyzeProgramQualitativeDataFlow',
         inputSchema: QualitativeAnalysisInputSchema,

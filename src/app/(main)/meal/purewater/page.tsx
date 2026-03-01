@@ -1,61 +1,51 @@
+
 'use client';
 
-import { Suspense } from 'react';
-import { Loader2, Droplets, Map, CheckSquare } from 'lucide-react';
-import Link from 'next/link';
+import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Wind, ArrowRight, Map, CheckSquare } from 'lucide-react';
+import Link from 'next/link';
 
 const pureWaterForms = [
-  {
-    href: '/meal/purewater/water-source-mapping',
-    title: 'Water Source Mapping',
-    description: 'Log the location and status of a community water source.',
-    icon: Map,
-  },
-  {
-    href: '/meal/purewater/wash-assessment',
-    title: 'WASH Assessment',
-    description: 'Conduct a Water, Sanitation, and Hygiene assessment for a school.',
-    icon: CheckSquare,
-  },
+    { href: '/meal/purewater/water-source-mapping', title: 'Water Source Mapping', description: 'Map and assess a new water source in the community.', icon: Map },
+    { href: '/meal/purewater/wash-assessment', title: 'WASH Assessment', description: 'Conduct a WASH (Water, Sanitation, and Hygiene) assessment at a school.', icon: CheckSquare },
 ];
 
-function PureWaterHubPage() {
-    return (
-        <div className="space-y-6">
-            <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">PureWater Initiative</h1>
-                <p className="text-muted-foreground">
-                    Data collection and management forms for the PureWater program.
-                </p>
-            </header>
-             <Card>
-                <CardHeader>
-                    <CardTitle>PureWater Forms</CardTitle>
-                </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {pureWaterForms.map(form => (
-                         <Link key={form.href} href={form.href} className="block">
-                            <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors h-full">
-                                <form.icon className="h-8 w-8 text-primary flex-shrink-0" />
-                                <div>
-                                    <p className="font-semibold">{form.title}</p>
-                                    <p className="text-sm text-muted-foreground">{form.description}</p>
-                                </div>
+export default function PureWaterHubPage() {
+  return (
+    <div className="space-y-8">
+        <PageHeader 
+            icon={Wind}
+            title="PureWater"
+            description="Data collection for the Water, Sanitation, and Hygiene (WASH) program."
+            breadcrumbs={[
+                { href: '/meal', name: 'MEAL Hub' },
+                { name: 'PureWater' },
+            ]}
+        />
+
+        <Card className="bg-background border-lg shadow-comic-sm">
+            <CardHeader>
+                <CardTitle>Data Collection Forms</CardTitle>
+                <CardDescription>Select a form to log data for the PureWater program.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {pureWaterForms.map(link => (
+                    <Link key={link.href} href={link.href} className="block group">
+                        <div className="flex items-center gap-4 p-4 border-lg rounded-2xl bg-muted/30 hover:bg-primary/5 hover:border-primary/20 transition-all h-full">
+                            <div className="p-3 bg-white rounded-xl border-lg">
+                                <link.icon className="h-6 w-6 text-blue-500" />
                             </div>
-                        </Link>
-                    ))}
-                </CardContent>
-            </Card>
-        </div>
-    )
+                            <div className="flex-1">
+                                <p className="font-bold tracking-tight">{link.title}</p>
+                                <p className="text-sm text-muted-foreground">{link.description}</p>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground ml-auto flex-shrink-0 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </Link>
+                ))}
+            </CardContent>
+        </Card>
+    </div>
+  );
 }
-
-export default function PureWaterPage() {
-    return (
-        <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-            <PureWaterHubPage />
-        </Suspense>
-    )
-}
-

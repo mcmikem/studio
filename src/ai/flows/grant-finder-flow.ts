@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to find and suggest grant opportunities.
  */
@@ -8,10 +6,10 @@ import { ai } from '@/ai/genkit';
 import type { GrantFinderInput, GrantFinderOutput } from '@/lib/types';
 import { z } from 'zod';
 import { GrantFinderInputSchema, GrantFinderOutputSchema } from '@/lib/types';
-import { googleAI } from '@genkit-ai/google-genai';
 
-// Export type for external use
-export type { GrantFinderOutput };
+// Export type and schemas for external use
+export type { GrantFinderInput, GrantFinderOutput };
+export { GrantFinderInputSchema, GrantFinderOutputSchema };
 
 const findGrantOpportunitiesToolObject = ai.defineTool(
     {
@@ -80,7 +78,7 @@ const grantFinderPrompt = ai.definePrompt(
     }
 );
 
-export const findGrants = ai.defineFlow(
+export const findGrantsFlow = ai.defineFlow(
   {
     name: 'findGrantsFlow',
     inputSchema: GrantFinderInputSchema,

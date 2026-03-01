@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to generate a structured task template from a description.
  */
@@ -9,6 +7,7 @@ import { ai } from '@/ai/genkit';
 import type { GenerateTemplateInput, GenerateTemplateOutput } from '@/lib/types';
 import { GenerateTemplateInputSchema, GenerateTemplateOutputSchema } from '@/lib/types';
 
+export { GenerateTemplateInputSchema, GenerateTemplateOutputSchema };
 
 const templateGeneratorPrompt = ai.definePrompt({
   name: 'templateGeneratorPrompt',
@@ -30,7 +29,7 @@ const templateGeneratorPrompt = ai.definePrompt({
 });
 
 
-export const generateTemplate = ai.defineFlow(
+export const generateTemplateFlow = ai.defineFlow(
     {
         name: 'generateTemplateFlow',
         inputSchema: GenerateTemplateInputSchema,
@@ -45,4 +44,3 @@ export const generateTemplate = ai.defineFlow(
         return output;
     }
 );
-

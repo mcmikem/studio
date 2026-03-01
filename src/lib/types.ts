@@ -1106,7 +1106,10 @@ export const DailyPlannerAIOutputSchema = z.object({
         endTime: z.string().describe("e.g., '11:00 AM'"),
         description: z.string(),
     })).describe("A detailed, actionable schedule for the day."),
-    multiWinConnections: z.array(z.string()).describe("Specific ways the daily mission connects to broader organizational goals (e.g., specific Key Results)."),
+    strategicAlignments: z.array(z.object({
+        krTitle: z.string().describe("The title of the Key Result this mission aligns with."),
+        alignmentJustification: z.string().describe("A brief, one-sentence explanation of *how* the daily mission supports this specific Key Result."),
+    })).describe("A list of 1-2 key results that this daily mission directly supports."),
     materials: z.string().describe("A comma-separated list of materials or resources needed."),
     challenges: z.string().describe("Potential challenges for the day's mission and a concrete mitigation strategy for each."),
     bestPractice: z.string().describe("A single, highly relevant productivity or strategic thinking tip related to the user's mission and role, drawing from the provided knowledge base."),

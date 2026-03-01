@@ -178,10 +178,13 @@ function CheckinFormComponent() {
                             </ul>
                         </div>
                          <div className="space-y-4">
-                             <h4 className="font-semibold text-md">Multi-Win Connections</h4>
-                            <ul className="list-disc list-inside space-y-2 text-base sm:text-sm">
-                                {submittedPlan.multiWinConnections.map((connection, index) => (
-                                    <li key={index}>{connection}</li>
+                             <h4 className="font-semibold text-md">Strategic Alignments</h4>
+                            <ul className="list-inside space-y-3">
+                                {submittedPlan.strategicAlignments?.map((align, index) => (
+                                    <li key={index} className="text-sm p-3 bg-muted/50 rounded-lg">
+                                        <p className="font-bold">{align.krTitle}</p>
+                                        <p className="text-muted-foreground mt-1">{align.alignmentJustification}</p>
+                                    </li>
                                 ))}
                             </ul>
                         </div>

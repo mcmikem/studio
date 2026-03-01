@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import type { ProductionLog, Sale, InventoryCheck } from '@/lib/types';
+import type { ProductionBatch, Sale, InventoryCheck } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Store } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,42 +25,57 @@ import { Badge } from '@/components/ui/badge';
 
 function ProductionTable() {
     const firestore = useFirestore();
-    const queryRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'essentials-production'), orderBy('date', 'desc')) : null, [firestore]);
-    const { data, isLoading } = useCollection<ProductionLog>(queryRef);
+    const queryRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'production-batches'), orderBy('production_date', 'desc')) : null, [firestore]);
+    const { data, isLoading } = useCollection<ProductionBatch>(queryRef);
     return (
         <Table>
-            <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Product</TableHead><TableHead>Batch #</TableHead><TableHead>Quantity</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Product ID</TableHead><TableHead>Batch #</TableHead><TableHead>Quantity</TableHead></TableRow></TableHeader>
             <TableBody>
                 {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={4}><Skeleton className="h-8"/></TableCell></TableRow>)}
-                {data?.map(p => <TableRow key={p.id}><TableCell>{formatDateSafe(p.date, 'dateOnly')}</TableCell><TableCell>{p.product}</TableCell><TableCell>{p.batchNumber}</TableCell><TableCell>{p.quantity}</TableCell></TableRow>)}
+                {data?.map(p => <TableRow key={p.id}><TableCell>{formatDateSafe(p.production_date, 'dateOnly')}</TableCell><TableCell>{p.productId}</TableCell><TableCell>{p.batch_number}</TableCell><TableCell>{p.quantity_produced}</TableCell></TableRow>)}
             </TableBody>
         </Table>
     )
 }
 function SalesTable() {
     const firestore = useFirestore();
-    const queryRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'essentials-sales'), orderBy('date', 'desc')) : null, [firestore]);
+    const queryRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'sales'), orderBy('sale_date', 'desc')) : null, [firestore]);
     const { data, isLoading } = useCollection<Sale>(queryRef);
     return (
         <Table>
-            <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Product</TableHead><TableHead>Quantity</TableHead><TableHead>Total</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Items</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
             <TableBody>
                 {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={4}><Skeleton className="h-8"/></TableCell></TableRow>)}
-                {data?.map(s => <TableRow key={s.id}><TableCell>{formatDateSafe(s.date, 'dateOnly')}</TableCell><TableCell>{s.product}</TableCell><TableCell>{s.quantity}</TableCell><TableCell>{formatCurrency(s.totalAmount)}</TableCell></TableRow>)}
+                {data?.map(s => (
+                    <TableRow key={s.id}>
+                        <TableCell>{formatDateSafe(s.sale_date, 'dateOnly')}</TableCell>
+                        <TableCell>
+                            {s.items.map(item => `${item.product_name} (x${item.quantity})`).join(', ')}
+                        </TableCell>
+                        <TableCell>{formatCurrency(s.total_amount)}</TableCell>
+                        <TableCell><Badge variant="outline">{s.status}</Badge></TableCell>
+                    </TableRow>
+                ))}
             </TableBody>
         </Table>
     )
 }
 function InventoryTable() {
     const firestore = useFirestore();
-    const queryRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'essentials-inventory'), orderBy('date', 'desc')) : null, [firestore]);
+    const queryRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'inventory-checks'), orderBy('date', 'desc')) : null, [firestore]);
     const { data, isLoading } = useCollection<InventoryCheck>(queryRef);
     return (
         <Table>
             <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Product</TableHead><TableHead>Physical Count</TableHead></TableRow></TableHeader>
             <TableBody>
                 {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={3}><Skeleton className="h-8"/></TableCell></TableRow>)}
-                {data?.map(i => <TableRow key={i.id}><TableCell>{formatDateSafe(i.date, 'dateOnly')}</TableCell><TableCell>{i.product}</TableCell><TableCell>{i.physicalCount}</TableCell></TableRow>)}
+                {data?.map(i => (
+                    <TableRow key={i.id}>
+                        <TableCell>{formatDateSafe(i.date, 'dateOnly')}</TableCell>
+                        <TableCell>{i.productName}</TableCell>
+                        <TableCell>{i.countedQuantity}</TableCell>
+                    </TableRow>
+                ))}
             </TableBody>
         </Table>
     )

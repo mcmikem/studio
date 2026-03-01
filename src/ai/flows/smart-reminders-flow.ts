@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview A flow to generate dynamic, context-aware reminders for a user.
  */
@@ -16,8 +14,8 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { format } from 'date-fns';
 import { z } from 'zod';
 
-// Export type for external use
-export type { SmartRemindersOutput };
+// Export type and schemas for external use
+export type { SmartRemindersOutput, SmartRemindersInput };
 export { SmartRemindersInputSchema, SmartRemindersOutputSchema };
 
 const getUpcomingEventsForUserToolObject = ai.defineTool(
@@ -33,7 +31,6 @@ const getUpcomingEventsForUserToolObject = ai.defineTool(
         const sevenDaysFromNow = new Date();
         sevenDaysFromNow.setDate(today.getDate() + 7);
 
-        // Use Admin SDK query methods
         const eventsRef = firestore.collection('events');
         const snapshot = await eventsRef
             .where('date', '>=', Timestamp.fromDate(today))
@@ -63,7 +60,6 @@ const getPendingTasksForUserToolObject = ai.defineTool(
     async ({ userId }) => {
         const { firestore } = getFirebaseAdmin();
         
-        // Use Admin SDK query methods
         const tasksRef = firestore.collection('users').doc(userId).collection('tasks');
         const snapshot = await tasksRef
             .where('completed', '==', false)
@@ -101,7 +97,7 @@ const smartRemindersPrompt = ai.definePrompt(
     }
 );
 
-export const generateSmartReminders = ai.defineFlow(
+export const generateSmartRemindersFlow = ai.defineFlow(
     {
       name: 'generateSmartRemindersFlow',
       inputSchema: SmartRemindersInputSchema,

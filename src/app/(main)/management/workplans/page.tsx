@@ -28,8 +28,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { parseWorkplan } from '@/ai/flows/parse-workplan-flow';
-import { createAlert } from '@/ai/flows/create-alert-flow';
+import { runParseWorkplan, createAlert } from '@/ai/actions';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),
@@ -144,7 +143,7 @@ function TeamWorkplanForm({
         }
         setIsParsing(true);
         try {
-            const parsedData = await parseWorkplan({ textPlan: pastedText });
+            const parsedData = await runParseWorkplan({ textPlan: pastedText });
             
             const validPriorities = parsedData.keyPriorities.map(p => {
                 const validResponsible = Array.isArray(p.responsible)

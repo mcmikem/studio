@@ -18,7 +18,7 @@ import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
-import { runOmutoAIFlow } from '@/ai/actions';
+import { runOmutoAI } from '@/ai/actions';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
 import {
   AlertDialog,
@@ -126,7 +126,7 @@ export default function ChatPage() {
           content: [{ text: m.text }]
         })) || [];
 
-      const aiResponse = await runOmutoAIFlow({ question: text, history: aiHistory, userId: user.uid });
+      const aiResponse = await runOmutoAI({ question: text, history: aiHistory, userId: user.uid });
       
       if(aiResponse.answer) {
           const aiMessageData = {

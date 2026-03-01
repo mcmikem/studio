@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview The main conversational AI agent for Omuto Central.
  * This flow acts as an expert assistant, knowledgeable about all aspects
@@ -15,7 +13,8 @@ import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { Timestamp } from 'firebase-admin/firestore';
 
-const { firestore } = getFirebaseAdmin();
+// Export schemas for external use
+export { OmutoAIInputSchema, OmutoAIOutputSchema };
 
 // --- TOOL DEFINITIONS ---
 
@@ -27,6 +26,7 @@ const findUsersByNameToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ name }) => {
+        const { firestore } = getFirebaseAdmin();
         const usersRef = firestore.collection('users');
         const q = usersRef.where('name', '>=', name).where('name', '<=', name + '\uf8ff');
         const snapshot = await q.get();
@@ -43,6 +43,7 @@ const findProgramsByNameToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
+        const { firestore } = getFirebaseAdmin();
         const programsRef = firestore.collection('programs');
         const q = programsRef.where('title', '>=', title).where('title', '<=', title + '\uf8ff');
         const snapshot = await q.get();
@@ -59,6 +60,7 @@ const findExpensesByTitleToolObject = ai.defineTool(
         outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
+        const { firestore } = getFirebaseAdmin();
         const expensesRef = firestore.collection('expenses');
         const q = expensesRef.where('title', '>=', title).where('title', '<=', title + '\uf8ff');
         const snapshot = await q.get();
@@ -103,6 +105,7 @@ const createCheckoutToolObject = ai.defineTool(
         outputSchema: z.object({ success: z.boolean(), message: z.string() })
     },
     async ({ userId, task, learning, tomorrowPlan }) => {
+        const { firestore } = getFirebaseAdmin();
         try {
             const userRef = firestore.collection('users').doc(userId);
             const userSnap = await userRef.get();
@@ -145,6 +148,7 @@ const getRecentCheckinsToolObject = ai.defineTool(
         outputSchema: z.array(z.object({ name: z.string(), primaryMission: z.string() }))
     },
     async ({ count }) => {
+        const { firestore } = getFirebaseAdmin();
         const checkinsRef = firestore.collection('checkins');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -173,6 +177,7 @@ const getRecentCheckoutsToolObject = ai.defineTool(
         }))
     },
     async ({ count }) => {
+        const { firestore } = getFirebaseAdmin();
         const checkoutsRef = firestore.collection('checkouts');
         const q = checkoutsRef.orderBy('timestamp', 'desc').limit(count);
         const snapshot = await q.get();

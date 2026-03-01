@@ -261,7 +261,7 @@ function ProjectDashboard() {
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader><DialogTitle>Add New Participant</DialogTitle></DialogHeader>
-                            <AddParticipantForm projectId={id} onSuccess={() => setIsParticipantDialogOpen(false)} />
+                            {id && <AddParticipantForm projectId={id} onSuccess={() => setIsParticipantDialogOpen(false)} />}
                         </DialogContent>
                      </Dialog>
                 </CardHeader>

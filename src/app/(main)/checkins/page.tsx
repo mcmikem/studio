@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { LogIn, Calendar, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit, Check, X } from 'lucide-react';
+import { LogIn, Calendar, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit, Check, X, Target } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkin } from '@/lib/types';
@@ -22,10 +22,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 const moodIcons: { [key: string]: string } = {
-  energized: '⚡️',
-  focused: '🎯',
-  calm: '🧘‍♀️',
-  overwhelmed: '🥵',
+  good: '😊',
+  neutral: '😐',
+  bad: '😔',
 };
 
 const getInitials = (name?: string) => {
@@ -68,12 +67,15 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
                 {hasDetails && (
                   <>
                     <div className="space-y-3">
-                        <h4 className="font-semibold text-sm flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Connections</h4>
-                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                            {checkin.details?.multiWinConnections?.map((connection, index) => (
-                                <li key={index}>{connection}</li>
+                        <h4 className="font-semibold text-sm flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Alignments</h4>
+                        <div className="space-y-2">
+                            {checkin.details?.strategicAlignments?.map((align, index) => (
+                                <div key={index} className="text-sm p-2 bg-muted/50 rounded-md">
+                                    <p className="font-bold">{align.krTitle}</p>
+                                    <p className="text-muted-foreground">{align.alignmentJustification}</p>
+                                </div>
                             ))}
-                        </ul>
+                        </div>
                     </div>
                     
                     <div className="space-y-3">

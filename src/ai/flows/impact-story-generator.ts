@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview A GenAI-powered tool to automatically generate compelling narratives from activity data.
  */
@@ -43,7 +41,3 @@ export const impactStoryFlow = ai.defineFlow({
       
       return result.output;
 });
-
-export async function generateImpactStory(input: ImpactStoryInput) {
-    return await impactStoryFlow(input);
-}

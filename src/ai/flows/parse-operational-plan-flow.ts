@@ -1,6 +1,4 @@
 
-'use server';
-
 /**
  * @fileOverview An AI flow to parse an unstructured operational plan into structured Key Result data.
  */
@@ -56,7 +54,3 @@ export const parseOperationalPlanFlow = ai.defineFlow(
     return { keyResults: sanitizedResults };
   }
 );
-
-export async function parseOperationalPlan(input: ParsePlanInput) {
-    return await parseOperationalPlanFlow(input);
-}

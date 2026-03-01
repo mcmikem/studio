@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -38,7 +37,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { formatDateSafe } from '@/lib/utils';
 import { format } from 'date-fns';
-import { findGrants, type GrantFinderOutput } from '@/ai/flows/grant-finder-flow';
+import { runGrantFinder } from '@/ai/actions';
+import type { GrantFinderOutput } from '@/lib/types';
 
 
 const formatCurrency = (value: number) => {
@@ -178,7 +178,7 @@ function GrantDiscovery() {
     setIsLoading(true);
     setResults(null);
     try {
-      const response = await findGrants({ query });
+      const response = await runGrantFinder({ query });
       setResults(response);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: err.message || 'Failed to find grants.' });

@@ -8,8 +8,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format, subDays } from 'date-fns';
-import type { Program } from '@/lib/types';
-import { analyzeProgramQualitativeData, type QualitativeAnalysisOutput } from '@/ai/flows/qualitative-analysis-flow';
+import type { Program, QualitativeAnalysisOutput } from '@/lib/types';
+import { runQualitativeAnalysis } from '@/ai/actions';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -110,7 +110,7 @@ export default function ProgramDeepDivePage() {
     }
 
     try {
-        const result = await analyzeProgramQualitativeData({
+        const result = await runQualitativeAnalysis({
             programId: data.programId,
             programName: selectedProgram.title,
             startDate: data.startDate,
