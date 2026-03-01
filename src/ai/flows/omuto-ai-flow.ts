@@ -190,7 +190,7 @@ const getRecentCheckoutsToolObject = ai.defineTool(
             const data = doc.data();
             return {
                 name: data.name,
-                tasks: Array.isArray(data.tasks) ? data.tasks : [{ description: data.task, status: 'Done'}],
+                tasks: Array.isArray(data.tasks) ? data.tasks : [],
                 learning: data.learning,
                 tomorrowPlan: data.tomorrowPlan,
             };
