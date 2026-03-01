@@ -14,6 +14,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import type { DailyPlannerAIOutput, KeyResult } from '@/lib/types';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { runDailyPlanner } from '@/ai/actions';
+import { formatDateSafe } from '@/lib/utils';
 
 export default function DailyPlannerPage() {
   const { toast } = useToast();
@@ -55,7 +56,7 @@ export default function DailyPlannerPage() {
         userRole: profile.role,
         primaryMission: primaryMission,
         weeklyPriorities: currentWeeklyPlan?.teamPriorities?.map((p: any) => p.activity) || [],
-        keyResults: keyResults.map(kr => ({ title: kr.title, description: kr.description, deadline: kr.deadline.toString() })),
+        keyResults: keyResults.map(kr => ({ title: kr.title, description: kr.description, deadline: formatDateSafe(kr.deadline, 'dateOnly') })),
       });
       setAiPlan(result);
       toast({

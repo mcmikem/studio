@@ -1,7 +1,6 @@
 
-import { z } from 'zod';
 import { ai } from '@/ai/genkit';
-import { KeyResultAISchema, DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
+import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
 
 export const dailyPlannerFlow = ai.defineFlow(
   {
@@ -30,10 +29,15 @@ export const dailyPlannerFlow = ai.defineFlow(
     `;
 
     const result = await ai.generate({
+      model: 'googleai/gemini-pro',
       prompt: prompt,
       output: { schema: DailyPlannerAIOutputSchema },
     });
 
-    return result.output!;
+    if (!result.output) {
+        throw new Error("The AI failed to generate a valid daily plan. Please try again.");
+    }
+
+    return result.output;
   }
 );
