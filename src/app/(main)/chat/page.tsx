@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
@@ -19,7 +17,7 @@ import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
-import { runOmutoAI } from '@/ai/actions';
+import { omutoAI } from '@/ai/actions';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
 import {
   AlertDialog,
@@ -127,7 +125,7 @@ export default function ChatPage() {
           content: [{ text: m.text }]
         })) || [];
 
-      const aiResponse = await runOmutoAI({ question: text, history: aiHistory, userId: user.uid });
+      const aiResponse = await omutoAI({ question: text, history: aiHistory, userId: user.uid });
       
       if(aiResponse.answer) {
           const aiMessageData = {
@@ -287,5 +285,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-  
