@@ -6,7 +6,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { KNOWLEDGE_BASE } from '@/lib/data';
 import { GrantWriterInputSchema, GrantWriterOutputSchema } from '@/lib/types';
 
 const grantWriterPrompt = ai.definePrompt({
@@ -15,10 +14,6 @@ const grantWriterPrompt = ai.definePrompt({
     output: { schema: GrantWriterOutputSchema },
     model: 'googleai/gemini-flash-latest',
     prompt: `You are a professional grant writer for an NGO called Omuto Foundation.
-  Use the following knowledge base:
-  ---
-  ${KNOWLEDGE_BASE}
-  ---
   
   Your task is to draft a concept note as a JSON object with a single key "conceptNote" containing a markdown string.
 

@@ -7,14 +7,12 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { KNOWLEDGE_BASE } from '@/lib/data';
 import {
   SearchResultItemSchema,
   OmutoAIInputSchema,
   OmutoAIOutputSchema,
   type OmutoAIInput,
   type OmutoAIOutput,
-  type SearchResultItem,
 } from '@/lib/types';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
@@ -209,9 +207,6 @@ const omutoAIPrompt = ai.definePrompt({
     ],
     system: `You are Omuto AI, an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda.
 Your knowledge is not just static; you can learn about the team's current activities and data by using the tools provided.
-
-## Knowledge Base
-${KNOWLEDGE_BASE}
 
 ## Tool Usage Instructions & Dynamic Knowledge
 
