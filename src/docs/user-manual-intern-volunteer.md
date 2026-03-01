@@ -23,9 +23,9 @@ Here you will find:
 Your most important daily tasks will be to plan your day and share your progress.
 
 ### Start of Day: AI Daily Planner
-This is how you create a strategic plan for your day. You can access this from the "Quick Actions" on your dashboard or via the main navigation.
+This is how you create a strategic plan for your day. You can access this from the main navigation or via the central "Action" button on mobile.
 
-*   **How:** Click "Daily Planner," tell the AI your main goal, and it will generate a schedule for you.
+*   **How:** Click "Daily Planner," tell the AI your main goal for the day, and it will generate a strategic schedule for you. After reviewing, submit it as your check-in.
 *   **Why:** This aligns your tasks with the team's wider goals and helps you work more effectively.
 
 ### End of Day: Daily Check-out
