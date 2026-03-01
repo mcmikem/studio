@@ -763,6 +763,24 @@ export const PulseContent = z.object({
 });
 export type PulseContent = z.infer<typeof PulseContent>;
 
+export const ProductionBatchMaterialSchema = z.object({
+    material_id: z.string().min(1, "Please select a material."),
+    quantity_used: z.coerce.number().min(0.01, "Quantity must be greater than 0.")
+});
+
+export const ProductionBatchFormSchema = z.object({
+  batch_number: z.string().min(3, "Batch number is required."),
+  productId: z.string().min(1, "Please select a finished product."),
+  quantity_produced: z.coerce.number().min(1, "Quantity must be at least 1."),
+  production_date: z.string().min(1, "Production date is required."),
+  supervisorId: z.string(),
+  status: z.enum(["planned", "in-progress", "completed"]),
+  notes: z.string().optional(),
+  materials_used: z.array(ProductionBatchMaterialSchema).min(1, "At least one material must be used."),
+});
+
+export type ProductionBatchFormData = z.infer<typeof ProductionBatchFormSchema>;
+
 export const SaleItemSchema = z.object({
     product_id: z.string().min(1, "Product is required."),
     product_name: z.string(),
@@ -798,7 +816,6 @@ export type SaleFormData = z.infer<typeof SaleFormSchema>;
 export type Sale = z.infer<typeof SaleSchema>;
   
 // Flow-specific types, centralized here
-
 export const SearchResultItemSchema = z.object({
   id: z.string(),
   type: z.string(),
