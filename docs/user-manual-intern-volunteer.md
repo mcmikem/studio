@@ -12,25 +12,26 @@ When you log in, you'll land on your personal dashboard. Think of this as your d
 
 Here you will find:
 *   **A Warm Welcome:** A greeting to get your day started.
-*   **Smart Reminders:** Your AI Coach will analyze your pending tasks and calendar events to give you smart, actionable reminders for the day. This helps you stay on track and focus on what matters most.
-*   **Quick Actions:** A set of buttons for the most common tasks you'll perform.
+*   **Smart Reminders:** Your AI Coach will analyze your pending tasks and calendar events to give you smart, actionable reminders for the day.
+*   **Your Supervisor:** Quick access to contact your direct supervisor.
+*   **Your First Quest:** An interactive task to help you learn the app.
 
 ---
 
-## 2. Your Daily Rhythm: Logging Hours & Submitting Notes
+## 2. Your Daily Rhythm: Plan & Report
 
-Your most important daily tasks will be to log your work and share your progress.
+Your most important daily tasks will be to plan your day and share your progress.
 
-### Logging Your Hours (Activity Form)
-This is how you record the work you've done. You can access this from the "Quick Actions" on your dashboard or via the "Forms Hub".
+### Start of Day: AI Daily Planner
+This is how you create a strategic plan for your day. You can access this from the main navigation or via the central **Action Button** on mobile.
 
-*   **How:** Click "Log My Hours" and fill out the simple form about the activity you participated in.
-*   **Why:** This helps us understand where our team's effort is going and is crucial for reporting to our partners and funders.
+*   **How:** Click "Daily Planner," tell the AI your main goal for the day, and it will generate a strategic schedule for you. After reviewing, submit it as your "check-in."
+*   **Why:** This aligns your tasks with the team's wider goals and helps you work more effectively.
 
-### Submitting Your End-of-Day Note
-At the end of your day, it's essential to submit a quick note. This is how your supervisor and the rest of the team see your progress and learnings.
+### End of Day: Daily Check-out
+At the end of your day, it's essential to submit a quick report. This shows your progress and learnings.
 
-*   **How:** Click "Submit End-of-Day Note." Briefly describe what you accomplished and one new thing you learned.
+*   **How:** Use the central **Action Button** on mobile and select "Evening Report," or find "Daily Check-out" in the Forms Hub. The form will ask you to review your planned tasks and share what you learned.
 *   **Why:** This keeps everyone in sync and helps us celebrate your contributions and growth! It's a key part of our culture of learning.
 
 ---
@@ -65,9 +66,8 @@ Your profile is your personal space within Omuto Central.
 
 Even when working remotely, it's important to stay connected. The Team Hub section is where this happens.
 
-*   **Team Space:** A group chat for all team members. Share quick updates, ask questions, and celebrate wins together.
+*   **Team Stream:** This is a live feed of the daily plans (check-ins) and end-of-day reports (check-outs) from the entire team. It's a great way to see what everyone is working on and learn from their progress.
 *   **Team Calendar:** A shared calendar showing all upcoming events, meetings, and important deadlines. Check this regularly to know what's happening.
-*   **Check-in & Check-out Streams:** These are live feeds of the daily plans (check-ins) and end-of-day reports (check-outs) from the entire team. It's a great way to see what everyone is working on and learn from their progress.
 
 ---
 

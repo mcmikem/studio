@@ -7,6 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -109,6 +110,94 @@ function ExpenseDetailsDialog({ expense, isOpen, onOpenChange }: { expense: Expe
     )
 }
 
+function ExpenseCard({ expense, highlightedExpenseId, currentUser, canApprove, canManageFinances, handleStatusUpdate, setViewingExpense, setEditingExpense, handleDelete }: any) {
+    const highlightClass = "ring-2 ring-primary bg-primary/5";
+    return (
+        <Card key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="text-base">{expense.title}</CardTitle>
+                        <CardDescription>
+                            {expense.userName} &bull; {formatDateSafe(expense.date, 'dateOnly')}
+                        </CardDescription>
+                    </div>
+                     <Badge variant="outline" className={statusColors[expense.status]}>{expense.status}</Badge>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <p className="text-2xl font-bold">{formatCurrency(expense.totalAmount)}</p>
+                <p className="text-xs text-muted-foreground">{expense.items.length} item(s) &bull; {expense.type}</p>
+            </CardContent>
+             <CardFooter className="flex justify-end gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewingExpense(expense)}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">View</span>
+                </Button>
+                
+                {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                    <>
+                        <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-100 h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}>
+                            <Check className="h-4 w-4" />
+                            <span className="sr-only">Approve</span>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-100 h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}>
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Reject</span>
+                        </Button>
+                    </>
+                )}
+                
+                {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                    <Button variant="ghost" size="icon" onClick={() => handleStatusUpdate(expense, 'Pending')} title="Reverse to Pending">
+                        <Undo2 className="h-4 w-4" />
+                        <span className="sr-only">Reverse</span>
+                    </Button>
+                )}
+                
+                {canManageFinances && expense.status === 'Approved' && (
+                    <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>
+                        Disburse
+                    </Button>
+                )}
+                
+                {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
+                    <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}>
+                        <CheckCheck className="mr-1 h-3 w-3"/> Acknowledge
+                    </Button>
+                )}
+
+                {canManageFinances && (
+                    <>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Edit</span>
+                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Delete</span>
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Report?</AlertDialogTitle>
+                                    <AlertDialogDescription>Are you sure you want to delete "{expense.title}"? This cannot be undone.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(expense)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </>
+                )}
+            </CardFooter>
+        </Card>
+    )
+}
+
 function ExpensesTable({ 
     expenses, 
     isLoading, 
@@ -124,136 +213,162 @@ function ExpensesTable({
     const highlightClass = "ring-2 ring-primary bg-primary/5";
 
     return (
-        <div className="rounded-md border">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {isLoading && Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={i}>
-                            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                            <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                            <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
-                        </TableRow>
-                    ))}
-                    {expenses && expenses.length > 0 ? (
-                        expenses.map((expense: Expense) => (
-                            <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
-                                <TableCell className="font-medium">
-                                    <div className="flex flex-col">
-                                        <span>{expense.userName}</span>
-                                        {expense.submittedFor && expense.submittedFor !== expense.userId && (
-                                            <span className="text-xs text-muted-foreground">via {expense.userName}</span>
-                                        )}
-                                    </div>
-                                </TableCell>
-                                <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col">
-                                        <span className="font-medium">{expense.title}</span>
-                                        <span className="text-xs text-muted-foreground">{expense.items.length} item(s)</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell className="font-bold">{formatCurrency(expense.totalAmount)}</TableCell>
-                                <TableCell>
-                                    <Badge variant="outline" className={statusColors[expense.status]}>
-                                        {expense.status}
-                                    </Badge>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex justify-end items-center gap-1">
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewingExpense(expense)}>
-                                            <Eye className="h-4 w-4" />
-                                            <span className="sr-only">View</span>
-                                        </Button>
-                                        
-                                        {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
-                                            <div className="flex gap-1">
-                                                <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-100 h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}>
-                                                    <Check className="h-4 w-4" />
-                                                    <span className="sr-only">Approve</span>
-                                                </Button>
-                                                <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-100 h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}>
-                                                    <X className="h-4 w-4" />
-                                                    <span className="sr-only">Reject</span>
-                                                </Button>
-                                            </div>
-                                        )}
-                                        
-                                        {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
-                                            <Button variant="ghost" size="icon" onClick={() => handleStatusUpdate(expense, 'Pending')} title="Reverse to Pending">
-                                                <Undo2 className="h-4 w-4" />
-                                                <span className="sr-only">Reverse</span>
-                                            </Button>
-                                        )}
-                                        
-                                        {canManageFinances && expense.status === 'Approved' && (
-                                            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>
-                                                Disburse
-                                            </Button>
-                                        )}
-                                        
-                                        {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
-                                            <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}>
-                                                <CheckCheck className="mr-1 h-3 w-3"/> Acknowledge
-                                            </Button>
-                                        )}
+        <>
+            {/* Mobile View */}
+            <div className="sm:hidden space-y-4">
+                {isLoading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+                {expenses && expenses.length > 0 ? (
+                    expenses.map((expense: Expense) => (
+                        <ExpenseCard 
+                            key={expense.id}
+                            expense={expense}
+                            highlightedExpenseId={highlightedExpenseId}
+                            currentUser={currentUser}
+                            canApprove={canApprove}
+                            canManageFinances={canManageFinances}
+                            handleStatusUpdate={handleStatusUpdate}
+                            setViewingExpense={setViewingExpense}
+                            setEditingExpense={setEditingExpense}
+                            handleDelete={handleDelete}
+                        />
+                    ))
+                ) : (
+                    !isLoading && <div className="h-32 text-center text-muted-foreground pt-10">No records found in this category.</div>
+                )}
+            </div>
 
-                                        {canManageFinances && (
-                                            <>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}>
-                                                    <Edit className="h-4 w-4" />
-                                                    <span className="sr-only">Edit</span>
+            {/* Desktop View */}
+            <div className="hidden sm:block rounded-md border">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>User</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Title</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-8 w-32 ml-auto" /></TableCell>
+                            </TableRow>
+                        ))}
+                        {expenses && expenses.length > 0 ? (
+                            expenses.map((expense: Expense) => (
+                                <TableRow key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
+                                    <TableCell className="font-medium">
+                                        <div className="flex flex-col">
+                                            <span>{expense.userName}</span>
+                                            {expense.submittedFor && expense.submittedFor !== expense.userId && (
+                                                <span className="text-xs text-muted-foreground">via {expense.userName}</span>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>{formatDateSafe(expense.date, 'dateOnly')}</TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{expense.title}</span>
+                                            <span className="text-xs text-muted-foreground">{expense.items.length} item(s)</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="font-bold">{formatCurrency(expense.totalAmount)}</TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className={statusColors[expense.status]}>
+                                            {expense.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end items-center gap-1">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setViewingExpense(expense)}>
+                                                <Eye className="h-4 w-4" />
+                                                <span className="sr-only">View</span>
+                                            </Button>
+                                            
+                                            {canApprove && expense.status === 'Pending' && expense.userId !== currentUser?.uid && (
+                                                <div className="flex gap-1">
+                                                    <Button variant="ghost" size="icon" className="text-green-600 hover:text-green-700 hover:bg-green-100 h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Approved')}>
+                                                        <Check className="h-4 w-4" />
+                                                        <span className="sr-only">Approve</span>
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-100 h-8 w-8" onClick={() => handleStatusUpdate(expense, 'Rejected')}>
+                                                        <X className="h-4 w-4" />
+                                                        <span className="sr-only">Reject</span>
+                                                    </Button>
+                                                </div>
+                                            )}
+                                            
+                                            {canManageFinances && (expense.status === 'Approved' || expense.status === 'Rejected') && (
+                                                <Button variant="ghost" size="icon" onClick={() => handleStatusUpdate(expense, 'Pending')} title="Reverse to Pending">
+                                                    <Undo2 className="h-4 w-4" />
+                                                    <span className="sr-only">Reverse</span>
                                                 </Button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
-                                                            <Trash2 className="h-4 w-4" />
-                                                            <span className="sr-only">Delete</span>
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Delete Report?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                Are you sure you want to delete "{expense.title}"? This cannot be undone.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleDelete(expense)}>Delete</AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </>
-                                        )}
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ))
-                    ) : (
-                        !isLoading && (
-                            <TableRow>
-                                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
-                                    No records found in this category.
-                                </TableCell>
-                            </TableRow>
-                        )
-                    )}
-                </TableBody>
-            </Table>
-        </div>
+                                            )}
+                                            
+                                            {canManageFinances && expense.status === 'Approved' && (
+                                                <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>
+                                                    Disburse
+                                                </Button>
+                                            )}
+                                            
+                                            {expense.status === 'Disbursed' && expense.userId === currentUser?.uid && (
+                                                <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}>
+                                                    <CheckCheck className="mr-1 h-3 w-3"/> Acknowledge
+                                                </Button>
+                                            )}
+
+                                            {canManageFinances && (
+                                                <>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}>
+                                                        <Edit className="h-4 w-4" />
+                                                        <span className="sr-only">Edit</span>
+                                                    </Button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                                                <Trash2 className="h-4 w-4" />
+                                                                <span className="sr-only">Delete</span>
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Delete Report?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Are you sure you want to delete "{expense.title}"? This cannot be undone.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(expense)}>Delete</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            !isLoading && (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                                        No records found in this category.
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        </>
     );
 }
 
@@ -588,5 +703,3 @@ export default function ExpensesPage() {
         </Suspense>
     )
 }
-
-    

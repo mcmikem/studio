@@ -30,11 +30,57 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { formatDateSafe } from "@/lib/utils";
 
 interface PartnershipListProps {
     partnerships: Partnership[] | null;
     isLoading: boolean;
     onEdit: (partner: Partnership) => void;
+}
+
+function PartnershipCard({ partnership, onEdit, onDelete }: { partnership: Partnership, onEdit: (p: Partnership) => void, onDelete: (p: Partnership) => void }) {
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <CardTitle className="text-base">
+                        <Link href={`/management/partnerships/${partnership.id}`} className="hover:underline">{partnership.name}</Link>
+                    </CardTitle>
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => onEdit(partnership)}>Edit</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <DropdownMenuItem onSelect={e => e.preventDefault()} className="text-destructive">Delete</DropdownMenuItem>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete "{partnership.name}".</AlertDialogDescription></AlertDialogHeader>
+                                    <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => onDelete(partnership)}>Delete</AlertDialogAction></AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+                <CardDescription>{partnership.type}</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+                 <p><span className="font-semibold">Contact:</span> {partnership.contactPerson}</p>
+                 <p><span className="font-semibold">Status:</span> <Badge variant="outline">{partnership.status}</Badge></p>
+                 <p><span className="font-semibold">Next Step:</span> {partnership.nextStep}</p>
+                 {partnership.nextActionDate && <p className="text-xs text-muted-foreground">Due: {formatDateSafe(partnership.nextActionDate, 'dateOnly')}</p>}
+            </CardContent>
+        </Card>
+    )
 }
 
 export function PartnershipList({ partnerships, isLoading, onEdit }: PartnershipListProps) {
@@ -76,7 +122,7 @@ export function PartnershipList({ partnerships, isLoading, onEdit }: Partnership
             <span>{partnership.nextStep}</span>
             {partnership.nextActionDate && (
                 <span className="text-sm text-muted-foreground">
-                ({new Date(partnership.nextActionDate as any).toLocaleDateString()})
+                ({formatDateSafe(partnership.nextActionDate as any, 'dateOnly')})
                 </span>
             )}
             </div>
@@ -116,8 +162,17 @@ export function PartnershipList({ partnerships, isLoading, onEdit }: Partnership
     ];
 
   return (
-    <div className="rounded-md border">
+    <>
+    {/* Mobile View */}
+    <div className="sm:hidden space-y-4">
+        {partnerships?.map(p => (
+            <PartnershipCard key={p.id} partnership={p} onEdit={onEdit} onDelete={handleDelete} />
+        ))}
+    </div>
+    {/* Desktop View */}
+    <div className="hidden sm:block rounded-md border">
       <DataTable columns={columns} data={partnerships || []} isLoading={isLoading} />
     </div>
+    </>
   );
 }

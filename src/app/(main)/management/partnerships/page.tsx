@@ -71,7 +71,6 @@ export default function PartnershipsManagementPage() {
               <PartnershipForm 
                 initialData={editingPartner} 
                 onSuccess={handleFormSuccess}
-                onCancel={() => setIsDialogOpen(false)}
               />
           </DialogContent>
       </Dialog>
@@ -83,10 +82,10 @@ export default function PartnershipsManagementPage() {
           <TabsTrigger value="all">All Partners</TabsTrigger>
         </TabsList>
         <TabsContent value="pipeline" className="space-y-4">
-          <PartnershipPipelineKanban />
+          <PartnershipList partnerships={partnerships?.filter(p => p.status !== 'Active' && p.status !== 'Terminated')} isLoading={isLoading} onEdit={handleEditPartner} />
         </TabsContent>
         <TabsContent value="schools" className="space-y-4">
-          <SchoolList />
+          <SchoolList onEdit={handleEditPartner} />
         </TabsContent>
         <TabsContent value="all" className="space-y-4">
           <PartnershipList partnerships={partnerships} isLoading={isLoading} onEdit={handleEditPartner} />

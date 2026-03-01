@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
@@ -5,7 +6,7 @@ import { useDoc, useFirestore, useMemoFirebase, deleteDocumentNonBlocking } from
 import { doc } from 'firebase/firestore';
 import type { OFATeam } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Swords, ArrowLeft, Users, Calendar, ShieldCheck, ClipboardList, Package, MessageCircleQuestion, CheckCircle2, Edit, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -149,7 +150,23 @@ function TeamDetailDashboard() {
             <Card>
                 <CardHeader><CardTitle>Management Structure</CardTitle></CardHeader>
                 <CardContent>
-                     <div className="overflow-x-auto">
+                     {/* Mobile View */}
+                    <div className="space-y-4 sm:hidden">
+                        {managementData.length > 0 ? managementData.map(m => (
+                            <Card key={m.role} className="p-4">
+                                <CardTitle className="text-base">{m.role}</CardTitle>
+                                <CardDescription>{m.name}</CardDescription>
+                                <div className="text-sm mt-2 space-y-1">
+                                    <p><strong>Phone:</strong> {m.phone || 'N/A'}</p>
+                                    <p><strong>Attendance:</strong> {m.attendance || 'N/A'}</p>
+                                    <p><strong>Availability:</strong> {m.availability || 'N/A'}</p>
+                                </div>
+                            </Card>
+                        )) : <p className="text-center h-24">No management data recorded.</p>}
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden sm:block overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>
