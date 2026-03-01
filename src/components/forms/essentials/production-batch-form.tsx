@@ -10,15 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, serverTimestamp, doc, writeBatch, runTransaction } from 'firebase/firestore';
-import { Loader2, ArrowLeft, Package, PlusCircle, Trash2 } from 'lucide-react';
+import { collection, serverTimestamp, doc, writeBatch, runTransaction, getDocs, query, where } from 'firebase/firestore';
+import { Loader2, ArrowLeft, Package, PlusCircle, Trash2, Wand2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export function ProductionBatchForm() {
   const router = useRouter();
@@ -26,6 +26,7 @@ export function ProductionBatchForm() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const { toast } = useToast();
+  const [isGeneratingBatch, setIsGeneratingBatch] = useState(false);
 
   const productsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -36,14 +37,7 @@ export function ProductionBatchForm() {
   const finishedGoods = useMemo(() => products?.filter(p => p.type === 'finished') || [], [products]);
   const materials = useMemo(() => products?.filter(p => p.type === 'raw' || p.type === 'packaging') || [], [products]);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<ProductionBatchFormData>({
+  const form = useForm<ProductionBatchFormData>({
     resolver: zodResolver(ProductionBatchFormSchema),
     defaultValues: {
       production_date: format(new Date(), 'yyyy-MM-dd'),
@@ -52,12 +46,40 @@ export function ProductionBatchForm() {
       materials_used: [{ material_id: '', quantity_used: 0 }]
     },
   });
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    formState: { errors, isSubmitting },
+    reset,
+  } = form;
   
   useEffect(() => {
     if (profile?.id) {
         setValue('supervisorId', profile.id);
     }
   }, [profile, setValue]);
+
+  const generateBatchNumber = async () => {
+      if (!firestore) return;
+      setIsGeneratingBatch(true);
+      try {
+          const today = new Date();
+          today.setHours(0,0,0,0);
+          const q = query(collection(firestore, 'production-batches'), where('createdAt', '>=', today));
+          const snapshot = await getDocs(q);
+          const count = snapshot.size + 1;
+          const batchNum = `PROD-${format(new Date(), 'yyMMdd')}-${count.toString().padStart(3, '0')}`;
+          setValue('batch_number', batchNum);
+          toast({ title: "Batch Number Generated", description: batchNum });
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setIsGeneratingBatch(false);
+      }
+  };
   
   const { fields, append, remove } = useFieldArray({
     control,
@@ -116,62 +138,94 @@ export function ProductionBatchForm() {
   };
 
   return (
-     <div className="space-y-4">
-      <Button variant="outline" asChild>
+     <div className="space-y-4 pb-10">
+      <Button variant="outline" asChild className="rounded-xl border-lg">
         <Link href="/enterprise/essentials">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Essentials Hub
+          Back to Hub
         </Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Package className="h-6 w-6"/> New Production Batch</CardTitle>
-          <CardDescription>Log a manufacturing run to update your finished goods and raw material inventory.</CardDescription>
+      <Card className="border-lg shadow-comic-sm">
+        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
+          <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter"><Package className="h-8 w-8 text-primary"/> New Production Batch</CardTitle>
+          <CardDescription className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Log a manufacturing run to update your finished goods and raw material inventory.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Batch Number</Label><Input {...register('batch_number')} />{errors.batch_number && <p className="text-sm text-destructive">{errors.batch_number.message}</p>}</div>
-              <div className="space-y-2"><Label>Production Date</Label><Input type="date" {...register('production_date')} />{errors.production_date && <p className="text-sm text-destructive">{errors.production_date.message}</p>}</div>
+          <CardContent className="space-y-8 pt-8">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                  <Label htmlFor="batch_number" className="font-bold text-xs uppercase tracking-widest">Batch Number</Label>
+                  <div className="flex gap-2">
+                    <Input id="batch_number" {...register('batch_number')} placeholder="e.g., PROD-240520-001" className="font-mono border-lg rounded-xl h-12" />
+                    <Button type="button" variant="outline" size="icon" className="h-12 w-12 border-lg rounded-xl" onClick={generateBatchNumber} disabled={isGeneratingBatch}>
+                        {isGeneratingBatch ? <Loader2 className="h-4 w-4 animate-spin"/> : <Wand2 className="h-4 w-4 text-primary"/>}
+                    </Button>
+                  </div>
+                  {errors.batch_number && <p className="text-xs text-destructive font-bold">{errors.batch_number.message}</p>}
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="production_date" className="font-bold text-xs uppercase tracking-widest">Production Date</Label>
+                  <Input id="production_date" type="date" {...register('production_date')} className="border-lg rounded-xl h-12" />
+                  {errors.production_date && <p className="text-xs text-destructive font-bold">{errors.production_date.message}</p>}
+              </div>
             </div>
-             <div className="grid md:grid-cols-2 gap-4">
+
+             <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-dashed">
                <div className="space-y-2">
-                 <Label>Product Manufactured</Label>
-                 {isLoadingProducts ? <Skeleton className="h-10" /> : (
+                 <Label className="font-bold text-xs uppercase tracking-widest">Finished Product</Label>
+                 {isLoadingProducts ? <Skeleton className="h-12 rounded-xl" /> : (
                     <Controller name="productId" control={control} render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select finished good..." /></SelectTrigger><SelectContent>{finishedGoods.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select>
+                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-12 border-lg rounded-xl font-bold"><SelectValue placeholder="Select product..." /></SelectTrigger><SelectContent>{finishedGoods.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent></Select>
                     )}/>
                  )}
-                  {errors.productId && <p className="text-sm text-destructive">{errors.productId.message}</p>}
+                  {errors.productId && <p className="text-xs text-destructive font-bold">{errors.productId.message}</p>}
                </div>
-                <div className="space-y-2"><Label>Quantity Produced</Label><Input type="number" {...register('quantity_produced')} />{errors.quantity_produced && <p className="text-sm text-destructive">{errors.quantity_produced.message}</p>}</div>
+                <div className="space-y-2">
+                    <Label htmlFor="quantity_produced" className="font-bold text-xs uppercase tracking-widest">Quantity Produced</Label>
+                    <Input id="quantity_produced" type="number" {...register('quantity_produced')} className="border-lg rounded-xl h-12 font-bold text-lg" />
+                    {errors.quantity_produced && <p className="text-xs text-destructive font-bold">{errors.quantity_produced.message}</p>}
+                </div>
             </div>
-             <div className="space-y-4 pt-4 border-t">
-                <h3 className="font-semibold">Materials & Packaging Used</h3>
-                {fields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-12 gap-2 items-end p-2 border rounded-md">
-                        <div className="col-span-12 md:col-span-7 space-y-1"><Label>Material</Label>
-                            {isLoadingProducts ? <Skeleton className="h-10"/> : (
-                                <Controller name={`materials_used.${index}.material_id`} control={control} render={({ field }) => (
-                                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select material..." /></SelectTrigger><SelectContent>{materials.map(m => <SelectItem key={m.id} value={m.id}>{m.name} ({m.unit})</SelectItem>)}</SelectContent></Select>
-                                )}/>
-                            )}
+
+             <div className="space-y-4 pt-6 border-t border-dashed">
+                <h3 className="font-black uppercase text-xs tracking-widest text-muted-foreground flex items-center gap-2"><Boxes className="h-4 w-4"/> Materials & Packaging Consumption</h3>
+                <div className="space-y-3">
+                    {fields.map((field, index) => (
+                        <div key={field.id} className="grid grid-cols-12 gap-3 items-end p-4 bg-muted/20 border-lg rounded-2xl relative">
+                            <div className="col-span-12 md:col-span-7 space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Material Name</Label>
+                                {isLoadingProducts ? <Skeleton className="h-10 rounded-xl"/> : (
+                                    <Controller name={`materials_used.${index}.material_id`} control={control} render={({ field }) => (
+                                        <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-11 border-lg rounded-xl font-bold bg-white"><SelectValue placeholder="Select raw material..." /></SelectTrigger><SelectContent>{materials.map(m => <SelectItem key={m.id} value={m.id} className="font-bold">{m.name} ({m.unit})</SelectItem>)}</SelectContent></Select>
+                                    )}/>
+                                )}
+                            </div>
+                            <div className="col-span-10 md:col-span-4 space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quantity Used</Label>
+                                <Input type="number" step="0.01" {...register(`materials_used.${index}.quantity_used`)} className="h-11 border-lg rounded-xl font-bold bg-white" />
+                            </div>
+                            <div className="col-span-2 md:col-span-1">
+                                <Button type="button" variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                                    <Trash2 className="h-5 w-5"/>
+                                </Button>
+                            </div>
                         </div>
-                        <div className="col-span-8 md:col-span-4 space-y-1"><Label>Quantity Used</Label><Input type="number" {...register(`materials_used.${index}.quantity_used`)} /></div>
-                        <div className="col-span-4 md:col-span-1"><Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4"/></Button></div>
-                    </div>
-                ))}
-                 <Button type="button" variant="outline" size="sm" onClick={() => append({ material_id: '', quantity_used: 0 })}><PlusCircle className="mr-2 h-4 w-4" /> Add Material</Button>
+                    ))}
+                </div>
+                 <Button type="button" variant="outline" size="sm" onClick={() => append({ material_id: '', quantity_used: 0 })} className="font-black text-xs uppercase tracking-widest border-lg rounded-xl h-10 px-4">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Material Item
+                </Button>
             </div>
-             <div className="space-y-2">
-                <Label>Notes</Label>
-                <Textarea {...register('notes')} />
+
+             <div className="space-y-2 pt-4 border-t border-dashed">
+                <Label htmlFor="notes" className="font-bold text-xs uppercase tracking-widest">Production Notes</Label>
+                <Textarea id="notes" {...register('notes')} placeholder="e.g., Temperature conditions, team members involved, or any deviations from SOP..." className="border-lg rounded-xl min-h-[100px]" />
              </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Log Production Batch
+          <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
+            <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
+              {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Package className="mr-2 h-5 w-5" />}
+              Commit Production Batch to Inventory
             </Button>
           </CardFooter>
         </form>

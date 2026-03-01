@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Goal, ArrowRight } from 'lucide-react';
 import { formatDateSafe } from '@/lib/utils';
-import { isPast, format } from 'date-fns';
+import { isPast, format, isSameMonth } from 'date-fns';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -29,7 +29,17 @@ export function KeyResultsTracker() {
     return query(collection(db, 'key-results'), orderBy('priority'), orderBy('deadline'));
   }, [firestore]);
 
-  const { data: keyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
+  const { data: allKeyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
+
+  const keyResults = React.useMemo(() => {
+    if (!allKeyResults) return [];
+    const now = new Date();
+    return allKeyResults.filter(kr => {
+        const deadline = kr.deadline.toDate();
+        return isSameMonth(deadline, now);
+    })
+  }, [allKeyResults]);
+
 
   const formatTarget = (kr: KeyResult) => {
     if (kr.title?.includes('KR1')) return `${((kr.target || 0) / 1000000).toFixed(1)}M UGX`;
@@ -72,7 +82,6 @@ export function KeyResultsTracker() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {keyResults.map(kr => {
               const progress = kr.target > 0 ? (kr.currentProgress / kr.target) * 100 : 0;
-              // Ensure deadline is treated as a Date object if it's a Timestamp
               const deadlineDate = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
               const deadlinePast = isPast(deadlineDate);
 

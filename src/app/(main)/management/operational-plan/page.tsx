@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -14,9 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import { collection, writeBatch, getDocs, doc, Timestamp, query, orderBy } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc, Timestamp, query, orderBy, where } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
-import { Loader2, Wand, FileSignature, CheckCircle, Goal, MessageSquare, Target, Sparkles, TrendingUp, Calendar } from 'lucide-react';
+import { Loader2, Wand, FileSignature, CheckCircle, Goal, MessageSquare, Target, Sparkles, TrendingUp, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { runParseOperationalPlan } from '@/ai/actions';
 import {
   Table,
@@ -30,152 +30,145 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { formatDateSafe } from '@/lib/utils';
 import { ProgressRing } from '@/components/ui/progress-ring';
-import { isPast } from 'date-fns';
+import { isPast, format, startOfWeek, isSameMonth, subMonths, addMonths } from 'date-fns';
 import { CommentsSection } from '@/components/ui/comments';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton'; // Added Skeleton import
+import { Skeleton } from '@/components/ui/skeleton'; 
+import { Input } from '@/components/ui/input';
 
 interface ParsedKeyResult extends Omit<KeyResult, 'id' | 'deadline'> {
   deadline: string;
 }
 
-function OperationalPlanViewer() {
+function KeyResultCard({ kr }: { kr: KeyResult }) {
     const firestore = useFirestore();
-    const keyResultsQuery = useMemoFirebase((db) => {
-        if (!db) return null;
-        return query(collection(db, 'key-results'), orderBy('priority'), orderBy('deadline'));
-    }, [firestore]);
-
-    const { data: keyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
-    const [selectedKR, setSelectedKR] = useState<KeyResult | null>(null);
-    const [isSheetOpen, setIsSheetOpen] = useState(false);
-
+    const { toast } = useToast();
+    const [progressInput, setProgressInput] = useState(kr.currentProgress);
+    const [isUpdating, setIsUpdating] = useState(false);
+    
+    const progress = kr.target > 0 ? Math.min(100, Math.round((progressInput / kr.target) * 100)) : 0;
+    const deadlineDate = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
+    const deadlinePast = isPast(deadlineDate) && progress < 100;
     const formatTarget = (kr: KeyResult) => {
         if (kr.title?.includes('KR1') || kr.description?.toLowerCase().includes('ugx')) return `${((kr.target || 0) / 1000000).toFixed(1)}M UGX`;
         if (kr.target === 100) return `${kr.target}%`;
         return kr.target.toLocaleString();
     };
-    
-    const handleKRClick = (kr: KeyResult) => {
-        setSelectedKR(kr);
-        setIsSheetOpen(true);
+
+    const handleUpdate = async () => {
+        if (!firestore) return;
+        setIsUpdating(true);
+        const krRef = doc(firestore, 'key-results', kr.id);
+        try {
+            await updateDocumentNonBlocking(krRef, { currentProgress: Number(progressInput) });
+            toast({ title: 'Progress Updated', description: `Progress for "${kr.title}" has been saved.` });
+        } catch (e) {
+            console.error("Failed to update KR", e);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not update progress.' });
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
+    return (
+        <Card className="group relative overflow-hidden flex flex-col">
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Target className="h-20 w-20 text-omuto-navy/10" />
+            </div>
+            <CardHeader className="pb-4">
+                <div className="flex justify-between items-start mb-4">
+                    <Badge className={`badge-omuto-outline ${kr.priority === 'High' ? 'border-omuto-red/30 text-omuto-red' : 'border-omuto-navy/20 text-omuto-navy/70'}`}>
+                        {kr.priority} Priority
+                    </Badge>
+                    <ProgressRing progress={progress} size={48} strokeWidth={5} />
+                </div>
+                <CardTitle className="text-xl font-bold tracking-tight leading-tight text-omuto-navy transition-colors">{kr.title}</CardTitle>
+                <CardDescription className="font-bold line-clamp-2 mt-1 text-omuto-navy/70">{kr.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 flex-grow">
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
+                        <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Target</p>
+                        <p className="text-sm font-bold text-omuto-navy">{formatTarget(kr)}</p>
+                    </div>
+                    <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
+                        <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Deadline</p>
+                        <p className={`text-sm font-bold text-omuto-navy ${deadlinePast ? 'text-destructive' : ''}`}>{formatDateSafe(kr.deadline, 'dateOnly')}</p>
+                    </div>
+                </div>
+            </CardContent>
+            <CardFooter className="pt-0 pb-6 px-6">
+                <div className="flex w-full gap-2 items-center">
+                    <Input 
+                        type="number" 
+                        value={progressInput} 
+                        onChange={(e) => setProgressInput(Number(e.target.value))} 
+                        className="h-10 border-lg rounded-xl font-bold"
+                    />
+                    <Button onClick={handleUpdate} disabled={isUpdating} size="sm" className="h-10">
+                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update'}
+                    </Button>
+                </div>
+            </CardFooter>
+        </Card>
+    );
+}
+
+
+function OperationalPlanViewer() {
+    const firestore = useFirestore();
+    const [currentDate, setCurrentDate] = useState(new Date());
+
+    const keyResultsQuery = useMemoFirebase((db) => {
+        if (!db) return null;
+        return query(collection(db, 'key-results'), orderBy('priority'), orderBy('deadline'));
+    }, [firestore]);
+
+    const { data: allKeyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
+
+    const filteredKeyResults = useMemo(() => {
+        if (!allKeyResults) return [];
+        return allKeyResults.filter(kr => {
+            const deadline = kr.deadline.toDate();
+            return isSameMonth(deadline, currentDate);
+        });
+    }, [allKeyResults, currentDate]);
+    
     if (isLoading) {
         return (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1,2,3].map(i => <Skeleton key={i} className="h-48 w-full" />)}
+                {[1,2,3].map(i => <Skeleton key={i} className="h-64 w-full" />)}
             </div>
         );
     }
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center gap-4">
+            <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4 mr-2"/> Prev Month</Button>
+            <h2 className="font-bold text-lg w-48 text-center">{format(currentDate, 'MMMM yyyy')}</h2>
+            <Button variant="outline" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>Next Month <ChevronRight className="h-4 w-4 ml-2"/></Button>
+        </div>
 
-    if (!keyResults || keyResults.length === 0) {
-        return (
-             <Card>
+        {filteredKeyResults.length > 0 ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredKeyResults.map(kr => <KeyResultCard key={kr.id} kr={kr} />)}
+            </div>
+        ) : (
+            <Card>
                 <CardContent className="flex flex-col items-center justify-center py-20 text-center">
                     <div className="p-6 bg-white border-lg border-omuto-navy/20 rounded-2xl shadow-comic-sm mb-6"><Goal className="h-12 w-12 text-omuto-navy/30" /></div>
-                    <h3 className="text-2xl font-bold tracking-tighter uppercase text-omuto-navy">No Active Plan</h3>
+                    <h3 className="text-2xl font-bold tracking-tighter uppercase text-omuto-navy">No Plan For This Month</h3>
                     <p className="max-w-xs text-omuto-navy/60 font-bold mt-2 uppercase text-[10px] tracking-widest leading-relaxed">
-                        An administrator needs to upload the strategic objectives for this period.
+                        There are no Key Results with deadlines in {format(currentDate, 'MMMM yyyy')}.
                     </p>
                 </CardContent>
             </Card>
-        )
-    }
-
-    return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {keyResults.map(kr => {
-              const progress = kr.target > 0 ? Math.min(100, Math.round((kr.currentProgress / kr.target) * 100)) : 0;
-              const deadlineDate = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
-              const deadlinePast = isPast(deadlineDate);
-
-              return (
-                <Card 
-                    key={kr.id} 
-                    className="group relative overflow-hidden hover:-translate-y-1"
-                    onClick={() => handleKRClick(kr)}
-                >
-                  <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                    <Target className="h-20 w-20 text-omuto-navy/10" />
-                  </div>
-                  <CardHeader className="pb-4">
-                    <div className="flex justify-between items-start mb-4">
-                         <Badge className={`badge-omuto-outline ${kr.priority === 'High' ? 'border-omuto-red/30 text-omuto-red' : 'border-omuto-navy/20 text-omuto-navy/70'}`}>
-                            {kr.priority} Priority
-                        </Badge>
-                         <ProgressRing progress={progress} size={48} strokeWidth={5} />
-                    </div>
-                    <CardTitle className="text-xl font-bold tracking-tight leading-tight text-omuto-navy group-hover:text-primary transition-colors">{kr.title}</CardTitle>
-                    <CardDescription className="font-bold line-clamp-2 mt-1 text-omuto-navy/70">{kr.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                     <div className="space-y-2">
-                        <div className="flex justify-between text-[10px] font-black uppercase text-omuto-navy/60 tracking-widest">
-                            <span>Progress</span>
-                            <span className="text-primary">{progress}%</span>
-                        </div>
-                        <div className="h-2 w-full bg-muted/40 rounded-full overflow-hidden border border-omuto-navy/10">
-                            <div 
-                                className="h-full bg-primary rounded-full transition-all duration-1000" 
-                                style={{ width: `${progress}%` }}
-                            />
-                        </div>
-                     </div>
-
-                     <div className="grid grid-cols-2 gap-4">
-                        <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
-                             <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Target</p>
-                             <p className="text-sm font-bold text-omuto-navy">{formatTarget(kr)}</p>
-                        </div>
-                        <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
-                             <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Deadline</p>
-                             <p className={`text-sm font-bold text-omuto-navy ${deadlinePast ? 'text-destructive' : ''}`}>{formatDateSafe(kr.deadline, 'dateOnly')}</p>
-                        </div>
-                     </div>
-                  </CardContent>
-                  <CardFooter className="pt-0 pb-6">
-                    <div className="flex items-center gap-2 text-primary font-black text-[10px] uppercase tracking-widest bg-primary/10 px-4 py-2 rounded-lg w-full justify-center group-hover:bg-primary group-hover:text-white transition-all">
-                        <MessageSquare className="h-3.5 w-3.5" /> Open Strategy Discussion
-                    </div>
-                  </CardFooter>
-                </Card>
-              )
-            })}
-            
-            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetContent className="sm:max-w-xl rounded-l-3xl border-l-lg border-omuto-navy/20 shadow-lg">
-                    <SheetHeader className="mb-8 pt-6">
-                        <Badge className="badge-omuto-outline mb-4 text-omuto-navy/60">KEY RESULT DETAIL</Badge>
-                        <SheetTitle className="text-3xl font-bold tracking-tight text-omuto-navy">{selectedKR?.title}</SheetTitle>
-                        <SheetDescription className="text-md font-bold leading-relaxed text-omuto-navy/70">
-                            {selectedKR?.description}
-                        </SheetDescription>
-                    </SheetHeader>
-                    {selectedKR && (
-                        <div className="space-y-8 h-full flex flex-col pb-10">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-5 bg-primary/10 rounded-2xl border-lg border-omuto-navy/20">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 flex items-center gap-1.5"><TrendingUp className="h-3 w-3" /> Target Goal</p>
-                                    <p className="text-2xl font-bold text-omuto-navy">{formatTarget(selectedKR)}</p>
-                                </div>
-                                <div className="p-5 bg-muted/30 border-lg border-omuto-navy/20 rounded-2xl">
-                                    <p className="text-[10px] font-black text-omuto-navy/50 uppercase tracking-widest mb-2 flex items-center gap-1.5"><Calendar className="h-3 w-3" /> Due Date</p>
-                                    <p className="text-xl font-bold text-omuto-navy">{formatDateSafe(selectedKR.deadline, 'dateOnly')}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex-1 overflow-hidden flex flex-col border-t-lg border-omuto-navy/10 pt-8">
-                                <CommentsSection targetId={selectedKR.id} targetCollection="key-results" title="Discussion & Team Updates" />
-                            </div>
-                        </div>
-                    )}
-                </SheetContent>
-            </Sheet>
-        </div>
-    );
+        )}
+      </div>
+    )
 }
 
 function OperationalPlanUpdater() {

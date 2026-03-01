@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, LogOut, Receipt, Megaphone, Wand, BarChart3, Bug } from 'lucide-react';
+import { ArrowRight, LogOut, Receipt, Megaphone, Wand, BarChart3, Bug, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 const formSections = [
@@ -30,6 +30,7 @@ const formSections = [
     forms: [
       { href: '/forms/expense', title: 'Expense Report', description: 'Submit a new expense or request funds.', icon: Receipt },
       { href: '/forms/alert', title: 'Create Alert', description: 'Broadcast an important message to the team.', icon: Megaphone },
+      { href: '/enterprise/essentials/feedback', title: 'Customer Feedback', description: 'Log feedback on Omuto Essentials products.', icon: MessageSquare },
     ]
   },
    {

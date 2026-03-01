@@ -1324,3 +1324,54 @@ export const ProjectParticipantSchema = z.object({
 export type ProjectParticipant = z.infer<typeof ProjectParticipantSchema>;
 export const ProjectParticipantFormSchema = ProjectParticipantSchema.omit({ id: true, createdAt: true });
 export type ProjectParticipantFormData = z.infer<typeof ProjectParticipantFormSchema>;
+
+export const MaterialPurchaseSchema = z.object({
+    id: z.string(),
+    material_id: z.string().min(1, "Material is required."),
+    material_name: z.string(),
+    quantity: z.coerce.number().min(0.01, "Quantity must be greater than 0."),
+    unit_cost: z.coerce.number().min(0),
+    total_cost: z.coerce.number(),
+    supplier_name: z.string().optional(),
+    purchase_date: z.string(),
+    logged_by: z.string(),
+    createdAt: z.any(),
+});
+export type MaterialPurchase = z.infer<typeof MaterialPurchaseSchema>;
+
+export const StockAdjustmentSchema = z.object({
+    id: z.string(),
+    product_id: z.string().min(1, "Product is required."),
+    product_name: z.string(),
+    adjustment_type: z.enum(['Damage', 'Loss', 'Correction', 'Return']),
+    quantity: z.coerce.number().min(0.01, "Quantity must be greater than 0."),
+    reason: z.string().min(5, "Please provide a reason for the adjustment."),
+    adjustment_date: z.string(),
+    logged_by: z.string(),
+    createdAt: z.any(),
+});
+export type StockAdjustment = z.infer<typeof StockAdjustmentSchema>;
+
+export const CustomerFeedbackSchema = z.object({
+    id: z.string(),
+    customer_name: z.string().optional(),
+    product_name: z.string(),
+    rating: z.number().min(1).max(5),
+    feedback: z.string(),
+    date: z.string(),
+    logged_by: z.string(),
+    createdAt: z.any(),
+});
+export type CustomerFeedback = z.infer<typeof CustomerFeedbackSchema>;
+
+export const SystemFeedbackSchema = z.object({
+    id: z.string(),
+    type: z.enum(['Bug', 'Feature', 'Feedback']),
+    title: z.string().min(5),
+    description: z.string().min(10),
+    priority: z.enum(['Low', 'Medium', 'High']).optional(),
+    status: z.enum(['New', 'In Progress', 'Resolved']),
+    reported_by: z.string(),
+    createdAt: z.any(),
+});
+export type SystemFeedback = z.infer<typeof SystemFeedbackSchema>;

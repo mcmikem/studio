@@ -2,7 +2,7 @@
 'use client';
 
 import { Suspense, useMemo } from 'react';
-import { Loader2, Package, DollarSign, List, ArrowLeft, TrendingUp, ShoppingCart, Store, ClipboardList, Factory, Boxes, AlertCircle } from 'lucide-react';
+import { Loader2, Package, DollarSign, List, ArrowLeft, TrendingUp, ShoppingCart, Store, ClipboardList, Factory, Boxes, AlertCircle, ShoppingBag, History } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,17 +16,17 @@ import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import { startOfMonth, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 
-function StatCard({ title, value, icon: Icon, description, trend }: { title: string; value: string; icon: React.ElementType, description?: string, trend?: string }) {
+function StatCard({ title, value, icon: Icon, description, trend, variant = 'default' }: { title: string; value: string; icon: React.ElementType, description?: string, trend?: string, variant?: 'default' | 'urgent' }) {
     return (
-        <Card className="bg-background border-lg shadow-comic-sm">
+        <Card className={`bg-background border-lg shadow-comic-sm ${variant === 'urgent' ? 'border-omuto-red/30 bg-omuto-red/5' : ''}`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-xs font-black uppercase tracking-widest text-muted-foreground">{title}</CardTitle>
-                <div className="p-2 bg-primary/10 rounded-lg">
-                    <Icon className="h-4 w-4 text-primary" />
+                <div className={`p-2 rounded-lg ${variant === 'urgent' ? 'bg-omuto-red/10' : 'bg-primary/10'}`}>
+                    <Icon className={`h-4 w-4 ${variant === 'urgent' ? 'text-omuto-red' : 'text-primary'}`} />
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold tracking-tight">{value}</div>
+                <div className={`text-2xl font-bold tracking-tight ${variant === 'urgent' ? 'text-omuto-red' : ''}`}>{value}</div>
                 {description && <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase tracking-tighter">{description}</p>}
                 {trend && <p className="text-[10px] font-black text-green-500 mt-2 flex items-center gap-1">
                     <TrendingUp className="h-3 w-3" /> {trend}
@@ -175,8 +175,8 @@ function EssentialsHubPage() {
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild className="rounded-xl border-lg">
-                        <Link href="/enterprise"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Enterprise</Link>
+                    <Button variant="outline" size="sm" asChild className="rounded-xl border-lg shadow-comic-sm">
+                        <Link href="/enterprise"><ArrowLeft className="mr-2 h-4 w-4" /> Enterprise Hub</Link>
                     </Button>
                 </div>
             </header>
@@ -205,6 +205,7 @@ function EssentialsHubPage() {
                     value={isLoading ? '...' : String(stats.lowStockCount)} 
                     icon={AlertCircle} 
                     description="Items below reorder point"
+                    variant={stats.lowStockCount > 0 ? 'urgent' : 'default'}
                 />
              </div>
              
@@ -265,11 +266,31 @@ function EssentialsHubPage() {
                         </Button>
 
                         <Button asChild variant="outline" className="h-20 border-lg shadow-comic-sm rounded-3xl justify-start px-6 hover:bg-primary/5 group">
+                            <Link href="/enterprise/essentials/procurement">
+                                <div className="p-3 bg-primary/10 rounded-xl mr-4 group-hover:bg-primary/20"><ShoppingBag className="h-6 w-6 text-primary"/></div>
+                                <div className="text-left text-omuto-navy">
+                                    <p className="font-black uppercase text-sm tracking-tighter">Restock Log</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground">Buy Raw Materials</p>
+                                </div>
+                            </Link>
+                        </Button>
+
+                        <Button asChild variant="outline" className="h-20 border-lg shadow-comic-sm rounded-3xl justify-start px-6 hover:bg-primary/5 group">
+                            <Link href="/enterprise/essentials/adjustments">
+                                <div className="p-3 bg-omuto-red/10 rounded-xl mr-4 group-hover:bg-omuto-red/20"><History className="h-6 w-6 text-omuto-red"/></div>
+                                <div className="text-left text-omuto-navy">
+                                    <p className="font-black uppercase text-sm tracking-tighter text-omuto-red">Damages/Loss</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground">Adjust Inventory</p>
+                                </div>
+                            </Link>
+                        </Button>
+
+                        <Button asChild variant="outline" className="h-20 border-lg shadow-comic-sm rounded-3xl justify-start px-6 hover:bg-primary/5 group">
                             <Link href="/enterprise/essentials/inventory">
                                 <div className="p-3 bg-primary/10 rounded-xl mr-4 group-hover:bg-primary/20"><Boxes className="h-6 w-6 text-primary"/></div>
                                 <div className="text-left text-omuto-navy">
-                                    <p className="font-black uppercase text-sm tracking-tighter">Inventory</p>
-                                    <p className="text-[10px] font-bold text-muted-foreground">Stock Check & Audit</p>
+                                    <p className="font-black uppercase text-sm tracking-tighter">Stock Count</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground">Physical Audit</p>
                                 </div>
                             </Link>
                         </Button>
@@ -278,8 +299,8 @@ function EssentialsHubPage() {
                             <Link href="/enterprise/essentials/products">
                                 <div className="p-3 bg-primary/10 rounded-xl mr-4 group-hover:bg-primary/20"><ClipboardList className="h-6 w-6 text-primary"/></div>
                                 <div className="text-left text-omuto-navy">
-                                    <p className="font-black uppercase text-sm tracking-tighter">Product List</p>
-                                    <p className="text-[10px] font-bold text-muted-foreground">SKU & Price Control</p>
+                                    <p className="font-black uppercase text-sm tracking-tighter">Manage List</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground">SKUs & Pricing</p>
                                 </div>
                             </Link>
                         </Button>
@@ -293,7 +314,7 @@ function EssentialsHubPage() {
                             <div className="space-y-1">
                                 <h4 className="font-black text-sm uppercase tracking-tighter text-omuto-brown">System Intelligence</h4>
                                 <p className="text-[10px] font-bold text-omuto-brown/70 leading-relaxed uppercase tracking-wide">
-                                    High volume production in Sector B. Suggesting inventory replenishment for packaging materials within 48 hours.
+                                    Suggested task: Review stock of packaging materials. Current consumption rate indicates stock-out risk in 7 days.
                                 </p>
                             </div>
                         </div>
