@@ -18,14 +18,20 @@ Here you will find:
 
 ---
 
-## 2. Your Daily Rhythm: Submitting Your End-of-Day Note
+## 2. Your Daily Rhythm: Plan & Report
 
-Your most important daily task is to share your progress.
+Your most important daily tasks will be to plan your day and share your progress.
 
-### Submitting Your End-of-Day Note
-At the end of your day, it's essential to submit a quick note. This is how your supervisor and the rest of the team see your progress and learnings. You can find this in the "Forms Hub".
+### Start of Day: AI Daily Planner
+This is how you create a strategic plan for your day. You can access this from the "Quick Actions" on your dashboard or via the main navigation.
 
-*   **How:** Click "Forms Hub" in the sidebar, then select "Daily Check-out". Briefly describe what you accomplished and one new thing you learned.
+*   **How:** Click "Daily Planner," tell the AI your main goal, and it will generate a schedule for you.
+*   **Why:** This aligns your tasks with the team's wider goals and helps you work more effectively.
+
+### End of Day: Daily Check-out
+At the end of your day, it's essential to submit a quick report. This is how your supervisor and the rest of the team see your progress and learnings.
+
+*   **How:** Click "Forms Hub" in the sidebar, then select "Daily Check-out". The form will ask you to review your planned tasks, share what you learned, and set a priority for tomorrow.
 *   **Why:** This keeps everyone in sync and helps us celebrate your contributions and growth! It's a key part of our culture of learning.
 
 ---
@@ -60,9 +66,8 @@ Your profile is your personal space within Omuto Central.
 
 Even when working remotely, it's important to stay connected. The Team Hub section is where this happens.
 
-*   **Team Space:** A group chat for all team members. Share quick updates, ask questions, and celebrate wins together.
+*   **Team Stream:** This is a live feed of the daily plans (check-ins) and end-of-day reports (check-outs) from the entire team. It's a great way to see what everyone is working on and learn from their progress.
 *   **Team Calendar:** A shared calendar showing all upcoming events, meetings, and important deadlines. Check this regularly to know what's happening.
-*   **Check-in & Check-out Streams:** These are live feeds of the daily plans (check-ins) and end-of-day reports (check-outs) from the entire team. It's a great way to see what everyone is working on and learn from their progress.
 
 ---
 

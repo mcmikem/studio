@@ -1,17 +1,17 @@
 
-
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks, DollarSign, Users, FileSignature } from 'lucide-react';
+import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks, DollarSign, Users, FileSignature, Bug, Camera } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
 import { useViewAs } from '@/hooks/use-view-as';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 
 
-export default function ManagementLayout({
+export default function ManagementLayoutComponent({
   children,
 }: {
   children: React.ReactNode;
@@ -47,6 +47,7 @@ export default function ManagementLayout({
     { name: 'Programs', href: '/management/programs', icon: FolderKanban },
     { name: 'Projects', href: '/management/projects', icon: Briefcase },
     { name: 'Partnerships', href: '/management/partnerships', icon: Handshake },
+    { name: 'Content', href: '/management/content', icon: Camera, roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'] },
     { name: 'Resources', href: '/management/resources', icon: DollarSign, roles: ['Executive Director', 'Resource Mobilization Lead', 'Administrator'] },
     { name: 'Operational Plan', href: '/management/operational-plan', icon: FileSignature, roles: ['Executive Director', 'Programs & Partnerships Manager', 'Administrator'] },
     { name: 'Finance', href: '/management/finance', icon: DollarSign, roles: ['Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Administrator'] },
@@ -56,6 +57,7 @@ export default function ManagementLayout({
     { name: 'Equipment', href: '/management/equipment', icon: Box },
     { name: 'Templates', href: '/management/templates', icon: ListChecks },
     { name: 'Users', href: '/management/users', icon: Users },
+    { name: 'Feedback', href: '/management/feedback', icon: Bug },
   ];
 
   const tabs = allTabs.filter(tab => {
@@ -65,24 +67,27 @@ export default function ManagementLayout({
 
   return (
     <div className="flex flex-col gap-6">
-       <div className="border-b border-border">
-        <div className="flex items-center gap-x-4 gap-y-2 p-2 flex-wrap">
-            {tabs.map((tab) => (
-              <Link
-                key={tab.name}
-                href={tab.href}
-                className={cn(
-                  'flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap',
-                  pathname.startsWith(tab.href)
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <tab.icon className="h-4 w-4" />
-                {tab.name}
-              </Link>
-            ))}
-          </div>
+       <div className="border-b border-border -mx-4 sm:-mx-6">
+        <ScrollArea className="w-full">
+          <div className="flex items-center gap-x-2 px-4 sm:px-6">
+              {tabs.map((tab) => (
+                <Link
+                  key={tab.name}
+                  href={tab.href}
+                  className={cn(
+                    'flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap',
+                    pathname.startsWith(tab.href)
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  <tab.icon className="h-4 w-4" />
+                  {tab.name}
+                </Link>
+              ))}
+            </div>
+             <ScrollBar orientation="horizontal" className="invisible" />
+          </ScrollArea>
       </div>
       <div>{children}</div>
     </div>
