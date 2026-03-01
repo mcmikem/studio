@@ -35,6 +35,7 @@ export const parseOperationalPlanFlow = ai.defineFlow(
   `;
 
     const result = await ai.generate({
+        model: 'googleai/gemini-flash-latest',
         prompt: prompt,
         output: { schema: ParsePlanOutputSchema },
     });

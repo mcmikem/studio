@@ -50,7 +50,7 @@ const getActivitiesForProgramToolObject = ai.defineTool(
 
 const qualitativeAnalysisPrompt = ai.definePrompt({
     name: 'qualitativeAnalysisPrompt',
-    model: 'googleai/gemini-pro', 
+    model: 'googleai/gemini-flash-latest', 
     input: { schema: QualitativeAnalysisInputSchema },
     tools: [getActivitiesForProgramToolObject],
     output: { schema: QualitativeAnalysisOutputSchema },

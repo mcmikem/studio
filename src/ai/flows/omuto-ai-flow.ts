@@ -200,7 +200,7 @@ const getRecentCheckoutsToolObject = ai.defineTool(
 
 const omutoAIPrompt = ai.definePrompt({
     name: 'omutoAIPrompt',
-    model: 'googleai/gemini-pro',
+    model: 'googleai/gemini-flash-latest',
     tools: [
         searchOmutoToolObject, 
         createCheckoutToolObject, 
@@ -259,4 +259,3 @@ export const omutoAIFlow = ai.defineFlow(
     }
   }
 );
-

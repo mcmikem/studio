@@ -27,6 +27,7 @@ export const impactStoryFlow = ai.defineFlow({
   ${input.userQuote ? `Quote from a Beneficiary: "${input.userQuote}"`: ''}`;
 
     const result = await ai.generate({
+        model: 'googleai/gemini-flash-latest',
         prompt: prompt,
         output: { schema: ImpactStoryOutputSchema },
       });
