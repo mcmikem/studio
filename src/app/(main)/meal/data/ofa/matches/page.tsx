@@ -46,49 +46,78 @@ export default function MatchesPage() {
       </header>
       <Card>
         <CardContent className="pt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Match</TableHead>
-                <TableHead className="text-center">Score</TableHead>
-                <TableHead className="hidden md:table-cell">Goal Scorers</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading &&
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
-                  </TableRow>
-                ))}
-              {matches && matches.length > 0 ? (
-                matches.map((match) => (
-                  <TableRow key={match.id}>
-                    <TableCell>{formatDateSafe(match.date, 'dateOnly')}</TableCell>
-                    <TableCell className="font-medium">{match.homeTeam} vs {match.awayTeam}</TableCell>
-                    <TableCell className="text-center font-bold text-lg">{match.homeScore} - {match.awayScore}</TableCell>
-                    <TableCell className="hidden md:table-cell text-xs text-muted-foreground">{match.goalScorers}</TableCell>
-                  </TableRow>
+           {/* Mobile View */}
+          <div className="sm:hidden space-y-4">
+            {isLoading && Array.from({length: 3}).map((_, i) => <Skeleton key={i} className="h-36 w-full"/>)}
+            {matches && matches.length > 0 ? (
+                matches.map(match => (
+                    <Card key={match.id}>
+                        <CardHeader>
+                            <CardTitle className="text-base">{match.homeTeam} vs {match.awayTeam}</CardTitle>
+                            <CardDescription>{formatDateSafe(match.date, 'dateOnly')}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-center">{match.homeScore} - {match.awayScore}</p>
+                            <p className="text-xs text-muted-foreground mt-2"><strong>Goal Scorers:</strong> {match.goalScorers || 'N/A'}</p>
+                        </CardContent>
+                    </Card>
                 ))
-              ) : (
+            ) : (
                 !isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-48">
-                      <EmptyState
-                        icon={FileText}
-                        title="No Match Reports"
-                        description="Submit the first match report from the OFA Hub."
-                      />
-                    </TableCell>
-                  </TableRow>
+                  <EmptyState
+                    icon={FileText}
+                    title="No Match Reports"
+                    description="Submit the first match report from the OFA Hub."
+                  />
                 )
-              )}
-            </TableBody>
-          </Table>
+            )}
+          </div>
+          {/* Desktop View */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Match</TableHead>
+                  <TableHead className="text-center">Score</TableHead>
+                  <TableHead className="hidden md:table-cell">Goal Scorers</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading &&
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12 mx-auto" /></TableCell>
+                      <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-32" /></TableCell>
+                    </TableRow>
+                  ))}
+                {matches && matches.length > 0 ? (
+                  matches.map((match) => (
+                    <TableRow key={match.id}>
+                      <TableCell>{formatDateSafe(match.date, 'dateOnly')}</TableCell>
+                      <TableCell className="font-medium">{match.homeTeam} vs {match.awayTeam}</TableCell>
+                      <TableCell className="text-center font-bold text-lg">{match.homeScore} - {match.awayScore}</TableCell>
+                      <TableCell className="hidden md:table-cell text-xs text-muted-foreground">{match.goalScorers}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-48">
+                        <EmptyState
+                          icon={FileText}
+                          title="No Match Reports"
+                          description="Submit the first match report from the OFA Hub."
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

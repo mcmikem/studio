@@ -221,7 +221,7 @@ export default function CalendarPage() {
             </div>
             
             {/* Calendar Grid */}
-            <div className="flex-grow grid grid-cols-7 grid-rows-5 md:grid-rows-6 h-[600px] md:h-auto">
+            <div className="flex-grow grid grid-cols-7 grid-rows-5 md:grid-rows-6">
                 {calendarDays.map((day, dayIdx) => {
                     const dayEvents = getEventsForDay(day);
                     const isCurrentMonth = isSameMonth(day, currentMonth);
@@ -232,7 +232,7 @@ export default function CalendarPage() {
                             key={day.toString()} 
                             onClick={() => handleDayClick(day)}
                             className={cn(
-                                "border-b border-r p-2 min-h-[100px] relative transition-colors hover:bg-muted/30 cursor-pointer flex flex-col gap-1",
+                                "border-b border-r p-1 sm:p-2 min-h-[90px] sm:min-h-[110px] relative transition-colors hover:bg-muted/30 cursor-pointer flex flex-col gap-1",
                                 !isCurrentMonth && "bg-muted/20 text-muted-foreground",
                                 isDayToday && "bg-primary/5"
                             )}

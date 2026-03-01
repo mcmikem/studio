@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -91,69 +90,95 @@ export default function BeneficiariesPage() {
         </Button>
       </header>
 
-      <Card className="data-table-omuto">
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70 pl-6">Participant Details</TableHead>
-                <TableHead className="hidden md:table-cell font-black uppercase text-[10px] tracking-widest text-omuto-navy/70">Enrolled Program</TableHead>
-                <TableHead className="hidden sm:table-cell font-black uppercase text-[10px] tracking-widest text-omuto-navy/70">Location</TableHead>
-                <TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70 pr-6 text-right">Gender</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading &&
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="pl-6"><Skeleton className="h-10 w-48" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-24" /></TableCell>
-                    <TableCell className="pr-6"><Skeleton className="h-6 w-12 ml-auto" /></TableCell>
-                  </TableRow>
-                ))}
-              {beneficiaries && beneficiaries.length > 0 ? (
-                beneficiaries.map((beneficiary) => (
-                  <TableRow key={beneficiary.id} className="group">
-                    <TableCell className="pl-6 py-4">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12 border-md border-omuto-navy shadow-comic-sm group-hover:rotate-3 transition-transform">
-                          <AvatarImage src={beneficiary.photoURL || ''} alt={beneficiary.name} />
-                          <AvatarFallback className="bg-omuto-cream text-omuto-navy font-black text-xs">{getInitials(beneficiary.name)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-black text-sm uppercase leading-tight text-omuto-navy">{beneficiary.name}</p>
-                          <p className="text-[10px] font-bold text-omuto-navy/40 uppercase tracking-tight">{beneficiary.phone || 'NO CONTACT RECORDED'}</p>
+      {/* Mobile View */}
+      <div className="sm:hidden space-y-4">
+        {isLoading && Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
+        {beneficiaries?.map(b => (
+            <Card key={b.id}>
+                <CardHeader className="flex flex-row items-center gap-4">
+                    <Avatar className="h-12 w-12 border-md border-omuto-navy shadow-comic-sm">
+                        <AvatarImage src={b.photoURL || ''} alt={b.name} />
+                        <AvatarFallback className="bg-omuto-cream text-omuto-navy font-black text-xs">{getInitials(b.name)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle className="text-base">{b.name}</CardTitle>
+                        <CardDescription>{b.programEnrolled}</CardDescription>
+                    </div>
+                </CardHeader>
+                 <CardContent className="text-sm">
+                    <p><strong>Village:</strong> {b.village}</p>
+                    <p><strong>Gender:</strong> {b.gender}</p>
+                 </CardContent>
+            </Card>
+        ))}
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden sm:block">
+        <Card className="data-table-omuto">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70 pl-6">Participant Details</TableHead>
+                  <TableHead className="hidden md:table-cell font-black uppercase text-[10px] tracking-widest text-omuto-navy/70">Enrolled Program</TableHead>
+                  <TableHead className="hidden sm:table-cell font-black uppercase text-[10px] tracking-widest text-omuto-navy/70">Location</TableHead>
+                  <TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70 pr-6 text-right">Gender</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading &&
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="pl-6"><Skeleton className="h-10 w-48" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-24" /></TableCell>
+                      <TableCell className="pr-6"><Skeleton className="h-6 w-12 ml-auto" /></TableCell>
+                    </TableRow>
+                  ))}
+                {beneficiaries && beneficiaries.length > 0 ? (
+                  beneficiaries.map((beneficiary) => (
+                    <TableRow key={beneficiary.id} className="group">
+                      <TableCell className="pl-6 py-4">
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-12 w-12 border-md border-omuto-navy shadow-comic-sm group-hover:rotate-3 transition-transform">
+                            <AvatarImage src={beneficiary.photoURL || ''} alt={beneficiary.name} />
+                            <AvatarFallback className="bg-omuto-cream text-omuto-navy font-black text-xs">{getInitials(beneficiary.name)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-black text-sm uppercase leading-tight text-omuto-navy">{beneficiary.name}</p>
+                            <p className="text-[10px] font-bold text-omuto-navy/40 uppercase tracking-tight">{beneficiary.phone || 'NO CONTACT RECORDED'}</p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                        <span className="px-3 py-1 bg-omuto-cream border-px border-omuto-navy/10 rounded-full text-[10px] font-black uppercase tracking-wide text-omuto-navy/70">{beneficiary.programEnrolled}</span>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell font-bold text-xs text-omuto-navy/70 uppercase">{beneficiary.village}</TableCell>
-                    <TableCell className="pr-6 text-right font-black text-xs text-omuto-navy">{beneficiary.gender}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="h-64"
-                    >
-                      <EmptyState
-                        icon={Users}
-                        title="No Beneficiaries Registered"
-                        description="Start by registering the first participant to activate this database."
-                      />
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                          <span className="px-3 py-1 bg-omuto-cream border-px border-omuto-navy/10 rounded-full text-[10px] font-black uppercase tracking-wide text-omuto-navy/70">{beneficiary.programEnrolled}</span>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell font-bold text-xs text-omuto-navy/70 uppercase">{beneficiary.village}</TableCell>
+                      <TableCell className="pr-6 text-right font-black text-xs text-omuto-navy">{beneficiary.gender}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className="h-64"
+                      >
+                        <EmptyState
+                          icon={Users}
+                          title="No Beneficiaries Registered"
+                          description="Start by registering the first participant to activate this database."
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

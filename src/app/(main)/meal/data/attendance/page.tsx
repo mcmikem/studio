@@ -46,55 +46,86 @@ export default function AttendanceRecordsPage() {
       </header>
       <Card>
         <CardContent className="pt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event Name</TableHead>
-                <TableHead className="hidden md:table-cell">Participant Name</TableHead>
-                <TableHead>Age</TableHead>
-                <TableHead>Gender</TableHead>
-                <TableHead className="hidden sm:table-cell">Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading &&
-                Array.from({ length: 10 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-28" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
-                  </TableRow>
-                ))}
-              {records && records.length > 0 ? (
-                records.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell className="font-medium">{record.eventName}</TableCell>
-                    <TableCell className="hidden md:table-cell">{record.participantName}</TableCell>
-                    <TableCell>{record.age}</TableCell>
-                    <TableCell>{record.gender}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{formatDateSafe(record.date, 'dateOnly')}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="h-48"
-                    >
-                      <EmptyState
-                        icon={CheckCircle}
-                        title="No Attendance Logged"
-                        description="Use the attendance form in the MEAL Hub to start tracking participants."
-                      />
-                    </TableCell>
-                  </TableRow>
+          {/* Mobile View */}
+          <div className="sm:hidden space-y-4">
+            {isLoading && Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+            {records && records.length > 0 ? (
+              records.map(record => (
+                <Card key={record.id}>
+                  <CardHeader>
+                    <CardTitle className="text-base">{record.participantName}</CardTitle>
+                    <CardDescription>{record.eventName}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-sm space-y-1">
+                    <p><strong>Date:</strong> {formatDateSafe(record.date, 'dateOnly')}</p>
+                    <p><strong>Age:</strong> {record.age}</p>
+                    <p><strong>Gender:</strong> {record.gender}</p>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+               !isLoading && (
+                  <EmptyState
+                    icon={CheckCircle}
+                    title="No Attendance Logged"
+                    description="Use the attendance form in the MEAL Hub to start tracking participants."
+                  />
                 )
-              )}
-            </TableBody>
-          </Table>
+            )}
+          </div>
+
+          {/* Desktop View */}
+          <div className="hidden sm:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Event Name</TableHead>
+                  <TableHead className="hidden md:table-cell">Participant Name</TableHead>
+                  <TableHead>Age</TableHead>
+                  <TableHead>Gender</TableHead>
+                  <TableHead className="hidden sm:table-cell">Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading &&
+                  Array.from({ length: 10 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                      <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-28" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                      <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
+                    </TableRow>
+                  ))}
+                {records && records.length > 0 ? (
+                  records.map((record) => (
+                    <TableRow key={record.id}>
+                      <TableCell className="font-medium">{record.eventName}</TableCell>
+                      <TableCell className="hidden md:table-cell">{record.participantName}</TableCell>
+                      <TableCell>{record.age}</TableCell>
+                      <TableCell>{record.gender}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{formatDateSafe(record.date, 'dateOnly')}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="h-48"
+                      >
+                        <EmptyState
+                          icon={CheckCircle}
+                          title="No Attendance Logged"
+                          description="Use the attendance form in the MEAL Hub to start tracking participants."
+                        />
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
