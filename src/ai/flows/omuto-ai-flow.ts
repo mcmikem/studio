@@ -8,7 +8,14 @@
 
 import { ai } from '@/ai/genkit';
 import { KNOWLEDGE_BASE } from '@/lib/data';
-import { SearchResultItem, OmutoAIInput, OmutoAIOutput } from '@/lib/types';
+import {
+  SearchResultItemSchema,
+  OmutoAIInputSchema,
+  OmutoAIOutputSchema,
+  type OmutoAIInput,
+  type OmutoAIOutput,
+  type SearchResultItem,
+} from '@/lib/types';
 import { z } from 'zod';
 import { getFirebaseAdmin } from '@/firebase/server';
 import { Timestamp } from 'firebase-admin/firestore';
@@ -20,7 +27,7 @@ const findUsersByNameToolObject = ai.defineTool(
         name: 'findUsersByName',
         description: 'Finds staff members by their name.',
         inputSchema: z.object({ name: z.string().describe("The name of the staff member to search for.") }),
-        outputSchema: z.array(SearchResultItem),
+        outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ name }) => {
         const { firestore } = getFirebaseAdmin();
@@ -37,7 +44,7 @@ const findProgramsByNameToolObject = ai.defineTool(
         name: 'findProgramsByName',
         description: 'Finds programs by their title.',
         inputSchema: z.object({ title: z.string().describe("The title of the program to search for.") }),
-        outputSchema: z.array(SearchResultItem),
+        outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
         const { firestore } = getFirebaseAdmin();
@@ -54,7 +61,7 @@ const findExpensesByTitleToolObject = ai.defineTool(
         name: 'findExpensesByTitle',
         description: 'Finds expense reports by their title.',
         inputSchema: z.object({ title: z.string().describe("The title of the expense report to search for.") }),
-        outputSchema: z.array(SearchResultItem),
+        outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ title }) => {
         const { firestore } = getFirebaseAdmin();
@@ -71,7 +78,7 @@ const searchOmutoToolObject = ai.defineTool(
         name: 'searchOmuto',
         description: 'Performs a global search across users, programs, and expenses to find information within the Omuto Central app.',
         inputSchema: z.object({ query: z.string().describe("The user's natural language search query.") }),
-        outputSchema: z.array(SearchResultItem),
+        outputSchema: z.array(SearchResultItemSchema),
     },
     async ({ query }) => {
         console.log(`Searching Omuto for: ${query}`);
@@ -218,10 +225,10 @@ ${KNOWLEDGE_BASE}
 export const omutoAIFlow = ai.defineFlow(
   {
     name: 'omutoAIFlow',
-    inputSchema: OmutoAIInput,
-    outputSchema: OmutoAIOutput,
+    inputSchema: OmutoAIInputSchema,
+    outputSchema: OmutoAIOutputSchema,
   },
-  async (input) => {
+  async (input: OmutoAIInput): Promise<OmutoAIOutput> => {
     try {
         console.log(`omutoAIFlow invoked with question: "${input.question}"`);
 
@@ -253,4 +260,3 @@ export const omutoAIFlow = ai.defineFlow(
   }
 );
 
-  
