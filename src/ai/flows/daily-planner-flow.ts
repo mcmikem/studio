@@ -1,3 +1,4 @@
+'use server';
 
 import { ai } from '@/ai/genkit';
 import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
@@ -29,7 +30,7 @@ export const dailyPlannerFlow = ai.defineFlow(
     `;
 
     const result = await ai.generate({
-      model: 'googleai/gemini-1.5-pro',
+      model: 'googleai/gemini-flash-latest',
       prompt: prompt,
       output: { schema: DailyPlannerAIOutputSchema },
     });
