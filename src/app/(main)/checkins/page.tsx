@@ -36,14 +36,13 @@ const getInitials = (name?: string) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-function CheckinCard({ checkin }: { checkin: Checkin }) {
+function DesktopCheckinCard({ checkin }: { checkin: Checkin }) {
     const hasDetails = !!checkin.details;
 
     return (
         <Card>
              <CardHeader className="flex flex-row items-start gap-4">
                 <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                     {/* Checkin doesn't have avatar, so we use fallback */}
                      <AvatarFallback>{getInitials(checkin.name)}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -102,6 +101,48 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
     )
 }
 
+function MobileCheckinCard({ checkin }: { checkin: Checkin }) {
+  const hasDetails = !!checkin.details;
+
+  return (
+    <Card>
+        <CardHeader className="flex flex-row items-start gap-4 pb-4">
+            <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
+                <AvatarFallback>{getInitials(checkin.name)}</AvatarFallback>
+            </Avatar>
+            <div>
+                <div className="flex items-center gap-2">
+                    <Link href={`/profile?userId=${checkin.userId}`} className="hover:underline">
+                        <CardTitle className="text-base">{checkin.name}'s Plan</CardTitle>
+                    </Link>
+                    {checkin.mood && (
+                        <span title={`Feeling: ${checkin.mood}`} className="text-lg">{moodIcons[checkin.mood]}</span>
+                    )}
+                </div>
+                <CardDescription className="text-xs">{formatDateSafe(checkin.timestamp)}</CardDescription>
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+            <div>
+                <p className="font-semibold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><TargetIcon className="h-4 w-4" /> Mission</p>
+                <p className="font-medium mt-1">{checkin.primaryMission}</p>
+            </div>
+            {hasDetails && checkin.details?.timeBlocks && (
+                 <div>
+                    <p className="font-semibold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Clock className="h-4 w-4" /> Time Blocks</p>
+                    <ul className="list-disc list-inside space-y-1 text-muted-foreground mt-1 pl-2">
+                        {checkin.details.timeBlocks.slice(0, 3).map((block, index) => (
+                            <li key={index} className="truncate"><strong>{block.startTime}:</strong> {block.description}</li>
+                        ))}
+                         {checkin.details.timeBlocks.length > 3 && <li>...and {checkin.details.timeBlocks.length - 3} more</li>}
+                    </ul>
+                </div>
+            )}
+        </CardContent>
+    </Card>
+  )
+}
+
 function CheckinStream() {
      const checkinsQuery = useMemoFirebase((db) => {
         return query(collection(db, 'checkins'), orderBy('timestamp', 'desc'), limit(50));
@@ -110,23 +151,44 @@ function CheckinStream() {
     const { data: checkins, isLoading } = useCollection<Checkin>(checkinsQuery);
 
     return (
-        <div className="space-y-6">
-            {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-60 w-full" />)}
-            {checkins && checkins.length > 0 ? (
-                checkins.map(checkin => <CheckinCard key={checkin.id} checkin={checkin} />)
-            ) : (
-                 !isLoading && (
-                    <EmptyState
-                        icon={LogIn}
-                        title="No Check-ins Yet!"
-                        description="Be the first to create a daily plan with the AI Daily Planner."
-                        className="min-h-[400px]"
-                    >
-                        <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
-                    </EmptyState>
-                )
-            )}
-        </div>
+        <>
+            {/* Mobile View */}
+            <div className="space-y-4 sm:hidden">
+                {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+                {checkins && checkins.length > 0 ? (
+                    checkins.map(checkin => <MobileCheckinCard key={checkin.id} checkin={checkin} />)
+                ) : (
+                    !isLoading && (
+                        <EmptyState
+                            icon={LogIn}
+                            title="No Check-ins Yet!"
+                            description="Be the first to create a daily plan with the AI Daily Planner."
+                        >
+                            <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
+                        </EmptyState>
+                    )
+                )}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block space-y-6">
+                {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-60 w-full" />)}
+                {checkins && checkins.length > 0 ? (
+                    checkins.map(checkin => <DesktopCheckinCard key={checkin.id} checkin={checkin} />)
+                ) : (
+                    !isLoading && (
+                        <EmptyState
+                            icon={LogIn}
+                            title="No Check-ins Yet!"
+                            description="Be the first to create a daily plan with the AI Daily Planner."
+                            className="min-h-[400px]"
+                        >
+                            <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
+                        </EmptyState>
+                    )
+                )}
+            </div>
+        </>
     );
 }
 

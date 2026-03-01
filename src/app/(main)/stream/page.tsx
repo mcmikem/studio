@@ -8,6 +8,14 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Rss, LogOut, BookOpen, Lightbulb, Check, X, Wind } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
@@ -24,7 +32,6 @@ import Link from 'next/link';
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
     
     const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [];
-
     const completedTasks = tasksArray.filter(t => t.status === 'Done');
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
     
@@ -39,56 +46,35 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
 
     return (
         <Card>
-             <CardHeader className="flex flex-row items-start gap-4">
+             <CardHeader className="flex flex-row items-start gap-4 pb-4">
                 <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
                      <AvatarImage src={checkout.avatar} />
                      <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
                 </Avatar>
                 <div>
                     <Link href={`/profile?userId=${checkout.userId}`} className="hover:underline">
-                        <CardTitle>{checkout.name}'s Report</CardTitle>
+                        <CardTitle className="text-base">{checkout.name}'s Report</CardTitle>
                     </Link>
-                    <CardDescription>{formatDateSafe(checkout.timestamp)}</CardDescription>
+                    <CardDescription className="text-xs">{formatDateSafe(checkout.timestamp)}</CardDescription>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-2 flex items-center gap-2">Task Completion</h4>
-                  <div className="space-y-3">
-                    {completedTasks.map((task, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                            <Check className="h-4 w-4 mt-1 text-green-500 flex-shrink-0" />
-                            <p className="text-sm text-muted-foreground">{task.description}</p>
-                        </div>
-                    ))}
-                    {notCompletedTasks.map((task, index) => (
-                         <div key={index} className="flex items-start gap-3">
-                            <X className="h-4 w-4 mt-1 text-red-500 flex-shrink-0" />
-                            <div>
-                                <p className="text-sm text-muted-foreground line-through">{task.description}</p>
-                                {task.reason && <p className="text-xs text-red-500 italic pl-2">Reason: {task.reason}</p>}
-                            </div>
-                        </div>
-                    ))}
-                     {tasksArray.length === 0 && (
-                        <p className="text-sm text-muted-foreground italic">No specific tasks were reported.</p>
-                    )}
-                  </div>
-                </div>
-
-                {(checkout.learning || checkout.tomorrowPlan) && <Separator />}
-
-                 {checkout.learning && (
-                    <div>
-                         <h4 className="font-semibold mb-1 flex items-center gap-2"><Lightbulb className="h-4 w-4 text-yellow-500"/> Key Learning</h4>
-                        <p className="text-muted-foreground text-sm italic">"{checkout.learning}"</p>
+            <CardContent className="space-y-4 text-sm">
+                {completedTasks.length > 0 && (
+                    <div className="flex items-start gap-2">
+                        <Check className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />
+                        <p className="text-muted-foreground">{completedTasks.map(t => t.description).join(', ')}</p>
                     </div>
                 )}
-                
-                {checkout.tomorrowPlan && (
-                    <div>
-                        <h4 className="font-semibold mb-1 flex items-center gap-2"><BookOpen className="h-4 w-4 text-blue-500"/> Tomorrow's Priority</h4>
-                        <p className="text-muted-foreground text-sm">{checkout.tomorrowPlan}</p>
+                 {notCompletedTasks.length > 0 && (
+                    <div className="flex items-start gap-2">
+                        <X className="h-4 w-4 mt-0.5 text-red-500 flex-shrink-0" />
+                        <p className="text-muted-foreground line-through">{notCompletedTasks.map(t => t.description).join(', ')}</p>
+                    </div>
+                )}
+                 {checkout.learning && (
+                    <div className="flex items-start gap-2 pt-2 border-t">
+                        <Lightbulb className="h-4 w-4 mt-0.5 text-yellow-500 flex-shrink-0"/>
+                        <p className="text-muted-foreground italic">"{checkout.learning}"</p>
                     </div>
                 )}
             </CardContent>
@@ -104,27 +90,106 @@ function CheckoutStream() {
     const { data: checkouts, isLoading } = useCollection<Checkout>(checkoutsQuery);
 
     return (
-        <div className="space-y-6">
-            {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-60 w-full" />)}
-            {checkouts && checkouts.length > 0 ? (
-                checkouts.map(checkout => <CheckoutCard key={checkout.id} checkout={checkout} />)
-            ) : (
-                 !isLoading && (
-                    <EmptyState
-                        icon={Wind}
-                        title="Quiet day so far..."
-                        description="No one has checked out yet. Be the first to share your progress!"
-                        className="min-h-[400px]"
-                    >
-                         <Button asChild className="mt-4"><Link href="/forms/check-out">Check Out Now</Link></Button>
-                    </EmptyState>
-                )
-            )}
-        </div>
+        <>
+            {/* Mobile View */}
+            <div className="space-y-4 sm:hidden">
+                {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+                {checkouts && checkouts.length > 0 ? (
+                    checkouts.map(checkout => <CheckoutCard key={checkout.id} checkout={checkout} />)
+                ) : (
+                    !isLoading && (
+                        <EmptyState
+                            icon={Wind}
+                            title="Quiet day so far..."
+                            description="No one has checked out yet. Be the first to share your progress!"
+                        >
+                            <Button asChild className="mt-4"><Link href="/forms/check-out">Check Out Now</Link></Button>
+                        </EmptyState>
+                    )
+                )}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block">
+                <Card>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[200px]">User</TableHead>
+                                <TableHead>Summary</TableHead>
+                                <TableHead className="w-[150px] text-right">Date</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell><Skeleton className="h-8 w-full" /></TableCell>
+                                    <TableCell><Skeleton className="h-8 w-full" /></TableCell>
+                                    <TableCell><Skeleton className="h-8 w-full" /></TableCell>
+                                </TableRow>
+                            ))}
+                            {checkouts && checkouts.length > 0 ? (
+                                checkouts.map((checkout) => {
+                                    const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [];
+                                    const completed = tasksArray.filter(t => t.status === 'Done').length;
+                                    const notCompleted = tasksArray.filter(t => t.status === 'Not Done').length;
+                                    return (
+                                        <TableRow key={checkout.id}>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
+                                                        <AvatarImage src={checkout.avatar} />
+                                                        <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="font-medium">{checkout.name}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <p className="font-medium truncate">{tasksArray[0]?.description}</p>
+                                                <div className="text-xs text-muted-foreground space-x-2">
+                                                    {completed > 0 && <span className="text-green-600">{completed} done</span>}
+                                                    {notCompleted > 0 && <span className="text-red-600">{notCompleted} not done</span>}
+                                                    {checkout.learning && <span>| Key Learning</span>}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right text-muted-foreground text-xs">{formatDateSafe(checkout.timestamp)}</TableCell>
+                                        </TableRow>
+                                    );
+                                })
+                            ) : (
+                                !isLoading && (
+                                     <TableRow>
+                                        <TableCell colSpan={3} className="h-48">
+                                            <EmptyState
+                                                icon={Wind}
+                                                title="Quiet day so far..."
+                                                description="No one has checked out yet. Check-out reports will appear here."
+                                                className="min-h-0"
+                                            >
+                                                 <Button asChild className="mt-4" variant="outline"><Link href="/forms/check-out">Check Out Now</Link></Button>
+                                            </EmptyState>
+                                        </TableCell>
+                                     </TableRow>
+                                )
+                            )}
+                        </TableBody>
+                    </Table>
+                </Card>
+            </div>
+        </>
     );
 }
 
 function StreamPageContent() {
+    const getInitials = (name?: string) => {
+        if (!name) return 'U';
+        const parts = name.split(' ');
+        if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
+            return parts[0][0] + parts[parts.length - 1][0];
+        }
+        return name.substring(0, 2).toUpperCase();
+    };
+
     return (
         <div className="flex flex-col gap-6">
             <header>
