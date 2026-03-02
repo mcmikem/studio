@@ -13,6 +13,8 @@ import { runImpactStoryGenerator, runTestimonyProcessor } from '@/ai/actions';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { formatDateSafe } from '@/lib/utils';
+import { runQualitativeAnalysis } from '@/ai/actions';
 
 interface ContentItem {
     id: string;
@@ -34,7 +36,7 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
                 const activity = item.source as Activity;
                 draft = await runImpactStoryGenerator({
                     activityName: activity.title,
-                    activityDescription: `An activity on ${new Date(activity.loggedAt.seconds * 1000).toDateString()}`,
+                    activityDescription: `An activity on ${formatDateSafe(activity.loggedAt)}`,
                     activityImpact: `Value: ${activity.totalValue}, ROI: ${activity.finalRoi}%`,
                     userName: activity.userName,
                     userQuote: activity.beneficiaryQuote,

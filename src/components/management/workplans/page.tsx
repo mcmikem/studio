@@ -144,7 +144,7 @@ function TeamWorkplanForm({
         }
         setIsParsing(true);
         try {
-            const parsedData = await parseWorkplanFlow({ textPlan: pastedText });
+            const parsedData = await runParseWorkplan({ textPlan: pastedText });
             
             const validPriorities = parsedData.keyPriorities.map(p => {
                 const validResponsible = Array.isArray(p.responsible)

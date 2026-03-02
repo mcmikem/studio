@@ -44,6 +44,7 @@ import type { TaskTemplate } from '@/lib/types';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Textarea } from '@/components/ui/textarea';
 import { generateTemplate } from '@/ai/actions';
+import type { GenerateTemplateOutput } from '@/lib/types';
 
 const templateSchema = z.object({
   title: z.string().min(3, 'Template title is required.'),
@@ -145,7 +146,7 @@ function NewTemplateDialog() {
     const [description, setDescription] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { toast } = useToast();
-    const [aiGeneratedData, setAiGeneratedData] = useState<Partial<TemplateFormData> | null>(null);
+    const [aiGeneratedData, setAiGeneratedData] = useState<GenerateTemplateOutput | null>(null);
 
     const handleGenerate = async () => {
         if (!description.trim()) {
@@ -155,10 +156,7 @@ function NewTemplateDialog() {
         setIsLoading(true);
         try {
             const result = await generateTemplate({ description });
-            setAiGeneratedData({
-                title: result.title,
-                checklistItems: result.checklistItems.map(item => ({ value: item }))
-            });
+            setAiGeneratedData(result);
         } catch (error) {
             console.error("AI template generation error:", error);
             toast({ variant: 'destructive', title: 'AI Error', description: 'Could not generate template. Please try again.' });
@@ -208,7 +206,7 @@ function NewTemplateDialog() {
                         </Button>
                     </div>
                 ) : (
-                    <TemplateForm onFormSubmit={() => handleOpenChange(false)} initialData={aiGeneratedData} />
+                    <TemplateForm onFormSubmit={() => handleOpenChange(false)} initialData={{ title: aiGeneratedData.title, checklistItems: aiGeneratedData.checklistItems.map(item => ({value: item})) }} />
                 )}
             </DialogContent>
         </Dialog>

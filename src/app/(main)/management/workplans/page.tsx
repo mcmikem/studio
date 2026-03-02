@@ -306,7 +306,7 @@ function TeamWorkplanForm({
                                         <MultiSelect
                                             options={responsibleOptions}
                                             onValueChange={field.onChange}
-                                            defaultValue={field.value}
+                                            defaultValue={field.value || []}
                                             placeholder="Assign to..."
                                         />
                                     )}

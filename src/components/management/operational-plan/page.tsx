@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { collection, writeBatch, getDocs, doc, Timestamp, query, orderBy, where } from 'firebase/firestore';
-import type { KeyResult } from '@/lib/types';
+import type { KeyResult, ParsePlanOutput } from '@/lib/types';
 import { Loader2, Wand, FileSignature, CheckCircle, Goal, MessageSquare, Target, Sparkles, TrendingUp, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { parseOperationalPlan } from '@/ai/actions';
 import {
@@ -175,7 +175,7 @@ function OperationalPlanUpdater() {
   const [pastedText, setPastedText] = useState('');
   const [isParsing, setIsParsing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [parsedResults, setParsedResults] = useState<ParsedKeyResult[]>([]);
+  const [parsedResults, setParsedResults] = useState<ParsePlanOutput['keyResults']>([]);
   const { toast } = useToast();
   const firestore = useFirestore();
 
@@ -192,7 +192,7 @@ function OperationalPlanUpdater() {
     setParsedResults([]);
     try {
       const result = await parseOperationalPlan({ planText: pastedText });
-      setParsedResults(result.keyResults as ParsedKeyResult[]);
+      setParsedResults(result.keyResults);
       toast({
         title: 'Plan Parsed Successfully',
         description: `Found ${result.keyResults.length} Key Results. Please review them below.`,
