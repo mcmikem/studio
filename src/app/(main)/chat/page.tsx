@@ -127,7 +127,7 @@ export default function ChatPage() {
 
       const aiResponse = await omutoAI({ question: text, history: aiHistory, userId: user.uid });
       
-      if(aiResponse.answer) {
+      if(aiResponse && aiResponse.answer) {
           const aiMessageData = {
             text: aiResponse.answer,
             userId: 'omuto-ai',

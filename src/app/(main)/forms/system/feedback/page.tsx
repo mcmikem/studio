@@ -4,7 +4,7 @@
 
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import { BugReportForm } from '@/components/forms/system/bug-report-form';
+import BugReportForm from '@/components/forms/system/bug-report-form';
 
 function SystemFeedbackPage() {
     return (

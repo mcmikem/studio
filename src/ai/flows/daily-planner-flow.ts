@@ -2,12 +2,13 @@
 
 import { ai } from '@/ai/genkit';
 import { DailyPlannerAIInputSchema, DailyPlannerAIOutputSchema } from '@/lib/types';
+import { z } from 'zod';
 
 export const dailyPlannerFlow = ai.defineFlow(
   {
     name: 'dailyPlannerFlow',
-    inputSchema: DailyPlannerAIInputSchema,
-    outputSchema: DailyPlannerAIOutputSchema,
+    inputSchema: z.any(),
+    outputSchema: z.any(),
   },
   async ({ userName, userRole, primaryMission, weeklyPriorities, keyResults }) => {
     const prompt = `

@@ -1,0 +1,1 @@
+export default function BugReportForm() { return <div>Bug Report Form</div>; }

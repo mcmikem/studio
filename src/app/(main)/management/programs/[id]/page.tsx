@@ -1,9 +1,9 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import type { Program } from '@/lib/types';
+import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, collection, query, where } from 'firebase/firestore';
+import type { Program, Kpi, FinancialSummary, Transaction } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FolderKanban, ArrowLeft, BarChart3, ClipboardEdit } from 'lucide-react';
@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatDateSafe } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import ProgramKPIs from '@/components/program/program-kpis';
+import ProgramFinancialSummary from '@/components/program/financial-summary';
 
 const statusColors: { [key: string]: string } = {
   "On Track": "border-green-500 bg-green-500/10 text-green-500",
@@ -30,9 +32,28 @@ function ProgramDashboard() {
     return doc(firestore, 'programs', id);
   }, [firestore, id]);
 
+  const kpisQuery = useMemoFirebase(() => {
+    if (!firestore || !id) return null;
+    return query(collection(firestore, 'impact-metrics'), where('programId', '==', id));
+  }, [firestore, id]);
+
+  const transactionsQuery = useMemoFirebase(() => {
+    if (!firestore || !id) return null;
+    return query(collection(firestore, 'transactions'), where('programId', '==', id));
+  }, [firestore, id]);
+
   const { data: program, isLoading: isLoadingProgram } = useDoc<Program>(programDocRef);
-  
-  const isLoading = isLoadingProgram;
+  const { data: kpis, isLoading: isLoadingKpis } = useCollection<Kpi>(kpisQuery);
+  const { data: transactions, isLoading: isLoadingTransactions } = useCollection<Transaction>(transactionsQuery);
+
+  const financialSummary: FinancialSummary = {
+    budget: program?.budget || 0,
+    spent: transactions?.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0) || 0,
+    income: transactions?.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) || 0,
+    net: (program?.budget || 0) - (transactions?.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0) || 0) + (transactions?.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) || 0),
+  };
+
+  const isLoading = isLoadingProgram || isLoadingKpis || isLoadingTransactions;
 
   if (isLoading) {
     return (
@@ -124,25 +145,33 @@ function ProgramDashboard() {
               </Link>
           </CardContent>
         </Card>
-        <Card>
+        {kpis && kpis.length > 0 ? (
+          <ProgramKPIs kpis={kpis} />
+        ) : (
+          <Card>
             <CardHeader>
-                <CardTitle>Program KPIs</CardTitle>
-                <CardDescription>Key performance indicators for this program.</CardDescription>
+              <CardTitle>Program KPIs</CardTitle>
+              <CardDescription>Key performance indicators for this program.</CardDescription>
             </CardHeader>
             <CardContent>
-                 <p className="text-center text-muted-foreground py-12">KPI linking for programs is coming soon.</p>
+              <p className="text-center text-muted-foreground py-12">No KPIs have been linked to this program yet.</p>
             </CardContent>
-        </Card>
+          </Card>
+        )}
       </div>
-      <Card>
-            <CardHeader>
-                <CardTitle>Financial Summary</CardTitle>
-                <CardDescription>Financial health of the {program.title} program.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <p className="text-center text-muted-foreground py-12">Program-level financial tracking is coming soon.</p>
-            </CardContent>
+      {financialSummary && transactions ? (
+        <ProgramFinancialSummary summary={financialSummary} transactions={transactions} />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Financial Summary</CardTitle>
+            <CardDescription>Financial health of the {program.title} program.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center text-muted-foreground py-12">No financial data has been recorded for this program yet.</p>
+          </CardContent>
         </Card>
+      )}
     </div>
   );
 }

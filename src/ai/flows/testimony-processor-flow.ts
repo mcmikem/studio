@@ -5,8 +5,16 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import type { TestimonyOutput, TestimonyInput } from '@/lib/types';
+import type { TestimonyInput } from '@/lib/types';
 import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
+
+
+const TestimonyAnalysisSchema = z.object({
+    summary: z.string().describe("A concise summary of the testimony."),
+    quotes: z.array(z.string()).describe("A list of 1-3 impactful quotes from the transcription."),
+    hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags (e.g., #YouthEmpowerment)."),
+});
+
 
 export const testimonyProcessorFlow = ai.defineFlow(
   {
@@ -44,7 +52,7 @@ export const testimonyProcessorFlow = ai.defineFlow(
     const analysisResult = await ai.generate({
         model: 'googleai/gemini-flash-latest',
         prompt: analysisPrompt,
-        output: { schema: TestimonyOutputSchema.pick({ summary: true, quotes: true, hashtags: true }) },
+        output: { schema: TestimonyAnalysisSchema },
     });
 
     const analysisOutput = analysisResult.output;

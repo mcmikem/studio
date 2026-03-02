@@ -4,8 +4,9 @@
 import { useParams } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase, useCollection, addDocumentNonBlocking } from '@/firebase';
 import { collection, doc, query, orderBy, where, limit, serverTimestamp } from 'firebase/firestore'; 
-import type { Project, Partnership, ProjectParticipant, ProjectParticipantFormData } from '@/lib/types';
-import { ProjectParticipantFormSchema } from '@/lib/types';
+// import type { Project, Partnership, ProjectParticipant, ProjectParticipantFormData } from '@/lib/types';
+// import { ProjectParticipantFormSchema } from '@/lib/types';
+import type { Project, Partnership } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, Users, Percent, TrendingUp, Handshake, Download, Link as LinkIcon, Pencil, PlusCircle, MoreHorizontal, CheckSquare, File, BookUser } from 'lucide-react';
@@ -53,6 +54,7 @@ function StatCard({ title, value, icon: Icon }: { title: string; value: string |
     )
 }
 
+/*
 function AddParticipantForm({ projectId, onSuccess }: { projectId: string; onSuccess: () => void; }) {
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -117,7 +119,9 @@ function AddParticipantForm({ projectId, onSuccess }: { projectId: string; onSuc
     </form>
   )
 }
+*/
 
+/*
 function ParticipantCard({ participant }: { participant: ProjectParticipant }) {
     return (
         <Card>
@@ -153,6 +157,7 @@ function ParticipantCard({ participant }: { participant: ProjectParticipant }) {
         </Card>
     )
 }
+*/
 
 function ProjectDashboard() {
   const params = useParams();
@@ -165,13 +170,15 @@ function ProjectDashboard() {
     return doc(firestore, 'projects', id);
   }, [firestore, id]);
   
+  /*
   const participantsQuery = useMemoFirebase(() => {
     if (!firestore || !id) return null;
     return query(collection(firestore, 'projects', id, 'participants'), orderBy('createdAt', 'desc'));
   }, [firestore, id]);
+  */
 
   const { data: project, isLoading: isLoadingProject } = useDoc<Project>(projectDocRef);
-  const { data: participants, isLoading: isLoadingParticipants } = useCollection<ProjectParticipant>(participantsQuery);
+  // const { data: participants, isLoading: isLoadingParticipants } = useCollection<ProjectParticipant>(participantsQuery);
   
   const partnerQuery = useMemoFirebase(() => {
       if (!firestore || !project || !project.partner) return null;
@@ -288,85 +295,16 @@ function ProjectDashboard() {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                     <div>
-                        <CardTitle>Project Participants ({participants?.length || 0})</CardTitle>
+                        <CardTitle>Project Participants</CardTitle>
                         <CardDescription>Enroll and manage all beneficiaries for this project.</CardDescription>
                     </div>
-                     <Dialog open={isParticipantDialogOpen} onOpenChange={setIsParticipantDialogOpen}>
-                        <DialogTrigger asChild>
-                             <Button><PlusCircle className="mr-2 h-4 w-4" /> Add Participant</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader><DialogTitle>Add New Participant</DialogTitle></DialogHeader>
-                            {id && <AddParticipantForm projectId={id} onSuccess={() => setIsParticipantDialogOpen(false)} />}
-                        </DialogContent>
-                     </Dialog>
                 </CardHeader>
                 <CardContent>
-                    {isLoadingParticipants ? (
-                      <Skeleton className="h-60" />
-                    ) : (participants && participants.length > 0) ? (
-                        <>
-                         {/* Mobile View */}
-                         <div className="sm:hidden space-y-4">
-                            {participants.map(p => <ParticipantCard key={p.id} participant={p} />)}
-                         </div>
-                         {/* Desktop View */}
-                         <div className="hidden sm:block border rounded-md">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Name</TableHead>
-                                        <TableHead>Business Stage</TableHead>
-                                        <TableHead>Attendance</TableHead>
-                                        <TableHead>Business Score</TableHead>
-                                        <TableHead><span className="sr-only">Actions</span></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {participants.map(participant => (
-                                        <TableRow key={participant.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-8 w-8 border">
-                                                        {participant.avatar && <AvatarImage src={participant.avatar} alt={participant.name} />}
-                                                        <AvatarFallback>{getInitials(participant.name)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="font-medium">{participant.name}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell><Badge variant="secondary">{participant.businessStage}</Badge></TableCell>
-                                            <TableCell>{participant.attendance}%</TableCell>
-                                            <TableCell>
-                                                <div className="flex items-center gap-2">
-                                                    <Progress value={participant.businessScore} className="h-2" />
-                                                    <span className="font-semibold text-sm">{participant.businessScore}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent>
-                                                        <DropdownMenuItem disabled>View Profile</DropdownMenuItem>
-                                                        <DropdownMenuItem disabled>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-destructive" disabled>Remove</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
-                        </>
-                    ) : (
-                         <EmptyState
-                            icon={Users}
-                            title="No Participants Enrolled"
-                            description="This project does not have any participants yet. Enroll them to see them here."
-                        />
-                    )}
+                    <EmptyState
+                        icon={Users}
+                        title="Participant Tracking Coming Soon"
+                        description="This feature is currently under development."
+                    />
                 </CardContent>
             </Card>
         </TabsContent>

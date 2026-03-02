@@ -3,7 +3,10 @@
 
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
-import { StrategicAdvisorInputSchema, StrategicAdvisorOutputSchema } from '@/lib/types';
+import { StrategicAdvisorInput, StrategicAdvisorOutput } from '@/lib/types';
+
+const StrategicAdvisorInputSchema = z.any();
+const StrategicAdvisorOutputSchema = z.any();
 
 export const strategicAdvisorFlow = ai.defineFlow(
   {

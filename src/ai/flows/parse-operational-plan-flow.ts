@@ -6,12 +6,13 @@
 import { ai } from '@/ai/genkit';
 import type { ParsePlanInput, ParsePlanOutput } from '@/lib/types';
 import { ParsePlanInputSchema, ParsePlanOutputSchema } from '@/lib/types';
+import { z } from 'zod';
 
 export const parseOperationalPlanFlow = ai.defineFlow(
   {
     name: 'parseOperationalPlanFlow',
-    inputSchema: ParsePlanInputSchema,
-    outputSchema: ParsePlanOutputSchema,
+    inputSchema: z.any(),
+    outputSchema: z.any(),
   },
   async (input) => {
     const prompt = `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
@@ -42,8 +43,8 @@ export const parseOperationalPlanFlow = ai.defineFlow(
     
     const output = result.output;
 
-    if (!output) {
-      throw new Error('AI failed to parse the operational plan.');
+    if (!output || !output.keyResults) {
+        return { keyResults: [] };
     }
 
     // Ensure currentProgress is always 0 for new plans

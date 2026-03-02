@@ -85,7 +85,7 @@ function AddParticipantForm({ projectId, onSuccess }: { projectId: string; onSuc
       <div className="space-y-2">
         <Label>Name</Label>
         <Input {...register('name')} />
-        {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+        {errors.name && <p className="text-sm text-destructive">{errors.name.message as string}</p>}
       </div>
       <div className="space-y-2">
         <Label>Phone</Label>

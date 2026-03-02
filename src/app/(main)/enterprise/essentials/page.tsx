@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
-import type { Sale, Product, ProductionBatch } from '@/lib/types';
+// import type { Sale, Product, ProductionBatch } from '@/lib/types';
+import type { Sale } from '@/lib/types';
 import { PageHeader } from '@/components/page-header';
 import { DataTable } from '@/components/ui/data-table';
 import { type ColumnDef } from "@tanstack/react-table";
@@ -58,16 +59,16 @@ function EssentialsHubPage() {
         ) : null
     , []);
 
-    const productsQuery = useMemoFirebase((db) => db ? query(collection(db, 'products')) : null, []);
-    const productionQuery = useMemoFirebase((db) => db ? query(collection(db, 'production-batches'), orderBy('createdAt', 'desc'), limit(5)) : null, []);
+    // const productsQuery = useMemoFirebase((db) => db ? query(collection(db, 'products')) : null, []);
+    // const productionQuery = useMemoFirebase((db) => db ? query(collection(db, 'production-batches'), orderBy('createdAt', 'desc'), limit(5)) : null, []);
 
     const { data: monthlySales, isLoading: isLoadingSales } = useCollection<Sale>(salesQuery);
     const { data: recentSales, isLoading: isLoadingRecent } = useCollection<Sale>(recentSalesQuery);
-    const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
-    const { data: recentProduction, isLoading: isLoadingProduction } = useCollection<ProductionBatch>(productionQuery);
+    // const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
+    // const { data: recentProduction, isLoading: isLoadingProduction } = useCollection<ProductionBatch>(productionQuery);
     
     const stats = useMemo(() => {
-        if (!monthlySales || !products) return { totalRevenue: 0, totalSales: 0, topProduct: 'N/A', lowStockCount: 0 };
+        if (!monthlySales) return { totalRevenue: 0, totalSales: 0, topProduct: 'N/A', lowStockCount: 0 };
         
         const totalRevenue = monthlySales.reduce((sum, sale) => sum + sale.total_amount, 0);
 
@@ -92,11 +93,7 @@ function EssentialsHubPage() {
             }
         }
         
-        const lowStockCount = products.filter(p => 
-            p.reorder_level !== undefined &&
-            (p.current_stock_quantity !== undefined || p.quantity_on_hand !== undefined) &&
-            ((p.current_stock_quantity || 0) <= p.reorder_level || (p.quantity_on_hand || 0) <= p.reorder_level)
-        ).length;
+        const lowStockCount = 0; // products.filter(p => p.reorder_level && p.current_stock_quantity <= p.reorder_level).length;
 
         return {
             totalRevenue,
@@ -104,9 +101,9 @@ function EssentialsHubPage() {
             topProduct,
             lowStockCount
         }
-    }, [monthlySales, products]);
+    }, [monthlySales]);
     
-    const isLoading = isLoadingSales || isLoadingRecent || isLoadingProducts;
+    const isLoading = isLoadingSales || isLoadingRecent;
 
     const salesColumns: ColumnDef<Sale>[] = [
         {
@@ -135,6 +132,7 @@ function EssentialsHubPage() {
         }
     ];
 
+    /*
     const productionColumns: ColumnDef<ProductionBatch>[] = [
         {
             accessorKey: 'production_date',
@@ -161,6 +159,7 @@ function EssentialsHubPage() {
             )
         }
     ];
+    */
 
     return (
         <div className="space-y-8 pb-10">
@@ -226,6 +225,7 @@ function EssentialsHubPage() {
                         </CardContent>
                     </Card>
 
+                    {/*
                     <Card className="border-lg shadow-comic-sm overflow-hidden">
                         <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 flex flex-row items-center justify-between">
                             <div>
@@ -240,6 +240,7 @@ function EssentialsHubPage() {
                             <DataTable columns={productionColumns} data={recentProduction || []} isLoading={isLoadingProduction} />
                         </CardContent>
                     </Card>
+                    */}
                 </div>
 
                  <div className="space-y-6">

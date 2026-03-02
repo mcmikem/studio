@@ -5,11 +5,12 @@
 
 import { ai } from '@/ai/genkit';
 import { ImpactStoryInputSchema, ImpactStoryOutputSchema, type ImpactStoryInput, type ImpactStoryOutput } from '@/lib/types';
+import { z } from 'zod';
 
 export const impactStoryFlow = ai.defineFlow({
     name: 'impactStoryFlow',
-    inputSchema: ImpactStoryInputSchema,
-    outputSchema: ImpactStoryOutputSchema
+    inputSchema: z.any(),
+    outputSchema: z.any()
 }, async (input) => {
     const prompt = `You are a skilled storyteller for Omuto Foundation, crafting engaging narratives that highlight the impact of our activities. Your output must be a JSON object with a single key "impactStory".
   

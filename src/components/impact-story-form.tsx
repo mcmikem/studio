@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, Suspense } from "react";
-import { generateImpactStory } from "@/ai/actions";
+import { runImpactStoryGenerator } from "@/ai/actions";
 import type { ImpactStoryInput } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -113,7 +113,7 @@ function ImpactStoryGeneratorContent() {
     setGeneratedStory("");
 
     try {
-      const result = await generateImpactStory(input);
+      const result = await runImpactStoryGenerator(input);
       setGeneratedStory(result.impactStory);
     } catch (error) {
       console.error("Error generating story:", error);
