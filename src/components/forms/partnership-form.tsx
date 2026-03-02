@@ -165,10 +165,10 @@ export function PartnershipForm({ initialData, onSuccess }: PartnershipFormProps
                 
                 <div className="space-y-4 pt-4 border-t">
                     <h3 className="text-lg font-medium">Value Exchange</h3>
-                     <FormField control={form.control} name="focusAreas" render={({ field }) => (<FormItem><FormLabel>Focus Areas</FormLabel><FormControl><MultiSelect options={focusAreaOptions} onValueChange={field.onChange} defaultValue={field.value || []} placeholder="Select areas..." /></FormControl><FormMessage /></FormItem>)}/>
+                     <FormField control={form.control} name="focusAreas" render={({ field }) => (<FormItem><FormLabel>Focus Areas</FormLabel><FormControl><MultiSelect options={focusAreaOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="Select areas..." /></FormControl><FormMessage /></FormItem>)}/>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                         <FormField control={form.control} name="offers" render={({ field }) => (<FormItem><FormLabel>What They Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={field.value || []} placeholder="e.g., Funding..." /></FormControl><FormMessage /></FormItem>)}/>
-                         <FormField control={form.control} name="receives" render={({ field }) => (<FormItem><FormLabel>What We Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={field.value || []} placeholder="e.g., Community Access..." /></FormControl><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="offers" render={({ field }) => (<FormItem><FormLabel>What They Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="e.g., Funding..." /></FormControl><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="receives" render={({ field }) => (<FormItem><FormLabel>What We Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="e.g., Community Access..." /></FormControl><FormMessage /></FormItem>)}/>
                     </div>
                 </div>
 

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -21,6 +21,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { useMemoFirebase } from '@/firebase/provider';
+import { Badge } from '@/components/ui/badge';
 
 const attendeeSchema = z.object({
   prefectId: z.string(),
@@ -69,6 +70,9 @@ export function TrainingAttendanceForm() {
     control,
     name: "attendees"
   });
+
+  const watchedAttendees = useWatch({ control, name: "attendees" });
+  const presentCount = watchedAttendees?.filter((a: any) => a.attended).length || 0;
   
   const fetchPrefects = useCallback(async (schoolId: string) => {
     if (!firestore) return;
@@ -192,7 +196,7 @@ export function TrainingAttendanceForm() {
               <div className="space-y-4 pt-6 border-t-lg border-omuto-navy/10">
                 <div className="flex items-center justify-between">
                     <h3 className="font-black uppercase text-sm tracking-tighter">Mark Leader Attendance</h3>
-                    <Badge variant="outline" className="font-black text-xs border-lg">{data.attendees.filter((a: any) => a.attended).length} PRESENT</Badge>
+                    <Badge variant="outline" className="font-black text-xs border-lg">{presentCount} PRESENT</Badge>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {fields.length > 0 && fields.map((field, index) => (

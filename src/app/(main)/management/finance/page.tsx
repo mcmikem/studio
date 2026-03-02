@@ -391,22 +391,22 @@ export default function FinancePage() {
     const monthStart = startOfMonth(selectedMonth);
     const monthEnd = endOfMonth(selectedMonth);
 
-    const incomeBefore = allIncome?.filter(i => new Date(i.dateReceived) < monthStart).reduce((sum, i) => sum + i.amount, 0) || 0;
-    const expensesBefore = allExpenses?.filter(e => (e.status === 'Disbursed' || e.status === 'Acknowledged') && new Date(e.date) < monthStart).reduce((sum, e) => sum + e.totalAmount, 0) || 0;
+    const incomeBefore = allIncome?.filter(i => new Date(i.dateReceived) < monthStart).reduce((sum, i) => sum + Number(i.amount || 0), 0) || 0;
+    const expensesBefore = allExpenses?.filter(e => (e.status === 'Disbursed' || e.status === 'Acknowledged') && new Date(e.date) < monthStart).reduce((sum, e) => sum + Number(e.totalAmount || 0), 0) || 0;
     const balanceBroughtForward = incomeBefore - expensesBefore;
     
     const monthlyIncome = allIncome?.filter(i => new Date(i.dateReceived) >= monthStart && new Date(i.dateReceived) <= monthEnd) || [];
     const monthlyExpenses = allExpenses?.filter(e => new Date(e.date) >= monthStart && new Date(e.date) <= monthEnd) || [];
     const monthlyAcknowledgedExpenses = monthlyExpenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
 
-    const totalMonthlyIncome = monthlyIncome.reduce((sum, i) => sum + i.amount, 0);
-    const totalMonthlyExpenses = monthlyAcknowledgedExpenses.reduce((sum, e) => sum + e.totalAmount, 0);
+    const totalMonthlyIncome = monthlyIncome.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+    const totalMonthlyExpenses = monthlyAcknowledgedExpenses.reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
 
     const closingBalance = balanceBroughtForward + totalMonthlyIncome - totalMonthlyExpenses;
 
     const combinedTransactions = [
-        ...monthlyIncome.map(i => ({ ...i, transactionType: 'income' as const, date: i.dateReceived, description: `Income: ${i.source}`, amount: i.amount })),
-        ...monthlyExpenses.map(e => ({ ...e, transactionType: 'expense' as const, date: e.date, description: e.title, amount: e.totalAmount })),
+        ...monthlyIncome.map(i => ({ ...i, transactionType: 'income' as const, date: i.dateReceived, description: `Income: ${i.source}`, amount: Number(i.amount || 0) })),
+        ...monthlyExpenses.map(e => ({ ...e, transactionType: 'expense' as const, date: e.date, description: e.title, amount: Number(e.totalAmount || 0) })),
     ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return {
@@ -430,7 +430,7 @@ export default function FinancePage() {
                 if (!acc[item.category]) {
                     acc[item.category] = 0;
                 }
-                acc[item.category] += item.amount;
+                acc[item.category] += Number(item.amount || 0);
             });
         }
         return acc;
@@ -677,7 +677,7 @@ export default function FinancePage() {
                         <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))' }} />
                         <ChartTooltip
                             cursor={false}
-                            content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)}/>}
+                            content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value || 0))}/>}
                         />
                         <Bar dataKey="total" fill="var(--color-total)" radius={4} />
                     </BarChart>

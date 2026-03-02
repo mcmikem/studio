@@ -95,12 +95,12 @@ function ExpenseDetailsDialog({ expense, isOpen, onOpenChange }: { expense: Expe
                                 <TableRow key={index}>
                                     <TableCell>{item.description}</TableCell>
                                     <TableCell>{item.category}</TableCell>
-                                    <TableCell className="text-right">{formatCurrency(item.amount)}</TableCell>
+                                    <TableCell className="text-right">{formatCurrency(Number(item.amount || 0))}</TableCell>
                                 </TableRow>
                             ))}
                              <TableRow className="font-bold bg-muted/50">
                                 <TableCell colSpan={2}>Total Amount</TableCell>
-                                <TableCell className="text-right">{formatCurrency(expense.totalAmount)}</TableCell>
+                                <TableCell className="text-right">{formatCurrency(Number(expense.totalAmount || 0))}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -126,7 +126,7 @@ function ExpenseCard({ expense, highlightedExpenseId, currentUser, canApprove, c
                 </div>
             </CardHeader>
             <CardContent>
-                <p className="text-2xl font-bold">{formatCurrency(expense.totalAmount)}</p>
+                <p className="text-2xl font-bold">{formatCurrency(Number(expense.totalAmount || 0))}</p>
                 <p className="text-xs text-muted-foreground">{expense.items.length} item(s) &bull; {expense.type}</p>
             </CardContent>
              <CardFooter className="flex justify-end gap-1">
@@ -279,7 +279,7 @@ function ExpensesTable({
                                             <span className="text-xs text-muted-foreground">{expense.items.length} item(s)</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-bold">{formatCurrency(expense.totalAmount)}</TableCell>
+                                    <TableCell className="font-bold">{formatCurrency(Number(expense.totalAmount || 0))}</TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className={statusColors[expense.status]}>
                                             {expense.status}
@@ -430,7 +430,7 @@ function ExpensesContent() {
                 if (!acc[item.category]) {
                     acc[item.category] = 0;
                 }
-                acc[item.category] += item.amount;
+                acc[item.category] += Number(item.amount || 0);
             });
         }
         return acc;
@@ -631,7 +631,7 @@ function ExpensesContent() {
                                 <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }} width={100} />
                                 <ChartTooltip
                                     cursor={false}
-                                    content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)}/>}
+                                    content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value || 0))}/>}
                                 />
                                 <Bar dataKey="total" fill="var(--color-total)" radius={4} />
                             </BarChart>
