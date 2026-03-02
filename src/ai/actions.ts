@@ -68,7 +68,7 @@ export async function runParseWorkplan(input: ParseWorkplanInput): Promise<Parse
     return await parseWorkplanFlow(input);
 }
 
-export async function analyzeProgramQualitativeData(input: QualitativeAnalysisInput) {
+export async function runQualitativeAnalysis(input: QualitativeAnalysisInput) {
     return await analyzeProgramQualitativeDataFlow(input);
 }
 

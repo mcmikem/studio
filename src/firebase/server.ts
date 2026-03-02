@@ -5,6 +5,7 @@ import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { firebaseConfig } from './config';
 import fs from 'fs';
 import path from 'path';
+import serviceAccount from '@/../secrets/serviceAccountKey.json';
 
 let adminApp: App | null = null;
 let firestoreInstance: Firestore | null = null;
@@ -145,16 +146,16 @@ export function getFirebaseAdmin() {
     adminApp = existingApp;
   } else {
      try {
-      // The most robust way to initialize in a Google Cloud environment (like Firebase Studio, Cloud Run, etc.)
-      // is to let the Admin SDK find the credentials automatically from the environment.
-      // This is called Application Default Credentials (ADC).
+      // Use the explicit service account credentials. This is the most reliable method in managed environments
+      // where Application Default Credentials (ADC) might not be configured as expected.
       adminApp = initializeApp({
+        credential: cert(serviceAccount as any),
         projectId: firebaseConfig.projectId,
       }, appName);
-      console.log("Firebase Admin SDK initialized successfully using Application Default Credentials.");
+      console.log("Firebase Admin SDK initialized successfully using service account key.");
     } catch (e) {
       console.error("CRITICAL ERROR: Failed to initialize Firebase Admin SDK.", e);
-      console.error("This usually means the server environment is not authenticated. If running locally, make sure you have run 'gcloud auth application-default login'. If deployed, check the service account permissions.");
+      console.error("This usually means the `secrets/serviceAccountKey.json` is missing or malformed.");
       throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
     }
   }
