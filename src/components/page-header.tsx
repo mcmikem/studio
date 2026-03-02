@@ -1,7 +1,3 @@
-
-'use client';
-
-import * as React from 'react';
 import type { LucideIcon } from "lucide-react";
 import Link from 'next/link';
 
@@ -27,10 +23,10 @@ export function PageHeader({ icon: Icon, title, description, breadcrumbs }: Page
             {breadcrumbs && breadcrumbs.length > 0 && (
                  <nav className="mb-1 text-sm text-muted-foreground">
                     {breadcrumbs.map((crumb, index) => (
-                        <React.Fragment key={crumb.href}>
+                        <span key={crumb.href}>
                             <Link href={crumb.href} className="hover:text-primary">{crumb.name}</Link>
                             {index < breadcrumbs.length - 1 && <span className="mx-2">/</span>}
-                        </React.Fragment>
+                        </span>
                     ))}
                 </nav>
             )}
