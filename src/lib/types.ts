@@ -66,7 +66,7 @@ export const ProjectSchema = z.object({
   name: z.string(),
   manager: z.string(),
   districts: z.string(),
-  status: z.string(),
+  status: z.enum(["Active", "Moderate", "At Risk", "Delayed", "Completed"]),
   completion: z.number(),
   nextMilestone: z.string(),
   partner: z.string().optional(),

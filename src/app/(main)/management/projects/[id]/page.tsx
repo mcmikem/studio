@@ -221,7 +221,7 @@ function ProjectDashboard() {
                          <div className="space-y-1">
                             <h4 className="font-semibold">Project Info</h4>
                             <p className="text-sm">ID: {project.id}</p>
-                            <p className="text-sm">Status: <Badge variant="outline" className={statusColors[project.status || '']}>{project.status}</Badge></p>
+                            <p className="text-sm">Status: <Badge variant="outline" className={statusColors[project.status]}>{project.status}</Badge></p>
                             <p className="text-sm">Timeline: {formatDateSafe(project.startDate, 'dateOnly')} - {formatDateSafe(project.endDate, 'dateOnly')}</p>
                             <p className="text-sm">Owner: {project.manager}</p>
                         </div>
