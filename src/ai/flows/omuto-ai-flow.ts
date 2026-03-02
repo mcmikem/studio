@@ -36,8 +36,7 @@ const getRecentCheckoutsToolObject = ai.defineTool(
   async ({ limit }) => {
     const { firestore } = getFirebaseAdmin();
     const checkoutsRef = firestore.collection('checkouts');
-    const q = query(checkoutsRef, orderBy('timestamp', 'desc'), limit(limit));
-    const snapshot = await getDocs(q);
+    const snapshot = await checkoutsRef.orderBy('timestamp', 'desc').limit(limit).get();
 
     return snapshot.docs.map(doc => {
       const data = doc.data();
@@ -97,7 +96,3 @@ export const omutoAIFlow = ai.defineFlow(
     }
   }
 );
-
-// Helper functions (e.g., from server.ts) need to be accessible here
-// For simplicity, assuming getFirebaseAdmin is correctly set up to be called.
-import { query, orderBy, limit as firestoreLimit, getDocs } from 'firebase/firestore';
