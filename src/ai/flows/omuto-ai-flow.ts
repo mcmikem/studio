@@ -78,13 +78,7 @@ export const omutoAIFlow = ai.defineFlow(
 
         const llmResponse = await omutoAIPrompt({
             history: history || [],
-            input: {
-                userId,
-                question,
-            },
-            config: {
-                temperature: 0.2,
-            }
+            input: question,
         });
         
         const answer = llmResponse.text;
@@ -107,4 +101,3 @@ export const omutoAIFlow = ai.defineFlow(
 // Helper functions (e.g., from server.ts) need to be accessible here
 // For simplicity, assuming getFirebaseAdmin is correctly set up to be called.
 import { query, orderBy, limit as firestoreLimit, getDocs } from 'firebase/firestore';
-

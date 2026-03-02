@@ -28,8 +28,8 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { runParseWorkplan, createAlert } from '@/ai/actions';
 import { parseWorkplanFlow } from '@/ai/flows/parse-workplan-flow';
-import { createAlert } from '@/ai/actions';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),
@@ -371,7 +371,7 @@ export default function TeamWorkplansPage() {
   }, []);
 
   const firestore = useFirestore();
-  const usersQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'users'), orderBy('name')) : null), []);
+  const usersQuery = useMemoFirebase(() => (firestore ? query(collection(firestore, 'users'), orderBy('name')) : null), [firestore]);
   const { data: users, isLoading: isLoadingUsers } = useCollection<User>(usersQuery);
 
   const weekStartDate = currentDate ? startOfWeek(currentDate, { weekStartsOn: 1 }) : new Date();

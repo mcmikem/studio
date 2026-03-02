@@ -11,8 +11,8 @@ import { z } from 'zod';
 export const parseOperationalPlanFlow = ai.defineFlow(
   {
     name: 'parseOperationalPlanFlow',
-    inputSchema: z.any(),
-    outputSchema: z.any(),
+    inputSchema: ParsePlanInputSchema,
+    outputSchema: ParsePlanOutputSchema,
   },
   async (input) => {
     const prompt = `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.

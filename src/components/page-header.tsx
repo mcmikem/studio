@@ -3,21 +3,18 @@
 
 import * as React from 'react';
 import type { LucideIcon } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 import Link from 'next/link';
+
+interface BreadcrumbItem {
+    href: string;
+    name: string;
+}
 
 interface PageHeaderProps {
     icon: LucideIcon;
     title: string;
     description: string;
-    breadcrumbs?: { href: string; name: string; }[];
+    breadcrumbs?: BreadcrumbItem[];
 }
 
 export function PageHeader({ icon: Icon, title, description, breadcrumbs }: PageHeaderProps) {
@@ -28,20 +25,14 @@ export function PageHeader({ icon: Icon, title, description, breadcrumbs }: Page
         </div>
         <div>
             {breadcrumbs && breadcrumbs.length > 0 && (
-                 <Breadcrumb className="mb-1">
-                    <BreadcrumbList>
-                        {breadcrumbs.map((crumb, index) => (
-                            <React.Fragment key={crumb.href}>
-                                <BreadcrumbItem>
-                                    <BreadcrumbLink asChild>
-                                        <Link href={crumb.href}>{crumb.name}</Link>
-                                    </BreadcrumbLink>
-                                </BreadcrumbItem>
-                                {index < breadcrumbs.length - 1 && <BreadcrumbSeparator />}
-                            </React.Fragment>
-                        ))}
-                    </BreadcrumbList>
-                </Breadcrumb>
+                 <nav className="mb-1 text-sm text-muted-foreground">
+                    {breadcrumbs.map((crumb, index) => (
+                        <React.Fragment key={crumb.href}>
+                            <Link href={crumb.href} className="hover:text-primary">{crumb.name}</Link>
+                            {index < breadcrumbs.length - 1 && <span className="mx-2">/</span>}
+                        </React.Fragment>
+                    ))}
+                </nav>
             )}
             <h1 className="font-headline text-3xl font-bold tracking-tight">{title}</h1>
             <p className="text-muted-foreground">{description}</p>

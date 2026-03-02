@@ -5,7 +5,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import type { TestimonyInput } from '@/lib/types';
+import type { TestimonyInput, TestimonyOutput } from '@/lib/types';
 import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
 
 
