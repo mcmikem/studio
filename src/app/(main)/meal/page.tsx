@@ -3,7 +3,7 @@
 
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, ArrowRight, BookOpen, Droplets, Wind, Leaf, Hand, Heart, Briefcase, FileText } from 'lucide-react';
+import { BarChart, ArrowRight, BookOpen, Droplets, Wind, Leaf, Hand, Heart, Briefcase, FileText, LayoutDashboard, Download } from 'lucide-react';
 import Link from 'next/link';
 
 const mealSections = [
@@ -14,6 +14,7 @@ const mealSections = [
             { href: '/meal/beneficiary-registration', title: 'Register Beneficiary', icon: Hand },
             { href: '/meal/attendance', title: 'Log General Attendance', icon: FileText },
             { href: '/meal/record-testimony', title: 'Capture Impact Story', icon: BookOpen },
+            { href: '/meal/data', title: 'Open Data Dashboards', icon: LayoutDashboard },
         ]
     },
     {
@@ -42,6 +43,22 @@ export default function MealHubPage() {
         description="Central hub for all Monitoring, Evaluation, Accountability, and Learning data collection forms."
       />
       
+
+      <Card className="bg-primary/5 border-primary/20">
+        <CardHeader>
+          <CardTitle className="tracking-tighter flex items-center gap-2"><LayoutDashboard className="h-5 w-5" /> MEAL Dashboards & Exports</CardTitle>
+          <CardDescription className="font-bold uppercase text-xs tracking-widest">View submitted data across all programs and export to sheets/docs.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row gap-3">
+          <Link href="/meal/data" className="btn-omuto w-full sm:w-auto inline-flex items-center justify-center gap-2">
+            <LayoutDashboard className="h-4 w-4" /> Open Data Dashboards
+          </Link>
+          <Link href="/meal/data" className="btn-omuto-secondary w-full sm:w-auto inline-flex items-center justify-center gap-2">
+            <Download className="h-4 w-4" /> Export Center
+          </Link>
+        </CardContent>
+      </Card>
+
       {mealSections.map(section => (
         <Card key={section.title} className="bg-background border-lg shadow-comic-sm">
             <CardHeader>
