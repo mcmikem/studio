@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="relative flex flex-col flex-1 h-full">
                 <AppHeader />
                 <ViewAsBanner />
-                <main className="flex-1 p-4 lg:p-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-6 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6 lg:py-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-6">
                   {children}
                 </main>
                 <MobileBottomNav />
