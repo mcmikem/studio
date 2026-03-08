@@ -138,7 +138,14 @@ function TeamWorkplanForm({
         try {
             const parsedData = await runParseWorkplan({ textPlan: pastedText });
             
-            const validPriorities = parsedData.keyPriorities.map(p => {
+            type WorkplanPriority = {
+                activity: string;
+                priority: 'High' | 'Medium' | 'Low';
+                responsible?: string[] | string;
+                deadline?: string;
+            };
+
+            const validPriorities = (parsedData.keyPriorities as WorkplanPriority[]).map((p: WorkplanPriority) => {
                 const validResponsible = Array.isArray(p.responsible)
                     ? p.responsible.filter(r => responsibleOptions.some(option => option.value === r))
                     : [];
