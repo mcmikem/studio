@@ -134,3 +134,22 @@ export const SmartRemindersOutputSchema = z.object({
     reminders: z.array(z.string()),
 });
 export type SmartRemindersOutput = z.infer<typeof SmartRemindersOutputSchema>;
+
+export const GrantWriterInputSchema = z.object({
+  partnerName: z.string(),
+  proposalTitle: z.string(),
+  amountRequested: z.string(),
+});
+export type GrantWriterInput = z.infer<typeof GrantWriterInputSchema>;
+
+export const GrantWriterOutputSchema = z.object({
+  conceptNote: z.string(),
+});
+export type GrantWriterOutput = z.infer<typeof GrantWriterOutputSchema>;
+
+export const SearchResultItemSchema = z.object({
+  title: z.string(),
+  link: z.string(),
+  snippet: z.string(),
+});
+export type SearchResultItem = z.infer<typeof SearchResultItemSchema>;

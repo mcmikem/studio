@@ -370,3 +370,15 @@ export type Beneficiary = {
   photoURL?: string | null;
   createdAt: Timestamp;
 };
+
+export const EquipmentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  category: z.string(),
+  status: z.enum(["Available", "In Use", "Under Maintenance"]),
+  condition: z.enum(["Good", "Fair", "Poor"]),
+  currentHolder: z.string(),
+  purchaseDate: z.string().optional(),
+  createdAt: z.any().optional(),
+});
+export type Equipment = z.infer<typeof EquipmentSchema>;
