@@ -235,7 +235,7 @@ function TeamDetailDashboard() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-  {(team as any).equipment?.length ? (team as any).equipment.map((e: EquipmentItem) => (
+  {(team as any).equipment?.length ? (team as any).equipment.map((e: any) => (
       <TableRow key={e.item}>
           <TableCell>{e.item}</TableCell>
           <TableCell>{e.qty || 0}</TableCell>
