@@ -225,7 +225,7 @@ function UserProfileCard() {
                   ref={fileInputRef} 
                   onChange={handleFileChange} 
                   className="hidden" 
-                  accept="image/png, image/jpeg, image/gif"
+                  accept="image/png, image/jpeg, image/gif, image/webp, image/heic, image/heif"
                 />
 
                 <h2 className="text-2xl font-semibold">{profile?.name || 'User'}</h2>

@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { updateProfile, type User } from 'firebase/auth';
-import { doc, setDoc, type Firestore } from 'firebase/firestore';
-import type { FirebaseApp } from 'firebase/app';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { updateProfile, type User } from "firebase/auth";
+import { doc, setDoc, type Firestore } from "firebase/firestore";
+import type { FirebaseApp } from "firebase/app";
+import { buildUploadPath } from "@/lib/upload-paths";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -20,8 +21,9 @@ export async function uploadFile(
   path: string
 ): Promise<string> {
   if (!app) {
-    throw new Error('Firebase app is not initialized. Cannot upload file.');
+    throw new Error("Firebase app is not initialized. Cannot upload file.");
   }
+
   const storage = getStorage(app);
   const storageRef = ref(storage, path);
 
@@ -30,8 +32,8 @@ export async function uploadFile(
     const downloadURL = await getDownloadURL(snapshot.ref);
     return downloadURL;
   } catch (error) {
-    console.error('Firebase Storage upload failed:', error);
-    throw new Error('File upload failed. Please try again.');
+    console.error("Firebase Storage upload failed:", error);
+    throw new Error("File upload failed. Please try again.");
   }
 }
 
@@ -45,26 +47,30 @@ export async function uploadImageAndUpdateProfile(
   user: User,
   firestore: Firestore
 ): Promise<string> {
-  if (!file.type.startsWith('image/')) {
-    throw new Error('Only image files are supported.');
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Only image files are supported.");
   }
 
   if (file.size > MAX_IMAGE_BYTES) {
-    throw new Error('Image is too large. Please use a file smaller than 5MB.');
+    throw new Error("Image is too large. Please use a file smaller than 5MB.");
   }
 
   if (!app) {
-    throw new Error('Firebase app is not initialized. Cannot upload file.');
+    throw new Error("Firebase app is not initialized. Cannot upload file.");
   }
 
-  const extensionFromType = file.type.split('/')[1] || 'jpg';
-  const safeExtension = extensionFromType.replace(/[^a-zA-Z0-9]/g, '') || 'jpg';
-  const filePath = `profile-pictures/${user.uid}/profile.${safeExtension}`;
+  const extensionFromType = file.type.split("/")[1] || "jpg";
+  const safeExtension =
+    extensionFromType.replace(/[^a-zA-Z0-9]/g, "") || "jpg";
+
+  // Keep centralized upload path helper
+  const filePath = buildUploadPath.profilePicture(user.uid, safeExtension);
+
   const downloadURL = await uploadFile(app, file, filePath);
 
   await updateProfile(user, { photoURL: downloadURL });
 
-  const userDocRef = doc(firestore, 'users', user.uid);
+  const userDocRef = doc(firestore, "users", user.uid);
   await setDoc(userDocRef, { photoURL: downloadURL }, { merge: true });
 
   return downloadURL;

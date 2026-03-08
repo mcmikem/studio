@@ -18,6 +18,7 @@ import type { Program, Beneficiary } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
+import { buildUploadPath } from '@/lib/upload-paths';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -82,7 +83,7 @@ function BeneficiaryRegistrationForm() {
     try {
         let photoURL: string | null = null;
         if (data.photo && data.photo instanceof File) {
-            const path = `beneficiary-photos/${user.uid}/${Date.now()}_${data.photo.name}`;
+            const path = buildUploadPath.beneficiaryPhoto(user.uid, data.photo.name);
             photoURL = await uploadFile(firebaseApp, data.photo, path);
         }
 

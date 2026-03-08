@@ -16,6 +16,7 @@ import { Loader2, ArrowLeft, UserPlus, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { uploadFile } from '@/firebase/storage';
+import { buildUploadPath } from '@/lib/upload-paths';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -111,7 +112,7 @@ export function PlayerRegistrationForm() {
       if (photoFile && app) {
         const ext = photoFile.name.split('.').pop() || 'jpg';
         const safeName = data.name.replace(/\s+/g, '-').toLowerCase();
-        photoUrl = await uploadFile(app, photoFile, `ofa/players/${data.teamId}/${safeName}-${Date.now()}.${ext}`);
+        photoUrl = await uploadFile(app, photoFile, buildUploadPath.ofaPlayerPhoto(data.teamId, safeName, ext));
       }
 
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), {

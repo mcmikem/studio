@@ -14,6 +14,7 @@ import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFi
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { serverTimestamp, collection, query, orderBy } from 'firebase/firestore';
 import { uploadFile } from '@/firebase/storage';
+import { buildUploadPath } from '@/lib/upload-paths';
 import { processTestimony } from '@/ai/actions';
 import type { TestimonyOutput } from '@/lib/types';
 import { z } from 'zod';
@@ -85,7 +86,7 @@ export default function RecordTestimonyPage() {
     
     try {
         const uploadPromises = mediaFiles.map(file => {
-            const path = `testimonies/${user.uid}/${Date.now()}_${file.name}`;
+            const path = buildUploadPath.testimonyMedia(user.uid, file.name);
             return uploadFile(firebaseApp, file, path);
         });
 
