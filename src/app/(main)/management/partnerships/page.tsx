@@ -20,7 +20,7 @@ const PartnershipPipelineKanban = () => {
         return query(collection(firestore, 'partnerships'));
     }, [firestore]);
     const { data: partnerships, isLoading } = useCollection<Partnership>(partnershipsQuery);
-    return <PartnershipList partnerships={partnerships} isLoading={isLoading} onEdit={() => {}} />;
+    return <PartnershipList partnerships={partnerships || []} isLoading={isLoading} onEdit={() => {}} />;
 };
 
 export default function PartnershipsManagementPage() {
@@ -82,13 +82,13 @@ export default function PartnershipsManagementPage() {
           <TabsTrigger value="all">All Partners</TabsTrigger>
         </TabsList>
         <TabsContent value="pipeline" className="space-y-4">
-          <PartnershipList partnerships={partnerships?.filter(p => p.status !== 'Active' && p.status !== 'Terminated')} isLoading={isLoading} onEdit={handleEditPartner} />
+          <PartnershipList partnerships={(partnerships || []).filter(p => p.status !== 'Active' && p.status !== 'Terminated')} isLoading={isLoading} onEdit={handleEditPartner} />
         </TabsContent>
         <TabsContent value="schools" className="space-y-4">
           <SchoolList onEdit={handleEditPartner} />
         </TabsContent>
         <TabsContent value="all" className="space-y-4">
-          <PartnershipList partnerships={partnerships} isLoading={isLoading} onEdit={handleEditPartner} />
+          <PartnershipList partnerships={partnerships || []} isLoading={isLoading} onEdit={handleEditPartner} />
         </TabsContent>
       </Tabs>
     </div>

@@ -19,9 +19,9 @@ export default function PureWaterHubPage() {
             title="PureWater"
             description="Data collection for the Water, Sanitation, and Hygiene (WASH) program."
             breadcrumbs={[
-                { href: '/meal', name: 'MEAL Hub' },
-                { name: 'PureWater' },
-            ]}
+                { name: 'Dashboard', href: '/main' },
+                { name: 'PureWater', href: '/meal/purewater' },
+              ]}
         />
 
         <Card className="bg-background border-lg shadow-comic-sm">

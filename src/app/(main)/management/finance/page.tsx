@@ -83,7 +83,7 @@ const directExpenseSchema = z.object({
   title: z.string().min(3, 'A title for the expense is required.'),
   amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
   date: z.string().min(1, 'Date is required.'),
-  category: z.enum(expenseItemCategories as [string, ...string[]]),
+  category: z.enum(expenseItemCategories as unknown as [string, ...string[]]),
   submittedFor: z.string().optional(),
   otherUserName: z.string().optional(),
 }).refine(data => {
@@ -113,14 +113,19 @@ function IncomeForm({ income, onFormSubmit }: { income?: Income | null; onFormSu
     formState: { errors, isSubmitting },
   } = useForm<IncomeFormData>({
     resolver: zodResolver(incomeSchema),
-    defaultValues: isEditMode && income ? {
-        ...income,
-        dateReceived: formatDateSafe(income.dateReceived, 'iso')
-    } : {
+    defaultValues: isEditMode && income
+  ? {
+      ...(income as any), // allow any extra fields
+      // explicitly cast type so TS is happy
+      type: (income.type as any) ?? 'Grants',
+      dateReceived: formatDateSafe(income.dateReceived, 'iso'),
+    }
+  : {
       type: 'Grants',
       dateReceived: format(new Date(), 'yyyy-MM-dd'),
     },
-  });
+});
+
 
   const onSubmit = (data: IncomeFormData) => {
     if (!firestore) return;

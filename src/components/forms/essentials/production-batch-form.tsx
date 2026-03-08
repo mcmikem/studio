@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, serverTimestamp, doc, writeBatch, runTransaction, getDocs, query, where } from 'firebase/firestore';
-import { Loader2, ArrowLeft, Package, PlusCircle, Trash2, Wand2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Package, PlusCircle, Trash2, Wand2, Boxes } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';

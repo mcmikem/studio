@@ -5,7 +5,19 @@
 import * as React from 'react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, doc, writeBatch } from 'firebase/firestore';
-import type { KnowledgeHubSection, KnowledgeHubPitch, KnowledgeHubFAQ, KnowledgeHubStory, KnowledgeHubCTA } from '@/lib/types';
+import type { KnowledgeHubSection, KnowledgeHubPitch, KnowledgeHubCTA } from '@/lib/types';
+
+type KnowledgeHubFAQ = {
+  id: string;
+  question: string;
+  answer: string;
+};
+
+type KnowledgeHubStory = {
+  id: string;
+  title: string;
+  summary: string;
+};
 
 import {
   Card,
@@ -169,17 +181,17 @@ export default function KnowPage() {
   
   const handleAddItem = (type: string) => {
     const newItem = { id: `temp-${Date.now()}`, order: 999 }; // temp ID
-    if (type === 'sections') setEditableSections(prev => [...prev, { ...newItem, title: '', content: '', subsections: [] } as any]);
-    if (type === 'pitches') setEditablePitches(prev => [...prev, { ...newItem, title: '', content: '' } as any]);
+    if (type === 'sections') setEditableSections(prev => [...prev, { ...newItem, title: '', summary: '', subsections: [] } as any]);
+    if (type === 'pitches') setEditablePitches(prev => [...prev, { ...newItem, title: '', summary: '' } as any]);
     if (type === 'faqs') setEditableFaqs(prev => [...prev, { ...newItem, question: '', answer: '' } as any]);
-    if (type === 'stories') setEditableStories(prev => [...prev, { ...newItem, title: '', content: '' } as any]);
+    if (type === 'stories') setEditableStories(prev => [...prev, { ...newItem, title: '', summary: '' } as any]);
     if (type === 'ctas') setEditableCtas(prev => [...prev, { ...newItem, title: '', description: '', buttonLabel: '' } as any]);
   };
   
-  const handleDeleteItem = (type: string, id: string, index: number) => {
+  const handleDeleteItem = (type: string, index: number, id?: string) => {
     const removeItem = (setter: React.Dispatch<React.SetStateAction<any[]>>, items: any[], collectionName: string) => {
       setter(items.filter((_, i) => i !== index));
-      if (!id.startsWith('temp-')) {
+      if (id && !id.startsWith('temp-')) {
           setItemsToDelete(prev => [...prev, { collection: collectionName, id }]);
       }
     };
@@ -226,8 +238,8 @@ export default function KnowPage() {
     const lowercasedFilter = searchTerm.toLowerCase();
     return editableSections?.filter(section => 
         section.title.toLowerCase().includes(lowercasedFilter) ||
-        section.content.toLowerCase().includes(lowercasedFilter) ||
-        section.subsections?.some(sub => sub.title.toLowerCase().includes(lowercasedFilter) || sub.content.toLowerCase().includes(lowercasedFilter))
+        (section.summary || '').toLowerCase().includes(lowercasedFilter) ||
+        (section.subsections || [])?.some(sub => sub.title.toLowerCase().includes(lowercasedFilter) || (sub.summary || '').toLowerCase().includes(lowercasedFilter))
     );
   }, [editableSections, searchTerm]);
 
@@ -236,7 +248,7 @@ export default function KnowPage() {
       const lowercasedFilter = searchTerm.toLowerCase();
       return editablePitches?.filter(pitch =>
           pitch.title.toLowerCase().includes(lowercasedFilter) ||
-          pitch.content.toLowerCase().includes(lowercasedFilter)
+          (pitch.summary || '').toLowerCase().includes(lowercasedFilter)
       );
   }, [editablePitches, searchTerm]);
 
@@ -254,19 +266,10 @@ export default function KnowPage() {
       const lowercasedFilter = searchTerm.toLowerCase();
       return editableStories?.filter(story =>
           story.title.toLowerCase().includes(lowercasedFilter) ||
-          story.content.toLowerCase().includes(lowercasedFilter)
+          (story.summary || '').toLowerCase().includes(lowercasedFilter)
       );
   }, [editableStories, searchTerm]);
   
-  const filteredCtas = useMemo(() => {
-      if (!searchTerm) return editableCtas;
-      const lowercasedFilter = searchTerm.toLowerCase();
-      return editableCtas?.filter(cta =>
-          cta.title.toLowerCase().includes(lowercasedFilter) ||
-          cta.description.toLowerCase().includes(lowercasedFilter)
-      );
-  }, [editableCtas, searchTerm]);
-
 
   const renderContent = () => {
     if (isLoading) {
@@ -280,7 +283,7 @@ export default function KnowPage() {
     }
     
     const isFiltering = searchTerm.length > 0;
-    const noResults = filteredSections?.length === 0 && filteredPitches?.length === 0 && filteredFaqs?.length === 0 && filteredStories?.length === 0 && filteredCtas?.length === 0;
+    const noResults = filteredSections?.length === 0 && filteredPitches?.length === 0 && filteredFaqs?.length === 0 && filteredStories?.length === 0;
 
     return (
       <>
@@ -297,12 +300,12 @@ export default function KnowPage() {
                             <AccordionTrigger>
                                <div className="flex-1 flex justify-between items-center mr-4">
                                 {isEditMode ? <Input value={section.title} onChange={(e) => handleContentChange('sections', index, 'title', e.target.value)} onClick={e => e.stopPropagation()} /> : <span className="text-left">{section.title}</span>}
-                                {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={(e) => {e.stopPropagation(); handleDeleteItem('sections', section.id, index);}}><Trash2 className="h-4 w-4" /></Button>}
+                                {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={(e) => {e.stopPropagation(); handleDeleteItem('sections', index, section.id);}}><Trash2 className="h-4 w-4" /></Button>}
                                </div>
                             </AccordionTrigger>
                             <AccordionContent className="space-y-4">
                                <div className="prose prose-sm dark:prose-invert max-w-none">
-                                {isEditMode ? <Textarea value={section.content} onChange={(e) => handleContentChange('sections', index, 'content', e.target.value)} className="min-h-24"/> : <div dangerouslySetInnerHTML={{ __html: section.content }} />}
+                                {isEditMode ? <Textarea value={section.summary} onChange={(e) => handleContentChange('sections', index, 'summary', e.target.value)} className="min-h-24"/> : <div dangerouslySetInnerHTML={{ __html: section.summary }} />}
                                </div>
                                {section.subsections && section.subsections.length > 0 && (
                                    <div className="space-y-3 pl-4 border-l-2">
@@ -310,7 +313,7 @@ export default function KnowPage() {
                                             <div key={subIndex}>
                                                 {isEditMode ? <Input value={sub.title} onChange={(e) => handleContentChange('sections', index, 'title', e.target.value, subIndex)} className="font-semibold" /> : <h4 className="font-semibold">{sub.title}</h4>}
                                                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                    {isEditMode ? <Textarea value={sub.content} onChange={(e) => handleContentChange('sections', index, 'content', e.target.value, subIndex)} /> : <div dangerouslySetInnerHTML={{ __html: sub.content }} />}
+                                                    {isEditMode ? <Textarea value={sub.summary} onChange={(e) => handleContentChange('sections', index, 'summary', e.target.value, subIndex)} /> : <div dangerouslySetInnerHTML={{ __html: sub.summary }} />}
                                                 </div>
                                             </div>
                                        ))}
@@ -340,15 +343,15 @@ export default function KnowPage() {
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete this pitch.</AlertDialogDescription></AlertDialogHeader>
-                                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteItem('pitches', pitch.id, index)}>Delete</AlertDialogAction></AlertDialogFooter>
+                                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteItem('pitches', index, pitch.id)}>Delete</AlertDialogAction></AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
                    )}
                   <div className="flex justify-between items-center mb-2">
                     {isEditMode ? <Input value={pitch.title} onChange={(e) => handleContentChange('pitches', index, 'title', e.target.value)} /> : <h4 className="font-semibold">{pitch.title}</h4>}
-                    {!isEditMode && <CopyButton text={pitch.content} />}
+                    {!isEditMode && <CopyButton text={pitch.summary} />}
                   </div>
-                  {isEditMode ? <Textarea value={pitch.content} onChange={(e) => handleContentChange('pitches', index, 'content', e.target.value)} /> : <p className="text-sm text-muted-foreground">{pitch.content}</p>}
+                  {isEditMode ? <Textarea value={pitch.summary} onChange={(e) => handleContentChange('pitches', index, 'summary', e.target.value)} /> : <p className="text-sm text-muted-foreground">{pitch.summary}</p>}
                 </div>
               ))}
             </CardContent>
@@ -364,25 +367,25 @@ export default function KnowPage() {
             <CardContent className="space-y-4">
               {filteredStories.map((story, index) => (
                 <div key={story.id} className="p-4 bg-muted rounded-lg relative">
-                  {isEditMode && <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive h-7 w-7" onClick={() => handleDeleteItem('stories', story.id, index)}><Trash2 className="h-4 w-4" /></Button>}
+                  {isEditMode && <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive h-7 w-7" onClick={() => handleDeleteItem('stories', index, story.id)}><Trash2 className="h-4 w-4" /></Button>}
                   <div className="flex justify-between items-center mb-2">
                      {isEditMode ? <Input value={story.title} onChange={(e) => handleContentChange('stories', index, 'title', e.target.value)} /> : <h4 className="font-semibold flex items-center gap-2"><MessageSquareQuote className="h-4 w-4 text-primary" />{story.title}</h4>}
-                    {!isEditMode && <CopyButton text={story.content} />}
+                    {!isEditMode && <CopyButton text={story.summary} />}
                   </div>
-                  {isEditMode ? <Textarea value={story.content} onChange={(e) => handleContentChange('stories', index, 'content', e.target.value)} /> : <p className="text-sm text-muted-foreground italic">"{story.content}"</p>}
+                  {isEditMode ? <Textarea value={story.summary} onChange={(e) => handleContentChange('stories', index, 'summary', e.target.value)} /> : <p className="text-sm text-muted-foreground italic">"{story.summary}"</p>}
                 </div>
               ))}
             </CardContent>
           </Card>
         )}
         
-        {filteredCtas && filteredCtas.length > 0 && (
+        {editableCtas && editableCtas.length > 0 && (
             <CallsToAction 
-                ctas={filteredCtas} 
+                ctas={editableCtas} 
                 isEditMode={isEditMode} 
                 handleContentChange={handleContentChange} 
                 handleAddItem={() => handleAddItem('ctas')} 
-                handleDeleteItem={(id, index) => handleDeleteItem('ctas', id, index)} 
+                handleDeleteItem={(type, index, id) => handleDeleteItem(type, index, id)} 
             />
         )}
 
@@ -393,13 +396,13 @@ export default function KnowPage() {
               {isEditMode && <Button size="sm" variant="outline" onClick={() => handleAddItem('faqs')}><PlusCircle className="mr-2 h-4 w-4" /> Add FAQ</Button>}
             </CardHeader>
             <CardContent>
-              <Accordion type="multiple" className="w-full" defaultValue={isFiltering ? filteredFaqs.map(f => f.id) : undefined}>
+              <Accordion type="multiple" className="w-full" defaultValue={isFiltering ? filteredFaqs.map(f => f.id) : []}>
                 {filteredFaqs.map((faq, index) => (
                   <AccordionItem key={faq.id} value={faq.id}>
                     <AccordionTrigger>
                       <div className="flex-1 flex justify-between items-center mr-4">
                         {isEditMode ? <Input value={faq.question} onClick={(e) => e.stopPropagation()} onChange={(e) => handleContentChange('faqs', index, 'question', e.target.value)} /> : <span className="text-left">{faq.question}</span>}
-                        {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={(e) => { e.stopPropagation(); handleDeleteItem('faqs', faq.id, index);}}><Trash2 className="h-4 w-4" /></Button>}
+                        {isEditMode && <Button variant="ghost" size="icon" className="text-destructive h-7 w-7" onClick={(e) => { e.stopPropagation(); handleDeleteItem('faqs', index, faq.id);}}><Trash2 className="h-4 w-4" /></Button>}
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>

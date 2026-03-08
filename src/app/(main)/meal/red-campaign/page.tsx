@@ -20,9 +20,10 @@ export default function RedCampaignHubPage() {
             title="RED Campaign"
             description="Data collection for the Menstrual Health Management program."
             breadcrumbs={[
-                { href: '/meal', name: 'MEAL Hub' },
-                { name: 'RED Campaign' },
-            ]}
+                { name: 'Dashboard', href: '/main' },
+                { name: 'RED Campaign', href: '/meal/red-campaign' },
+              ]}
+              
         />
 
         <Card className="bg-background border-lg shadow-comic-sm">

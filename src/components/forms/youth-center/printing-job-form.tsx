@@ -101,12 +101,16 @@ export function PrintingJobForm({ job, onSuccess }: PrintingJobFormProps) {
         <div className="space-y-2">
           <Label htmlFor="clientName">Client Name</Label>
           <Input id="clientName" {...register('clientName')} />
-          {errors.clientName && <p className="text-sm text-destructive">{errors.clientName.message}</p>}
+          {errors.clientName && <p className="text-sm text-destructive">
+  {errors.clientName && (errors.clientName as any).message}
+</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="jobDate">Job Date</Label>
           <Input id="jobDate" type="date" {...register('jobDate')} />
-          {errors.jobDate && <p className="text-sm text-destructive">{errors.jobDate.message}</p>}
+          {errors.jobDate && <p className="text-sm text-destructive">
+  {errors.jobDate && (errors.jobDate as any).message}
+</p>}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">

@@ -17,7 +17,9 @@ import {
 } from '@/components/ui/table';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import type { YoSkillsCircle, BusinessIdea, BusinessProgress } from '@/lib/types';
+import type { YoSkillsCircle, BusinessProgress } from '@/lib/types';
+
+type BusinessIdea = any;
 import { Skeleton } from '@/components/ui/skeleton';
 import { Zap } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

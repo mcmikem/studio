@@ -74,16 +74,16 @@ export default function PlayersPage() {
                     <Card key={player.id}>
                         <CardHeader className="flex flex-row items-center gap-4">
                             <Avatar className="h-12 w-12 border">
-                                <AvatarImage src={player.photoUrl || ''} alt={player.name} />
-                                <AvatarFallback>{getInitials(player.name)}</AvatarFallback>
+                                <AvatarImage src={(player as any).photoUrl || ''} alt={(player as any).name} />
+                                <AvatarFallback>{getInitials((player as any).name)}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <CardTitle className="text-base">{player.name}</CardTitle>
-                                <CardDescription>{player.teamName} <Badge variant="outline" className="ml-2">{player.ageCategory}</Badge></CardDescription>
+                                <CardTitle className="text-base">{(player as any).name}</CardTitle>
+                                <CardDescription>{(player as any).teamName} <Badge variant="outline" className="ml-2">{(player as any).ageCategory}</Badge></CardDescription>
                             </div>
                         </CardHeader>
                         <CardContent>
-                             <p className="text-sm text-muted-foreground">School: {player.school || 'N/A'}</p>
+                             <p className="text-sm text-muted-foreground">School: {(player as any).school || 'N/A'}</p>
                         </CardContent>
                         <CardFooter>
                             <Button asChild variant="secondary" className="w-full">
@@ -133,17 +133,17 @@ export default function PlayersPage() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                            <AvatarImage src={player.photoUrl || ''} alt={player.name} />
-                            <AvatarFallback>{getInitials(player.name)}</AvatarFallback>
+                            <AvatarImage src={(player as any).photoUrl || ''} alt={(player as any).name} />
+                            <AvatarFallback>{getInitials((player as any).name)}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{player.name}</p>
+                            <p className="font-medium">{(player as any).name}</p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="hidden md:table-cell">{player.teamName}</TableCell>
-                      <TableCell><Badge variant="outline">{player.ageCategory}</Badge></TableCell>
-                      <TableCell className="hidden sm:table-cell">{player.school}</TableCell>
+                      <TableCell className="hidden md:table-cell">{(player as any).teamName}</TableCell>
+                      <TableCell><Badge variant="outline">{(player as any).ageCategory}</Badge></TableCell>
+                      <TableCell className="hidden sm:table-cell">{(player as any).school}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                            <Button asChild variant="ghost" size="icon">
@@ -159,7 +159,7 @@ export default function PlayersPage() {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  This will permanently delete {player.name}'s record. This action cannot be undone.
+                                  This will permanently delete {(player as any).name}'s record. This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>

@@ -8,14 +8,14 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { LogIn, Calendar, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit, Check, X, Target } from 'lucide-react';
+import { LogIn, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit } from 'lucide-react';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkin } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import { formatDateSafe } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { EmptyState } from '@/components/ui/empty-state';
 import Link from 'next/link';
@@ -26,6 +26,17 @@ const moodIcons: { [key: string]: string } = {
   neutral: '😐',
   bad: '😔',
 };
+
+type StrategicAlignment = {
+  krTitle: string;
+  alignmentJustification: string;
+};
+
+type TimeBlock = {
+    startTime: string;
+    endTime: string;
+    description: string;
+}
 
 const getInitials = (name?: string) => {
     if (!name) return 'U';
@@ -68,7 +79,7 @@ function DesktopCheckinCard({ checkin }: { checkin: Checkin }) {
                     <div className="space-y-3">
                         <h4 className="font-semibold text-sm flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Alignments</h4>
                         <div className="space-y-2">
-                            {checkin.details?.strategicAlignments?.map((align, index) => (
+                            {checkin.details?.strategicAlignments?.map((align: StrategicAlignment, index: number) => (
                                 <div key={index} className="text-sm p-2 bg-muted/50 rounded-md">
                                     <p className="font-bold">{align.krTitle}</p>
                                     <p className="text-muted-foreground">{align.alignmentJustification}</p>
@@ -87,7 +98,7 @@ function DesktopCheckinCard({ checkin }: { checkin: Checkin }) {
                             <AccordionTrigger>View Detailed Time Blocks</AccordionTrigger>
                             <AccordionContent className="space-y-2 pt-2">
                                 <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                                    {checkin.details?.timeBlocks?.map((block, index) => (
+                                    {checkin.details?.timeBlocks?.map((block: TimeBlock, index: number) => (
                                         <li key={index}><strong>{block.startTime} - {block.endTime}:</strong> {block.description}</li>
                                     ))}
                                 </ul>
@@ -131,7 +142,7 @@ function MobileCheckinCard({ checkin }: { checkin: Checkin }) {
                  <div>
                     <p className="font-semibold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Clock className="h-4 w-4" /> Time Blocks</p>
                     <ul className="list-disc list-inside space-y-1 text-muted-foreground mt-1 pl-2">
-                        {checkin.details.timeBlocks.slice(0, 3).map((block, index) => (
+                        {checkin.details.timeBlocks.slice(0, 3).map((block: TimeBlock, index: number) => (
                             <li key={index} className="truncate"><strong>{block.startTime}:</strong> {block.description}</li>
                         ))}
                          {checkin.details.timeBlocks.length > 3 && <li>...and {checkin.details.timeBlocks.length - 3} more</li>}

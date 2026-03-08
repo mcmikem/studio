@@ -1,3 +1,4 @@
+import type { Timestamp } from 'firebase-admin/firestore';
 import { z } from 'zod';
 
 export const expenseItemCategories = ["Transport", "Rent", "Office Dev't", "Projects", "Stationery", "Registration", "Meetings", "Media", "Fuel", "Printing & Photocopy", "Phone", "Food", "Mobile Money Charges", "IGA Expense", "Allowances and Stipends", "Kibanja", "Professional Services", "community support", "miscellaneous", "Withdraw", "Raw Materials"] as const;
@@ -608,6 +609,51 @@ export const SearchResultItemSchema = z.object({
 export const OFATeamSchema = z.object({
   id: z.string(),
   teamName: z.string(),
+  headCoachName: z.string().optional(),
+  headCoachPhone: z.string().optional(),
+  headCoachAttendance: z.string().optional(),
+  headCoachAvailability: z.string().optional(),
+  assistantCoachName: z.string().optional(),
+  assistantCoachPhone: z.string().optional(),
+  assistantCoachAttendance: z.string().optional(),
+  assistantCoachAvailability: z.string().optional(),
+  teamManagerName: z.string().optional(),
+  teamManagerPhone: z.string().optional(),
+  teamManagerAttendance: z.string().optional(),
+  teamManagerAvailability: z.string().optional(),
+  captainName: z.string().optional(),
+  captainPhone: z.string().optional(),
+  captainAttendance: z.string().optional(),
+  viceCaptainName: z.string().optional(),
+  viceCaptainPhone: z.string().optional(),
+  viceCaptainAttendance: z.string().optional(),
+  subcounty: z.string().optional(),
+  parish: z.string().optional(),
+  village: z.string().optional(),
+  yearOfEstablishment: z.number().optional(),
+  homePitchName: z.string().optional(),
+  teamColours: z.string().optional(),
+  motto: z.string().optional(),
+  totalPlayers: z.number().optional(),
+  u13: z.number().optional(),
+  u15: z.number().optional(),
+  u17: z.number().optional(),
+  u19: z.number().optional(),
+  percentageInSchool: z.number().optional(),
+  mainAcademicChallenges: z.array(z.string()).optional(),
+  enforceSchoolAttendance: z.string().optional(),
+  trainingDaysPerWeek: z.number().optional(),
+  avgTrainingAttendance: z.number().optional(),
+  useWarmups: z.boolean().optional(),
+  trackPlayerProgress: z.boolean().optional(),
+  punctualityScore: z.number().optional(),
+  disciplineScore: z.number().optional(),
+  equipment: z.array(z.object({ item: z.string(), qty: z.number(), condition: z.string(), needLevel: z.string() })).optional(),
+  needs: z.array(z.object({ area: z.string(), priority: z.number() })).optional(),
+  communitySupport: z.string().optional(),
+  parentEngagement: z.string().optional(),
+  hasVolunteers: z.boolean().optional(),
+  volunteerCount: z.number().optional(),
 });
 export type OFATeam = z.infer<typeof OFATeamSchema>;
 
@@ -626,7 +672,9 @@ export const OFAMatchSchema = z.object({
   awayTeam: z.string(),
   homeScore: z.number(),
   awayScore: z.number(),
+  goalScorers: z.string().optional(),
 });
+
 export type OFAMatch = z.infer<typeof OFAMatchSchema>;
 
 export const OFAPlayerSchema = z.object({
@@ -637,6 +685,18 @@ export const OFAPlayerSchema = z.object({
   ageCategory: z.enum(['U13', 'U15', 'U17', 'U19']),
   photoUrl: z.string().url().optional().nullable(),
   playingPosition: z.enum(["Goalkeeper", "Defender", "Midfielder", "Forward"]).optional().nullable(),
+  school: z.string().optional(),
+  class: z.string().optional(),
+  guardianContact: z.string().optional(),
+  careerDream: z.string().optional(),
+  skillGoal: z.string().optional(),
+  schoolGoal: z.string().optional(),
+  behaviourGoal: z.string().optional(),
+  strengths: z.string().optional(),
+  weaknesses: z.string().optional(),
+  medicalConditions: z.string().optional(),
+  schoolAttendance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional(),
+  academicPerformance: z.enum(["Good", "Fair", "Poor", "Not Applicable"]).optional(),
 });
 export type OFAPlayer = z.infer<typeof OFAPlayerSchema>;
 
@@ -709,6 +769,7 @@ export type SLF_School = z.infer<typeof SLF_SchoolSchema>;
 export const SLF_PrefectSchema = z.object({
     id: z.string(),
     schoolId: z.string(),
+    schoolName: z.string(),
     name: z.string(),
     position: z.string(),
     age: z.number(),
@@ -808,6 +869,7 @@ export const CustomerFeedbackSchema = z.object({
   product_name: z.string(),
   rating: z.number().min(1).max(5),
   feedback: z.string().min(5),
+  logged_by: z.string(),
 });
 export type CustomerFeedback = z.infer<typeof CustomerFeedbackSchema>;
 
@@ -819,7 +881,8 @@ export const MaterialPurchaseSchema = z.object({
   unit_cost: z.number(),
   total_cost: z.number(),
   supplier_name: z.string().optional(),
-  purchase_date: z.any(),
+  purchase_date: z.string(),
+  logged_by: z.string(),
 });
 export type MaterialPurchase = z.infer<typeof MaterialPurchaseSchema>;
 
@@ -844,6 +907,7 @@ export const ProductSchema = z.object({
   createdAt: z.any(),
   updatedAt: z.any(),
 });
+export type Product = z.infer<typeof ProductSchema>;
 export const ProductFormSchema = ProductSchema.omit({ id: true, createdAt: true, updatedAt: true });
 export type ProductFormData = z.infer<typeof ProductFormSchema>;
 export type ProductCategory = { id: string; name: string; };
@@ -883,11 +947,14 @@ export type SaleFormData = z.infer<typeof SaleFormSchema>;
 
 
 export const StockAdjustmentSchema = z.object({
+    id: z.string(),
     product_id: z.string().min(1),
-    adjustment_date: z.string().min(1),
+    product_name: z.string(),
+    adjustment_date: z.any(),
     quantity: z.coerce.number().min(0.01, "Quantity must be greater than zero."),
     adjustment_type: z.enum(['Damage', 'Loss', 'Correction', 'Return']),
     reason: z.string().min(5, "A reason is required for adjustments."),
+    logged_by: z.string(),
 });
 export type StockAdjustment = z.infer<typeof StockAdjustmentSchema>;
 
@@ -919,6 +986,37 @@ export const SystemFeedbackSchema = z.object({
     createdAt: z.any(),
 });
 export type SystemFeedback = z.infer<typeof SystemFeedbackSchema>;
+
+export const SystemFeedbackFormDataSchema = SystemFeedbackSchema.omit({ id: true, createdAt: true, reported_by: true, status: true });
+export type SystemFeedbackFormData = z.infer<typeof SystemFeedbackFormDataSchema>;
+
+export const KnowledgeHubCTASchema = z.object({
+    id: z.string(),
+    title: z.string(),
+    description: z.string(),
+    buttonLabel: z.string(),
+});
+
+export type KnowledgeHubCTA = z.infer<typeof KnowledgeHubCTASchema>;
+
+export const SeedGrantApplicationSchema = z.object({
+    id: z.string(),
+    projectTitle: z.string(),
+    applicantName: z.string(),
+});
+export type SeedGrantApplication = z.infer<typeof SeedGrantApplicationSchema>;
+
+export const YAP_ChapterSchema = z.object({
+    id: z.string(),
+    chapterName: z.string(),
+});
+export type YAP_Chapter = z.infer<typeof YAP_ChapterSchema>;
+
+export const BusinessIdeaSchema = z.object({
+    id: z.string(),
+    businessName: z.string(),
+});
+export type BusinessIdea = z.infer<typeof BusinessIdeaSchema>;
 
 export type Checklist = any;
 export type PlanGoal = any;
@@ -954,4 +1052,20 @@ export type InventoryCheck = {
     productName: string;
     date: any;
     countedQuantity: number;
+}
+
+export type KnowledgeHubSection = {
+    id: string;
+    title: string;
+    summary: string;
+    subsections: {
+        title: string;
+        summary: string;
+    }[];
+}
+
+export type KnowledgeHubPitch = {
+    id: string;
+    title: string;
+    summary: string;
 }

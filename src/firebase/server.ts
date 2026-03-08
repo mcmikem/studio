@@ -5,7 +5,30 @@ import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { firebaseConfig } from './config';
 import fs from 'fs';
 import path from 'path';
-import serviceAccount from '@/../secrets/serviceAccountKey.json';
+
+// Function to get service account credentials
+const getServiceAccount = () => {
+  if (process.env.SERVICE_ACCOUNT) {
+    try {
+      return JSON.parse(process.env.SERVICE_ACCOUNT);
+    } catch (e) {
+      console.error('Error parsing SERVICE_ACCOUNT environment variable:', e);
+    }
+  }
+
+  const serviceAccountPath = path.join(process.cwd(), 'secrets', 'serviceAccountKey.json');
+  if (fs.existsSync(serviceAccountPath)) {
+    try {
+      return JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+    } catch (e) {
+      console.error('Error reading or parsing service account key file:', e);
+    }
+  }
+
+  return null;
+};
+
+const serviceAccount = getServiceAccount();
 
 let adminApp: App | null = null;
 let firestoreInstance: Firestore | null = null;
@@ -47,15 +70,15 @@ const sampleTaskTemplates = [
 
 const knowledgeHubContent = {
   sections: [
-    { order: 1, title: 'Mission & Vision', content: '<p><strong>Mission:</strong> To empower young people to learn, lead, and create sustainable change in their communities.</p><p><strong>Vision:</strong> A world where every young person has the skills, confidence, and opportunity to thrive and transform their community.</p><p>Omuto Foundation is a youth-led nonprofit based in Mpigi District, Uganda. We work with schools and communities to build youth leadership, entrepreneurship, education access, sports development, environmental conservation, and creative expression. Our approach is simple: young people are not just beneficiaries — they are leaders and solution-builders.</p>' },
-    { order: 2, title: 'Quick Facts', content: '<ul><li><strong>District:</strong> Mpigi</li><li><strong>Country:</strong> Uganda</li><li><strong>Type:</strong> Youth-led organization</li><li><strong>Primary beneficiaries:</strong> children, adolescents, and young people</li><li><strong>Key focus:</strong> schools, youth groups, sports teams, communities</li><li><strong>Current core team:</strong> Executive Director, Programs & Partnerships Manager, Operations & Field Manager, Media & Communications Lead</li><li><strong>Signature approach:</strong> leadership, practical skills, campaigns, community action</li><li><strong>Recent wins:</strong> planted over 1,300 trees, launched donor nursery beds, established youth entrepreneurship circles, trained student leaders, produced reusable dignity pads.</li></ul>' },
-    { order: 3, title: 'Programs & Projects', content: 'An overview of our key initiatives.', subsections: [ { title: 'Omuto Youth Project', content: '<p>Equips young people with leadership, life skills, social action experience, and entrepreneurship capacity.</p><strong>Key components:</strong> Student Leaders Forum (SLF), RED Campaign, GreenSchools Campaign, PureWater Initiative, YoSkills Entrepreneurship Circles, Youth Action Pathway.' }, { title: 'Student Leaders Forum (SLF)', content: '<p>Training platform for student leaders to drive school and community change. Includes RED Campaign, GreenSchools, and PureWater Initiative.</p>' }, { title: 'RED Campaign', content: '<p>Supports menstrual health education, dignity, and confidence for girls.</p><strong>Impact Message:</strong> No girl should miss school because of her period.' }, { title: 'GreenSchools Campaign', content: '<p>Greening schools to build greener communities and futures. Activities include tree planting, environmental clubs, and climate action training.</p><strong>Success Metric:</strong> 1,300+ trees planted and monitored.' }, { title: 'PureWater Initiative', content: '<p>Promotes safe water, hygiene, and sanitation awareness among students.</p>'}, { title: 'YoSkills Entrepreneurship Circles', content: '<p>Peer-based entrepreneurship and work-readiness learning spaces.</p>'}, { title: 'Youth Action Pathway', content: '<p>Guides motivated youth from idea to full community social action project.</p>'}, { title: 'Omuto Talents Project (OFA & Omuto Pulse)', content: '<p>Uses football and media to build discipline, leadership, and opportunity.</p>'}, { title: 'Omuto Essentials (Social Enterprise)', content: '<p>Produces locally made youth-friendly products to support programs and create jobs (e.g., reusable dignity pads, soaps).</p>' } ] },
-     { order: 5, title: 'Grant Boilerplates', content: 'Standard paragraphs for grant proposals.', subsections: [ { title: 'Short Grant Paragraph', content: 'Omuto Foundation is a youth-led nonprofit in Mpigi District, Uganda, working to empower young people through education, leadership development, entrepreneurship, sports, environmental conservation, and menstrual health support. We partner with schools and communities to create long-term, youth-driven change.'}, { title: 'Problem Statement Example', content: 'Many young people in Mpigi face limited access to quality education, essential health information, economic opportunity, and safe learning environments. Youth have ideas and energy, but lack platforms, mentorship, and resources.'}, { title: 'Outcome Statement', content: 'Young people gain confidence, leadership skills, entrepreneurship capacity, environmental awareness, and practical experience implementing real projects in their communities.'} ] }
+    { order: 1, title: 'Mission & Vision', summary: '<p><strong>Mission:</strong> To empower young people to learn, lead, and create sustainable change in their communities.</p><p><strong>Vision:</strong> A world where every young person has the skills, confidence, and opportunity to thrive and transform their community.</p><p>Omuto Foundation is a youth-led nonprofit based in Mpigi District, Uganda. We work with schools and communities to build youth leadership, entrepreneurship, education access, sports development, environmental conservation, and creative expression. Our approach is simple: young people are not just beneficiaries — they are leaders and solution-builders.</p>' },
+    { order: 2, title: 'Quick Facts', summary: '<ul><li><strong>District:</strong> Mpigi</li><li><strong>Country:</strong> Uganda</li><li><strong>Type:</strong> Youth-led organization</li><li><strong>Primary beneficiaries:</strong> children, adolescents, and young people</li><li><strong>Key focus:</strong> schools, youth groups, sports teams, communities</li><li><strong>Current core team:</strong> Executive Director, Programs & Partnerships Manager, Operations & Field Manager, Media & Communications Lead</li><li><strong>Signature approach:</strong> leadership, practical skills, campaigns, community action</li><li><strong>Recent wins:</strong> planted over 1,300 trees, launched donor nursery beds, established youth entrepreneurship circles, trained student leaders, produced reusable dignity pads.</li></ul>' },
+    { order: 3, title: 'Programs & Projects', summary: 'An overview of our key initiatives.', subsections: [ { title: 'Omuto Youth Project', summary: '<p>Equips young people with leadership, life skills, social action experience, and entrepreneurship capacity.</p><strong>Key components:</strong> Student Leaders Forum (SLF), RED Campaign, GreenSchools Campaign, PureWater Initiative, YoSkills Entrepreneurship Circles, Youth Action Pathway.' }, { title: 'Student Leaders Forum (SLF)', summary: '<p>Training platform for student leaders to drive school and community change. Includes RED Campaign, GreenSchools, and PureWater Initiative.</p>' }, { title: 'RED Campaign', summary: '<p>Supports menstrual health education, dignity, and confidence for girls.</p><strong>Impact Message:</strong> No girl should miss school because of her period.' }, { title: 'GreenSchools Campaign', summary: '<p>Greening schools to build greener communities and futures. Activities include tree planting, environmental clubs, and climate action training.</p><strong>Success Metric:</strong> 1,300+ trees planted and monitored.' }, { title: 'PureWater Initiative', summary: '<p>Promotes safe water, hygiene, and sanitation awareness among students.</p>'}, { title: 'YoSkills Entrepreneurship Circles', summary: '<p>Peer-based entrepreneurship and work-readiness learning spaces.</p>'}, { title: 'Youth Action Pathway', summary: '<p>Guides motivated youth from idea to full community social action project.</p>'}, { title: 'Omuto Talents Project (OFA & Omuto Pulse)', summary: '<p>Uses football and media to build discipline, leadership, and opportunity.</p>'}, { title: 'Omuto Essentials (Social Enterprise)', summary: '<p>Produces locally made youth-friendly products to support programs and create jobs (e.g., reusable dignity pads, soaps).</p>' } ] },
+     { order: 5, title: 'Grant Boilerplates', summary: 'Standard paragraphs for grant proposals.', subsections: [ { title: 'Short Grant Paragraph', summary: 'Omuto Foundation is a youth-led nonprofit in Mpigi District, Uganda, working to empower young people through education, leadership development, entrepreneurship, sports, environmental conservation, and menstrual health support. We partner with schools and communities to create long-term, youth-driven change.'}, { title: 'Problem Statement Example', summary: 'Many young people in Mpigi face limited access to quality education, essential health information, economic opportunity, and safe learning environments. Youth have ideas and energy, but lack platforms, mentorship, and resources.'}, { title: 'Outcome Statement', summary: 'Young people gain confidence, leadership skills, entrepreneurship capacity, environmental awareness, and practical experience implementing real projects in their communities.'} ] }
   ],
   pitches: [
-    { order: 1, title: '15-second pitch (youth audience)', content: 'Omuto Foundation helps young people learn skills, lead projects, and change their communities — from tree planting and menstrual health to football and entrepreneurship.' },
-    { order: 2, title: '30-second pitch (schools & partners)', content: 'We are a youth-led nonprofit in Mpigi that trains student leaders, runs environmental and menstrual health campaigns, supports youth entrepreneurship, and uses sports and creative arts to engage young people. We work directly with schools and communities to build confidence, skills, and opportunity.'},
-    { order: 3, title: '60-second pitch (donors & funders)', content: 'Omuto Foundation empowers young people in Mpigi District with leadership development, entrepreneurship skills, sports programs, environmental action, and menstrual health support. Our programs include the Student Leaders Forum, GreenSchools Campaign, PureWater Initiative, YoSkills entrepreneurship circles, and Omuto Football Alliance. We combine training with real community action so youth are not passive beneficiaries but active solution-makers.'},
+    { order: 1, title: '15-second pitch (youth audience)', summary: 'Omuto Foundation helps young people learn skills, lead projects, and change their communities — from tree planting and menstrual health to football and entrepreneurship.' },
+    { order: 2, title: '30-second pitch (schools & partners)', summary: 'We are a youth-led nonprofit in Mpigi that trains student leaders, runs environmental and menstrual health campaigns, supports youth entrepreneurship, and uses sports and creative arts to engage young people. We work directly with schools and communities to build confidence, skills, and opportunity.'},
+    { order: 3, title: '60-second pitch (donors & funders)', summary: 'Omuto Foundation empowers young people in Mpigi District with leadership development, entrepreneurship skills, sports programs, environmental action, and menstrual health support. Our programs include the Student Leaders Forum, GreenSchools Campaign, PureWater Initiative, YoSkills entrepreneurship circles, and Omuto Football Alliance. We combine training with real community action so youth are not passive beneficiaries but active solution-makers.'},
   ],
   faqs: [
     { order: 1, question: 'Who runs Omuto Foundation?', answer: 'A youth-led team based in Mpigi working with schools and communities.' },
@@ -64,9 +87,9 @@ const knowledgeHubContent = {
     { order: 4, question: 'Do you work with schools?', answer: 'Yes — schools are at the heart of our programs.' },
   ],
   stories: [
-    { order: 1, title: "Aisha's Story (GreenSchools)", content: 'Aisha used to think trees were just shade. After joining GreenSchools, she helped plant fruit trees at her school and now leads a group that waters and monitors them. She says, “I feel like I’m growing with the trees.”' },
-    { order: 2, title: "Grace's Story (RED Campaign)", content: 'Grace missed class because of her periods. After joining RED Campaign sessions and receiving reusable pads, she now attends fully and helps other girls learn hygiene with confidence.' },
-    { order: 3, title: "Musa's Story (OFA)", content: 'Musa joined Omuto Football Alliance to play. He stayed because he found mentorship, discipline, and teamwork. His new dream is to coach younger players.' },
+    { order: 1, title: "Aisha's Story (GreenSchools)", summary: 'Aisha used to think trees were just shade. After joining GreenSchools, she helped plant fruit trees at her school and now leads a group that waters and monitors them. She says, “I feel like I’m growing with the trees.”' },
+    { order: 2, title: "Grace's Story (RED Campaign)", summary: 'Grace missed class because of her periods. After joining RED Campaign sessions and receiving reusable pads, she now attends fully and helps other girls learn hygiene with confidence.' },
+    { order: 3, title: "Musa's Story (OFA)", summary: 'Musa joined Omuto Football Alliance to play. He stayed because he found mentorship, discipline, and teamwork. His new dream is to coach younger players.' },
   ],
   ctas: [
       { order: 1, title: 'Sponsor a School Nursery Bed', description: 'Help a school grow its own trees and food.', buttonLabel: 'Sponsor a Nursery Bed' },
@@ -145,9 +168,13 @@ export function getFirebaseAdmin() {
   if (existingApp) {
     adminApp = existingApp;
   } else {
-     try {
-      // Use the explicit service account credentials. This is the most reliable method in managed environments
-      // where Application Default Credentials (ADC) might not be configured as expected.
+     if (!serviceAccount) {
+      console.error("CRITICAL ERROR: Service account credentials are not available.");
+      console.error("Ensure `secrets/serviceAccountKey.json` exists or SERVICE_ACCOUNT environment variable is set.");
+      throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
+    }
+
+    try {
       adminApp = initializeApp({
         credential: cert(serviceAccount as any),
         projectId: firebaseConfig.projectId,
@@ -155,7 +182,6 @@ export function getFirebaseAdmin() {
       console.log("Firebase Admin SDK initialized successfully using service account key.");
     } catch (e) {
       console.error("CRITICAL ERROR: Failed to initialize Firebase Admin SDK.", e);
-      console.error("This usually means the `secrets/serviceAccountKey.json` is missing or malformed.");
       throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
     }
   }

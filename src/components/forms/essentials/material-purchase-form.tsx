@@ -19,6 +19,16 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { useEffect, useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
+import { z } from 'zod';
+
+const MaterialPurchaseFormSchema = z.object({
+    material_id: z.string(),
+    purchase_date: z.string(),
+    quantity: z.number(),
+    unit_cost: z.number(),
+    total_cost: z.number(),
+    supplier_name: z.string().optional(),
+});
 
 export function MaterialPurchaseForm() {
   const router = useRouter();
@@ -33,13 +43,14 @@ export function MaterialPurchaseForm() {
   }, [firestore]);
   const { data: materials, isLoading: isLoadingMaterials } = useCollection<Product>(materialsQuery);
 
-  const form = useForm<Partial<MaterialPurchase>>({
-    resolver: zodResolver(MaterialPurchaseSchema.omit({ id: true, createdAt: true, logged_by: true })),
+  const form = useForm<z.infer<typeof MaterialPurchaseFormSchema>>({
+    resolver: zodResolver(MaterialPurchaseFormSchema),
     defaultValues: {
       purchase_date: format(new Date(), 'yyyy-MM-dd'),
       quantity: 0,
       unit_cost: 0,
       total_cost: 0,
+      supplier_name: '',
     },
   });
 
@@ -124,11 +135,11 @@ export function MaterialPurchaseForm() {
             <div className="grid md:grid-cols-3 gap-6 pt-4 border-t border-dashed">
                 <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Quantity Purchased</Label>
-                    <Input type="number" step="0.01" {...register('quantity')} className="border-lg rounded-xl h-12 font-bold text-lg" />
+                    <Input type="number" step="0.01" {...register('quantity', { valueAsNumber: true })} className="border-lg rounded-xl h-12 font-bold text-lg" />
                 </div>
                 <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Unit Cost (UGX)</Label>
-                    <Input type="number" {...register('unit_cost')} className="border-lg rounded-xl h-12 font-bold text-lg" />
+                    <Input type="number" {...register('unit_cost', { valueAsNumber: true })} className="border-lg rounded-xl h-12 font-bold text-lg" />
                 </div>
                 <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Total Cost</Label>

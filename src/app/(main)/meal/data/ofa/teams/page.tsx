@@ -55,7 +55,7 @@ export default function TeamsPage() {
     if (!firestore) return;
     deleteDocumentNonBlocking(doc(firestore, 'ofa-teams', team.id))
       .then(() => {
-        toast({ title: "Team Deleted", description: `${team.teamName} has been removed.` });
+        toast({ title: "Team Deleted", description: `${(team as any).teamName} has been removed.` });
       })
       .catch((err) => {
         toast({ variant: 'destructive', title: "Error", description: "Could not delete team." });
@@ -86,12 +86,12 @@ export default function TeamsPage() {
                 teams.map((team) => (
                     <Card key={team.id}>
                         <CardHeader>
-                            <CardTitle>{team.teamName}</CardTitle>
-                            <CardDescription>{team.subcounty}</CardDescription>
+                            <CardTitle>{(team as any).teamName}</CardTitle>
+                            <CardDescription>{(team as any).subcounty}</CardDescription>
                         </CardHeader>
                         <CardContent className="text-sm">
-                            <p><strong>Coach:</strong> {team.headCoachName || 'N/A'}</p>
-                            <p><strong>Players:</strong> {team.totalPlayers || 0}</p>
+                            <p><strong>Coach:</strong> {(team as any).headCoachName || 'N/A'}</p>
+                            <p><strong>Players:</strong> {(team as any).totalPlayers || 0}</p>
                         </CardContent>
                         <CardFooter className="flex gap-2">
                             <Button asChild variant="secondary" className="w-full">
@@ -103,7 +103,7 @@ export default function TeamsPage() {
                                  <AlertDialogContent>
                                     <AlertDialogHeader>
                                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>This will permanently delete "{team.teamName}" and all its data. This action cannot be undone.</AlertDialogDescription>
+                                    <AlertDialogDescription>This will permanently delete "{(team as any).teamName}" and all its data. This action cannot be undone.</AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -150,10 +150,10 @@ export default function TeamsPage() {
                 {teams && teams.length > 0 ? (
                   teams.map((team) => (
                     <TableRow key={team.id}>
-                      <TableCell className="font-medium">{team.teamName}</TableCell>
-                      <TableCell className="hidden md:table-cell">{team.subcounty}</TableCell>
-                      <TableCell>{team.headCoachName || 'N/A'}</TableCell>
-                      <TableCell className="hidden sm:table-cell">{team.totalPlayers || 0}</TableCell>
+                      <TableCell className="font-medium">{(team as any).teamName}</TableCell>
+                      <TableCell className="hidden md:table-cell">{(team as any).subcounty}</TableCell>
+                      <TableCell>{(team as any).headCoachName || 'N/A'}</TableCell>
+                      <TableCell className="hidden sm:table-cell">{(team as any).totalPlayers || 0}</TableCell>
                        <TableCell className="text-right">
                         <div className="flex gap-1 justify-end">
                             <Button asChild variant="outline" size="sm">
@@ -171,7 +171,7 @@ export default function TeamsPage() {
                                 <AlertDialogContent>
                                     <AlertDialogHeader>
                                     <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>This will permanently delete "{team.teamName}" and all its data. This action cannot be undone.</AlertDialogDescription>
+                                    <AlertDialogDescription>This will permanently delete "{(team as any).teamName}" and all its data. This action cannot be undone.</AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -205,7 +205,7 @@ export default function TeamsPage() {
       <Dialog open={!!editingTeam} onOpenChange={(open) => !open && setEditingTeam(null)}>
         <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
             <DialogHeader>
-                <DialogTitle>Edit Team: {editingTeam?.teamName}</DialogTitle>
+                <DialogTitle>Edit Team: {(editingTeam as any)?.teamName}</DialogTitle>
                 <DialogDescription>Update the registration details for this team.</DialogDescription>
             </DialogHeader>
             <OFATeamRegistrationForm team={editingTeam} onSuccess={() => setEditingTeam(null)} />

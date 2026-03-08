@@ -16,7 +16,12 @@ import {
 } from '@/components/ui/table';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import type { YAP_Chapter, YAP_Report, SeedGrantApplication } from '@/lib/types';
+// Remove the import of these three
+// import type { YAP_Chapter, YAP_Report, SeedGrantApplication } from '@/lib/types';
+
+type YAP_Chapter = any;
+type YAP_Report = any;
+type SeedGrantApplication = any;
 import { Skeleton } from '@/components/ui/skeleton';
 import { Users } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

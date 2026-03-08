@@ -49,7 +49,7 @@ function TeamDetailDashboard() {
     if (!firestore || !id) return;
     deleteDocumentNonBlocking(doc(firestore, 'ofa-teams', id))
       .then(() => {
-        toast({ title: "Team Deleted", description: `${team?.teamName} has been removed from the database.` });
+        toast({ title: "Team Deleted", description: `${(team as any)?.teamName} has been removed from the database.` });
         router.push('/meal/data/ofa/teams');
       })
       .catch((err) => {
@@ -85,11 +85,11 @@ function TeamDetailDashboard() {
   }
 
   const managementData = [
-      { role: 'Head Coach', name: team.headCoachName, phone: team.headCoachPhone, attendance: team.headCoachAttendance, availability: team.headCoachAvailability },
-      { role: 'Assistant Coach', name: team.assistantCoachName, phone: team.assistantCoachPhone, attendance: team.assistantCoachAttendance, availability: team.assistantCoachAvailability },
-      { role: 'Team Manager', name: team.teamManagerName, phone: team.teamManagerPhone, attendance: team.teamManagerAttendance, availability: team.teamManagerAvailability },
-      { role: 'Captain', name: team.captainName, phone: team.captainPhone, attendance: team.captainAttendance },
-      { role: 'Vice Captain', name: team.viceCaptainName, phone: team.viceCaptainPhone, attendance: team.viceCaptainAttendance },
+      { role: 'Head Coach', name: (team as any).headCoachName, phone: (team as any).headCoachPhone, attendance: (team as any).headCoachAttendance, availability: (team as any).headCoachAvailability },
+      { role: 'Assistant Coach', name: (team as any).assistantCoachName, phone: (team as any).assistantCoachPhone, attendance: (team as any).assistantCoachAttendance, availability: (team as any).assistantCoachAvailability },
+      { role: 'Team Manager', name: (team as any).teamManagerName, phone: (team as any).teamManagerPhone, attendance: (team as any).teamManagerAttendance, availability: (team as any).teamManagerAvailability },
+      { role: 'Captain', name: (team as any).captainName, phone: (team as any).captainPhone, attendance: (team as any).captainAttendance },
+      { role: 'Vice Captain', name: (team as any).viceCaptainName, phone: (team as any).viceCaptainPhone, attendance: (team as any).viceCaptainAttendance },
   ].filter(m => m.name);
 
   return (
@@ -107,7 +107,7 @@ function TeamDetailDashboard() {
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>This will permanently delete "{team.teamName}" and all its associated data. This action cannot be undone.</AlertDialogDescription>
+                        <AlertDialogDescription>This will permanently delete "{(team as any).teamName}" and all its associated data. This action cannot be undone.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -121,7 +121,7 @@ function TeamDetailDashboard() {
        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle>Edit Team: {team.teamName}</DialogTitle>
+                    <DialogTitle>Edit Team: {(team as any).teamName}</DialogTitle>
                     <DialogDescription>Update the registration details for this team.</DialogDescription>
                 </DialogHeader>
                 <OFATeamRegistrationForm team={team} onSuccess={() => setIsEditDialogOpen(false)} />
@@ -134,17 +134,17 @@ function TeamDetailDashboard() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-3 text-2xl">
                         <Swords className="h-7 w-7" />
-                        {team.teamName}
+                        {(team as any).teamName}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <DetailItem label="Subcounty" value={team.subcounty} />
-                    <DetailItem label="Parish" value={team.parish} />
-                    <DetailItem label="Village" value={team.village} />
-                    <DetailItem label="Year Formed" value={team.yearOfEstablishment} />
-                    <DetailItem label="Home Pitch" value={team.homePitchName} />
-                    <DetailItem label="Team Colours" value={team.teamColours} />
-                    <div className="col-span-full"><DetailItem label="Motto/Values" value={team.motto} /></div>
+                    <DetailItem label="Subcounty" value={(team as any).subcounty} />
+                    <DetailItem label="Parish" value={(team as any).parish} />
+                    <DetailItem label="Village" value={(team as any).village} />
+                    <DetailItem label="Year Formed" value={(team as any).yearOfEstablishment} />
+                    <DetailItem label="Home Pitch" value={(team as any).homePitchName} />
+                    <DetailItem label="Team Colours" value={(team as any).teamColours} />
+                    <div className="col-span-full"><DetailItem label="Motto/Values" value={(team as any).motto} /></div>
                 </CardContent>
             </Card>
             <Card>
@@ -186,29 +186,29 @@ function TeamDetailDashboard() {
                 <CardHeader><CardTitle>Player Development & Education</CardTitle></CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center">
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Players</p><p className="text-2xl font-bold">{team.totalPlayers || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-13</p><p className="text-2xl font-bold">{team.u13 || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-15</p><p className="text-2xl font-bold">{team.u15 || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-17</p><p className="text-2xl font-bold">{team.u17 || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-19</p><p className="text-2xl font-bold">{team.u19 || 0}</p></div>
-                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">% in School</p><p className="text-2xl font-bold">{team.percentageInSchool || 0}%</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">Total Players</p><p className="text-2xl font-bold">{(team as any).totalPlayers || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-13</p><p className="text-2xl font-bold">{(team as any).u13 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-15</p><p className="text-2xl font-bold">{(team as any).u15 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-17</p><p className="text-2xl font-bold">{(team as any).u17 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">U-19</p><p className="text-2xl font-bold">{(team as any).u19 || 0}</p></div>
+                        <div className="p-2 bg-muted rounded-lg"><p className="text-xs text-muted-foreground">% in School</p><p className="text-2xl font-bold">{(team as any).percentageInSchool || 0}%</p></div>
                     </div>
-                    <DetailItem label="Main Academic Challenges" value={team.mainAcademicChallenges?.join(', ')} />
-                    <DetailItem label="School Attendance Enforcement" value={team.enforceSchoolAttendance} />
+                    <DetailItem label="Main Academic Challenges" value={(team as any).mainAcademicChallenges?.join(', ')} />
+                    <DetailItem label="School Attendance Enforcement" value={(team as any).enforceSchoolAttendance} />
                 </CardContent>
             </Card>
              <Card>
                 <CardHeader><CardTitle>Training Culture</CardTitle></CardHeader>
                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                        <DetailItem label="Training Days per Week" value={team.trainingDaysPerWeek} />
-                        <DetailItem label="Average Attendance" value={team.avgTrainingAttendance} />
-                        <div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${team.useWarmups ? 'text-green-500' : 'text-muted-foreground'}`}/> <span className="text-sm">Uses warm-ups & drills</span></div>
-                        <div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${team.trackPlayerProgress ? 'text-green-500' : 'text-muted-foreground'}`}/> <span className="text-sm">Tracks player progress</span></div>
+                        <DetailItem label="Training Days per Week" value={(team as any).trainingDaysPerWeek} />
+                        <DetailItem label="Average Attendance" value={(team as any).avgTrainingAttendance} />
+                        <div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${(team as any).useWarmups ? 'text-green-500' : 'text-muted-foreground'}`}/> <span className="text-sm">Uses warm-ups & drills</span></div>
+                        <div className="flex items-center gap-2"><CheckCircle2 className={`h-4 w-4 ${(team as any).trackPlayerProgress ? 'text-green-500' : 'text-muted-foreground'}`}/> <span className="text-sm">Tracks player progress</span></div>
                     </div>
                      <div className="space-y-4">
-                        <div><Label className="text-sm text-muted-foreground">Punctuality</Label><Progress value={(team.punctualityScore || 0)*20} className="h-2 mt-1" /></div>
-                        <div><Label className="text-sm text-muted-foreground">Discipline</Label><Progress value={(team.disciplineScore || 0)*20} className="h-2 mt-1" /></div>
+                        <div><Label className="text-sm text-muted-foreground">Punctuality</Label><Progress value={((team as any).punctualityScore || 0)*20} className="h-2 mt-1" /></div>
+                        <div><Label className="text-sm text-muted-foreground">Discipline</Label><Progress value={((team as any).disciplineScore || 0)*20} className="h-2 mt-1" /></div>
                      </div>
                 </CardContent>
             </Card>
@@ -224,7 +224,7 @@ function TeamDetailDashboard() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {team.equipment?.length ? team.equipment.map(e => (
+                                    {(team as any).equipment?.length ? (team as any).equipment.map(e => (
                                         <TableRow key={e.item}><TableCell>{e.item}</TableCell><TableCell>{e.qty || 0}</TableCell><TableCell>{e.condition}</TableCell><TableCell>{e.needLevel}</TableCell></TableRow>
                                     )) : <TableRow><TableCell colSpan={4} className="h-24 text-center">No equipment data.</TableCell></TableRow>}
                                 </TableBody>
@@ -236,7 +236,7 @@ function TeamDetailDashboard() {
                     <CardHeader><CardTitle>Needs Assessment</CardTitle></CardHeader>
                     <CardContent>
                         <ul className="space-y-2">
-                            {team.needs?.length ? team.needs.sort((a,b) => (b.priority || 0) - (a.priority || 0)).map(n => (
+                            {(team as any).needs?.length ? (team as any).needs.sort((a,b) => (b.priority || 0) - (a.priority || 0)).map(n => (
                                 <li key={n.area} className="flex justify-between items-center text-sm"><span>{n.area}</span><Badge variant="outline">{n.priority}/5</Badge></li>
                             )) : <li className="text-center text-sm text-muted-foreground h-24 flex items-center justify-center">No needs assessed.</li>}
                         </ul>
@@ -246,9 +246,9 @@ function TeamDetailDashboard() {
              <Card>
                 <CardHeader><CardTitle>Community Involvement</CardTitle></CardHeader>
                  <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <DetailItem label="Community Support" value={team.communitySupport} />
-                    <DetailItem label="Parent Engagement" value={team.parentEngagement} />
-                    <DetailItem label="Volunteers" value={team.hasVolunteers ? `Yes (${team.volunteerCount || 'N/A'})` : 'No'} />
+                    <DetailItem label="Community Support" value={(team as any).communitySupport} />
+                    <DetailItem label="Parent Engagement" value={(team as any).parentEngagement} />
+                    <DetailItem label="Volunteers" value={(team as any).hasVolunteers ? `Yes (${(team as any).volunteerCount || 'N/A'})` : 'No'} />
                 </CardContent>
             </Card>
         </div>

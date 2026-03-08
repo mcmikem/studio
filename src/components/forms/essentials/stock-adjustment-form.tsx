@@ -18,6 +18,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
+import { z } from 'zod';
+
+const StockAdjustmentFormSchema = z.object({
+    product_id: z.string(),
+    adjustment_type: z.enum(["Damage", "Loss", "Correction", "Return"]),
+    quantity: z.number(),
+    adjustment_date: z.string(),
+    reason: z.string(),
+});
 
 export function StockAdjustmentForm() {
   const router = useRouter();
@@ -32,12 +41,14 @@ export function StockAdjustmentForm() {
   }, [firestore]);
   const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
 
-  const form = useForm<Partial<StockAdjustment>>({
-    resolver: zodResolver(StockAdjustmentSchema.omit({ id: true, createdAt: true, logged_by: true })),
+  const form = useForm<z.infer<typeof StockAdjustmentFormSchema>>({
+    resolver: zodResolver(StockAdjustmentFormSchema),
     defaultValues: {
       adjustment_date: format(new Date(), 'yyyy-MM-dd'),
       adjustment_type: 'Damage',
       quantity: 0,
+      product_id: '',
+      reason: '',
     },
   });
 
@@ -127,7 +138,7 @@ export function StockAdjustmentForm() {
             <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-dashed">
                 <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Quantity</Label>
-                    <Input type="number" step="0.01" {...register('quantity')} className="border-lg rounded-xl h-12 font-bold text-lg text-destructive" />
+                    <Input type="number" step="0.01" {...register('quantity', { valueAsNumber: true })} className="border-lg rounded-xl h-12 font-bold text-lg text-destructive" />
                 </div>
                 <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Adjustment Date</Label>

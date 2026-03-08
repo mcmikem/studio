@@ -20,9 +20,9 @@ export default function GreenSchoolsHubPage() {
             title="Green Schools"
             description="Data collection for environmental and conservation programs."
             breadcrumbs={[
-                { href: '/meal', name: 'MEAL Hub' },
-                { name: 'Green Schools' },
-            ]}
+                { name: 'Dashboard', href: '/main' },
+                { name: 'Green Schools', href: '/meal/greenschools' },
+              ]}
         />
 
         <Card className="bg-background border-lg shadow-comic-sm">

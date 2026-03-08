@@ -57,17 +57,17 @@ function EditPlayerDialog({ player, onOpenChange }: { player: OFAPlayer, onOpenC
   const { register, handleSubmit, control, formState: { isSubmitting } } = useForm<PlayerEditFormData>({
     resolver: zodResolver(playerEditSchema),
     defaultValues: {
-      name: player.name,
-      school: player.school || '',
-      class: player.class || '',
-      guardianContact: player.guardianContact || '',
-      careerDream: player.careerDream || '',
-      skillGoal: player.skillGoal || '',
-      schoolGoal: player.schoolGoal || '',
-      behaviourGoal: player.behaviourGoal || '',
-      playingPosition: player.playingPosition || undefined,
-      schoolAttendance: player.schoolAttendance || undefined,
-      academicPerformance: player.academicPerformance || undefined,
+      name: (player as any).name,
+      school: (player as any).school || '',
+      class: (player as any).class || '',
+      guardianContact: (player as any).guardianContact || '',
+      careerDream: (player as any).careerDream || '',
+      skillGoal: (player as any).skillGoal || '',
+      schoolGoal: (player as any).schoolGoal || '',
+      behaviourGoal: (player as any).behaviourGoal || '',
+      playingPosition: (player as any).playingPosition || undefined,
+      schoolAttendance: (player as any).schoolAttendance || undefined,
+      academicPerformance: (player as any).academicPerformance || undefined,
     }
   });
 
@@ -86,7 +86,7 @@ function EditPlayerDialog({ player, onOpenChange }: { player: OFAPlayer, onOpenC
   return (
     <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-            <DialogTitle>Edit Player: {player.name}</DialogTitle>
+            <DialogTitle>Edit Player: {(player as any).name}</DialogTitle>
             <DialogDescription>
             Quickly update the key details for this player.
             </DialogDescription>
@@ -169,7 +169,7 @@ function PlayerDetailDashboard() {
     if (!firestore || !id) return;
     deleteDocumentNonBlocking(doc(firestore, 'ofa-players', id))
       .then(() => {
-        toast({ title: "Player Deleted", description: `${player?.name} has been removed from the database.` });
+        toast({ title: "Player Deleted", description: `${(player as any)?.name} has been removed from the database.` });
         router.push('/meal/data/ofa/players');
       })
       .catch((err) => {
@@ -226,7 +226,7 @@ function PlayerDetailDashboard() {
                         <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete {player.name}'s record. This action cannot be undone.
+                            This will permanently delete {(player as any).name}'s record. This action cannot be undone.
                         </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -244,44 +244,44 @@ function PlayerDetailDashboard() {
       <Card>
         <CardHeader className="flex flex-col items-center text-center">
             <Avatar className="h-24 w-24 mb-4 border-2" data-ai-hint="person avatar">
-                <AvatarImage src={player.photoUrl || ''} alt={player.name} />
-                <AvatarFallback className="text-3xl">{getInitials(player.name)}</AvatarFallback>
+                <AvatarImage src={(player as any).photoUrl || ''} alt={(player as any).name} />
+                <AvatarFallback className="text-3xl">{getInitials((player as any).name)}</AvatarFallback>
             </Avatar>
-            <CardTitle className="text-2xl">{player.name}</CardTitle>
-            <CardDescription>{player.teamName} &bull; <Badge variant="secondary">{player.ageCategory}</Badge></CardDescription>
+            <CardTitle className="text-2xl">{(player as any).name}</CardTitle>
+            <CardDescription>{(player as any).teamName} &bull; <Badge variant="secondary">{(player as any).ageCategory}</Badge></CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
             <div className="flex flex-wrap items-center justify-center gap-2">
-                <InfoPill label="Position" value={player.playingPosition} />
-                <InfoPill label="School" value={player.school} />
-                <InfoPill label="Class" value={player.class} />
-                <InfoPill label="Guardian Contact" value={player.guardianContact} icon={Phone} />
+                <InfoPill label="Position" value={(player as any).playingPosition} />
+                <InfoPill label="School" value={(player as any).school} />
+                <InfoPill label="Class" value={(player as any).class} />
+                <InfoPill label="Guardian Contact" value={(player as any).guardianContact} icon={Phone} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <Card>
                     <CardHeader><CardTitle className="text-base flex items-center gap-2"><Sparkles /> Player Development</CardTitle></CardHeader>
                     <CardContent className="text-sm space-y-4">
-                        <InfoPill label="Strengths" value={player.strengths} icon={Smile} />
-                        <InfoPill label="Weaknesses" value={player.weaknesses} icon={Frown} />
-                        <InfoPill label="Medical Notes" value={player.medicalConditions} icon={Heart} />
+                        <InfoPill label="Strengths" value={(player as any).strengths} icon={Smile} />
+                        <InfoPill label="Weaknesses" value={(player as any).weaknesses} icon={Frown} />
+                        <InfoPill label="Medical Notes" value={(player as any).medicalConditions} icon={Heart} />
                     </CardContent>
                  </Card>
                   <Card>
                     <CardHeader><CardTitle className="text-base flex items-center gap-2"><BookOpen /> Personal Goals</CardTitle></CardHeader>
                     <CardContent className="text-sm space-y-4">
-                        <InfoPill label="Career Dream" value={player.careerDream} />
-                        <InfoPill label="Skill Goal" value={player.skillGoal} />
-                        <InfoPill label="School Goal" value={player.schoolGoal} />
-                        <InfoPill label="Behaviour Goal" value={player.behaviourGoal} />
+                        <InfoPill label="Career Dream" value={(player as any).careerDream} />
+                        <InfoPill label="Skill Goal" value={(player as any).skillGoal} />
+                        <InfoPill label="School Goal" value={(player as any).schoolGoal} />
+                        <InfoPill label="Behaviour Goal" value={(player as any).behaviourGoal} />
                     </CardContent>
                  </Card>
             </div>
              <Card>
                 <CardHeader><CardTitle className="text-base">Performance</CardTitle></CardHeader>
                 <CardContent className="flex flex-wrap gap-4">
-                    <InfoPill label="School Attendance" value={player.schoolAttendance} />
-                    <InfoPill label="Academic Performance" value={player.academicPerformance} />
+                    <InfoPill label="School Attendance" value={(player as any).schoolAttendance} />
+                    <InfoPill label="Academic Performance" value={(player as any).academicPerformance} />
                 </CardContent>
              </Card>
         </CardContent>

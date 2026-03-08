@@ -18,6 +18,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
+import { z } from 'zod';
+
+const CustomerFeedbackFormSchema = z.object({
+    customer_name: z.string().optional(),
+    date: z.string(),
+    product_name: z.string(),
+    rating: z.number().min(1).max(5),
+    feedback: z.string(),
+});
 
 export function CustomerFeedbackForm() {
   const router = useRouter();
@@ -32,11 +41,14 @@ export function CustomerFeedbackForm() {
   }, [firestore]);
   const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
 
-  const form = useForm<Partial<CustomerFeedback>>({
-    resolver: zodResolver(CustomerFeedbackSchema.omit({ id: true, createdAt: true, logged_by: true })),
+  const form = useForm<z.infer<typeof CustomerFeedbackFormSchema>>({
+    resolver: zodResolver(CustomerFeedbackFormSchema),
     defaultValues: {
       date: format(new Date(), 'yyyy-MM-dd'),
       rating: 5,
+      customer_name: '',
+      product_name: '',
+      feedback: '',
     },
   });
 

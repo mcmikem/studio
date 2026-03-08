@@ -47,10 +47,11 @@ function ProgramDashboard() {
   const { data: transactions, isLoading: isLoadingTransactions } = useCollection<Transaction>(transactionsQuery);
 
   const financialSummary: FinancialSummary = {
-    budget: program?.budget || 0,
+    //budget: program?.budget || 0, 
+    budget: 0,
     spent: transactions?.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0) || 0,
     income: transactions?.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) || 0,
-    net: (program?.budget || 0) - (transactions?.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0) || 0) + (transactions?.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) || 0),
+    net: 0,
   };
 
   const isLoading = isLoadingProgram || isLoadingKpis || isLoadingTransactions;

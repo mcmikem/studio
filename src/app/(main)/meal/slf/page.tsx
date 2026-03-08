@@ -21,9 +21,10 @@ export default function SlfHubPage() {
             title="Student Leaders Fellowship"
             description="Data collection for the SLF program."
             breadcrumbs={[
-                { href: '/meal', name: 'MEAL Hub' },
-                { name: 'SLF' },
-            ]}
+                { name: 'Dashboard', href: '/main' },
+                { name: 'SLF', href: '/meal/slf' },
+              ]}
+              
         />
 
         <Card className="bg-background border-lg shadow-comic-sm">
