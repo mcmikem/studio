@@ -10,7 +10,7 @@ import { SupervisorCard } from './supervisor-card';
 import { DashboardHeader } from './dashboard-header';
 import { SmartReminders } from './smart-reminders';
 import { MyTasksSummary } from './my-tasks-summary';
-import type { DashboardProps, DashboardData } from './dashboard-loader';
+import type { DashboardProps } from './dashboard-loader';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
 
@@ -40,24 +40,13 @@ function FirstQuestCard() {
     )
 }
 
-export function InternVolunteerDashboard({ profile, data }: { profile: any, data: DashboardData }) {
-  const { activities, users, checkins, checkouts, allExpenses, testimonies } = data;
-  const isLoading = !activities || !users || !checkins;
-
+export function InternVolunteerDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-8">
       <DashboardHeader profile={profile} />
        <DashboardGrid className="lg:grid-cols-3">
         <div className="lg:col-span-2 flex flex-col gap-8">
-           <TeamPerformanceLeaderboard 
-                activities={activities} 
-                users={users} 
-                checkins={checkins} 
-                checkouts={checkouts} 
-                expenses={allExpenses}
-                testimonies={testimonies}
-                isLoading={isLoading} 
-            />
+           <TeamPerformanceLeaderboard />
            <SmartReminders profile={profile} />
         </div>
          <div className="flex flex-col gap-8">

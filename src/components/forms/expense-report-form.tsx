@@ -29,7 +29,7 @@ import { Loader2, FilePlus2, PlusCircle, Trash2, Receipt, Wallet, Sparkles, Arro
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
-import { createAlert } from '@/ai/actions';
+import { createAlertAction as createAlert } from '@/actions/mutations';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import type { Expense, User, Project, ExpenseItem } from '@/lib/types';
 import { expenseItemCategories } from '@/lib/types';

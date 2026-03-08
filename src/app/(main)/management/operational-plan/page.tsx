@@ -10,13 +10,25 @@ import {
   CardTitle,
   CardFooter,
 } from '@/components/ui/card';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
 import { collection, writeBatch, getDocs, doc, Timestamp, query, orderBy, where } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
-import { Loader2, Wand, FileSignature, CheckCircle, Goal, MessageSquare, Target, Sparkles, TrendingUp, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Wand, FileSignature, CheckCircle, Goal, MessageSquare, Target, Sparkles, TrendingUp, Calendar, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import { parseOperationalPlan } from '@/ai/actions';
 import {
   Table,
@@ -28,7 +40,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { formatDateSafe } from '@/lib/utils';
+import { formatDateSafe, formatDateForInput } from '@/lib/utils';
 import { ProgressRing } from '@/components/ui/progress-ring';
 import { isPast, format, startOfWeek, isSameMonth, subMonths, addMonths } from 'date-fns';
 import { CommentsSection } from '@/components/ui/comments';
@@ -37,7 +49,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton'; 
 import { Input } from '@/components/ui/input';
-
 interface ParsedKeyResult extends Omit<KeyResult, 'id' | 'deadline'> {
   deadline: string;
 }
@@ -80,7 +91,7 @@ function KeyResultCard({ kr }: { kr: KeyResult }) {
             <CardHeader className="pb-4">
                 <div className="flex justify-between items-start mb-4">
                     <Badge className={`badge-omuto-outline ${kr.priority === 'High' ? 'border-omuto-red/30 text-omuto-red' : 'border-omuto-navy/20 text-omuto-navy/70'}`}>
-                        {kr.priority} Priority
+                        {`${kr.priority} Priority`}
                     </Badge>
                     <ProgressRing progress={progress} size={48} strokeWidth={5} />
                 </div>
@@ -171,64 +182,142 @@ function OperationalPlanViewer() {
     )
 }
 
+const krSchema = z.object({
+  title: z.string().min(2, 'Title is required.'),
+  description: z.string().min(5, 'Description is required.'),
+  target: z.number().min(0),
+  deadline: z.string().min(1, 'Deadline is required.'),
+  priority: z.enum(['High', 'Medium', 'Low']),
+});
+
+function KeyResultFormItem({ 
+    index, 
+    register, 
+    remove, 
+    errors,
+    control
+}: { 
+    index: number; 
+    register: any; 
+    remove: (index: number) => void; 
+    errors: any;
+    control: any;
+}) {
+    return (
+        <div className="p-6 border-lg border-omuto-navy/10 rounded-2xl bg-white space-y-4 relative group">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label>Key Result Title</Label>
+                    <Input {...register(`keyResults.${index}.title`)} placeholder="e.g., KR1: Monthly Fundraising" />
+                    {errors.keyResults?.[index]?.title && <p className="text-xs text-destructive font-bold">{errors.keyResults[index].title.message}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label>Target Value (Number)</Label>
+                    <Input type="number" {...register(`keyResults.${index}.target`, { valueAsNumber: true })} placeholder="e.g., 150000000" />
+                    {errors.keyResults?.[index]?.target && <p className="text-xs text-destructive font-bold">{errors.keyResults[index].target.message}</p>}
+                </div>
+            </div>
+            
+            <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea {...register(`keyResults.${index}.description`)} placeholder="Describe what success looks like..." />
+                {errors.keyResults?.[index]?.description && <p className="text-xs text-destructive font-bold">{errors.keyResults[index].description.message}</p>}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label>Deadline</Label>
+                    <Input type="date" {...register(`keyResults.${index}.deadline`)} />
+                    {errors.keyResults?.[index]?.deadline && <p className="text-xs text-destructive font-bold">{errors.keyResults[index].deadline.message}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label>Priority</Label>
+                    <Controller
+                        control={control}
+                        name={`keyResults.${index}.priority`}
+                        render={({ field }: { field: any }) => (
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select priority" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="High">High</SelectItem>
+                                    <SelectItem value="Medium">Medium</SelectItem>
+                                    <SelectItem value="Low">Low</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        )}
+                    />
+                </div>
+            </div>
+
+            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => remove(index)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+        </div>
+    );
+}
+
 function OperationalPlanUpdater() {
+  const [isImporting, setIsImporting] = useState(false);
   const [pastedText, setPastedText] = useState('');
   const [isParsing, setIsParsing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [parsedResults, setParsedResults] = useState<ParsedKeyResult[]>([]);
   const { toast } = useToast();
   const firestore = useFirestore();
 
+  const {
+      register,
+      control,
+      handleSubmit,
+      reset,
+      formState: { errors, isSubmitting }
+  } = useForm({
+      defaultValues: {
+          keyResults: [{ title: '', description: '', target: 0, deadline: '', priority: 'Medium' }]
+      }
+  });
+
+  const { fields, append, remove } = useFieldArray({
+      control,
+      name: "keyResults"
+  });
+
   const handleParseWithAI = async () => {
     if (!pastedText.trim()) {
-      toast({
-        variant: 'destructive',
-        title: 'No Text Provided',
-        description: 'Please paste your operational plan into the text area.',
-      });
+      toast({ variant: 'destructive', title: 'No Text', description: 'Paste plan text first.' });
       return;
     }
     setIsParsing(true);
-    setParsedResults([]);
     try {
       const result = await parseOperationalPlan({ planText: pastedText });
-      setParsedResults(result.keyResults as ParsedKeyResult[]);
-      toast({
-        title: 'Plan Parsed Successfully',
-        description: `Found ${result.keyResults.length} Key Results. Please review them below.`,
-      });
+      const mappedResults = result.keyResults.map(kr => ({
+          title: kr.title,
+          description: kr.description,
+          target: Number(kr.target) || 0,
+          deadline: kr.deadline ? formatDateForInput(kr.deadline) : '',
+          priority: (kr.priority as any) || 'Medium'
+      }));
+      reset({ keyResults: mappedResults });
+      setIsImporting(false);
+      toast({ title: 'Import Successful', description: `Loaded ${result.keyResults.length} Key Results.` });
     } catch (error) {
-      console.error('AI parsing error:', error);
-      toast({
-        variant: 'destructive',
-        title: 'AI Parsing Failed',
-        description: 'The AI could not understand the provided text. Please check the format and try again.',
-      });
+      console.error('Import error:', error);
+      toast({ variant: 'destructive', title: 'Import Failed', description: 'Could not structure the text.' });
     } finally {
       setIsParsing(false);
     }
   };
 
-  const handleSavePlan = async () => {
-    if (parsedResults.length === 0 || !firestore) {
-      toast({
-        variant: 'destructive',
-        title: 'No Results to Save',
-        description: 'Please parse a plan before saving.',
-      });
-      return;
-    }
-    setIsSaving(true);
+  const onSubmit = async (data: any) => {
+    if (!firestore) return;
     const krCollection = collection(firestore, 'key-results');
     const batch = writeBatch(firestore);
 
     try {
       const existingDocsSnapshot = await getDocs(krCollection);
-      existingDocsSnapshot.forEach(docSnapshot => {
-        batch.delete(docSnapshot.ref);
-      });
+      existingDocsSnapshot.forEach(docSnapshot => batch.delete(docSnapshot.ref));
 
-      parsedResults.forEach(kr => {
+      data.keyResults.forEach((kr: any) => {
         const newDocRef = doc(krCollection);
         const deadlineDate = new Date(kr.deadline);
         batch.set(newDocRef, { 
@@ -240,91 +329,89 @@ function OperationalPlanUpdater() {
       });
 
       await batch.commit();
-
-      toast({
-        title: 'Operational Plan Updated!',
-        description: `Successfully saved ${parsedResults.length} new Key Results. Your dashboard is now up-to-date.`,
-      });
-      setParsedResults([]);
-      setPastedText('');
+      toast({ title: 'Plan Activated', description: 'Organizational strategy has been updated.' });
     } catch (error) {
-      console.error('Error saving new plan:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Save Failed',
-        description: 'Could not update the operational plan in the database.',
-      });
-    } finally {
-      setIsSaving(false);
+      console.error('Save error:', error);
+      toast({ variant: 'destructive', title: 'Error', description: 'Could not save strategy.' });
     }
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 pb-10 pt-10 px-8">
-            <div className="p-3 bg-white border-lg border-omuto-navy/20 shadow-comic-sm rounded-2xl w-fit mb-4 rotate-[-2deg]">
-                <FileSignature className="h-6 w-6 text-primary" />
+    <div className="space-y-10">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold tracking-tight text-omuto-navy">Structured Strategy Input</h2>
+        <Button 
+            variant="outline" 
+            onClick={() => setIsImporting(!isImporting)}
+            className="border-lg rounded-xl font-bold text-xs uppercase tracking-widest"
+        >
+            {isImporting ? <ChevronLeft className="mr-2 h-4 w-4" /> : <Sparkles className="mr-2 h-4 w-4 text-omuto-yellow" />}
+            {isImporting ? 'Back to Form' : 'Import from Text (AI)'}
+        </Button>
+      </div>
+
+      {isImporting ? (
+        <Card className="overflow-hidden bg-omuto-navy/5 border-dashed border-2 border-omuto-navy/20">
+            <CardHeader>
+                <CardTitle className="text-lg">Paste Raw Plan</CardTitle>
+                <CardDescription>Paste your unstructured meeting notes or plan document here. We'll use AI to fill out the strategy form for you.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Textarea
+                    placeholder="E.g. KR1: Fundraising 150M by April. KR2: Support 2000 girls in RED Campaign..."
+                    className="min-h-[200px] border-lg rounded-2xl p-6 bg-white"
+                    value={pastedText}
+                    onChange={e => setPastedText(e.target.value)}
+                />
+                <Button onClick={handleParseWithAI} disabled={isParsing || !pastedText.trim()} className="w-full h-12">
+                    {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
+                    Analyze & Fill Form
+                </Button>
+            </CardContent>
+        </Card>
+      ) : (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            <div className="space-y-6">
+                {fields.map((field, index) => (
+                    <KeyResultFormItem 
+                        key={field.id} 
+                        index={index} 
+                        register={register} 
+                        remove={remove} 
+                        errors={errors} 
+                        control={control}
+                    />
+                ))}
             </div>
-          <CardTitle className="text-3xl font-bold tracking-tighter uppercase text-omuto-navy">Strategy <span className="text-primary">Input</span></CardTitle>
-          <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">
-            Paste your raw operational plan text. Omuto AI will extract structured Key Results and activate the trackers.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-8 pt-0 -mt-6">
-          <div className="space-y-2 relative">
-            <Textarea
-              id="plan-text"
-              placeholder="E.g. KR1: Fundraising 150M by April. KR2: Support 2000 girls in RED Campaign..."
-              className="min-h-[300px] border-lg rounded-2xl border-omuto-navy/20 p-6 text-sm focus-visible:ring-primary shadow-inner bg-omuto-cream/50"
-              value={pastedText}
-              onChange={e => setPastedText(e.target.value)}
-            />
-             <div className="absolute bottom-4 right-4">
-                <Button onClick={handleParseWithAI} disabled={isParsing || !pastedText.trim()} className="btn-omuto shadow-comic-lg hover:shadow-comic-sm h-12 text-xs">
-                    {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4 text-omuto-yellow" />}
-                    Analyze & Structure
+
+            <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                    type="button" 
+                    variant="outline" 
+                    className="flex-1 h-16 border-2 border-dashed border-omuto-navy/20 hover:border-omuto-navy/40 rounded-2xl"
+                    onClick={() => append({ title: '', description: '', target: 0, deadline: '', priority: 'Medium' })}
+                >
+                    <PlusCircle className="mr-2 h-5 w-5" /> Add Manual Key Result
+                </Button>
+                
+                <Button 
+                    type="submit" 
+                    disabled={isSubmitting} 
+                    className="flex-1 h-16 btn-omuto shadow-comic-lg hover:shadow-comic-sm bg-primary text-white border-white"
+                >
+                    {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+                    Activate Strategy Framework
                 </Button>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {parsedResults.length > 0 && (
-        <Card className="bg-white overflow-hidden">
-          <CardHeader className="px-8 pt-8 bg-muted/10 border-b-lg border-omuto-navy/10">
-            <CardTitle className="text-2xl font-bold tracking-tighter text-omuto-navy">Extracted <span className="text-primary">Strategy Model</span></CardTitle>
-            <CardDescription className="font-bold text-omuto-navy/50 mt-1">Review the structured data below. Saving will overwrite the previous organizational plan.</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8">
-            <div className="data-table-omuto">
-                <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/90">Key Result</TableHead>
-                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/90">Description</TableHead>
-                    <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/90 text-right">Target</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {parsedResults.map((kr, index) => (
-                    <TableRow key={index}>
-                        <TableCell className="font-bold text-sm text-omuto-navy">{kr.title}</TableCell>
-                        <TableCell className="text-xs font-bold text-omuto-navy/70 leading-relaxed">{kr.description}</TableCell>
-                        <TableCell className="text-right font-bold text-omuto-navy">{kr.target}</TableCell>
-                    </TableRow>
-                    ))}
-                </TableBody>
-                </Table>
-            </div>
-          </CardContent>
-           <CardFooter className="p-8 bg-muted/10 border-t-lg border-omuto-navy/10">
-             <Button onClick={handleSavePlan} disabled={isSaving} className="btn-omuto w-full h-14 text-sm shadow-comic-lg hover:shadow-comic-sm bg-primary border-white text-white">
-                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                Activate Organizational Strategy
-            </Button>
-          </CardFooter>
-        </Card>
+            
+            <Alert className="bg-omuto-yellow/10 border-omuto-yellow/30">
+                <Target className="h-4 w-4 text-omuto-yellow" />
+                <AlertTitle className="text-xs font-black uppercase tracking-widest">Caution: Overwrite Warning</AlertTitle>
+                <AlertDescription className="text-xs font-bold text-omuto-navy/70">
+                    Activating this strategy will replace all existing organizational Key Results. Ensure you have reviewed all items before proceeding.
+                </AlertDescription>
+            </Alert>
+        </form>
       )}
     </div>
   );

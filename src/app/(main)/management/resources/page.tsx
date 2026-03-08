@@ -37,7 +37,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { formatDateSafe } from '@/lib/utils';
 import { format } from 'date-fns';
-import { runGrantFinder } from '@/ai/actions';
+import { findGrantsAction as runGrantFinder } from '@/actions/mutations';
 import type { GrantFinderOutput } from '@/lib/types';
 
 

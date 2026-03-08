@@ -58,7 +58,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { formatDateSafe, cn, formatCurrency } from '@/lib/utils';
-import { createAlert } from '@/ai/actions';
+import { createAlertAction as createAlert } from '@/actions/mutations';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { ExpenseReportForm } from '@/components/forms/expense-report-form';
 

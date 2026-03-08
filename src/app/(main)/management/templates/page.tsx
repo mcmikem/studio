@@ -43,7 +43,7 @@ import { PlusCircle, Edit, Trash2, ListChecks, Loader2, Wand } from 'lucide-reac
 import type { TaskTemplate } from '@/lib/types';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Textarea } from '@/components/ui/textarea';
-import { generateTemplate } from '@/ai/actions';
+import { generateTemplateAction as generateTemplate } from '@/actions/mutations';
 
 const templateSchema = z.object({
   title: z.string().min(3, 'Template title is required.'),
@@ -149,7 +149,7 @@ function NewTemplateDialog() {
 
     const handleGenerate = async () => {
         if (!description.trim()) {
-            toast({ variant: 'destructive', title: 'Description is empty', description: 'Please describe the template you want to create.' });
+            toast({ variant: 'destructive', title: 'Description is empty', description: 'Please describe the task or process.' });
             return;
         }
         setIsLoading(true);
@@ -160,8 +160,8 @@ function NewTemplateDialog() {
                 checklistItems: result.checklistItems.map(item => ({ value: item }))
             });
         } catch (error) {
-            console.error("AI template generation error:", error);
-            toast({ variant: 'destructive', title: 'AI Error', description: 'Could not generate template. Please try again.' });
+            console.error("Template library error:", error);
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load template from library.' });
         } finally {
             setIsLoading(false);
         }
@@ -187,7 +187,7 @@ function NewTemplateDialog() {
                 <DialogHeader>
                     <DialogTitle>Create New Task Template</DialogTitle>
                     <DialogDescription>
-                        {aiGeneratedData ? "Review and edit the AI-generated template below." : "Describe the checklist you want to create, and AI will build it for you."}
+                        {aiGeneratedData ? "Review and edit the selected SOP template below." : "Describe the process (e.g., 'Volunteer', 'Safety'), and we will find a matching standard for you."}
                     </DialogDescription>
                 </DialogHeader>
                 {!aiGeneratedData ? (
@@ -203,8 +203,8 @@ function NewTemplateDialog() {
                             />
                         </div>
                         <Button onClick={handleGenerate} disabled={isLoading} className="w-full">
-                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
-                            Generate with AI
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                            Find Standard SOP
                         </Button>
                     </div>
                 ) : (

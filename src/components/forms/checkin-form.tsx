@@ -22,7 +22,7 @@ import Link from 'next/link';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { DailyPlannerAIOutputSchema, type DailyPlannerAIOutput } from '@/lib/types';
 import { Separator } from '../ui/separator';
-import { createAlert } from '@/ai/actions';
+import { createAlertAction as createAlert } from '@/actions/mutations';
 
 const checkinSchema = z.object({
   primaryMission: z.string().min(1, "Primary mission is required."),

@@ -15,7 +15,7 @@ import { Loader2, ArrowLeft, Bug, Lightbulb, MessageSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
-import { createAlert } from '@/ai/actions';
+import { createAlertAction as createAlert } from '@/actions/mutations';
 import { SystemFeedbackSchema, type SystemFeedbackFormData } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 

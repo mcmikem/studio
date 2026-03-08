@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
-import { createAlert } from '@/ai/actions';
+import { createAlertAction as createAlert } from '@/actions/mutations';
 import type { AlertInput } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';

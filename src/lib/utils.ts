@@ -53,6 +53,26 @@ export const formatDateSafe = (
 };
 
 
+export const formatDateForInput = (date: Timestamp | string | Date | null | undefined): string => {
+    if (!date) return '';
+    try {
+        let d: Date;
+        if (typeof (date as any).toDate === 'function') {
+            d = (date as any).toDate();
+        } else {
+            d = new Date(date as any);
+        }
+        
+        if (isValid(d)) {
+            return formatFns(d, 'yyyy-MM-dd');
+        }
+        return '';
+    } catch {
+        return '';
+    }
+};
+
+
 export const formatCurrency = (value: number, compact = false) => {
   if (compact && value >= 1000000) {
     return new Intl.NumberFormat('en-UG', {

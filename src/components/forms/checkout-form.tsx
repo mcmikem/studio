@@ -42,7 +42,7 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import type { Checkin } from '@/lib/types';
 import { AlertTriangle } from 'lucide-react';
 import { Progress } from '../ui/progress';
-import { createAlert } from '@/ai/actions';
+import { createAlertAction as createAlert } from '@/actions/mutations';
 
 const checkoutTaskSchema = z.object({
   description: z.string(),

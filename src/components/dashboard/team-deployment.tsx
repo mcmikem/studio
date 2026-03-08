@@ -10,17 +10,27 @@ import { Users, Target, Clock, AlertTriangle, Signal } from 'lucide-react';
 import { isWithinInterval, parse, startOfDay, format, isValid } from 'date-fns';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getInitials } from '@/lib/utils';
-
-interface TeamDeploymentProps {
-  users: User[] | null;
-  checkins: Checkin[] | null;
-  checkouts?: Checkout[] | null;
-  isLoading: boolean;
-}
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, limit } from 'firebase/firestore';
 
 const ACTIVE_WINDOW_MINUTES = 18 * 60;
 
-export function TeamDeployment({ users, checkins, checkouts, isLoading }: TeamDeploymentProps) {
+export function TeamDeployment() {
+  const firestore = useFirestore();
+
+  const queries = useMemo(() => {
+    if (!firestore) return null;
+    return {
+      users: query(collection(firestore, 'users'), limit(200)),
+      checkins: query(collection(firestore, 'checkins'), limit(200)),
+      checkouts: query(collection(firestore, 'checkouts'), limit(200)),
+    };
+  }, [firestore]);
+
+  const users = useCollection<User>(queries?.users);
+  const checkins = useCollection<Checkin>(queries?.checkins);
+  const checkouts = useCollection<Checkout>(queries?.checkouts);
+  const isLoading = users.isLoading || checkins.isLoading || checkouts.isLoading;
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [selectedUserStatus, setSelectedUserStatus] = useState<any | null>(null);
 
@@ -31,19 +41,19 @@ export function TeamDeployment({ users, checkins, checkouts, isLoading }: TeamDe
   }, []);
 
   const teamStatus = useMemo(() => {
-    if (!users || !checkins || !currentTime) return null;
+    if (!users.data || !checkins.data || !currentTime) return null;
 
-    const uniqueUsers = Array.from(new Map(users.map((u) => [u.id, u])).values());
+    const uniqueUsers = Array.from(new Map(users.data.map((u) => [u.id, u])).values());
     const byUserCheckins = new Map<string, Checkin[]>();
     const byUserCheckouts = new Map<string, Checkout[]>();
 
-    checkins.forEach((c) => {
+    checkins.data.forEach((c) => {
       const list = byUserCheckins.get(c.userId) || [];
       list.push(c);
       byUserCheckins.set(c.userId, list);
     });
 
-    (checkouts || []).forEach((c) => {
+    (checkouts.data || []).forEach((c) => {
       const list = byUserCheckouts.get(c.userId) || [];
       list.push(c);
       byUserCheckouts.set(c.userId, list);

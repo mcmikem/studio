@@ -7,13 +7,28 @@ import type { Activity } from "@/lib/types";
 import { useMemo, useEffect, useState } from "react";
 import { subWeeks, startOfWeek, isAfter, getWeek } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
 
-export function QuickInsights({ activities }: { activities: Activity[] | null }) {
+export function QuickInsights() {
+    const firestore = useFirestore();
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
     }, []);
+
+    const sixWeeksAgoDate = useMemo(() => subWeeks(new Date(), 6), []);
+    
+    const queries = useMemo(() => {
+        if (!firestore) return null;
+        return {
+            activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(sixWeeksAgoDate)), orderBy('loggedAt', 'desc'), limit(500)),
+        };
+    }, [firestore, sixWeeksAgoDate]);
+
+    const activitiesQuery = useCollection<Activity>(queries?.activities);
+    const activities = activitiesQuery.data;
 
     const { chartData, weeklyTotal, trend } = useMemo(() => {
         if (!activities || !isClient) {

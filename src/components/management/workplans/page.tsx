@@ -28,7 +28,8 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { runParseWorkplan, createAlert } from '@/ai/actions';
+import { runParseWorkplan } from '@/ai/actions';
+import { createAlertAction as createAlert } from '@/actions/mutations';
 import { parseWorkplanFlow } from '@/ai/flows/parse-workplan-flow';
 
 const priorityItemSchema = z.object({

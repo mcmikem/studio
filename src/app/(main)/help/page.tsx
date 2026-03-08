@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { collection, serverTimestamp } from "firebase/firestore";
 import { useFirestore } from "@/firebase";
-import { createAlert } from "@/ai/actions";
+import { createAlertAction as createAlert } from "@/actions/mutations";
 
 const feedbackSchema = z.object({
   description: z.string().min(15, { message: "Please provide a detailed description." }),

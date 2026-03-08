@@ -10,12 +10,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase, useFirebaseApp } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, useFirebaseApp } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import { serverTimestamp, collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { uploadFile } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
-import { runTestimonyProcessor } from '@/ai/actions';
+import { createTestimonyAction } from '@/actions/mutations';
 import type { TestimonyOutput } from '@/lib/types';
 import { z } from 'zod';
 import { useForm, Controller } from 'react-hook-form';
@@ -72,7 +72,7 @@ export default function RecordTestimonyPage() {
   };
 
   const onSubmit = async (data: ImpactStoryFormData) => {
-    if (!user || !profile || !firestore || !firebaseApp) {
+    if (!user || !profile || !firebaseApp) {
       toast({ variant: 'destructive', title: 'Not Logged In or Firebase not ready' });
       return;
     }
@@ -97,11 +97,14 @@ export default function RecordTestimonyPage() {
             userId: user.uid,
             userName: profile.name,
             mediaUrls,
-            createdAt: serverTimestamp(),
         };
 
-        await addDocumentNonBlocking(collection(firestore, 'testimonies'), testimonyData);
-        toast({ title: 'Impact Story Saved!', description: 'Your story has been successfully captured.' });
+        const result = await createTestimonyAction(testimonyData);
+        if (result.success) {
+            toast({ title: 'Impact Story Saved!', description: 'Your story has been successfully captured.' });
+        } else {
+            throw new Error(result.error);
+        }
 
     } catch(e) {
         console.error("Failed to save impact story", e);

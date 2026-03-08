@@ -17,8 +17,16 @@ const metricIcons: { [key: string]: React.ElementType } = {
   default: Target,
 }
 
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, query, limit, orderBy } from "firebase/firestore"
 
-export function QuickStatsSummary({ metrics }: { metrics: ImpactMetric[] | null }) {
+export function QuickStatsSummary() {
+  const firestore = useFirestore();
+  const metricsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'impact-metrics'), orderBy('metric'), limit(50));
+  }, [firestore]);
+  const { data: metrics } = useCollection<ImpactMetric>(metricsQuery);
 
   const displayMetrics = useMemo(() => {
     if (!metrics) return null;

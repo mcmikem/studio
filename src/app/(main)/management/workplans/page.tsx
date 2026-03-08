@@ -28,7 +28,10 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { runParseWorkplan, createAlert } from '@/ai/actions';
+import { runParseWorkplan } from '@/ai/actions';
+import { createAlertAction as createAlert } from '@/actions/mutations';
+import { formatDateForInput } from '@/lib/utils';
+import { Sparkles } from 'lucide-react';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),
@@ -46,18 +49,7 @@ const teamWorkplanSchema = z.object({
 
 type TeamWorkplanFormData = z.infer<typeof teamWorkplanSchema>;
 
-const formatDateForInput = (date: Timestamp | string | Date | undefined): string => {
-    if (!date) return '';
-    try {
-        const d = (date as Timestamp)?.toDate ? (date as Timestamp).toDate() : new Date(date as string | Date);
-        if(isValid(d)) {
-          return format(d, 'yyyy-MM-dd');
-        }
-        return '';
-    } catch {
-        return '';
-    }
-};
+// Local utility removed in favor of imported one
 
 function TeamWorkplanForm({
     weekOf,
@@ -76,6 +68,7 @@ function TeamWorkplanForm({
   const { toast } = useToast();
   const [pastedText, setPastedText] = useState('');
   const [isParsing, setIsParsing] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   const {
     register,
@@ -164,7 +157,8 @@ function TeamWorkplanForm({
                 status: 'Draft'
             });
 
-            toast({ title: 'Plan Parsed!', description: 'The AI has filled out the form for you. Please review and save.' });
+            setIsImporting(false);
+            toast({ title: 'Plan Pre-filled!', description: 'The Copilot has organized your notes into the form. Please review and activate.' });
         } catch (error) {
             console.error("AI parsing error:", error);
             toast({ variant: 'destructive', title: 'AI Parsing Failed', description: 'Could not understand the provided text. Please try rephrasing.' });
@@ -243,36 +237,62 @@ function TeamWorkplanForm({
   };
 
   return (
-    <Card>
-        <CardHeader>
-             <CardTitle>{existingPlan ? 'Edit Team Plan' : 'Create New Team Plan'}</CardTitle>
-             <CardDescription>Set the high-level priorities and message for the entire team for this week, or paste your plan below to have AI fill the form.</CardDescription>
+    <Card className="border-lg rounded-3xl overflow-hidden shadow-comic-sm">
+        <CardHeader className="bg-omuto-navy/5 border-b-lg border-omuto-navy/10 pb-8">
+             <div className="flex justify-between items-center">
+                <div>
+                    <CardTitle className="text-2xl font-black text-omuto-navy uppercase tracking-tight">
+                        {existingPlan ? 'Update Weekly Strategy' : 'New Weekly Strategy'}
+                    </CardTitle>
+                    <CardDescription className="font-bold text-omuto-navy/50 text-xs uppercase tracking-widest mt-1">
+                        Build your team's tactical plan for the week.
+                    </CardDescription>
+                </div>
+                <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsImporting(!isImporting)}
+                    className="border-lg rounded-xl font-bold text-[10px] uppercase tracking-widest"
+                >
+                    {isImporting ? <ChevronLeft className="mr-2 h-3 w-3" /> : <Sparkles className="mr-2 h-3 w-3 text-omuto-yellow" />}
+                    {isImporting ? 'Back to Form' : 'Import from Notes (AI)'}
+                </Button>
+             </div>
         </CardHeader>
-        <CardContent className='space-y-6'>
-            <div className="space-y-2">
-                <Label htmlFor="paste-area">Paste Your Workplan Text Here</Label>
-                <Textarea
-                    id="paste-area"
-                    placeholder="Paste your unstructured weekly plan notes here..."
-                    className="min-h-[120px]"
-                    value={pastedText}
-                    onChange={(e) => setPastedText(e.target.value)}
-                />
-            </div>
-             <Button type="button" onClick={handleParseWithAI} disabled={isParsing}>
-                {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
-                Parse with AI
-            </Button>
-             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-6 border-t">
+        <CardContent className="p-8 space-y-8">
+            {isImporting && (
+                <div className="space-y-4 p-6 bg-omuto-yellow/5 border-2 border-dashed border-omuto-yellow/30 rounded-2xl">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Wand className="h-4 w-4 text-omuto-yellow" />
+                        <Label className="font-black text-[10px] uppercase tracking-widest text-omuto-navy/70">AI Copilot: Paste Meeting Notes</Label>
+                    </div>
+                    <Textarea
+                        placeholder="Paste your unstructured weekly plan notes here..."
+                        className="min-h-[120px] bg-white border-lg rounded-xl"
+                        value={pastedText}
+                        onChange={(e) => setPastedText(e.target.value)}
+                    />
+                    <Button type="button" onClick={handleParseWithAI} disabled={isParsing} className="w-full bg-omuto-yellow hover:bg-omuto-yellow/90 text-omuto-navy font-bold">
+                        {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Analyze & Pre-fill Form
+                    </Button>
+                </div>
+            )}
+
+             <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
                 
-                <div className="space-y-4">
-                    <Label className="text-lg font-semibold">Key Team Priorities</Label>
-                    {fields.map((field, index) => (
-                        <div key={field.id} className="p-4 border rounded-lg space-y-4 relative">
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <Label className="text-xl font-black text-omuto-navy uppercase tracking-tight">1. Key Team Priorities</Label>
+                        <Badge variant="outline" className="border-omuto-navy/20 text-omuto-navy/50 font-bold">{fields.length} Items</Badge>
+                    </div>
+                    <div className="grid grid-cols-1 gap-6">
+                    {fields.map((field: any, index: number) => (
+                        <div key={field.id} className="p-6 border-lg border-omuto-navy/10 rounded-2xl bg-white space-y-6 relative group hover:border-primary/30 transition-colors">
                             <div className="space-y-2">
-                                <Label htmlFor={`keyPriorities.${index}.activity`}>Activity</Label>
-                                <Input id={`keyPriorities.${index}.activity`} {...register(`keyPriorities.${index}.activity`)} placeholder={`Priority Activity #${index + 1}`}/>
-                                {errors.keyPriorities?.[index]?.activity && <p className="text-sm text-destructive">{errors.keyPriorities[index]?.activity?.message}</p>}
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Activity Description</Label>
+                                <Input {...register(`keyPriorities.${index}.activity`)} placeholder="What needs to be done?" className="border-none bg-omuto-navy/5 focus-visible:ring-primary h-12 font-bold text-omuto-navy" />
+                                {errors.keyPriorities?.[index]?.activity && <p className="text-xs text-destructive font-bold">{errors.keyPriorities[index]?.activity?.message}</p>}
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
@@ -302,7 +322,7 @@ function TeamWorkplanForm({
                                     <Controller
                                     control={control}
                                     name={`keyPriorities.${index}.responsible`}
-                                    render={({ field }) => (
+                                    render={({ field }: { field: any }) => (
                                         <MultiSelect
                                             options={responsibleOptions}
                                             onValueChange={field.onChange}
@@ -318,24 +338,27 @@ function TeamWorkplanForm({
                             </Button>
                         </div>
                     ))}
-                    {errors.keyPriorities?.root && <p className="text-sm text-destructive">{errors.keyPriorities.root.message}</p>}
+                    </div>
                 </div>
                 
-                <Button type="button" variant="outline" size="sm" onClick={() => append({ activity: '', priority: 'Medium', responsible: [], deadline: '' })}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Priority
+                <Button type="button" variant="outline" className="w-full h-14 border-2 border-dashed border-omuto-navy/20 hover:border-omuto-navy/40 rounded-2xl font-bold text-omuto-navy/60" onClick={() => append({ activity: '', priority: 'Medium', responsible: [], deadline: '' })}>
+                    <PlusCircle className="mr-2 h-5 w-5" /> Add Another Priority Item
                 </Button>
 
-                 <div className="space-y-2">
-                    <Label htmlFor="message" className="text-lg font-semibold">Weekly Message/Focus</Label>
-                    <Textarea id="message" {...register('message')} placeholder="e.g., 'This week is all about finalizing our Q3 reports and preparing for the partner visits...'" />
-                    {errors.message && <p className="text-sm text-destructive">{errors.message.message}</p>}
+                 <div className="space-y-4 pt-4">
+                    <Label className="text-xl font-black text-omuto-navy uppercase tracking-tight">2. Weekly Message & Status</Label>
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Weekly Focus / Motivation</Label>
+                        <Textarea {...register('message')} placeholder="e.g., 'This week is all about finalizing our Q3 reports...'" className="min-h-[100px] border-lg rounded-xl" />
+                        {errors.message && <p className="text-xs text-destructive font-bold">{errors.message.message}</p>}
+                    </div>
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="status" className="text-lg font-semibold">Status</Label>
                      <Controller
                         name="status"
                         control={control}
-                        render={({ field }) => (
+                        render={({ field }: { field: any }) => (
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select status"/>
@@ -349,9 +372,9 @@ function TeamWorkplanForm({
                     />
                 </div>
 
-                <Button type="submit" disabled={isSubmitting} size="lg">
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {existingPlan ? 'Save Changes to Plan' : 'Save Team Plan'}
+                <Button type="submit" disabled={isSubmitting} size="lg" className="w-full h-16 btn-omuto shadow-comic-lg hover:shadow-comic-sm bg-primary text-white border-white">
+                    {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle className="mr-2 h-5 w-5" />}
+                    {existingPlan ? 'Commit Changes to Weekly Plan' : 'Activate Team Workplan'}
                 </Button>
             </form>
         </CardContent>
@@ -445,20 +468,20 @@ export default function TeamWorkplansPage() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
+          {isLoadingPlan ? (
             <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin"/></div>
           ) : (
-             <TeamWorkplanForm weekOf={currentDate} existingPlan={currentPlan} onPlanSaved={() => fetchPlanForWeek(currentDate)} users={users || []} />
+             <TeamWorkplanForm weekOf={currentDate || new Date()} existingPlan={currentPlan} onPlanSaved={() => currentDate && fetchPlanForWeek(currentDate)} users={users || []} />
           )}
         </CardContent>
       </Card>
 
-      {currentPlan && !isLoading && (
+      {currentPlan && !isLoadingPlan && (
         <Card>
             <CardHeader>
                 <CardTitle className="flex justify-between items-center">
                     Current Plan Summary
-                    <Badge variant={currentPlan.status === 'Published' ? 'default' : 'secondary'}>{currentPlan.status}</Badge>
+                    <Badge variant={currentPlan.status === 'Published' ? 'default' : 'secondary'}>{`${currentPlan.status}`}</Badge>
                 </CardTitle>
             </CardHeader>
              <CardContent className="space-y-6">
@@ -469,12 +492,12 @@ export default function TeamWorkplansPage() {
                  <div>
                     <h4 className="font-semibold mb-2">Key Priorities for the Week:</h4>
                     <div className="space-y-3">
-                        {currentPlan.keyPriorities.map((p, i) => (
-                          <div key={i} className="p-3 border rounded-lg">
-                              <div className="flex justify-between items-start">
-                                  <p className="font-medium pr-4">{p.activity}</p>
-                                  <Badge variant="outline" className={priorityColors[p.priority]}>{p.priority}</Badge>
-                              </div>
+                         {currentPlan.keyPriorities.map((p: any, i: number) => (
+                           <div key={i} className="p-3 border rounded-lg">
+                               <div className="flex justify-between items-start">
+                                   <p className="font-medium pr-4">{p.activity}</p>
+                                   <Badge variant="outline" className={priorityColors[p.priority]}>{`${p.priority}`}</Badge>
+                               </div>
                               <div className="text-xs text-muted-foreground mt-1 space-x-4">
                                   <span><span className="font-semibold">By:</span> {(Array.isArray(p.responsible) ? p.responsible.join(', ') : p.responsible)}</span>
                                   {p.deadline && <span><span className="font-semibold">Due:</span> {format(p.deadline instanceof Timestamp ? p.deadline.toDate() : new Date(p.deadline), 'MMM dd')}</span>}

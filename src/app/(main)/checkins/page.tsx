@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import {
   Card,
   CardContent,
@@ -8,8 +9,8 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { LogIn, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { LogIn, Clock, Target as TargetIcon, Link as LinkIcon, BrainCircuit, Loader2 } from 'lucide-react';
+import { useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkin } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -47,159 +48,132 @@ const getInitials = (name?: string) => {
     return name.substring(0, 2).toUpperCase();
 };
 
-function DesktopCheckinCard({ checkin }: { checkin: Checkin }) {
+function CheckinCard({ checkin }: { checkin: Checkin }) {
     const hasDetails = !!checkin.details;
 
     return (
-        <Card>
-             <CardHeader className="flex flex-row items-start gap-4">
+        <Card className="shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+             <CardHeader className="flex flex-row items-start gap-4 pb-4">
                 <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
                      <AvatarFallback>{getInitials(checkin.name)}</AvatarFallback>
                 </Avatar>
-                <div>
-                    <div className="flex items-center gap-2">
-                        <Link href={`/profile?userId=${checkin.userId}`} className="hover:underline">
-                            <CardTitle>{checkin.name}'s Daily Plan</CardTitle>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                        <Link href={`/profile?userId=${checkin.userId}`} className="hover:underline truncate">
+                            <CardTitle className="text-base sm:text-lg truncate">{checkin.name}'s Plan</CardTitle>
                         </Link>
                         {checkin.mood && (
-                            <span title={`Feeling: ${checkin.mood}`} className="text-xl">{moodIcons[checkin.mood]}</span>
+                            <span title={`Feeling: ${checkin.mood}`} className="text-xl flex-shrink-0">{moodIcons[checkin.mood]}</span>
                         )}
                     </div>
-                    <CardDescription>{formatDateSafe(checkin.timestamp)}</CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">{formatDateSafe(checkin.timestamp)}</CardDescription>
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="p-4 rounded-lg bg-muted border">
-                    <h3 className="font-semibold flex items-center gap-2"><TargetIcon className="h-5 w-5 text-primary" /> Today's Primary Mission</h3>
-                    <p className="text-muted-foreground mt-1 whitespace-pre-wrap">{checkin.primaryMission}</p>
+                <div className="p-3 sm:p-4 rounded-lg bg-muted border">
+                    <h3 className="font-semibold flex items-center gap-2 text-sm sm:text-base"><TargetIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" /> Today's Mission</h3>
+                    <p className="text-muted-foreground mt-1 text-sm whitespace-pre-wrap">{checkin.primaryMission}</p>
                 </div>
 
                 {hasDetails && (
-                  <>
-                    <div className="space-y-3">
-                        <h4 className="font-semibold text-sm flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Alignments</h4>
-                        <div className="space-y-2">
-                            {checkin.details?.strategicAlignments?.map((align: StrategicAlignment, index: number) => (
-                                <div key={index} className="text-sm p-2 bg-muted/50 rounded-md">
-                                    <p className="font-bold">{align.krTitle}</p>
-                                    <p className="text-muted-foreground">{align.alignmentJustification}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                  <div className="space-y-4">
+                    {/* Time Blocks - ALWAYS visible on all screens as an accordion */}
+                    {checkin.details?.timeBlocks && (
+                       <Accordion type="single" collapsible className="w-full">
+                           <AccordionItem value="time-blocks" className="border-b-0">
+                               <AccordionTrigger className="py-2 hover:no-underline rounded-md hover:bg-muted/50 px-2 transition-colors">
+                                  <span className="font-semibold text-sm flex items-center gap-2"><Clock className="h-4 w-4" /> Time Blocks</span>
+                               </AccordionTrigger>
+                               <AccordionContent className="space-y-2 pt-2 px-2">
+                                   <ul className="list-none space-y-2 text-sm text-muted-foreground">
+                                       {checkin.details.timeBlocks.map((block: TimeBlock, index: number) => (
+                                           <li key={index} className="flex flex-col sm:flex-row gap-1 sm:gap-4 p-2 bg-muted/30 rounded-md">
+                                             <strong className="text-primary w-28 shrink-0">{block.startTime} - {block.endTime}:</strong> 
+                                             <span>{block.description}</span>
+                                           </li>
+                                       ))}
+                                   </ul>
+                               </AccordionContent>
+                           </AccordionItem>
+                       </Accordion>
+                    )}
+
+                    {/* Strategic Alignments */}
+                    {checkin.details?.strategicAlignments && checkin.details.strategicAlignments.length > 0 && (
+                      <div className="space-y-2 px-2">
+                          <h4 className="font-semibold text-sm flex items-center gap-2"><LinkIcon className="h-4 w-4" /> Strategic Alignments</h4>
+                          <div className="space-y-2">
+                              {checkin.details.strategicAlignments.map((align: StrategicAlignment, index: number) => (
+                                  <div key={index} className="text-xs sm:text-sm p-2 bg-muted/50 rounded-md">
+                                      <p className="font-bold">{align.krTitle}</p>
+                                      <p className="text-muted-foreground mt-0.5">{align.alignmentJustification}</p>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                    )}
                     
-                    <div className="space-y-3">
-                        <h4 className="font-semibold text-sm flex items-center gap-2"><BrainCircuit className="h-4 w-4" /> AI Best Practice Tip</h4>
-                        <p className="text-sm text-muted-foreground italic">"{checkin.details?.bestPractice}"</p>
-                    </div>
-                    
-                    <Accordion type="single" collapsible className="w-full">
-                        <AccordionItem value="item-1">
-                            <AccordionTrigger>View Detailed Time Blocks</AccordionTrigger>
-                            <AccordionContent className="space-y-2 pt-2">
-                                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                                    {checkin.details?.timeBlocks?.map((block: TimeBlock, index: number) => (
-                                        <li key={index}><strong>{block.startTime} - {block.endTime}:</strong> {block.description}</li>
-                                    ))}
-                                </ul>
-                            </AccordionContent>
-                        </AccordionItem>
-                    </Accordion>
-                  </>
+                    {/* Best Practice Tip */}
+                    {checkin.details?.bestPractice && (
+                      <div className="space-y-2 px-2">
+                          <h4 className="font-semibold text-sm flex items-center gap-2"><BrainCircuit className="h-4 w-4 text-omuto-yellow" /> Best Practice Tip</h4>
+                          <p className="text-sm text-muted-foreground italic p-2 bg-omuto-yellow/10 rounded-md border border-omuto-yellow/20">"{checkin.details.bestPractice}"</p>
+                      </div>
+                    )}
+                  </div>
                 )}
             </CardContent>
         </Card>
     )
 }
 
-function MobileCheckinCard({ checkin }: { checkin: Checkin }) {
-  const hasDetails = !!checkin.details;
-
-  return (
-    <Card>
-        <CardHeader className="flex flex-row items-start gap-4 pb-4">
-            <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                <AvatarFallback>{getInitials(checkin.name)}</AvatarFallback>
-            </Avatar>
-            <div>
-                <div className="flex items-center gap-2">
-                    <Link href={`/profile?userId=${checkin.userId}`} className="hover:underline">
-                        <CardTitle className="text-base">{checkin.name}'s Plan</CardTitle>
-                    </Link>
-                    {checkin.mood && (
-                        <span title={`Feeling: ${checkin.mood}`} className="text-lg">{moodIcons[checkin.mood]}</span>
-                    )}
-                </div>
-                <CardDescription className="text-xs">{formatDateSafe(checkin.timestamp)}</CardDescription>
-            </div>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-            <div>
-                <p className="font-semibold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><TargetIcon className="h-4 w-4" /> Mission</p>
-                <p className="font-medium mt-1">{checkin.primaryMission}</p>
-            </div>
-            {hasDetails && checkin.details?.timeBlocks && (
-                 <div>
-                    <p className="font-semibold flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground"><Clock className="h-4 w-4" /> Time Blocks</p>
-                    <ul className="list-disc list-inside space-y-1 text-muted-foreground mt-1 pl-2">
-                        {checkin.details.timeBlocks.slice(0, 3).map((block: TimeBlock, index: number) => (
-                            <li key={index} className="truncate"><strong>{block.startTime}:</strong> {block.description}</li>
-                        ))}
-                         {checkin.details.timeBlocks.length > 3 && <li>...and {checkin.details.timeBlocks.length - 3} more</li>}
-                    </ul>
-                </div>
-            )}
-        </CardContent>
-    </Card>
-  )
-}
-
 function CheckinStream() {
-     const checkinsQuery = useMemoFirebase((db) => {
-        return query(collection(db, 'checkins'), orderBy('timestamp', 'desc'), limit(50));
-    }, []);
+    const [limitCount, setLimitCount] = useState(50);
+    
+    const checkinsQuery = useMemoFirebase((db) => {
+        return query(collection(db, 'checkins'), orderBy('timestamp', 'desc'), limit(limitCount));
+    }, [limitCount]);
 
     const { data: checkins, isLoading } = useCollection<Checkin>(checkinsQuery);
 
     return (
-        <>
-            {/* Mobile View */}
-            <div className="space-y-4 sm:hidden">
-                {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)}
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {isLoading && !checkins && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[400px] w-full rounded-xl" />)}
+                
                 {checkins && checkins.length > 0 ? (
-                    checkins.map(checkin => <MobileCheckinCard key={checkin.id} checkin={checkin} />)
+                    checkins.map(checkin => <CheckinCard key={checkin.id} checkin={checkin} />)
                 ) : (
                     !isLoading && (
-                        <EmptyState
-                            icon={LogIn}
-                            title="No Check-ins Yet!"
-                            description="Be the first to create a daily plan with the AI Daily Planner."
-                        >
-                            <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
-                        </EmptyState>
+                        <div className="col-span-1 lg:col-span-2">
+                          <EmptyState
+                              icon={LogIn}
+                              title="No Check-ins Yet!"
+                              description="Be the first to create a daily plan with the AI Daily Planner."
+                              className="min-h-[400px]"
+                          >
+                              <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
+                          </EmptyState>
+                        </div>
                     )
                 )}
             </div>
-
-            {/* Desktop View */}
-            <div className="hidden sm:block space-y-6">
-                {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-60 w-full" />)}
-                {checkins && checkins.length > 0 ? (
-                    checkins.map(checkin => <DesktopCheckinCard key={checkin.id} checkin={checkin} />)
-                ) : (
-                    !isLoading && (
-                        <EmptyState
-                            icon={LogIn}
-                            title="No Check-ins Yet!"
-                            description="Be the first to create a daily plan with the AI Daily Planner."
-                            className="min-h-[400px]"
-                        >
-                            <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
-                        </EmptyState>
-                    )
-                )}
-            </div>
-        </>
+            
+            {checkins && checkins.length >= limitCount && (
+              <div className="flex justify-center mt-8">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={() => setLimitCount((prev: number) => prev + 50)} 
+                  disabled={isLoading}
+                  className="w-full sm:w-auto"
+                >
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Load More Check-ins
+                </Button>
+              </div>
+            )}
+        </div>
     );
 }
 

@@ -7,31 +7,52 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { buildPerformanceSummary } from '@/lib/performance';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, where, orderBy, Timestamp, limit } from 'firebase/firestore';
+import { subDays } from 'date-fns';
 
 interface TeamPerformanceLeaderboardProps {
-  activities: Activity[] | null;
-  checkins: Checkin[] | null;
-  checkouts: Checkout[] | null;
-  users: User[] | null;
-  isLoading: boolean;
-  partnerships?: Partnership[] | null;
-  expenses?: Expense[] | null;
-  testimonies?: Testimony[] | null;
+  // Data is now fetched locally
 }
 
-export function TeamPerformanceLeaderboard({
-  activities,
-  checkins,
-  checkouts,
-  users,
-  isLoading,
-  expenses,
-  testimonies,
-}: TeamPerformanceLeaderboardProps) {
+export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProps) {
+  const firestore = useFirestore();
+  const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
+
+  const queries = useMemo(() => {
+    if (!firestore) return null;
+    return {
+      activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc'), limit(100)),
+      users: query(collection(firestore, 'users'), orderBy('name'), limit(100)),
+      checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), limit(100)),
+      checkouts: query(collection(firestore, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc'), limit(100)),
+      expenses: query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(100)),
+      testimonies: query(collection(firestore, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc'), limit(100)),
+      partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'), limit(50)),
+    };
+  }, [firestore, thirtyDaysAgo]);
+
+  const activities = useCollection<Activity>(queries?.activities);
+  const users = useCollection<User>(queries?.users);
+  const checkins = useCollection<Checkin>(queries?.checkins);
+  const checkouts = useCollection<Checkout>(queries?.checkouts);
+  const expenses = useCollection<Expense>(queries?.expenses);
+  const testimonies = useCollection<Testimony>(queries?.testimonies);
+  const partnerships = useCollection<Partnership>(queries?.partnerships);
+
+  const isLoading = activities.isLoading || users.isLoading || checkins.isLoading || checkouts.isLoading || expenses.isLoading || testimonies.isLoading || partnerships.isLoading;
+
   const leaderboard = useMemo(
     () =>
-      buildPerformanceSummary({ users, activities, checkins, checkouts, expenses, testimonies }).slice(0, 5),
-    [users, activities, checkins, checkouts, expenses, testimonies]
+      buildPerformanceSummary({ 
+        users: users.data, 
+        activities: activities.data, 
+        checkins: checkins.data, 
+        checkouts: checkouts.data, 
+        expenses: expenses.data, 
+        testimonies: testimonies.data
+      }).slice(0, 5),
+    [users.data, activities.data, checkins.data, checkouts.data, expenses.data, testimonies.data]
   );
 
   if (isLoading) return <Skeleton className="h-96" />;

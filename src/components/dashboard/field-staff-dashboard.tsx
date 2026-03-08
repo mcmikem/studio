@@ -3,7 +3,7 @@
 
 import { DashboardGrid } from '@/components/dashboard/dashboard-grid';
 import dynamic from 'next/dynamic'
-import type { DashboardProps, DashboardData } from './dashboard-loader';
+import type { DashboardProps } from './dashboard-loader';
 import { Skeleton } from '../ui/skeleton';
 import { DashboardHeader } from "./dashboard-header"
 
@@ -24,14 +24,7 @@ const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/
     ssr: false,
 });
 
-interface FieldStaffDashboardProps extends DashboardProps {
-    data: DashboardData;
-}
-
-export function FieldStaffDashboard({ profile, data }: FieldStaffDashboardProps) {
-  const { checkouts, users, checkins, activities, testimonies, allExpenses } = data;
-  const isLoading = !checkouts || !users || !checkins;
-
+export function FieldStaffDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-8">
         <DashboardHeader profile={profile} />
@@ -41,18 +34,10 @@ export function FieldStaffDashboard({ profile, data }: FieldStaffDashboardProps)
                 <DashboardCalendar />
             </div>
             <div className="lg:col-span-1 flex flex-col gap-8">
-                <TeamDeployment users={users} checkins={checkins} checkouts={checkouts} isLoading={isLoading} />
+                <TeamDeployment />
             </div>
              <div className="lg:col-span-1 flex flex-col gap-8">
-                <TeamPerformanceLeaderboard 
-                    activities={activities} 
-                    users={users} 
-                    checkins={checkins} 
-                    checkouts={checkouts} 
-                    expenses={allExpenses}
-                    testimonies={testimonies}
-                    isLoading={isLoading} 
-                />
+                <TeamPerformanceLeaderboard />
             </div>
         </DashboardGrid>
     </div>

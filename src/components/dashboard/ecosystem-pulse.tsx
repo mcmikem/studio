@@ -8,14 +8,26 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Sparkles, Zap, Leaf, Activity as ActivityIcon } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { Progress } from '../ui/progress';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, limit, orderBy } from 'firebase/firestore';
 
-interface EcosystemPulseProps {
-    activities: Activity[] | null;
-    programs: Program[] | null;
-    isLoading: boolean;
-}
+export function EcosystemPulse() {
+    const firestore = useFirestore();
+    
+    const activitiesQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'), limit(500));
+    }, [firestore]);
+    
+    const programsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'programs'), limit(100));
+    }, [firestore]);
 
-export function EcosystemPulse({ activities, programs, isLoading }: EcosystemPulseProps) {
+    const { data: activities, isLoading: isActivitiesLoading } = useCollection<Activity>(activitiesQuery);
+    const { data: programs, isLoading: isProgramsLoading } = useCollection<Program>(programsQuery);
+    
+    const isLoading = isActivitiesLoading || isProgramsLoading;
 
     const stats = useMemo(() => {
         if (!activities || !programs) {

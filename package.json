@@ -53,6 +53,7 @@
     "lucide-react": "^0.411.0",
     "marked": "^13.0.2",
     "next": "^16.1.6",
+    "next-pwa": "^5.6.0",
     "react": "^18.3.1",
     "react-day-picker": "8.10.1",
     "react-dom": "^18.3.1",
@@ -66,14 +67,14 @@
   "devDependencies": {
     "@types/canvas-confetti": "^1.6.4",
     "@types/marked": "^6.0.0",
-    "@types/node": "^20",
-    "@types/react": "^18.3.3",
+    "@types/node": "^22.10.0",
+    "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "cross-env": "^7.0.3",
     "firebase-admin": "^13.6.0",
     "genkit-cli": "^1.20.0",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.7.2"
   }
 }

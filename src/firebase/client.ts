@@ -1,7 +1,6 @@
-
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 import { getMessaging, getToken, isSupported, type Messaging } from "firebase/messaging";
 import { firebaseConfig } from "./config";
@@ -9,7 +8,13 @@ import { firebaseConfig } from "./config";
 // --- CORE INSTANCES (For Legacy/Direct Access) ---
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+
+// Initialize Firestore with multi-tab offline persistence enabled
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager()
+  })
+});
 const storage = getStorage(app);
 
 // Use a promise to handle the async nature of isSupported() for messaging
@@ -19,11 +24,11 @@ if (typeof window !== "undefined") {
     // We don't await here to avoid blocking module evaluation, 
     // but in a real app you might want to initialize this in a useEffect or similar.
     // For the exported 'messaging' variable, it might be null initially.
-    isSupported().then(supported => {
+    isSupported().then((supported: boolean) => {
         if (supported) {
             messaging = getMessaging(app);
         }
-    }).catch(err => console.error("Firebase Messaging support check failed", err));
+    }).catch((err: any) => console.error("Firebase Messaging support check failed", err));
 }
 
 // --- HELPER FUNCTIONS ---
@@ -66,15 +71,23 @@ export const requestNotificationPermission = async () => {
 
     try {
         const messagingInstance = await getFirebaseMessaging();
-        if (!messagingInstance) return null;
+        if (!messagingInstance) {
+            console.warn("FCM: Messaging not supported or initialization failed.");
+            return null;
+        }
 
         const permission = await Notification.requestPermission();
         if (permission === "granted") {
-            const token = await getToken(messagingInstance);
+            const token = await getToken(messagingInstance, {
+                vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY // Suggesting use of VAPID key
+            });
+            console.log("FCM: Token generated successfully.");
             return token;
+        } else {
+            console.warn("FCM: Notification permission denied.");
         }
     } catch (error) {
-        console.error("FCM Token Error:", error);
+        console.error("FCM: Error requesting permission or getting token:", error);
     }
     return null;
 };

@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { runSmartReminders } from '@/ai/actions';
+import { generateSmartRemindersAction as runSmartReminders } from '@/actions/mutations';
 import type { SmartRemindersOutput } from '@/lib/types';
 import type { User } from '@/lib/types';
 import { Loader2, Wand } from 'lucide-react';
@@ -28,7 +28,7 @@ export function SmartReminders({ profile }: { profile: User }) {
         setReminders(result);
       } catch (error: any) {
         console.error('Failed to fetch smart reminders:', error);
-        setError("Could not load AI reminders at this time.");
+        setError("Could not load reminders at this time.");
         setReminders(null); // Clear reminders on error
       } finally {
         setIsLoading(false);
@@ -41,7 +41,7 @@ export function SmartReminders({ profile }: { profile: User }) {
     return (
       <div className="flex items-center text-sm text-muted-foreground">
         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        AI is generating your reminders...
+        Computing your personal reminders...
       </div>
     );
   }

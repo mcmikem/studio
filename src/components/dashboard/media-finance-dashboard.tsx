@@ -23,8 +23,10 @@ import { formatDateSafe } from "@/lib/utils"
 import { DashboardGrid } from "./dashboard-grid"
 import { Skeleton } from "../ui/skeleton"
 import dynamic from "next/dynamic"
-import type { DashboardProps, DashboardData } from "./dashboard-loader"
+import type { DashboardProps } from "./dashboard-loader"
 import { DashboardHeader } from "./dashboard-header"
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, query, where, orderBy, Timestamp, limit } from "firebase/firestore"
 
 const DynamicApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64" />, ssr: false });
 const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), {
@@ -50,7 +52,25 @@ const formatCurrency = (value: number) => {
     }).format(value);
 };
 
-function MediaOpportunities({ activities, isLoading }: { activities: Activity[] | null, isLoading: boolean }) {
+function MediaOpportunities() {
+    const firestore = useFirestore();
+    const thirtyDaysAgo = useMemo(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        return d;
+    }, []);
+    
+    const queries = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'activities'), 
+            where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
+            orderBy('loggedAt', 'desc'),
+            limit(100)
+        );
+    }, [firestore, thirtyDaysAgo]);
+
+    const { data: activities, isLoading } = useCollection<Activity>(queries);
     const opportunities = useMemo(() => {
         if (!activities) return [];
         return activities.filter(act => act.indirectValue && act.indirectValue > 0);
@@ -109,7 +129,25 @@ function MediaOpportunities({ activities, isLoading }: { activities: Activity[] 
     );
 }
 
-function LatestTestimonies({ testimonies, isLoading }: { testimonies: Testimony[] | null, isLoading: boolean }) {
+function LatestTestimonies() {
+    const firestore = useFirestore();
+    const thirtyDaysAgo = useMemo(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        return d;
+    }, []);
+    
+    const queries = useMemo(() => {
+        if (!firestore) return null;
+        return query(
+            collection(firestore, 'testimonies'), 
+            where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)),
+            orderBy('createdAt', 'desc'),
+            limit(100)
+        );
+    }, [firestore, thirtyDaysAgo]);
+
+    const { data: testimonies, isLoading } = useCollection<Testimony>(queries);
      return (
         <Card>
             <CardHeader>
@@ -161,7 +199,21 @@ function LatestTestimonies({ testimonies, isLoading }: { testimonies: Testimony[
     );
 }
 
-function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income: Income[] | null }) {
+function BudgetHealth() {
+    const firestore = useFirestore();
+    
+    const expensesQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(1000));
+    }, [firestore]);
+    
+    const incomeQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'income'), orderBy('createdAt', 'desc'), limit(1000));
+    }, [firestore]);
+
+    const { data: expenses } = useCollection<Expense>(expensesQuery);
+    const { data: income } = useCollection<Income>(incomeQuery);
 
     const { totalIncome, totalExpenses, cashBalance } = useMemo(() => {
         if (!income || !expenses) return { totalIncome: 0, totalExpenses: 0, cashBalance: 0 };
@@ -200,36 +252,22 @@ function BudgetHealth({ expenses, income }: { expenses: Expense[] | null, income
   )
 }
 
-interface MediaFinanceDashboardProps extends DashboardProps {
-    data: DashboardData;
-}
-
-export function MediaFinanceDashboard({ profile, data }: MediaFinanceDashboardProps) {
-  const { allExpenses, allIncome, activities, testimonies, checkins, checkouts, users } = data;
-  const isLoading = !allExpenses || !allIncome || !activities || !testimonies;
+export function MediaFinanceDashboard({ profile }: DashboardProps) {
 
   return (
     <div className="flex flex-col gap-6">
        <DashboardHeader profile={profile} />
        <DashboardGrid className="mt-6 lg:grid-cols-3">
          <div className="lg:col-span-3">
-            <BudgetHealth expenses={allExpenses} income={allIncome} />
+            <BudgetHealth />
          </div>
         <div className="lg:col-span-1 flex flex-col gap-6">
-            <TeamPerformanceLeaderboard 
-                activities={activities} 
-                users={users} 
-                checkins={checkins} 
-                checkouts={checkouts} 
-                expenses={allExpenses}
-                testimonies={testimonies}
-                isLoading={isLoading} 
-            />
+            <TeamPerformanceLeaderboard />
             <DynamicApprovalQueue />
         </div>
          <div className="lg:col-span-2 flex flex-col gap-6">
-             <MediaOpportunities activities={activities} isLoading={isLoading} />
-             <LatestTestimonies testimonies={testimonies} isLoading={isLoading} />
+             <MediaOpportunities />
+             <LatestTestimonies />
         </div>
       </DashboardGrid>
     </div>

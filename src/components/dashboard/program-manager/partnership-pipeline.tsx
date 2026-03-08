@@ -8,22 +8,36 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight, Handshake } from 'lucide-react';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 
-export function PartnershipPipeline({ partnerships, isLoading }: { partnerships: Partnership[] | null, isLoading: boolean }) {
+export function PartnershipPipeline() {
+    const firestore = useFirestore();
+
+    const queries = useMemo(() => {
+        if (!firestore) return null;
+        return {
+            partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'), limit(50)),
+        };
+    }, [firestore]);
+
+    const partnerships = useCollection<Partnership>(queries?.partnerships);
+    const data = partnerships.data;
+    const isLoading = partnerships.isLoading;
     
     const { activeCount, negotiationCount, prospectingCount, urgentItem, upcomingItem } = useMemo(() => {
-        if (!partnerships) {
+        if (!data) {
             return { activeCount: 0, negotiationCount: 0, prospectingCount: 0, urgentItem: null, upcomingItem: null };
         }
 
-        const active = partnerships.filter(p => p.status === 'Active').length;
-        const negotiation = partnerships.filter(p => p.status === 'Negotiation').length;
-        const prospecting = partnerships.filter(p => p.status === 'Prospecting').length;
+        const active = data.filter(p => p.status === 'Active').length;
+        const negotiation = data.filter(p => p.status === 'Negotiation').length;
+        const prospecting = data.filter(p => p.status === 'Prospecting').length;
 
         const urgentKeywords = ['deadline', 'report', 'due', 'mou'];
         const upcomingKeywords = ['meeting', 'call', 'follow-up', 'proposal', 'submit', 'draft'];
 
-        const activeOrPotential = partnerships.filter(p => p.status !== 'Stalled');
+        const activeOrPotential = data.filter(p => p.status !== 'Stalled');
         
         let urgent = null;
         for (const p of activeOrPotential) {
@@ -51,7 +65,7 @@ export function PartnershipPipeline({ partnerships, isLoading }: { partnerships:
             upcomingItem: upcoming 
         };
 
-    }, [partnerships]);
+    }, [data]);
 
     return (
         <Card className="hover:bg-muted/50 transition-colors group/card">
