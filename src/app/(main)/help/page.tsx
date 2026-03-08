@@ -359,7 +359,7 @@ const FieldCoordinatorManual = () => (
         <h3>1. Your Daily Rhythm</h3>
         <h4>AI Daily Planner (/daily-plan)</h4>
         <p>Start your day here. Tell the AI your main goal, and it will generate a strategic schedule for you, helping you break down big tasks and connect them to our wider objectives. After you review the plan, submit it as your official "Check-in".</p>
-        <h4>ROI Activity Form (/forms/activity)</h4>
+        <h4>ROI Activity Form (/meal/activity)</h4>
         <p>This is your primary tool for reporting. Before you start an activity, use the "Planning" tab to estimate costs and value. After the activity, fill out the "Logging" tab with the final numbers and a brief story about a memorable moment. This is crucial for showing our impact.</p>
         <h4>Daily Check-out (/forms/check-out)</h4>
         <p>At the end of the day, use this simple form to report on which tasks from your daily plan you completed, share what you learned, and state your priority for tomorrow. This keeps the whole team in sync.</p>
