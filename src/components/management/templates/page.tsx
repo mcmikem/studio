@@ -43,7 +43,7 @@ import { PlusCircle, Edit, Trash2, ListChecks, Loader2, Wand } from 'lucide-reac
 import type { TaskTemplate } from '@/lib/types';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Textarea } from '@/components/ui/textarea';
-import { generateTemplate } from '@/ai/actions';
+import { generateTemplateAction as generateTemplate } from '@/actions/mutations';
 import type { GenerateTemplateOutput } from '@/lib/types';
 
 const templateSchema = z.object({
