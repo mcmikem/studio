@@ -19,16 +19,28 @@ export function EcosystemPulse({ activities, programs, isLoading }: EcosystemPul
 
     const stats = useMemo(() => {
         if (!activities || !programs) {
-            return { inspire: 0, equip: 0, sustain: 0, total: 0 };
+            return { inspire: 0, equip: 0, sustain: 0, total: 0, inspireProgress: 0, equipProgress: 0, sustainProgress: 0 };
         }
 
+        const totalPrograms = programs.length || 1;
         const inspire = programs.filter(p => p.status === 'On Track').length;
         const equip = activities.filter(a => a.ecosystem_phase === 'Equip & Empower').length;
         const sustain = activities
             .filter(a => a.ecosystem_phase === 'Activate & Sustain')
-            .reduce((sum, act) => sum + act.totalValue, 0);
+            .reduce((sum, act) => sum + (act.totalValue || 0), 0);
 
-        return { inspire, equip, sustain, total: activities.length };
+        const totalActivities = activities.length || 1;
+        const totalValue = activities.reduce((sum, a) => sum + (a.totalValue || 0), 0) || 1;
+
+        return {
+            inspire,
+            equip,
+            sustain,
+            total: activities.length,
+            inspireProgress: Math.round((inspire / totalPrograms) * 100),
+            equipProgress: Math.round((equip / totalActivities) * 100),
+            sustainProgress: Math.round((sustain / totalValue) * 100),
+        };
 
     }, [activities, programs]);
 
@@ -64,9 +76,9 @@ export function EcosystemPulse({ activities, programs, isLoading }: EcosystemPul
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-[10px] font-black uppercase text-muted-foreground">
                                 <span>Active Programs</span>
-                                <span>On Track</span>
+                                <span>{stats.inspireProgress}%</span>
                             </div>
-                            <Progress value={85} className="h-1.5 bg-muted" />
+                            <Progress value={stats.inspireProgress} className="h-1.5 bg-muted" />
                         </div>
                     </div>
 
@@ -83,9 +95,9 @@ export function EcosystemPulse({ activities, programs, isLoading }: EcosystemPul
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-[10px] font-black uppercase text-muted-foreground">
                                 <span>Activities Logged</span>
-                                <span>Engagement</span>
+                                <span>{stats.equipProgress}%</span>
                             </div>
-                            <Progress value={60} className="h-1.5 bg-muted" />
+                            <Progress value={stats.equipProgress} className="h-1.5 bg-muted" />
                         </div>
                     </div>
 
@@ -104,9 +116,9 @@ export function EcosystemPulse({ activities, programs, isLoading }: EcosystemPul
                         <div className="space-y-1.5">
                             <div className="flex justify-between text-[10px] font-black uppercase text-muted-foreground">
                                 <span>Value Generated</span>
-                                <span>ROI Efficiency</span>
+                                <span>{stats.sustainProgress}%</span>
                             </div>
-                            <Progress value={75} className="h-1.5 bg-muted" />
+                            <Progress value={stats.sustainProgress} className="h-1.5 bg-muted" />
                         </div>
                     </div>
                 </div>
