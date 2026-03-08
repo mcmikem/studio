@@ -177,8 +177,8 @@ export function AppHeader() {
         "flex items-center gap-1.5"
       )}>
         <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setOpen(true)}><Search className="h-5 w-5" /></Button>
-        {canViewAs && <ViewAsMenu />}
-        <QuickAddMenu />
+        {canViewAs && <div className="hidden sm:block"><ViewAsMenu /></div>}
+        <div className="hidden sm:block"><QuickAddMenu /></div>
         <NotificationsMenu />
         <UserMenu />
       </div>

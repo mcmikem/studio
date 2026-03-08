@@ -1,98 +1,135 @@
-
 'use client';
 
-import { Home, ClipboardEdit, Rss, User, Menu, Plus, Zap, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, Trophy } from 'lucide-react';
+import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useSidebar } from './ui/sidebar';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export function MobileBottomNav() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
+  useEffect(() => {
+    if (!isActionMenuOpen) return;
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsActionMenuOpen(false);
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [isActionMenuOpen]);
+
   const isActive = (path: string) => {
     if (path === '/' && pathname === '/') return true;
     if (path !== '/' && pathname.startsWith(path)) return true;
     return false;
-  }
+  };
 
   const actions = [
-      { href: '/daily-plan', label: 'Morning Check-in', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
-      { href: '/forms/check-out', label: 'Evening Report', icon: LogOut, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
-      { href: '/meal/activity', label: 'Log ROI Impact', icon: BarChart3, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
-      { href: '/forms/expense', label: 'Expense Request', icon: Receipt, color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
-      { href: '/chat', label: 'Ask AI Coach', icon: MessageCircle, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
+    { href: '/daily-plan', label: 'Morning Check-in', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
+    { href: '/forms/check-out', label: 'Evening Report', icon: LogOut, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
+    { href: '/meal/activity', label: 'Log ROI Impact', icon: BarChart3, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
+    { href: '/forms/expense', label: 'Expense Request', icon: Receipt, color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
+    { href: '/chat', label: 'Ask AI Coach', icon: MessageCircle, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe">
-        
-        {/* Action Menu (Modal overlay) */}
-        {isActionMenuOpen && (
-            <div className="fixed inset-0 bg-omuto-navy/80 backdrop-blur-sm z-[700] animate-in fade-in duration-300" onClick={() => setIsActionMenuOpen(false)}>
-                <div className="absolute bottom-32 left-4 right-4 space-y-3 animate-in slide-in-from-bottom-10 duration-300" onClick={e => e.stopPropagation()}>
-                    <div className="grid grid-cols-1 gap-3">
-                        {actions.map((action) => (
-                             <Link 
-                                key={action.href} 
-                                href={action.href} 
-                                onClick={() => setIsActionMenuOpen(false)}
-                                className="flex items-center gap-4 p-5 bg-white card-comic-clean active:scale-95 transition-all group"
-                             >
-                                <div className={`p-3 rounded-xl ${action.bg} ${action.color} group-hover:scale-110 transition-transform`}>
-                                    <action.icon className="w-6 h-6" />
-                                </div>
-                                <span className="font-black uppercase text-sm tracking-tight text-omuto-navy">{action.label}</span>
-                             </Link>
-                        ))}
-                    </div>
-                </div>
+    <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe" aria-label="Mobile navigation">
+      {isActionMenuOpen && (
+        <div
+          className="fixed inset-0 bg-omuto-navy/80 backdrop-blur-sm z-[700] animate-in fade-in duration-300"
+          onClick={() => setIsActionMenuOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Quick actions"
+        >
+          <div
+            className="absolute bottom-32 left-4 right-4 space-y-3 animate-in slide-in-from-bottom-10 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="grid grid-cols-1 gap-3">
+              {actions.map((action) => (
+                <Link
+                  key={action.href}
+                  href={action.href}
+                  onClick={() => setIsActionMenuOpen(false)}
+                  className="flex items-center gap-4 p-5 bg-white card-comic-clean active:scale-95 transition-all group"
+                >
+                  <div className={`p-3 rounded-xl ${action.bg} ${action.color} group-hover:scale-110 transition-transform`}>
+                    <action.icon className="w-6 h-6" />
+                  </div>
+                  <span className="font-black uppercase text-sm tracking-tight text-omuto-navy">{action.label}</span>
+                </Link>
+              ))}
             </div>
-        )}
-
-        {/* The Float Navigation Bar */}
-        <div className="mx-4 mb-6 h-20 bg-white border-xl border-omuto-navy shadow-comic rounded-3xl flex items-center justify-between px-4 relative z-[800]">
-            
-            <Link href="/" className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}>
-                <Home className="w-6 h-6" />
-                <span className="text-[9px] font-black uppercase mt-1">HQ</span>
-            </Link>
-
-            <Link href="/meal" className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/meal') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}>
-                <BarChart3 className="w-6 h-6" />
-                <span className="text-[9px] font-black uppercase mt-1">Impact</span>
-            </Link>
-
-            {/* ACTION CENTER TRIGGER */}
-            <button 
-                onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
-                className="flex items-center justify-center -mt-12 group"
-            >
-                <div className={cn(
-                    "w-16 h-16 border-xl border-omuto-navy rounded-full flex items-center justify-center text-white transition-all transform active:scale-90 shadow-comic-sm",
-                    isActionMenuOpen ? "bg-omuto-navy rotate-45" : "bg-omuto-red rotate-0"
-                )}>
-                    {isActionMenuOpen ? <X className="w-8 h-8 stroke-[3px]" /> : <Plus className="w-8 h-8 stroke-[3px]" />}
-                </div>
-                <div className="absolute -bottom-6 w-max bg-omuto-navy text-white text-[8px] font-black px-2 py-0.5 rounded shadow-comic-sm opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest border border-white/20">
-                    Deploy Action
-                </div>
-            </button>
-
-            <Link href="/team-performance" className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/team-performance') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}>
-                <Trophy className="w-6 h-6" />
-                <span className="text-[9px] font-black uppercase mt-1">Stars</span>
-            </Link>
-
-            <button onClick={() => setOpenMobile(true)} className="flex flex-col items-center justify-center flex-1 h-full text-omuto-navy/40">
-                <Menu className="w-6 h-6" />
-                <span className="text-[9px] font-black uppercase mt-1">More</span>
-            </button>
-
+          </div>
         </div>
+      )}
+
+      <div className="mx-4 mb-6 h-20 bg-white border-xl border-omuto-navy shadow-comic rounded-3xl flex items-center justify-between px-4 relative z-[800]">
+        <Link
+          href="/"
+          aria-label="Go to HQ"
+          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}
+        >
+          <Home className="w-6 h-6" />
+          <span className="text-[11px] font-black uppercase mt-1">HQ</span>
+        </Link>
+
+        <Link
+          href="/meal"
+          aria-label="Go to Impact"
+          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/meal') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}
+        >
+          <BarChart3 className="w-6 h-6" />
+          <span className="text-[11px] font-black uppercase mt-1">Impact</span>
+        </Link>
+
+        <button
+          onClick={() => setIsActionMenuOpen((open) => !open)}
+          aria-label={isActionMenuOpen ? 'Close quick actions' : 'Open quick actions'}
+          aria-expanded={isActionMenuOpen}
+          className="flex items-center justify-center -mt-12 group"
+        >
+          <div
+            className={cn(
+              'w-16 h-16 border-xl border-omuto-navy rounded-full flex items-center justify-center text-white transition-all transform active:scale-90 shadow-comic-sm',
+              isActionMenuOpen ? 'bg-omuto-navy rotate-45' : 'bg-omuto-red rotate-0'
+            )}
+          >
+            {isActionMenuOpen ? <X className="w-8 h-8 stroke-[3px]" /> : <Plus className="w-8 h-8 stroke-[3px]" />}
+          </div>
+          <div className="absolute -bottom-6 w-max bg-omuto-navy text-white text-[10px] font-black px-2 py-0.5 rounded shadow-comic-sm opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest border border-white/20">
+            Quick Actions
+          </div>
+        </button>
+
+        <Link
+          href="/team-performance"
+          aria-label="Go to Impact Stars"
+          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/team-performance') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}
+        >
+          <Trophy className="w-6 h-6" />
+          <span className="text-[11px] font-black uppercase mt-1">Stars</span>
+        </Link>
+
+        <button onClick={() => setOpenMobile(true)} aria-label="Open more navigation" className="flex flex-col items-center justify-center flex-1 h-full text-omuto-navy/40">
+          <Menu className="w-6 h-6" />
+          <span className="text-[11px] font-black uppercase mt-1">More</span>
+        </button>
+      </div>
     </div>
   );
 }

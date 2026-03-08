@@ -5,7 +5,6 @@ import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 const unprotectedRoutes = ['/login', '/forms/school'];
 
@@ -37,10 +36,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   // If we are on an unprotected route, or if all loading is complete, render the app.
-  return (
-      <>
-        <FirebaseErrorListener />
-        {children}
-      </>
-  );
+  return <>{children}</>;
 }
