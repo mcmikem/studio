@@ -235,21 +235,22 @@ function TeamDetailDashboard() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-    {(team as any).equipment?.length ? (team as any).equipment.map((e: EquipmentItem) => (
-        <TableRow key={e.item}>
-            <TableCell>{e.item}</TableCell>
-            <TableCell>{e.qty || 0}</TableCell>
-            <TableCell>{e.condition}</TableCell>
-            <TableCell>{e.needLevel}</TableCell>
-        </TableRow>
-    )) : (
-        <TableRow>
-            <TableCell colSpan={4} className="h-24 text-center">
-                No equipment data.
-            </TableCell>
-        </TableRow>
-    )}
+  {(team as any).equipment?.length ? (team as any).equipment.map((e: EquipmentItem) => (
+      <TableRow key={e.item}>
+          <TableCell>{e.item}</TableCell>
+          <TableCell>{e.qty || 0}</TableCell>
+          <TableCell>{e.condition}</TableCell>
+          <TableCell>{e.needLevel}</TableCell>
+      </TableRow>
+  )) : (
+      <TableRow>
+          <TableCell colSpan={4} className="h-24 text-center">
+              No equipment data.
+          </TableCell>
+      </TableRow>
+  )}
 </TableBody>
+
 
                             </Table>
                         </div>
