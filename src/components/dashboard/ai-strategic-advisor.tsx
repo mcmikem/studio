@@ -23,6 +23,8 @@ export function AiStrategicAdvisor() {
   const firestore = useFirestore();
   const [insights, setInsights] = React.useState<any[] | null>(null);
   const [isLoadingInsights, setIsLoadingInsights] = React.useState(true);
+  const lastSignatureRef = React.useRef<string>('');
+  const lastRunRef = React.useRef<number>(0);
 
   const thirtyDaysAgo = React.useMemo(() => subDays(new Date(), 30), []);
 
@@ -43,6 +45,24 @@ export function AiStrategicAdvisor() {
   React.useEffect(() => {
     const getInsights = async () => {
       if (activities && checkins && expenses && keyResults) {
+        const signature = JSON.stringify({
+          activities: activities.length,
+          checkins: checkins.length,
+          expenses: expenses.length,
+          keyResults: keyResults.length,
+          latestActivity: activities[0]?.id || '',
+          latestCheckin: checkins[0]?.id || '',
+          latestExpense: expenses[0]?.id || '',
+        });
+
+        const now = Date.now();
+        if (signature === lastSignatureRef.current && now - lastRunRef.current < 5 * 60 * 1000) {
+          return;
+        }
+
+        lastSignatureRef.current = signature;
+        lastRunRef.current = now;
+
         setIsLoadingInsights(true);
         try {
           const plainInput = {
@@ -55,7 +75,7 @@ export function AiStrategicAdvisor() {
           setInsights(result.insights);
         } catch (error) {
           console.error("Failed to get strategic insights:", error);
-          setInsights([]); // Set empty to avoid re-triggering
+          setInsights([]);
         } finally {
           setIsLoadingInsights(false);
         }

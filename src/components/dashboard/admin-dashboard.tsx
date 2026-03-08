@@ -47,7 +47,7 @@ export function AdminDashboard({ profile, data }: AdminDashboardProps) {
                         />
                     </div>
                     <div className="lg:col-span-1 flex flex-col gap-8">
-                        <TeamDeployment users={users} checkins={checkins} isLoading={false} />
+                        <TeamDeployment users={users} checkins={checkins} checkouts={checkouts} isLoading={false} />
                         <PartnershipPipeline partnerships={partnerships} isLoading={false} />
                     </div>
                      <div className="lg:col-span-1 flex flex-col gap-8">

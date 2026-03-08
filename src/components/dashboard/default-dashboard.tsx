@@ -36,7 +36,7 @@ export function DefaultDashboard({ data }: DefaultDashboardProps) {
                 <MyWeeklyPlan />
             </div>
             <div className="flex flex-col gap-6">
-                <TeamDeployment users={users} checkins={checkins} isLoading={!users || !checkins} />
+                <TeamDeployment users={users} checkins={checkins} checkouts={checkouts} isLoading={!users || !checkins} />
             </div>
         </DashboardGrid>
     </div>

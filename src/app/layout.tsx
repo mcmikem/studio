@@ -9,6 +9,7 @@ import { AppHeader } from '@/components/header';
 import { MobileBottomNav } from '@/components/mobile-nav';
 import { ViewAsBanner } from '@/components/view-as-banner';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { GlobalBackButton } from '@/components/global-back-button';
 
 const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -40,7 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="relative flex flex-col flex-1 h-full">
                 <AppHeader />
                 <ViewAsBanner />
-                <main className="flex-1 p-4 lg:p-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-6 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6 lg:py-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-6">
+                  <GlobalBackButton />
                   {children}
                 </main>
                 <MobileBottomNav />

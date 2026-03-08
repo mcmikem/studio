@@ -76,8 +76,15 @@ export async function runGrantFinder(input: GrantFinderInput): Promise<GrantFind
     return await findGrantsFlow(input);
 }
 
-export async function omutoAI(input: OmutoAIInput) {
-    return await omutoAIFlow(input);
+export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
+    try {
+        return await omutoAIFlow(input);
+    } catch (error) {
+        console.error('omutoAI server action failed:', error);
+        return {
+            answer: "I'm temporarily unable to reach the AI service right now. Please retry in a moment."
+        };
+    }
 }
 
 export async function runSmartReminders(input: SmartRemindersInput): Promise<SmartRemindersOutput> {

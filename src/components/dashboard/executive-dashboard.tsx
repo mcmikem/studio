@@ -34,7 +34,7 @@ export function ExecutiveDashboard({ profile, data }: ExecutiveDashboardProps) {
                    <AiStrategicAdvisor />
               </div>
               <div className="lg:col-span-1 flex flex-col gap-8">
-                  <TeamDeployment users={users} checkins={checkins} isLoading={isLoading} />
+                  <TeamDeployment users={users} checkins={checkins} checkouts={checkouts} isLoading={isLoading} />
                   <EcosystemPulse activities={activities} programs={programs} isLoading={isLoading} />
               </div>
               <div className="lg:col-span-1 flex flex-col gap-8">

@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, Trophy } from 'lucide-react';
+import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, Trophy, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,7 @@ export function MobileBottomNav() {
     { href: '/daily-plan', label: 'Morning Check-in', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
     { href: '/forms/check-out', label: 'Evening Report', icon: LogOut, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
     { href: '/meal/activity', label: 'Log ROI Impact', icon: BarChart3, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
+    { href: '/meal/data', label: 'Data Dashboards', icon: LayoutDashboard, color: 'text-omuto-navy', bg: 'bg-omuto-navy/10' },
     { href: '/forms/expense', label: 'Expense Request', icon: Receipt, color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
     { href: '/chat', label: 'Ask AI Coach', icon: MessageCircle, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
   ];
