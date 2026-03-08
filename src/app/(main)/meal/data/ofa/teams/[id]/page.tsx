@@ -19,6 +19,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { OFATeamRegistrationForm } from '@/components/forms/ofa/team-registration-form';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogTrigger, AlertDialogFooter } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+type EquipmentItem = {
+    item: string;
+    qty?: number;
+    condition?: string;
+    needLevel?: string;
+};
+
+type NeedItem = {
+    area: string;
+    priority?: number;
+};
 
 function DetailItem({ label, value }: { label: string, value: string | number | undefined | null }) {
     if (value === undefined || value === null || value === '') return null;
@@ -224,10 +235,22 @@ function TeamDetailDashboard() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {(team as any).equipment?.length ? (team as any).equipment.map(e => (
-                                        <TableRow key={e.item}><TableCell>{e.item}</TableCell><TableCell>{e.qty || 0}</TableCell><TableCell>{e.condition}</TableCell><TableCell>{e.needLevel}</TableCell></TableRow>
-                                    )) : <TableRow><TableCell colSpan={4} className="h-24 text-center">No equipment data.</TableCell></TableRow>}
-                                </TableBody>
+    {(team as any).equipment?.length ? (team as any).equipment.map((e: EquipmentItem) => (
+        <TableRow key={e.item}>
+            <TableCell>{e.item}</TableCell>
+            <TableCell>{e.qty || 0}</TableCell>
+            <TableCell>{e.condition}</TableCell>
+            <TableCell>{e.needLevel}</TableCell>
+        </TableRow>
+    )) : (
+        <TableRow>
+            <TableCell colSpan={4} className="h-24 text-center">
+                No equipment data.
+            </TableCell>
+        </TableRow>
+    )}
+</TableBody>
+
                             </Table>
                         </div>
                     </CardContent>
@@ -236,9 +259,21 @@ function TeamDetailDashboard() {
                     <CardHeader><CardTitle>Needs Assessment</CardTitle></CardHeader>
                     <CardContent>
                         <ul className="space-y-2">
-                            {(team as any).needs?.length ? (team as any).needs.sort((a,b) => (b.priority || 0) - (a.priority || 0)).map(n => (
-                                <li key={n.area} className="flex justify-between items-center text-sm"><span>{n.area}</span><Badge variant="outline">{n.priority}/5</Badge></li>
-                            )) : <li className="text-center text-sm text-muted-foreground h-24 flex items-center justify-center">No needs assessed.</li>}
+                        {(team as any).needs?.length ? (team as any).needs
+    .sort((a: NeedItem, b: NeedItem) => (b.priority || 0) - (a.priority || 0))
+    .map((n: NeedItem) => (
+        <li key={n.area} className="flex justify-between items-center text-sm">
+            <span>{n.area}</span>
+            <Badge variant="outline">{n.priority}/5</Badge>
+        </li>
+    ))
+    : (
+        <li className="text-center text-sm text-muted-foreground h-24 flex items-center justify-center">
+            No needs assessed.
+        </li>
+    )
+}
+
                         </ul>
                     </CardContent>
                 </Card>
