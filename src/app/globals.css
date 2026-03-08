@@ -119,3 +119,18 @@
     scrollbar-width: none;  /* Firefox */
   }
 }
+
+
+@layer base {
+  html, body {
+    overflow-x: hidden;
+  }
+
+  @media (max-width: 640px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
+  }
+}
