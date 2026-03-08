@@ -224,38 +224,42 @@ function TeamDetailDashboard() {
                 </CardContent>
             </Card>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                    <CardHeader><CardTitle>Equipment Status</CardTitle></CardHeader>
-                    <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Item</TableHead><TableHead>Quantity</TableHead><TableHead>Condition</TableHead><TableHead>Need Level</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-  {(team as any).equipment?.length ? (team as any).equipment.map((e: any) => (
-      <TableRow key={e.item}>
-          <TableCell>{e.item}</TableCell>
-          <TableCell>{e.qty || 0}</TableCell>
-          <TableCell>{e.condition}</TableCell>
-          <TableCell>{e.needLevel}</TableCell>
-      </TableRow>
-  )) : (
-      <TableRow>
-          <TableCell colSpan={4} className="h-24 text-center">
-              No equipment data.
-          </TableCell>
-      </TableRow>
-  )}
-</TableBody>
+            <Card>
+  <CardHeader><CardTitle>Equipment Status</CardTitle></CardHeader>
+  <CardContent>
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Item</TableHead>
+            <TableHead>Quantity</TableHead>
+            <TableHead>Condition</TableHead>
+            <TableHead>Need Level</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {(team as any).equipment?.length
+            ? (team as any).equipment.map((e: any) => (
+                <TableRow key={e.item}>
+                  <TableCell>{e.item}</TableCell>
+                  <TableCell>{e.qty || 0}</TableCell>
+                  <TableCell>{e.condition}</TableCell>
+                  <TableCell>{e.needLevel}</TableCell>
+                </TableRow>
+              ))
+            : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    No equipment data.
+                  </TableCell>
+                </TableRow>
+              )}
+        </TableBody>
+      </Table>
+    </div>
+  </CardContent>
+</Card>
 
-
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
                  <Card>
                     <CardHeader><CardTitle>Needs Assessment</CardTitle></CardHeader>
                     <CardContent>
