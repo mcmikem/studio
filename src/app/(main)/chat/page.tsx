@@ -115,7 +115,7 @@ export default function ChatPage() {
       createdAt: serverTimestamp(),
     };
     
-    addDoc(aiChatsCollection, userMessageData);
+    await addDoc(aiChatsCollection, userMessageData);
 
     try {
       // Construct history for AI from the private chat history
@@ -135,19 +135,24 @@ export default function ChatPage() {
             userAvatar: '', // AI has no avatar
             createdAt: serverTimestamp(),
           };
-          addDoc(aiChatsCollection, aiMessageData);
+          await addDoc(aiChatsCollection, aiMessageData);
       }
 
     } catch (error: any) {
       console.error('Error with Omuto AI:', error);
       const errorMessageData = {
-          text: `I'm sorry, I encountered a server error and couldn't complete your request. Please try again later.`,
+          text: `I couldn't complete that request right now. Please retry in a moment.`,
           userId: 'omuto-ai',
           userName: 'Omuto AI',
           userAvatar: '',
           createdAt: serverTimestamp(),
       };
-      addDoc(aiChatsCollection, errorMessageData);
+      await addDoc(aiChatsCollection, errorMessageData);
+      toast({
+        variant: 'destructive',
+        title: 'AI request failed',
+        description: 'The AI service is temporarily unavailable. Please try again.',
+      });
     }
 
     setIsSending(false);

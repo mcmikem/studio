@@ -146,6 +146,7 @@ function UserProfileCard() {
         });
       } finally {
         setIsUploading(false);
+        event.target.value = '';
       }
     }
   };
@@ -208,7 +209,7 @@ function UserProfileCard() {
             <div className="flex flex-col items-center text-center">
                 <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
                     <Avatar className="h-24 w-24 mb-4 border-2 border-primary">
-                        {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
+                        {(profile?.photoURL || user?.photoURL) && <AvatarImage src={profile?.photoURL || user?.photoURL || ''} alt="User avatar" />}
                         <AvatarFallback className="text-3xl">{getInitials(profile?.name, user?.email)}</AvatarFallback>
                     </Avatar>
                      <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -224,7 +225,7 @@ function UserProfileCard() {
                   ref={fileInputRef} 
                   onChange={handleFileChange} 
                   className="hidden" 
-                  accept="image/png, image/jpeg, image/gif"
+                  accept="image/png, image/jpeg, image/gif, image/webp, image/heic, image/heif"
                 />
 
                 <h2 className="text-2xl font-semibold">{profile?.name || 'User'}</h2>

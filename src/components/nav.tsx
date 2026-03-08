@@ -78,6 +78,7 @@ const navConfig = {
   ],
   meal: [
       { href: '/meal', icon: BarChart3, label: 'Impact Hub' },
+      { href: '/meal/data', icon: LayoutDashboard, label: 'Data Dashboards' },
   ],
   enterprise: [
     { href: '/enterprise', icon: Store, label: 'Enterprise Hub' },

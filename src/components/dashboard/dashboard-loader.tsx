@@ -7,7 +7,7 @@ import type { User as UserProfileType, Activity, Checkin, Program, Checkout, Imp
 import { useUser, useFirestore } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, query, where, orderBy, Timestamp, limit, getDocs } from 'firebase/firestore';
-import { subDays, startOfDay } from 'date-fns';
+import { subDays } from 'date-fns';
 import { DefaultDashboard } from './default-dashboard';
 import { DashboardSkeleton } from './dashboard-skeleton';
 
@@ -66,19 +66,18 @@ export function DashboardLoader() {
         setIsDataLoading(true);
         try {
             const thirtyDaysAgo = subDays(new Date(), 30);
-            const todayStart = startOfDay(new Date());
 
             const queries = {
                 activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc')),
                 users: query(collection(firestore, 'users'), orderBy('name')),
-                checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(todayStart))),
+                checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo))),
                 programs: query(collection(firestore, 'programs')),
-                checkouts: query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10)),
+                checkouts: query(collection(firestore, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc'), limit(200)),
                 metrics: query(collection(firestore, 'impact-metrics'), orderBy('metric')),
                 partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')),
                 allExpenses: query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')),
                 allIncome: query(collection(firestore, 'income'), orderBy('createdAt', 'desc')),
-                testimonies: query(collection(firestore, 'testimonies'), orderBy('createdAt', 'desc'), limit(5)),
+                testimonies: query(collection(firestore, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc'), limit(200)),
             };
 
             const [
