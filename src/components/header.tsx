@@ -47,7 +47,7 @@ function QuickAddMenu() {
                         </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                        <Link href="/forms/program-logs/general">
+                        <Link href="/meal/activity">
                             <BarChart3 className="mr-2 h-4 w-4" />
                             <span>Log Activity (ROI)</span>
                         </Link>

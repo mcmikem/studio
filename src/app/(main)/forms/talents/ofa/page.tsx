@@ -8,13 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 const ofaForms = [
   {
-    href: '/forms/talents/ofa/player-registration',
+    href: '/meal/ofa/player-registration',
     title: 'Player Registration',
     description: 'Register a new player for a team in the alliance.',
     icon: UserPlus,
   },
   {
-    href: '/forms/talents/ofa/match-report',
+    href: '/meal/ofa/match-report',
     title: 'Match Report Form',
     description: 'Log the results and details of a completed match.',
     icon: FileText,

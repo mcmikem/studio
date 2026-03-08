@@ -70,7 +70,7 @@ export function UserPerformance({ userId }: UserPerformanceProps) {
             title="No Activity Logged"
             description="Log an activity via the Forms Hub to see your performance here."
           >
-              <Link href="/forms/program-logs/general" className='mt-4 text-primary underline'>Log your first activity</Link>
+              <Link href="/meal/activity" className='mt-4 text-primary underline'>Log your first activity</Link>
           </EmptyState>
         </CardContent>
       </Card>

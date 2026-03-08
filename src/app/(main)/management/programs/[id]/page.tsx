@@ -135,7 +135,7 @@ function ProgramDashboard() {
               <CardDescription>Use these forms to log data for the {program.title} program.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-              <Link href={`/forms/activity?programId=${program.id}&programName=${encodeURIComponent(program.title)}`} className="block">
+              <Link href={`/meal/activity?programId=${program.id}&programName=${encodeURIComponent(program.title)}`} className="block">
                   <div className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                       <BarChart3 className="h-8 w-8 text-primary" />
                       <div>
