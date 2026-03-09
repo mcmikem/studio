@@ -225,8 +225,13 @@ export default function LoginPage() {
                 <Alert className="bg-primary/5 border-primary/20">
                     <Info className="h-4 w-4 text-primary" />
                     <AlertTitle className="text-xs font-black uppercase text-primary">First time here?</AlertTitle>
-                    <AlertDescription className="text-[10px] font-bold text-omuto-navy/70 leading-relaxed">
-                        If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first to set your password.
+                    <AlertDescription className="text-[10px] font-bold text-omuto-navy/70 leading-relaxed space-y-2">
+                        <p>If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first to set your password.</p>
+                        {email.toLowerCase().includes('diana') && (
+                            <p className="text-primary bg-primary/10 p-2 rounded border border-primary/20">
+                                <strong>Tip for Dianah:</strong> You can now also use <code className="bg-white px-1">dianah@omuto.org</code> to sign up!
+                            </p>
+                        )}
                     </AlertDescription>
                 </Alert>
 
@@ -270,11 +275,14 @@ export default function LoginPage() {
                                     id="password" 
                                     type="password" 
                                     required 
-                                    placeholder="••••••••"
+                                    placeholder={isOrgEmail ? "Staff Password: Omutofoundation." : "Volunteer Password: Omutofoundation"}
                                     className="h-12 border-lg rounded-xl"
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)} 
                                 />
+                                <p className="text-[10px] font-bold text-muted-foreground italic">
+                                    {isOrgEmail ? "Staff must use 'Omutofoundation.' (with the dot)" : "Volunteers use 'Omutofoundation' (no dot)"}
+                                </p>
                             </div>
 
                             {activeTab === 'signup' && !isOrgEmail && (
@@ -295,7 +303,7 @@ export default function LoginPage() {
 
                             <Button type="submit" className="w-full h-14 btn-omuto shadow-comic-md hover:shadow-comic-sm bg-primary text-white border-white mt-4" disabled={!!loading}>
                                 {loading === 'email' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                {activeTab === 'login' ? 'Access Dashboard' : 'Create Volunteer Account'}
+                                {activeTab === 'login' ? 'Access Dashboard' : (isOrgEmail ? 'Create Staff Account' : 'Create Volunteer Account')}
                             </Button>
                         </form>
                     </div>

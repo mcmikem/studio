@@ -31,6 +31,10 @@ import { FirestorePermissionError } from './errors';
 // This maps specific emails to roles and names within the Omuto organization.
 const approvedUsers: Record<string, { name: string; role: string, supervisorId?: string }> = {
   'mcmike@omuto.org': { name: 'McMike Mutumba', role: 'Executive Director' },
+  'dianah@omuto.org': {
+    name: 'Dianah Nansikombi',
+    role: 'Programs & Partnerships Manager',
+  },
   'programs@omuto.org': {
     name: 'Dianah Nansikombi',
     role: 'Programs & Partnerships Manager',
@@ -170,12 +174,22 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore, 
 /** Sign in an existing user with email and password. */
 export async function signInWithEmail(auth: Auth, email: string, password: string): Promise<UserCredential> {
   const db = getFirestore(auth.app);
+  const isOrgEmail = email.toLowerCase().endsWith('@omuto.org');
+  const requiredPassword = isOrgEmail ? 'Omutofoundation.' : 'Omutofoundation';
+
+  if (password !== requiredPassword) {
+    throw new Error(`Incorrect password. For ${isOrgEmail ? 'staff' : 'volunteers'}, the standard password is ${requiredPassword}`);
+  }
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       // Profile is updated/verified on every sign-in.
       return await createUserProfile(userCredential, db);
     } catch (error: any) {
       console.error('Email sign-in error:', error);
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        throw new Error(`Wrong Credentials. If you haven't updated your account to the new standard password (${requiredPassword}), please use 'Forgot Password' to reset it.`);
+      }
       throw error;
     }
 }
@@ -184,8 +198,15 @@ export async function signInWithEmail(auth: Auth, email: string, password: strin
 export async function signUpWithEmail(auth: Auth, email: string, password: string, accessCode?: string): Promise<UserCredential> {
   const db = getFirestore(auth.app);
   
-  const isOrgEmail = Object.keys(approvedUsers).some(key => key.toLowerCase() === email.toLowerCase());
+  const isOrgEmail = email.toLowerCase().endsWith('@omuto.org');
+  const requiredPassword = isOrgEmail ? 'Omutofoundation.' : 'Omutofoundation';
 
+  if (password !== requiredPassword) {
+    throw new Error(`To sign up, you must use the ${isOrgEmail ? 'Staff' : 'Volunteer'} standard password: ${requiredPassword}`);
+  }
+
+  // Volunteers must still provide the access code "Omutofoundation" in the separate field 
+  // (which matches their password, but keeps the flow consistent)
   if (!isOrgEmail && accessCode !== 'Omutofoundation') {
     throw new Error('Personal emails require the correct Volunteer Access Code to sign up.');
   }
