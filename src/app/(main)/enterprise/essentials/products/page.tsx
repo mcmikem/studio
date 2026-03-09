@@ -112,7 +112,50 @@ export default function ProductsPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={products || []} isLoading={isLoading} />
+
+      <DataTable 
+        columns={columns} 
+        data={products || []} 
+        isLoading={isLoading} 
+        renderMobileCard={(product) => (
+          <div className="p-4 border rounded-xl bg-background shadow-sm space-y-3">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <p className="font-bold text-omuto-navy text-lg">{product.name}</p>
+                <div className="flex gap-2 items-center">
+                    <Badge variant={product.type === 'finished' ? 'default' : 'secondary'} className="text-[10px] uppercase">{product.type}</Badge>
+                    <span className="text-[10px] font-mono text-muted-foreground">{product.sku}</span>
+                </div>
+              </div>
+              <div className="flex flex-col items-end">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase">Stock</p>
+                <p className="font-black text-primary">{product.type === 'finished' ? product.quantity_on_hand : product.current_stock_quantity}</p>
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center pt-2 border-t border-dashed">
+              <div>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase">{product.type === 'finished' ? 'Price' : 'Cost'}</p>
+                <p className="font-bold">
+                  {product.type === 'finished' ? formatCurrency(product.default_selling_price || 0) : formatCurrency(product.cost_per_unit || 0)}
+                </p>
+              </div>
+               <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => handleEdit(product)}><Edit className="h-4 w-4" /></Button>
+                  <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader><AlertDialogTitle>Delete "{product.name}"?</AlertDialogTitle><AlertDialogDescription>This will permanently remove this item from inventory.</AlertDialogDescription></AlertDialogHeader>
+                          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDelete(product)}>Delete</AlertDialogAction></AlertDialogFooter>
+                      </AlertDialogContent>
+                  </AlertDialog>
+              </div>
+            </div>
+          </div>
+        )}
+      />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl">

@@ -53,7 +53,7 @@ function MessageItem({ message }: { message: Message }) {
         )}
       </Avatar>
       <div className={cn(
-          'max-w-xs md:max-w-md lg:max-w-lg rounded-lg px-4 py-2', 
+          'max-w-[85%] md:max-w-md lg:max-w-lg rounded-lg px-4 py-2', 
           isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-muted',
           isAI && 'bg-background border'
         )}>

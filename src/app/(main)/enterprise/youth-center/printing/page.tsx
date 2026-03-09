@@ -147,7 +147,53 @@ export default function PrintingJobsPage() {
         </Button>
       </div>
 
-      <DataTable columns={columns} data={jobs || []} isLoading={isLoading} />
+      <DataTable 
+        columns={columns} 
+        data={jobs || []} 
+        isLoading={isLoading} 
+        renderMobileCard={(job) => (
+          <div className="p-4 border rounded-xl bg-background shadow-sm space-y-3">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <p className="font-bold text-omuto-navy">{job.clientName}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase">{formatDateSafe(job.jobDate, 'dateOnly')}</p>
+              </div>
+              <Badge variant="outline" className={paymentStatusColors[job.paymentStatus]}>{job.paymentStatus}</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs border-y py-2 border-dashed">
+              <div>
+                <p className="text-muted-foreground">B&W Pages</p>
+                <p className="font-bold">{job.pages_bw}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Color Pages</p>
+                <p className="font-bold">{job.pages_color}</p>
+              </div>
+            </div>
+            <div className="flex justify-between items-center pt-1">
+              <span className="font-black text-primary">{formatCurrency(job.totalAmount)}</span>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(job)}><Edit className="h-4 w-4" /></Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Record?</AlertDialogTitle>
+                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(job)}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          </div>
+        )}
+      />
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent>

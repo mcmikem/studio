@@ -190,29 +190,38 @@ export default function DailyPlannerPage() {
                     </div>
                     <div className="space-y-3">
                         {editablePlan?.timeBlocks.map((block, i) => (
-                            <div key={i} className="flex gap-2 items-start p-3 bg-muted/30 rounded-2xl border-2 border-transparent hover:border-omuto-navy/10 transition-all group">
-                                <div className="flex flex-col gap-1 w-32">
-                                    <Input 
-                                        value={block.startTime} 
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTimeBlockChange(i, 'startTime', e.target.value)}
-                                        className="h-8 text-[10px] font-bold text-primary bg-white border-2 text-center p-0"
-                                    />
-                                    <Input 
-                                        value={block.endTime} 
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTimeBlockChange(i, 'endTime', e.target.value)}
-                                        className="h-8 text-[10px] font-bold text-primary bg-white border-2 text-center p-0"
+                            <div key={i} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-start p-4 bg-muted/30 rounded-2xl border-2 border-transparent hover:border-omuto-navy/10 transition-all group relative">
+                                <div className="flex sm:flex-col gap-2 w-full sm:w-32">
+                                    <div className="flex-1 sm:flex-none">
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground mb-1 block sm:hidden">Start</Label>
+                                        <Input 
+                                            value={block.startTime} 
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTimeBlockChange(i, 'startTime', e.target.value)}
+                                            className="h-10 sm:h-8 text-xs sm:text-[10px] font-bold text-primary bg-white border-2 text-center p-0"
+                                        />
+                                    </div>
+                                    <div className="flex-1 sm:flex-none">
+                                        <Label className="text-[10px] font-black uppercase text-muted-foreground mb-1 block sm:hidden">End</Label>
+                                        <Input 
+                                            value={block.endTime} 
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTimeBlockChange(i, 'endTime', e.target.value)}
+                                            className="h-10 sm:h-8 text-xs sm:text-[10px] font-bold text-primary bg-white border-2 text-center p-0"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                    <Label className="text-[10px] font-black uppercase text-muted-foreground mb-1 block sm:hidden">Task Description</Label>
+                                    <Textarea 
+                                        value={block.description}
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleTimeBlockChange(i, 'description', e.target.value)}
+                                        className="min-h-[80px] sm:min-h-[64px] text-sm sm:text-xs font-bold text-omuto-navy/80 bg-white border-2 resize-none leading-tight"
                                     />
                                 </div>
-                                <Textarea 
-                                    value={block.description}
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleTimeBlockChange(i, 'description', e.target.value)}
-                                    className="min-h-[64px] text-xs font-bold text-omuto-navy/80 bg-white border-2 resize-none leading-tight"
-                                />
                                 <Button 
                                     variant="ghost" 
                                     size="icon" 
                                     onClick={() => removeTimeBlock(i)}
-                                    className="h-8 w-8 text-muted-foreground hover:text-omuto-red group-hover:opacity-100 opacity-0 transition-opacity"
+                                    className="absolute -top-2 -right-2 sm:static h-8 w-8 rounded-full bg-background sm:bg-transparent shadow-sm sm:shadow-none text-muted-foreground hover:text-omuto-red sm:opacity-0 group-hover:opacity-100 transition-opacity"
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </Button>

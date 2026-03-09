@@ -221,7 +221,25 @@ function EssentialsHubPage() {
                             </Button>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <DataTable columns={salesColumns} data={recentSales || []} isLoading={isLoadingRecent} />
+                            <DataTable 
+                                columns={salesColumns} 
+                                data={recentSales || []} 
+                                isLoading={isLoadingRecent} 
+                                renderMobileCard={(sale) => (
+                                    <div className="p-4 border rounded-xl bg-background shadow-sm space-y-2">
+                                        <div className="flex justify-between items-start">
+                                            <span className="text-xs font-bold text-muted-foreground">{formatDateSafe(sale.sale_date, 'dateOnly')}</span>
+                                            <Badge variant={sale.status === 'completed' ? 'default' : 'outline'} className="text-[10px] uppercase font-black">
+                                                {sale.status}
+                                            </Badge>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-semibold text-omuto-navy">{sale.customer_name || 'Guest'}</span>
+                                            <span className="font-bold text-primary">{formatCurrency(sale.total_amount)}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            />
                         </CardContent>
                     </Card>
 
@@ -237,7 +255,25 @@ function EssentialsHubPage() {
                             </Button>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <DataTable columns={productionColumns} data={recentProduction || []} isLoading={isLoadingProduction} />
+                            <DataTable 
+                                columns={productionColumns} 
+                                data={recentProduction || []} 
+                                isLoading={isLoadingProduction} 
+                                renderMobileCard={(prod) => (
+                                    <div className="p-4 border rounded-xl bg-background shadow-sm space-y-2">
+                                        <div className="flex justify-between items-start">
+                                            <span className="text-xs font-bold text-muted-foreground">{formatDateSafe(prod.production_date, 'dateOnly')}</span>
+                                            <Badge variant="outline" className="text-[10px] uppercase font-black">
+                                                {prod.status}
+                                            </Badge>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-semibold text-omuto-navy">{prod.product_name}</span>
+                                            <span className="font-bold text-primary">{prod.quantity_produced} Units</span>
+                                        </div>
+                                    </div>
+                                )}
+                            />
                         </CardContent>
                     </Card>
                     */}
