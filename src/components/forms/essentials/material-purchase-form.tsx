@@ -102,13 +102,13 @@ export function MaterialPurchaseForm() {
   };
 
   return (
-    <div className="space-y-4 pb-10">
-      <Button variant="outline" asChild className="rounded-xl border-lg">
-        <Link href="/enterprise/essentials"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Hub</Link>
-      </Button>
+    <div className="space-y-4">
       <Card className="border-lg shadow-comic-sm">
-        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
-          <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter"><ShoppingBag className="h-8 w-8 text-primary"/> Material Procurement</CardTitle>
+        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl font-black uppercase tracking-tighter">
+            <ShoppingBag className="h-6 w-6 sm:h-8 sm:w-8 text-primary"/> 
+            Material Procurement
+          </CardTitle>
           <CardDescription className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Record the purchase of raw materials or packaging to update stock levels.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>

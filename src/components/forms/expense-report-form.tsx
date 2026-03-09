@@ -239,18 +239,18 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
 
   return (
-    <Card>
-      <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-8 md:p-12">
+    <Card className="border-lg shadow-comic-sm">
+      <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-5 sm:p-8">
             <div className="p-3 bg-white border-lg border-omuto-navy/20 shadow-comic-sm rounded-2xl w-fit mb-6 rotate-[-2deg]">
                 <Receipt className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="font-heading text-4xl font-bold tracking-tight uppercase leading-none text-omuto-navy">
+            <CardTitle className="font-heading text-2xl sm:text-4xl font-bold tracking-tight uppercase leading-none text-omuto-navy">
                 Expense <span className="text-omuto-red underline decoration-4 underline-offset-4">Report</span>
             </CardTitle>
             <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">Financial Accountability Terminal</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
-        <CardContent className="p-8 md:p-12 space-y-12">
+        <CardContent className="p-5 sm:p-8 space-y-8 sm:space-y-12">
             
             {/* 1. Header Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

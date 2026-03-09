@@ -232,19 +232,19 @@ function ActivityReportFormComponent() {
   };
   
   return (
-    <Card className="card-comic-hero overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-8 md:p-12">
+    <Card className="card-comic-hero overflow-hidden border-lg shadow-comic-sm">
+        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-5 sm:p-8">
             <div className="p-3 bg-white border-lg border-omuto-navy/20 shadow-comic-sm rounded-2xl w-fit mb-6 rotate-[-2deg]">
                 <BarChart3 className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="font-heading text-4xl font-black tracking-tighter uppercase leading-none text-omuto-navy">
+            <CardTitle className="font-heading text-2xl sm:text-4xl font-black tracking-tighter uppercase leading-none text-omuto-navy">
                 Activity <span className="text-omuto-red underline decoration-4 underline-offset-4">ROI Log</span>
             </CardTitle>
             <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">Impact Verification Terminal</CardDescription>
         </CardHeader>
         
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-            <div className="bg-muted/20 border-b-lg border-omuto-navy/5 px-8 pt-2">
+            <div className="bg-muted/20 border-b-lg border-omuto-navy/5 px-4 sm:px-8 pt-2">
                 <TabsList className="bg-transparent gap-8 h-14">
                     {["planning", "execution", "logging"].map((tab, i) => (
                         <TabsTrigger key={tab} value={tab} className="rounded-none border-b-4 border-transparent data-[state=active]:border-omuto-red data-[state=active]:bg-transparent font-black text-xs uppercase tracking-widest px-0">
@@ -254,7 +254,7 @@ function ActivityReportFormComponent() {
                 </TabsList>
             </div>
 
-            <CardContent className="p-8 md:p-12">
+            <CardContent className="p-5 sm:p-8">
                 <TabsContent value="planning" className="mt-0 animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="space-y-10">
                         <div className="space-y-4">

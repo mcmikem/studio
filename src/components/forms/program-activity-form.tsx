@@ -225,12 +225,12 @@ export function ProgramActivityForm({
   }
   
   return (
-      <Card>
-           <CardHeader>
+      <Card className="border-lg shadow-comic-sm">
+           <CardHeader className="p-5 sm:p-8 border-b-lg border-muted">
             <div className='flex items-center gap-4'>
                 <BarChart3 className="h-8 w-8 text-primary" />
                 <div>
-                    <CardTitle>{programTitle} Activity Report</CardTitle>
+                    <CardTitle className="text-xl sm:text-3xl">{programTitle} Activity Report</CardTitle>
                     <CardDescription>{formDescription}</CardDescription>
                 </div>
             </div>

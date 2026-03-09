@@ -192,7 +192,7 @@ export default function ChatPage() {
   const isSendDisabled = !newMessage.trim() || isSending || isLoadingProfile || !profile;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full pb-20 md:pb-0">
       <Card className="flex-1 flex flex-col">
         <CardContent className="flex-1 flex flex-col p-0">
           <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
