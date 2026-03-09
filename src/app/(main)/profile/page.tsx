@@ -112,6 +112,8 @@ function UserProfileCard() {
   const firestore = useFirestore();
   const firebaseApp = useFirebaseApp();
   const [isUploading, setIsUploading] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = (name?: string, email?: string | null) => {
@@ -157,14 +159,23 @@ function UserProfileCard() {
 
   const handleRoleChange = (newRole: string) => {
     if (!user || !firestore || newRole === profile?.role) return;
-
     const userDocRef = doc(firestore, 'users', user.uid);
     updateDocumentNonBlocking(userDocRef, { role: newRole });
-    toast({
-        title: "Role Updated!",
-        description: `Your role has been changed to ${newRole}. Your dashboard and navigation will now update.`,
-    })
-  }
+    toast({ title: "Role Updated!", description: `Your role has been changed to ${newRole}.` });
+  };
+
+  const handleNameEdit = () => {
+    setEditedName(profile?.name || '');
+    setIsEditingName(true);
+  };
+
+  const handleNameSave = () => {
+    if (!user || !firestore || !editedName.trim()) return;
+    const userDocRef = doc(firestore, 'users', user.uid);
+    updateDocumentNonBlocking(userDocRef, { name: editedName.trim() });
+    setIsEditingName(false);
+    toast({ title: 'Name Updated!', description: 'Your display name has been saved.' });
+  };
 
 
   if (isLoading) {
@@ -228,7 +239,26 @@ function UserProfileCard() {
                   accept="image/png, image/jpeg, image/gif, image/webp, image/heic, image/heif"
                 />
 
-                <h2 className="text-2xl font-semibold">{profile?.name || 'User'}</h2>
+                <h2 className="text-2xl font-semibold mt-2">
+                    {isEditingName ? (
+                        <div className="flex items-center gap-2 mt-2">
+                            <Input 
+                                value={editedName}
+                                onChange={(e) => setEditedName(e.target.value)}
+                                className="h-9 text-lg font-semibold"
+                                onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
+                                autoFocus
+                            />
+                            <Button size="sm" onClick={handleNameSave}>Save</Button>
+                            <Button size="sm" variant="ghost" onClick={() => setIsEditingName(false)}>Cancel</Button>
+                        </div>
+                    ) : (
+                        <span className="cursor-pointer hover:underline" onClick={handleNameEdit} title="Click to edit name">
+                            {profile?.name || 'User'}
+                            <span className="ml-2 text-xs text-muted-foreground font-normal">(edit)</span>
+                        </span>
+                    )}
+                </h2>
                 <p className="text-muted-foreground">{profile?.email}</p>
                 
                  <DropdownMenu>

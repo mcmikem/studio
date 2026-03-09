@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { initiateGoogleSignIn, initiatePasswordReset, signUpWithEmail, signInWithEmail } from '@/firebase/non-blocking-login';
+import { initiateGoogleSignIn, initiatePasswordReset, signUpWithEmail, signInWithEmail, isOrgEmail } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { validateAccessCodeAction } from '@/actions/auth-actions';
 
 
 const GoogleIcon = () => (
@@ -122,8 +123,9 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState('');
   const [selectedRole, setSelectedRole] = useState<'Volunteer' | 'Intern'>('Volunteer');
   const [loading, setLoading] = useState<'google' | 'email' | null>(null);
+  const [isCodeValidated, setIsCodeValidated] = useState(false);
 
-  const isOrgEmail = email.toLowerCase().endsWith('@omuto.org');
+  const isOrgEmailAddr = isOrgEmail(email);
 
   useEffect(() => {
     if (user && !isUserLoading) {
@@ -187,7 +189,21 @@ export default function LoginPage() {
             await signInWithEmail(auth, email, password);
             toast({ title: 'Welcome Back!', description: 'Redirecting to your dashboard...' });
         } else {
-            await signUpWithEmail(auth, email, password, accessCode, fullName, selectedRole);
+            // Validate access code server-side before creating the account
+            let validated = isOrgEmailAddr;
+            if (!isOrgEmailAddr) {
+                const result = await validateAccessCodeAction(accessCode, 'personal');
+                if (!result.valid) {
+                    toast({ variant: 'destructive', title: 'Invalid Access Code', description: 'The access code is incorrect. Please contact your Omuto team coordinator.' });
+                    setLoading(null);
+                    return;
+                }
+                validated = true;
+                setIsCodeValidated(true);
+                // Use role from server validation
+                if (result.role === 'staff') setSelectedRole('Intern'); // default staff path
+            }
+            await signUpWithEmail(auth, email, password, validated, fullName, selectedRole);
             toast({ title: 'Account Created!', description: 'Welcome to the team. Redirecting to your dashboard...' });
         }
     } catch (error: any) {
@@ -201,8 +217,18 @@ export default function LoginPage() {
     if (!auth) return;
     setLoading('google');
     try {
-        await initiateGoogleSignIn(auth, accessCode);
-         // On success, the useEffect hook will handle the redirect.
+        // For Google sign-in on sign-up tab, validate access code first
+        let validated = true; // existing users signing in are always valid
+        if (activeTab === 'signup' && !isOrgEmailAddr) {
+            const result = await validateAccessCodeAction(accessCode, 'personal');
+            if (!result.valid) {
+                toast({ variant: 'destructive', title: 'Invalid Access Code', description: 'The access code is incorrect. Please contact your Omuto team coordinator.' });
+                setLoading(null);
+                return;
+            }
+            validated = true;
+        }
+        await initiateGoogleSignIn(auth, validated);
     } catch (error: any) {
         handleAuthError(error);
     } finally {
@@ -228,15 +254,10 @@ export default function LoginPage() {
                     <Info className="h-4 w-4 text-primary" />
                     <AlertTitle className="text-xs font-black uppercase text-primary">First time here?</AlertTitle>
                     <AlertDescription className="text-[10px] font-bold text-omuto-navy/70 leading-relaxed space-y-2">
-                        <p>If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first. </p>
+                        <p>If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first.</p>
                         <p className="bg-primary/10 p-2 rounded border border-primary/20 text-primary">
                             <strong>Note:</strong> Please use the Access Code provided by your team coordinator to complete signup.
                         </p>
-                        {email.toLowerCase().includes('diana') && (
-                            <p className="text-primary bg-primary/10 p-2 rounded border border-primary/20">
-                                <strong>Tip for Dianah:</strong> Use <code className="bg-white px-1">dianah@omuto.org</code> to sign up!
-                            </p>
-                        )}
                     </AlertDescription>
                 </Alert>
 
@@ -336,6 +357,9 @@ export default function LoginPage() {
                                                     value={accessCode} 
                                                     onChange={(e) => setAccessCode(e.target.value)} 
                                                 />
+                                                <p className="text-[10px] text-muted-foreground font-semibold">
+                                                    Don't have a code? Contact your Omuto team coordinator for access.
+                                                </p>
                                             </div>
                                         </>
                                     )}
@@ -344,7 +368,7 @@ export default function LoginPage() {
 
                             <Button type="submit" className="w-full h-14 btn-omuto shadow-comic-md hover:shadow-comic-sm bg-primary text-white border-white mt-4" disabled={!!loading}>
                                 {loading === 'email' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                                {activeTab === 'login' ? 'Access Dashboard' : (isOrgEmail ? 'Create Staff Account' : 'Create Volunteer Account')}
+                                {activeTab === 'login' ? 'Access Dashboard' : (isOrgEmailAddr ? 'Create Staff Account' : 'Create Volunteer Account')}
                             </Button>
                         </form>
                     </div>

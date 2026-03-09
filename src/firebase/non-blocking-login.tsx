@@ -15,41 +15,24 @@ import {
   setDoc,
   writeBatch,
   collection,
-  getDocs,
-  query,
-  limit,
   Firestore,
   serverTimestamp,
   getDoc,
 } from 'firebase/firestore';
 
-// This maps specific emails to roles and names within the Omuto organization.
-const approvedUsers: Record<string, { name: string; role: string, supervisorId?: string }> = {
+/**
+ * Maps organizational emails to a name and role within Omuto Foundation.
+ * For new staff: add their email here and redeploy.
+ * Long-term: migrate this to a Firestore `approved-emails` collection.
+ */
+const approvedUsers: Record<string, { name: string; role: string; supervisorId?: string }> = {
   'mcmike@omuto.org': { name: 'McMike Mutumba', role: 'Executive Director' },
-  'dianah@omuto.org': {
-    name: 'Dianah Nansikombi',
-    role: 'Programs & Partnerships Manager',
-  },
-  'programs@omuto.org': {
-    name: 'Dianah Nansikombi',
-    role: 'Programs & Partnerships Manager',
-  },
-  'operations@omuto.org': {
-    name: 'Kasirye Constantine',
-    role: 'Operations & Field Manager',
-  },
-  'kasiryeconstantine@gmail.com': {
-    name: 'Kasirye Constantine',
-    role: 'Operations & Field Manager',
-  },
-  'communications@omuto.org': {
-    name: 'Nsereko Alex',
-    role: 'Media & Finance Lead',
-  },
-  'partnerships@omuto.org': {
-    name: 'John Paul Akera',
-    role: 'Resource Mobilization Lead',
-  },
+  'dianah@omuto.org': { name: 'Dianah Nansikombi', role: 'Programs & Partnerships Manager' },
+  'programs@omuto.org': { name: 'Dianah Nansikombi', role: 'Programs & Partnerships Manager' },
+  'operations@omuto.org': { name: 'Kasirye Constantine', role: 'Operations & Field Manager' },
+  'kasiryeconstantine@gmail.com': { name: 'Kasirye Constantine', role: 'Operations & Field Manager' },
+  'communications@omuto.org': { name: 'Nsereko Alex', role: 'Media & Finance Lead' },
+  'partnerships@omuto.org': { name: 'John Paul Akera', role: 'Resource Mobilization Lead' },
   'essentials.manager@omuto.org': { name: 'Essentials Manager', role: 'Essentials Manager', supervisorId: 'operations@omuto.org' },
   'yc.manager@omuto.org': { name: 'Youth Center Manager', role: 'Youth Center Manager', supervisorId: 'operations@omuto.org' },
   'finance@omuto.org': { name: 'Finance Admin', role: 'Accountant/Finance', supervisorId: 'mcmike@omuto.org' },
@@ -58,57 +41,50 @@ const approvedUsers: Record<string, { name: string; role: string, supervisorId?:
   'info@omuto.org': { name: 'Omuto Admin', role: 'Administrator' },
 };
 
-export const isEmailApproved = (email: string | null): boolean => {
+/** Returns true if the email belongs to a known org staff member. */
+export const isOrgEmail = (email: string | null): boolean => {
   if (!email) return false;
-  const lowercasedEmail = email.toLowerCase();
-  
-  // Explicitly approved organizational emails
-  if (Object.keys(approvedUsers).some(key => key.toLowerCase() === lowercasedEmail)) {
-    return true;
-  }
-
-  // Any other email is "approved" as they are signing up as volunteers or interns
-  return true; 
+  const lower = email.toLowerCase();
+  return Object.keys(approvedUsers).some((key) => key.toLowerCase() === lower);
 };
 
 async function seedUserTasks(db: Firestore, userId: string, role: string) {
   const userTasksCollection = collection(db, 'users', userId, 'tasks');
-  let initialTasks = [
+  const initialTasks = [
     { title: 'Update your profile picture', completed: false, createdAt: serverTimestamp() },
   ];
 
   if (role === 'Intern' || role === 'Volunteer') {
-      initialTasks.push(
-          { title: "Read the Intern & Volunteer Guide in the 'Help' section", completed: false, createdAt: serverTimestamp() },
-          { title: "Ask the AI Coach: 'What are the main programs at Omuto?'", completed: false, createdAt: serverTimestamp() },
-          { title: "Schedule a 15-min intro meeting with your supervisor", completed: false, createdAt: serverTimestamp() }
-      );
+    initialTasks.push(
+      { title: "Read the Intern & Volunteer Guide in the 'Help' section", completed: false, createdAt: serverTimestamp() },
+      { title: "Ask the AI Coach: 'What are the main programs at Omuto?'", completed: false, createdAt: serverTimestamp() },
+      { title: 'Schedule a 15-min intro meeting with your supervisor', completed: false, createdAt: serverTimestamp() }
+    );
   } else {
-       initialTasks.push(
-          { title: 'Review the November Operational Plan', completed: false, createdAt: serverTimestamp() },
-          { title: 'Explore your new dashboard and management tools', completed: false, createdAt: serverTimestamp() },
-       );
+    initialTasks.push(
+      { title: 'Review the current Operational Plan', completed: false, createdAt: serverTimestamp() },
+      { title: 'Explore your dashboard and management tools', completed: false, createdAt: serverTimestamp() }
+    );
   }
 
-  const userBatch = writeBatch(db);
+  const batch = writeBatch(db);
   initialTasks.forEach((task) => {
     const taskRef = doc(userTasksCollection);
-    userBatch.set(taskRef, task);
+    batch.set(taskRef, task);
   });
-  await userBatch.commit();
+  await batch.commit();
 }
 
 async function createUserProfile(
-  userCredential: UserCredential, 
-  db: Firestore, 
-  accessCode?: string,
+  userCredential: UserCredential,
+  db: Firestore,
+  isValidated: boolean = false,
   extraProfileData?: { name?: string; role?: string }
 ) {
   const user = userCredential.user;
   if (!user || !user.email) return userCredential;
 
   const userEmailLower = user.email.toLowerCase();
-  
   const approvedEmailKey = Object.keys(approvedUsers).find(
     (key) => key.toLowerCase() === userEmailLower
   );
@@ -118,27 +94,24 @@ async function createUserProfile(
   const isNewUser = !docSnap.exists();
 
   if (!approvedEmailKey) {
-     // If not an organizational email, they MUST be a volunteer or intern
-     if (isNewUser && accessCode !== 'Omutofoundation' && accessCode !== 'Omutovolunteer') {
-        throw new Error('Personal emails require the correct Access Code to join the team.');
-     }
+    // Personal email — must have been validated via Server Action before calling this
+    if (isNewUser && !isValidated) {
+      throw new Error('Access denied. Please use the correct Access Code to complete signup.');
+    }
 
-     const finalRole = extraProfileData?.role || 'Volunteer';
-     const userProfile = {
-       id: user.uid,
-       name: extraProfileData?.name || user.displayName || 'Volunteer User',
-       email: user.email,
-       role: finalRole,
-       photoURL: user.photoURL || '',
-       createdAt: serverTimestamp(),
-       supervisorId: finalRole === 'Intern' ? 'operations@omuto.org' : 'programs@omuto.org',
-     };
-     await setDoc(userRef, userProfile, { merge: true });
-
-     if (isNewUser) {
-        await seedUserTasks(db, user.uid, finalRole);
-     }
-     return userCredential;
+    const finalRole = extraProfileData?.role || 'Volunteer';
+    const userProfile = {
+      id: user.uid,
+      name: extraProfileData?.name || user.displayName || 'Team Member',
+      email: user.email,
+      role: finalRole,
+      photoURL: user.photoURL || '',
+      createdAt: serverTimestamp(),
+      supervisorId: finalRole === 'Intern' ? 'operations@omuto.org' : 'programs@omuto.org',
+    };
+    await setDoc(userRef, userProfile, { merge: true });
+    if (isNewUser) await seedUserTasks(db, user.uid, finalRole);
+    return userCredential;
   }
 
   const userData = approvedUsers[approvedEmailKey];
@@ -151,80 +124,71 @@ async function createUserProfile(
     createdAt: serverTimestamp(),
     supervisorId: userData.supervisorId || '',
   };
-
   await setDoc(userRef, userProfile, { merge: true });
-
-  if (isNewUser) {
-    await seedUserTasks(db, user.uid, userData.role);
-  }
-
+  if (isNewUser) await seedUserTasks(db, user.uid, userData.role);
   return userCredential;
 }
 
-/** Sign in an existing user with email and password. */
+/** Sign in an existing user with email and password. The password is never echoed in error messages. */
 export async function signInWithEmail(auth: Auth, email: string, password: string): Promise<UserCredential> {
   const db = getFirestore(auth.app);
-  const isOrgEmail = email.toLowerCase().endsWith('@omuto.org');
-  const requiredPassword = isOrgEmail ? 'Omutofoundation.' : 'Omutovolunteer';
-
-  if (password !== requiredPassword) {
-    throw new Error(`Incorrect password. For ${isOrgEmail ? 'staff' : 'volunteers/interns'}, the standard password is ${requiredPassword}`);
-  }
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return await createUserProfile(userCredential, db);
-    } catch (error: any) {
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        throw new Error(`Wrong Credentials. If you haven't updated your account to the new standard password (${requiredPassword}), please use 'Forgot Password' to reset it.`);
-      }
-      throw error;
-    }
-}
-
-/** Create a new account with email and password. */
-export async function signUpWithEmail(
-  auth: Auth, 
-  email: string, 
-  password: string, 
-  accessCode?: string,
-  fullName?: string,
-  role?: string
-): Promise<UserCredential> {
-  const db = getFirestore(auth.app);
-  
-  const isOrgEmail = email.toLowerCase().endsWith('@omuto.org');
-  const requiredPassword = isOrgEmail ? 'Omutofoundation.' : 'Omutovolunteer';
-
-  if (password !== requiredPassword) {
-    throw new Error(`To sign up, you must use the ${isOrgEmail ? 'Staff' : 'Volunteer/Intern'} standard password: ${requiredPassword}`);
-  }
-
-  if (!isOrgEmail && accessCode !== 'Omutovolunteer' && accessCode !== 'Omutofoundation') {
-    throw new Error('Personal emails require the correct Access Code to sign up.');
-  }
-
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return await createUserProfile(userCredential, db, accessCode, { name: fullName, role });
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return await createUserProfile(userCredential, db, true);
   } catch (error: any) {
+    if (
+      error.code === 'auth/wrong-password' ||
+      error.code === 'auth/invalid-credential' ||
+      error.code === 'auth/invalid-email'
+    ) {
+      throw new Error('Incorrect email or password. Please check your credentials or contact your team coordinator.');
+    }
+    if (error.code === 'auth/user-not-found') {
+      throw new Error('No account found for this email. Please use the Sign Up tab to create your access.');
+    }
     throw error;
   }
 }
 
-/** Initiate Google sign-in and create user profile. */
-export function initiateGoogleSignIn(authInstance: Auth, accessCode?: string) {
+/** Create a new account. The access code must have been validated server-side before calling this. */
+export async function signUpWithEmail(
+  auth: Auth,
+  email: string,
+  password: string,
+  isValidated: boolean = false,
+  fullName?: string,
+  role?: string
+): Promise<UserCredential> {
+  const db = getFirestore(auth.app);
+
+  if (!isValidated && !isOrgEmail(email)) {
+    throw new Error('Your Access Code is incorrect. Please contact your Omuto team coordinator.');
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    return await createUserProfile(userCredential, db, isValidated, { name: fullName, role });
+  } catch (error: any) {
+    if (error.code === 'auth/email-already-in-use') {
+      throw new Error('This email is already registered. Please use the Log In tab instead.');
+    }
+    if (error.code === 'auth/weak-password') {
+      throw new Error('Password must be at least 6 characters. Please try again.');
+    }
+    throw error;
+  }
+}
+
+/** Initiate Google sign-in and create user profile if new. */
+export function initiateGoogleSignIn(authInstance: Auth, isValidated: boolean = false) {
   const provider = new GoogleAuthProvider();
   const db = getFirestore(authInstance.app);
   return signInWithPopup(authInstance, provider)
     .then(async (userCredential) => {
-      return createUserProfile(userCredential, db, accessCode);
+      return createUserProfile(userCredential, db, isValidated);
     })
     .catch((error) => {
-      if (
-        error.code === 'auth/popup-closed-by-user' ||
-        error.message.includes('not authorized')
-      ) {
+      if (error.code === 'auth/popup-closed-by-user') {
         authInstance.signOut();
       }
       throw error;

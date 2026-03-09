@@ -1,0 +1,22 @@
+{
+  "name": "omuto-functions",
+  "description": "Omuto Central Cloud Functions",
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": { "node": "20" },
+  "main": "lib/index.js",
+  "dependencies": {
+    "date-fns": "^3.6.0",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.9.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  },
+  "private": true
+}

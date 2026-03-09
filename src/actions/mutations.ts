@@ -107,62 +107,86 @@ export async function findGrantsAction(input: GrantFinderInput): Promise<GrantFi
     };
 }
 
-// ─── Smart Reminders (replaces AI flow → deterministic rule engine) ───
+// ─── Smart Reminders (deterministic rule engine — data-aware) ───
 
 export async function generateSmartRemindersAction(input: SmartRemindersInput): Promise<SmartRemindersOutput> {
     try {
         const { firestore } = getFirebaseAdmin();
         const { userId, userName, userRole } = input;
 
-        // 1. Get upcoming events (next 7 days)
         const today = new Date();
+        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
         const sevenDaysFromNow = new Date();
         sevenDaysFromNow.setDate(today.getDate() + 7);
+        const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
+        const reminders: string[] = [];
+
+        // 1. Check if user has checked in today
+        const checkinSnapshot = await firestore.collection('checkins')
+            .where('userId', '==', userId)
+            .where('timestamp', '>=', Timestamp.fromDate(todayStart))
+            .limit(1)
+            .get();
+        if (checkinSnapshot.empty) {
+            reminders.push(`⚠️ You haven't checked in today. Head to Daily Planner to start your day!`);
+        } else {
+            reminders.push(`✅ Checked in! Great start, ${userName}.`);
+        }
+
+        // 2. Upcoming events (next 7 days)
         const eventsSnapshot = await firestore.collection('events')
             .where('date', '>=', Timestamp.fromDate(today))
             .where('date', '<=', Timestamp.fromDate(sevenDaysFromNow))
             .orderBy('date', 'asc')
+            .limit(2)
             .get();
-
-        // 2. Get pending tasks (top 5)
-        const tasksSnapshot = await firestore.collection('users').doc(userId).collection('tasks')
-            .where('completed', '==', false)
-            .orderBy('createdAt', 'desc')
-            .limit(5)
-            .get();
-
-        const reminders: string[] = [];
-
-        // Process Events
         if (!eventsSnapshot.empty) {
-            eventsSnapshot.docs.slice(0, 2).forEach(doc => {
+            eventsSnapshot.docs.forEach(doc => {
                 const ev = doc.data();
                 const dateStr = format(ev.date.toDate(), 'eeee, MMM d');
                 reminders.push(`📅 Upcoming: "${ev.title}" on ${dateStr}.`);
             });
         }
 
-        // Process Tasks
+        // 3. Pending tasks
+        const tasksSnapshot = await firestore.collection('users').doc(userId).collection('tasks')
+            .where('completed', '==', false)
+            .orderBy('createdAt', 'desc')
+            .limit(5)
+            .get();
         if (!tasksSnapshot.empty) {
             const count = tasksSnapshot.size;
             const topTask = tasksSnapshot.docs[0].data().title;
-            reminders.push(`📝 You have ${count} pending tasks. Top priority: "${topTask}".`);
+            reminders.push(`📝 You have ${count} pending task${count > 1 ? 's' : ''}. Top priority: "${topTask}".`);
         } else {
-            reminders.push(`✅ All caught up on tasks! Great job, ${userName}.`);
+            reminders.push(`🎉 All tasks complete! Great discipline, ${userName}.`);
         }
 
-        // Strategic Alignment (Role-based)
+        // 4. Monthly expense submission check (for staff roles)
+        const isStaff = !['Intern', 'Volunteer'].includes(userRole);
+        if (isStaff) {
+            const expensesSnapshot = await firestore.collection('expenses')
+                .where('userId', '==', userId)
+                .where('timestamp', '>=', Timestamp.fromDate(firstOfMonth))
+                .limit(1)
+                .get();
+            if (expensesSnapshot.empty) {
+                reminders.push(`💰 No expense report submitted this month. Don't forget to log your expenses!`);
+            }
+        }
+
+        // 5. Strategic Alignment (Role-based KPI nudge)
         const kpis = roleKpis[userRole] || [];
         if (kpis.length > 0) {
             const randomKpi = kpis[Math.floor(Math.random() * kpis.length)];
-            reminders.push(`💡 Strategic Alignment: ${randomKpi.title} - ${randomKpi.description}`);
+            reminders.push(`💡 Today's Focus: ${randomKpi.title} — ${randomKpi.description}`);
         }
 
         return { reminders };
     } catch (error) {
         console.error('Server Action Error - generateSmartRemindersAction:', error);
-        return { reminders: ["Could not load reminders at this time. Please check your connection."] };
+        return { reminders: ['Could not load reminders at this time. Please check your connection.'] };
     }
 }
 
