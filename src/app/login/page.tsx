@@ -230,7 +230,7 @@ export default function LoginPage() {
                     <AlertDescription className="text-[10px] font-bold text-omuto-navy/70 leading-relaxed space-y-2">
                         <p>If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first. </p>
                         <p className="bg-primary/10 p-2 rounded border border-primary/20 text-primary">
-                            <strong>Note:</strong> Staff use <code className="bg-white px-1">Omutofoundation.</code> while Volunteers & Interns use <code className="bg-white px-1">Omutovolunteer</code>.
+                            <strong>Note:</strong> Please use the Access Code provided by your team coordinator to complete signup.
                         </p>
                         {email.toLowerCase().includes('diana') && (
                             <p className="text-primary bg-primary/10 p-2 rounded border border-primary/20">
@@ -330,7 +330,7 @@ export default function LoginPage() {
                                                 <Input 
                                                     id="accessCode" 
                                                     type="password" 
-                                                    placeholder="Omutovolunteer"
+                                                    placeholder="Enter your access code"
                                                     required 
                                                     className="h-12 border-lg border-primary/30 rounded-xl focus-visible:ring-primary"
                                                     value={accessCode} 
