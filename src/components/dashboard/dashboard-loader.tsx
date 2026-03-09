@@ -17,8 +17,9 @@ const AdminDashboard = dynamic(() => import('./admin-dashboard').then(mod => mod
 const ExecutiveDashboard = dynamic(() => import('./executive-dashboard').then(mod => mod.ExecutiveDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
 const ProgramManagerDashboard = dynamic(() => import('./program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
 const FieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
-const InternVolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
 const MediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
+const InternDashboard = dynamic(() => import('./intern-dashboard').then(mod => mod.InternDashboard), { loading: () => <DashboardSkeleton />, ssr: false }) as React.ComponentType<{ profile: UserProfileType }>;
+const VolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardSkeleton />, ssr: false }) as React.ComponentType<{ profile: UserProfileType }>;
 
 const dashboardMap: Record<string, React.ComponentType<{ profile: UserProfileType }>> = {
   'Administrator': AdminDashboard,
@@ -28,8 +29,8 @@ const dashboardMap: Record<string, React.ComponentType<{ profile: UserProfileTyp
   'Media & Finance Lead': MediaFinanceDashboard,
   'Media & Communications Lead': MediaFinanceDashboard,
   'Field Coordinator': FieldStaffDashboard,
-  'Intern': InternVolunteerDashboard,
-  'Volunteer': InternVolunteerDashboard,
+  'Intern': InternDashboard,
+  'Volunteer': VolunteerDashboard,
 };
 
 export function DashboardLoader() {

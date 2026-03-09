@@ -53,7 +53,14 @@ export function TeamDeployment() {
   const teamStatus = useMemo(() => {
     if (!users.data || !checkins.data || !currentTime) return null;
 
-    const uniqueUsers = Array.from(new Map(users.data.map((u) => [u.id, u])).values());
+    const uniqueGroups = Array.from(
+      users.data.reduce((map, u) => {
+        const key = `${u.name}|${u.role}`.toLowerCase();
+        if (!map.has(key)) map.set(key, u);
+        return map;
+      }, new Map<string, User>()).values()
+    );
+
     const byUserCheckins = new Map<string, Checkin[]>();
     const byUserCheckouts = new Map<string, Checkout[]>();
 
@@ -69,9 +76,30 @@ export function TeamDeployment() {
       byUserCheckouts.set(c.userId, list);
     });
 
-    return uniqueUsers.map((user) => {
-      const userCheckins = (byUserCheckins.get(user.id) || []).sort((a, b) => (b.timestamp?.toDate?.()?.getTime() || 0) - (a.timestamp?.toDate?.()?.getTime() || 0));
-      const userCheckouts = (byUserCheckouts.get(user.id) || []).sort((a, b) => (b.timestamp?.toDate?.()?.getTime() || 0) - (a.timestamp?.toDate?.()?.getTime() || 0));
+    // To handle multiple IDs for the same name/role, we need a map from name|role to all associated IDs
+    const groupToIds = users.data.reduce((map, u) => {
+      const key = `${u.name}|${u.role}`.toLowerCase();
+      const list = map.get(key) || [];
+      list.push(u.id);
+      map.set(key, list);
+      return map;
+    }, new Map<string, string[]>());
+
+    return uniqueGroups.map((user) => {
+      const key = `${user.name}|${user.role}`.toLowerCase();
+      const ids = groupToIds.get(key) || [user.id];
+
+      // Merge check-ins and check-outs for ALL account IDs in this group
+      const allUserCheckins: Checkin[] = [];
+      const allUserCheckouts: Checkout[] = [];
+      
+      ids.forEach(id => {
+        allUserCheckins.push(...(byUserCheckins.get(id) || []));
+        allUserCheckouts.push(...(byUserCheckouts.get(id) || []));
+      });
+
+      const userCheckins = allUserCheckins.sort((a, b) => (b.timestamp?.toDate?.()?.getTime() || 0) - (a.timestamp?.toDate?.()?.getTime() || 0));
+      const userCheckouts = allUserCheckouts.sort((a, b) => (b.timestamp?.toDate?.()?.getTime() || 0) - (a.timestamp?.toDate?.()?.getTime() || 0));
 
       const latestCheckin = userCheckins[0];
       const latestCheckout = userCheckouts[0];

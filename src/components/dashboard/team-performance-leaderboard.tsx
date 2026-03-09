@@ -32,6 +32,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
   }, [firestore, thirtyDaysAgo]);
 
   const activities = useCollection<Activity>(queries?.activities);
+  const checkins = useCollection<Checkin>(queries?.checkins);
   const checkouts = useCollection<Checkout>(queries?.checkouts);
   const expenses = useCollection<Expense>(queries?.expenses);
   const testimonies = useCollection<Testimony>(queries?.testimonies);

@@ -119,6 +119,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [accessCode, setAccessCode] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'Volunteer' | 'Intern'>('Volunteer');
   const [loading, setLoading] = useState<'google' | 'email' | null>(null);
 
   const isOrgEmail = email.toLowerCase().endsWith('@omuto.org');
@@ -185,7 +187,7 @@ export default function LoginPage() {
             await signInWithEmail(auth, email, password);
             toast({ title: 'Welcome Back!', description: 'Redirecting to your dashboard...' });
         } else {
-            await signUpWithEmail(auth, email, password, accessCode);
+            await signUpWithEmail(auth, email, password, accessCode, fullName, selectedRole);
             toast({ title: 'Account Created!', description: 'Welcome to the team. Redirecting to your dashboard...' });
         }
     } catch (error: any) {
@@ -226,10 +228,13 @@ export default function LoginPage() {
                     <Info className="h-4 w-4 text-primary" />
                     <AlertTitle className="text-xs font-black uppercase text-primary">First time here?</AlertTitle>
                     <AlertDescription className="text-[10px] font-bold text-omuto-navy/70 leading-relaxed space-y-2">
-                        <p>If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first to set your standard access password.</p>
+                        <p>If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first. </p>
+                        <p className="bg-primary/10 p-2 rounded border border-primary/20 text-primary">
+                            <strong>Note:</strong> Staff use <code className="bg-white px-1">Omutofoundation.</code> while Volunteers & Interns use <code className="bg-white px-1">Omutovolunteer</code>.
+                        </p>
                         {email.toLowerCase().includes('diana') && (
                             <p className="text-primary bg-primary/10 p-2 rounded border border-primary/20">
-                                <strong>Tip for Dianah:</strong> You can now also use <code className="bg-white px-1">dianah@omuto.org</code> to sign up!
+                                <strong>Tip for Dianah:</strong> Use <code className="bg-white px-1">dianah@omuto.org</code> to sign up!
                             </p>
                         )}
                     </AlertDescription>
@@ -282,19 +287,58 @@ export default function LoginPage() {
                                 />
                             </div>
 
-                            {activeTab === 'signup' && !isOrgEmail && (
-                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <Label htmlFor="accessCode" className="text-xs font-black uppercase tracking-widest text-primary">Volunteer Access Code</Label>
-                                    <Input 
-                                        id="accessCode" 
-                                        type="password" 
-                                        placeholder="Required for personal emails"
-                                        required 
-                                        className="h-12 border-lg border-primary/30 rounded-xl focus-visible:ring-primary"
-                                        value={accessCode} 
-                                        onChange={(e) => setAccessCode(e.target.value)} 
-                                    />
-                                    <p className="text-[10px] font-bold text-muted-foreground italic">Use the foundation's shared code to join as a volunteer.</p>
+                            {activeTab === 'signup' && (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="fullName" className="text-xs font-black uppercase tracking-widest text-omuto-navy/70">Full Name</Label>
+                                        <Input 
+                                            id="fullName" 
+                                            placeholder="Your Real Name"
+                                            required 
+                                            className="h-12 border-lg rounded-xl"
+                                            value={fullName} 
+                                            onChange={(e) => setFullName(e.target.value)} 
+                                        />
+                                    </div>
+                                    
+                                    {!isOrgEmail && (
+                                        <>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/70">Join as...</Label>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Button 
+                                                        type="button"
+                                                        variant={selectedRole === 'Volunteer' ? 'default' : 'outline'}
+                                                        className="h-10 rounded-lg text-[10px] font-black uppercase tracking-widest"
+                                                        onClick={() => setSelectedRole('Volunteer')}
+                                                    >
+                                                        Volunteer
+                                                    </Button>
+                                                    <Button 
+                                                        type="button"
+                                                        variant={selectedRole === 'Intern' ? 'default' : 'outline'}
+                                                        className="h-10 rounded-lg text-[10px] font-black uppercase tracking-widest"
+                                                        onClick={() => setSelectedRole('Intern')}
+                                                    >
+                                                        Intern
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="accessCode" className="text-xs font-black uppercase tracking-widest text-primary font-bold">Access Code</Label>
+                                                <Input 
+                                                    id="accessCode" 
+                                                    type="password" 
+                                                    placeholder="Omutovolunteer"
+                                                    required 
+                                                    className="h-12 border-lg border-primary/30 rounded-xl focus-visible:ring-primary"
+                                                    value={accessCode} 
+                                                    onChange={(e) => setAccessCode(e.target.value)} 
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             )}
 
