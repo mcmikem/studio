@@ -118,7 +118,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
           <Label htmlFor="description">Description</Label>
           <Textarea id="description" {...register('description')} />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2"><Label htmlFor="sku">SKU</Label><Input id="sku" {...register('sku')} /></div>
           <div className="space-y-2"><Label htmlFor="unit">Unit</Label><Input id="unit" {...register('unit')} placeholder="e.g., piece, kg, liter" /></div>
       </div>
@@ -126,7 +126,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       {productType === 'finished' ? (
         <div className="space-y-4 p-4 border rounded-md bg-muted/50">
             <h4 className="font-semibold text-sm">Finished Good Details</h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Default Selling Price</Label><Input type="number" {...register('default_selling_price')} /></div>
                 <div className="space-y-2"><Label>Quantity on Hand</Label><Input type="number" {...register('quantity_on_hand')} /></div>
             </div>
@@ -135,7 +135,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       ) : (
         <div className="space-y-4 p-4 border rounded-md bg-muted/50">
             <h4 className="font-semibold text-sm">Raw Material/Packaging Details</h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2"><Label>Cost per Unit</Label><Input type="number" {...register('cost_per_unit')} /></div>
                 <div className="space-y-2"><Label>Current Stock Quantity</Label><Input type="number" {...register('current_stock_quantity')} /></div>
             </div>

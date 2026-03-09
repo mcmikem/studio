@@ -90,9 +90,11 @@ export const omutoAIFlow = ai.defineFlow(
         console.log('omutoAIFlow completed successfully.');
         return { answer };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error executing omutoAIFlow:', error);
-        return { answer: "An unexpected error occurred. I've logged the issue for the technical team to review." };
+        // Log the full error object for better debugging
+        if (error.stack) console.error(error.stack);
+        return { answer: `An unexpected error occurred: ${error.message || 'Unknown error'}. I've logged the issue for the technical team to review.` };
     }
   }
 );

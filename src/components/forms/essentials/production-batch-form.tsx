@@ -152,7 +152,7 @@ export function ProductionBatchForm() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8 pt-8">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                   <Label htmlFor="batch_number" className="font-bold text-xs uppercase tracking-widest">Batch Number</Label>
                   <div className="flex gap-2">
@@ -170,7 +170,7 @@ export function ProductionBatchForm() {
               </div>
             </div>
 
-             <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-dashed">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-dashed">
                <div className="space-y-2">
                  <Label className="font-bold text-xs uppercase tracking-widest">Finished Product</Label>
                  {isLoadingProducts ? <Skeleton className="h-12 rounded-xl" /> : (

@@ -58,8 +58,20 @@ export function OFATeamRegistrationForm({ team, onSuccess }: { team?: OFATeam | 
   const { toast } = useToast();
 
   const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<TeamFormData>({
-    resolver: zodResolver(teamSchema),
+    resolver: zodResolver(teamSchema.omit({ id: true })),
   });
+
+  // Effect to show validation errors to the user
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.warn("Form validation errors:", errors);
+      toast({
+        variant: 'destructive',
+        title: 'Validation Error',
+        description: 'Please check the form for missing or invalid fields.',
+      });
+    }
+  }, [errors, toast]);
 
   useEffect(() => {
     if (!team) return;

@@ -246,7 +246,7 @@ export default function ChatPage() {
           
           <div className="p-4 border-t space-y-4 bg-background">
             
-            <div className='flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar'>
+            <div className='flex flex-wrap items-center gap-2'>
                  <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={() => handleQuickAction('Plan my day')}>
                     <CalendarCheck className="h-4 w-4 mr-2" /> Plan My Day
                 </Button>

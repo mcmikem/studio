@@ -106,7 +106,7 @@ export function StockAdjustmentForm() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8 pt-8">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Select Item</Label>
                     {isLoadingProducts ? <Skeleton className="h-12 rounded-xl" /> : (
@@ -135,7 +135,7 @@ export function StockAdjustmentForm() {
                 </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 pt-4 border-t border-dashed">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-dashed">
                 <div className="space-y-2">
                     <Label className="font-bold text-xs uppercase tracking-widest">Quantity</Label>
                     <Input type="number" step="0.01" {...register('quantity', { valueAsNumber: true })} className="border-lg rounded-xl h-12 font-bold text-lg text-destructive" />
