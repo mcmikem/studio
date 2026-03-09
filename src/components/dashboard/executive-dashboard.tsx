@@ -7,6 +7,7 @@ import { QuickStatsSummary } from "./quick-stats-summary"
 import { DashboardHeader } from "./dashboard-header"
 import type { DashboardProps } from "./dashboard-loader"
 import { Skeleton } from "../ui/skeleton";
+import { RoleMissionCard } from "./role-mission-card";
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const ApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
@@ -35,9 +36,10 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                    <TeamPerformanceLeaderboard />
               </div>
           </DashboardGrid>
-           <DashboardGrid>
-                <KeyResultsTracker />
-           </DashboardGrid>
+            <DashboardGrid>
+                 <KeyResultsTracker />
+            </DashboardGrid>
+            <RoleMissionCard profile={profile} />
       </div>
     )
 }

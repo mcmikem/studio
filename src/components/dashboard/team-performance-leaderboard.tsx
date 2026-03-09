@@ -25,7 +25,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
       activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc')),
       checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')),
       checkouts: query(collection(firestore, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')),
-      expenses: query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')),
+      expenses: query(collection(firestore, 'expenses'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc')),
       testimonies: query(collection(firestore, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc')),
       users: query(collection(firestore, 'users'), orderBy('name')),
     };

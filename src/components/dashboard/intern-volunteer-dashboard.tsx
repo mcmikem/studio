@@ -10,6 +10,7 @@ import { SupervisorCard } from './supervisor-card';
 import { DashboardHeader } from './dashboard-header';
 import { SmartReminders } from './smart-reminders';
 import { MyTasksSummary } from './my-tasks-summary';
+import { RoleMissionCard } from './role-mission-card';
 import type { DashboardProps } from './dashboard-loader';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
@@ -54,7 +55,8 @@ export function InternVolunteerDashboard({ profile }: DashboardProps) {
             <MyTasksSummary />
             <FirstQuestCard />
          </div>
-    </DashboardGrid>
+        </DashboardGrid>
+        <RoleMissionCard profile={profile} />
     </div>
   );
 }

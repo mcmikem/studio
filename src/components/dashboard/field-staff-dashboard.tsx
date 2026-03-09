@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import type { DashboardProps } from './dashboard-loader';
 import { Skeleton } from '../ui/skeleton';
 import { DashboardHeader } from "./dashboard-header"
+import { RoleMissionCard } from "./role-mission-card"
 
 const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan').then(mod => mod.MyWeeklyPlan), {
   loading: () => <Skeleton className="h-64" />,
@@ -40,6 +41,7 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
                 <TeamPerformanceLeaderboard />
             </div>
         </DashboardGrid>
+        <RoleMissionCard profile={profile} />
     </div>
   );
 }

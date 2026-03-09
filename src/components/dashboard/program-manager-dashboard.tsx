@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import type { DashboardProps } from "./dashboard-loader"
 import { Skeleton } from '../ui/skeleton';
 import { DashboardHeader } from "./dashboard-header"
+import { RoleMissionCard } from "./role-mission-card"
 
 const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), {
   loading: () => <Skeleton className="h-64" />,
@@ -49,6 +50,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
                 <TeamDeployment />
             </div>
         </DashboardGrid>
+        <RoleMissionCard profile={profile} />
     </div>
   );
 }

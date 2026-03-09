@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic'
 import type { DashboardProps } from "./dashboard-loader"
 import { Skeleton } from "../ui/skeleton";
 import { DashboardHeader } from "./dashboard-header"
+import { RoleMissionCard } from "./role-mission-card"
 
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const DashboardCalendar = dynamic(() => import('@/components/dashboard/dashboard-calendar').then(mod => mod.DashboardCalendar), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
@@ -31,6 +32,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
                 <ManagementQuickLinks />
             </div>
         </DashboardGrid>
+        <RoleMissionCard profile={profile} />
     </div>
   )
 }

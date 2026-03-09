@@ -150,6 +150,34 @@ export default function TeamPerformancePage() {
               ))}
             </CardContent>
           </Card>
+
+          <Card className="border-lg shadow-comic-sm bg-omuto-blue/5">
+            <CardHeader>
+              <CardTitle className="text-sm font-black uppercase text-omuto-navy">How are Points Calculated?</CardTitle>
+              <CardDescription className="text-[10px] font-bold">The ranking system rewards consistency and high-impact work.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-xs font-medium text-omuto-navy/80">
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-omuto-navy/10">
+                <span>Field Activity (ROI)</span>
+                <span className="font-black text-omuto-red">80-120 pts</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-omuto-navy/10">
+                <span>Detailed Check-out</span>
+                <span className="font-black text-omuto-red">Up to 80 pts</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-omuto-navy/10">
+                <span>Success Testimony</span>
+                <span className="font-black text-omuto-red">60 pts</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded-lg border border-omuto-navy/10">
+                <span>Daily Check-in</span>
+                <span className="font-black text-omuto-red">12 pts</span>
+              </div>
+              <p className="text-[10px] italic leading-relaxed pt-2">
+                *Quality Index is based on task completion, level of detail, and showing learning/planning in your daily check-outs.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="lg:col-span-7">
