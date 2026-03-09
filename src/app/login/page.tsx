@@ -15,8 +15,9 @@ import { Separator } from '@/components/ui/separator';
 import { FirebaseError } from 'firebase/app';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { signUpWithEmail, signInWithEmail } from '@/firebase/non-blocking-login';
 
 
 const GoogleIcon = () => (
@@ -111,9 +112,17 @@ export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  
+  // Tab State
+  const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
+  
+  // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [accessCode, setAccessCode] = useState('');
   const [loading, setLoading] = useState<'google' | 'email' | null>(null);
+
+  const isOrgEmail = email.toLowerCase().endsWith('@omuto.org');
 
   useEffect(() => {
     if (user && !isUserLoading) {
@@ -173,8 +182,13 @@ export default function LoginPage() {
     if (!auth) return;
     setLoading('email');
     try {
-        await initiateEmailAuth(auth, email, password);
-        // On success, the useEffect hook will handle the redirect.
+        if (activeTab === 'login') {
+            await signInWithEmail(auth, email, password);
+            toast({ title: 'Welcome Back!', description: 'Redirecting to your dashboard...' });
+        } else {
+            await signUpWithEmail(auth, email, password, accessCode);
+            toast({ title: 'Account Created!', description: 'Welcome to the team. Redirecting to your dashboard...' });
+        }
     } catch (error: any) {
         handleAuthError(error);
     } finally {
@@ -203,47 +217,82 @@ export default function LoginPage() {
             <Image src="/logo.svg" alt="Omuto Foundation Logo" width={80} height={80} data-ai-hint="logo" />
         </div>
         
-        <Card>
-            <CardHeader>
-                <CardTitle>Welcome to Omuto Central</CardTitle>
-                <CardDescription>Enter your credentials to access your Mission Control.</CardDescription>
+        <Card className="border-lg shadow-comic-lg">
+            <CardHeader className="text-center pb-2">
+                <CardTitle className="text-2xl font-bold tracking-tight text-omuto-navy">Omuto Central</CardTitle>
+                <CardDescription className="font-bold text-omuto-navy/50">Mission Control Access</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>First Time Here?</AlertTitle>
-                    <AlertDescription>
-                        If your email is pre-approved, simply enter it with a new password to create your account and sign in.
-                    </AlertDescription>
-                </Alert>
-                <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={!!loading}>
-                    {loading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <GoogleIcon />}
-                    Continue with Google
-                </Button>
-                
-                <div className="flex items-center space-x-2">
-                    <Separator className="flex-1" />
-                    <span className="text-xs text-muted-foreground">OR</span>
-                    <Separator className="flex-1" />
-                </div>
+            <CardContent className="space-y-6">
+                <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-xl">
+                        <TabsTrigger value="login" className="rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">Log In</TabsTrigger>
+                        <TabsTrigger value="signup" className="rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">Sign Up</TabsTrigger>
+                    </TabsList>
 
-                <form onSubmit={handleAuth} className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" type="email" placeholder="m@example.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <div className="pt-6 space-y-4">
+                        <Button variant="outline" className="w-full h-12 border-lg font-bold hover:bg-muted/50" onClick={handleGoogleSignIn} disabled={!!loading}>
+                            {loading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <GoogleIcon />}
+                            {activeTab === 'login' ? 'Sign in with Google' : 'Sign up with Google'}
+                        </Button>
+                        
+                        <div className="flex items-center space-x-2">
+                            <Separator className="flex-1" />
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">OR</span>
+                            <Separator className="flex-1" />
+                        </div>
+
+                        <form onSubmit={handleAuth} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-omuto-navy/70">Email Address</Label>
+                                <Input 
+                                    id="email" 
+                                    type="email" 
+                                    placeholder="m@example.com" 
+                                    required 
+                                    className="h-12 border-lg rounded-xl"
+                                    value={email} 
+                                    onChange={(e) => setEmail(e.target.value)} 
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                    <Label htmlFor="password" name="password-label" className="text-xs font-black uppercase tracking-widest text-omuto-navy/70">Password</Label>
+                                    {activeTab === 'login' && <ForgotPasswordDialog />}
+                                </div>
+                                <Input 
+                                    id="password" 
+                                    type="password" 
+                                    required 
+                                    placeholder="••••••••"
+                                    className="h-12 border-lg rounded-xl"
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                />
+                            </div>
+
+                            {activeTab === 'signup' && !isOrgEmail && (
+                                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <Label htmlFor="accessCode" className="text-xs font-black uppercase tracking-widest text-primary">Volunteer Access Code</Label>
+                                    <Input 
+                                        id="accessCode" 
+                                        type="password" 
+                                        placeholder="Required for personal emails"
+                                        required 
+                                        className="h-12 border-lg border-primary/30 rounded-xl focus-visible:ring-primary"
+                                        value={accessCode} 
+                                        onChange={(e) => setAccessCode(e.target.value)} 
+                                    />
+                                    <p className="text-[10px] font-bold text-muted-foreground italic">Use the foundation's shared code to join as a volunteer.</p>
+                                </div>
+                            )}
+
+                            <Button type="submit" className="w-full h-14 btn-omuto shadow-comic-md hover:shadow-comic-sm bg-primary text-white border-white mt-4" disabled={!!loading}>
+                                {loading === 'email' ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                                {activeTab === 'login' ? 'Access Dashboard' : 'Create Volunteer Account'}
+                            </Button>
+                        </form>
                     </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                    </div>
-                     <div className="flex items-center justify-between text-sm">
-                        <ForgotPasswordDialog />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={loading === 'email'}>
-                        {loading === 'email' && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                        Continue with Email
-                    </Button>
-                </form>
+                </Tabs>
             </CardContent>
         </Card>
 

@@ -158,39 +158,35 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
   return userCredential;
 }
 
-/** Unified email/password auth flow. Attempts to sign in, and if user doesn't exist, creates an account. */
-export async function initiateEmailAuth(auth: Auth, email: string, password: string): Promise<UserCredential> {
+/** Sign in an existing user with email and password. */
+export async function signInWithEmail(auth: Auth, email: string, password: string): Promise<UserCredential> {
   const db = getFirestore(auth.app);
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    // If sign-in is successful, update/verify their profile.
+    // Profile is updated/verified on every sign-in to ensure roles/metadata are fresh.
     return await createUserProfile(userCredential, db);
   } catch (error: any) {
-    // If sign-in fails because the user is not found, attempt to create a new account.
-    // NOTE: 'auth/invalid-credential' can be either wrong password OR user-not-found in newer Firebase.
-    if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-      const isOrgEmail = Object.keys(approvedUsers).some(key => key.toLowerCase() === email.toLowerCase());
-      const isVolunteerPassword = password === 'Omutofoundation';
-
-      if (!isOrgEmail && !isVolunteerPassword) {
-        throw new Error('Unauthorized: Personal emails require the volunteer access code to sign up.');
-      }
-      try {
-        const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
-        return await createUserProfile(newUserCredential, db);
-      } catch (signUpError: any) {
-        // If sign-up fails because email is already in use, it means the INITIAL
-        // sign-in failure was actually a WRONG PASSWORD (not a missing user).
-        if (signUpError.code === 'auth/email-already-in-use') {
-            console.log('User exists but sign-in failed. Re-throwing initial invalid credential error.');
-            throw error; // Re-throw the original 'auth/invalid-credential' which explains it better.
-        }
-        console.error('Email sign-up error during auth flow:', signUpError);
-        throw signUpError;
-      }
-    }
-    // Re-throw other sign-in errors (e.g., wrong password)
     console.error('Email sign-in error:', error);
+    throw error;
+  }
+}
+
+/** Create a new account with email and password. */
+export async function signUpWithEmail(auth: Auth, email: string, password: string, accessCode?: string): Promise<UserCredential> {
+  const db = getFirestore(auth.app);
+  
+  const isOrgEmail = Object.keys(approvedUsers).some(key => key.toLowerCase() === email.toLowerCase());
+  const isVolunteerPassword = accessCode === 'Omutofoundation';
+
+  if (!isOrgEmail && !isVolunteerPassword) {
+    throw new Error('Personal emails require the correct Volunteer Access Code to sign up.');
+  }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    return await createUserProfile(userCredential, db);
+  } catch (error: any) {
+    console.error('Email sign-up error:', error);
     throw error;
   }
 }
