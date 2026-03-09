@@ -139,11 +139,11 @@ export default function LoginPage() {
             case 'auth/invalid-credential':
             case 'auth/wrong-password':
                 title = 'Invalid Credentials';
-                description = 'Please check your email and password. If you are signing up for the first time, make sure your email has been approved by an admin.';
+                description = 'The password you entered is incorrect. If you haven\'t created an account yet, please use the "Sign Up" tab.';
                 break;
             case 'auth/user-not-found':
                 title = 'Account Not Found';
-                description = 'This email is not registered. An account will be created if the email is on the approved list.';
+                description = 'No account was found for this email. If you are part of the team, please use the "Sign Up" tab to create your access.';
                 break;
             case 'auth/email-already-in-use':
                 title = 'Email Already in Use';
@@ -222,6 +222,14 @@ export default function LoginPage() {
                 <CardDescription className="font-bold text-omuto-navy/50">Mission Control Access</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+                <Alert className="bg-primary/5 border-primary/20">
+                    <Info className="h-4 w-4 text-primary" />
+                    <AlertTitle className="text-xs font-black uppercase text-primary">First time here?</AlertTitle>
+                    <AlertDescription className="text-[10px] font-bold text-omuto-navy/70 leading-relaxed">
+                        If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first to set your password.
+                    </AlertDescription>
+                </Alert>
+
                 <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 rounded-xl">
                         <TabsTrigger value="login" className="rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">Log In</TabsTrigger>
