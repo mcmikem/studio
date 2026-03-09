@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@/firebase';
-import { initiateEmailAuth } from '@/firebase/non-blocking-login';
-import { initiateGoogleSignIn, initiatePasswordReset } from '@/firebase/non-blocking-login';
+import { useRouter } from 'next/navigation';
+import { initiateGoogleSignIn, initiatePasswordReset, signUpWithEmail, signInWithEmail } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -17,7 +17,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { signUpWithEmail, signInWithEmail } from '@/firebase/non-blocking-login';
 
 
 const GoogleIcon = () => (
@@ -200,7 +199,7 @@ export default function LoginPage() {
     if (!auth) return;
     setLoading('google');
     try {
-        await initiateGoogleSignIn(auth);
+        await initiateGoogleSignIn(auth, accessCode);
          // On success, the useEffect hook will handle the redirect.
     } catch (error: any) {
         handleAuthError(error);
@@ -256,7 +255,7 @@ export default function LoginPage() {
                             </div>
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center">
-                                    <Label htmlFor="password" name="password-label" className="text-xs font-black uppercase tracking-widest text-omuto-navy/70">Password</Label>
+                                    <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-omuto-navy/70">Password</Label>
                                     {activeTab === 'login' && <ForgotPasswordDialog />}
                                 </div>
                                 <Input 

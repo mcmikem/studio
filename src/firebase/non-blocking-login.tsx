@@ -104,7 +104,7 @@ async function seedUserTasks(db: Firestore, userId: string, role: string) {
   console.log(`Initial tasks for ${role} seeded successfully.`);
 }
 
-async function createUserProfile(userCredential: UserCredential, db: Firestore) {
+async function createUserProfile(userCredential: UserCredential, db: Firestore, accessCode?: string) {
   const user = userCredential.user;
   if (!user || !user.email) return userCredential;
 
@@ -115,9 +115,15 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
   );
 
   if (!approvedEmailKey) {
-     // If not an organizational email, they MUST be a volunteer (verified by password in the auth flow)
-     // If we reached here, it means we are creating their profile.
+     // If not an organizational email, they MUST be a volunteer (verified by access code for new users)
      const userRef = doc(db, 'users', user.uid);
+     const docSnap = await getDoc(userRef);
+
+     // If they are new, they MUST provide the correct access code
+     if (!docSnap.exists() && accessCode !== 'Omutofoundation') {
+        throw new Error('Personal emails require the correct Volunteer Access Code to join the team.');
+     }
+
      const userProfile = {
        id: user.uid,
        name: user.displayName || 'Volunteer User',
@@ -128,7 +134,10 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
        supervisorId: 'programs@omuto.org', // Default supervisor for volunteers
      };
      await setDoc(userRef, userProfile, { merge: true });
-     await seedUserTasks(db, user.uid, 'Volunteer');
+
+     if (!docSnap.exists()) {
+        await seedUserTasks(db, user.uid, 'Volunteer');
+     }
      return userCredential;
   }
 
@@ -161,14 +170,14 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
 /** Sign in an existing user with email and password. */
 export async function signInWithEmail(auth: Auth, email: string, password: string): Promise<UserCredential> {
   const db = getFirestore(auth.app);
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    // Profile is updated/verified on every sign-in to ensure roles/metadata are fresh.
-    return await createUserProfile(userCredential, db);
-  } catch (error: any) {
-    console.error('Email sign-in error:', error);
-    throw error;
-  }
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // Profile is updated/verified on every sign-in.
+      return await createUserProfile(userCredential, db);
+    } catch (error: any) {
+      console.error('Email sign-in error:', error);
+      throw error;
+    }
 }
 
 /** Create a new account with email and password. */
@@ -176,15 +185,14 @@ export async function signUpWithEmail(auth: Auth, email: string, password: strin
   const db = getFirestore(auth.app);
   
   const isOrgEmail = Object.keys(approvedUsers).some(key => key.toLowerCase() === email.toLowerCase());
-  const isVolunteerPassword = accessCode === 'Omutofoundation';
 
-  if (!isOrgEmail && !isVolunteerPassword) {
+  if (!isOrgEmail && accessCode !== 'Omutofoundation') {
     throw new Error('Personal emails require the correct Volunteer Access Code to sign up.');
   }
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return await createUserProfile(userCredential, db);
+    return await createUserProfile(userCredential, db, accessCode);
   } catch (error: any) {
     console.error('Email sign-up error:', error);
     throw error;
@@ -192,13 +200,13 @@ export async function signUpWithEmail(auth: Auth, email: string, password: strin
 }
 
 /** Initiate Google sign-in and create user profile. */
-export function initiateGoogleSignIn(authInstance: Auth) {
+export function initiateGoogleSignIn(authInstance: Auth, accessCode?: string) {
   const provider = new GoogleAuthProvider();
   const db = getFirestore(authInstance.app);
   return signInWithPopup(authInstance, provider)
     .then(async (userCredential) => {
       // The createUserProfile function now handles authorization and creation/update.
-      return createUserProfile(userCredential, db);
+      return createUserProfile(userCredential, db, accessCode);
     })
     .catch((error) => {
       console.error('Google sign-in error:', error);
