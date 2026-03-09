@@ -62,8 +62,16 @@ const approvedUsers: Record<string, { name: string; role: string, supervisorId?:
 export const isEmailApproved = (email: string | null): boolean => {
   if (!email) return false;
   const lowercasedEmail = email.toLowerCase();
+  
+  // Explicitly approved organizational emails
   const approvedEmailKeys = Object.keys(approvedUsers);
-  return approvedEmailKeys.some(key => key.toLowerCase() === lowercasedEmail);
+  if (approvedEmailKeys.some(key => key.toLowerCase() === lowercasedEmail)) {
+    return true;
+  }
+
+  // Any other email is "approved" only if they are signing up as a volunteer 
+  // (this logic is handled in the auth flow by checking the password)
+  return true; 
 };
 
 
@@ -107,8 +115,21 @@ async function createUserProfile(userCredential: UserCredential, db: Firestore) 
   );
 
   if (!approvedEmailKey) {
-     await user.delete();
-     throw new Error('This email address is not authorized to use this application.');
+     // If not an organizational email, they MUST be a volunteer (verified by password in the auth flow)
+     // If we reached here, it means we are creating their profile.
+     const userRef = doc(db, 'users', user.uid);
+     const userProfile = {
+       id: user.uid,
+       name: user.displayName || 'Volunteer User',
+       email: user.email,
+       role: 'Volunteer',
+       photoURL: user.photoURL || '',
+       createdAt: serverTimestamp(),
+       supervisorId: 'programs@omuto.org', // Default supervisor for volunteers
+     };
+     await setDoc(userRef, userProfile, { merge: true });
+     await seedUserTasks(db, user.uid, 'Volunteer');
+     return userCredential;
   }
 
   const userRef = doc(db, 'users', user.uid);
@@ -146,15 +167,24 @@ export async function initiateEmailAuth(auth: Auth, email: string, password: str
     return await createUserProfile(userCredential, db);
   } catch (error: any) {
     // If sign-in fails because the user is not found, attempt to create a new account.
+    // NOTE: 'auth/invalid-credential' can be either wrong password OR user-not-found in newer Firebase.
     if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-      if (!isEmailApproved(email)) {
-        throw new Error('This email address is not authorized to sign up.');
+      const isOrgEmail = Object.keys(approvedUsers).some(key => key.toLowerCase() === email.toLowerCase());
+      const isVolunteerPassword = password === 'Omutofoundation';
+
+      if (!isOrgEmail && !isVolunteerPassword) {
+        throw new Error('Unauthorized: Personal emails require the volunteer access code to sign up.');
       }
       try {
         const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
         return await createUserProfile(newUserCredential, db);
       } catch (signUpError: any) {
-        // This will catch errors during the sign-up attempt (e.g., weak password)
+        // If sign-up fails because email is already in use, it means the INITIAL
+        // sign-in failure was actually a WRONG PASSWORD (not a missing user).
+        if (signUpError.code === 'auth/email-already-in-use') {
+            console.log('User exists but sign-in failed. Re-throwing initial invalid credential error.');
+            throw error; // Re-throw the original 'auth/invalid-credential' which explains it better.
+        }
         console.error('Email sign-up error during auth flow:', signUpError);
         throw signUpError;
       }
