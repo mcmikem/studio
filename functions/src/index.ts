@@ -221,3 +221,71 @@ export const onboardingNudge = functions.firestore
 
     console.log(`[onboardingNudge] Alert sent for new user: ${name}`);
   });
+
+// ──────────────────────────────────────────────────────────────────
+// 6. Push Notifications (Triggered on new alert creation)
+// ──────────────────────────────────────────────────────────────────
+export const onAlertCreated = functions.firestore
+  .document('alerts/{alertId}')
+  .onCreate(async (snap) => {
+    const alert = snap.data();
+    if (!alert.targetUserIds || !Array.isArray(alert.targetUserIds) || alert.targetUserIds.length === 0) {
+        console.log('[onAlertCreated] No target users specified for this alert.');
+        return;
+    }
+
+    const targetUserIds = alert.targetUserIds;
+    
+    // Fetch user documents to get FCM tokens
+    const usersSnapshot = await db.collection('users')
+      .where(admin.firestore.FieldPath.documentId(), 'in', targetUserIds)
+      .get();
+
+    const tokens: string[] = [];
+    usersSnapshot.forEach(doc => {
+      const userData = doc.data();
+      if (userData.fcmToken) {
+        tokens.push(userData.fcmToken);
+      }
+    });
+
+    if (tokens.length === 0) {
+      console.log('[onAlertCreated] No FCM tokens found for target users.');
+      return;
+    }
+
+    const message: admin.messaging.MulticastMessage = {
+      tokens,
+      notification: {
+        title: alert.type === 'Urgent' ? '🚨 URGENT: Omuto Central' : '🔔 Omuto Notification',
+        body: alert.message,
+      },
+      webpush: {
+        fcmOptions: {
+            link: alert.action || '/',
+        },
+        notification: {
+            icon: 'https://omuto-central.web.app/icon-192x192.png' // Use public app icon if available
+        }
+      },
+      // Data payload for potential in-app handling
+      data: {
+        alertId: snap.id,
+        action: alert.action || '/',
+      }
+    };
+
+    try {
+      const response = await admin.messaging().sendEachForMulticast(message);
+      console.log(`[onAlertCreated] Successfully sent ${response.successCount} push notifications.`);
+      if (response.failureCount > 0) {
+        console.warn(`[onAlertCreated] Failed to send ${response.failureCount} notifications.`);
+      }
+      
+      // NOTE: WhatsApp/SMS integration would be triggered here if Twilio/Meta API was configured.
+      // Example: await sendWhatsAppMessage(phones, alert.message);
+      
+    } catch (error) {
+      console.error('[onAlertCreated] FCM Error:', error);
+    }
+  });

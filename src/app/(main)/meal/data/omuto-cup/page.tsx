@@ -45,17 +45,39 @@ export default function OmutoCupDataPage() {
             <CardTitle>Registered Volunteers</CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
-            <Table>
-                <TableHeader><TableRow><TableHead>Name</TableHead><TableHead>Role</TableHead><TableHead>Contact</TableHead></TableRow></TableHeader>
-                <TableBody>
-                    {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={3}><Skeleton className="h-8"/></TableCell></TableRow>)}
-                    {data?.map(v => <TableRow key={v.id}>
-                        <TableCell>{v.name}</TableCell>
-                        <TableCell>{v.role}</TableCell>
-                        <TableCell>{v.contact}</TableCell>
-                    </TableRow>)}
-                </TableBody>
-            </Table>
+            {/* Mobile View */}
+            <div className="space-y-4 sm:hidden">
+                {isLoading && Array.from({length:3}).map((_,i) => <Card key={i} className="p-4"><Skeleton className="h-20 w-full" /></Card>)}
+                {data?.map(v => (
+                    <Card key={v.id}>
+                        <CardHeader className="py-4 px-4 pb-2">
+                            <CardTitle className="text-sm font-black uppercase text-omuto-navy">{v.name}</CardTitle>
+                            <CardDescription className="text-xs font-bold text-omuto-red">{v.role}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="px-4 pb-4 text-xs">
+                            <div className="p-2 bg-omuto-cream rounded-lg border border-omuto-navy/5">
+                                <span className="text-[10px] font-black uppercase text-omuto-navy/40 block mb-1">Contact Details</span>
+                                <p className="font-bold">{v.contact}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block">
+                <Table>
+                    <TableHeader><TableRow><TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70 pl-6">Name</TableHead><TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70">Role</TableHead><TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70 pr-6">Contact</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={3}><Skeleton className="h-8"/></TableCell></TableRow>)}
+                        {data?.map(v => <TableRow key={v.id}>
+                            <TableCell className="pl-6 font-bold">{v.name}</TableCell>
+                            <TableCell><Badge variant="outline" className="text-[10px] font-black uppercase tracking-wide">{v.role}</Badge></TableCell>
+                            <TableCell className="pr-6 font-mono text-[10px] font-bold">{v.contact}</TableCell>
+                        </TableRow>)}
+                    </TableBody>
+                </Table>
+            </div>
         </CardContent>
        </Card>
     </div>

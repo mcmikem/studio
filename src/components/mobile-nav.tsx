@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, Trophy, LayoutDashboard } from 'lucide-react';
+import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -118,12 +118,12 @@ export function MobileBottomNav() {
         </button>
 
         <Link
-          href="/team-performance"
-          aria-label="Go to Impact Stars"
-          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/team-performance') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}
+          href="/profile?tab=tasks"
+          aria-label="Go to Tasks"
+          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/profile?tab=tasks') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}
         >
-          <Trophy className="w-6 h-6" />
-          <span className="text-[11px] font-black uppercase mt-1">Stars</span>
+          <CheckCircle className="w-6 h-6" />
+          <span className="text-[11px] font-black uppercase mt-1">Tasks</span>
         </Link>
 
         <button onClick={() => setOpenMobile(true)} aria-label="Open more navigation" className="flex flex-col items-center justify-center flex-1 h-full text-omuto-navy/40">

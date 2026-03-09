@@ -69,6 +69,35 @@ export default function SurveysPage() {
       </header>
       <Card>
         <CardContent className="pt-6">
+        {/* Mobile View */}
+        <div className="sm:hidden space-y-4">
+          {isLoading && Array.from({ length: 3 }).map((_, i) => (
+             <Card key={i}><CardContent className="pt-6"><Skeleton className="h-20 w-full" /></CardContent></Card>
+          ))}
+          {combinedSurveys.length > 0 ? (
+            combinedSurveys.map((survey) => (
+              <Card key={survey.id}>
+                <CardHeader className="py-4">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-xs font-mono">{survey.beneficiaryId}</CardTitle>
+                    <Badge variant={survey.type === 'Baseline' ? 'secondary' : 'default'}>
+                      {survey.type}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-4 text-sm flex justify-between items-center">
+                   <span className="text-muted-foreground">{formatDateSafe(survey.surveyDate, 'dateOnly')}</span>
+                   <span className="font-bold">Skill: {survey.skillLevel}/10</span>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            !isLoading && <EmptyState icon={FileText} title="No Surveys" description="No data found." />
+          )}
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden sm:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -119,6 +148,7 @@ export default function SurveysPage() {
               )}
             </TableBody>
           </Table>
+        </div>
         </CardContent>
       </Card>
     </div>

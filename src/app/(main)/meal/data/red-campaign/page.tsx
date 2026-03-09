@@ -34,29 +34,54 @@ function SchoolVisitsTable() {
     const { data: visits, isLoading } = useCollection<SchoolVisit>(visitsQuery);
 
     return (
-        <Table>
-            <TableHeader><TableRow><TableHead>School</TableHead><TableHead>Date</TableHead><TableHead>Logged By</TableHead></TableRow></TableHeader>
-            <TableBody>
+        <div className="space-y-4">
+            <div className="sm:hidden space-y-4">
                 {isLoading && Array.from({ length: 3 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                    </TableRow>
+                    <Card key={i}><CardContent className="pt-6"><Skeleton className="h-20 w-full" /></CardContent></Card>
                 ))}
                 {visits && visits.length > 0 ? (
                     visits.map((visit) => (
-                    <TableRow key={visit.id}>
-                        <TableCell className="font-medium">{visit.schoolName}</TableCell>
-                        <TableCell>{formatDateSafe(visit.dateOfVisit, 'dateOnly')}</TableCell>
-                        <TableCell>{visit.userName}</TableCell>
-                    </TableRow>
+                    <Card key={visit.id}>
+                        <CardHeader className="py-4">
+                            <CardTitle className="text-base">{visit.schoolName}</CardTitle>
+                            <CardDescription>{formatDateSafe(visit.dateOfVisit, 'dateOnly')}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pb-4 text-sm text-muted-foreground">
+                            Logged by: {visit.userName}
+                        </CardContent>
+                    </Card>
                     ))
                 ) : (
-                    !isLoading && <TableRow><TableCell colSpan={3} className="h-24 text-center">No school visits logged.</TableCell></TableRow>
+                    !isLoading && <EmptyState icon={Heart} title="No Visits Logged" description="" />
                 )}
-            </TableBody>
-        </Table>
+            </div>
+            
+            <div className="hidden sm:block">
+                <Table>
+                    <TableHeader><TableRow><TableHead>School</TableHead><TableHead>Date</TableHead><TableHead>Logged By</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {isLoading && Array.from({ length: 3 }).map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                            </TableRow>
+                        ))}
+                        {visits && visits.length > 0 ? (
+                            visits.map((visit) => (
+                            <TableRow key={visit.id}>
+                                <TableCell className="font-medium">{visit.schoolName}</TableCell>
+                                <TableCell>{formatDateSafe(visit.dateOfVisit, 'dateOnly')}</TableCell>
+                                <TableCell>{visit.userName}</TableCell>
+                            </TableRow>
+                            ))
+                        ) : (
+                            !isLoading && <TableRow><TableCell colSpan={3} className="h-24 text-center">No school visits logged.</TableCell></TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
     );
 }
 
@@ -69,31 +94,57 @@ function PadsDistributionTable() {
     const { data: distributions, isLoading } = useCollection<PadsDistribution>(distributionsQuery);
 
     return (
-        <Table>
-            <TableHeader><TableRow><TableHead>School/Community</TableHead><TableHead>Date</TableHead><TableHead>Pads Distributed</TableHead><TableHead>Girls Reached</TableHead></TableRow></TableHeader>
-            <TableBody>
+        <div className="space-y-4">
+            <div className="sm:hidden space-y-4">
                 {isLoading && Array.from({ length: 3 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                    </TableRow>
+                    <Card key={i}><CardContent className="pt-6"><Skeleton className="h-20 w-full" /></CardContent></Card>
                 ))}
                 {distributions && distributions.length > 0 ? (
                     distributions.map((dist) => (
-                    <TableRow key={dist.id}>
-                        <TableCell className="font-medium">{dist.school}</TableCell>
-                        <TableCell>{formatDateSafe(dist.date, 'dateOnly')}</TableCell>
-                        <TableCell>{dist.numberOfPads}</TableCell>
-                        <TableCell>{dist.girlsReached}</TableCell>
-                    </TableRow>
+                    <Card key={dist.id}>
+                        <CardHeader className="py-4">
+                            <CardTitle className="text-base">{dist.school}</CardTitle>
+                            <CardDescription>{formatDateSafe(dist.date, 'dateOnly')}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="pb-4 text-sm">
+                            <p><strong>Pads Distributed:</strong> {dist.numberOfPads}</p>
+                            <p><strong>Girls Reached:</strong> {dist.girlsReached}</p>
+                        </CardContent>
+                    </Card>
                     ))
                 ) : (
-                    !isLoading && <TableRow><TableCell colSpan={4} className="h-24 text-center">No pad distributions logged.</TableCell></TableRow>
+                    !isLoading && <EmptyState icon={Heart} title="No Distributions Logged" description="" />
                 )}
-            </TableBody>
-        </Table>
+            </div>
+
+            <div className="hidden sm:block">
+                <Table>
+                    <TableHeader><TableRow><TableHead>School/Community</TableHead><TableHead>Date</TableHead><TableHead>Pads Distributed</TableHead><TableHead>Girls Reached</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {isLoading && Array.from({ length: 3 }).map((_, i) => (
+                            <TableRow key={i}>
+                                <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                                <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                            </TableRow>
+                        ))}
+                        {distributions && distributions.length > 0 ? (
+                            distributions.map((dist) => (
+                            <TableRow key={dist.id}>
+                                <TableCell className="font-medium">{dist.school}</TableCell>
+                                <TableCell>{formatDateSafe(dist.date, 'dateOnly')}</TableCell>
+                                <TableCell>{dist.numberOfPads}</TableCell>
+                                <TableCell>{dist.girlsReached}</TableCell>
+                            </TableRow>
+                            ))
+                        ) : (
+                            !isLoading && <TableRow><TableCell colSpan={4} className="h-24 text-center">No pad distributions logged.</TableCell></TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
     )
 }
 

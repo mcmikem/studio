@@ -42,19 +42,44 @@ export default function PulseDataPage() {
       </header>
        <Card>
         <CardContent className="pt-6">
-            <Table>
-                <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Title</TableHead><TableHead>Creator</TableHead><TableHead>Format</TableHead><TableHead>Link</TableHead></TableRow></TableHeader>
-                <TableBody>
-                    {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-8"/></TableCell></TableRow>)}
-                    {data?.map(c => <TableRow key={c.id}>
-                        <TableCell>{formatDateSafe(c.dateCreated, 'dateOnly')}</TableCell>
-                        <TableCell>{c.contentTitle}</TableCell>
-                        <TableCell>{c.creatorName}</TableCell>
-                        <TableCell><Badge variant="secondary">{c.format}</Badge></TableCell>
-                        <TableCell><Button asChild variant="link"><Link href={c.link} target="_blank">View</Link></Button></TableCell>
-                    </TableRow>)}
-                </TableBody>
-            </Table>
+            {/* Mobile View */}
+            <div className="space-y-4 sm:hidden">
+                {isLoading && Array.from({length:3}).map((_,i) => <Card key={i} className="p-4"><Skeleton className="h-24 w-full" /></Card>)}
+                {data?.map(c => (
+                    <Card key={c.id}>
+                        <CardHeader className="py-4 px-4 pb-2">
+                             <div className="flex justify-between items-start">
+                                <Badge variant="secondary" className="text-[10px] font-black uppercase">{c.format}</Badge>
+                                <span className="text-[10px] font-bold text-omuto-navy/40 uppercase font-mono">{formatDateSafe(c.dateCreated, 'dateOnly')}</span>
+                             </div>
+                             <CardTitle className="text-sm font-black uppercase text-omuto-navy mt-2 leading-tight">{c.contentTitle}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="px-4 pb-4 flex justify-between items-center">
+                            <span className="text-xs font-bold uppercase text-omuto-navy/60">BY: {c.creatorName}</span>
+                            <Button asChild variant="outline" size="sm" className="shadow-comic-sm">
+                                <Link href={c.link} target="_blank">VIEW CONTENT</Link>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block">
+                <Table>
+                    <TableHeader><TableRow><TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70 px-6">Date</TableHead><TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70">Title</TableHead><TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70">Creator</TableHead><TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70">Format</TableHead><TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/70 text-right pr-6">Link</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={5}><Skeleton className="h-8"/></TableCell></TableRow>)}
+                        {data?.map(c => <TableRow key={c.id}>
+                            <TableCell className="px-6 font-mono text-[10px] font-bold text-omuto-navy/50">{formatDateSafe(c.dateCreated, 'dateOnly')}</TableCell>
+                            <TableCell className="font-black uppercase text-xs leading-tight max-w-[200px] truncate">{c.contentTitle}</TableCell>
+                            <TableCell className="font-bold text-xs uppercase text-omuto-navy/70">{c.creatorName}</TableCell>
+                            <TableCell><Badge variant="secondary" className="text-[10px] font-black uppercase tracking-wide">{c.format}</Badge></TableCell>
+                            <TableCell className="text-right pr-6"><Button asChild variant="link" className="text-omuto-red font-black uppercase text-[10px]"><Link href={c.link} target="_blank">View</Link></Button></TableCell>
+                        </TableRow>)}
+                    </TableBody>
+                </Table>
+            </div>
         </CardContent>
        </Card>
     </div>

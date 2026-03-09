@@ -11,9 +11,12 @@ import {
   useUser,
   useCollection,
   useMemoFirebase,
+  useFirebaseApp,
   addDocumentNonBlocking, 
   updateDocumentNonBlocking
 } from '@/firebase';
+import { uploadFile } from '@/firebase/storage';
+import { buildUploadPath } from '@/lib/upload-paths';
 import { collection, serverTimestamp, doc, query, orderBy, getDocs, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -25,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Loader2, FilePlus2, PlusCircle, Trash2, Receipt, Wallet, Sparkles, ArrowRight } from 'lucide-react';
+import { Loader2, FilePlus2, PlusCircle, Trash2, Receipt, Wallet, Sparkles, ArrowRight, Upload } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
@@ -51,6 +54,7 @@ const expenseSchema = z.object({
   totalAmount: z.number().min(1, 'Total amount must be greater than zero.'),
   submittedFor: z.string().optional(),
   otherUserName: z.string().optional(),
+  receiptUrl: z.string().optional(),
 }).refine(data => {
     if ((data.submittedFor === 'Volunteer' || data.submittedFor === 'Intern') && !data.otherUserName) {
         return false;
@@ -79,6 +83,10 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
   const projectsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'projects'), orderBy('name')) : null, [firestore]);
   const { data: projects } = useCollection<Project>(projectsQuery);
+
+  const firebaseApp = useFirebaseApp();
+  const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
+  const [isUploading, setIsUploading] = React.useState(false);
 
   const isEditMode = !!expense;
   const financeRoles = ['Administrator', 'Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Programs & Partnerships Manager'];
@@ -174,12 +182,22 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
 
     try {
+        let finalReceiptUrl = data.receiptUrl || '';
+
+        if (receiptFile && firebaseApp) {
+            setIsUploading(true);
+            const ext = receiptFile.name.split('.').pop() || 'jpg';
+            const safeName = `receipt_${Date.now()}`;
+            finalReceiptUrl = await uploadFile(firebaseApp, receiptFile, buildUploadPath.expenseReceipt(user.uid, `${safeName}.${ext}`));
+            setIsUploading(false);
+        }
+
         if (isEditMode && expense) {
             const docRef = doc(firestore, 'expenses', expense.id);
-            await updateDocumentNonBlocking(docRef, expenseData);
+            await updateDocumentNonBlocking(docRef, { ...expenseData, receiptUrl: finalReceiptUrl });
             toast({ title: 'Report Updated!' });
         } else {
-            const newExpenseData = { ...expenseData, status: 'Pending' as const, createdAt: serverTimestamp() };
+            const newExpenseData = { ...expenseData, receiptUrl: finalReceiptUrl, status: 'Pending' as const, createdAt: serverTimestamp() };
             const expensesCollection = collection(firestore, 'expenses');
             const docRef = await addDocumentNonBlocking(expensesCollection, newExpenseData);
             toast({ title: 'Report Submitted!' });
@@ -200,11 +218,23 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             }
         }
         if (onSuccess) onSuccess();
-        else reset();
+        else {
+            reset();
+            setReceiptFile(null);
+        }
     } catch(e) {
         console.error(e);
-        toast({ variant: 'destructive', title: 'Submission Error' });
+        setIsUploading(false);
+        toast({ variant: 'destructive', title: 'Submission Error', description: 'Failed to submit the report or upload the receipt.' });
     };
+  };
+
+  const onInvalid = (errors: any) => {
+    toast({
+        variant: 'destructive',
+        title: 'Form Validation Failed',
+        description: 'Please check all required fields and try again.'
+    });
   };
 
 
@@ -219,7 +249,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             </CardTitle>
             <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">Financial Accountability Terminal</CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         <CardContent className="p-8 md:p-12 space-y-12">
             
             {/* 1. Header Info */}
@@ -248,6 +278,36 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             <div className="space-y-2">
                 <Label htmlFor="title" className="font-bold text-[10px] uppercase tracking-widest pl-1">Mission / Title</Label>
                 <Input id="title" placeholder="e.g., Mpigi Field Distribution" {...register('title')} className="h-16 border-lg rounded-2xl text-xl font-bold tracking-tight text-omuto-navy" />
+                {errors.title && <p className="text-omuto-red text-xs font-bold pt-1">{errors.title.message}</p>}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                    <Label className="font-bold text-[10px] uppercase tracking-widest pl-1">Attach Receipt</Label>
+                    <div className="flex items-center gap-4">
+                        <Input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={(e) => {
+                                if (e.target.files?.[0]) {
+                                    setReceiptFile(e.target.files[0]);
+                                }
+                            }}
+                            className="hidden" 
+                            id="receipt-upload" 
+                        />
+                        <Label 
+                            htmlFor="receipt-upload" 
+                            className="h-14 flex items-center justify-center gap-2 border-lg border-omuto-navy border-dashed rounded-2xl bg-muted/20 px-6 cursor-pointer hover:bg-muted/40 transition-colors w-full font-bold text-omuto-navy"
+                        >
+                            <Upload className="h-5 w-5" />
+                            {receiptFile ? receiptFile.name : 'Upload Receipt Image'}
+                        </Label>
+                    </div>
+                    {expense?.receiptUrl && (
+                        <p className="text-xs text-muted-foreground">Current receipt attached. Upload new to replace.</p>
+                    )}
+                </div>
             </div>
 
             <Separator className="bg-omuto-navy/5" />
@@ -308,9 +368,9 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                         <p className="font-heading text-4xl font-bold text-white tracking-tighter">{formatCurrency(totalAmount)}</p>
                     </div>
                 </div>
-                 <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm">
-                    {isSubmitting ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Sparkles className="mr-3 h-5 w-5 fill-white" />}
-                    DEPLOY REPORT
+                 <Button type="submit" disabled={isSubmitting || isUploading} className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm">
+                    {(isSubmitting || isUploading) ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Sparkles className="mr-3 h-5 w-5 fill-white" />}
+                    {isUploading ? 'UPLOADING...' : 'DEPLOY REPORT'}
                 </Button>
             </div>
 

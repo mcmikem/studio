@@ -261,6 +261,23 @@ function GrantDiscovery() {
 }
 
 
+function FundingPipelineCard({ partner }: { partner: Partnership }) {
+    return (
+        <Card className="mb-4">
+            <CardHeader className="pb-2">
+                <CardTitle className="text-base">{partner.name}</CardTitle>
+                <CardDescription>{partner.contactPerson}</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm">
+                <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Next Step:</span>
+                    <span className="font-medium">{partner.nextStep}</span>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
 function FundingPipeline() {
   const firestore = useFirestore();
   const partnershipsQuery = useMemoFirebase(() => {
@@ -285,48 +302,61 @@ function FundingPipeline() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Organization</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Next Step</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading &&
-              Array.from({ length: 2 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <Skeleton className="h-5 w-24" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-32" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-40" />
-                  </TableCell>
-                </TableRow>
-              ))}
+        {/* Mobile View */}
+        <div className="sm:hidden">
+            {isLoading && Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-24 w-full mb-4" />)}
             {partnerships && partnerships.length > 0 ? (
-              partnerships.map((partner) => (
-                <TableRow key={partner.id}>
-                  <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell>{partner.contactPerson}</TableCell>
-                  <TableCell>{partner.nextStep}</TableCell>
-                </TableRow>
-              ))
+                partnerships.map(partner => <FundingPipelineCard key={partner.id} partner={partner} />)
             ) : (
-              !isLoading && (
-                <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
-                    No potential partners in the pipeline.
-                  </TableCell>
-                </TableRow>
-              )
+                !isLoading && <p className="text-sm text-center text-muted-foreground py-8">No potential partners in the pipeline.</p>
             )}
-          </TableBody>
-        </Table>
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden sm:block">
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Organization</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead>Next Step</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {isLoading &&
+                Array.from({ length: 2 }).map((_, i) => (
+                    <TableRow key={i}>
+                    <TableCell>
+                        <Skeleton className="h-5 w-24" />
+                    </TableCell>
+                    <TableCell>
+                        <Skeleton className="h-5 w-32" />
+                    </TableCell>
+                    <TableCell>
+                        <Skeleton className="h-5 w-40" />
+                    </TableCell>
+                    </TableRow>
+                ))}
+                {partnerships && partnerships.length > 0 ? (
+                partnerships.map((partner) => (
+                    <TableRow key={partner.id}>
+                    <TableCell className="font-medium">{partner.name}</TableCell>
+                    <TableCell>{partner.contactPerson}</TableCell>
+                    <TableCell>{partner.nextStep}</TableCell>
+                    </TableRow>
+                ))
+                ) : (
+                !isLoading && (
+                    <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center">
+                        No potential partners in the pipeline.
+                    </TableCell>
+                    </TableRow>
+                )
+                )}
+            </TableBody>
+            </Table>
+        </div>
       </CardContent>
     </Card>
   );
@@ -387,6 +417,58 @@ function DonorDirectory() {
   );
 }
 
+function ProposalCard({ 
+    proposal, 
+    statusColors, 
+    onEdit, 
+    onDelete 
+}: { 
+    proposal: Proposal; 
+    statusColors: Record<string, string>; 
+    onEdit: (p: Proposal) => void; 
+    onDelete: (p: Proposal) => void;
+}) {
+    return (
+        <Card className="mb-4">
+            <CardHeader className="pb-2">
+                <div className="flex justify-between items-start">
+                    <CardTitle className="text-base">{proposal.title}</CardTitle>
+                    <Badge variant="outline" className={statusColors[proposal.status]}>{proposal.status}</Badge>
+                </div>
+                <CardDescription>{proposal.partnerName}</CardDescription>
+            </CardHeader>
+            <CardContent className="text-sm pb-2">
+                <div className="flex justify-between items-center mb-1">
+                    <span className="text-muted-foreground">Amount:</span>
+                    <span className="font-bold">{formatCurrency(proposal.amountRequested)}</span>
+                </div>
+                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                    <span>Submitted:</span>
+                    <span>{formatDateSafe(proposal.submissionDate, "dateOnly")}</span>
+                </div>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2 pt-0">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(proposal)}><Edit className="h-4 w-4" /></Button>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8"><Trash2 className="h-4 w-4" /></Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>This will permanently delete "{proposal.title}".</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onDelete(proposal)}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </CardFooter>
+        </Card>
+    );
+}
+
 function ProposalTracker() {
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -424,7 +506,7 @@ function ProposalTracker() {
                 </div>
                 <Dialog open={isNewDialogOpen} onOpenChange={setIsNewDialogOpen}>
                     <DialogTrigger asChild>
-                        <Button><PlusCircle className="mr-2 h-4 w-4" /> New Proposal</Button>
+                        <Button size="sm" className="h-8"><PlusCircle className="mr-2 h-4 w-4" /> New Proposal</Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
@@ -436,73 +518,99 @@ function ProposalTracker() {
                 </Dialog>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Proposal Title</TableHead>
-                            <TableHead>Partner</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Submission Date</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading && Array.from({ length: 3 }).map((_, i) => (
-                            <TableRow key={i}>
-                                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                {/* Mobile View */}
+                <div className="sm:hidden">
+                    {isLoading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 w-full mb-4" />)}
+                    {proposals && proposals.length > 0 ? (
+                        proposals.map(p => (
+                            <ProposalCard 
+                                key={p.id} 
+                                proposal={p} 
+                                statusColors={statusColors} 
+                                onEdit={setEditingProposal} 
+                                onDelete={handleDelete} 
+                            />
+                        ))
+                    ) : (
+                         !isLoading && (
+                            <div className="py-12 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                <Goal className="h-12 w-12" />
+                                <span className="text-lg font-semibold">No Proposals Found</span>
+                            </div>
+                        )
+                    )}
+                </div>
+
+                {/* Desktop View */}
+                <div className="hidden sm:block">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Proposal Title</TableHead>
+                                <TableHead>Partner</TableHead>
+                                <TableHead>Amount</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Submission Date</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        ))}
-                        {proposals && proposals.length > 0 ? (
-                            proposals.map(p => (
-                                <TableRow key={p.id}>
-                                    <TableCell className="font-medium">{p.title}</TableCell>
-                                    <TableCell>{p.partnerName}</TableCell>
-                                    <TableCell>{formatCurrency(p.amountRequested)}</TableCell>
-                                    <TableCell><Badge variant="outline" className={statusColors[p.status]}>{p.status}</Badge></TableCell>
-                                    <TableCell>{formatDateSafe(p.submissionDate, "dateOnly")}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" onClick={() => setEditingProposal(p)}><Edit className="h-4 w-4" /></Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                        <AlertDialogDescription>This will permanently delete the proposal "{p.title}".</AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(p)}>Delete</AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    </TableCell>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading && Array.from({ length: 3 }).map((_, i) => (
+                                <TableRow key={i}>
+                                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-20" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
                                 </TableRow>
-                            ))
-                        ) : (
-                            !isLoading && (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
-                                        <div className="flex flex-col items-center justify-center gap-2">
-                                            <Goal className="h-12 w-12" />
-                                            <span className="text-lg font-semibold">No Proposals Found</span>
-                                            <p className="text-sm">Add a proposal to get started.</p>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            )
-                        )}
-                    </TableBody>
-                </Table>
+                            ))}
+                            {proposals && proposals.length > 0 ? (
+                                proposals.map(p => (
+                                    <TableRow key={p.id}>
+                                        <TableCell className="font-medium">{p.title}</TableCell>
+                                        <TableCell>{p.partnerName}</TableCell>
+                                        <TableCell>{formatCurrency(p.amountRequested)}</TableCell>
+                                        <TableCell><Badge variant="outline" className={statusColors[p.status]}>{p.status}</Badge></TableCell>
+                                        <TableCell>{formatDateSafe(p.submissionDate, "dateOnly")}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="icon" onClick={() => setEditingProposal(p)}><Edit className="h-4 w-4" /></Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                            <AlertDialogDescription>This will permanently delete the proposal "{p.title}".</AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDelete(p)}>Delete</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ) : (
+                                !isLoading && (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                                            <div className="flex flex-col items-center justify-center gap-2">
+                                                <Goal className="h-12 w-12" />
+                                                <span className="text-lg font-semibold">No Proposals Found</span>
+                                                <p className="text-sm">Add a proposal to get started.</p>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </CardContent>
              {editingProposal && (
                 <Dialog open={!!editingProposal} onOpenChange={(open) => !open && setEditingProposal(null)}>

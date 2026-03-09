@@ -10,4 +10,10 @@ export const buildUploadPath = {
 
   testimonyMedia: (userId: string, fileName: string) =>
     `testimonies/${userId}/${Date.now()}_${fileName}`,
+
+  expenseReceipt: (userId: string, fileName: string) =>
+    `expense-receipts/${userId}/${Date.now()}_${fileName}`,
+
+  activityMedia: (userId: string, fileName: string) =>
+    `activity-media/${userId}/${Date.now()}_${fileName}`,
 };

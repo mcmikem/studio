@@ -27,13 +27,39 @@ function WaterSourcesTable() {
     const queryRef = useMemoFirebase(() => firestore ? query(collection(firestore, 'water-sources'), orderBy('createdAt', 'desc')) : null, [firestore]);
     const { data, isLoading } = useCollection<WaterSource>(queryRef);
     return (
-        <Table>
-            <TableHeader><TableRow><TableHead>Source</TableHead><TableHead>Type</TableHead><TableHead>Functional</TableHead></TableRow></TableHeader>
-            <TableBody>
-                {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={3}><Skeleton className="h-8"/></TableCell></TableRow>)}
-                {data?.map(s => <TableRow key={s.id}><TableCell>{s.sourceName}</TableCell><TableCell>{s.type}</TableCell><TableCell>{s.functional ? <CheckCircle className="text-green-500"/> : <XCircle className="text-red-500"/>}</TableCell></TableRow>)}
-            </TableBody>
-        </Table>
+        <>
+            {/* Mobile View */}
+            <div className="space-y-4 sm:hidden">
+                {isLoading && Array.from({length:3}).map((_,i) => <Card key={i} className="p-4"><Skeleton className="h-16 w-full" /></Card>)}
+                {data?.map(s => (
+                    <Card key={s.id}>
+                        <CardHeader className="py-3 px-4">
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="text-sm font-black uppercase text-omuto-navy">{s.sourceName}</CardTitle>
+                                {s.functional ? <CheckCircle className="h-4 w-4 text-green-500"/> : <XCircle className="h-4 w-4 text-red-500"/>}
+                            </div>
+                        </CardHeader>
+                        <CardContent className="py-3 px-4 text-xs">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground font-bold uppercase">TYPE:</span>
+                                <span className="font-black">{s.type}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block">
+                <Table>
+                    <TableHeader><TableRow><TableHead className="font-black uppercase text-[10px]">Source</TableHead><TableHead className="font-black uppercase text-[10px]">Type</TableHead><TableHead className="font-black uppercase text-[10px]">Functional</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={3}><Skeleton className="h-8"/></TableCell></TableRow>)}
+                        {data?.map(s => <TableRow key={s.id}><TableCell className="font-bold">{s.sourceName}</TableCell><TableCell className="text-xs uppercase">{s.type}</TableCell><TableCell>{s.functional ? <CheckCircle className="h-5 w-5 text-green-500"/> : <XCircle className="h-5 w-5 text-red-500"/>}</TableCell></TableRow>)}
+                    </TableBody>
+                </Table>
+            </div>
+        </>
     )
 }
 function WashAssessmentsTable() {
@@ -46,13 +72,44 @@ function WashAssessmentsTable() {
         "Poor": "border-red-500 bg-red-500/10 text-red-500",
     };
     return (
-        <Table>
-            <TableHeader><TableRow><TableHead>School</TableHead><TableHead>Stations</TableHead><TableHead>Soap</TableHead><TableHead>Latrine Condition</TableHead></TableRow></TableHeader>
-            <TableBody>
-                {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={4}><Skeleton className="h-8"/></TableCell></TableRow>)}
-                {data?.map(a => <TableRow key={a.id}><TableCell>{a.school}</TableCell><TableCell>{a.handwashingStations}</TableCell><TableCell>{a.soapAvailable ? 'Yes' : 'No'}</TableCell><TableCell><Badge variant="outline" className={conditionColors[a.latrineCondition]}>{a.latrineCondition}</Badge></TableCell></TableRow>)}
-            </TableBody>
-        </Table>
+        <>
+            {/* Mobile View */}
+            <div className="space-y-4 sm:hidden">
+                {isLoading && Array.from({length:3}).map((_,i) => <Card key={i} className="p-4"><Skeleton className="h-24 w-full" /></Card>)}
+                {data?.map(a => (
+                    <Card key={a.id}>
+                        <CardHeader className="py-3 px-4">
+                            <CardTitle className="text-sm font-black uppercase text-omuto-navy">{a.school}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="py-3 px-4 text-xs space-y-2">
+                             <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground font-bold uppercase">LATRINE CONDITION:</span>
+                                <Badge variant="outline" className={conditionColors[a.latrineCondition]}>{a.latrineCondition}</Badge>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground font-bold uppercase">STATIONS:</span>
+                                <span className="font-black">{a.handwashingStations}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground font-bold uppercase">SOAP AVAILABLE:</span>
+                                <Badge variant="secondary" className="text-[10px] font-black uppercase">{a.soapAvailable ? 'YES' : 'NO'}</Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block">
+                <Table>
+                    <TableHeader><TableRow><TableHead className="font-black uppercase text-[10px]">School</TableHead><TableHead className="font-black uppercase text-[10px]">Stations</TableHead><TableHead className="font-black uppercase text-[10px]">Soap</TableHead><TableHead className="font-black uppercase text-[10px]">Latrine Condition</TableHead></TableRow></TableHeader>
+                    <TableBody>
+                        {isLoading && Array.from({length:3}).map((_,i) => <TableRow key={i}><TableCell colSpan={4}><Skeleton className="h-8"/></TableCell></TableRow>)}
+                        {data?.map(a => <TableRow key={a.id}><TableCell className="font-bold">{a.school}</TableCell><TableCell>{a.handwashingStations}</TableCell><TableCell>{a.soapAvailable ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}</TableCell><TableCell><Badge variant="outline" className={conditionColors[a.latrineCondition]}>{a.latrineCondition}</Badge></TableCell></TableRow>)}
+                    </TableBody>
+                </Table>
+            </div>
+        </>
     )
 }
 

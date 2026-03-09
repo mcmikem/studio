@@ -14,10 +14,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, useFirebaseApp, addDocumentNonBlocking } from '@/firebase';
+import { uploadFile } from '@/firebase/storage';
+import { buildUploadPath } from '@/lib/upload-paths';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Zap, Target, TrendingUp, BarChart3, ArrowRight, Sparkles, MessageCircle, Clock, Wallet } from 'lucide-react';
+import { Loader2, Zap, Target, TrendingUp, BarChart3, ArrowRight, Sparkles, MessageCircle, Clock, Wallet, Upload } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -70,6 +72,7 @@ interface ActivityData {
   parents_attended?: number;
   teachers_attended?: number;
   trees_planted?: number;
+  mediaUrl?: string;
 }
 
 function ActivityReportFormComponent() {
@@ -80,9 +83,12 @@ function ActivityReportFormComponent() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const firestore = useFirestore();
+  const firebaseApp = useFirebaseApp();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState("planning");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [activityName, setActivityName] = useState('');
   const [ecosystemPhase, setEcosystemPhase] = useState<'Identify & Inspire' | 'Equip & Empower' | 'Activate & Sustain'>('Identify & Inspire');
@@ -180,34 +186,46 @@ function ActivityReportFormComponent() {
     }
     setLoading(true);
 
-    const activityData: ActivityData = {
-      title: activityName,
-      userId: user.uid,
-      userName: profile.name,
-      ecosystem_phase: ecosystemPhase,
-      estimatedCost: preActivityCost,
-      actualCost: actualCost,
-      directValue: directValue,
-      indirectValue: indirectValue,
-      totalValue: totalValue,
-      estimatedRoi: ((totalValue - preActivityCost) / preActivityCost) * 100,
-      finalRoi: finalRoi,
-      loggedAt: serverTimestamp(),
-      primaryGoalType: goalType,
-      primaryGoalId: selectedGoalId,
-      primaryGoalQuantity: goalQuantity,
-      keyResultId: keyResultId,
-      memorableMoment,
-      challengesLearned,
-      beneficiaryQuote,
-    };
-
     try {
+        let finalMediaUrl = '';
+        if (mediaFile && firebaseApp) {
+            setIsUploading(true);
+            const ext = mediaFile.name.split('.').pop() || 'jpg';
+            const safeName = `media_${Date.now()}`;
+            finalMediaUrl = await uploadFile(firebaseApp, mediaFile, buildUploadPath.activityMedia(user.uid, `${safeName}.${ext}`));
+            setIsUploading(false);
+        }
+
+        const activityData: ActivityData = {
+          title: activityName,
+          userId: user.uid,
+          userName: profile.name,
+          ecosystem_phase: ecosystemPhase,
+          estimatedCost: preActivityCost,
+          actualCost: actualCost,
+          directValue: directValue,
+          indirectValue: indirectValue,
+          totalValue: totalValue,
+          estimatedRoi: ((totalValue - preActivityCost) / preActivityCost) * 100,
+          finalRoi: finalRoi,
+          loggedAt: serverTimestamp(),
+          primaryGoalType: goalType,
+          primaryGoalId: selectedGoalId,
+          primaryGoalQuantity: goalQuantity,
+          keyResultId: keyResultId,
+          memorableMoment,
+          challengesLearned,
+          beneficiaryQuote,
+          mediaUrl: finalMediaUrl,
+        };
+
         await addDocumentNonBlocking(collection(firestore, 'activities'), activityData);
         toast({ title: 'Impact Logged!', description: 'Activity successfully deployed to HQ.' });
         router.push('/');
     } catch(e) {
-        toast({ variant: 'destructive', title: 'Sync Failed' });
+        console.error(e);
+        setIsUploading(false);
+        toast({ variant: 'destructive', title: 'Sync Failed', description: 'Failed to upload media or save report.' });
     } finally {
         setLoading(false);
     }
@@ -448,11 +466,34 @@ function ActivityReportFormComponent() {
                                 <Label className="font-black text-[10px] uppercase tracking-widest pl-1 flex items-center gap-2"><Clock className="h-3 w-3 text-omuto-navy/60" /> Challenges & Learnings</Label>
                                 <Textarea value={challengesLearned} onChange={e => setChallengesLearned(e.target.value)} className="min-h-[120px] border-lg rounded-2xl p-6 text-omuto-navy font-bold" placeholder="What was a surprising challenge and how did you overcome it?" />
                             </div>
+                            <div className="space-y-4 pt-4">
+                                <Label className="font-bold text-[10px] uppercase tracking-widest pl-1">Attach Media Evidence</Label>
+                                <div className="flex items-center gap-4">
+                                    <Input 
+                                        type="file" 
+                                        accept="image/*,video/*" 
+                                        onChange={(e) => {
+                                            if (e.target.files?.[0]) {
+                                                setMediaFile(e.target.files[0]);
+                                            }
+                                        }}
+                                        className="hidden" 
+                                        id="media-upload" 
+                                    />
+                                    <Label 
+                                        htmlFor="media-upload" 
+                                        className="h-14 flex items-center justify-center gap-2 border-lg border-omuto-navy border-dashed rounded-2xl bg-muted/20 px-6 cursor-pointer hover:bg-muted/40 transition-colors w-full font-bold text-omuto-navy"
+                                    >
+                                        <Upload className="h-5 w-5" />
+                                        {mediaFile ? mediaFile.name : 'Upload Event Photo or Video'}
+                                    </Label>
+                                </div>
+                            </div>
                         </div>
 
-                        <Button className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm" onClick={handleLogActivity} disabled={loading}>
-                            {loading ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Zap className="mr-3 h-5 w-5 fill-white" />}
-                            DEPLOY IMPACT DATA
+                        <Button className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm" onClick={handleLogActivity} disabled={loading || isUploading}>
+                            {(loading || isUploading) ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Zap className="mr-3 h-5 w-5 fill-white" />}
+                            {isUploading ? 'UPLOADING...' : 'DEPLOY IMPACT DATA'}
                         </Button>
                     </div>
                 </TabsContent>

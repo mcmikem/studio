@@ -6,6 +6,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import {
   Table,
@@ -245,92 +246,159 @@ export default function EquipmentPage() {
         </Dialog>
       </CardHeader>
       <CardContent>
-        <Table>
-        <TableHeader>
-            <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead className="hidden sm:table-cell">Category</TableHead>
-            <TableHead className="hidden md:table-cell">Status</TableHead>
-            <TableHead className="hidden md:table-cell">Condition</TableHead>
-            <TableHead>Holder</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            {isLoading &&
-            Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
-                <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-20" /></TableCell>
-                <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
-                </TableRow>
+        {/* Mobile View */}
+        <div className="space-y-4 sm:hidden">
+            {isLoading && Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i} className="p-4"><Skeleton className="h-24 w-full" /></Card>
             ))}
             {equipment && equipment.length > 0 ? (
-            equipment.map((item) => (
-                <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell className="hidden sm:table-cell">{item.category}</TableCell>
-                <TableCell className="hidden md:table-cell">
-                    <Badge variant="outline" className={statusColors[item.status]}>
-                        {item.status}
-                    </Badge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                    <Badge variant="outline" className={conditionColors[item.condition]}>
-                        {item.condition}
-                    </Badge>
-                </TableCell>
-                <TableCell>{item.currentHolder}</TableCell>
-                <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => setEditingEquipment(item)}>
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete "{item.name}".
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete(item)}>Delete</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-                    </TableCell>
-                </TableRow>
-            ))
+                equipment.map((item) => (
+                    <Card key={item.id}>
+                        <CardHeader className="py-4">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle className="text-base">{item.name}</CardTitle>
+                                    <CardDescription>{item.category}</CardDescription>
+                                </div>
+                                <div className="flex flex-col gap-1 items-end">
+                                     <Badge variant="outline" className={statusColors[item.status]}>
+                                        {item.status}
+                                    </Badge>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="pb-4 text-sm">
+                            <div className="flex justify-between mb-2">
+                                <span>Condition:</span>
+                                <Badge variant="outline" className={conditionColors[item.condition]}>
+                                    {item.condition}
+                                </Badge>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Current Holder:</span>
+                                <span>{item.currentHolder}</span>
+                            </div>
+                        </CardContent>
+                        <CardFooter className="justify-end gap-2 pt-0">
+                            <Button variant="outline" size="sm" onClick={() => setEditingEquipment(item)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="text-destructive">
+                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete "{item.name}".
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(item)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </CardFooter>
+                    </Card>
+                ))
             ) : (
-            !isLoading && (
-                <TableRow>
-                    <TableCell
-                    colSpan={6}
-                    className="h-48"
-                    >
-                        <EmptyState 
-                            icon={Box}
-                            title="No Equipment Here!"
-                            description="Your inventory is empty. Add your first asset to get started tracking."
-                            className="min-h-0"
-                        />
-                    </TableCell>
-                </TableRow>
-            )
+                !isLoading && <EmptyState icon={Box} title="No Equipment" description="Your inventory is empty." />
             )}
-        </TableBody>
-        </Table>
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden sm:block">
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="hidden sm:table-cell">Category</TableHead>
+                <TableHead className="hidden md:table-cell">Status</TableHead>
+                <TableHead className="hidden md:table-cell">Condition</TableHead>
+                <TableHead>Holder</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {isLoading &&
+                Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                    <TableCell className="hidden sm:table-cell"><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-20" /></TableCell>
+                    <TableCell className="hidden md:table-cell"><Skeleton className="h-6 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-8 w-20 ml-auto" /></TableCell>
+                    </TableRow>
+                ))}
+                {equipment && equipment.length > 0 ? (
+                equipment.map((item) => (
+                    <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.name}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{item.category}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                        <Badge variant="outline" className={statusColors[item.status]}>
+                            {item.status}
+                        </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                        <Badge variant="outline" className={conditionColors[item.condition]}>
+                            {item.condition}
+                        </Badge>
+                    </TableCell>
+                    <TableCell>{item.currentHolder}</TableCell>
+                    <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => setEditingEquipment(item)}>
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete "{item.name}".
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(item)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                        </TableCell>
+                    </TableRow>
+                ))
+                ) : (
+                !isLoading && (
+                    <TableRow>
+                        <TableCell
+                        colSpan={6}
+                        className="h-48"
+                        >
+                            <EmptyState 
+                                icon={Box}
+                                title="No Equipment Here!"
+                                description="Your inventory is empty. Add your first asset to get started tracking."
+                                className="min-h-0"
+                            />
+                        </TableCell>
+                    </TableRow>
+                )
+                )}
+            </TableBody>
+            </Table>
+        </div>
       </CardContent>
        <Dialog open={!!editingEquipment} onOpenChange={(open) => !open && setEditingEquipment(null)}>
          <DialogContent className="sm:max-w-lg">
