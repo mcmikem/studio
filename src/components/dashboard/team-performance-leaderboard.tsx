@@ -22,13 +22,13 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
   const queries = useMemo(() => {
     if (!firestore) return null;
     return {
-      activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc'), limit(100)),
-      users: query(collection(firestore, 'users'), orderBy('name'), limit(100)),
-      checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), limit(100)),
-      checkouts: query(collection(firestore, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc'), limit(100)),
-      expenses: query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(100)),
-      testimonies: query(collection(firestore, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc'), limit(100)),
-      partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'), limit(50)),
+      activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc')),
+      users: query(collection(firestore, 'users'), orderBy('name')),
+      checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo))),
+      checkouts: query(collection(firestore, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')),
+      expenses: query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')),
+      testimonies: query(collection(firestore, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc')),
+      partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')),
     };
   }, [firestore, thirtyDaysAgo]);
 

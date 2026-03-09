@@ -11,7 +11,8 @@ import { isWithinInterval, parse, startOfDay, format, isValid } from 'date-fns';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getInitials } from '@/lib/utils';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, limit } from 'firebase/firestore';
+import { collection, query, limit, where, Timestamp, orderBy } from 'firebase/firestore';
+import { subHours } from 'date-fns';
 
 const ACTIVE_WINDOW_MINUTES = 18 * 60;
 
@@ -20,10 +21,19 @@ export function TeamDeployment() {
 
   const queries = useMemo(() => {
     if (!firestore) return null;
+    const since = subHours(new Date(), 24);
     return {
-      users: query(collection(firestore, 'users'), limit(200)),
-      checkins: query(collection(firestore, 'checkins'), limit(200)),
-      checkouts: query(collection(firestore, 'checkouts'), limit(200)),
+      users: query(collection(firestore, 'users')),
+      checkins: query(
+        collection(firestore, 'checkins'), 
+        where('timestamp', '>=', Timestamp.fromDate(since)),
+        orderBy('timestamp', 'desc')
+      ),
+      checkouts: query(
+        collection(firestore, 'checkouts'), 
+        where('timestamp', '>=', Timestamp.fromDate(since)),
+        orderBy('timestamp', 'desc')
+      ),
     };
   }, [firestore]);
 

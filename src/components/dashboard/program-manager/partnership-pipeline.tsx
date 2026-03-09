@@ -17,7 +17,7 @@ export function PartnershipPipeline() {
     const queries = useMemo(() => {
         if (!firestore) return null;
         return {
-            partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc'), limit(50)),
+            partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')),
         };
     }, [firestore]);
 
