@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="relative flex flex-col flex-1">
                 <AppHeader />
                 <ViewAsBanner />
-                <main className="flex-1 px-3 py-4 sm:px-4 lg:px-6 lg:py-6 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-6">
+                <main className="flex-1 w-full max-w-full overflow-x-hidden px-3 py-4 sm:px-4 lg:px-6 lg:py-6 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-6">
                   <GlobalBackButton />
                   {children}
                 </main>
