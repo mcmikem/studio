@@ -61,8 +61,8 @@ export function EcosystemPulse() {
     }
 
     return (
-        <Card className="rounded-[2rem] border-none shadow-2xl shadow-muted/20 overflow-hidden bg-card">
-            <CardHeader className="pb-2">
+        <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
+            <CardHeader className="bg-omuto-cream/50 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
                 <div className="flex items-center gap-2">
                     <div className="p-2 bg-primary/10 rounded-xl">
                         <ActivityIcon className="h-5 w-5 text-primary" />

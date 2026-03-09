@@ -56,8 +56,8 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
   if (isLoading) return <Skeleton className="h-96" />;
 
   return (
-    <Card>
-      <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-8 border-b-4 border-omuto-red">
+    <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
+      <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-6 border-b-4 border-omuto-red flex flex-col justify-center">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -97,9 +97,9 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
             </div>
           ))
         ) : (
-          <div className="text-center py-20 bg-white border-2 border-omuto-navy/10 border-dashed rounded-2xl">
-            <Zap className="h-16 w-16 mx-auto mb-4 opacity-10 text-omuto-navy" />
-            <p className="text-xs font-bold text-omuto-navy/40 uppercase tracking-widest">Awaiting Team Activity...</p>
+          <div className="text-center py-20 bg-white border-2 border-omuto-navy/20 border-dashed rounded-2xl">
+            <Zap className="h-16 w-16 mx-auto mb-4 opacity-20 text-omuto-navy" />
+            <p className="text-xs font-bold text-omuto-navy/50 uppercase tracking-widest">Awaiting Team Activity 🚀</p>
           </div>
         )}
       </CardContent>

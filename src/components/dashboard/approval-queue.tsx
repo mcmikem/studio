@@ -12,7 +12,9 @@ import { Check, X, Wallet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createAlertAction as createAlert } from '@/actions/mutations';
 import { formatCurrency } from '@/lib/utils';
+
 import { Skeleton } from '../ui/skeleton';
+import { EmptyState } from '../ui/empty-state';
 import Link from 'next/link';
 
 export function ApprovalQueue() {
@@ -80,14 +82,19 @@ export function ApprovalQueue() {
     };
     
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Wallet /> Financial Queue</CardTitle>
-                <CardDescription>
-                    Approve or reject new expense reports.
-                </CardDescription>
+        <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden flex flex-col">
+            <CardHeader className="bg-omuto-cream/50 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-xl text-primary"><Wallet className="h-5 w-5" /></div>
+                    <div>
+                        <CardTitle className="font-heading text-xl font-bold tracking-tight text-omuto-navy">Financial Queue</CardTitle>
+                        <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest mt-1">
+                            Action new expense reports
+                        </CardDescription>
+                    </div>
+                </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 p-0 flex flex-col">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -131,17 +138,19 @@ export function ApprovalQueue() {
                         ) : (
                             !isLoading && (
                                 <TableRow>
-                                    <TableCell colSpan={2} className="h-24 text-center">
-                                        The approval queue is empty.
+                                    <TableCell colSpan={2} className="h-32 text-center p-0">
+                                        <EmptyState icon={Check} title="Queue Empty" description="All expenses have been reviewed." className="border-none rounded-none w-full h-full min-h-[150px] bg-transparent pb-0" />
                                     </TableCell>
                                 </TableRow>
                             )
                         )}
                     </TableBody>
                 </Table>
-                 <Button variant="link" asChild className="w-full mt-2">
-                    <Link href="/management/expenses">View All Expenses</Link>
-                </Button>
+                <div className="mt-auto p-4 border-t border-omuto-navy/10 bg-muted/20">
+                    <Button variant="outline" asChild className="w-full bg-white hover:bg-omuto-cream border-omuto-navy text-omuto-navy font-bold shadow-sm hover:-translate-y-0.5 transition-all">
+                        <Link href="/management/expenses">View All Expenses</Link>
+                    </Button>
+                </div>
             </CardContent>
         </Card>
     )

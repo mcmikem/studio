@@ -157,10 +157,10 @@ export function AppSidebar() {
                 isActive={isActive(item.href)}
                 onClick={handleLinkClick}
                 className={`
-                    rounded-lg border-md border-transparent transition-all h-11 px-4
+                    rounded-lg border-md transition-all h-11 px-4 duration-200
                     ${isActive(item.href) 
-                        ? 'bg-omuto-red text-white border-omuto-navy shadow-comic-sm hover:bg-omuto-red hover:text-white' 
-                        : 'bg-white text-omuto-navy/70 hover:bg-omuto-cream/50 hover:border-omuto-navy/20'
+                        ? 'bg-omuto-red text-white border-omuto-navy shadow-comic-sm hover:translate-x-1' 
+                        : 'bg-transparent text-omuto-navy/70 border-transparent hover:bg-white hover:border-omuto-navy hover:shadow-comic-sm hover:-translate-y-0.5 hover:text-omuto-navy'
                     }
                 `}
               >

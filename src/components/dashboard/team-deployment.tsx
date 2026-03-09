@@ -142,8 +142,8 @@ export function TeamDeployment() {
   const activeCount = teamStatus?.filter((s) => s.checkedIn).length || 0;
 
   return (
-    <Card className="rounded-[2rem] border-lg border-omuto-navy/20 shadow-soft bg-card overflow-hidden">
-      <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
+    <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
+      <CardHeader className="bg-omuto-cream/50 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl text-primary"><Signal className="h-5 w-5" /></div>

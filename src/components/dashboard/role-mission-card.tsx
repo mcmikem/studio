@@ -67,8 +67,12 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
   const content = roleData[profile.role] || defaultContent;
 
   return (
-    <Card className="border-2 border-omuto-navy shadow-comic-sm overflow-hidden">
-      <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-8">
+    <Card className="rounded-[2rem] border-xl border-omuto-navy shadow-comic bg-white overflow-hidden relative">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-omuto-red/5 rounded-bl-[100px] pointer-events-none"></div>
+      <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-8 relative z-10 border-b-4 border-omuto-red overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 transform rotate-12 opacity-10">
+          <Target className="w-32 h-32 text-white" />
+        </div>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-omuto-red rounded-lg"><Users className="h-5 w-5" /></div>
           <div>
