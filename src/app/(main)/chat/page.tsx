@@ -192,11 +192,13 @@ export default function ChatPage() {
   const isSendDisabled = !newMessage.trim() || isSending || isLoadingProfile || !profile;
 
   return (
-    <div className="flex flex-col h-full pb-20 md:pb-0">
-      <Card className="flex-1 flex flex-col">
-        <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-            <div className="space-y-6">
+    <div className="flex flex-col h-[calc(100dvh-5rem)] md:h-[calc(100vh-8rem)]">
+      <Card className="flex-1 flex flex-col overflow-hidden border-lg shadow-comic-sm">
+        <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+          <div 
+            className="flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar" 
+            ref={scrollAreaRef}
+          >
               <div className='text-center space-y-2 py-8 relative'>
                  <div className="absolute right-0 top-0">
                      <AlertDialog>
@@ -221,11 +223,11 @@ export default function ChatPage() {
                  </div>
                 <div className='inline-flex items-center justify-center'>
                     <Wand className="h-6 w-6 mr-2 text-primary" />
-                    <h1 className="font-headline text-3xl font-bold tracking-tight">
+                    <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight">
                         Hello, {profile?.name.split(' ')[0]}!
                     </h1>
                 </div>
-                <p className="text-muted-foreground">What can I help you accomplish today?</p>
+                <p className="text-muted-foreground text-sm">What can I help you accomplish today?</p>
               </div>
 
               {profile && <SmartReminders profile={profile} />}
@@ -240,22 +242,21 @@ export default function ChatPage() {
               {messages && messages.map(msg => (
                 <MessageItem key={msg.id} message={msg} />
               ))}
-            </div>
-          </ScrollArea>
+          </div>
           
-          <div className="p-4 border-t space-y-4">
+          <div className="p-4 border-t space-y-4 bg-background">
             
-            <div className='flex items-center gap-2 overflow-x-auto pb-2'>
-                 <Button variant="outline" size="sm" onClick={() => handleQuickAction('Plan my day')}>
+            <div className='flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar'>
+                 <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={() => handleQuickAction('Plan my day')}>
                     <CalendarCheck className="h-4 w-4 mr-2" /> Plan My Day
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => handleQuickAction('Log an activity')}>
+                <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={() => handleQuickAction('Log an activity')}>
                     <BarChart3 className="h-4 w-4 mr-2" /> Log Activity
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => handleQuickAction('Check out')}>
+                <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={() => handleQuickAction('Check out')}>
                     <MessageSquare className="h-4 w-4 mr-2" /> Check Out
                 </Button>
-                 <Button variant="outline" size="sm" onClick={() => handleQuickAction('Search for ')}>
+                 <Button variant="outline" size="sm" className="whitespace-nowrap" onClick={() => handleQuickAction('Search for ')}>
                     <Lightbulb className="h-4 w-4 mr-2" /> Quick Find
                 </Button>
             </div>
@@ -264,7 +265,7 @@ export default function ChatPage() {
                 placeholder={
                     isLoadingProfile ? "Loading profile..." : 
                     !user ? "You must be logged in to chat." : 
-                    "Ask Omuto AI a question..."
+                    "Ask Omuto AI..."
                 }
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
@@ -274,15 +275,15 @@ export default function ChatPage() {
                     handleSendMessage(e);
                   }
                 }}
-                className="min-h-0 h-12 resize-none"
+                className="min-h-0 h-12 resize-none text-base"
                 disabled={isLoadingProfile || !user}
               />
-              <Button type="submit" size="icon" disabled={isSendDisabled}>
+              <Button type="submit" size="icon" disabled={isSendDisabled} className="h-12 w-12 shrink-0">
                 <Send className="h-5 w-5" />
               </Button>
             </form>
-            <div className="text-xs text-muted-foreground text-center">
-                This is your private workspace with Omuto AI. Your conversations here are not shared with the team.
+            <div className="text-[10px] text-muted-foreground text-center uppercase tracking-widest font-bold opacity-50">
+                Private Workspace
             </div>
           </div>
         </CardContent>

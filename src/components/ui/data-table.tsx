@@ -41,7 +41,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {/* Desktop View */}
-      <div className={renderMobileCard ? "hidden sm:block rounded-md border" : "rounded-md border"}>
+      <div className={renderMobileCard ? "hidden md:block rounded-md border" : "rounded-md border"}>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -96,7 +96,7 @@ export function DataTable<TData, TValue>({
 
       {/* Mobile View */}
       {renderMobileCard && (
-          <div className="sm:hidden space-y-4">
+          <div className="md:hidden space-y-4">
               {isLoading ? (
                   Array.from({length: 3}).map((_, i) => (
                       <Skeleton key={i} className="h-32 w-full rounded-xl" />

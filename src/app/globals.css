@@ -56,7 +56,13 @@
 
   html,
   body {
+    height: 100%;
     overflow-x: hidden;
+  }
+
+  /* Support for modern mobile viewport height */
+  :root {
+    --vh: 1vh;
   }
 
   @media (max-width: 640px) {
