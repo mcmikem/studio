@@ -226,7 +226,7 @@ export default function LoginPage() {
                     <Info className="h-4 w-4 text-primary" />
                     <AlertTitle className="text-xs font-black uppercase text-primary">First time here?</AlertTitle>
                     <AlertDescription className="text-[10px] font-bold text-omuto-navy/70 leading-relaxed space-y-2">
-                        <p>If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first to set your password.</p>
+                        <p>If you haven't created your Omuto Central account yet, please use the <span className="text-primary uppercase">Sign Up</span> tab first to set your standard access password.</p>
                         {email.toLowerCase().includes('diana') && (
                             <p className="text-primary bg-primary/10 p-2 rounded border border-primary/20">
                                 <strong>Tip for Dianah:</strong> You can now also use <code className="bg-white px-1">dianah@omuto.org</code> to sign up!
@@ -275,14 +275,11 @@ export default function LoginPage() {
                                     id="password" 
                                     type="password" 
                                     required 
-                                    placeholder={isOrgEmail ? "Staff Password: Omutofoundation." : "Volunteer Password: Omutofoundation"}
+                                    placeholder="••••••••"
                                     className="h-12 border-lg rounded-xl"
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)} 
                                 />
-                                <p className="text-[10px] font-bold text-muted-foreground italic">
-                                    {isOrgEmail ? "Staff must use 'Omutofoundation.' (with the dot)" : "Volunteers use 'Omutofoundation' (no dot)"}
-                                </p>
                             </div>
 
                             {activeTab === 'signup' && !isOrgEmail && (
