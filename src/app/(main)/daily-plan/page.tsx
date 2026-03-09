@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Loader2, Sparkles, Wand, ThumbsUp, ThumbsDown, Check, ArrowRight, Target } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, Sparkles, Wand, ThumbsUp, ThumbsDown, Check, ArrowRight, Target, Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -25,6 +26,7 @@ export default function DailyPlannerPage() {
   const [mood, setMood] = useState<'good' | 'neutral' | 'bad' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [aiPlan, setAiPlan] = useState<DailyPlannerAIOutput | null>(null);
+  const [editablePlan, setEditablePlan] = useState<DailyPlannerAIOutput | null>(null);
 
   const firestore = useFirestore();
   const keyResultsQuery = useMemoFirebase((db) => db ? query(collection(db, 'key-results'), orderBy('priority')) : null, []);
@@ -59,6 +61,7 @@ export default function DailyPlannerPage() {
         keyResults: keyResults.map(kr => ({ title: kr.title, description: kr.description, deadline: formatDateSafe(kr.deadline, 'dateOnly') })),
       });
       setAiPlan(result);
+      setEditablePlan(result);
       toast({
         title: 'Plan Built!',
         description: 'Your strategic plan for the day is ready. Review and submit it.',
@@ -75,12 +78,35 @@ export default function DailyPlannerPage() {
     }
   };
 
+  const handleTimeBlockChange = (index: number, field: 'startTime' | 'endTime' | 'description', value: string) => {
+    if (!editablePlan) return;
+    const newBlocks = [...editablePlan.timeBlocks];
+    newBlocks[index] = { ...newBlocks[index], [field]: value };
+    setEditablePlan({ ...editablePlan, timeBlocks: newBlocks });
+  };
+
+  const addTimeBlock = () => {
+    if (!editablePlan) return;
+    setEditablePlan({
+        ...editablePlan,
+        timeBlocks: [...editablePlan.timeBlocks, { startTime: "09:00", endTime: "10:00", description: "New Task" }]
+    });
+  };
+
+  const removeTimeBlock = (index: number) => {
+    if (!editablePlan) return;
+    setEditablePlan({
+        ...editablePlan,
+        timeBlocks: editablePlan.timeBlocks.filter((_, i) => i !== index)
+    });
+  };
+
   const submitCheckin = () => {
-    if (!aiPlan || !mood || !primaryMission) return;
+    if (!editablePlan || !mood || !primaryMission) return;
     const planData = {
       primaryMission,
       mood,
-      details: aiPlan,
+      details: editablePlan,
     };
     const encodedPlan = encodeURIComponent(JSON.stringify(planData));
     router.push(`/forms/check-in?plan=${encodedPlan}`);
@@ -109,7 +135,7 @@ export default function DailyPlannerPage() {
                 placeholder="e.g., 'Finalize the RED Campaign report' or 'Conduct a site visit at St. Mary\'s School...'"
                 className="min-h-[100px] border-lg rounded-2xl p-4 text-omuto-navy font-bold"
                 value={primaryMission}
-                onChange={(e) => setPrimaryMission(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrimaryMission(e.target.value)}
               />
             </div>
             <div className="space-y-3">
@@ -154,17 +180,45 @@ export default function DailyPlannerPage() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-3">
-                    <h4 className="font-black uppercase text-sm">Time Blocks</h4>
-                    <ul className="space-y-2">
-                        {aiPlan.timeBlocks.map((block, i) => (
-                            <li key={i} className="flex gap-4 p-3 bg-muted/30 rounded-lg">
-                                <span className="font-bold text-primary text-xs w-28 text-right">{block.startTime} - {block.endTime}</span>
-                                <span className="text-xs font-bold text-omuto-navy/80">{block.description}</span>
-                            </li>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h4 className="font-black uppercase text-sm">Time Blocks</h4>
+                        <Button variant="outline" size="sm" onClick={addTimeBlock} className="h-8 text-[10px] font-black uppercase tracking-widest border-2">
+                            <Plus className="h-3 w-3 mr-1" /> Add Task
+                        </Button>
+                    </div>
+                    <div className="space-y-3">
+                        {editablePlan?.timeBlocks.map((block, i) => (
+                            <div key={i} className="flex gap-2 items-start p-3 bg-muted/30 rounded-2xl border-2 border-transparent hover:border-omuto-navy/10 transition-all group">
+                                <div className="flex flex-col gap-1 w-32">
+                                    <Input 
+                                        value={block.startTime} 
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTimeBlockChange(i, 'startTime', e.target.value)}
+                                        className="h-8 text-[10px] font-bold text-primary bg-white border-2 text-center p-0"
+                                    />
+                                    <Input 
+                                        value={block.endTime} 
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleTimeBlockChange(i, 'endTime', e.target.value)}
+                                        className="h-8 text-[10px] font-bold text-primary bg-white border-2 text-center p-0"
+                                    />
+                                </div>
+                                <Textarea 
+                                    value={block.description}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleTimeBlockChange(i, 'description', e.target.value)}
+                                    className="min-h-[64px] text-xs font-bold text-omuto-navy/80 bg-white border-2 resize-none leading-tight"
+                                />
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={() => removeTimeBlock(i)}
+                                    className="h-8 w-8 text-muted-foreground hover:text-omuto-red group-hover:opacity-100 opacity-0 transition-opacity"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
                  <div className="space-y-3">
                     <h4 className="font-black uppercase text-sm">Key Resources</h4>

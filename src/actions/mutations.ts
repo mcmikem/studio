@@ -195,12 +195,13 @@ export async function generateDailyPlanAction(input: DailyPlannerAIInput): Promi
 
     // 2. Build Time Blocks based on role
     const timeBlocks = [
-        { startTime: "08:30", endTime: "09:00", description: "Morning Briefing & Review" },
-        { startTime: "09:00", endTime: "12:00", description: `Deep Work: ${primaryMission}` },
+        { startTime: "08:30", endTime: "09:15", description: "Morning Briefing: Review Daily Goals" },
+        { startTime: "09:15", endTime: "11:00", description: `Primary Focus: ${primaryMission} (Deep Work)` },
+        { startTime: "11:00", endTime: "12:00", description: "Coordination & Strategic Communication" },
         { startTime: "12:00", endTime: "13:00", description: "Lunch & Refuel" },
-        { startTime: "13:00", endTime: "14:30", description: "Team Sync & Operational Coordination" },
-        { startTime: "14:30", endTime: "16:30", description: "Documentation & Next Step Planning" },
-        { startTime: "16:30", endTime: "17:00", description: "Daily Check-out & Briefing preparation" }
+        { startTime: "13:00", endTime: "15:00", description: `Continuation: ${primaryMission}` },
+        { startTime: "15:00", endTime: "16:15", description: "Documentation & Impact Evidence Collection" },
+        { startTime: "16:15", endTime: "17:00", description: "Daily Check-out & Briefing preparation" }
     ];
 
     // 3. Static Resources & Challenges
