@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { subMonths } from 'date-fns';
+import { subDays } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -34,14 +34,14 @@ function downloadCsv(filename: string, rows: Array<Record<string, string | numbe
 
 export default function TeamPerformancePage() {
   const { toast } = useToast();
-  const thirtyDaysAgo = useMemo(() => subMonths(new Date(), 1), []);
+  const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
 
   const activitiesQuery = useMemoFirebase((db) => db ? query(collection(db, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc')) : null, [thirtyDaysAgo]);
   const checkinsQuery = useMemoFirebase((db) => db ? query(collection(db, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')) : null, [thirtyDaysAgo]);
   const checkoutsQuery = useMemoFirebase((db) => db ? query(collection(db, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')) : null, [thirtyDaysAgo]);
   const expensesQuery = useMemoFirebase((db) => db ? query(collection(db, 'expenses'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc')) : null, [thirtyDaysAgo]);
   const testimoniesQuery = useMemoFirebase((db) => db ? query(collection(db, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc')) : null, [thirtyDaysAgo]);
-  const usersQuery = useMemoFirebase((db) => db ? query(collection(db, 'users')) : null, []);
+  const usersQuery = useMemoFirebase((db) => db ? query(collection(db, 'users'), orderBy('name')) : null, []);
 
   const { data: activities, isLoading: isActLoading } = useCollection<Activity>(activitiesQuery);
   const { data: checkins, isLoading: isCinLoading } = useCollection<Checkin>(checkinsQuery);

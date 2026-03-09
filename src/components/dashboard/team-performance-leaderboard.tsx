@@ -23,24 +23,21 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
     if (!firestore) return null;
     return {
       activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc')),
-      users: query(collection(firestore, 'users'), orderBy('name')),
-      checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo))),
+      checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')),
       checkouts: query(collection(firestore, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')),
       expenses: query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')),
       testimonies: query(collection(firestore, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc')),
-      partnerships: query(collection(firestore, 'partnerships'), orderBy('createdAt', 'desc')),
+      users: query(collection(firestore, 'users'), orderBy('name')),
     };
   }, [firestore, thirtyDaysAgo]);
 
   const activities = useCollection<Activity>(queries?.activities);
-  const users = useCollection<User>(queries?.users);
-  const checkins = useCollection<Checkin>(queries?.checkins);
   const checkouts = useCollection<Checkout>(queries?.checkouts);
   const expenses = useCollection<Expense>(queries?.expenses);
   const testimonies = useCollection<Testimony>(queries?.testimonies);
-  const partnerships = useCollection<Partnership>(queries?.partnerships);
+  const users = useCollection<User>(queries?.users);
 
-  const isLoading = activities.isLoading || users.isLoading || checkins.isLoading || checkouts.isLoading || expenses.isLoading || testimonies.isLoading || partnerships.isLoading;
+  const isLoading = activities.isLoading || checkins.isLoading || checkouts.isLoading || expenses.isLoading || testimonies.isLoading || users.isLoading;
 
   const leaderboard = useMemo(
     () =>
