@@ -203,6 +203,15 @@ function EssentialsHubPage() {
                 </div>
             </header>
 
+            <Card className="border-primary/30 bg-primary/5 shadow-comic-sm">
+                <CardHeader>
+                    <CardTitle className="text-base">How the Essentials system works</CardTitle>
+                    <CardDescription>
+                        Add real product/material names, log production, record sales, and run inventory checks. The app automatically updates shared data so reports and dashboards stay aligned.
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+
              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard 
                     title="Monthly Revenue" 
