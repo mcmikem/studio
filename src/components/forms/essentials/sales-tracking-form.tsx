@@ -201,7 +201,7 @@ export function SalesTrackingForm() {
                                 <div className="col-span-4 md:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Qty</Label><Input type="number" {...form.register(`items.${index}.quantity`)} className="h-11 border-lg rounded-xl font-bold bg-white" onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}/></div>
                                 <div className="col-span-4 md:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price</Label><Input type="number" readOnly value={form.watch(`items.${index}.unit_price`)} className="h-11 border-lg rounded-xl font-bold bg-muted/50" /></div>
                                 <div className="col-span-4 md:col-span-3 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total</Label><div className="h-11 border-lg rounded-xl flex items-center px-4 bg-muted/50 font-bold text-omuto-navy">{formatCurrency(form.watch(`items.${index}.total`))}</div></div>
-                                <div className="col-span-12 md:col-span-1"><Button variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 rounded-xl" onClick={() => remove(index)}><Trash2 className="h-5 w-5"/></Button></div>
+                                <div className="col-span-12 md:col-span-1"><Button type="button" variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 rounded-xl" onClick={() => remove(index)}><Trash2 className="h-5 w-5"/></Button></div>
                             </div>
                         ))}
                     </div>

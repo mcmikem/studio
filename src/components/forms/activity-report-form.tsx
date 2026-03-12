@@ -367,7 +367,7 @@ function ActivityReportFormComponent() {
                                     <p className="font-heading text-4xl font-black tracking-tighter">{formatCurrency(directValue)}</p>
                                 </div>
                             </div>
-                            <Button onClick={() => setCurrentTab("execution")} className="btn-omuto bg-omuto-red text-white border-lg border-white shadow-comic-sm hover:shadow-comic-sm">
+                            <Button type="button" onClick={() => setCurrentTab("execution")} className="btn-omuto bg-omuto-red text-white border-lg border-white shadow-comic-sm hover:shadow-comic-sm">
                                 NEXT STEP <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </div>
@@ -425,7 +425,7 @@ function ActivityReportFormComponent() {
                                     <p className="font-heading text-4xl font-black text-white tracking-tighter">{formatCurrency(totalValue)}</p>
                                 </div>
                             </div>
-                            <Button onClick={() => setCurrentTab("logging")} className="btn-omuto bg-omuto-red text-white border-lg border-white shadow-comic-sm hover:shadow-comic-sm">
+                            <Button type="button" onClick={() => setCurrentTab("logging")} className="btn-omuto bg-omuto-red text-white border-lg border-white shadow-comic-sm hover:shadow-comic-sm">
                                 LOG FINAL STATS <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </div>
@@ -491,7 +491,7 @@ function ActivityReportFormComponent() {
                             </div>
                         </div>
 
-                        <Button className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm" onClick={handleLogActivity} disabled={loading || isUploading}>
+                        <Button type="button" className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm" onClick={handleLogActivity} disabled={loading || isUploading}>
                             {(loading || isUploading) ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Zap className="mr-3 h-5 w-5 fill-white" />}
                             {isUploading ? 'UPLOADING...' : 'DEPLOY IMPACT DATA'}
                         </Button>
