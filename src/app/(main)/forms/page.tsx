@@ -36,7 +36,7 @@ const formSections = [
    {
     title: 'System',
     forms: [
-        { href: '/system/feedback', title: 'System Feedback & Bug Report', description: 'Report an issue or suggest a feature.', icon: Bug },
+        { href: '/forms/system/feedback', title: 'System Feedback & Bug Report', description: 'Report an issue or suggest a feature.', icon: Bug },
     ]
   },
 ];

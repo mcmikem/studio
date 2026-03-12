@@ -7,6 +7,7 @@ import type { FirebaseApp } from "firebase/app";
 import { buildUploadPath } from "@/lib/upload-paths";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
 
 /**
  * Uploads a file Blob to a specified path in Firebase Storage.
@@ -22,6 +23,18 @@ export async function uploadFile(
 ): Promise<string> {
   if (!app) {
     throw new Error("Firebase app is not initialized. Cannot upload file.");
+  }
+
+  if (!path?.trim()) {
+    throw new Error("Upload path is missing. Please try again.");
+  }
+
+  if (!fileBlob || fileBlob.size <= 0) {
+    throw new Error("Selected file is empty. Please choose a valid file.");
+  }
+
+  if (fileBlob.size > MAX_UPLOAD_BYTES) {
+    throw new Error("File is too large. Please keep uploads under 25MB.");
   }
 
   const storage = getStorage(app);

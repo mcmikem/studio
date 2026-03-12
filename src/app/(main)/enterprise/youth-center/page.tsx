@@ -15,19 +15,19 @@ const youthCenterLinks = [
     icon: Printer,
   },
   {
-    href: '#',
+    href: '/enterprise/youth-center/design-projects',
     title: 'Design Projects',
     description: 'Manage branding and design projects for clients.',
     icon: Brush,
   },
   {
-    href: '#',
+    href: '/enterprise/youth-center/courses',
     title: 'Courses',
     description: 'Manage short courses and holiday intensives.',
     icon: BookOpen,
   },
   {
-    href: '#',
+    href: '/enterprise/youth-center/students',
     title: 'Students',
     description: 'View and manage all enrolled students.',
     icon: Users,
