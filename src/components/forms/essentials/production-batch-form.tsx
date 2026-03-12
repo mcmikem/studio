@@ -13,7 +13,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import {
   useFirestore,
@@ -99,7 +105,8 @@ export function ProductionBatchForm() {
     formState: { errors, isSubmitting },
   } = form;
 
-  const [editingBatch, setEditingBatch] = useState<ProductionBatchFormData | null>(null);
+  const [editingBatch, setEditingBatch] =
+    useState<ProductionBatchFormData | null>(null);
 
   const handleEditBatch = (batch: ProductionBatchFormData) => {
     setEditingBatch(batch);
@@ -117,9 +124,14 @@ export function ProductionBatchForm() {
 
   const handleDeleteBatch = async (batch: ProductionBatchFormData) => {
     if (!firestore || !batch.id) return;
+
     try {
       await runTransaction(firestore, async (transaction) => {
-        const batchRef = doc(firestore, 'production-batches', batch.id);
+        const batchRef = doc(
+          firestore,
+          'production-batches',
+          batch.id as string,
+        );
         transaction.delete(batchRef);
       });
 
@@ -156,7 +168,11 @@ export function ProductionBatchForm() {
     try {
       await runTransaction(firestore, async (transaction) => {
         if (editingBatch && editingBatch.id) {
-          const batchRef = doc(firestore, 'production-batches', editingBatch.id);
+          const batchRef = doc(
+            firestore,
+            'production-batches',
+            editingBatch.id as string,
+          );
           transaction.update(batchRef, {
             ...data,
             updatedBy: profile.name,
