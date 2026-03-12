@@ -19,6 +19,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { z } from 'zod';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 const CustomerFeedbackFormSchema = z.object({
     customer_name: z.string().optional(),
@@ -40,6 +41,7 @@ export function CustomerFeedbackForm() {
     return query(collection(firestore, 'products'), where('type', '==', 'finished'));
   }, [firestore]);
   const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
+  const hasProducts = (products?.length || 0) > 0;
 
   const form = useForm<z.infer<typeof CustomerFeedbackFormSchema>>({
     resolver: zodResolver(CustomerFeedbackFormSchema),
@@ -73,10 +75,11 @@ export function CustomerFeedbackForm() {
   };
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className="enterprise-form-shell">
       <Button variant="outline" asChild className="rounded-xl border-lg">
         <Link href="/enterprise/essentials"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Hub</Link>
       </Button>
+      <EnterpriseFormTips type="feedback" />
       <Card className="border-lg shadow-comic-sm">
         <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
           <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter"><MessageSquare className="h-8 w-8 text-primary"/> Customer Feedback</CardTitle>
@@ -105,6 +108,12 @@ export function CustomerFeedbackForm() {
                                 <SelectContent>{products?.map(p => <SelectItem key={p.id} value={p.name} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
                             </Select>
                         )}/>
+                    )}
+                    {!isLoadingProducts && !hasProducts && (
+                      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs font-semibold text-destructive">
+                        No finished products found. Add products first in{' '}
+                        <Link href="/enterprise/essentials/products" className="underline">Products</Link>.
+                      </div>
                     )}
                      {errors.product_name && <p className="text-xs text-destructive font-bold">{errors.product_name.message}</p>}
                 </div>
@@ -136,8 +145,8 @@ export function CustomerFeedbackForm() {
                 {errors.feedback && <p className="text-xs text-destructive font-bold">{errors.feedback.message}</p>}
             </div>
           </CardContent>
-          <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
-            <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
+          <CardFooter className="enterprise-form-footer">
+            <Button type="submit" disabled={isSubmitting || !hasProducts} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
               {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <MessageSquare className="mr-2 h-5 w-5" />}
               Save Feedback
             </Button>

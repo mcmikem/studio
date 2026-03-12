@@ -303,7 +303,7 @@ export function ProgramActivityForm({
                           </div>
                        </div>
 
-                      <Button onClick={() => setCurrentTab("execution")} className="w-full">Next: Plan Execution</Button>
+                      <Button type="button" onClick={() => setCurrentTab("execution")} className="w-full">Next: Plan Execution</Button>
                     </div>
                 </TabsContent>
                  <TabsContent value="execution" className="pt-6">
@@ -331,7 +331,7 @@ export function ProgramActivityForm({
                                   <span className="font-bold">{formatCurrency(indirectValue)}</span>
                               </div>
                           </div>
-                           <Button onClick={() => setCurrentTab("logging")} className="w-full">Next: Log Results</Button>
+                           <Button type="button" onClick={() => setCurrentTab("logging")} className="w-full">Next: Log Results</Button>
                       </div>
                 </TabsContent>
                 <TabsContent value="logging" className="pt-6">
@@ -385,7 +385,7 @@ export function ProgramActivityForm({
                           <span className={`font-bold font-headline ${finalRoi >= 0 ? 'text-green-500' : 'text-red-500'}`}>{finalRoi.toFixed(0)}%</span>
                         </div>
                       </div>
-                      <Button className="w-full" size="lg" onClick={handleLogActivity} disabled={loading || !activityName.trim()}>
+                      <Button type="button" className="w-full" size="lg" onClick={handleLogActivity} disabled={loading || !activityName.trim()}>
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Log this Activity &amp; ROI
                       </Button>

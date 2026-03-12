@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 export function SalesTrackingForm() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export function SalesTrackingForm() {
     return query(collection(firestore, 'products'), where('type', '==', 'finished'), where('is_active', '==', true));
   }, [firestore]);
   const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
+  const hasSellableProducts = (products?.length || 0) > 0;
 
   const partnersQuery = useMemoFirebase(() => {
       if (!firestore) return null;
@@ -126,10 +128,11 @@ export function SalesTrackingForm() {
   };
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className="enterprise-form-shell">
          <Button variant="outline" asChild className="rounded-xl border-lg">
             <Link href="/enterprise/essentials"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Hub</Link>
         </Button>
+        <EnterpriseFormTips type="sales" />
         <Card className="border-lg shadow-comic-sm">
             <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
                 <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter"><ShoppingCart className="h-8 w-8 text-primary"/> Point of Sale</CardTitle>
@@ -161,6 +164,9 @@ export function SalesTrackingForm() {
                                     <SelectContent>{partners?.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
                                 </Select>
                             )}
+                            {!isLoadingPartners && (!partners || partners.length === 0) && (
+                              <p className="text-[11px] font-semibold text-muted-foreground">No partners found. You can still enter customer details manually.</p>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Customer Name</Label>
@@ -185,15 +191,21 @@ export function SalesTrackingForm() {
                                             <Select onValueChange={(value) => handleProductChange(index, value)} value={field.value}><SelectTrigger className="h-11 border-lg rounded-xl font-bold bg-white"><SelectValue placeholder="Select product..." /></SelectTrigger><SelectContent>{products?.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent></Select>
                                         )}/>
                                     )}
+                                    {!isLoadingProducts && !hasSellableProducts && (
+                                      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-[11px] font-semibold text-destructive">
+                                        No active finished products found. Add one in{' '}
+                                        <Link href="/enterprise/essentials/products" className="underline">Products</Link>.
+                                      </div>
+                                    )}
                                 </div>
                                 <div className="col-span-4 md:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Qty</Label><Input type="number" {...form.register(`items.${index}.quantity`)} className="h-11 border-lg rounded-xl font-bold bg-white" onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}/></div>
                                 <div className="col-span-4 md:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price</Label><Input type="number" readOnly value={form.watch(`items.${index}.unit_price`)} className="h-11 border-lg rounded-xl font-bold bg-muted/50" /></div>
                                 <div className="col-span-4 md:col-span-3 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total</Label><div className="h-11 border-lg rounded-xl flex items-center px-4 bg-muted/50 font-bold text-omuto-navy">{formatCurrency(form.watch(`items.${index}.total`))}</div></div>
-                                <div className="col-span-12 md:col-span-1"><Button variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 rounded-xl" onClick={() => remove(index)}><Trash2 className="h-5 w-5"/></Button></div>
+                                <div className="col-span-12 md:col-span-1"><Button type="button" variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 rounded-xl" onClick={() => remove(index)}><Trash2 className="h-5 w-5"/></Button></div>
                             </div>
                         ))}
                     </div>
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ product_id: '', product_name: '', quantity: 1, unit_price: 0, total: 0 })} className="font-black text-xs uppercase tracking-widest border-lg rounded-xl h-10 px-4"><PlusCircle className="mr-2 h-4 w-4" />Add Product Item</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ product_id: '', product_name: '', quantity: 1, unit_price: 0, total: 0 })} className="font-black text-xs uppercase tracking-widest border-lg rounded-xl h-10 px-4" disabled={!hasSellableProducts}><PlusCircle className="mr-2 h-4 w-4" />Add Product Item</Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-dashed">
@@ -201,13 +213,13 @@ export function SalesTrackingForm() {
                     <div className="space-y-2"><Label className="font-bold text-xs uppercase tracking-widest">Transaction Status</Label><Controller name="status" control={form.control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-12 border-lg rounded-xl font-bold"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="completed" className="font-bold text-green-600">Completed (Paid)</SelectItem><SelectItem value="pending" className="font-bold text-orange-600">Pending (Invoice)</SelectItem></SelectContent></Select>)}/></div>
                 </div>
 
-                <div className="p-8 bg-omuto-navy text-white rounded-3xl flex justify-between items-center shadow-comic-lg mt-6">
+                <div className="p-4 sm:p-8 bg-omuto-navy text-white rounded-3xl flex justify-between items-center shadow-comic-lg mt-6 gap-3">
                     <span className="font-black uppercase tracking-widest text-white/60">Grand Total Payable</span>
-                    <span className="font-black text-4xl italic tracking-tighter">{formatCurrency(totalAmount)}</span>
+                    <span className="font-black text-2xl sm:text-4xl italic tracking-tighter">{formatCurrency(totalAmount)}</span>
                 </div>
             </CardContent>
-             <CardFooter className="p-8 bg-muted/30 border-t-lg border-omuto-navy/10 mt-6">
-                <Button type="submit" disabled={form.formState.isSubmitting} className="btn-omuto w-full h-16 text-lg font-black uppercase tracking-widest shadow-comic-lg rounded-2xl border-white">
+             <CardFooter className="enterprise-form-footer mt-6">
+                <Button type="submit" disabled={form.formState.isSubmitting || !hasSellableProducts} className="btn-omuto w-full h-16 text-lg font-black uppercase tracking-widest shadow-comic-lg rounded-2xl border-white">
                 {form.formState.isSubmitting ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : <ShoppingCart className="mr-2 h-6 w-6" />}
                 Process Sale & Print Receipt
                 </Button>
