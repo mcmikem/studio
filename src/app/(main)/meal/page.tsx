@@ -15,6 +15,7 @@ const mealSections = [
             { href: '/meal/attendance', title: 'Log General Attendance', icon: FileText },
             { href: '/meal/record-testimony', title: 'Capture Impact Story', icon: BookOpen },
             { href: '/meal/data', title: 'Open Data Dashboards', icon: LayoutDashboard },
+            { href: '/meal/impact-studio', title: 'Impact Studio (AI Forms + Knowledge)', icon: BookOpen },
         ]
     },
     {
