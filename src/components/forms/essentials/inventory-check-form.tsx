@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/types';
 import Link from 'next/link';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 const inventoryCheckSchema = z.object({
   productId: z.string().min(1, "Please select a product."),
@@ -93,6 +94,7 @@ export function InventoryCheckForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <EnterpriseFormTips type="inventory" />
       <div className="space-y-2">
         <Label htmlFor="productId">Product</Label>
         {isLoadingProducts ? <Skeleton className="h-10" /> : (

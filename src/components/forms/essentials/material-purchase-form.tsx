@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { useEffect, useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { z } from 'zod';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 const MaterialPurchaseFormSchema = z.object({
     material_id: z.string(),
@@ -103,7 +104,8 @@ export function MaterialPurchaseForm() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="enterprise-form-shell">
+      <EnterpriseFormTips type="procurement" />
       <Card className="border-lg shadow-comic-sm">
         <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-4 sm:p-6">
           <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl font-black uppercase tracking-tighter">
@@ -161,7 +163,7 @@ export function MaterialPurchaseForm() {
                 <Input {...register('supplier_name')} placeholder="e.g., Mukwano Industries" className="border-lg rounded-xl h-12 font-bold" />
             </div>
           </CardContent>
-          <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
+          <CardFooter className="enterprise-form-footer">
             <Button type="submit" disabled={isSubmitting || !hasMaterials} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
               Commit Purchase & Update Inventory

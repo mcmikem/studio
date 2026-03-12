@@ -19,6 +19,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { z } from 'zod';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 const StockAdjustmentFormSchema = z.object({
     product_id: z.string(),
@@ -96,10 +97,11 @@ export function StockAdjustmentForm() {
   };
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className="enterprise-form-shell">
       <Button variant="outline" asChild className="rounded-xl border-lg">
         <Link href="/enterprise/essentials"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Hub</Link>
       </Button>
+      <EnterpriseFormTips type="inventory" />
       <Card className="border-lg shadow-comic-sm">
         <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
           <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter text-destructive"><AlertTriangle className="h-8 w-8"/> Stock Adjustment</CardTitle>
@@ -159,7 +161,7 @@ export function StockAdjustmentForm() {
                 {errors.reason && <p className="text-xs text-destructive font-bold">{errors.reason.message}</p>}
             </div>
           </CardContent>
-          <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
+          <CardFooter className="enterprise-form-footer">
             <Button type="submit" disabled={isSubmitting || !hasProducts} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl bg-destructive border-white hover:bg-destructive/90">
               {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               Update Stock Records

@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 export function SalesTrackingForm() {
   const router = useRouter();
@@ -127,10 +128,11 @@ export function SalesTrackingForm() {
   };
 
   return (
-    <div className="space-y-4 pb-10">
+    <div className="enterprise-form-shell">
          <Button variant="outline" asChild className="rounded-xl border-lg">
             <Link href="/enterprise/essentials"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Hub</Link>
         </Button>
+        <EnterpriseFormTips type="sales" />
         <Card className="border-lg shadow-comic-sm">
             <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
                 <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter"><ShoppingCart className="h-8 w-8 text-primary"/> Point of Sale</CardTitle>
@@ -211,12 +213,12 @@ export function SalesTrackingForm() {
                     <div className="space-y-2"><Label className="font-bold text-xs uppercase tracking-widest">Transaction Status</Label><Controller name="status" control={form.control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-12 border-lg rounded-xl font-bold"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="completed" className="font-bold text-green-600">Completed (Paid)</SelectItem><SelectItem value="pending" className="font-bold text-orange-600">Pending (Invoice)</SelectItem></SelectContent></Select>)}/></div>
                 </div>
 
-                <div className="p-8 bg-omuto-navy text-white rounded-3xl flex justify-between items-center shadow-comic-lg mt-6">
+                <div className="p-4 sm:p-8 bg-omuto-navy text-white rounded-3xl flex justify-between items-center shadow-comic-lg mt-6 gap-3">
                     <span className="font-black uppercase tracking-widest text-white/60">Grand Total Payable</span>
-                    <span className="font-black text-4xl italic tracking-tighter">{formatCurrency(totalAmount)}</span>
+                    <span className="font-black text-2xl sm:text-4xl italic tracking-tighter">{formatCurrency(totalAmount)}</span>
                 </div>
             </CardContent>
-             <CardFooter className="p-8 bg-muted/30 border-t-lg border-omuto-navy/10 mt-6">
+             <CardFooter className="enterprise-form-footer mt-6">
                 <Button type="submit" disabled={form.formState.isSubmitting || !hasSellableProducts} className="btn-omuto w-full h-16 text-lg font-black uppercase tracking-widest shadow-comic-lg rounded-2xl border-white">
                 {form.formState.isSubmitting ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : <ShoppingCart className="mr-2 h-6 w-6" />}
                 Process Sale & Print Receipt

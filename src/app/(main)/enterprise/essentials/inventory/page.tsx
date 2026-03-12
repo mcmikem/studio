@@ -11,7 +11,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 function InventoryCheckPage() {
     return (
         <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
-             <div className="space-y-4">
+             <div className="enterprise-form-shell">
                 <Button variant="outline" asChild>
                     <Link href="/enterprise/essentials">
                         <ArrowLeft className="mr-2 h-4 w-4" />

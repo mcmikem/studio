@@ -27,6 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { useState } from 'react';
+import { starterProducts } from '@/lib/enterprise-starter-catalog';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -71,6 +72,30 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   
   const productType = watch('type');
 
+  const applyStarterTemplate = (sku: string) => {
+    const template = starterProducts.find((item) => item.sku === sku);
+    if (!template) return;
+
+    reset({
+      ...watch(),
+      name: template.name,
+      sku: template.sku,
+      description: template.description,
+      unit: template.unit,
+      type: template.type,
+      default_selling_price: template.default_selling_price || 0,
+      cost_per_unit: template.cost_per_unit || 0,
+      reorder_level: template.reorder_level || 0,
+      quantity_on_hand: template.quantity_on_hand || 0,
+      current_stock_quantity: template.current_stock_quantity || 0,
+      location: template.location || '',
+      categoryId: '__create__',
+      is_active: true,
+    });
+    setNewCategoryName(template.category);
+    toast({ title: 'Template applied', description: `${template.name} fields pre-filled.` });
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     if (!firestore) return;
 
@@ -108,6 +133,21 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {!isEditMode && (
+        <div className="space-y-2">
+          <Label>Starter Template (Optional)</Label>
+          <Select onValueChange={applyStarterTemplate}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose a ready Omuto Essentials product/material" />
+            </SelectTrigger>
+            <SelectContent>
+              {starterProducts.map((item) => (
+                <SelectItem key={item.sku} value={item.sku}>{item.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Product/Material Name</Label>

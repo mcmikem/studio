@@ -140,6 +140,14 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;     /* Firefox */
   }
+
+  .enterprise-form-shell {
+    @apply space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))];
+  }
+
+  .enterprise-form-footer {
+    @apply bg-muted/30 border-t-lg border-omuto-navy/10 p-4 sm:p-6;
+  }
 }
 
 

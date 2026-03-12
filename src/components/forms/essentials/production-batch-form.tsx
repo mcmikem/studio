@@ -19,6 +19,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useMemo, useState } from 'react';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 export function ProductionBatchForm() {
   const router = useRouter();
@@ -148,13 +149,14 @@ export function ProductionBatchForm() {
   };
 
   return (
-     <div className="space-y-4 pb-10">
+     <div className="enterprise-form-shell">
       <Button variant="outline" asChild className="rounded-xl border-lg">
         <Link href="/enterprise/essentials">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Hub
         </Link>
       </Button>
+      <EnterpriseFormTips type="production" />
       <Card className="border-lg shadow-comic-sm">
         <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
           <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter"><Package className="h-8 w-8 text-primary"/> New Production Batch</CardTitle>
@@ -243,7 +245,7 @@ export function ProductionBatchForm() {
                 <Textarea id="notes" {...register('notes')} placeholder="e.g., Temperature conditions, team members involved, or any deviations from SOP..." className="border-lg rounded-xl min-h-[100px]" />
              </div>
           </CardContent>
-          <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
+          <CardFooter className="enterprise-form-footer">
             <Button type="submit" disabled={isSubmitting || !hasFinishedGoods} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
               {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Package className="mr-2 h-5 w-5" />}
               Commit Production Batch to Inventory
