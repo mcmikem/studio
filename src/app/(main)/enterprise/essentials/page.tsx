@@ -27,7 +27,7 @@ function StatCard({ title, value, icon: Icon, description, trend, variant = 'def
                 </div>
             </CardHeader>
             <CardContent>
-                <div className={`text-2xl font-bold tracking-tight ${variant === 'urgent' ? 'text-omuto-red' : ''}`}>{value}</div>
+                <div className={`text-xl sm:text-2xl font-bold tracking-tight break-words ${variant === 'urgent' ? 'text-omuto-red' : ''}`}>{value}</div>
                 {description && <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase tracking-tighter">{description}</p>}
                 {trend && <p className="text-[10px] font-black text-green-500 mt-2 flex items-center gap-1">
                     <TrendingUp className="h-3 w-3" /> {trend}
@@ -164,17 +164,17 @@ function EssentialsHubPage() {
     return (
         <div className="space-y-8 pb-10">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                     <h1 className="font-headline text-4xl font-bold tracking-tight text-omuto-navy flex items-center gap-3">
-                        <Store className="h-10 w-10 text-primary" />
+                <div className="min-w-0">
+                     <h1 className="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-omuto-navy flex flex-wrap items-center gap-2 sm:gap-3 leading-tight">
+                        <Store className="h-8 w-8 sm:h-10 sm:w-10 text-primary shrink-0" />
                         Omuto <span className="text-primary">Essentials</span> Hub
                     </h1>
-                    <p className="text-muted-foreground font-bold mt-1 uppercase text-xs tracking-widest leading-relaxed max-w-xl">
+                    <p className="text-muted-foreground font-bold mt-1 uppercase text-[11px] sm:text-xs tracking-[0.15em] sm:tracking-widest leading-relaxed max-w-xl break-words">
                         Centralized command center for manufacturing, sales performance, and high-integrity inventory management.
                     </p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild className="rounded-xl border-lg shadow-comic-sm">
+                <div className="flex gap-2 w-full md:w-auto">
+                    <Button variant="outline" size="sm" asChild className="rounded-xl border-lg shadow-comic-sm w-full md:w-auto">
                         <Link href="/enterprise"><ArrowLeft className="mr-2 h-4 w-4" /> Enterprise Hub</Link>
                     </Button>
                 </div>
@@ -211,12 +211,12 @@ function EssentialsHubPage() {
              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 <div className="lg:col-span-3 space-y-8">
                     <Card className="border-lg shadow-comic-sm overflow-hidden">
-                        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 flex flex-row items-center justify-between">
+                        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <div>
                                 <CardTitle className="text-xl font-black uppercase tracking-tighter">Recent Sales Activity</CardTitle>
                                 <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Live feed of revenue-generating transactions.</CardDescription>
                             </div>
-                            <Button variant="ghost" size="sm" asChild className="font-black text-xs uppercase tracking-widest text-primary">
+                            <Button variant="ghost" size="sm" asChild className="font-black text-xs uppercase tracking-widest text-primary w-full sm:w-auto justify-center sm:justify-start">
                                 <Link href="/enterprise/essentials/sales">View All <TrendingUp className="ml-2 h-3 w-3"/></Link>
                             </Button>
                         </CardHeader>

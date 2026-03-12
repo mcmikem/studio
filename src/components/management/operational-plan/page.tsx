@@ -88,7 +88,7 @@ function KeyResultCard({ kr }: { kr: KeyResult }) {
                 <CardDescription className="font-bold line-clamp-2 mt-1 text-omuto-navy/70">{kr.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 flex-grow">
-                <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
                         <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Target</p>
                         <p className="text-sm font-bold text-omuto-navy">{formatTarget(kr)}</p>
@@ -99,15 +99,15 @@ function KeyResultCard({ kr }: { kr: KeyResult }) {
                     </div>
                 </div>
             </CardContent>
-            <CardFooter className="pt-0 pb-6 px-6">
-                <div className="flex w-full gap-2 items-center">
+            <CardFooter className="pt-0 pb-4 px-4 sm:pb-6 sm:px-6">
+                <div className="flex w-full flex-col sm:flex-row gap-2 items-stretch sm:items-center">
                     <Input 
                         type="number" 
                         value={progressInput} 
                         onChange={(e) => setProgressInput(Number(e.target.value))} 
                         className="h-10 border-lg rounded-xl font-bold"
                     />
-                    <Button onClick={handleUpdate} disabled={isUpdating} size="sm" className="h-10">
+                    <Button onClick={handleUpdate} disabled={isUpdating} size="sm" className="h-10 sm:w-auto w-full">
                         {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update'}
                     </Button>
                 </div>
@@ -146,10 +146,10 @@ function OperationalPlanViewer() {
     
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-center gap-4">
-            <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4 mr-2"/> Prev Month</Button>
-            <h2 className="font-bold text-lg w-48 text-center">{format(currentDate, 'MMMM yyyy')}</h2>
-            <Button variant="outline" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>Next Month <ChevronRight className="h-4 w-4 ml-2"/></Button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
+            <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, 1))} className="w-full sm:w-auto"><ChevronLeft className="h-4 w-4 mr-2"/> Prev Month</Button>
+            <h2 className="font-bold text-lg text-center sm:min-w-48">{format(currentDate, 'MMMM yyyy')}</h2>
+            <Button variant="outline" onClick={() => setCurrentDate(addMonths(currentDate, 1))} className="w-full sm:w-auto">Next Month <ChevronRight className="h-4 w-4 ml-2"/></Button>
         </div>
 
         {filteredKeyResults.length > 0 ? (
@@ -262,26 +262,26 @@ function OperationalPlanUpdater() {
   return (
     <div className="space-y-6">
       <Card className="overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 pb-10 pt-10 px-8">
+        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 pb-8 pt-8 px-4 sm:px-8 sm:pb-10 sm:pt-10">
             <div className="p-3 bg-white border-lg border-omuto-navy/20 shadow-comic-sm rounded-2xl w-fit mb-4 rotate-[-2deg]">
                 <FileSignature className="h-6 w-6 text-primary" />
             </div>
-          <CardTitle className="text-3xl font-bold tracking-tighter uppercase text-omuto-navy">Strategy <span className="text-primary">Input</span></CardTitle>
+          <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase text-omuto-navy">Strategy <span className="text-primary">Input</span></CardTitle>
           <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">
             Paste your raw operational plan text. Omuto AI will extract structured Key Results and activate the trackers.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-8 pt-0 -mt-6">
+        <CardContent className="p-4 sm:p-8 pt-0 -mt-6">
           <div className="space-y-2 relative">
             <Textarea
               id="plan-text"
               placeholder="E.g. KR1: Fundraising 150M by April. KR2: Support 2000 girls in RED Campaign..."
-              className="min-h-[300px] border-lg rounded-2xl border-omuto-navy/20 p-6 text-sm focus-visible:ring-primary shadow-inner bg-omuto-cream/50"
+              className="min-h-[300px] border-lg rounded-2xl border-omuto-navy/20 p-4 sm:p-6 text-sm focus-visible:ring-primary shadow-inner bg-omuto-cream/50"
               value={pastedText}
               onChange={e => setPastedText(e.target.value)}
             />
-             <div className="absolute bottom-4 right-4">
-                <Button onClick={handleParseWithAI} disabled={isParsing || !pastedText.trim()} className="btn-omuto shadow-comic-lg hover:shadow-comic-sm h-12 text-xs">
+             <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4">
+                <Button onClick={handleParseWithAI} disabled={isParsing || !pastedText.trim()} className="btn-omuto shadow-comic-lg hover:shadow-comic-sm h-11 sm:h-12 text-[10px] sm:text-xs px-3 sm:px-4">
                     {isParsing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4 text-omuto-yellow" />}
                     Analyze & Structure
                 </Button>
@@ -292,11 +292,11 @@ function OperationalPlanUpdater() {
 
       {parsedResults.length > 0 && (
         <Card className="bg-white overflow-hidden">
-          <CardHeader className="px-8 pt-8 bg-muted/10 border-b-lg border-omuto-navy/10">
-            <CardTitle className="text-2xl font-bold tracking-tighter text-omuto-navy">Extracted <span className="text-primary">Strategy Model</span></CardTitle>
+          <CardHeader className="px-4 sm:px-8 pt-6 sm:pt-8 bg-muted/10 border-b-lg border-omuto-navy/10">
+            <CardTitle className="text-xl sm:text-2xl font-bold tracking-tighter text-omuto-navy">Extracted <span className="text-primary">Strategy Model</span></CardTitle>
             <CardDescription className="font-bold text-omuto-navy/50 mt-1">Review the structured data below. Saving will overwrite the previous organizational plan.</CardDescription>
           </CardHeader>
-          <CardContent className="p-8">
+          <CardContent className="p-4 sm:p-8">
             <div className="data-table-omuto">
                 <Table>
                 <TableHeader>
@@ -318,8 +318,8 @@ function OperationalPlanUpdater() {
                 </Table>
             </div>
           </CardContent>
-           <CardFooter className="p-8 bg-muted/10 border-t-lg border-omuto-navy/10">
-             <Button onClick={handleSavePlan} disabled={isSaving} className="btn-omuto w-full h-14 text-sm shadow-comic-lg hover:shadow-comic-sm bg-primary border-white text-white">
+           <CardFooter className="p-4 sm:p-8 bg-muted/10 border-t-lg border-omuto-navy/10">
+             <Button onClick={handleSavePlan} disabled={isSaving} className="btn-omuto w-full h-12 sm:h-14 text-xs sm:text-sm shadow-comic-lg hover:shadow-comic-sm bg-primary border-white text-white">
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
                 Activate Organizational Strategy
             </Button>
@@ -339,23 +339,23 @@ export default function OperationalPlanPage() {
     return (
         <div className="space-y-10 pb-10">
             <header className="flex flex-col gap-2">
-                <div className="flex items-center gap-3 text-omuto-navy">
+                <div className="flex items-start sm:items-center gap-3 text-omuto-navy">
                     <div className="p-3 bg-omuto-navy/10 rounded-2xl">
                         <Goal className="h-8 w-8 text-omuto-red" />
                     </div>
                     <div>
-                        <h1 className="font-heading text-4xl font-bold tracking-tight">Impact <span className="text-omuto-red">Strategy</span></h1>
+                        <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight">Impact <span className="text-omuto-red">Strategy</span></h1>
                         <p className="text-omuto-navy/60 font-bold uppercase text-[10px] tracking-widest mt-1">Operational Objectives & Key Result Framework</p>
                     </div>
                 </div>
             </header>
 
             <Tabs defaultValue="view" className="w-full">
-                <TabsList className="bg-omuto-navy/10 p-1 rounded-xl mb-8 border-lg border-omuto-navy/10">
-                    <TabsTrigger value="view" className="rounded-lg font-bold text-xs uppercase tracking-widest px-6 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
+                <TabsList className="bg-omuto-navy/10 p-1 rounded-xl mb-8 border-lg border-omuto-navy/10 h-auto w-full sm:w-auto inline-grid sm:inline-flex grid-cols-1 sm:grid-cols-2 gap-1">
+                    <TabsTrigger value="view" className="rounded-lg font-bold text-xs uppercase tracking-widest px-3 sm:px-6 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
                         View Plan
                     </TabsTrigger>
-                    {canEdit && <TabsTrigger value="edit" className="rounded-lg font-bold text-xs uppercase tracking-widest px-6 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
+                    {canEdit && <TabsTrigger value="edit" className="rounded-lg font-bold text-xs uppercase tracking-widest px-3 sm:px-6 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
                         Update Plan
                     </TabsTrigger>}
                 </TabsList>

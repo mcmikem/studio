@@ -19,6 +19,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Textarea } from '@/components/ui/textarea';
 import { useEffect, useMemo, useState } from 'react';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 export function ProductionBatchForm() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export function ProductionBatchForm() {
       production_date: format(new Date(), 'yyyy-MM-dd'),
       status: 'in-progress',
       supervisorId: profile?.id || '',
-      materials_used: [{ material_id: '', quantity_used: 0 }]
+      materials_used: []
     },
   });
 
@@ -86,8 +87,18 @@ export function ProductionBatchForm() {
     name: "materials_used"
   });
 
+  const hasFinishedGoods = finishedGoods.length > 0;
+
   const onSubmit = async (data: ProductionBatchFormData) => {
     if (!firestore || !profile) return;
+    if (!hasFinishedGoods) {
+      toast({
+        variant: 'destructive',
+        title: 'No Finished Products Available',
+        description: 'Please create at least one finished product before logging a batch.'
+      });
+      return;
+    }
     
     try {
         await runTransaction(firestore, async (transaction) => {
@@ -101,7 +112,7 @@ export function ProductionBatchForm() {
             transaction.set(batchRef, newBatchData);
 
             // 2. Decrement raw material stock
-            if (data.materials_used) {
+            if (data.materials_used && data.materials_used.length > 0) {
                 for (const material of data.materials_used) {
                     const materialDocRef = doc(firestore, 'products', material.material_id);
                     const materialDoc = await transaction.get(materialDocRef);
@@ -138,13 +149,14 @@ export function ProductionBatchForm() {
   };
 
   return (
-     <div className="space-y-4 pb-10">
+     <div className="enterprise-form-shell">
       <Button variant="outline" asChild className="rounded-xl border-lg">
         <Link href="/enterprise/essentials">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Hub
         </Link>
       </Button>
+      <EnterpriseFormTips type="production" />
       <Card className="border-lg shadow-comic-sm">
         <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
           <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter"><Package className="h-8 w-8 text-primary"/> New Production Batch</CardTitle>
@@ -178,6 +190,12 @@ export function ProductionBatchForm() {
                         <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-12 border-lg rounded-xl font-bold"><SelectValue placeholder="Select product..." /></SelectTrigger><SelectContent>{finishedGoods.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent></Select>
                     )}/>
                  )}
+                  {!isLoadingProducts && !hasFinishedGoods && (
+                    <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs font-semibold text-destructive">
+                      No finished products found. Create one first in{' '}
+                      <Link href="/enterprise/essentials/products" className="underline">Products</Link>.
+                    </div>
+                  )}
                   {errors.productId && <p className="text-xs text-destructive font-bold">{errors.productId.message}</p>}
                </div>
                 <div className="space-y-2">
@@ -189,6 +207,11 @@ export function ProductionBatchForm() {
 
              <div className="space-y-4 pt-6 border-t border-dashed">
                 <h3 className="font-black uppercase text-xs tracking-widest text-muted-foreground flex items-center gap-2"><Boxes className="h-4 w-4"/> Materials & Packaging Consumption</h3>
+                {!isLoadingProducts && materials.length === 0 && (
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs font-semibold text-amber-800">
+                    No raw/packaging materials configured yet. You can still log the batch now and add materials later from inventory records.
+                  </div>
+                )}
                 <div className="space-y-3">
                     {fields.map((field, index) => (
                         <div key={field.id} className="grid grid-cols-12 gap-3 items-end p-4 bg-muted/20 border-lg rounded-2xl relative">
@@ -205,7 +228,7 @@ export function ProductionBatchForm() {
                                 <Input type="number" step="0.01" {...register(`materials_used.${index}.quantity_used`)} className="h-11 border-lg rounded-xl font-bold bg-white" />
                             </div>
                             <div className="col-span-2 md:col-span-1">
-                                <Button type="button" variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                                <Button type="button" variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl" onClick={() => remove(index)}>
                                     <Trash2 className="h-5 w-5"/>
                                 </Button>
                             </div>
@@ -222,8 +245,8 @@ export function ProductionBatchForm() {
                 <Textarea id="notes" {...register('notes')} placeholder="e.g., Temperature conditions, team members involved, or any deviations from SOP..." className="border-lg rounded-xl min-h-[100px]" />
              </div>
           </CardContent>
-          <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
-            <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
+          <CardFooter className="enterprise-form-footer">
+            <Button type="submit" disabled={isSubmitting || !hasFinishedGoods} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
               {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Package className="mr-2 h-5 w-5" />}
               Commit Production Batch to Inventory
             </Button>
