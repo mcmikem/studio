@@ -26,6 +26,7 @@ import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { useState } from 'react';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -36,6 +37,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
   const isEditMode = !!product;
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const categoriesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -72,8 +74,22 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   const onSubmit = async (data: ProductFormData) => {
     if (!firestore) return;
 
+    let categoryId = data.categoryId;
+    if (categoryId === '__create__') {
+      if (!newCategoryName.trim()) {
+        toast({ variant: 'destructive', title: 'Category name required', description: 'Enter a category name or choose an existing category.' });
+        return;
+      }
+      const categoryRef = await addDocumentNonBlocking(collection(firestore, 'product-categories'), {
+        name: newCategoryName.trim(),
+        createdAt: serverTimestamp(),
+      });
+      categoryId = categoryRef.id;
+    }
+
     const submissionData = {
         ...data,
+        categoryId,
         updatedAt: serverTimestamp(),
     };
 
@@ -109,8 +125,22 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         <Label htmlFor="categoryId">Category</Label>
         {isLoadingCategories ? <Skeleton className="h-10"/> : (
              <Controller name="categoryId" control={control} render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select a category..."/></SelectTrigger><SelectContent>{categories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent></Select>
+                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select a category..."/></SelectTrigger><SelectContent>{categories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}<SelectItem value="__create__">+ Create new category</SelectItem></SelectContent></Select>
             )}/>
+        )}
+        {watch('categoryId') === '__create__' && (
+          <div className="space-y-2">
+            <Label htmlFor="new-category-name">New Category Name</Label>
+            <Input
+              id="new-category-name"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              placeholder="e.g., Cleaning Supplies"
+            />
+          </div>
+        )}
+        {!isLoadingCategories && (!categories || categories.length === 0) && (
+          <p className="text-xs text-muted-foreground">No categories found yet. Select “Create new category” to add one now.</p>
         )}
         {errors.categoryId && <p className="text-sm text-destructive">{errors.categoryId.message}</p>}
       </div>

@@ -19,6 +19,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/types';
+import Link from 'next/link';
 
 const inventoryCheckSchema = z.object({
   productId: z.string().min(1, "Please select a product."),
@@ -41,6 +42,7 @@ export function InventoryCheckForm() {
     return collection(firestore, 'products');
   }, [firestore]);
   const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
+  const hasProducts = (products?.length || 0) > 0;
 
   const {
     register,
@@ -105,6 +107,12 @@ export function InventoryCheckForm() {
             )}
             />
         )}
+        {!isLoadingProducts && !hasProducts && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs font-semibold text-destructive">
+            No products available for stock checks. Add items in{' '}
+            <Link href="/enterprise/essentials/products" className="underline">Products</Link>.
+          </div>
+        )}
         {errors.productId && <p className="text-sm text-destructive">{errors.productId.message}</p>}
       </div>
 
@@ -125,7 +133,7 @@ export function InventoryCheckForm() {
         <Textarea id="notes" {...register('notes')} />
       </div>
       <DialogFooter>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || !hasProducts}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Update Stock Count
         </Button>
