@@ -1,7 +1,10 @@
 'use client';
 
-import { useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
 import {
   Card,
   CardContent,
@@ -27,30 +30,23 @@ import {
   useCollection,
   useMemoFirebase,
   useUser,
-  updateDocumentNonBlocking,
-  deleteDocumentNonBlocking,
 } from '@/firebase';
 import {
   collection,
   serverTimestamp,
   doc,
   runTransaction,
-  getDocs,
   query,
   where,
-  orderBy,
-  limit,
 } from 'firebase/firestore';
-import {
-  Loader2,
-  ArrowLeft,
-  Package,
-  PlusCircle,
-  Trash2,
-  Wand2,
-  Boxes,
-  Pencil,
-} from 'lucide-react';
+
+import { Loader2, Package, PlusCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { format } from 'date-fns';
+import { EnterpriseFormTips } from './enterprise-form-tips';
 
 // Local schema & types for production batches
 const ProductionBatchFormSchema = z.object({
@@ -359,4 +355,3 @@ export function ProductionBatchForm() {
 }
 
 export default ProductionBatchForm;
-
