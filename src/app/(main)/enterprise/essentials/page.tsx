@@ -9,13 +9,14 @@ import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
 // import type { Sale, Product, ProductionBatch } from '@/lib/types';
-import type { Sale } from '@/lib/types';
+import type { Sale, ProductionBatch } from '@/lib/types';
 import { PageHeader } from '@/components/page-header';
 import { DataTable } from '@/components/ui/data-table';
 import { type ColumnDef } from "@tanstack/react-table";
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import { startOfMonth, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function StatCard({ title, value, icon: Icon, description, trend, variant = 'default' }: { title: string; value: string; icon: React.ElementType, description?: string, trend?: string, variant?: 'default' | 'urgent' }) {
     return (
@@ -59,16 +60,34 @@ function EssentialsHubPage() {
         ) : null
     , []);
 
+    const monthlyProductionQuery = useMemoFirebase((db) =>
+        db ? query(
+            collection(db, 'production-batches'),
+            where('production_date', '>=', format(monthStart, 'yyyy-MM-dd')),
+            orderBy('production_date', 'desc')
+        ) : null
+    , [monthStart]);
+
+    const recentProductionQuery = useMemoFirebase((db) =>
+        db ? query(
+            collection(db, 'production-batches'),
+            orderBy('createdAt', 'desc'),
+            limit(5)
+        ) : null
+    , []);
+
     // const productsQuery = useMemoFirebase((db) => db ? query(collection(db, 'products')) : null, []);
     // const productionQuery = useMemoFirebase((db) => db ? query(collection(db, 'production-batches'), orderBy('createdAt', 'desc'), limit(5)) : null, []);
 
     const { data: monthlySales, isLoading: isLoadingSales } = useCollection<Sale>(salesQuery);
     const { data: recentSales, isLoading: isLoadingRecent } = useCollection<Sale>(recentSalesQuery);
+    const { data: monthlyProduction, isLoading: isLoadingProduction } = useCollection<ProductionBatch>(monthlyProductionQuery);
+    const { data: recentProduction, isLoading: isLoadingRecentProduction } = useCollection<ProductionBatch>(recentProductionQuery);
     // const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
     // const { data: recentProduction, isLoading: isLoadingProduction } = useCollection<ProductionBatch>(productionQuery);
     
     const stats = useMemo(() => {
-        if (!monthlySales) return { totalRevenue: 0, totalSales: 0, topProduct: 'N/A', lowStockCount: 0 };
+        if (!monthlySales) return { totalRevenue: 0, totalSales: 0, topProduct: 'N/A', lowStockCount: 0, productionBatches: 0, productionCost: 0 };
         
         const totalRevenue = monthlySales.reduce((sum, sale) => sum + sale.total_amount, 0);
 
@@ -95,15 +114,19 @@ function EssentialsHubPage() {
         
         const lowStockCount = 0; // products.filter(p => p.reorder_level && p.current_stock_quantity <= p.reorder_level).length;
 
+        const productionCost = (monthlyProduction || []).reduce((sum, batch) => sum + Number((batch as any).material_cost_total || 0), 0);
+
         return {
             totalRevenue,
             totalSales: monthlySales.length,
             topProduct,
-            lowStockCount
+            lowStockCount,
+            productionBatches: monthlyProduction?.length || 0,
+            productionCost,
         }
-    }, [monthlySales]);
+    }, [monthlySales, monthlyProduction]);
     
-    const isLoading = isLoadingSales || isLoadingRecent;
+    const isLoading = isLoadingSales || isLoadingRecent || isLoadingProduction;
 
     const salesColumns: ColumnDef<Sale>[] = [
         {
@@ -206,6 +229,12 @@ function EssentialsHubPage() {
                     description="Items below reorder point"
                     variant={stats.lowStockCount > 0 ? 'urgent' : 'default'}
                 />
+                <StatCard 
+                    title="Production Batches" 
+                    value={isLoading ? '...' : stats.productionBatches.toString()} 
+                    icon={Factory} 
+                    description={`Material cost: ${formatCurrency(stats.productionCost)}`}
+                />
              </div>
              
              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -243,40 +272,33 @@ function EssentialsHubPage() {
                         </CardContent>
                     </Card>
 
-                    {/*
                     <Card className="border-lg shadow-comic-sm overflow-hidden">
-                        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 flex flex-row items-center justify-between">
+                        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <div>
-                                <CardTitle className="text-xl font-black uppercase tracking-tighter text-omuto-teal">Production Queue</CardTitle>
-                                <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Recent batches and manufacturing logs.</CardDescription>
+                                <CardTitle className="text-xl font-black uppercase tracking-tighter">Production Tracker</CardTitle>
+                                <CardDescription className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Recent production runs and linked cost capture.</CardDescription>
                             </div>
-                             <Button variant="ghost" size="sm" asChild className="font-black text-xs uppercase tracking-widest text-omuto-teal">
-                                <Link href="/enterprise/essentials/production">View All <Factory className="ml-2 h-3 w-3"/></Link>
+                            <Button variant="ghost" size="sm" asChild className="font-black text-xs uppercase tracking-widest text-primary w-full sm:w-auto justify-center sm:justify-start">
+                                <Link href="/enterprise/essentials/production">Manage Batches <Factory className="ml-2 h-3 w-3"/></Link>
                             </Button>
                         </CardHeader>
-                        <CardContent className="p-0">
-                            <DataTable 
-                                columns={productionColumns} 
-                                data={recentProduction || []} 
-                                isLoading={isLoadingProduction} 
-                                renderMobileCard={(prod) => (
-                                    <div className="p-4 border rounded-xl bg-background shadow-sm space-y-2">
-                                        <div className="flex justify-between items-start">
-                                            <span className="text-xs font-bold text-muted-foreground">{formatDateSafe(prod.production_date, 'dateOnly')}</span>
-                                            <Badge variant="outline" className="text-[10px] uppercase font-black">
-                                                {prod.status}
-                                            </Badge>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="font-semibold text-omuto-navy">{prod.product_name}</span>
-                                            <span className="font-bold text-primary">{prod.quantity_produced} Units</span>
-                                        </div>
+                        <CardContent className="space-y-3 p-4">
+                            {isLoadingRecentProduction && <Skeleton className="h-20 w-full" />}
+                            {!isLoadingRecentProduction && (!recentProduction || recentProduction.length === 0) && (
+                                <p className="text-sm text-muted-foreground">No production batches recorded yet.</p>
+                            )}
+                            {recentProduction?.map((batch) => (
+                                <div key={batch.id} className="rounded-xl border p-3 flex items-center justify-between gap-3">
+                                    <div>
+                                        <p className="font-semibold">{batch.batch_number}</p>
+                                        <p className="text-xs text-muted-foreground">{formatDateSafe(batch.production_date, 'dateOnly')} • Qty {batch.quantity_produced}</p>
                                     </div>
-                                )}
-                            />
+                                    <Badge variant="outline">{batch.status}</Badge>
+                                </div>
+                            ))}
                         </CardContent>
                     </Card>
-                    */}
+
                 </div>
 
                  <div className="space-y-6">
