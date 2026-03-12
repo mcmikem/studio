@@ -40,6 +40,7 @@ export function StockAdjustmentForm() {
     return query(collection(firestore, 'products'), orderBy('name'));
   }, [firestore]);
   const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
+  const hasProducts = (products?.length || 0) > 0;
 
   const form = useForm<z.infer<typeof StockAdjustmentFormSchema>>({
     resolver: zodResolver(StockAdjustmentFormSchema),
@@ -117,6 +118,12 @@ export function StockAdjustmentForm() {
                             </Select>
                         )}/>
                     )}
+                    {!isLoadingProducts && !hasProducts && (
+                        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs font-semibold text-destructive">
+                            No inventory items found. Add products/materials in{' '}
+                            <Link href="/enterprise/essentials/products" className="underline">Products</Link> first.
+                        </div>
+                    )}
                     {errors.product_id && <p className="text-xs text-destructive font-bold">{errors.product_id.message}</p>}
                 </div>
                  <div className="space-y-2">
@@ -153,7 +160,7 @@ export function StockAdjustmentForm() {
             </div>
           </CardContent>
           <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
-            <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl bg-destructive border-white hover:bg-destructive/90">
+            <Button type="submit" disabled={isSubmitting || !hasProducts} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl bg-destructive border-white hover:bg-destructive/90">
               {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               Update Stock Records
             </Button>

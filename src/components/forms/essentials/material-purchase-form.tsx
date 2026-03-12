@@ -42,6 +42,7 @@ export function MaterialPurchaseForm() {
     return query(collection(firestore, 'products'), where('type', 'in', ['raw', 'packaging']));
   }, [firestore]);
   const { data: materials, isLoading: isLoadingMaterials } = useCollection<Product>(materialsQuery);
+  const hasMaterials = (materials?.length || 0) > 0;
 
   const form = useForm<z.infer<typeof MaterialPurchaseFormSchema>>({
     resolver: zodResolver(MaterialPurchaseFormSchema),
@@ -124,6 +125,12 @@ export function MaterialPurchaseForm() {
                             </Select>
                         )}/>
                     )}
+                    {!isLoadingMaterials && !hasMaterials && (
+                        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs font-semibold text-destructive">
+                            No raw/packaging materials available. Add materials first in{' '}
+                            <Link href="/enterprise/essentials/products" className="underline">Products</Link>.
+                        </div>
+                    )}
                     {errors.material_id && <p className="text-xs text-destructive font-bold">{errors.material_id.message}</p>}
                 </div>
                 <div className="space-y-2">
@@ -155,7 +162,7 @@ export function MaterialPurchaseForm() {
             </div>
           </CardContent>
           <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
-            <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
+            <Button type="submit" disabled={isSubmitting || !hasMaterials} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
               Commit Purchase & Update Inventory
             </Button>
