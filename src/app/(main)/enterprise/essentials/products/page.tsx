@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { useCollection, useFirestore, useMemoFirebase, deleteDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, doc } from 'firebase/firestore';
+import { useState } from 'react';
+import { useCollection, useFirestore, useMemoFirebase, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, doc, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { PageHeader } from '@/components/page-header';
-import { Package, PlusCircle, Edit, Trash2, MoreHorizontal } from 'lucide-react';
+import { Package, PlusCircle, Edit, Trash2, DatabaseZap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,10 +21,13 @@ import { formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { starterCategories, starterProducts } from '@/lib/enterprise-starter-catalog';
+import { EnterpriseFormTips } from '@/components/forms/essentials/enterprise-form-tips';
 
 export default function ProductsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isSeeding, setIsSeeding] = useState(false);
   const firestore = useFirestore();
   const { toast } = useToast();
 
@@ -49,6 +52,60 @@ export default function ProductsPage() {
     deleteDocumentNonBlocking(doc(firestore, 'products', product.id))
       .then(() => toast({ title: "Product Deleted" }))
       .catch((e) => toast({ variant: 'destructive', title: "Error", description: e.message }));
+  };
+
+  const handleSeedStarterCatalog = async () => {
+    if (!firestore || isSeeding) return;
+    setIsSeeding(true);
+    try {
+      const categoryIdByName: Record<string, string> = {};
+
+      for (const category of starterCategories) {
+        const existingCategorySnapshot = await getDocs(
+          query(collection(firestore, 'product-categories'), where('name', '==', category.name))
+        );
+
+        if (!existingCategorySnapshot.empty) {
+          categoryIdByName[category.name] = existingCategorySnapshot.docs[0].id;
+          continue;
+        }
+
+        const newCategoryRef = await addDocumentNonBlocking(collection(firestore, 'product-categories'), {
+          name: category.name,
+          createdAt: serverTimestamp(),
+        });
+        categoryIdByName[category.name] = newCategoryRef.id;
+      }
+
+      let createdCount = 0;
+      for (const starter of starterProducts) {
+        const existingProductSnapshot = await getDocs(
+          query(collection(firestore, 'products'), where('sku', '==', starter.sku))
+        );
+        if (!existingProductSnapshot.empty) continue;
+
+        await addDocumentNonBlocking(collection(firestore, 'products'), {
+          ...starter,
+          categoryId: categoryIdByName[starter.category],
+          is_active: true,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+        createdCount += 1;
+      }
+
+      toast({
+        title: 'Starter catalog ready',
+        description: createdCount > 0
+          ? `Added ${createdCount} products/materials for Essentials.`
+          : 'Starter catalog already exists. No duplicates added.',
+      });
+    } catch (error: any) {
+      console.error(error);
+      toast({ variant: 'destructive', title: 'Seeding failed', description: error?.message || 'Could not seed starter catalog.' });
+    } finally {
+      setIsSeeding(false);
+    }
   };
 
   const columns: ColumnDef<Product>[] = [
@@ -101,16 +158,23 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <PageHeader
           icon={Package}
           title="Product & Material Management"
           description="Manage all finished goods, raw materials, and packaging."
         />
-        <Button onClick={handleAdd}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Product
-        </Button>
+        <div className="flex w-full sm:w-auto gap-2 flex-col sm:flex-row">
+          <Button variant="outline" onClick={handleSeedStarterCatalog} disabled={isSeeding} className="w-full sm:w-auto">
+            {isSeeding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <DatabaseZap className="mr-2 h-4 w-4" />} Seed Starter Catalog
+          </Button>
+          <Button onClick={handleAdd} className="w-full sm:w-auto">
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Product
+          </Button>
+        </div>
       </div>
+
+      <EnterpriseFormTips type="products" />
 
 
       <DataTable 
