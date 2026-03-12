@@ -48,6 +48,13 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { EnterpriseFormTips } from './enterprise-form-tips';
 
+// Helper: auto-generate batch number like BATCH-20260312-1234
+function generateBatchNumber() {
+  const date = format(new Date(), 'yyyyMMdd');
+  const random = Math.floor(Math.random() * 9000) + 1000; // 4‑digit
+  return `BATCH-${date}-${random}`;
+}
+
 // Local schema & types for production batches
 const ProductionBatchFormSchema = z.object({
   id: z.string().optional(),
@@ -55,7 +62,7 @@ const ProductionBatchFormSchema = z.object({
   productId: z.string().min(1, 'Product is required'),
   quantity_produced: z.number().min(0, 'Quantity must be >= 0'),
   production_date: z.string(),
-  status: z.string(),
+  status: z.enum(['in-progress', 'completed', 'on-hold']),
   supervisorId: z.string().optional(),
   notes: z.string().optional(),
   materials_used: z.array(z.any()).optional(),
@@ -89,7 +96,7 @@ export function ProductionBatchForm() {
   const form = useForm<ProductionBatchFormData>({
     resolver: zodResolver(ProductionBatchFormSchema),
     defaultValues: {
-      batch_number: '',
+      batch_number: generateBatchNumber(),
       productId: '',
       quantity_produced: 0,
       production_date: format(new Date(), 'yyyy-MM-dd'),
@@ -114,6 +121,7 @@ export function ProductionBatchForm() {
   const handleEditBatch = (batch: ProductionBatchFormData) => {
     setEditingBatch(batch);
     reset({
+      id: batch.id,
       batch_number: batch.batch_number,
       productId: batch.productId,
       quantity_produced: batch.quantity_produced,
@@ -146,14 +154,14 @@ export function ProductionBatchForm() {
       if (editingBatch?.id === batch.id) {
         setEditingBatch(null);
         reset({
+          batch_number: generateBatchNumber(),
+          productId: '',
+          quantity_produced: 0,
           production_date: format(new Date(), 'yyyy-MM-dd'),
           status: 'in-progress',
           supervisorId: profile?.id || '',
-          materials_used: [],
-          batch_number: '',
-          productId: '',
-          quantity_produced: 0,
           notes: '',
+          materials_used: [],
         });
       }
     } catch (error: any) {
@@ -200,7 +208,7 @@ export function ProductionBatchForm() {
 
       setEditingBatch(null);
       reset({
-        batch_number: '',
+        batch_number: generateBatchNumber(),
         productId: '',
         quantity_produced: 0,
         production_date: format(new Date(), 'yyyy-MM-dd'),
@@ -299,7 +307,8 @@ export function ProductionBatchForm() {
                 </Label>
                 <Input
                   {...register('batch_number')}
-                  className="border-lg rounded-xl h-12 font-bold"
+                  readOnly
+                  className="border-lg rounded-xl h-12 font-bold bg-muted/50"
                 />
               </div>
               <div className="space-y-2">
@@ -316,10 +325,32 @@ export function ProductionBatchForm() {
                 <Label className="font-bold text-xs uppercase tracking-widest">
                   Status
                 </Label>
-                <Input
-                  {...register('status')}
-                  className="border-lg rounded-xl h-12 font-bold"
-                />
+                <Select
+                  onValueChange={(value) =>
+                    reset({ ...watch(), status: value as ProductionBatchFormData['status'] })
+                  }
+                  value={watch('status')}
+                >
+                  <SelectTrigger className="h-12 border-lg rounded-xl font-bold">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="in-progress" className="font-bold">
+                      In Progress
+                    </SelectItem>
+                    <SelectItem value="completed" className="font-bold">
+                      Completed
+                    </SelectItem>
+                    <SelectItem value="on-hold" className="font-bold">
+                      On Hold
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.status && (
+                  <p className="text-xs text-destructive font-bold">
+                    {errors.status.message}
+                  </p>
+                )}
               </div>
             </div>
 
