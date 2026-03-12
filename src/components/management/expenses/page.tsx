@@ -449,7 +449,7 @@ function ExpensesContent() {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-3 mb-4">
+                        <TabsList className="mb-4 grid h-auto w-full grid-cols-1 sm:grid-cols-3 gap-1">
                             <TabsTrigger value="all">All Records</TabsTrigger>
                             <TabsTrigger value="requisitions">Requisitions</TabsTrigger>
                             <TabsTrigger value="reimbursements">Reimbursements</TabsTrigger>
@@ -556,7 +556,7 @@ function ExpensesContent() {
     </div>
     </div>
     <Dialog open={!!editingExpense} onOpenChange={(open) => !open && setEditingExpense(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl w-[calc(100%-1rem)] sm:w-full">
             <DialogHeader>
                 <DialogTitle>Edit Transaction</DialogTitle>
                 <DialogDescription>

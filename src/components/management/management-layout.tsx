@@ -9,7 +9,6 @@ import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
 import { useViewAs } from '@/hooks/use-view-as';
-import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 
 
 export default function ManagementLayoutComponent({
@@ -69,26 +68,23 @@ export default function ManagementLayoutComponent({
   return (
     <div className="flex flex-col gap-6">
        <div className="border-b border-border -mx-4 sm:-mx-6">
-        <ScrollArea className="w-full">
-          <div className="flex items-center gap-x-2 px-4 sm:px-6">
+          <div className="flex flex-wrap items-stretch gap-1 px-4 sm:px-6 sm:gap-x-2">
               {tabs.map((tab) => (
                 <Link
                   key={tab.name}
                   href={tab.href}
                   className={cn(
-                    'flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors whitespace-nowrap',
+                    'flex min-w-0 flex-1 basis-[calc(50%-0.25rem)] items-center justify-center gap-2 border-b-2 px-2 py-2.5 text-xs font-medium transition-colors text-center sm:flex-none sm:basis-auto sm:justify-start sm:px-3 sm:text-sm sm:whitespace-nowrap',
                     pathname.startsWith(tab.href)
                       ? 'border-primary text-primary'
                       : 'border-transparent text-muted-foreground hover:text-foreground'
                   )}
                 >
                   <tab.icon className="h-4 w-4" />
-                  {tab.name}
+                  <span className="break-words leading-tight">{tab.name}</span>
                 </Link>
               ))}
             </div>
-             <ScrollBar orientation="horizontal" className="invisible" />
-          </ScrollArea>
       </div>
       <div>{children}</div>
     </div>
