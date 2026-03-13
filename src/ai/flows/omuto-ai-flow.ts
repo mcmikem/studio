@@ -1,8 +1,6 @@
 
 /**
  * @fileOverview The main conversational AI agent for Omuto Central.
- * This flow acts as an expert assistant, knowledgeable about all aspects
- * of the Omuto Foundation's operations.
  */
 
 import { ai } from '@/ai/genkit';
@@ -17,7 +15,7 @@ import { z } from 'zod';
 const getRecentCheckoutsToolObject = ai.defineTool(
   {
     name: 'getRecentCheckouts',
-    description: 'Retrieves the most recent daily checkout reports from the team to understand what they accomplished.',
+    description: 'Retrieves the most recent daily checkout reports from the team.',
     inputSchema: z.object({
       limit: z.number().optional().default(5),
     }),
@@ -35,19 +33,19 @@ const getRecentCheckoutsToolObject = ai.defineTool(
       const { firestore } = getFirebaseAdmin();
       
       if (!firestore) {
-        return [{ userName: 'System', tasksCompleted: [], keyLearning: 'Firestore not available' }];
+        return [];
       }
       
       const checkoutsRef = firestore.collection('checkouts');
-      const snapshot = await checkoutsRef.orderBy('timestamp', 'desc').limit(limit).get();
+      const snapshot = await checkoutsRef.orderBy('timestamp', 'desc').limit(limit || 5).get();
 
       return snapshot.docs.map(doc => {
         const data = doc.data();
         const tasks = Array.isArray(data.tasks) ? data.tasks : [];
         return {
           userName: data.name || 'Unknown',
-          tasksCompleted: tasks.filter((t: any) => t.status === 'Done').map((t: any) => t.description),
-          keyLearning: data.learning,
+          tasksCompleted: tasks.filter((t: any) => t.status === 'Done').map((t: any) => t.description || ''),
+          keyLearning: data.learning || '',
         };
       });
     } catch (error) {
@@ -62,9 +60,7 @@ const omutoAIPrompt = ai.definePrompt({
     model: 'googleai/gemini-2.0-flash',
     tools: [getRecentCheckoutsToolObject],
     system: `You are an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda. Your name is Omuto AI.
-    Your personality is: Helpful, knowledgeable, and slightly formal but friendly.
-    You have access to real-time data tools. Use them whenever a user asks a question that can be answered by the tool's description.
-    When summarizing data, be concise and clear. Do not just list the data; synthesize it.`,
+    Be helpful, knowledgeable, and friendly. Be concise and actionable.`,
 });
 
 // --- FLOW DEFINITION ---
@@ -77,35 +73,49 @@ export const omutoAIFlow = ai.defineFlow(
   },
   async (input: OmutoAIInput): Promise<OmutoAIOutput> => {
     try {
-        console.log(`[OmutoAI] Processing question: "${input.question?.substring(0, 50)}..."`);
-
         const { history, question } = input;
 
         if (!question) {
           return { answer: "Please ask me a question!" };
         }
 
+        console.log(`[OmutoAI] Question: "${question.substring(0, 50)}..."`);
+
         const llmResponse = await omutoAIPrompt({
             history: history || [],
             input: question,
         });
         
-        const answer = llmResponse?.text;
+        // Handle different response formats safely
+        let answer = '';
         
-        if (!answer) {
-            console.error("[OmutoAI] No text response from AI");
-            return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
+        if (typeof llmResponse === 'string') {
+          answer = llmResponse;
+        } else if (llmResponse && typeof llmResponse === 'object') {
+          // Try various possible response formats - use type assertion
+          const response = llmResponse as any;
+          answer = response.text || response.content || response.output || response.message || JSON.stringify(response);
+        }
+        
+        if (!answer || answer.trim() === '') {
+            console.error("[OmutoAI] Empty response from AI");
+            return { answer: "I didn't get a response. Please try again." };
         }
         
         console.log('[OmutoAI] Response received, length:', answer.length);
         return { answer };
 
     } catch (error: any) {
-        console.error('[OmutoAI] Error:', error?.message || error);
-        const errorMessage = error?.message || 'Unknown error';
+        console.error('[OmutoAI] Error:', error);
+        
+        const errorMessage = error?.message || String(error) || 'Unknown error';
+        
+        if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
+          return { answer: "I'm receiving too many requests right now. Please wait a moment and try again." };
+        }
         
         if (errorMessage.includes('API key') || errorMessage.includes('not configured')) {
-          return { answer: "The AI service is not configured. Please contact the administrator to set up the Gemini API key." };
+          return { answer: "The AI service is not configured. Please contact the administrator." };
         }
         
         return { answer: `I encountered an error: ${errorMessage}. Please try again.` };

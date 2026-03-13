@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -6,9 +7,10 @@ import { collection, query, where, Timestamp, orderBy } from 'firebase/firestore
 import type { Activity, User, Checkin, Expense, KeyResult } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Lightbulb, TrendingDown, AlertTriangle, Sparkles, BarChart3, Info, TrendingUp } from 'lucide-react';
+import { Lightbulb, TrendingDown, AlertTriangle, Sparkles, BarChart3, Info, TrendingUp, RefreshCw } from 'lucide-react';
 import { runStrategicAdvisor } from '@/ai/actions';
 import { subDays, startOfDay } from 'date-fns';
+import { Button } from '@/components/ui/button';
 
 const insightIcons: { [key: string]: React.ElementType } = {
   "📈": TrendingUp,
@@ -22,9 +24,10 @@ const insightIcons: { [key: string]: React.ElementType } = {
 export function AiStrategicAdvisor() {
   const firestore = useFirestore();
   const [insights, setInsights] = React.useState<any[] | null>(null);
-  const [isLoadingInsights, setIsLoadingInsights] = React.useState(true);
-  const lastSignatureRef = React.useRef<string>('');
+  const [isLoadingInsights, setIsLoadingInsights] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
   const lastRunRef = React.useRef<number>(0);
+  const isRunningRef = React.useRef<boolean>(false);
 
   const thirtyDaysAgo = React.useMemo(() => subDays(new Date(), 30), []);
 
@@ -42,65 +45,102 @@ export function AiStrategicAdvisor() {
 
   const isLoadingData = isActLoading || isCinLoading || isExpLoading || isKrLoading;
 
-  React.useEffect(() => {
-    const getInsights = async () => {
-      if (activities && checkins && expenses && keyResults) {
-        const signature = JSON.stringify({
-          activities: activities.length,
-          checkins: checkins.length,
-          expenses: expenses.length,
-          keyResults: keyResults.length,
-          latestActivity: activities[0]?.id || '',
-          latestCheckin: checkins[0]?.id || '',
-          latestExpense: expenses[0]?.id || '',
-        });
+  const getInsights = React.useCallback(async () => {
+    if (!activities || !checkins || !expenses || !keyResults) return;
+    
+    // Prevent multiple simultaneous runs
+    if (isRunningRef.current) return;
+    
+    // Rate limit: minimum 30 seconds between runs
+    const now = Date.now();
+    if (now - lastRunRef.current < 30000) {
+      console.log('[StrategicAdvisor] Rate limited, skipping...');
+      return;
+    }
+    
+    // Only run if we have meaningful data
+    const hasData = activities.length > 0 || checkins.length > 0 || expenses.length > 0 || keyResults.length > 0;
+    if (!hasData) {
+      console.log('[StrategicAdvisor] No data to analyze');
+      setInsights([]);
+      return;
+    }
 
-        const now = Date.now();
-        if (signature === lastSignatureRef.current && now - lastRunRef.current < 5 * 60 * 1000) {
-          return;
-        }
+    isRunningRef.current = true;
+    lastRunRef.current = now;
+    setError(null);
+    setIsLoadingInsights(true);
 
-        lastSignatureRef.current = signature;
-        lastRunRef.current = now;
-
-        setIsLoadingInsights(true);
-        try {
-          const plainInput = {
-            activities: JSON.parse(JSON.stringify(activities)),
-            checkins: JSON.parse(JSON.stringify(checkins)),
-            expenses: JSON.parse(JSON.stringify(expenses)),
-            keyResults: JSON.parse(JSON.stringify(keyResults)),
-          };
-          const result = await runStrategicAdvisor(plainInput);
-          setInsights(result.insights);
-        } catch (error) {
-          console.error("Failed to get strategic insights:", error);
-          setInsights([]);
-        } finally {
-          setIsLoadingInsights(false);
-        }
+    try {
+      console.log('[StrategicAdvisor] Running analysis...', { 
+        activities: activities.length, 
+        checkins: checkins.length, 
+        expenses: expenses.length, 
+        keyResults: keyResults.length 
+      });
+      
+      const plainInput = {
+        activities: JSON.parse(JSON.stringify(activities)),
+        checkins: JSON.parse(JSON.stringify(checkins)),
+        expenses: JSON.parse(JSON.stringify(expenses)),
+        keyResults: JSON.parse(JSON.stringify(keyResults)),
+      };
+      
+      const result = await runStrategicAdvisor(plainInput);
+      
+      if (result && result.insights) {
+        setInsights(result.insights);
+        console.log('[StrategicAdvisor] Success:', result.insights.length, 'insights');
+      } else {
+        setInsights([]);
       }
-    };
+    } catch (err: any) {
+      console.error('[StrategicAdvisor] Error:', err);
+      setError(err?.message || 'Failed to get insights');
+      setInsights([]);
+    } finally {
+      setIsLoadingInsights(false);
+      isRunningRef.current = false;
+    }
+  }, [activities, checkins, expenses, keyResults]);
 
-    if (!isLoadingData) {
+  // Only run once on mount when data is ready
+  React.useEffect(() => {
+    if (!isLoadingData && activities) {
       getInsights();
     }
-  }, [activities, checkins, expenses, keyResults, isLoadingData]);
+  }, [isLoadingData]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const isLoading = isLoadingData || isLoadingInsights;
 
   return (
     <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
       <CardHeader className="bg-omuto-cream/50 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-omuto-yellow/10 border-md border-omuto-yellow/20 rounded-lg text-omuto-yellow">
-            <Sparkles className="h-5 w-5" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-omuto-yellow/10 border-md border-omuto-yellow/20 rounded-lg text-omuto-yellow">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <CardTitle className="font-heading text-2xl font-bold uppercase text-omuto-navy">AI Strategic <span className="text-omuto-red">Advisor</span></CardTitle>
           </div>
-          <CardTitle className="font-heading text-2xl font-bold uppercase text-omuto-navy">AI Strategic <span className="text-omuto-red">Advisor</span></CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={getInsights}
+            disabled={isLoadingInsights}
+            className="rounded-full"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoadingInsights ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
         <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest mt-1">High-level insights based on real-time data.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {error && (
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+            {error}
+          </div>
+        )}
         {isLoading && (
           <>
             <Skeleton className="h-20 w-full rounded-xl" />
@@ -128,7 +168,7 @@ export function AiStrategicAdvisor() {
           !isLoading && (
             <div className="text-center py-10">
               <BarChart3 className="h-12 w-12 mx-auto text-omuto-navy/10" />
-              <p className="text-sm font-bold mt-4 text-omuto-navy/50">Analyzing data streams...</p>
+              <p className="text-sm font-bold mt-4 text-omuto-navy/50">Click refresh to analyze data</p>
             </div>
           )
         )}
