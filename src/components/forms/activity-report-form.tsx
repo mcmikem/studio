@@ -244,10 +244,10 @@ function ActivityReportFormComponent() {
         </CardHeader>
         
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-            <div className="bg-muted/20 border-b-lg border-omuto-navy/5 px-4 sm:px-8 pt-2">
-                <TabsList className="bg-transparent gap-8 h-14">
+            <div className="bg-muted/20 border-b-lg border-omuto-navy/5 px-2 sm:px-8 pt-2 overflow-x-auto">
+                <TabsList className="bg-transparent gap-2 sm:gap-8 h-14 w-full justify-start min-w-max">
                     {["planning", "execution", "logging"].map((tab, i) => (
-                        <TabsTrigger key={tab} value={tab} className="rounded-none border-b-4 border-transparent data-[state=active]:border-omuto-red data-[state=active]:bg-transparent font-black text-xs uppercase tracking-widest px-0">
+                        <TabsTrigger key={tab} value={tab} className="rounded-none border-b-4 border-transparent data-[state=active]:border-omuto-red data-[state=active]:bg-transparent font-black text-xs sm:text-xs uppercase tracking-widest px-2 sm:px-0 whitespace-nowrap">
                             {i + 1}. {tab}
                         </TabsTrigger>
                     ))}
@@ -293,12 +293,12 @@ function ActivityReportFormComponent() {
 
                         {/* Goal Selectors - Metric or Program */}
                         {goalType === 'Metric' && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-4">
                                 <div className="space-y-2">
                                     <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Primary Metric</Label>
                                     {overallLoading ? <Skeleton className="h-14 rounded-2xl border-lg" /> : (
                                         <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
-                                            <SelectTrigger className="h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue placeholder="Select a metric..." /></SelectTrigger>
+                                            <SelectTrigger className="h-12 sm:h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue placeholder="Select a metric..." /></SelectTrigger>
                                             <SelectContent>
                                                 {metrics?.map(metric => (
                                                     <SelectItem key={metric.id} value={metric.id}>{metric.metric}</SelectItem>
@@ -309,18 +309,18 @@ function ActivityReportFormComponent() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Quantity ({selectedMetric?.unit || 'units'})</Label>
-                                    <Input type="number" placeholder="e.g., 50" value={goalQuantity} onChange={e => (e.target.value === '' ? setGoalQuantity(0) : setGoalQuantity(Number(e.target.value)))} disabled={!selectedGoalId} className="h-14 border-lg rounded-2xl font-black text-omuto-navy" />
+                                    <Input type="number" placeholder="e.g., 50" value={goalQuantity} onChange={e => (e.target.value === '' ? setGoalQuantity(0) : setGoalQuantity(Number(e.target.value)))} disabled={!selectedGoalId} className="h-12 sm:h-14 border-lg rounded-2xl font-black text-omuto-navy" />
                                 </div>
                             </div>
                         )}
 
                         {goalType === 'Program' && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-4">
                                 <div className="space-y-2">
                                     <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Primary Program</Label>
                                     {overallLoading ? <Skeleton className="h-14 rounded-2xl border-lg" /> : (
                                         <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined} disabled={!!programIdFromUrl}>
-                                            <SelectTrigger className="h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue placeholder="Select a program..." /></SelectTrigger>
+                                            <SelectTrigger className="h-12 sm:h-14 border-lg rounded-2xl font-bold text-omuto-navy"><SelectValue placeholder="Select a program..." /></SelectTrigger>
                                             <SelectContent>
                                                 {programs?.map(program => (
                                                     <SelectItem key={program.id} value={program.id}>{program.title}</SelectItem>
@@ -331,7 +331,7 @@ function ActivityReportFormComponent() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="font-black text-[10px] uppercase tracking-widest pl-1">Objectives Completed</Label>
-                                    <Input type="number" placeholder="e.g., 1" value={goalQuantity} onChange={e => (e.target.value === '' ? setGoalQuantity(0) : setGoalQuantity(Number(e.target.value)))} disabled={!selectedGoalId} className="h-14 border-lg rounded-2xl font-black text-omuto-navy" />
+                                    <Input type="number" placeholder="e.g., 1" value={goalQuantity} onChange={e => (e.target.value === '' ? setGoalQuantity(0) : setGoalQuantity(Number(e.target.value)))} disabled={!selectedGoalId} className="h-12 sm:h-14 border-lg rounded-2xl font-black text-omuto-navy" />
                                 </div>
                             </div>
                         )}

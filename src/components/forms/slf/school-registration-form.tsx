@@ -63,61 +63,61 @@ export function SchoolRegistrationForm() {
 
   return (
     <div className="space-y-4">
-      <Button variant="outline" asChild>
+      <Button variant="outline" size="sm" asChild>
         <Link href="/meal/slf">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to SLF Hub
         </Link>
       </Button>
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-6 w-6" />
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Users className="h-5 sm:h-6 w-5 sm:w-6" />
             SLF School Registration
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Register a new school to participate in the Student Leaders Forum.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
-              <Label htmlFor="schoolName">School Name</Label>
-              <Input id="schoolName" {...register('schoolName')} />
+              <Label htmlFor="schoolName" className="text-xs sm:text-sm">School Name</Label>
+              <Input id="schoolName" {...register('schoolName')} className="h-12" />
               {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName.message}</p>}
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="headTeacherName">Head Teacher's Name</Label>
-                  <Input id="headTeacherName" {...register('headTeacherName')} />
+                  <Label htmlFor="headTeacherName" className="text-xs sm:text-sm">Head Teacher's Name</Label>
+                  <Input id="headTeacherName" {...register('headTeacherName')} className="h-12" />
                   {errors.headTeacherName && <p className="text-sm text-destructive">{errors.headTeacherName.message}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contactTeacher">Patron/Contact Teacher's Name</Label>
-                  <Input id="contactTeacher" {...register('contactTeacher')} />
+                  <Label htmlFor="contactTeacher" className="text-xs sm:text-sm">Patron/Contact Teacher's Name</Label>
+                  <Input id="contactTeacher" {...register('contactTeacher')} className="h-12" />
                   {errors.contactTeacher && <p className="text-sm text-destructive">{errors.contactTeacher.message}</p>}
                 </div>
             </div>
              <div className="space-y-2">
-                <Label htmlFor="phone">Contact Teacher's Phone</Label>
-                <Input id="phone" type="tel" {...register('phone')} />
+                <Label htmlFor="phone" className="text-xs sm:text-sm">Contact Teacher's Phone</Label>
+                <Input id="phone" type="tel" {...register('phone')} className="h-12" />
                 {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                  <div className="space-y-2">
-                    <Label htmlFor="enrollmentSize">Total School Enrollment</Label>
-                    <Input id="enrollmentSize" type="number" {...register('enrollmentSize')} />
+                    <Label htmlFor="enrollmentSize" className="text-xs sm:text-sm">Total School Enrollment</Label>
+                    <Input id="enrollmentSize" type="number" {...register('enrollmentSize')} className="h-12" />
                     {errors.enrollmentSize && <p className="text-sm text-destructive">{errors.enrollmentSize.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="location">Location (District)</Label>
-                    <Input id="location" {...register('location')} />
+                    <Label htmlFor="location" className="text-xs sm:text-sm">Location (district)</Label>
+                    <Input id="location" {...register('location')} className="h-12" />
                     {errors.location && <p className="text-sm text-destructive">{errors.location.message}</p>}
                 </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-12">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Register School
             </Button>
