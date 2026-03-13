@@ -7,16 +7,12 @@
 
 import { ai } from '@/ai/genkit';
 import {
-  SearchResultItemSchema,
   OmutoAIInputSchema,
   OmutoAIOutputSchema,
   type OmutoAIInput,
   type OmutoAIOutput,
 } from '@/lib/types';
 import { z } from 'zod';
-import { getFirebaseAdmin } from '@/firebase/server';
-import { Timestamp } from 'firebase-admin/firestore';
-
 
 const getRecentCheckoutsToolObject = ai.defineTool(
   {
@@ -34,26 +30,36 @@ const getRecentCheckoutsToolObject = ai.defineTool(
     ),
   },
   async ({ limit }) => {
-    const { firestore } = getFirebaseAdmin();
-    const checkoutsRef = firestore.collection('checkouts');
-    const snapshot = await checkoutsRef.orderBy('timestamp', 'desc').limit(limit).get();
+    try {
+      const { getFirebaseAdmin } = await import('@/firebase/server');
+      const { firestore } = getFirebaseAdmin();
+      
+      if (!firestore) {
+        return [{ userName: 'System', tasksCompleted: [], keyLearning: 'Firestore not available' }];
+      }
+      
+      const checkoutsRef = firestore.collection('checkouts');
+      const snapshot = await checkoutsRef.orderBy('timestamp', 'desc').limit(limit).get();
 
-    return snapshot.docs.map(doc => {
-      const data = doc.data();
-      // Ensure tasks is an array and handle potential missing data
-      const tasks = Array.isArray(data.tasks) ? data.tasks : [];
-      return {
-        userName: data.name,
-        tasksCompleted: tasks.filter(t => t.status === 'Done').map(t => t.description),
-        keyLearning: data.learning,
-      };
-    });
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+        return {
+          userName: data.name || 'Unknown',
+          tasksCompleted: tasks.filter((t: any) => t.status === 'Done').map((t: any) => t.description),
+          keyLearning: data.learning,
+        };
+      });
+    } catch (error) {
+      console.error('[getRecentCheckouts] Error:', error);
+      return [];
+    }
   }
 );
 
 const omutoAIPrompt = ai.definePrompt({
     name: 'omutoAIPrompt',
-    model: 'googleai/gemini-flash-latest',
+    model: 'googleai/gemini-2.0-flash',
     tools: [getRecentCheckoutsToolObject],
     system: `You are an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda. Your name is Omuto AI.
     Your personality is: Helpful, knowledgeable, and slightly formal but friendly.
@@ -71,30 +77,38 @@ export const omutoAIFlow = ai.defineFlow(
   },
   async (input: OmutoAIInput): Promise<OmutoAIOutput> => {
     try {
-        console.log(`omutoAIFlow invoked with question: "${input.question}"`);
+        console.log(`[OmutoAI] Processing question: "${input.question?.substring(0, 50)}..."`);
 
-        const { history, userId, question } = input;
+        const { history, question } = input;
+
+        if (!question) {
+          return { answer: "Please ask me a question!" };
+        }
 
         const llmResponse = await omutoAIPrompt({
             history: history || [],
             input: question,
         });
         
-        const answer = llmResponse.text;
+        const answer = llmResponse?.text;
         
         if (!answer) {
-            console.error("AI did not return a text response.", { llmResponse });
+            console.error("[OmutoAI] No text response from AI");
             return { answer: "I'm sorry, but I wasn't able to generate a response. Please try again." };
         }
         
-        console.log('omutoAIFlow completed successfully.');
+        console.log('[OmutoAI] Response received, length:', answer.length);
         return { answer };
 
     } catch (error: any) {
-        console.error('Error executing omutoAIFlow:', error);
-        // Log the full error object for better debugging
-        if (error.stack) console.error(error.stack);
-        return { answer: `An unexpected error occurred: ${error.message || 'Unknown error'}. I've logged the issue for the technical team to review.` };
+        console.error('[OmutoAI] Error:', error?.message || error);
+        const errorMessage = error?.message || 'Unknown error';
+        
+        if (errorMessage.includes('API key') || errorMessage.includes('not configured')) {
+          return { answer: "The AI service is not configured. Please contact the administrator to set up the Gemini API key." };
+        }
+        
+        return { answer: `I encountered an error: ${errorMessage}. Please try again.` };
     }
   }
 );

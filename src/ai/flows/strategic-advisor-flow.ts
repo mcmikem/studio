@@ -3,57 +3,97 @@
 
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
-import { StrategicAdvisorInput, StrategicAdvisorOutput } from '@/lib/types';
 
-const StrategicAdvisorInputSchema = z.any();
-const StrategicAdvisorOutputSchema = z.any();
+const StrategicAdvisorOutputSchema = z.object({
+  insights: z.array(z.object({
+    emoji: z.string(),
+    title: z.string(),
+    description: z.string(),
+    recommendation: z.string()
+  }))
+});
 
 export const strategicAdvisorFlow = ai.defineFlow(
   {
     name: 'strategicAdvisorFlow',
-    inputSchema: StrategicAdvisorInputSchema,
+    inputSchema: z.any(),
     outputSchema: StrategicAdvisorOutputSchema,
   },
-  async ({ activities, checkins, expenses, keyResults }) => {
-    const prompt = `
-      You are an AI Strategic Advisor for the Omuto Foundation, a youth-led NGO in rural Uganda. Your user is the Executive Director.
-      Your task is to analyze the provided JSON data from the last 30 days and generate 3-4 high-level, actionable insights.
-      Do not state the obvious. Find trends, risks, and opportunities. Be direct and concise.
-
-      Here is the raw data:
-      - Key Results (Our current strategy): ${JSON.stringify(keyResults)}
-      - Activities (What the team has done): ${JSON.stringify(activities)}
-      - Check-ins (Today's team focus): ${JSON.stringify(checkins)}
-      - Expenses (Where money is going): ${JSON.stringify(expenses)}
-
-      Analyze the data to find critical insights. Here are some examples of what to look for:
-      1.  **Momentum Shift**: Is there a sudden drop or increase in activity for a key program (e.g., 'RED Campaign')? Compare the last 7 days to the previous 23.
-      2.  **Budget Anomalies**: Is the expense burn rate for a specific category (e.g., 'Transport') unusually high compared to the number of activities logged?
-      3.  **Strategic Misalignment**: Are team members' daily check-in missions consistently focused on activities that do not align with any of the current Key Results?
-      4.  **Emerging Blockers**: Do you see recurring keywords like "challenge," "stuck," "transport," or "delay" in activity or checkout reports that might indicate a systemic issue?
-      5.  **Untapped Opportunity**: Is one program generating a very high ROI compared to others? Is a specific team member outperforming everyone else?
-
-      Based on your analysis, provide 3-4 insights in the required JSON format. Each insight must be impactful and provide a clear recommendation.
-      
-      Example Insight:
-      {
-        "emoji": "⚠️",
-        "title": "RED Campaign Slowdown",
-        "description": "Activity for the RED Campaign has dropped 50% in the last week, despite it being a high priority KR.",
-        "recommendation": "Check in with the program lead to identify and resolve potential blockers."
-      }
-    `;
-
-    const result = await ai.generate({
-      model: 'googleai/gemini-flash-latest',
-      prompt: prompt,
-      output: { schema: StrategicAdvisorOutputSchema },
+  async ({ activities = [], checkins = [], expenses = [], keyResults = [] }) => {
+    console.log('[StrategicAdvisor] Starting analysis with', { 
+      activities: activities.length, 
+      checkins: checkins.length, 
+      expenses: expenses.length, 
+      keyResults: keyResults.length 
     });
-    
-    if (!result.output) {
-      throw new Error("Failed to generate strategic insights.");
-    }
 
-    return result.output;
+    const prompt = `
+You are an AI Strategic Advisor for the Omuto Foundation, a youth-led NGO in rural Uganda. Your user is the Executive Director.
+Your task is to analyze the provided JSON data from the last 30 days and generate 3-4 high-level, actionable insights.
+Do not state the obvious. Find trends, risks, and opportunities. Be direct and concise.
+
+Here is the raw data:
+- Key Results (Our current strategy): ${JSON.stringify(keyResults).substring(0, 1000)}
+- Activities (What the team has done): ${JSON.stringify(activities).substring(0, 1000)}
+- Check-ins (Today's team focus): ${JSON.stringify(checkins).substring(0, 1000)}
+- Expenses (Where money is going): ${JSON.stringify(expenses).substring(0, 1000)}
+
+Analyze the data to find critical insights. Provide 3-4 insights in the required JSON format.
+      
+Example Insight:
+{
+  "emoji": "⚠️",
+  "title": "RED Campaign Slowdown",
+  "description": "Activity for the RED Campaign has dropped 50% in the last week, despite it being a high priority KR.",
+  "recommendation": "Check in with the program lead to identify and resolve potential blockers."
+}
+
+Return ONLY valid JSON, no other text.
+`;
+
+    try {
+      const result = await ai.generate({
+        model: 'googleai/gemini-2.0-flash',
+        prompt: prompt,
+      });
+      
+      const text = result.text;
+      console.log('[StrategicAdvisor] Raw response:', text?.substring(0, 200));
+      
+      // Try to parse JSON from response
+      const jsonMatch = text?.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          return parsed;
+        } catch (parseError) {
+          console.error('[StrategicAdvisor] JSON parse error:', parseError);
+        }
+      }
+      
+      // If no valid JSON, return a fallback
+      return {
+        insights: [
+          {
+            emoji: "📊",
+            title: "Analysis Complete",
+            description: "The AI analyzed your data but couldn't format the response. Please try again.",
+            recommendation: "Check your data and try again."
+          }
+        ]
+      };
+    } catch (error: any) {
+      console.error('[StrategicAdvisor] Error:', error?.message || error);
+      return {
+        insights: [
+          {
+            emoji: "⚠️",
+            title: "Analysis Unavailable",
+            description: error?.message || "Could not complete the analysis at this time.",
+            recommendation: "Please try again later or check your data."
+          }
+        ]
+      };
+    }
   }
 );
