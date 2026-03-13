@@ -132,24 +132,42 @@ function UserProfileCard() {
   
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && user && firestore && firebaseApp) {
-      setIsUploading(true);
-      try {
-        await uploadImageAndUpdateProfile(firebaseApp, file, user, firestore);
-        toast({
-          title: "Profile Picture Updated!",
-          description: "Your new picture has been saved.",
-        });
-      } catch (error: any) {
-        toast({
-          variant: "destructive",
-          title: "Upload Failed",
-          description: error.message || "Could not upload your picture. Please try again.",
-        });
-      } finally {
-        setIsUploading(false);
-        event.target.value = '';
-      }
+    console.log('[Profile] File selected:', file?.name, 'size:', file?.size);
+    
+    if (!file) {
+      console.log('[Profile] No file selected');
+      return;
+    }
+    
+    if (!user || !firestore || !firebaseApp) {
+      console.log('[Profile] Missing auth state:', { user: !!user, firestore: !!firestore, firebaseApp: !!firebaseApp });
+      toast({
+        variant: "destructive",
+        title: "Not Ready",
+        description: "Please wait for the app to fully load, then try again.",
+      });
+      return;
+    }
+    
+    setIsUploading(true);
+    console.log('[Profile] Starting upload...');
+    try {
+      const result = await uploadImageAndUpdateProfile(firebaseApp, file, user, firestore);
+      console.log('[Profile] Upload success:', result);
+      toast({
+        title: "Profile Picture Updated!",
+        description: "Your new picture has been saved.",
+      });
+    } catch (error: any) {
+      console.error('[Profile] Upload error:', error);
+      toast({
+        variant: "destructive",
+        title: "Upload Failed",
+        description: error?.message || "Could not upload your picture. Please try again.",
+      });
+    } finally {
+      setIsUploading(false);
+      event.target.value = '';
     }
   };
 
