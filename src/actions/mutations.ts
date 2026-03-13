@@ -204,135 +204,38 @@ export async function generateSmartRemindersAction(input: SmartRemindersInput): 
     }
 }
 
-// ─── Daily Planner (replaces AI flow → structured builder) ───
+// ─── Daily Planner (Hybrid: AI when online, algorithm offline) ───
 
 export async function generateDailyPlanAction(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
-    const { primaryMission, keyResults = [] } = input;
-    
-    // 1. Determine Strategic Alignment (Keyword matching)
-    const missionLower = primaryMission.toLowerCase();
-    const alignments = keyResults
-        .map((kr: any) => {
-            const krMatches = kr.title.toLowerCase().split(/\s+/).some((word: string) => word.length > 3 && missionLower.includes(word));
-            return { kr, matches: krMatches };
-        })
-        .filter((a: any) => a.matches)
-        .slice(0, 2)
-        .map((a: any) => ({
-            krTitle: a.kr.title,
-            alignmentJustification: `Directly supports "${a.kr.title}" through focused execution on "${primaryMission}".`
-        }));
-
-    // Fallback if no keyword matches
-    if (alignments.length === 0 && keyResults.length > 0) {
-        alignments.push({
-            krTitle: keyResults[0].title,
-            alignmentJustification: `Contributes to overall program goals by completing mission-critical tasks: "${primaryMission}".`
+    // Try AI first, fall back to offline algorithm
+    try {
+        const { dailyPlannerFlow } = await import('@/ai/flows/daily-planner-flow');
+        const aiPlan = await dailyPlannerFlow({
+            userName: input.userName,
+            userRole: input.userRole,
+            primaryMission: input.primaryMission,
+            weeklyPriorities: input.weeklyPriorities,
+            keyResults: input.keyResults,
         });
+        return aiPlan;
+    } catch (error) {
+        console.warn('AI planner unavailable, using offline algorithm:', error);
+        // Fall back to offline algorithm
+        const { generateOfflinePlan } = await import('@/ai/flows/daily-planner-flow');
+        return generateOfflinePlan(input);
     }
-
-    // 2. Build Time Blocks based on role
-    const timeBlocks = [
-        { startTime: "08:30", endTime: "09:15", description: "Morning Briefing: Review Daily Goals" },
-        { startTime: "09:15", endTime: "11:00", description: `Primary Focus: ${primaryMission} (Deep Work)` },
-        { startTime: "11:00", endTime: "12:00", description: "Coordination & Strategic Communication" },
-        { startTime: "12:00", endTime: "13:00", description: "Lunch & Refuel" },
-        { startTime: "13:00", endTime: "15:00", description: `Continuation: ${primaryMission}` },
-        { startTime: "15:00", endTime: "16:15", description: "Documentation & Impact Evidence Collection" },
-        { startTime: "16:15", endTime: "17:00", description: "Daily Check-out & Briefing preparation" }
-    ];
-
-    // 3. Static Resources & Challenges
-    const materials = "Laptop, Omuto Field Manual, reliable internet connection, and task-specific documentation.";
-    const challenges = "Potential connectivity issues, transit delays, or urgent ad-hoc coordination requests.";
-    
-    // 4. Random Best Practice
-    const tips = [
-        "Eat the Frog: Start with your most difficult task first.",
-        "Use Pomodoro: Work in 25-minute sprints to maintain high focus.",
-        "Single-tasking: Multitasking reduces quality; focus on one priority at a time.",
-        "Batching: Respond to all communications in one structured block of time."
-    ];
-    const bestPractice = tips[Math.floor(Math.random() * tips.length)];
-
-    return {
-        timeBlocks,
-        strategicAlignments: alignments,
-        materials,
-        challenges,
-        bestPractice
-    };
 }
 
-// ─── SOP Template Generator (replaces AI flow → Library selector) ───
+// ─── SOP Template Generator (Hybrid: AI when online, algorithm offline) ───
 
 export async function generateTemplateAction(input: GenerateTemplateInput): Promise<GenerateTemplateOutput> {
-    const { description } = input;
-    const lowerDesc = description.toLowerCase();
-
-    const library = [
-        {
-            keywords: ['volunteer', 'onboarding', 'staff', 'recruit'],
-            title: 'Volunteer Onboarding Checklist',
-            checklistItems: [
-                'Collect signed ID documents and contact info',
-                'Briefing on Omuto Foundation mission and values',
-                'Safety and code of conduct training',
-                'Assign to a field supervisor',
-                'Provision with necessary field materials (manual, laptop)'
-            ]
-        },
-        {
-            keywords: ['inspection', 'facility', 'safety', 'site'],
-            title: 'Facility Safety Inspection',
-            checklistItems: [
-                'Verify all fire extinguishers are serviced and accessible',
-                'Inspect electrical outlets and wiring for damage',
-                'Check first aid kits for expired supplies',
-                'Ensure all exit paths are clear of obstructions',
-                'Test emergency lighting and backup power'
-            ]
-        },
-        {
-            keywords: ['event', 'planning', 'meeting', 'community'],
-            title: 'Community Event Planning',
-            checklistItems: [
-                'Define event objectives and target audience',
-                'Secure venue and verify local permits',
-                'Draft and distribute event invitations',
-                'Arrange logistics (transport, seating, sound)',
-                'Prepare presentation materials and feedback forms'
-            ]
-        },
-        {
-            keywords: ['financial', 'reconciliation', 'budget', 'expense'],
-            title: 'Monthly Financial Reconciliation',
-            checklistItems: [
-                'Gather all receipts and invoices for the period',
-                'Compare bank statements with recorded expenses',
-                'Categorize all transactions in the ledger',
-                'Flag and investigate any discrepancies',
-                'Generate final monthly expenditure report'
-            ]
-        }
-    ];
-
-    // Find best match
-    const match = library.find(item => 
-        item.keywords.some(kw => lowerDesc.includes(kw))
-    ) || {
-        title: 'Custom Operational Checklist',
-        checklistItems: [
-            'Define objective for this task',
-            'Identify key personnel involved',
-            'Determine required materials and budget',
-            'Establish timeline and milestones',
-            'Define success criteria and reporting flow'
-        ]
-    };
-
-    return {
-        title: match.title,
-        checklistItems: match.checklistItems
-    };
+    // Try AI first, fall back to offline algorithm
+    try {
+        const { templateGeneratorFlow } = await import('@/ai/flows/template-generator-flow');
+        return await templateGeneratorFlow(input);
+    } catch (error) {
+        console.warn('AI template generator unavailable, using offline algorithm:', error);
+        const { generateOfflineTemplate } = await import('@/ai/flows/template-generator-flow');
+        return generateOfflineTemplate(input);
+    }
 }
