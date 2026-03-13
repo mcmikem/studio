@@ -2,6 +2,7 @@
 
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
+import { getStorage as getAdminStorage, type Storage } from 'firebase-admin/storage';
 import { firebaseConfig } from './config';
 import fs from 'fs';
 import path from 'path';
@@ -32,6 +33,7 @@ const serviceAccount = getServiceAccount();
 
 let adminApp: App | null = null;
 let firestoreInstance: Firestore | null = null;
+let storageInstance: Storage | null = null;
 let isSeeding = false; 
 
 // --- START OF SAMPLE DATA ---
@@ -155,11 +157,11 @@ async function seedDatabase(db: Firestore) {
 /**
  * Returns the singleton instance of the Firebase Admin services.
  * This function ensures that Firebase Admin is initialized only once.
- * @returns An object containing the initialized Firestore instance.
+ * @returns An object containing the initialized Firestore and Storage instances.
  */
 export function getFirebaseAdmin() {
   if (adminApp && firestoreInstance) {
-    return { firestore: firestoreInstance };
+    return { firestore: firestoreInstance, storage: storageInstance };
   }
 
   const appName = 'firebase-admin-app-e9d6a3c2'; 
@@ -187,6 +189,15 @@ export function getFirebaseAdmin() {
   }
 
   firestoreInstance = getFirestore(adminApp);
+  
+  // Initialize Storage
+  try {
+    storageInstance = getAdminStorage(adminApp);
+    console.log("Firebase Admin Storage initialized successfully.");
+  } catch (storageError) {
+    console.warn("Firebase Admin Storage initialization failed:", storageError);
+  }
+  
   seedDatabase(firestoreInstance).catch(console.error);
-  return { firestore: firestoreInstance };
+  return { firestore: firestoreInstance, storage: storageInstance };
 }

@@ -5,21 +5,20 @@ import { updateProfile, type User } from "firebase/auth";
 import { doc, setDoc, type Firestore } from "firebase/firestore";
 import type { FirebaseApp } from "firebase/app";
 import { buildUploadPath } from "@/lib/upload-paths";
+import { uploadToGCS } from "@/lib/gcs-upload";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
 
 /**
  * Uploads a file Blob to a specified path in Firebase Storage.
- * @param app The initialized FirebaseApp instance.
- * @param fileBlob The file blob to upload.
- * @param path The full path in storage, including file name and extension.
- * @returns The public URL of the uploaded file.
+ * Falls back to GCS signed URLs if Firebase Storage fails.
  */
 export async function uploadFile(
   app: FirebaseApp,
   fileBlob: Blob,
-  path: string
+  path: string,
+  userId?: string
 ): Promise<string> {
   if (!app) {
     throw new Error("Firebase app is not initialized. Please refresh the page and try again.");
@@ -38,57 +37,51 @@ export async function uploadFile(
   }
 
   console.log("[Upload] Starting upload to path:", path);
-  console.log("[Upload] File size:", fileBlob.size, "bytes");
 
-  let storage: FirebaseStorage;
+  // Try Firebase Storage first
   try {
-    storage = getStorage(app);
-    console.log("[Upload] Storage initialized successfully");
-  } catch (storageError: any) {
-    console.error("[Upload] Failed to initialize storage:", storageError);
-    throw new Error("Storage service unavailable. Please check your internet connection and try again.");
-  }
+    const storage = getStorage(app);
+    const storageRef = ref(storage, path);
 
-  const storageRef = ref(storage, path);
-
-  try {
-    console.log("[Upload] Uploading bytes...");
+    console.log("[Upload] Trying Firebase Storage...");
     const snapshot = await uploadBytes(storageRef, fileBlob);
-    console.log("[Upload] Upload complete, getting download URL...");
-
     const downloadURL = await getDownloadURL(snapshot.ref);
-    console.log("[Upload] Success! URL:", downloadURL.substring(0, 50) + "...");
-
+    console.log("[Upload] Firebase Storage success!");
     return downloadURL;
-  } catch (error: any) {
-    console.error("[Upload] Firebase Storage upload failed:", error);
+  } catch (firebaseError: any) {
+    console.warn("[Upload] Firebase Storage failed, trying GCS fallback:", firebaseError?.message || firebaseError);
     
-    // Provide more specific error messages based on the error
-    if (error.code === 'storage/unauthorized') {
-      throw new Error("Upload not authorized. Please log out and log back in, then try again.");
-    }
-    if (error.code === 'storage/canceled') {
-      throw new Error("Upload was cancelled. Please try again.");
-    }
-    if (error.code === 'storage/quota-exceeded') {
-      throw new Error("Storage quota exceeded. Please contact the administrator.");
-    }
-    if (error.code === 'storage/invalid-chunk-size' || error.message?.includes('net::ERR_CONNECTION')) {
-      throw new Error("Network error. Please check your internet connection and try again.");
-    }
-    if (error.code === 'storage/object-not-found') {
-      throw new Error("Storage bucket not found. Please contact the administrator.");
+    // Fallback to GCS signed URLs
+    if (userId) {
+      try {
+        console.log("[Upload] Trying GCS fallback...");
+        const folder = path.split('/')[0];
+        const fileName = path.split('/').pop() || 'file';
+        
+        // Convert Blob to File if needed
+        const file = fileBlob instanceof File ? fileBlob : new File([fileBlob], fileName);
+        
+        const result = await uploadToGCS(file, folder, userId);
+        
+        if (result.success && result.url) {
+          console.log("[Upload] GCS fallback success!");
+          return result.url;
+        }
+        
+        throw new Error(result.error || 'GCS upload failed');
+      } catch (gcsError: any) {
+        console.error("[Upload] GCS fallback also failed:", gcsError);
+        throw new Error(`Upload failed: ${gcsError?.message || 'Unknown error'}`);
+      }
     }
     
-    // Generic fallback
-    const errorMessage = error.message || "Unknown error occurred";
-    throw new Error(`Upload failed: ${errorMessage}`);
+    // No userId for fallback
+    throw new Error(`Upload failed: ${firebaseError?.message || 'Firebase Storage unavailable'}`);
   }
 }
 
 /**
- * Uploads an image to Firebase Storage, updates the user's Auth profile,
- * and upserts their Firestore profile document.
+ * Uploads an image to Firebase Storage with GCS fallback
  */
 export async function uploadImageAndUpdateProfile(
   app: FirebaseApp,
@@ -109,13 +102,11 @@ export async function uploadImageAndUpdateProfile(
   }
 
   const extensionFromType = file.type.split("/")[1] || "jpg";
-  const safeExtension =
-    extensionFromType.replace(/[^a-zA-Z0-9]/g, "") || "jpg";
+  const safeExtension = extensionFromType.replace(/[^a-zA-Z0-9]/g, "") || "jpg";
 
-  // Keep centralized upload path helper
   const filePath = buildUploadPath.profilePicture(user.uid, safeExtension);
 
-  const downloadURL = await uploadFile(app, file, filePath);
+  const downloadURL = await uploadFile(app, file, filePath, user.uid);
 
   await updateProfile(user, { photoURL: downloadURL });
 
