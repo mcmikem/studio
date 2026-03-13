@@ -4,9 +4,23 @@ import { getFirebaseAdmin } from '@/firebase/server';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { format } from 'date-fns';
 import { roleKpis } from '@/lib/data';
+import { checkRateLimit } from '@/lib/rate-limit';
 import type { AlertInput, GrantFinderInput, GrantFinderOutput, SmartRemindersInput, SmartRemindersOutput, DailyPlannerAIInput, DailyPlannerAIOutput, GenerateTemplateInput, GenerateTemplateOutput } from '@/lib/types';
 
+function rateLimitCheck(identifier: string, actionName: string) {
+    const result = checkRateLimit(identifier, { windowMs: 60000, maxRequests: 20 });
+    if (!result.allowed) {
+        console.warn(`Rate limit exceeded for ${identifier} on ${actionName}`);
+        return { allowed: false, error: 'Rate limit exceeded. Please try again later.' };
+    }
+    return { allowed: true };
+}
+
 export async function createAlertAction(input: AlertInput) {
+    const rateLimit = rateLimitCheck('createAlertAction', 'createAlertAction');
+    if (!rateLimit.allowed) {
+        return { success: false, error: rateLimit.error };
+    }
     try {
         const { firestore } = getFirebaseAdmin();
         const alertPayload = {

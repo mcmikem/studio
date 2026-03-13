@@ -59,3 +59,52 @@ export const TransactionSchema = z.object({
 });
 
 export type Transaction = z.infer<typeof TransactionSchema>;
+
+export const RecurrenceFrequencySchema = z.enum(['daily', 'weekly', 'monthly', 'quarterly', 'yearly']);
+
+export type RecurrenceFrequency = z.infer<typeof RecurrenceFrequencySchema>;
+
+export const RecurringExpenseSchema = z.object({
+    id: z.string(),
+    userId: z.string(),
+    description: z.string(),
+    category: z.enum(expenseItemCategories),
+    amount: z.number(),
+    frequency: RecurrenceFrequencySchema,
+    startDate: z.any(),
+    endDate: z.any().optional(),
+    nextDueDate: z.any(),
+    isActive: z.boolean().default(true),
+    projectId: z.string().optional(),
+    projectName: z.string().optional(),
+    createdAt: z.any(),
+});
+
+export type RecurringExpense = z.infer<typeof RecurringExpenseSchema>;
+
+export const generateNextDueDate = (
+    currentDate: Date,
+    frequency: RecurrenceFrequency
+): Date => {
+    const next = new Date(currentDate);
+    
+    switch (frequency) {
+        case 'daily':
+            next.setDate(next.getDate() + 1);
+            break;
+        case 'weekly':
+            next.setDate(next.getDate() + 7);
+            break;
+        case 'monthly':
+            next.setMonth(next.getMonth() + 1);
+            break;
+        case 'quarterly':
+            next.setMonth(next.getMonth() + 3);
+            break;
+        case 'yearly':
+            next.setFullYear(next.getFullYear() + 1);
+            break;
+    }
+    
+    return next;
+};
