@@ -3,30 +3,13 @@ import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, type Firestore } from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 import { getMessaging, getToken, isSupported, type Messaging } from "firebase/messaging";
-import { initializeAppCheck, ReCaptchaV3Provider, type AppCheck } from "firebase/app-check";
 import { firebaseConfig } from "./config";
 
-// --- APP CHECK (Optional: Uncomment after configuring reCAPTCHA in Firebase Console) ---
-let appCheck: AppCheck | null = null;
-
-const initAppCheck = async () => {
-  if (typeof window === 'undefined') return null;
-  try {
-    const supported = await isSupported();
-    if (supported && process.env.NEXT_PUBLIC_APP_CHECK_SITE_KEY) {
-      const provider = new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_APP_CHECK_SITE_KEY);
-      appCheck = initializeAppCheck(app, { provider });
-      console.log('App Check initialized');
-    }
-  } catch (e) {
-    console.warn('App Check initialization failed:', e);
-  }
-  return appCheck;
-};
+// --- APP CHECK (Optional: Add NEXT_PUBLIC_APP_CHECK_SITE_KEY to .env.local to enable) ---
+// App Check is bundled with firebase v12+, no extra import needed when using compat
 
 // --- CORE INSTANCES (For Legacy/Direct Access) ---
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-initAppCheck();
 const auth = getAuth(app);
 
 // Initialize Firestore with multi-tab offline persistence enabled
@@ -59,7 +42,6 @@ export interface FirebaseServices {
     auth: Auth;
     storage: FirebaseStorage;
     messaging: Messaging | null;
-    appCheck: AppCheck | null;
 }
 
 export const initializeFirebase = (): FirebaseServices => {
@@ -68,8 +50,7 @@ export const initializeFirebase = (): FirebaseServices => {
         firestore: db,
         auth: auth,
         storage: storage,
-        messaging: messaging,
-        appCheck: appCheck
+        messaging: messaging
     };
 };
 
