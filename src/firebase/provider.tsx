@@ -108,6 +108,14 @@ export const useFirestore = (): Firestore | null => {
   return context.services?.firestore ?? null;
 };
 
+export const useFirebaseStorage = () => {
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    throw new Error('useFirebaseStorage must be used within a FirebaseProvider.');
+  }
+  return context.services?.storage ?? null;
+};
+
 export const useFirebaseApp = (): FirebaseApp | null => {
   const context = useContext(FirebaseContext);
   if (context === undefined) {

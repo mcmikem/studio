@@ -18,7 +18,21 @@ const db = initializeFirestore(app, {
     tabManager: persistentMultipleTabManager()
   })
 });
-const storage = getStorage(app);
+
+// Initialize Storage with explicit bucket URL
+let storage: FirebaseStorage;
+try {
+  // Try to get the default storage bucket
+  storage = getStorage(app);
+  console.log("[Firebase] Storage initialized with default bucket");
+} catch (error) {
+  console.error("[Firebase] Failed to initialize storage:", error);
+  // Fallback: try with explicit bucket URL from config
+  if (firebaseConfig.storageBucket) {
+    storage = getStorage(app, `gs://${firebaseConfig.storageBucket}`);
+    console.log("[Firebase] Storage initialized with explicit bucket");
+  }
+}
 
 // Use a promise to handle the async nature of isSupported() for messaging
 let messaging: Messaging | null = null;
