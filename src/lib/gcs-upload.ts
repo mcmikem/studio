@@ -1,6 +1,7 @@
 /**
  * GCS Upload Utility using Signed URLs
- * This provides a fallback when Firebase Storage fails
+ * OPTIONAL: This is an enhancement when Firebase Storage is not available
+ * This requires a service account with Storage permissions to be configured
  */
 
 const API_UPLOAD_URL = '/api/upload/gcs-signed-url';
@@ -13,7 +14,29 @@ export interface UploadResult {
 }
 
 /**
+ * Check if GCS upload is available
+ */
+export async function isGCSEnabled(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/upload/gcs-signed-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        fileName: 'test.txt', 
+        fileType: 'text/plain', 
+        folder: 'test', 
+        userId: 'test' 
+      }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Upload a file to Google Cloud Storage using signed URLs
+ * NOTE: This requires the SERVICE_ACCOUNT environment variable to be set
  */
 export async function uploadToGCS(
   file: File,
@@ -38,12 +61,19 @@ export async function uploadToGCS(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({ error: 'Failed to get upload URL' }));
       console.error('[GCS Upload] Failed to get signed URL:', errorData);
-      return { success: false, error: errorData.error || 'Failed to get upload URL' };
+      return { success: false, error: errorData.error || 'GCS not configured. Please enable Firebase Storage.' };
     }
 
-    const { uploadUrl, downloadUrl, filePath } = await response.json();
+    const data = await response.json().catch(() => ({}));
+    const { uploadUrl, downloadUrl, filePath } = data;
+
+    if (!uploadUrl) {
+      console.error('[GCS Upload] No upload URL received');
+      return { success: false, error: 'GCS not configured. Please enable Firebase Storage.' };
+    }
+
     console.log('[GCS Upload] Got signed URL, uploading...');
 
     // 2. Upload the file directly to GCS
@@ -57,10 +87,10 @@ export async function uploadToGCS(
 
     if (!uploadResponse.ok) {
       console.error('[GCS Upload] Upload failed:', uploadResponse.statusText);
-      return { success: false, error: 'Upload to storage failed' };
+      return { success: false, error: 'Upload to storage failed. Please try Firebase Storage instead.' };
     }
 
-    console.log('[GCS Upload] Success! URL:', downloadUrl);
+    console.log('[GCS Upload] Success!');
     return {
       success: true,
       url: downloadUrl,
@@ -68,7 +98,7 @@ export async function uploadToGCS(
     };
   } catch (error: any) {
     console.error('[GCS Upload] Error:', error);
-    return { success: false, error: error.message || 'Upload failed' };
+    return { success: false, error: error?.message || 'Upload failed. Please try again.' };
   }
 }
 
