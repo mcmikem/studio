@@ -25,11 +25,15 @@ export function SmartReminders({ profile }: { profile: User }) {
           userRole: profile.role,
           userId: profile.id,
         });
-        setReminders(result);
+        if (result && result.reminders) {
+          setReminders(result);
+        } else {
+          setReminders(null);
+        }
       } catch (error: any) {
         console.error('Failed to fetch smart reminders:', error);
         setError("Could not load reminders at this time.");
-        setReminders(null); // Clear reminders on error
+        setReminders(null);
       } finally {
         setIsLoading(false);
       }

@@ -119,11 +119,12 @@ export default function ChatPage() {
 
     try {
       // Construct history for AI from the private chat history
-      const aiHistory = messages
-        ?.map(m => ({
+      const aiHistory = (messages || [])
+        .filter(m => m && m.text)
+        .map(m => ({
           role: m.userId === 'omuto-ai' ? 'model' as const : 'user' as const,
-          content: [{ text: m.text }]
-        })) || [];
+          content: [{ text: m.text || '' }]
+        }));
 
       const aiResponse = await omutoAI({ question: text, history: aiHistory, userId: user.uid });
       
