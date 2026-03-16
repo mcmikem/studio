@@ -2,16 +2,63 @@
 
 import { getStorage, ref, uploadBytes, getDownloadURL, type FirebaseStorage } from "firebase/storage";
 import { updateProfile, type User } from "firebase/auth";
-import { doc, setDoc, type Firestore } from "firebase/firestore";
+import { doc, setDoc, getDoc, type Firestore } from "firebase/firestore";
 import type { FirebaseApp } from "firebase/app";
 import { buildUploadPath } from "@/lib/upload-paths";
 
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
-const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25MB
+const MAX_IMAGE_BYTES = 500 * 1024; // 500KB for base64 (Firestore limit)
+const MAX_FIRESTORE_BYTES = 1024 * 1024; // 1MB hard limit in Firestore
 
 /**
- * Uploads a file using Firebase Storage.
- * This is the primary upload method.
+ * Converts a File to base64 string
+ */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Uploads an image to Firestore as base64 (free, no paid storage needed)
+ * Falls back to Firebase Storage if file is too large
+ */
+export async function uploadImageAsBase64(
+  app: FirebaseApp,
+  file: File,
+  userId: string,
+  firestore: Firestore
+): Promise<string> {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Only image files are supported.");
+  }
+
+  if (file.size > MAX_FIRESTORE_BYTES) {
+    throw new Error(`Image too large. Maximum size is ${MAX_FIRESTORE_BYTES / 1024}KB for direct upload.`);
+  }
+
+  console.log("[Base64 Upload] Converting to base64...");
+  
+  // Convert to base64
+  const base64 = await fileToBase64(file);
+  console.log("[Base64 Upload] Base64 length:", base64.length);
+
+  // Save to Firestore user document
+  const userDocRef = doc(firestore, "users", userId);
+  await setDoc(userDocRef, { 
+    photoURL: base64,
+    photoUpdatedAt: new Date().toISOString()
+  }, { merge: true });
+
+  console.log("[Base64 Upload] Saved to Firestore!");
+  return base64;
+}
+
+/**
+ * Uploads a file using Firebase Storage (requires Blaze plan)
+ * OR falls back to base64 for small images
  */
 export async function uploadFile(
   app: FirebaseApp,
@@ -19,59 +66,34 @@ export async function uploadFile(
   path: string,
   userId?: string
 ): Promise<string> {
-  if (!app) {
-    throw new Error("Firebase app is not initialized. Please refresh the page and try again.");
+  // For small images, try base64 first (free)
+  if (fileBlob.size <= MAX_IMAGE_BYTES && fileBlob instanceof File) {
+    try {
+      const firestore = (await import("firebase/firestore")).getFirestore(app);
+      const base64Url = await uploadImageAsBase64(app, fileBlob as File, userId!, firestore);
+      console.log("[Upload] Used base64 method (free)");
+      return base64Url;
+    } catch (e) {
+      console.warn("[Upload] Base64 failed, trying Storage:", e);
+    }
   }
 
-  if (!path?.trim()) {
-    throw new Error("Upload path is missing. Please try again.");
-  }
-
-  if (!fileBlob || fileBlob.size <= 0) {
-    throw new Error("Selected file is empty. Please choose a valid file.");
-  }
-
-  if (fileBlob.size > MAX_UPLOAD_BYTES) {
-    throw new Error("File is too large. Please keep uploads under 25MB.");
-  }
-
-  console.log("[Upload] Starting upload to path:", path);
-
-  // Try Firebase Storage
+  // Fallback to Firebase Storage (requires Blaze plan)
   try {
     const storage = getStorage(app);
     const storageRef = ref(storage, path);
-
-    console.log("[Upload] Uploading to Firebase Storage...");
     const snapshot = await uploadBytes(storageRef, fileBlob);
     const downloadURL = await getDownloadURL(snapshot.ref);
-    console.log("[Upload] Firebase Storage success!");
+    console.log("[Upload] Used Firebase Storage");
     return downloadURL;
-  } catch (firebaseError: any) {
-    console.error("[Upload] Firebase Storage error:", firebaseError?.message || firebaseError);
-    
-    // Provide specific error messages based on the error
-    if (firebaseError?.code === 'storage/unauthorized') {
-      throw new Error("Upload not authorized. Please log out and log back in, then try again.");
-    }
-    if (firebaseError?.code === 'storage/canceled') {
-      throw new Error("Upload was cancelled. Please try again.");
-    }
-    if (firebaseError?.code === 'storage/quota-exceeded') {
-      throw new Error("Storage quota exceeded. Please contact the administrator.");
-    }
-    if (firebaseError?.code === 'storage/object-not-found') {
-      throw new Error("Storage bucket not found. Please contact the administrator to enable Firebase Storage.");
-    }
-    
-    // Generic error - suggest enabling Firebase Storage
-    const errorMsg = firebaseError?.message || 'Unknown error';
-    throw new Error(`Upload failed: ${errorMsg}. Please ensure Firebase Storage is enabled in the Firebase Console.`);
+  } catch (error: any) {
+    console.error("[Upload] Storage error:", error?.message);
+    throw new Error(`Upload failed: ${error?.message}. Firebase Storage may require a paid plan.`);
   }
 }
 
 /**
- * Uploads an image to Firebase Storage and updates the user's profile
+ * Uploads an image to Firebase Storage with base64 fallback
  */
 export async function uploadImageAndUpdateProfile(
   app: FirebaseApp,
@@ -83,32 +105,27 @@ export async function uploadImageAndUpdateProfile(
     throw new Error("Only image files are supported.");
   }
 
-  if (file.size > MAX_IMAGE_BYTES) {
-    throw new Error("Image is too large. Please use a file smaller than 5MB.");
+  if (file.size > MAX_FIRESTORE_BYTES) {
+    throw new Error(`Image is too large. Maximum size is ${MAX_FIRESTORE_BYTES / 1024}KB.`);
   }
 
   if (!app) {
-    throw new Error("Firebase app is not initialized. Please refresh the page and try again.");
+    throw new Error("Firebase app is not initialized.");
   }
 
-  const extensionFromType = file.type.split("/")[1] || "jpg";
-  const safeExtension = extensionFromType.replace(/[^a-zA-Z0-9]/g, "") || "jpg";
+  console.log("[Profile Upload] Starting...");
 
-  const filePath = buildUploadPath.profilePicture(user.uid, safeExtension);
-
-  console.log("[Profile Upload] Starting upload...");
-  
-  const downloadURL = await uploadFile(app, file, filePath, user.uid);
-
-  console.log("[Profile Upload] Updating profile...");
-  
-  // Update Firebase Auth profile
-  await updateProfile(user, { photoURL: downloadURL });
-
-  // Update Firestore user document
-  const userDocRef = doc(firestore, "users", user.uid);
-  await setDoc(userDocRef, { photoURL: downloadURL }, { merge: true });
-
-  console.log("[Profile Upload] Success!");
-  return downloadURL;
+  // Try base64 first (free, always works)
+  try {
+    const base64Url = await uploadImageAsBase64(app, file, user.uid, firestore);
+    
+    // Update auth profile
+    await updateProfile(user, { photoURL: base64Url });
+    
+    console.log("[Profile Upload] Success via base64!");
+    return base64Url;
+  } catch (error) {
+    console.error("[Profile Upload] Base64 failed:", error);
+    throw error;
+  }
 }
