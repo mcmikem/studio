@@ -10,7 +10,7 @@ import { Users, Target, Clock, AlertTriangle, Signal, Coffee, Moon, Sun, Zap } f
 import { isWithinInterval, parse, startOfDay, format, isValid, isBefore, isAfter } from 'date-fns';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getInitials } from '@/lib/utils';
-import { useFirestore, useCollection } from '@/firebase';
+import { useFirestore, useCollection, useUser } from '@/firebase';
 import { collection, query, limit, where, Timestamp, orderBy } from 'firebase/firestore';
 import { subHours, differenceInMinutes } from 'date-fns';
 
@@ -92,10 +92,12 @@ function getUserStatus(checkin: Checkin | null, checkout: Checkout | null, curre
 }
 
 export function TeamDeployment() {
+  const { user } = useUser();
   const firestore = useFirestore();
 
   const queries = useMemo(() => {
-    if (!firestore) return null;
+    // Don't run queries until user is authenticated
+    if (!firestore || !user) return null;
     const since = subHours(new Date(), 24);
     return {
       users: query(collection(firestore, 'users')),
@@ -110,7 +112,7 @@ export function TeamDeployment() {
         orderBy('timestamp', 'desc')
       ),
     };
-  }, [firestore]);
+  }, [firestore, user]);
 
   const users = useCollection<User>(queries?.users);
   const checkins = useCollection<Checkin>(queries?.checkins);
