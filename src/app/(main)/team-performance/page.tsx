@@ -182,9 +182,9 @@ export default function TeamPerformancePage() {
 
         <div className="lg:col-span-7">
           <Tabs defaultValue={leaderboardData[0]?.userId} className="w-full">
-            <ScrollArea className="w-full"><TabsList className="mb-4 h-auto p-2 gap-2">
+            <ScrollArea className="w-full"><TabsList className="mb-4 h-auto p-2 gap-1 sm:gap-2 flex-wrap">
               {leaderboardData.map((u) => (
-                <TabsTrigger key={u.userId} value={u.userId} className="min-w-[120px]">{u.name.split(' ')[0]}</TabsTrigger>
+                <TabsTrigger key={u.userId} value={u.userId} className="min-w-[80px] sm:min-w-[120px] text-xs sm:text-sm">{u.name.split(' ')[0]}</TabsTrigger>
               ))}
             </TabsList><ScrollBar orientation="horizontal" /></ScrollArea>
 

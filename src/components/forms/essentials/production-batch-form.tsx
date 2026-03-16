@@ -498,7 +498,7 @@ export function ProductionBatchForm() {
             </div>
           </CardContent>
           <CardFooter className="enterprise-form-footer gap-2 flex-wrap">
-            <Button type="submit" disabled={isSubmitting || !hasProducts} className="btn-omuto flex-1 min-w-[220px] h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
+            <Button type="submit" disabled={isSubmitting || !hasProducts} className="btn-omuto flex-1 w-full sm:w-auto sm:min-w-[220px] h-12 sm:h-14 text-xs sm:text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl mt-2 sm:mt-0">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
               {editingBatch ? 'Update Batch' : 'Save Production Batch'}
             </Button>
