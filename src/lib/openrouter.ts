@@ -1,9 +1,16 @@
 import OpenAI from 'openai';
 
-const openrouter = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: 'https://openrouter.ai/api/v1',
-});
+function getOpenRouterClient(): OpenAI | null {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    console.error('[OpenRouter] No API key found in environment');
+    return null;
+  }
+  return new OpenAI({
+    apiKey,
+    baseURL: 'https://openrouter.ai/api/v1',
+  });
+}
 
 export async function callOpenRouter(
   prompt: string,
@@ -11,8 +18,13 @@ export async function callOpenRouter(
   model: string = 'openai/gpt-4o-mini',
   temperature: number = 0.7
 ): Promise<string> {
+  const client = getOpenRouterClient();
+  if (!client) {
+    throw new Error('OpenRouter not configured - missing API key');
+  }
+
   try {
-    const response = await openrouter.chat.completions.create({
+    const response = await client.chat.completions.create({
       model,
       messages: [
         { role: 'system', content: systemPrompt },
@@ -21,8 +33,8 @@ export async function callOpenRouter(
       temperature,
     });
     return response.choices[0]?.message?.content || '';
-  } catch (error) {
-    console.error('[OpenRouter] Error:', error);
+  } catch (error: any) {
+    console.error('[OpenRouter] Error:', error?.message || error);
     throw error;
   }
 }
@@ -31,16 +43,21 @@ export async function chatWithOpenRouter(
   messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
   model: string = 'openai/gpt-4o-mini',
   temperature: number = 0.7
-) {
+): Promise<string> {
+  const client = getOpenRouterClient();
+  if (!client) {
+    throw new Error('OpenRouter not configured - missing API key');
+  }
+
   try {
-    const response = await openrouter.chat.completions.create({
+    const response = await client.chat.completions.create({
       model,
       messages,
       temperature,
     });
     return response.choices[0]?.message?.content || '';
-  } catch (error) {
-    console.error('[OpenRouter] Error:', error);
+  } catch (error: any) {
+    console.error('[OpenRouter] Error:', error?.message || error);
     throw error;
   }
 }
