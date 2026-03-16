@@ -30,7 +30,6 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { runParseWorkplan } from '@/ai/actions';
 import { createAlertAction as createAlert } from '@/actions/mutations';
-import { parseWorkplanFlow } from '@/ai/flows/parse-workplan-flow';
 
 const priorityItemSchema = z.object({
   activity: z.string().min(1, 'Activity description is required.'),

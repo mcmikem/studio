@@ -1,16 +1,6 @@
 
 'use server';
 
-
-
-import { strategicAdvisorFlow } from './flows/strategic-advisor-flow';
-import { impactStoryFlow } from './flows/impact-story-generator';
-import { testimonyProcessorFlow } from './flows/testimony-processor-flow';
-import { parseOperationalPlanFlow } from './flows/parse-operational-plan-flow';
-
-import { parseWorkplanFlow } from './flows/parse-workplan-flow';
-import { analyzeProgramQualitativeDataFlow } from './flows/qualitative-analysis-flow';
-
 import { omutoAIFlow } from './flows/omuto-ai-flow';
 import { chatWithOpenRouter } from '@/lib/openrouter';
 import { aiConfig } from '@/lib/ai';
@@ -44,7 +34,8 @@ import {
 
 export async function runStrategicAdvisor(input: StrategicAdvisorInput): Promise<StrategicAdvisorOutput> {
     try {
-        return await strategicAdvisorFlow(input);
+        const { getStrategicInsights } = await import('./flows/strategic-advisor-flow');
+        return await getStrategicInsights(input);
     } catch (error) {
         console.error('runStrategicAdvisor failed:', error);
         return { insights: [] };
@@ -53,7 +44,8 @@ export async function runStrategicAdvisor(input: StrategicAdvisorInput): Promise
 
 export async function generateImpactStory(input: ImpactStoryInput) {
     try {
-        return await impactStoryFlow(input);
+        const { generateImpactStory: generateStory } = await import('./flows/impact-story-generator');
+        return await generateStory(input);
     } catch (error) {
         console.error('generateImpactStory failed:', error);
         return { impactStory: "Unable to generate story at this time." };
@@ -62,7 +54,8 @@ export async function generateImpactStory(input: ImpactStoryInput) {
 
 export async function processTestimony(input: TestimonyInput) {
     try {
-        return await testimonyProcessorFlow(input);
+        const { processTestimony: processTest } = await import('./flows/testimony-processor-flow');
+        return await processTest(input);
     } catch (error) {
         console.error('processTestimony failed:', error);
         throw error;
@@ -71,7 +64,8 @@ export async function processTestimony(input: TestimonyInput) {
 
 export async function parseOperationalPlan(input: ParsePlanInput) {
     try {
-        return await parseOperationalPlanFlow(input);
+        const { parseOperationalPlan: parsePlan } = await import('./flows/parse-operational-plan-flow');
+        return await parsePlan(input);
     } catch (error) {
         console.error('parseOperationalPlan failed:', error);
         return { keyResults: [] };
@@ -82,7 +76,8 @@ export async function parseOperationalPlan(input: ParsePlanInput) {
 
 export async function runParseWorkplan(input: ParseWorkplanInput): Promise<ParseWorkplanOutput> {
     try {
-        return await parseWorkplanFlow(input);
+        const { parseWorkplan } = await import('./flows/parse-workplan-flow');
+        return await parseWorkplan(input);
     } catch (error) {
         console.error('runParseWorkplan failed:', error);
         return { keyPriorities: [], message: 'Error parsing workplan.' };
@@ -91,7 +86,8 @@ export async function runParseWorkplan(input: ParseWorkplanInput): Promise<Parse
 
 export async function runQualitativeAnalysis(input: QualitativeAnalysisInput) {
     try {
-        return await analyzeProgramQualitativeDataFlow(input);
+        const { analyzeQualitativeData } = await import('./flows/qualitative-analysis-flow');
+        return await analyzeQualitativeData(input);
     } catch (error) {
         console.error('runQualitativeAnalysis failed:', error);
         return { summary: 'Error analyzing data.', recurringSuccesses: [], commonChallenges: [], keyLearnings: [] };

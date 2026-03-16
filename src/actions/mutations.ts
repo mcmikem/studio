@@ -209,8 +209,8 @@ export async function generateSmartRemindersAction(input: SmartRemindersInput): 
 export async function generateDailyPlanAction(input: DailyPlannerAIInput): Promise<DailyPlannerAIOutput> {
     // Try AI first, fall back to offline algorithm
     try {
-        const { dailyPlannerFlow } = await import('@/ai/flows/daily-planner-flow');
-        const aiPlan = await dailyPlannerFlow({
+        const { generateDailyPlan } = await import('@/ai/flows/daily-planner-flow');
+        const aiPlan = await generateDailyPlan({
             userName: input.userName,
             userRole: input.userRole,
             primaryMission: input.primaryMission,

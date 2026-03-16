@@ -1,71 +1,61 @@
 
 /**
  * @fileOverview An AI flow to transcribe and analyze audio/video testimonies.
+ * Uses OpenRouter for AI generation
  */
 
-import { ai } from '@/ai/genkit';
+import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
 import { z } from 'zod';
 import type { TestimonyInput, TestimonyOutput } from '@/lib/types';
 import { TestimonyInputSchema, TestimonyOutputSchema } from '@/lib/types';
 
+export async function processTestimony(input: TestimonyInput): Promise<TestimonyOutput> {
+  const systemPrompt = `You are an expert communications assistant for a youth-led NGO in Uganda. You are brilliant at finding the core message in a story.`;
 
-const TestimonyAnalysisSchema = z.object({
-    summary: z.string().describe("A concise summary of the testimony."),
-    quotes: z.array(z.string()).describe("A list of 1-3 impactful quotes from the transcription."),
-    hashtags: z.array(z.string()).describe("A list of 3-5 relevant social media hashtags (e.g., #YouthEmpowerment)."),
-});
+  if (aiConfig.provider === 'openrouter') {
+    try {
+      const prompt = `Analyze the following transcription of a beneficiary's testimony and return a JSON object with a summary, key quotes, and relevant hashtags.
+      
+Return JSON with: summary, quotes (array), hashtags (array).
 
+If you have the transcription text, include it.`;
 
-export const testimonyProcessorFlow = ai.defineFlow(
-  {
-    name: 'testimonyProcessorFlow',
-    inputSchema: TestimonyInputSchema,
-    outputSchema: TestimonyOutputSchema,
-  },
-  async (input) => {
-    
-    // 1. Transcribe the audio/video
-    const transcriptionResponse = await ai.generate({
-        model: 'googleai/gemini-flash-latest',
-        prompt: [
-          { text: "Please transcribe the following audio. The audio is a testimony from a beneficiary of an NGO in Uganda. Capture the speech as accurately as possible. If there is more than one speaker, try to differentiate them." },
-          { media: { url: input.mediaUri } }
-        ],
-    });
-    
-    const transcription = transcriptionResponse.text;
-
-    if (!transcription) {
-      throw new Error('AI failed to transcribe the audio.');
+      const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.7);
+      
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          transcription: '',
+          summary: parsed.summary || 'Summary not available',
+          quotes: parsed.quotes || [],
+          hashtags: parsed.hashtags || ['#OmutoFoundation']
+        };
+      }
+      
+      return {
+        transcription: '',
+        summary: 'Could not analyze testimony at this time',
+        quotes: [],
+        hashtags: ['#OmutoFoundation']
+      };
+    } catch (error) {
+      console.error('Testimony processing failed:', error);
+      return {
+        transcription: '',
+        summary: 'Error processing testimony',
+        quotes: [],
+        hashtags: ['#OmutoFoundation']
+      };
     }
-
-    // 2. Analyze the transcription
-    const analysisPrompt = `You are an expert communications assistant for a youth-led NGO in Uganda. You are brilliant at finding the core message in a story.
-    Analyze the following transcription of a beneficiary's testimony and return a JSON object with a summary, key quotes, and relevant hashtags.
-    
-    Transcription:
-    ---
-    ${transcription}
-    ---
-    `;
-
-    const analysisResult = await ai.generate({
-        model: 'googleai/gemini-flash-latest',
-        prompt: analysisPrompt,
-        output: { schema: TestimonyAnalysisSchema },
-    });
-
-    const analysisOutput = analysisResult.output;
-
-    if (!analysisOutput) {
-      throw new Error('AI failed to analyze the transcription.');
-    }
-        
-    return {
-      transcription,
-      summary: analysisOutput.summary,
-      quotes: analysisOutput.quotes,
-      hashtags: analysisOutput.hashtags,
-    };
   }
-);
+
+  // Fallback
+  return {
+    transcription: '',
+    summary: 'AI service not configured. Set up OpenRouter for AI-powered analysis.',
+    quotes: [],
+    hashtags: ['#OmutoFoundation']
+  };
+}

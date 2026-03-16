@@ -3,48 +3,46 @@
 
 /**
  * @fileOverview An AI flow to parse unstructured text into a structured weekly workplan.
+ * Uses OpenRouter for AI generation
  */
 
-import { ai } from '@/ai/genkit';
+import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
 import { ParseWorkplanInputSchema, ParseWorkplanOutputSchema, type ParseWorkplanInput, type ParseWorkplanOutput } from '@/lib/types';
 
+export async function parseWorkplan(input: ParseWorkplanInput): Promise<ParseWorkplanOutput> {
+  const systemPrompt = `You are an expert administrative assistant. Parse unstructured text into structured workplans.`;
 
-const workplanParserPrompt = ai.definePrompt({
-    name: 'workplanParserPrompt',
-    input: { schema: ParseWorkplanInputSchema },
-    output: { schema: ParseWorkplanOutputSchema },
-    model: 'googleai/gemini-flash-latest',
-    prompt: `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format that conforms to the provided schema.
+  const prompt = `You are an expert administrative assistant. Your task is to read an unstructured block of text representing a team's weekly plan and convert it into a structured JSON format.
 
-  **Instructions:**
-  1.  **Extract Key Priorities:** Identify each distinct task or activity.
-  2.  **Assign Priority:** Based on keywords (e.g., "must do", "urgent", "critical" -> High; "should do", "important" -> Medium; "if time", "nice to have" -> Low), assign a priority. If no keyword is present, default to 'Medium'.
-  3.  **Identify Responsible Parties:** Look for names (e.g., "Dianah", "McMike", "Alex", "Kasirye", "Bwire", "John Paul") or roles ("All Members", "Volunteers", "Interns"). Always return an array of strings for the 'responsible' field, even if it's just one person. Be accurate with names.
-  4.  **Extract Deadlines:** If a specific date is mentioned, format it as YYYY-MM-DD.
-  5.  **Summarize:** Create a concise one or two-sentence summary of the main goal for the week to use as the 'message'.
-  
-  Please parse the following weekly plan text into a structured JSON object.
+Instructions:
+1. Extract Key Priorities: Identify each distinct task or activity.
+2. Assign Priority: Based on keywords ("must do", "urgent", "critical" -> High; "should do", "important" -> Medium; "if time", "nice to have" -> Low)
+3. Identify Responsible Parties: Look for names or roles. Return an array of strings.
+4. Extract Deadlines: Format as YYYY-MM-DD if specified.
+5. Create a concise summary as 'message'.
 
-  **User's Text:**
-  ---
-  {{textPlan}}
-  ---
-  `,
-});
+Parse this weekly plan:
 
-export const parseWorkplanFlow = ai.defineFlow(
-  {
-    name: 'parseWorkplanFlow',
-    inputSchema: ParseWorkplanInputSchema,
-    outputSchema: ParseWorkplanOutputSchema,
-  },
-  async (input) => {
-    const { output } = await workplanParserPrompt(input);
+${input.textPlan}
 
-    if (!output) {
-      throw new Error('AI failed to parse the workplan.');
+Return JSON with keyPriorities array and message string.`;
+
+  if (aiConfig.provider === 'openrouter') {
+    try {
+      const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.3);
+      
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return parsed;
+      }
+      return { keyPriorities: [], message: 'Could not parse workplan' };
+    } catch (error) {
+      console.error('Parse workplan failed:', error);
+      return { keyPriorities: [], message: 'Error parsing workplan' };
     }
-
-    return output;
   }
-);
+
+  return { keyPriorities: [], message: 'AI not configured' };
+}

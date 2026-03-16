@@ -2,7 +2,8 @@
 'use server';
 
 import { z } from 'zod';
-import { ai } from '@/ai/genkit';
+import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
 
 const StrategicAdvisorOutputSchema = z.object({
   insights: z.array(z.object({
@@ -13,25 +14,22 @@ const StrategicAdvisorOutputSchema = z.object({
   }))
 });
 
-export const strategicAdvisorFlow = ai.defineFlow(
-  {
-    name: 'strategicAdvisorFlow',
-    inputSchema: z.any(),
-    outputSchema: StrategicAdvisorOutputSchema,
-  },
-  async ({ activities = [], checkins = [], expenses = [], keyResults = [] }) => {
-    console.log('[StrategicAdvisor] Starting analysis with', { 
-      activities: activities.length, 
-      checkins: checkins.length, 
-      expenses: expenses.length, 
-      keyResults: keyResults.length 
-    });
+export async function getStrategicInsights(input: { activities?: any[]; checkins?: any[]; expenses?: any[]; keyResults?: any[] }) {
+  const { activities = [], checkins = [], expenses = [], keyResults = [] } = input;
+  
+  console.log('[StrategicAdvisor] Starting analysis with', { 
+    activities: activities.length, 
+    checkins: checkins.length, 
+    expenses: expenses.length, 
+    keyResults: keyResults.length 
+  });
 
-    const prompt = `
-You are an AI Strategic Advisor for the Omuto Foundation, a youth-led NGO in rural Uganda. Your user is the Executive Director.
+  const systemPrompt = `You are an AI Strategic Advisor for the Omuto Foundation, a youth-led NGO in rural Uganda. 
+Your user is the Executive Director.
 Your task is to analyze the provided JSON data from the last 30 days and generate 3-4 high-level, actionable insights.
-Do not state the obvious. Find trends, risks, and opportunities. Be direct and concise.
+Do not state the obvious. Find trends, risks, and opportunities. Be direct and concise.`;
 
+  const prompt = `
 Here is the raw data:
 - Key Results (Our current strategy): ${JSON.stringify(keyResults).substring(0, 1000)}
 - Activities (What the team has done): ${JSON.stringify(activities).substring(0, 1000)}
@@ -39,7 +37,7 @@ Here is the raw data:
 - Expenses (Where money is going): ${JSON.stringify(expenses).substring(0, 1000)}
 
 Analyze the data to find critical insights. Provide 3-4 insights in the required JSON format.
-      
+
 Example Insight:
 {
   "emoji": "⚠️",
@@ -48,19 +46,14 @@ Example Insight:
   "recommendation": "Check in with the program lead to identify and resolve potential blockers."
 }
 
-Return ONLY valid JSON, no other text.
+Return ONLY valid JSON.
 `;
 
+  if (aiConfig.provider === 'openrouter') {
     try {
-      const result = await ai.generate({
-        model: 'googleai/gemini-2.0-flash',
-        prompt: prompt,
-      });
-      
-      const text = result.text;
+      const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.5);
       console.log('[StrategicAdvisor] Raw response:', text?.substring(0, 200));
       
-      // Try to parse JSON from response
       const jsonMatch = text?.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         try {
@@ -71,7 +64,6 @@ Return ONLY valid JSON, no other text.
         }
       }
       
-      // If no valid JSON, return a fallback
       return {
         insights: [
           {
@@ -96,4 +88,16 @@ Return ONLY valid JSON, no other text.
       };
     }
   }
-);
+
+  // Fallback if not configured
+  return {
+    insights: [
+      {
+        emoji: "⚙️",
+        title: "AI Not Configured",
+        description: "Set up OpenRouter in .env.local to enable strategic insights.",
+        recommendation: "Add your OpenRouter API key to enable AI analysis."
+      }
+    ]
+  };
+}

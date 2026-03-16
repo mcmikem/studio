@@ -1,10 +1,11 @@
 
 /**
  * @fileOverview Hybrid Daily Planner AI Flow
- * Uses algorithmic planning as base, optionally enhanced by AI when online
+ * Uses OpenRouter for AI generation
  */
 
-import { ai } from '@/ai/genkit';
+import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
 import { 
   DailyPlannerAIInputSchema, 
   DailyPlannerAIOutputSchema,
@@ -12,18 +13,6 @@ import {
   type DailyPlannerAIOutput 
 } from '@/lib/types';
 import { z } from 'zod';
-
-const plannerPrompt = ai.definePrompt({
-  name: 'dailyPlannerPrompt',
-  model: 'googleai/gemini-2.0-flash',
-  system: `You are an expert productivity assistant for the Omuto Foundation, a youth-led NGO in Uganda.
-Your role is to help staff and volunteers plan their day strategically.
-- Be practical and realistic about time allocations
-- Consider the organization's strategic objectives (Key Results)
-- Be concise and action-oriented
-- When suggesting time blocks, always include specific descriptions of what to do
-- Prioritize impact over busyness`,
-});
 
 const plannerInputSchema = z.object({
   userName: z.string(),
@@ -37,24 +26,27 @@ const plannerInputSchema = z.object({
   })).optional(),
 });
 
-export const dailyPlannerFlow = ai.defineFlow(
-  {
-    name: 'dailyPlannerFlow',
-    inputSchema: plannerInputSchema,
-    outputSchema: DailyPlannerAIOutputSchema,
-  },
-  async (input): Promise<DailyPlannerAIOutput> => {
-    const { userName, userRole, primaryMission, weeklyPriorities = [], keyResults = [] } = input;
-    
-    const strategyContext = keyResults.length > 0 
-      ? `\n\nStrategic Objectives to align with:\n${keyResults.map(kr => `- ${kr.title}: ${kr.description}`).join('\n')}`
-      : '';
-    
-    const weeklyContext = weeklyPriorities.length > 0
-      ? `\n\nThis week's priorities:\n${weeklyPriorities.map(p => `- ${p}`).join('\n')}`
-      : '';
+const systemPrompt = `You are an expert productivity assistant for the Omuto Foundation, a youth-led NGO in Uganda.
+Your role is to help staff and volunteers plan their day strategically.
+- Be practical and realistic about time allocations
+- Consider the organization's strategic objectives (Key Results)
+- Be concise and action-oriented
+- When suggesting time blocks, always include specific descriptions of what to do
+- Prioritize impact over busyness
+Return valid JSON only.`;
 
-    const prompt = `
+export async function generateDailyPlan(input: z.infer<typeof plannerInputSchema>): Promise<DailyPlannerAIOutput> {
+  const { userName, userRole, primaryMission, weeklyPriorities = [], keyResults = [] } = input;
+  
+  const strategyContext = keyResults.length > 0 
+    ? `\n\nStrategic Objectives to align with:\n${keyResults.map(kr => `- ${kr.title}: ${kr.description}`).join('\n')}`
+    : '';
+  
+  const weeklyContext = weeklyPriorities.length > 0
+    ? `\n\nThis week's priorities:\n${weeklyPriorities.map(p => `- ${p}`).join('\n')}`
+    : '';
+
+  const prompt = `
 Create a detailed daily plan for ${userName} (${userRole}) at Omuto Foundation.
 
 Primary Mission: ${primaryMission}
@@ -72,28 +64,29 @@ Keep time blocks realistic (8:30 AM to 5 PM with lunch break).
 Ensure strategic alignments are specific to the mission and actual key results.
 `;
 
+  // Use OpenRouter if configured
+  if (aiConfig.provider === 'openrouter') {
     try {
-      const response = await plannerPrompt({ input: prompt });
-      const text = response.text;
+      const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.7);
       
-      // Try to parse JSON from response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
         return parsed;
       }
-      
-      // Fallback if no valid JSON
       throw new Error('Could not parse AI response');
     } catch (error) {
-      console.error('Daily Planner AI failed, using fallback:', error);
-      throw error;
+      console.error('Daily Planner AI failed:', error);
+      return generateOfflinePlan({ primaryMission, keyResults });
     }
   }
-);
+  
+  // Fallback to offline algorithm
+  return generateOfflinePlan({ primaryMission, keyResults });
+}
 
-// Offline algorithm-based planner (works without AI)
-export function generateOfflinePlan(input: DailyPlannerAIInput): DailyPlannerAIOutput {
+// Keep the offline function for fallback
+export function generateOfflinePlan(input: { primaryMission: string; keyResults?: any[] }): DailyPlannerAIOutput {
   const { primaryMission, keyResults = [] } = input;
   
   const missionLower = primaryMission.toLowerCase();

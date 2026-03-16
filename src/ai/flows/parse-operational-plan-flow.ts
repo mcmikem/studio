@@ -1,54 +1,52 @@
 
 /**
  * @fileOverview An AI flow to parse an unstructured operational plan into structured Key Result data.
+ * Uses OpenRouter for AI generation
  */
 
-import { ai } from '@/ai/genkit';
+import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
 import type { ParsePlanInput, ParsePlanOutput } from '@/lib/types';
 import { ParsePlanInputSchema, ParsePlanOutputSchema } from '@/lib/types';
 import { z } from 'zod';
 
-export const parseOperationalPlanFlow = ai.defineFlow(
-  {
-    name: 'parseOperationalPlanFlow',
-    inputSchema: ParsePlanInputSchema,
-    outputSchema: ParsePlanOutputSchema,
-  },
-  async (input) => {
-    const prompt = `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format that conforms to the provided schema.
+export async function parseOperationalPlan(input: ParsePlanInput): Promise<ParsePlanOutput> {
+  const systemPrompt = `You are an expert M&E (Monitoring and Evaluation) assistant. Extract Key Results from NGO operational plans.`;
 
-  **Instructions:**
-  1.  **Identify Key Results:** Scan the text for items explicitly labeled with a KR code (e.g., "OCT-KR1", "NOV-KR1", "Q4-KR3").
-  2.  **Extract Details:** For each KR found, extract the following information:
-      - **title:** The KR code itself (e.g., "OCT-KR1").
-      - **description:** The short summary of the objective.
-      - **target:** The numerical goal. Extract only the number (e.g., for "2M UGX", the target is 2000000; for "510 trees", it's 510).
-      - **deadline:** The specified end date. Convert it to YYYY-MM-DD format.
-      - **priority:** Assign 'High', 'Medium', 'Low' based on context clues. If none, default to 'Medium'.
-  3.  **Set Initial Progress:** The 'currentProgress' for all extracted KRs must always be set to 0, as this is a new plan.
-  
-  Please parse the following operational plan text into a structured JSON object.
-  
-  **Operational Plan Text:**
-  ---
-  ${input.planText}
-  ---
-  `;
+  const prompt = `You are an expert M&E (Monitoring and Evaluation) assistant. Your task is to read a raw text operational plan for an NGO and extract all the Key Results (KRs) into a structured JSON format.
 
-    const result = await ai.generate({
-        model: 'googleai/gemini-flash-latest',
-        prompt: prompt,
-        output: { schema: ParsePlanOutputSchema },
-    });
-    
-    const output = result.output;
+Instructions:
+1. Identify Key Results: Scan the text for items explicitly labeled with a KR code (e.g., "OCT-KR1", "NOV-KR1", "Q4-KR3").
+2. Extract Details: For each KR found, extract:
+   - title: The KR code (e.g., "OCT-KR1")
+   - description: The short summary of the objective
+   - target: The numerical goal (e.g., 2000000 for "2M UGX", 510 for "510 trees")
+   - deadline: The specified end date in YYYY-MM-DD format
+   - priority: 'High', 'Medium', or 'Low'
+3. Set currentProgress to 0 for all new KRs.
 
-    if (!output || !output.keyResults) {
-        return { keyResults: [] };
+Parse this operational plan:
+
+${input.planText}
+
+Return JSON: {"keyResults": [{"title": "", "description": "", "target": 0, "deadline": "YYYY-MM-DD", "priority": "Medium", "currentProgress": 0}]}`;
+
+  if (aiConfig.provider === 'openrouter') {
+    try {
+      const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.3);
+      
+      const jsonMatch = text.match(/\{"keyResults"[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        const sanitizedResults = (parsed.keyResults || []).map((kr: any) => ({ ...kr, currentProgress: 0 }));
+        return { keyResults: sanitizedResults };
+      }
+      return { keyResults: [] };
+    } catch (error) {
+      console.error('Parse Operational Plan failed:', error);
+      return { keyResults: [] };
     }
-
-    // Ensure currentProgress is always 0 for new plans
-    const sanitizedResults = output.keyResults.map(kr => ({ ...kr, currentProgress: 0 }));
-    return { keyResults: sanitizedResults };
   }
-);
+
+  return { keyResults: [] };
+}

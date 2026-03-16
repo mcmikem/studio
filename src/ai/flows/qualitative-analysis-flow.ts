@@ -1,85 +1,65 @@
 
 /**
- * @fileOverview An AI flow to analyze the qualitative data from program activities.
+ * @fileOverview An AI flow to analyze qualitative data from program activities.
+ * Uses OpenRouter for AI generation
  */
-import { ai } from '@/ai/genkit';
+import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
 import { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from '@/lib/types';
-import { getFirebaseAdmin } from '@/firebase/server';
-import { z } from 'zod';
-import { formatDateSafe } from '@/lib/utils';
 
-const getActivitiesForProgramToolObject = ai.defineTool(
-    {
-        name: 'getActivitiesForProgram',
-        description: 'Retrieves all activity reports for a specific program within a given date range.',
-        inputSchema: z.object({
-            programId: z.string().describe('The ID of the program to fetch activities for.'),
-        }),
-        outputSchema: z.array(z.any()), // We can be more specific, but 'any' is fine for the tool
-    },
-    async ({ programId }) => {
-        const { firestore } = getFirebaseAdmin();
-        const activitiesRef = firestore.collection('activities');
-        const q = activitiesRef
-            .where('primaryGoalType', '==', 'Program')
-            .where('primaryGoalId', '==', programId);
+export async function analyzeQualitativeData(input: { programName: string; programId: string; startDate: string; endDate: string; data?: any[] }): Promise<{ summary: string; recurringSuccesses: string[]; commonChallenges: string[]; keyLearnings: string[] }> {
+  const systemPrompt = `You are an expert M&E (Monitoring and Evaluation) analyst for a youth-led NGO in Uganda.
+Analyze qualitative data and provide actionable insights.`;
 
-        const snapshot = await q.get();
-        if (snapshot.empty) {
-            return [];
-        }
-        
-        // Sanitize data for AI, converting Timestamps to strings
-        return snapshot.docs.map(doc => {
-            const data = doc.data();
-            const sanitizedData: Record<string, any> = {};
-            for (const key in data) {
-                if (data[key] && typeof data[key].toDate === 'function') {
-                    sanitizedData[key] = formatDateSafe(data[key]);
-                } else {
-                    sanitizedData[key] = data[key];
-                }
-            }
-            return {
-                id: doc.id,
-                ...sanitizedData,
-            };
-        });
+  const prompt = `You are an expert M&E analyst. Analyze the following qualitative data from field reports.
+
+Provide a JSON response with:
+1. summary - Executive summary of findings
+2. recurringSuccesses - Array of what's going well
+3. commonChallenges - Array of obstacles faced
+4. keyLearnings - Array of important takeaways
+
+Data:
+${JSON.stringify(input.data || [], null, 2).substring(0, 3000)}
+
+Return JSON with summary, recurringSuccesses, commonChallenges, keyLearnings.`;
+
+  if (aiConfig.provider === 'openrouter') {
+    try {
+      const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.5);
+      
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          summary: parsed.summary || 'Analysis complete',
+          recurringSuccesses: parsed.recurringSuccesses || [],
+          commonChallenges: parsed.commonChallenges || [],
+          keyLearnings: parsed.keyLearnings || []
+        };
+      }
+      
+      return {
+        summary: 'Could not analyze data at this time',
+        recurringSuccesses: [],
+        commonChallenges: [],
+        keyLearnings: []
+      };
+    } catch (error) {
+      console.error('Qualitative analysis failed:', error);
+      return {
+        summary: 'Error analyzing data',
+        recurringSuccesses: [],
+        commonChallenges: [],
+        keyLearnings: []
+      };
     }
-);
+  }
 
-const qualitativeAnalysisPrompt = ai.definePrompt({
-    name: 'qualitativeAnalysisPrompt',
-    model: 'googleai/gemini-flash-latest', 
-    input: { schema: QualitativeAnalysisInputSchema },
-    tools: [getActivitiesForProgramToolObject],
-    output: { schema: QualitativeAnalysisOutputSchema },
-    prompt: `You are an expert M&E (Monitoring and Evaluation) analyst for a youth-led NGO in Uganda.
-    Your task is to analyze a collection of raw, qualitative data from field reports for a specific program and return a structured JSON object conforming to the schema.
-    The data includes memorable moments, challenges, lessons learned, and direct quotes from beneficiaries.
-    
-    Synthesize this information into a high-level, thematic analysis.
-    - Identify recurring themes of success. What is consistently going well?
-    - Identify common challenges. What obstacles does the team repeatedly face?
-    - Extract key, actionable learnings. What are the most important takeaways for improving the program?
-    - Provide a concise executive summary of your findings.
-    
-    Focus on patterns and insights, not just listing individual comments. Be insightful and strategic.
-    
-    Analyze the qualitative data for the '{{programName}}' program from {{startDate}} to {{endDate}}. Use the 'getActivitiesForProgram' tool with programId '{{programId}}'.`,
-});
-
-export const analyzeProgramQualitativeDataFlow = ai.defineFlow(
-    {
-        name: 'analyzeProgramQualitativeDataFlow',
-        inputSchema: QualitativeAnalysisInputSchema,
-        outputSchema: QualitativeAnalysisOutputSchema,
-    },
-    async (input) => {
-        const {output} = await qualitativeAnalysisPrompt(input);
-        if (!output) {
-            throw new Error("The AI failed to generate an analysis for the program's qualitative data.");
-        }
-        return output;
-    }
-);
+  return {
+    summary: 'AI not configured. Set up OpenRouter.',
+    recurringSuccesses: [],
+    commonChallenges: [],
+    keyLearnings: []
+  };
+}
