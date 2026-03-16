@@ -222,7 +222,7 @@ export async function generateDailyPlanAction(input: DailyPlannerAIInput): Promi
         console.warn('AI planner unavailable, using offline algorithm:', error);
         // Fall back to offline algorithm
         const { generateOfflinePlan } = await import('@/ai/flows/daily-planner-flow');
-        return generateOfflinePlan(input);
+        return generateOfflinePlan({ primaryMission: input.primaryMission, keyResults: input.keyResults });
     }
 }
 

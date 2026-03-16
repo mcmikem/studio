@@ -87,7 +87,13 @@ export async function runParseWorkplan(input: ParseWorkplanInput): Promise<Parse
 export async function runQualitativeAnalysis(input: QualitativeAnalysisInput) {
     try {
         const { analyzeQualitativeData } = await import('./flows/qualitative-analysis-flow');
-        return await analyzeQualitativeData(input);
+        return await analyzeQualitativeData({ 
+            programName: input.programName, 
+            programId: input.programId, 
+            startDate: input.startDate, 
+            endDate: input.endDate,
+            data: []
+        });
     } catch (error) {
         console.error('runQualitativeAnalysis failed:', error);
         return { summary: 'Error analyzing data.', recurringSuccesses: [], commonChallenges: [], keyLearnings: [] };
