@@ -25,6 +25,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useViewAs } from '@/hooks/use-view-as';
 import { useCommandState } from '@/hooks/use-command-state';
+import { useResolvedPhotoURL } from '@/hooks/use-resolved-photo';
 
 
 function QuickAddMenu() {
@@ -190,6 +191,7 @@ function UserMenu() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const auth = useAuth();
+  const resolvedPhotoURL = useResolvedPhotoURL(profile?.photoURL || user?.photoURL || null);
 
   const handleLogout = () => {
     if(auth) {
@@ -219,7 +221,7 @@ function UserMenu() {
           className="relative h-9 w-9 rounded-full text-foreground hover:bg-muted/50"
         >
           <Avatar className="h-9 w-9" data-ai-hint="user avatar">
-            {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
+            {resolvedPhotoURL && <AvatarImage src={resolvedPhotoURL} alt="User avatar" />}
             <AvatarFallback>{getInitials(profile?.name, user?.email)}</AvatarFallback>
           </Avatar>
         </Button>
@@ -228,7 +230,7 @@ function UserMenu() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10" data-ai-hint="user avatar">
-              {user?.photoURL && <AvatarImage src={user.photoURL} alt="User avatar" />}
+              {resolvedPhotoURL && <AvatarImage src={resolvedPhotoURL} alt="User avatar" />}
               <AvatarFallback>{getInitials(profile?.name, user?.email)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col space-y-1">

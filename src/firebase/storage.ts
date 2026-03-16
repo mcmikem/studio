@@ -2,29 +2,19 @@
 
 import { getStorage, ref, uploadBytes, getDownloadURL, type FirebaseStorage } from "firebase/storage";
 import { updateProfile, type User } from "firebase/auth";
-import { doc, setDoc, getDoc, type Firestore } from "firebase/firestore";
+import { doc, setDoc, getDoc, collection, addDoc, Firestore } from "firebase/firestore";
 import type { FirebaseApp } from "firebase/app";
 import { buildUploadPath } from "@/lib/upload-paths";
+import { compressImage, fileToBase64 } from "@/lib/image-utils";
 
-const MAX_IMAGE_BYTES = 500 * 1024; // 500KB for base64 (Firestore limit)
-const MAX_FIRESTORE_BYTES = 1024 * 1024; // 1MB hard limit in Firestore
+const MAX_IMAGE_BYTES = 500 * 1024;
+const MAX_FIRESTORE_BYTES = 1024 * 1024;
+const COMPRESS_MAX_KB = 300;
 
-/**
- * Converts a File to base64 string
- */
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+function generateId(): string {
+  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
 }
 
-/**
- * Uploads an image to Firestore as base64 (free, no paid storage needed)
- * Falls back to Firebase Storage if file is too large
- */
 export async function uploadImageAsBase64(
   app: FirebaseApp,
   file: File,
@@ -35,41 +25,67 @@ export async function uploadImageAsBase64(
     throw new Error("Only image files are supported.");
   }
 
-  if (file.size > MAX_FIRESTORE_BYTES) {
-    throw new Error(`Image too large. Maximum size is ${MAX_FIRESTORE_BYTES / 1024}KB for direct upload.`);
-  }
-
-  console.log("[Base64 Upload] Converting to base64...");
+  console.log("[Base64 Upload] Compressing image first...");
   
-  // Convert to base64
-  const base64 = await fileToBase64(file);
+  const compressedFile = await compressImage(file, COMPRESS_MAX_KB);
+  console.log("[Base64 Upload] Original:", file.size, "Compressed:", compressedFile.size);
+
+  const base64 = await fileToBase64(compressedFile);
   console.log("[Base64 Upload] Base64 length:", base64.length);
 
-  // Save to Firestore user document
+  const imageId = generateId();
+  
+  const imagesRef = collection(firestore, "images");
+  await addDoc(imagesRef, {
+    _id: imageId,
+    userId: userId,
+    data: base64,
+    contentType: file.type,
+    createdAt: new Date().toISOString()
+  });
+
   const userDocRef = doc(firestore, "users", userId);
   await setDoc(userDocRef, { 
-    photoURL: base64,
+    photoURL: `base64:${imageId}`,
     photoUpdatedAt: new Date().toISOString()
   }, { merge: true });
 
-  console.log("[Base64 Upload] Saved to Firestore!");
+  console.log("[Base64 Upload] Saved to Firestore images collection!");
   return base64;
 }
 
-/**
- * Uploads a file using Firebase Storage (requires Blaze plan)
- * OR falls back to base64 for small images
- */
+export async function getBase64Image(imageRef: string, firestore: Firestore): Promise<string | null> {
+  if (!imageRef.startsWith("base64:")) {
+    return imageRef;
+  }
+
+  const imageId = imageRef.replace("base64:", "");
+  
+  const imagesRef = collection(firestore, "images");
+  const q = doc(imagesRef, imageId);
+  
+  try {
+    const snapshot = await getDoc(q);
+    if (snapshot.exists()) {
+      return snapshot.data().data;
+    }
+  } catch (e) {
+    console.error("Error fetching base64 image:", e);
+  }
+  
+  return null;
+}
+
 export async function uploadFile(
   app: FirebaseApp,
   fileBlob: Blob,
   path: string,
   userId?: string
 ): Promise<string> {
-  // For small images, try base64 first (free)
   if (fileBlob.size <= MAX_IMAGE_BYTES && fileBlob instanceof File) {
     try {
-      const firestore = (await import("firebase/firestore")).getFirestore(app);
+      const { getFirestore } = await import("firebase/firestore");
+      const firestore = getFirestore(app);
       const base64Url = await uploadImageAsBase64(app, fileBlob as File, userId!, firestore);
       console.log("[Upload] Used base64 method (free)");
       return base64Url;
@@ -78,7 +94,6 @@ export async function uploadFile(
     }
   }
 
-  // Fallback to Firebase Storage (requires Blaze plan)
   try {
     const storage = getStorage(app);
     const storageRef = ref(storage, path);
@@ -92,9 +107,6 @@ export async function uploadFile(
   }
 }
 
-/**
- * Uploads an image to Firebase Storage with base64 fallback
- */
 export async function uploadImageAndUpdateProfile(
   app: FirebaseApp,
   file: File,
@@ -115,11 +127,9 @@ export async function uploadImageAndUpdateProfile(
 
   console.log("[Profile Upload] Starting...");
 
-  // Try base64 first (free, always works)
   try {
     const base64Url = await uploadImageAsBase64(app, file, user.uid, firestore);
     
-    // Update auth profile
     await updateProfile(user, { photoURL: base64Url });
     
     console.log("[Profile Upload] Success via base64!");

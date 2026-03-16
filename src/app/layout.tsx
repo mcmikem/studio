@@ -10,6 +10,7 @@ import { MobileBottomNav } from '@/components/mobile-nav';
 import { ViewAsBanner } from '@/components/view-as-banner';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { GlobalBackButton } from '@/components/global-back-button';
+import { CheckinReminderToast } from '@/components/reminders/checkin-reminder-toast';
 
 const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <FirebaseErrorListener />
+          <CheckinReminderToast />
           <SidebarProvider>
             <Sidebar>
               <AppSidebar />
