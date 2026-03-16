@@ -27,8 +27,12 @@ function getTimeOfDayGreeting(): { emoji: string; message: string; icon: any } {
   return { emoji: '🌙', message: 'Evening wind-down', icon: Moon };
 }
 
-function determineCurrentFocus(timeBlocks: any[], currentTime: Date): { task: string; status: 'working' | 'break' | 'flexible' } {
+function determineCurrentFocus(timeBlocks: any[], currentTime: Date, primaryMission?: string): { task: string; status: 'working' | 'break' | 'flexible' } {
+  // First try to get the primary mission if no time blocks
   if (!timeBlocks || !Array.isArray(timeBlocks) || timeBlocks.length === 0) {
+    if (primaryMission) {
+      return { task: primaryMission, status: 'flexible' };
+    }
     return { task: 'Flexible / async work', status: 'flexible' };
   }
 
@@ -48,7 +52,7 @@ function determineCurrentFocus(timeBlocks: any[], currentTime: Date): { task: st
                         block.description?.toLowerCase().includes('lunch') ||
                         block.description?.toLowerCase().includes('flexible');
           return { 
-            task: block.description || 'In scheduled block', 
+            task: block.description || primaryMission || 'In scheduled block', 
             status: isBreak ? 'break' : 'working' 
           };
         }
@@ -56,7 +60,8 @@ function determineCurrentFocus(timeBlocks: any[], currentTime: Date): { task: st
     } catch {}
   }
 
-  return { task: 'Flexible / async work', status: 'flexible' };
+  // If no current block found, return primary mission or flexible
+  return { task: primaryMission || 'Flexible / async work', status: 'flexible' };
 }
 
 function getUserStatus(checkin: Checkin | null, checkout: Checkout | null, currentTime: Date): { 
@@ -159,7 +164,7 @@ export function TeamDeployment() {
       const checkinDate = latestCheckin?.timestamp?.toDate?.();
       const minutesSinceCheckin = checkinDate ? differenceInMinutes(currentTime, checkinDate) : null;
       
-      const focus = determineCurrentFocus(latestCheckin?.details?.timeBlocks, currentTime);
+      const focus = determineCurrentFocus(latestCheckin?.details?.timeBlocks, currentTime, latestCheckin?.primaryMission);
 
       return {
         user,

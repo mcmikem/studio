@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard } from 'lucide-react';
+import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard, ChevronUp, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,7 @@ export function MobileBottomNav() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   useEffect(() => {
     if (!isActionMenuOpen) return;
@@ -48,6 +49,14 @@ export function MobileBottomNav() {
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe" aria-label="Mobile navigation">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white border-2 border-b-0 border-omuto-navy rounded-t-lg px-3 py-1 shadow-comic-sm z-[900]"
+        aria-label={isExpanded ? 'Hide menu' : 'Show menu'}
+      >
+        {isExpanded ? <ChevronDown className="w-4 h-4 text-omuto-navy" /> : <ChevronUp className="w-4 h-4 text-omuto-navy" />}
+      </button>
+      
       {isActionMenuOpen && (
         <div
           className="fixed inset-0 bg-omuto-navy/80 backdrop-blur-sm z-[700] animate-in fade-in duration-300"
@@ -79,7 +88,12 @@ export function MobileBottomNav() {
         </div>
       )}
 
-      <div className="mx-4 mb-6 h-20 bg-white border-xl border-omuto-navy shadow-comic rounded-3xl flex items-center justify-between px-4 relative z-[800]">
+      <div 
+        className={cn(
+          "mx-4 mb-4 bg-white border-xl border-omuto-navy shadow-comic rounded-3xl relative z-[800] transition-all duration-300 overflow-hidden",
+          isExpanded ? "h-20 py-4 flex items-center justify-between px-4" : "h-0 py-0 border-none shadow-none"
+        )}
+      >
         <Link
           href="/"
           aria-label="Go to HQ"

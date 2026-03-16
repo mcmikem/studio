@@ -23,6 +23,8 @@ export async function getStrategicInsights(input: { activities?: any[]; checkins
     expenses: expenses.length, 
     keyResults: keyResults.length 
   });
+  console.log('[StrategicAdvisor] AI Config provider:', aiConfig.provider);
+  console.log('[StrategicAdvisor] Is configured:', aiConfig.isConfigured);
 
   const systemPrompt = `You are an AI Strategic Advisor for the Omuto Foundation, a youth-led NGO in rural Uganda. 
 Your user is the Executive Director.

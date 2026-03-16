@@ -103,34 +103,43 @@ export async function runQualitativeAnalysis(input: QualitativeAnalysisInput) {
 
 
 export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
-    // Use OpenRouter if configured
-    if (aiConfig.provider === 'openrouter') {
+    console.log('[omutoAI] Provider:', aiConfig.provider, 'Is configured:', aiConfig.isConfigured);
+    
+    // Try OpenRouter first
+    if (aiConfig.provider === 'openrouter' || aiConfig.isConfigured) {
         try {
             const systemMessage = `You are an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda. Your name is Omuto AI.
             Be helpful, knowledgeable, and friendly. Be concise and actionable.`;
             
+            // Safely handle history
+            const historyMessages = Array.isArray(input.history) 
+                ? input.history.map((h: any) => ({
+                    role: (h?.role === 'model' ? 'assistant' : 'user') as 'user' | 'assistant',
+                    content: h?.content?.[0]?.text || h?.content || ''
+                }))
+                : [];
+            
             const messages = [
                 { role: 'system' as const, content: systemMessage },
-                ...(input.history || []).map((h: { role: string; content?: { text: string }[] }) => ({
-                    role: h.role as 'user' | 'assistant',
-                    content: h.content?.[0]?.text || ''
-                })),
-                { role: 'user' as const, content: input.question }
+                ...historyMessages,
+                { role: 'user' as const, content: input.question || '' }
             ];
+            
+            console.log('[omutoAI] Sending request to OpenRouter, messages:', messages.length);
             
             const answer = await chatWithOpenRouter(messages, 'openai/gpt-4o-mini');
             return { answer };
-        } catch (error) {
-            console.error('omutoAI OpenRouter failed:', error);
+        } catch (error: any) {
+            console.error('omutoAI OpenRouter failed:', error?.message || error);
             return { answer: "I'm temporarily unable to reach the AI service right now. Please retry in a moment." };
         }
     }
     
-    // Fall back to Gemini
+    // Fall back - try old flow but catch any errors
     try {
         return await omutoAIFlow(input);
-    } catch (error) {
-        console.error('omutoAI server action failed:', error);
+    } catch (error: any) {
+        console.error('omutoAI fallback failed:', error?.message || error);
         return {
             answer: "I'm temporarily unable to reach the AI service right now. Please retry in a moment."
         };
