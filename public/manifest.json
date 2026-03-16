@@ -1,16 +1,41 @@
 {
   "name": "Omuto Central",
-  "short_name": "Omuto Central",
-  "description": "The master tool for Omuto Foundation staff.",
+  "short_name": "Omuto",
+  "description": "The master tool for Omuto Foundation staff to manage programs, track activities, and coordinate operations.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#F9F7F0",
   "theme_color": "#111827",
+  "categories": ["business", "productivity", "education"],
+  "screenshots": [],
   "icons": [
     {
       "src": "/logo.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Daily Check-in",
+      "short_name": "Check-in",
+      "url": "/forms/check-in",
+      "description": "Start your day with a check-in"
+    },
+    {
+      "name": "Log Expense",
+      "short_name": "Expense",
+      "url": "/forms/expense",
+      "description": "Log a new expense"
+    },
+    {
+      "name": "Chat with AI",
+      "short_name": "AI Chat",
+      "url": "/chat",
+      "description": "Ask Omuto AI for help"
     }
   ]
 }

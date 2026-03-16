@@ -7,7 +7,6 @@ const withPWA = require('next-pwa')({
 });
 
 const nextConfig = {
-  /* config options here */
   turbopack: {},
   images: {
     remotePatterns: [
@@ -32,6 +31,18 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'i.imgur.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.googleusercontent.com',
         port: '',
         pathname: '/**',
       },

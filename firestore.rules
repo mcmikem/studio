@@ -1,9 +1,140 @@
 rules_version = '2';
 
 service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+  // Helper function to get user role from users collection
+  function getUserRole() {
+    return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+  }
+  
+  function isExecutiveDirector() {
+    return getUserRole() == 'Executive Director';
+  }
+  
+  function isAdministrator() {
+    return getUserRole() == 'Administrator';
+  }
+  
+  function isAdminOrExecutive() {
+    return isExecutiveDirector() || isAdministrator();
+  }
+  
+  function isStaff() {
+    let role = getUserRole();
+    return role in ['Executive Director', 'Administrator', 'Programs & Partnerships Manager', 
+                    'Operations & Field Manager', 'Media & Finance Lead', 
+                    'Media & Communications Lead', 'Resource Mobilization Lead',
+                    'Essentials Manager', 'Youth Center Manager', 'Accountant/Finance', 'Intern'];
+  }
+  
+  function isVolunteer() {
+    return getUserRole() == 'Volunteer';
+  }
+
+  // Users collection - users can read all, write own profile
+  match /users/{userId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && request.auth.uid == userId;
+    
+    // User's subcollections
+    match /tasks/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+  }
+
+  // Programs - readable by all, writable by staff
+  match /programs/{programId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Projects - readable by all, writable by staff
+  match /projects/{projectId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Expenses - readable by all authenticated, writable by staff
+  match /expenses/{expenseId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Activities - readable by all, writable by authenticated users
+  match /activities/{activityId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null && isStaff();
+  }
+
+  // Check-ins and Check-outs - readable by all, writable by authenticated users
+  match /checkins/{checkinId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null;
+  }
+  
+  match /checkouts/{checkoutId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null;
+  }
+
+  // Testimonies - readable by all, writable by authenticated users
+  match /testimonies/{testimonyId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null;
+  }
+
+  // Beneficiaries - readable by all, writable by staff
+  match /beneficiaries/{beneficiaryId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Partnerships - readable by all, writable by staff
+  match /partnerships/{partnershipId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Key Results - readable by all, writable by admin/executive
+  match /key-results/{keyResultId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isAdminOrExecutive();
+  }
+
+  // Alerts - readable by all, writable by staff
+  match /alerts/{alertId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Events - readable by all, writable by staff
+  match /events/{eventId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Finance - readable by staff, writable by admin/executive
+  match /finance/{financeId} {
+    allow read: if request.auth != null && isStaff();
+    allow write: if request.auth != null && isAdminOrExecutive();
+  }
+
+  // Resources - readable by all authenticated
+  match /resources/{resourceId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Programs data subcollections
+  match /programs/{programId}/data/{dataId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Default rule - require authentication
+  match /{document=**} {
+    allow read, write: if request.auth != null;
   }
 }
