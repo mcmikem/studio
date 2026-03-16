@@ -49,9 +49,13 @@ import { CallsToAction } from '@/components/know/calls-to-action';
 
 function CopyButton({ text }: { text: string }) {
   const { toast } = useToast();
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text);
-    toast({ title: "Copied to clipboard!" });
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copied to clipboard!" });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Copy failed" });
+    }
   };
   return (
     <Button variant="ghost" size="icon" onClick={handleCopy} className="h-7 w-7">

@@ -127,12 +127,21 @@ function ImpactStoryGeneratorContent() {
     }
   };
 
-  const copyToClipboard = () => {
+  const copyToClipboard = async () => {
     if (!generatedStory) return;
-    navigator.clipboard.writeText(generatedStory);
-    toast({
-      title: "Copied to clipboard!",
-    });
+    try {
+      await navigator.clipboard.writeText(generatedStory);
+      toast({
+        title: "Copied to clipboard!",
+      });
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      toast({
+        variant: "destructive",
+        title: "Copy failed",
+        description: "Unable to copy to clipboard. Please try selecting and copying manually.",
+      });
+    }
   };
   
   const dataToDisplay = selectedActivity || selectedCheckout;
