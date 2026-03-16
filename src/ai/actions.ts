@@ -12,10 +12,10 @@ import { parseWorkplanFlow } from './flows/parse-workplan-flow';
 import { analyzeProgramQualitativeDataFlow } from './flows/qualitative-analysis-flow';
 
 import { omutoAIFlow } from './flows/omuto-ai-flow';
+import { chatWithOpenRouter } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
 
 import {
-
-
 
     StrategicAdvisorInput,
     StrategicAdvisorOutput,
@@ -101,6 +101,30 @@ export async function runQualitativeAnalysis(input: QualitativeAnalysisInput) {
 
 
 export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
+    // Use OpenRouter if configured
+    if (aiConfig.provider === 'openrouter') {
+        try {
+            const systemMessage = `You are an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda. Your name is Omuto AI.
+            Be helpful, knowledgeable, and friendly. Be concise and actionable.`;
+            
+            const messages = [
+                { role: 'system' as const, content: systemMessage },
+                ...(input.history || []).map((h: { role: string; content?: { text: string }[] }) => ({
+                    role: h.role as 'user' | 'assistant',
+                    content: h.content?.[0]?.text || ''
+                })),
+                { role: 'user' as const, content: input.question }
+            ];
+            
+            const answer = await chatWithOpenRouter(messages, 'openai/gpt-4o-mini');
+            return { answer };
+        } catch (error) {
+            console.error('omutoAI OpenRouter failed:', error);
+            return { answer: "I'm temporarily unable to reach the AI service right now. Please retry in a moment." };
+        }
+    }
+    
+    // Fall back to Gemini
     try {
         return await omutoAIFlow(input);
     } catch (error) {
