@@ -33,6 +33,7 @@ import {
   GraduationCap,
   Flower2,
   Landmark,
+  LogOut,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -72,6 +73,17 @@ const navConfig = {
     { href: '/daily-plan', icon: Zap, label: 'Daily Planner' },
     { href: '/workplan', icon: CheckCircle, label: 'Weekly Goals' },
     { href: '/profile?tab=tasks', icon: Bell, label: 'Task List' },
+  ],
+  forms: [
+    { href: '/meal/beneficiary-registration', icon: Users, label: 'Register Beneficiary' },
+    { href: '/forms/school', icon: Book, label: 'Register School' },
+    { href: '/meal/activity', icon: BarChart3, label: 'Log Activity' },
+    { href: '/meal/attendance', icon: Users, label: 'Take Attendance' },
+    { href: '/meal/baseline-survey', icon: Book, label: 'Baseline Survey' },
+    { href: '/meal/endline-survey', icon: Book, label: 'Endline Survey' },
+    { href: '/meal/pulse', icon: Heart, label: 'Pulse Content' },
+    { href: '/forms/check-in', icon: LogIn, label: 'Check-in' },
+    { href: '/forms/check-out', icon: LogOut, label: 'Check-out' },
   ],
   enterprise: [
     { href: '/enterprise/essentials', icon: Store, label: 'Enterprise Hub' },

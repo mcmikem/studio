@@ -24,10 +24,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const beneficiarySchema = z.object({
-  name: z.string().min(3, 'Beneficiary name is required.'),
-  dob: z.string().min(1, 'Date of birth is required.'),
+  name: z.string().min(1, 'Beneficiary name is required.'),
+  dob: z.string().optional(),
   gender: z.enum(['Male', 'Female']),
-  village: z.string().min(3, 'Village is required.'),
+  village: z.string().min(1, 'Village is required.'),
   programEnrolled: z.string().min(1, 'Please select a program.'),
   school: z.string().optional(),
   phone: z.string().optional(),
@@ -89,7 +89,7 @@ function BeneficiaryRegistrationForm() {
 
         const beneficiaryData: Omit<Beneficiary, 'id'> = {
             name: data.name,
-            dob: data.dob,
+            dob: data.dob || '',
             gender: data.gender,
             village: data.village,
             programEnrolled: data.programEnrolled,
@@ -144,9 +144,8 @@ function BeneficiaryRegistrationForm() {
               {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dob" className="text-xs sm:text-sm">Date of Birth</Label>
+              <Label htmlFor="dob" className="text-xs sm:text-sm">Date of Birth (optional)</Label>
               <Input id="dob" type="date" {...register('dob')} className="h-12" />
-              {errors.dob && <p className="text-sm text-destructive">{errors.dob.message}</p>}
             </div>
           </div>
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

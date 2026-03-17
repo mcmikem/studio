@@ -51,7 +51,7 @@ export function MobileBottomNav() {
     <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe" aria-label="Mobile navigation">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-white border-2 border-b-0 border-omuto-navy rounded-t-lg px-3 py-1 shadow-comic-sm z-[900]"
+        className="absolute -top-6 right-4 bg-white border-2 border-b-0 border-omuto-navy rounded-t-lg px-3 py-1 shadow-comic-sm z-[900]"
         aria-label={isExpanded ? 'Hide menu' : 'Show menu'}
       >
         {isExpanded ? <ChevronDown className="w-4 h-4 text-omuto-navy" /> : <ChevronUp className="w-4 h-4 text-omuto-navy" />}
