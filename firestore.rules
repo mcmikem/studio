@@ -257,6 +257,189 @@ service cloud.firestore {
     allow write: if request.auth != null && isStaff();
   }
 
+  // Printing Jobs
+  match /printing-jobs/{jobId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // YOSkills Additional
+  match /pitch-scores/{scoreId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /business-progress/{progressId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // YAP Additional
+  match /yap-reports/{reportId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /seed-grant-applications/{applicationId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /seed-grant-accountability/{accountabilityId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // School Applications
+  match /school-applications/{applicationId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Red Campaign Additional
+  match /school-visits/{visitId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /mhm-trainings/{trainingId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // PureWater
+  match /water-sources/{sourceId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /wash-assessments/{assessmentId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Pulse
+  match /pulse-content/{contentId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // OFA Additional
+  match /ofa-volunteers/{volunteerId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /omuto-cup-tournaments/{tournamentId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /ofa-quarterly-scorecards/{scorecardId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /ofa-match-summaries/{summaryId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /ofa-matches/{matchId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /ofa-equipment-impact/{impactId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /ofa-advanced-analysis/{analysisId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Green Schools
+  match /waste-audits/{auditId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /tree-surveys/{surveyId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /baseline-surveys/{surveyId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /endline-surveys/{surveyId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /attendance-records/{recordId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null;
+  }
+  
+  match /environmental-clubs/{clubId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Events & Comments
+  match /events/{eventId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null;
+  }
+  
+  match /comments/{commentId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null;
+  }
+
+  // Finance Additional
+  match /income/{incomeId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /proposals/{proposalId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /resources/{resourceId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /equipment/{equipmentId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // Health Checks & Meetings
+  match /partnerships/{partnershipId}/health-checks/{checkId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+  
+  match /partnerships/{partnershipId}/meetings/{meetingId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
+  // SLF Additional
+  match /prefect-performance/{performanceId} {
+    allow read: if request.auth != null;
+    allow write: if request.auth != null && isStaff();
+  }
+
   // Programs data subcollections
   match /programs/{programId}/data/{dataId} {
     allow read: if request.auth != null;
