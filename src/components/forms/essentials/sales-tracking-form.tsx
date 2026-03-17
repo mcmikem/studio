@@ -110,14 +110,11 @@ export function SalesTrackingForm() {
       return;
     }
 
-    if (!data.items || data.items.length === 0) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Please add at least one product.' });
-      return;
-    }
-
-    const validItems = data.items.filter(item => item.product_id && item.quantity > 0);
+    // Schema already filtered empty items via transform
+    const validItems = data.items || [];
+    
     if (validItems.length === 0) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Please select valid products with quantities.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'Please select at least one product with quantity.' });
       return;
     }
 

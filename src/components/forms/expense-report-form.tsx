@@ -40,9 +40,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const expenseItemSchema = z.object({
-  description: z.string().min(1, 'Item description is required.'),
+  description: z.string(),
   category: z.enum(expenseItemCategories),
-  amount: z.coerce.number().min(1, 'Amount must be greater than zero.'),
+  amount: z.coerce.number().default(0),
 });
 
 const expenseSchema = z.object({
@@ -50,12 +50,15 @@ const expenseSchema = z.object({
   type: z.enum(["Requisition", "Reimbursement"]),
   date: z.string().min(1, 'Date is required.'),
   projectId: z.string().optional(),
-  items: z.array(expenseItemSchema).min(1, 'Please add at least one expense item.'),
-  totalAmount: z.number().min(1, 'Total amount must be greater than zero.'),
+  items: z.array(expenseItemSchema),
+  totalAmount: z.coerce.number().default(0),
   submittedFor: z.string().optional(),
   otherUserName: z.string().optional(),
   receiptUrl: z.string().optional(),
-}).refine(data => {
+}).transform((data) => ({
+    ...data,
+    items: (data.items || []).filter(item => item.description && item.amount > 0),
+})).refine(data => {
     if ((data.submittedFor === 'Volunteer' || data.submittedFor === 'Intern') && !data.otherUserName) {
         return false;
     }
@@ -63,6 +66,11 @@ const expenseSchema = z.object({
 }, {
     message: "Please specify the name for the selected role.",
     path: ["otherUserName"],
+}).refine(data => {
+    return data.items.length > 0;
+}, {
+    message: 'Please add at least one expense item.',
+    path: ['items'],
 });
 
 type ExpenseFormData = z.infer<typeof expenseSchema>;

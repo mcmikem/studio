@@ -34,13 +34,16 @@ export const SaleFormSchema = z.object({
     payment_method: z.enum(["Cash", "Mobile Money", "Bank Transfer"]),
     status: z.enum(["completed", "pending"]),
     items: z.array(z.object({
-        product_id: z.string().min(1, "Product is required"),
+        product_id: z.string(),
         product_name: z.string(),
-        quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
-        unit_price: z.coerce.number(),
-        total: z.coerce.number(),
+        quantity: z.coerce.number().default(1),
+        unit_price: z.coerce.number().default(0),
+        total: z.coerce.number().default(0),
     })).min(1, "At least one item is required."),
-});
+}).transform((data) => ({
+    ...data,
+    items: data.items.filter(item => item.product_id && item.quantity > 0),
+}));
 
 export type SaleFormData = z.infer<typeof SaleFormSchema>;
 
