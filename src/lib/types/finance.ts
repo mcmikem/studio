@@ -32,7 +32,7 @@ export type Expense = z.infer<typeof ExpenseSchema>;
 export const IncomeSchema = z.object({
     id: z.string(),
     source: z.string(),
-    amount: z.number(),
+    amount: z.coerce.number(),
     dateReceived: z.any(),
     type: z.string(),
     notes: z.string().optional(),
@@ -42,10 +42,10 @@ export const IncomeSchema = z.object({
 export type Income = z.infer<typeof IncomeSchema>;
 
 export const FinancialSummarySchema = z.object({
-    budget: z.number(),
-    spent: z.number(),
-    income: z.number(),
-    net: z.number(),
+    budget: z.coerce.number(),
+    spent: z.coerce.number(),
+    income: z.coerce.number(),
+    net: z.coerce.number(),
 });
 
 export type FinancialSummary = z.infer<typeof FinancialSummarySchema>;
@@ -53,7 +53,7 @@ export type FinancialSummary = z.infer<typeof FinancialSummarySchema>;
 export const TransactionSchema = z.object({
     id: z.string(),
     description: z.string(),
-    amount: z.number(),
+    amount: z.coerce.number(),
     date: z.any(),
     type: z.enum(['income', 'expense']),
 });
@@ -69,7 +69,7 @@ export const RecurringExpenseSchema = z.object({
     userId: z.string(),
     description: z.string(),
     category: z.enum(expenseItemCategories),
-    amount: z.number(),
+    amount: z.coerce.number(),
     frequency: RecurrenceFrequencySchema,
     startDate: z.any(),
     endDate: z.any().optional(),

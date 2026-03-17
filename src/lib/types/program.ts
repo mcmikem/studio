@@ -8,7 +8,7 @@ export const ProgramSchema = z.object({
     status: z.enum(["On Track", "At Risk", "Delayed", "Completed"]),
     deadline: z.string(),
     objectives: z.array(z.string()),
-    valuePerObjective: z.number().optional(),
+    valuePerObjective: z.coerce.number().optional(),
     createdAt: z.any().optional(),
 });
 

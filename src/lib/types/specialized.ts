@@ -174,9 +174,9 @@ export const PrefectPerformanceSchema = z.object({
   prefectId: z.string(),
   prefectName: z.string(),
   month: z.string(),
-  visibilityScore: z.number(),
-  disciplineScore: z.number(),
-  initiativeScore: z.number(),
+  visibilityScore: z.coerce.number(),
+  disciplineScore: z.coerce.number(),
+  initiativeScore: z.coerce.number(),
 });
 export type PrefectPerformance = z.infer<typeof PrefectPerformanceSchema>;
 
@@ -184,7 +184,7 @@ export const BaselineSurveySchema = z.object({
     id: z.string(),
     beneficiaryId: z.string(),
     surveyDate: z.any(),
-    skillLevel: z.number(),
+    skillLevel: z.coerce.number(),
     primaryChallenge: z.string(),
     programGoals: z.string(),
     createdAt: z.any(),
@@ -195,9 +195,9 @@ export const EndlineSurveySchema = z.object({
     id: z.string(),
     beneficiaryId: z.string(),
     surveyDate: z.any(),
-    skillLevel: z.number(),
+    skillLevel: z.coerce.number(),
     changesNoticed: z.string(),
-    satisfaction: z.number(),
+    satisfaction: z.coerce.number(),
     createdAt: z.any(),
 });
 export type EndlineSurvey = z.infer<typeof EndlineSurveySchema>;
@@ -207,7 +207,7 @@ export const YoSkillsCircleSchema = z.object({
     circleName: z.string(),
     coach: z.string(),
     location: z.string(),
-    membersCount: z.number(),
+    membersCount: z.coerce.number(),
 });
 export type YoSkillsCircle = z.infer<typeof YoSkillsCircleSchema>;
 
@@ -215,7 +215,7 @@ export const YoSkillsYouthSchema = z.object({
     id: z.string(),
     circleId: z.string(),
     name: z.string(),
-    age: z.number(),
+    age: z.coerce.number(),
     businessInterest: z.string(),
 });
 export type YoSkillsYouth = z.infer<typeof YoSkillsYouthSchema>;
@@ -224,7 +224,7 @@ export const BusinessProgressSchema = z.object({
     id: z.string(),
     businessIdeaId: z.string(),
     month: z.string(),
-    monthlySales: z.number(),
+    monthlySales: z.coerce.number(),
 });
 export type BusinessProgress = z.infer<typeof BusinessProgressSchema>;
 
@@ -234,7 +234,7 @@ export const AttendanceRecordSchema = z.object({
     date: z.any(),
     participantName: z.string(),
     gender: z.enum(['Male', 'Female', 'Other']),
-    age: z.number(),
+    age: z.coerce.number(),
     signature: z.boolean(),
     createdAt: z.any(),
 });
@@ -244,7 +244,7 @@ export const TreeSurvivalSurveySchema = z.object({
     id: z.string(),
     originalPlantingActivityId: z.string(),
     surveyDate: z.any(),
-    numberOfTreesSurvived: z.number(),
+    numberOfTreesSurvived: z.coerce.number(),
     conditionOfTrees: z.enum(['Good', 'Fair', 'Poor']),
     userId: z.string(),
     userName: z.string(),
@@ -257,7 +257,7 @@ export const CustomerFeedbackSchema = z.object({
   customer_name: z.string().optional(),
   date: z.string(),
   product_name: z.string(),
-  rating: z.number().min(1).max(5),
+  rating: z.coerce.number().min(1).max(5),
   feedback: z.string().min(5),
   logged_by: z.string(),
 });
@@ -267,9 +267,9 @@ export const MaterialPurchaseSchema = z.object({
   id: z.string(),
   material_id: z.string(),
   material_name: z.string(),
-  quantity: z.number(),
-  unit_cost: z.number(),
-  total_cost: z.number(),
+  quantity: z.coerce.number(),
+  unit_cost: z.coerce.number(),
+  total_cost: z.coerce.number(),
   supplier_name: z.string().optional(),
   purchase_date: z.string(),
   logged_by: z.string(),
@@ -307,7 +307,7 @@ export const InventoryCheckSchema = z.object({
     id: z.string(),
     productName: z.string(),
     date: z.any(),
-    countedQuantity: z.number(),
+    countedQuantity: z.coerce.number(),
 });
 // Checking original:
 // 1050: export type InventoryCheck = {
@@ -329,9 +329,9 @@ export const PrintingJobSchema = z.object({
   jobNumber: z.string(),
   clientName: z.string(),
   clientPhone: z.string().optional(),
-  pages_bw: z.number(),
-  pages_color: z.number(),
-  totalAmount: z.number(),
+  pages_bw: z.coerce.number(),
+  pages_color: z.coerce.number(),
+  totalAmount: z.coerce.number(),
   paymentStatus: z.enum(['Paid', 'Partial', 'Unpaid']),
   jobDate: z.any(),
   operatorId: z.string(),
