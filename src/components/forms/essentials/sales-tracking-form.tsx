@@ -96,34 +96,50 @@ export function SalesTrackingForm() {
   };
 
   const onSubmit = async (data: SaleFormData) => {
-    if (!firestore || !user) return;
-    const batch = writeBatch(firestore);
+    if (!firestore || !user) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please log in to record a sale.' });
+      return;
+    }
 
-    const saleRef = doc(collection(firestore, 'sales'));
-    batch.set(saleRef, {
-      ...data,
-      total_amount: totalAmount,
-      created_by: user.uid,
-      createdAt: serverTimestamp(),
-      transaction_number: `SALE-${format(new Date(), 'yyMMdd')}-${Date.now().toString().slice(-4)}`
-    });
+    if (!data.items || data.items.length === 0) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please add at least one product.' });
+      return;
+    }
 
-    for (const item of data.items) {
+    const validItems = data.items.filter(item => item.product_id && item.quantity > 0);
+    if (validItems.length === 0) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please select valid products with quantities.' });
+      return;
+    }
+
+    try {
+      const batch = writeBatch(firestore);
+
+      const saleRef = doc(collection(firestore, 'sales'));
+      batch.set(saleRef, {
+        ...data,
+        items: validItems,
+        total_amount: totalAmount,
+        created_by: user.uid,
+        createdAt: serverTimestamp(),
+        transaction_number: `SALE-${format(new Date(), 'yyMMdd')}-${Date.now().toString().slice(-4)}`
+      });
+
+      for (const item of validItems) {
         const productRef = doc(firestore, 'products', item.product_id);
         const product = products?.find(p => p.id === item.product_id);
         if (product) {
-            const newQuantity = (product.quantity_on_hand || 0) - item.quantity;
-            batch.update(productRef, { quantity_on_hand: newQuantity });
+          const newQuantity = (product.quantity_on_hand || 0) - item.quantity;
+          batch.update(productRef, { quantity_on_hand: newQuantity });
         }
-    }
-    
-    try {
-        await batch.commit();
-        toast({ title: 'Sale Recorded!', description: `Transaction recorded and inventory adjusted.` });
-        router.push('/enterprise/essentials');
+      }
+      
+      await batch.commit();
+      toast({ title: 'Sale Recorded!', description: `Transaction recorded and inventory adjusted.` });
+      router.push('/enterprise/essentials');
     } catch (e: any) {
-        console.error("Error recording sale:", e);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not record sale.'});
+      console.error("Error recording sale:", e);
+      toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not record sale.'});
     }
   };
 

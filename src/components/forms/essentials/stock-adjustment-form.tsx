@@ -57,10 +57,16 @@ export function StockAdjustmentForm() {
   const { register, handleSubmit, control, formState: { errors, isSubmitting } } = form;
 
   const onSubmit = async (data: any) => {
-    if (!firestore || !user || !profile) return;
+    if (!firestore || !user || !profile) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please log in to adjust stock.' });
+      return;
+    }
     
     const product = products?.find(p => p.id === data.product_id);
-    if (!product) return;
+    if (!product) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please select a product.' });
+      return;
+    }
 
     try {
         await runTransaction(firestore, async (transaction) => {
