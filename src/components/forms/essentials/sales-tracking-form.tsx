@@ -95,6 +95,15 @@ export function SalesTrackingForm() {
     form.trigger(`items`);
   };
 
+  const onInvalid = (errors: any) => {
+    console.error('Form validation errors:', errors);
+    toast({ 
+      variant: 'destructive', 
+      title: 'Validation Error', 
+      description: 'Please fill in all required fields correctly.' 
+    });
+  };
+
   const onSubmit = async (data: SaleFormData) => {
     if (!firestore || !user) {
       toast({ variant: 'destructive', title: 'Error', description: 'Please log in to record a sale.' });
@@ -154,7 +163,7 @@ export function SalesTrackingForm() {
                 <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter"><ShoppingCart className="h-8 w-8 text-primary"/> Point of Sale</CardTitle>
                 <CardDescription className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Record a customer transaction and automatically update finished goods inventory.</CardDescription>
             </CardHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
             <CardContent className="space-y-8 pt-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
