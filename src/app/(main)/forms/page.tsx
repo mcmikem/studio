@@ -8,35 +8,36 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { ArrowRight, LogOut, Receipt, Megaphone, Wand, BarChart3, Bug, MessageSquare } from 'lucide-react';
+import { ArrowRight, LogOut, Receipt, Megaphone, Wand, BarChart3, Bug, MessageSquare, Package, ShoppingCart, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
 const formSections = [
   {
-    title: 'Daily Routines',
+    title: 'Daily Operations',
     forms: [
-      { href: '/daily-plan', title: 'AI Daily Planner', description: 'Plan your day and align with team goals.', icon: Wand },
-      { href: '/forms/check-out', title: 'Daily Check-out', description: 'Report your impact and share key learnings.', icon: LogOut },
+      { href: '/daily-plan', title: 'AI Daily Planner', description: 'Plan your day with AI assistance.', icon: Wand },
+      { href: '/workplan', title: 'Weekly Goals', description: 'Set and track weekly objectives.', icon: BarChart3 },
     ]
   },
   {
-    title: 'MEAL & Data Collection',
+    title: 'Enterprise & Sales',
     forms: [
-      { href: '/meal', title: 'MEAL Hub', description: 'Access all program-specific data collection forms.', icon: BarChart3 },
+      { href: '/enterprise/essentials/products', title: 'Products', description: 'Manage products inventory.', icon: Package },
+      { href: '/enterprise/essentials/sales', title: 'Point of Sale', description: 'Record sales transactions.', icon: ShoppingCart },
+      { href: '/enterprise/essentials/production', title: 'Production', description: 'Log production batches.', icon: TrendingUp },
     ]
   },
   {
     title: 'Financial & Admin',
     forms: [
-      { href: '/forms/expense', title: 'Expense Report', description: 'Submit a new expense or request funds.', icon: Receipt },
-      { href: '/forms/alert', title: 'Create Alert', description: 'Broadcast an important message to the team.', icon: Megaphone },
-      { href: '/enterprise/essentials/feedback', title: 'Customer Feedback', description: 'Log feedback on Omuto Essentials products.', icon: MessageSquare },
+      { href: '/forms/expense', title: 'Expense Report', description: 'Submit expense or request funds.', icon: Receipt },
+      { href: '/enterprise/essentials/feedback', title: 'Customer Feedback', description: 'Log customer feedback.', icon: MessageSquare },
     ]
   },
-   {
+  {
     title: 'System',
     forms: [
-        { href: '/forms/system/feedback', title: 'System Feedback & Bug Report', description: 'Report an issue or suggest a feature.', icon: Bug },
+        { href: '/system/feedback', title: 'Report Issue', description: 'Report bugs or suggest features.', icon: Bug },
     ]
   },
 ];

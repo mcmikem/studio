@@ -26,6 +26,13 @@ import {
   Book,
   Goal,
   Zap,
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  UsersRound,
+  GraduationCap,
+  Flower2,
+  Landmark,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -60,51 +67,71 @@ const OmutoLogo = () => (
 );
 
 const navConfig = {
-  workspace: [
+  daily: [
     { href: '/', icon: LayoutDashboard, label: 'Mission Control' },
-    { href: '/management/operational-plan', icon: Goal, label: 'Strategy Map' },
-    { href: '/chat', icon: Sparkles, label: 'AI Coach' },
     { href: '/daily-plan', icon: Zap, label: 'Daily Planner' },
     { href: '/workplan', icon: CheckCircle, label: 'Weekly Goals' },
     { href: '/profile?tab=tasks', icon: Bell, label: 'Task List' },
-    { href: '/my-finances', icon: Wallet, label: 'Finances' },
-  ],
-  teamHub: [
-    { href: '/team-performance', icon: Trophy, label: 'Impact Stars' },
-    { href: '/checkins', icon: LogIn, label: 'Morning Call' },
-    { href: '/stream', icon: Wind, label: 'Evening Report' },
-    { href: '/calendar', icon: CalendarIcon, label: 'HQ Calendar' },
-    { href: '/notifications', icon: Bell, label: 'System Alerts' },
-  ],
-  meal: [
-      { href: '/meal', icon: BarChart3, label: 'Impact Hub' },
-      { href: '/meal/data', icon: LayoutDashboard, label: 'Data Dashboards' },
   ],
   enterprise: [
-    { href: '/enterprise', icon: Store, label: 'Enterprise Hub' },
+    { href: '/enterprise/essentials', icon: Store, label: 'Enterprise Hub' },
+    { href: '/enterprise/essentials/products', icon: Package, label: 'Products' },
+    { href: '/enterprise/essentials/sales', icon: ShoppingCart, label: 'Point of Sale' },
+    { href: '/enterprise/essentials/production', icon: TrendingUp, label: 'Production' },
   ],
-  reports: [
-     { href: '/reports', icon: AreaChart, label: 'Field Data' },
-     { href: '/testimonies', icon: Video, label: 'Success Stories' },
+  programs: [
+    { href: '/enterprise/youth-center', icon: UsersRound, label: 'Youth Center' },
+    { href: '/meal/ofa', icon: Swords, label: 'OFA Football' },
+    { href: '/meal/yoskills', icon: GraduationCap, label: 'YOSkills' },
+    { href: '/meal/yap', icon: Landmark, label: 'YAP' },
+    { href: '/meal/greenschools', icon: Flower2, label: 'Green Schools' },
+    { href: '/meal/purewater', icon: Droplets, label: 'PureWater' },
   ],
-  management: [
+  team: [
+    { href: '/team-performance', icon: Trophy, label: 'Performance' },
+    { href: '/checkins', icon: LogIn, label: 'Check-ins' },
+    { href: '/stream', icon: Wind, label: 'Reports' },
+    { href: '/calendar', icon: CalendarIcon, label: 'Calendar' },
+  ],
+  data: [
+    { href: '/meal/data', icon: BarChart3, label: 'Dashboards' },
+    { href: '/reports', icon: AreaChart, label: 'Reports' },
+  ],
+  ai: [
+    { href: '/chat', icon: Sparkles, label: 'AI Coach' },
+    { href: '/management/operational-plan', icon: Goal, label: 'Strategy' },
+  ],
+  ops: [
     { href: '/management', icon: Briefcase, label: 'Ops Desk' },
+    { href: '/management/expenses', icon: Wallet, label: 'Expenses' },
+    { href: '/my-finances', icon: Wallet, label: 'My Finances' },
+  ],
+  content: [
+    { href: '/testimonies', icon: Video, label: 'Stories' },
+    { href: '/pulse', icon: Heart, label: 'Pulse' },
   ],
   system: [
-    { href: '/help', icon: LifeBuoy, label: 'User Manual' },
-    { href: '/system/feedback', icon: Bug, label: 'Report Bug' },
+    { href: '/help', icon: LifeBuoy, label: 'Help' },
+    { href: '/system/feedback', icon: Bug, label: 'Feedback' },
   ]
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['workspace', 'teamHub', 'meal', 'enterprise', 'reports', 'management', 'system'],
-  'Executive Director': ['workspace', 'teamHub', 'meal', 'enterprise', 'reports', 'management', 'system'],
-  'Programs & Partnerships Manager': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
-  'Operations & Field Manager': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
-  'Media & Finance Lead': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
-  'Media & Communications Lead': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
-  'Resource Mobilization Lead': ['workspace', 'teamHub', 'meal', 'reports', 'management', 'enterprise'],
-  'default': ['workspace', 'teamHub', 'meal', 'reports'],
+  'Administrator': ['daily', 'ai', 'ops', 'enterprise', 'programs', 'team', 'data', 'content', 'system'],
+  'Executive Director': ['daily', 'ai', 'ops', 'enterprise', 'programs', 'team', 'data', 'content', 'system'],
+  'Programs & Partnerships Manager': ['daily', 'ai', 'enterprise', 'programs', 'team', 'data', 'content'],
+  'Operations & Field Manager': ['daily', 'ai', 'enterprise', 'programs', 'team', 'data', 'content'],
+  'Media & Finance Lead': ['daily', 'ai', 'ops', 'enterprise', 'data', 'content'],
+  'Media & Communications Lead': ['daily', 'ai', 'enterprise', 'data', 'content'],
+  'Essentials Manager': ['daily', 'ai', 'enterprise', 'ops', 'data'],
+  'Youth Center Manager': ['daily', 'ai', 'enterprise', 'team', 'data'],
+  'Field Coordinator': ['daily', 'programs', 'team', 'data'],
+  'Field Staff': ['daily', 'team', 'data'],
+  'Media & Communications': ['daily', 'content', 'data'],
+  'Accountant/Finance': ['daily', 'ops', 'data'],
+  'Intern': ['daily', 'team', 'content'],
+  'Volunteer': ['daily', 'team'],
+  'default': ['daily', 'team', 'data'],
 };
 
 
@@ -144,7 +171,7 @@ export function AppSidebar() {
 
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
     if (!allowedSections.includes(sectionName)) return null;
-    let navItems = navConfig[sectionName];
+    const navItems = navConfig[sectionName];
 
     return (
       <SidebarGroup className="px-4">
@@ -180,19 +207,23 @@ export function AppSidebar() {
         <OmutoLogo />
       </SidebarHeader>
       <SidebarContent className="no-scrollbar pt-2">
-        {renderNavSection('workspace', 'Command Center')}
-        <div className="h-5" />
-        {renderNavSection('teamHub', 'Network')}
-        <div className="h-5" />
-        {renderNavSection('meal', 'Impact')}
-        <div className="h-5" />
+        {renderNavSection('daily', 'Daily Ops')}
+        <div className="h-3" />
+        {renderNavSection('ai', 'AI & Strategy')}
+        <div className="h-3" />
+        {renderNavSection('ops', 'Operations')}
+        <div className="h-3" />
         {renderNavSection('enterprise', 'Enterprise')}
-        <div className="h-5" />
-        {renderNavSection('reports', 'Analysis')}
-        <div className="h-5" />
-        {renderNavSection('management', 'Operations')}
+        <div className="h-3" />
+        {renderNavSection('programs', 'Programs')}
+        <div className="h-3" />
+        {renderNavSection('team', 'Team')}
+        <div className="h-3" />
+        {renderNavSection('data', 'Data')}
+        <div className="h-3" />
+        {renderNavSection('content', 'Content')}
         <Separator className="mx-7 my-5 bg-omuto-navy/10 border-none h-[2px]" />
-        {renderNavSection('system', 'Platform')}
+        {renderNavSection('system', 'System')}
       </SidebarContent>
       <SidebarFooter className="p-6 border-t-lg border-omuto-navy/10 bg-white">
         <div className="flex items-center gap-4">

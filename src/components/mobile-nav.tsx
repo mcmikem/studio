@@ -39,12 +39,12 @@ export function MobileBottomNav() {
   };
 
   const actions = [
-    { href: '/daily-plan', label: 'Morning Check-in', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
-    { href: '/forms/check-out', label: 'Evening Report', icon: LogOut, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
-    { href: '/meal/activity', label: 'Log ROI Impact', icon: BarChart3, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
-    { href: '/meal/data', label: 'Data Dashboards', icon: LayoutDashboard, color: 'text-omuto-navy', bg: 'bg-omuto-navy/10' },
-    { href: '/forms/expense', label: 'Expense Request', icon: Receipt, color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
-    { href: '/chat', label: 'Ask AI Coach', icon: MessageCircle, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
+    { href: '/daily-plan', label: 'Daily Planner', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
+    { href: '/enterprise/essentials/sales', label: 'Point of Sale', icon: Receipt, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
+    { href: '/meal/activity', label: 'Log Impact', icon: BarChart3, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
+    { href: '/meal/data', label: 'Dashboards', icon: LayoutDashboard, color: 'text-omuto-navy', bg: 'bg-omuto-navy/10' },
+    { href: '/management/expenses', label: 'Expenses', icon: Receipt, color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
+    { href: '/chat', label: 'AI Coach', icon: MessageCircle, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
   ];
 
   return (
