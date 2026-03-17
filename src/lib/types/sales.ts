@@ -29,20 +29,21 @@ export const SaleFormSchema = z.object({
     transaction_number: z.string().optional(),
     customer_name: z.string().optional(),
     customer_phone: z.string().optional(),
-    sale_date: z.string().min(1, "Sale date is required"),
-    total_amount: z.coerce.number(),
-    payment_method: z.enum(["Cash", "Mobile Money", "Bank Transfer"]),
-    status: z.enum(["completed", "pending"]),
+    sale_date: z.string().optional(),
+    total_amount: z.coerce.number().default(0),
+    payment_method: z.enum(["Cash", "Mobile Money", "Bank Transfer"]).default("Cash"),
+    status: z.enum(["completed", "pending"]).default("completed"),
     items: z.array(z.object({
-        product_id: z.string(),
-        product_name: z.string(),
+        product_id: z.string().optional(),
+        product_name: z.string().optional(),
         quantity: z.coerce.number().default(1),
         unit_price: z.coerce.number().default(0),
         total: z.coerce.number().default(0),
-    })).min(1, "At least one item is required."),
+    })).default([]),
 }).transform((data) => ({
     ...data,
-    items: data.items.filter(item => item.product_id && item.quantity > 0),
+    sale_date: data.sale_date || new Date().toISOString().split('T')[0],
+    items: (data.items || []).filter(item => item.product_id && item.quantity > 0),
 }));
 
 export type SaleFormData = z.infer<typeof SaleFormSchema>;

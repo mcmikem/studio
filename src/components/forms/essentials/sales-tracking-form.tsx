@@ -36,7 +36,7 @@ export function SalesTrackingForm() {
 
   const productsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'products'), where('type', '==', 'finished'), where('is_active', '==', true));
+    return query(collection(firestore, 'products'), where('type', '==', 'finished'));
   }, [firestore]);
   const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
   const hasSellableProducts = (products?.length || 0) > 0;
@@ -132,6 +132,7 @@ export function SalesTrackingForm() {
       });
 
       for (const item of validItems) {
+        if (!item.product_id) continue;
         const productRef = doc(firestore, 'products', item.product_id);
         const product = products?.find(p => p.id === item.product_id);
         if (product) {
@@ -227,7 +228,7 @@ export function SalesTrackingForm() {
                             </div>
                         ))}
                     </div>
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ product_id: '', product_name: '', quantity: 1, unit_price: 0, total: 0 })} className="font-black text-xs uppercase tracking-widest border-lg rounded-xl h-10 px-4" disabled={!hasSellableProducts}><PlusCircle className="mr-2 h-4 w-4" />Add Product Item</Button>
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ product_id: '', product_name: '', quantity: 1, unit_price: 0, total: 0 })} className="font-black text-xs uppercase tracking-widest border-lg rounded-xl h-10 px-4"><PlusCircle className="mr-2 h-4 w-4" />Add Product Item</Button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-dashed">
@@ -241,7 +242,7 @@ export function SalesTrackingForm() {
                 </div>
             </CardContent>
              <CardFooter className="enterprise-form-footer mt-6">
-                <Button type="submit" disabled={form.formState.isSubmitting || !hasSellableProducts} className="btn-omuto w-full h-16 text-lg font-black uppercase tracking-widest shadow-comic-lg rounded-2xl border-white">
+                <Button type="submit" disabled={form.formState.isSubmitting} className="btn-omuto w-full h-16 text-lg font-black uppercase tracking-widest shadow-comic-lg rounded-2xl border-white">
                 {form.formState.isSubmitting ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : <ShoppingCart className="mr-2 h-6 w-6" />}
                 Process Sale & Print Receipt
                 </Button>

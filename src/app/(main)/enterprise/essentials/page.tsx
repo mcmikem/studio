@@ -87,7 +87,7 @@ function EssentialsHubPage() {
     // const { data: recentProduction, isLoading: isLoadingProduction } = useCollection<ProductionBatch>(productionQuery);
     
     const stats = useMemo(() => {
-        if (!monthlySales) return { totalRevenue: 0, totalSales: 0, topProduct: 'N/A', lowStockCount: 0, productionBatches: 0, productionCost: 0 };
+        if (!monthlySales) return { totalRevenue: 0, totalSales: 0, topProduct: 'N/A', lowStockCount: 0, productionBatches: 0, productionCost: 0, profit: 0 };
         
         const totalRevenue = monthlySales.reduce((sum, sale) => sum + sale.total_amount, 0);
 
@@ -112,9 +112,10 @@ function EssentialsHubPage() {
             }
         }
         
-        const lowStockCount = 0; // products.filter(p => p.reorder_level && p.current_stock_quantity <= p.reorder_level).length;
+        const lowStockCount = 0;
 
         const productionCost = (monthlyProduction || []).reduce((sum, batch) => sum + Number((batch as any).material_cost_total || 0), 0);
+        const profit = totalRevenue - productionCost;
 
         return {
             totalRevenue,
@@ -123,6 +124,7 @@ function EssentialsHubPage() {
             lowStockCount,
             productionBatches: monthlyProduction?.length || 0,
             productionCost,
+            profit,
         }
     }, [monthlySales, monthlyProduction]);
     
@@ -218,6 +220,13 @@ function EssentialsHubPage() {
                     value={isLoading ? '...' : formatCurrency(stats.totalRevenue)} 
                     icon={DollarSign} 
                     trend="+12% from last month"
+                />
+                <StatCard 
+                    title="Profit/Loss" 
+                    value={isLoading ? '...' : formatCurrency(stats.profit)} 
+                    icon={stats.profit >= 0 ? TrendingUp : AlertCircle} 
+                    description={stats.profit >= 0 ? 'Revenue minus costs' : 'Operating at a loss'}
+                    variant={stats.profit < 0 ? 'urgent' : 'default'}
                 />
                 <StatCard 
                     title="Volume of Sales" 
