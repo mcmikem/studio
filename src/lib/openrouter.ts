@@ -73,4 +73,4 @@ export const OPENROUTER_FREE_MODELS = [
   { id: 'mistralai/mistral-small-3.1-24b-instruct:free', name: 'Mistral Small 3.1', provider: 'Mistral', description: 'Fast & capable' },
 ];
 
-export const DEFAULT_MODEL = 'google/gemini-2.0-flash-lite-preview-02-05:free';
+export const DEFAULT_MODEL = 'mistralai/mistral-small-3.1-24b-instruct:free';
