@@ -569,7 +569,7 @@ function ExpensesContent() {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-3 mb-4">
+                        <TabsList className="mb-4">
                             <TabsTrigger value="all">All Records</TabsTrigger>
                             <TabsTrigger value="requisitions">Requisitions</TabsTrigger>
                             <TabsTrigger value="reimbursements">Reimbursements</TabsTrigger>

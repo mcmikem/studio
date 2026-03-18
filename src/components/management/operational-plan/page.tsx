@@ -351,11 +351,11 @@ export default function OperationalPlanPage() {
             </header>
 
             <Tabs defaultValue="view" className="w-full">
-                <TabsList className="bg-omuto-navy/10 p-1 rounded-xl mb-8 border-lg border-omuto-navy/10 h-auto w-full inline-flex flex-wrap justify-start gap-1">
-                    <TabsTrigger value="view" className="rounded-lg font-bold text-xs uppercase tracking-widest px-3 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy flex-1 sm:flex-none min-w-[100px]">
+                <TabsList className="bg-omuto-navy/10 p-1 rounded-xl mb-8 border-lg border-omuto-navy/10">
+                    <TabsTrigger value="view" className="rounded-lg font-bold text-xs uppercase tracking-widest px-4 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
                         View Plan
                     </TabsTrigger>
-                    {canEdit && <TabsTrigger value="edit" className="rounded-lg font-bold text-xs uppercase tracking-widest px-3 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy flex-1 sm:flex-none min-w-[100px]">
+                    {canEdit && <TabsTrigger value="edit" className="rounded-lg font-bold text-xs uppercase tracking-widest px-4 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
                         Update Plan
                     </TabsTrigger>}
                 </TabsList>

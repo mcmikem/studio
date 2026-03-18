@@ -440,10 +440,10 @@ export default function OperationalPlanPage() {
 
             <Tabs defaultValue="view" className="w-full">
                 <TabsList className="bg-omuto-navy/10 p-1 rounded-xl mb-8 border-lg border-omuto-navy/10">
-                    <TabsTrigger value="view" className="rounded-lg font-bold text-xs uppercase tracking-widest px-6 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
+                    <TabsTrigger value="view" className="rounded-lg font-bold text-xs uppercase tracking-widest px-4 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
                         View Plan
                     </TabsTrigger>
-                    {canEdit && <TabsTrigger value="edit" className="rounded-lg font-bold text-xs uppercase tracking-widest px-6 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
+                    {canEdit && <TabsTrigger value="edit" className="rounded-lg font-bold text-xs uppercase tracking-widest px-4 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
                         Update Plan
                     </TabsTrigger>}
                 </TabsList>

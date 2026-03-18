@@ -449,10 +449,10 @@ function ExpensesContent() {
                 </CardHeader>
                 <CardContent>
                     <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="mb-4 flex flex-wrap h-auto w-full gap-1">
-                            <TabsTrigger value="all" className="flex-1 sm:flex-none min-w-[80px]">All Records</TabsTrigger>
-                            <TabsTrigger value="requisitions" className="flex-1 sm:flex-none min-w-[80px]">Requisitions</TabsTrigger>
-                            <TabsTrigger value="reimbursements" className="flex-1 sm:flex-none min-w-[80px]">Reimbursements</TabsTrigger>
+                        <TabsList className="mb-4">
+                            <TabsTrigger value="all">All Records</TabsTrigger>
+                            <TabsTrigger value="requisitions">Requisitions</TabsTrigger>
+                            <TabsTrigger value="reimbursements">Reimbursements</TabsTrigger>
                         </TabsList>
                         
                         <TabsContent value="all">
