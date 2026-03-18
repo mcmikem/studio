@@ -47,7 +47,7 @@ export async function analyzeQualitativeData(input: { programName: string; progr
     console.log('[QualitativeAnalysis] Attempting Gemini fallback');
     const response = await qualitativeParserPrompt({ input: prompt });
     if (response.output) {
-       return response.output;
+      return response.output as { summary: string; recurringSuccesses: string[]; commonChallenges: string[]; keyLearnings: string[] };
     }
   } catch (error) {
     console.error('Qualitative analysis Gemini failed:', error);

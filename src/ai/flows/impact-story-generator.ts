@@ -62,7 +62,7 @@ Return a compelling narrative in the "impactStory" field.
       console.log('[ImpactStory] Attempting Gemini generation');
       const response = await storyPrompt({ input: prompt });
       if (response.output) {
-        return response.output;
+        return response.output as ImpactStoryOutput;
       }
     } catch (error) {
       console.error('Impact Story Gemini failed:', error);

@@ -64,7 +64,7 @@ Provide 3-4 strategic insights with emoji, title, description, and recommendatio
           console.log('[StrategicAdvisor] Attempting Gemini generation');
           const response = await advisorPrompt({ input: prompt });
           if (response.output) {
-              return response.output;
+              return response.output as { insights: { emoji: string; title: string; description: string; recommendation: string }[] };
           }
       } catch (error) {
           console.error('[StrategicAdvisor] Gemini failed:', error);
