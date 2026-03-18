@@ -192,17 +192,20 @@ function OperationalPlanUpdater() {
     setParsedResults([]);
     try {
       const result = await parseOperationalPlan({ planText: pastedText });
+      if (!result.keyResults || result.keyResults.length === 0) {
+        throw new Error('AI returned no results. Try reformatting your plan text with clear KR labels (e.g., KR1, KR2).');
+      }
       setParsedResults(result.keyResults);
       toast({
         title: 'Plan Parsed Successfully',
         description: `Found ${result.keyResults.length} Key Results. Please review them below.`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI parsing error:', error);
       toast({
         variant: 'destructive',
         title: 'AI Parsing Failed',
-        description: 'The AI could not understand the provided text. Please check the format and try again.',
+        description: error?.message || 'The AI could not understand the provided text. Please check the format and try again.',
       });
     } finally {
       setIsParsing(false);

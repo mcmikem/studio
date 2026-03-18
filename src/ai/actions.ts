@@ -63,13 +63,13 @@ export async function processTestimony(input: TestimonyInput) {
     }
 }
 
-export async function parseOperationalPlan(input: ParsePlanInput) {
+export async function parseOperationalPlan(input: ParsePlanInput): Promise<ParsePlanOutput> {
     try {
         const { parseOperationalPlan: parsePlan } = await import('./flows/parse-operational-plan-flow');
         return await parsePlan(input);
-    } catch (error) {
+    } catch (error: any) {
         console.error('parseOperationalPlan failed:', error);
-        return { keyResults: [] };
+        throw new Error(error?.message || 'Failed to parse operational plan');
     }
 }
 

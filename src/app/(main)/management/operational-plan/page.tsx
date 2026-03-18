@@ -291,6 +291,9 @@ function OperationalPlanUpdater() {
     setIsParsing(true);
     try {
       const result = await parseOperationalPlan({ planText: pastedText });
+      if (!result.keyResults || result.keyResults.length === 0) {
+        throw new Error('AI returned no results. Try reformatting your plan text.');
+      }
       const mappedResults = result.keyResults.map(kr => ({
           title: kr.title,
           description: kr.description,
@@ -301,9 +304,13 @@ function OperationalPlanUpdater() {
       reset({ keyResults: mappedResults });
       setIsImporting(false);
       toast({ title: 'Import Successful', description: `Loaded ${result.keyResults.length} Key Results.` });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Import error:', error);
-      toast({ variant: 'destructive', title: 'Import Failed', description: 'Could not structure the text.' });
+      toast({ 
+        variant: 'destructive', 
+        title: 'Import Failed', 
+        description: error?.message || 'Could not structure the text. Try simplifying your plan format.' 
+      });
     } finally {
       setIsParsing(false);
     }
