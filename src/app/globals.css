@@ -141,6 +141,16 @@
     scrollbar-width: none;     /* Firefox */
   }
 
+  /* Hide scrollbar for horizontal scroll containers like tabs */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   .enterprise-form-shell {
     @apply space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))];
   }
