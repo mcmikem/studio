@@ -86,41 +86,41 @@ function KeyResultCard({ kr }: { kr: KeyResult }) {
 
     return (
         <Card className="group relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                <Target className="h-20 w-20 text-omuto-navy/10" />
+            <div className="absolute top-0 right-0 p-4 sm:p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+                <Target className="h-12 w-12 sm:h-16 sm:w-16 text-omuto-navy/10" />
             </div>
-            <CardHeader className="pb-4">
-                <div className="flex justify-between items-start mb-4">
-                    <Badge className={`badge-omuto-outline ${kr.priority === 'High' ? 'border-omuto-red/30 text-omuto-red' : 'border-omuto-navy/20 text-omuto-navy/70'}`}>
-                        {`${kr.priority} Priority`}
+            <CardHeader className="pb-3 sm:pb-4">
+                <div className="flex justify-between items-start gap-2 mb-3">
+                    <Badge className={`badge-omuto-outline text-[9px] sm:text-xs ${kr.priority === 'High' ? 'border-omuto-red/30 text-omuto-red' : 'border-omuto-navy/20 text-omuto-navy/70'}`}>
+                        {kr.priority}
                     </Badge>
-                    <ProgressRing progress={progress} size={48} strokeWidth={5} />
+                    <ProgressRing progress={progress} size={40} strokeWidth={4} />
                 </div>
-                <CardTitle className="text-xl font-bold tracking-tight leading-tight text-omuto-navy transition-colors">{kr.title}</CardTitle>
-                <CardDescription className="font-bold line-clamp-2 mt-1 text-omuto-navy/70">{kr.description}</CardDescription>
+                <CardTitle className="text-base sm:text-lg font-bold tracking-tight leading-tight text-omuto-navy transition-colors line-clamp-2">{kr.title}</CardTitle>
+                <CardDescription className="font-bold line-clamp-2 mt-1 text-omuto-navy/70 text-xs sm:text-sm">{kr.description}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6 flex-grow">
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
-                        <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Target</p>
-                        <p className="text-sm font-bold text-omuto-navy">{formatTarget(kr)}</p>
+            <CardContent className="space-y-4 flex-grow">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-muted/30 border border-omuto-navy/10 rounded-lg sm:rounded-xl">
+                        <p className="text-[9px] sm:text-[10px] font-black text-omuto-navy/50 uppercase tracking-widest mb-0.5 sm:mb-1 truncate">Target</p>
+                        <p className="text-xs sm:text-sm font-bold text-omuto-navy truncate">{formatTarget(kr)}</p>
                     </div>
-                    <div className="p-3 bg-muted/30 border-md border-omuto-navy/10 rounded-xl">
-                        <p className="text-[9px] font-black text-omuto-navy/50 uppercase tracking-widest mb-1">Deadline</p>
-                        <p className={`text-sm font-bold text-omuto-navy ${deadlinePast ? 'text-destructive' : ''}`}>{formatDateSafe(kr.deadline, 'dateOnly')}</p>
+                    <div className="p-2 sm:p-3 bg-muted/30 border border-omuto-navy/10 rounded-lg sm:rounded-xl">
+                        <p className="text-[9px] sm:text-[10px] font-black text-omuto-navy/50 uppercase tracking-widest mb-0.5 sm:mb-1 truncate">Deadline</p>
+                        <p className={`text-xs sm:text-sm font-bold text-omuto-navy truncate ${deadlinePast ? 'text-destructive' : ''}`}>{formatDateSafe(kr.deadline, 'dateOnly')}</p>
                     </div>
                 </div>
             </CardContent>
-            <CardFooter className="pt-0 pb-6 px-6">
+            <CardFooter className="pt-0 pb-3 sm:pb-4 px-3 sm:px-4">
                 <div className="flex w-full gap-2 items-center">
                     <Input 
                         type="number" 
                         value={progressInput} 
                         onChange={(e) => setProgressInput(Number(e.target.value))} 
-                        className="h-10 border-lg rounded-xl font-bold"
+                        className="h-9 sm:h-10 border rounded-lg font-bold text-sm"
                     />
-                    <Button onClick={handleUpdate} disabled={isUpdating} size="sm" className="h-10">
-                        {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update'}
+                    <Button onClick={handleUpdate} disabled={isUpdating} size="sm" className="h-9 sm:h-10 px-3">
+                        {isUpdating ? <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" /> : <span className="text-xs sm:text-sm">Update</span>}
                     </Button>
                 </div>
             </CardFooter>
@@ -157,15 +157,15 @@ function OperationalPlanViewer() {
     }
     
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-center gap-4">
-            <Button variant="outline" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-4 w-4 mr-2"/> Prev Month</Button>
-            <h2 className="font-bold text-lg w-48 text-center">{format(currentDate, 'MMMM yyyy')}</h2>
-            <Button variant="outline" onClick={() => setCurrentDate(addMonths(currentDate, 1))}>Next Month <ChevronRight className="h-4 w-4 ml-2"/></Button>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-center gap-2 sm:gap-4">
+            <Button variant="outline" size="sm" onClick={() => setCurrentDate(subMonths(currentDate, 1))}><ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1"/> <span className="hidden sm:inline">Prev</span></Button>
+            <h2 className="font-bold text-sm sm:text-base w-28 sm:w-40 text-center truncate">{format(currentDate, 'MMMM yyyy')}</h2>
+            <Button variant="outline" size="sm" onClick={() => setCurrentDate(addMonths(currentDate, 1))}><span className="hidden sm:inline">Next</span> <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1"/></Button>
         </div>
 
         {filteredKeyResults.length > 0 ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {filteredKeyResults.map(kr => <KeyResultCard key={kr.id} kr={kr} />)}
             </div>
         ) : (
@@ -432,25 +432,25 @@ export default function OperationalPlanPage() {
     const canEdit = profile && ['Administrator', 'Executive Director'].includes(profile.role);
 
     return (
-        <div className="space-y-10 pb-10">
+        <div className="space-y-6 sm:space-y-8 w-full overflow-hidden">
             <header className="flex flex-col gap-2">
-                <div className="flex items-center gap-3 text-omuto-navy">
-                    <div className="p-3 bg-omuto-navy/10 rounded-2xl">
-                        <Goal className="h-8 w-8 text-omuto-red" />
+                <div className="flex items-center gap-2 sm:gap-3 text-omuto-navy">
+                    <div className="p-2 sm:p-3 bg-omuto-navy/10 rounded-xl sm:rounded-2xl">
+                        <Goal className="h-6 w-6 sm:h-8 sm:w-8 text-omuto-red" />
                     </div>
-                    <div>
-                        <h1 className="font-heading text-4xl font-bold tracking-tight">Impact <span className="text-omuto-red">Strategy</span></h1>
-                        <p className="text-omuto-navy/60 font-bold uppercase text-[10px] tracking-widest mt-1">Operational Objectives & Key Result Framework</p>
+                    <div className="min-w-0">
+                        <h1 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight truncate">Impact <span className="text-omuto-red">Strategy</span></h1>
+                        <p className="text-omuto-navy/60 font-bold uppercase text-[8px] sm:text-[10px] tracking-widest mt-0.5 sm:mt-1 truncate">Operational Objectives & Key Result Framework</p>
                     </div>
                 </div>
             </header>
 
             <Tabs defaultValue="view" className="w-full">
-                <TabsList className="bg-omuto-navy/10 p-1 rounded-xl mb-8 border-lg border-omuto-navy/10">
-                    <TabsTrigger value="view" className="rounded-lg font-bold text-xs uppercase tracking-widest px-4 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
+                <TabsList className="bg-omuto-navy/10 p-1 rounded-lg mb-4 sm:mb-6">
+                    <TabsTrigger value="view" className="rounded-md font-bold text-xs uppercase tracking-wider px-3 py-1.5 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-sm">
                         View Plan
                     </TabsTrigger>
-                    {canEdit && <TabsTrigger value="edit" className="rounded-lg font-bold text-xs uppercase tracking-widest px-4 py-2 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-comic-sm data-[state=active]:border-omuto-navy">
+                    {canEdit && <TabsTrigger value="edit" className="rounded-md font-bold text-xs uppercase tracking-wider px-3 py-1.5 data-[state=active]:bg-omuto-navy data-[state=active]:text-white data-[state=active]:shadow-sm">
                         Update Plan
                     </TabsTrigger>}
                 </TabsList>

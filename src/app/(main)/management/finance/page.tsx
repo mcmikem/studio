@@ -477,38 +477,38 @@ export default function FinancePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full overflow-hidden">
       <Card>
         <CardHeader>
              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <CardTitle>Financial Ledger (Cashbook)</CardTitle>
-                  <CardDescription>A complete log of all income and expense transactions.</CardDescription>
+                <div className="min-w-0">
+                  <CardTitle className="text-lg sm:text-xl truncate">Financial Ledger (Cashbook)</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">A complete log of all income and expense transactions.</CardDescription>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                     <Button variant="outline" size="icon" onClick={handlePrevMonth}><ChevronLeft className="h-4 w-4" /></Button>
-                    {selectedMonth && <Input type="month" className="w-auto" value={format(selectedMonth, 'yyyy-MM')} onChange={e => setSelectedMonth(new Date(e.target.value))} />}
+                    <Input type="month" className="w-32 sm:w-auto" value={selectedMonth ? format(selectedMonth, 'yyyy-MM') : ''} onChange={e => setSelectedMonth(new Date(e.target.value))} />
                     <Button variant="outline" size="icon" onClick={handleNextMonth}><ChevronRight className="h-4 w-4" /></Button>
                 </div>
             </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="p-4">
-                    <p className="text-sm font-medium text-muted-foreground">Opening Balance</p>
-                    <p className="text-xl font-bold">{isLoading ? <Skeleton className="h-7 w-32"/> : formatCurrency(monthlyData.balanceBroughtForward)}</p>
+        <CardContent className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                <Card className="p-3 sm:p-4">
+                    <p className="text-xs font-medium text-muted-foreground">Opening Balance</p>
+                    <p className="text-lg sm:text-xl font-bold truncate">{isLoading ? <Skeleton className="h-6 w-24"/> : formatCurrency(monthlyData.balanceBroughtForward)}</p>
                 </Card>
-                 <Card className="p-4">
-                    <p className="text-sm font-medium text-muted-foreground">Monthly Income</p>
-                    <p className="text-xl font-bold text-green-600">{isLoading ? <Skeleton className="h-7 w-32"/> : formatCurrency(monthlyData.totalMonthlyIncome)}</p>
+                 <Card className="p-3 sm:p-4">
+                    <p className="text-xs font-medium text-muted-foreground">Income</p>
+                    <p className="text-lg sm:text-xl font-bold text-green-600 truncate">{isLoading ? <Skeleton className="h-6 w-24"/> : formatCurrency(monthlyData.totalMonthlyIncome)}</p>
                 </Card>
-                <Card className="p-4">
-                    <p className="text-sm font-medium text-muted-foreground">Monthly Expenses</p>
-                    <p className="text-xl font-bold text-red-600">{isLoading ? <Skeleton className="h-7 w-32"/> : formatCurrency(monthlyData.totalMonthlyExpenses)}</p>
+                <Card className="p-3 sm:p-4">
+                    <p className="text-xs font-medium text-muted-foreground">Expenses</p>
+                    <p className="text-lg sm:text-xl font-bold text-red-600 truncate">{isLoading ? <Skeleton className="h-6 w-24"/> : formatCurrency(monthlyData.totalMonthlyExpenses)}</p>
                 </Card>
-                <Card className="p-4 bg-muted">
-                    <p className="text-sm font-medium text-muted-foreground">Closing Balance</p>
-                    <p className="text-xl font-bold">{isLoading ? <Skeleton className="h-7 w-32"/> : formatCurrency(monthlyData.closingBalance)}</p>
+                <Card className="p-3 sm:p-4 bg-muted">
+                    <p className="text-xs font-medium text-muted-foreground">Closing Balance</p>
+                    <p className="text-lg sm:text-xl font-bold truncate">{isLoading ? <Skeleton className="h-6 w-24"/> : formatCurrency(monthlyData.closingBalance)}</p>
                 </Card>
             </div>
              <div className="flex flex-col sm:flex-row gap-2 justify-end">
@@ -670,16 +670,16 @@ export default function FinancePage() {
       </Card>
       <Card>
         <CardHeader>
-            <CardTitle>Spending by Category (All Time)</CardTitle>
-            <CardDescription>Based on all 'Disbursed' and 'Acknowledged' expenses.</CardDescription>
+            <CardTitle className="text-base sm:text-lg">Spending by Category (All Time)</CardTitle>
+            <CardDescription className="text-xs sm:text-sm">Based on all 'Disbursed' and 'Acknowledged' expenses.</CardDescription>
         </CardHeader>
         <CardContent>
-             {(isLoadingIncome || isLoadingExpenses) && <Skeleton className="w-full h-96" />}
+             {(isLoadingIncome || isLoadingExpenses) && <Skeleton className="w-full h-48 sm:h-64" />}
              {!(isLoadingIncome || isLoadingExpenses) && chartData.length > 0 && (
-                <ChartContainer config={chartConfig} className="w-full h-96">
-                    <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 120 }}>
+                <ChartContainer config={chartConfig} className="w-full h-48 sm:h-64">
+                    <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 60, right: 10 }}>
                         <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))' }} />
+                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))', fontSize: 10 }} width={60} />
                         <ChartTooltip
                             cursor={false}
                             content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value || 0))}/>}
