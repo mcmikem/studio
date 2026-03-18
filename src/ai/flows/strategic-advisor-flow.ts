@@ -66,11 +66,18 @@ Provide 3-4 strategic insights with emoji, title, description, and recommendatio
   if (aiConfig.isConfigured) {
       try {
           console.log('[StrategicAdvisor] Attempting Gemini generation');
-          const response = await advisorPrompt({ input: prompt });
-          if (response.output) {
-              return response.output as { insights: { emoji: string; title: string; description: string; recommendation: string }[] };
+          const response = await ai.generate({
+              model: 'googleai/gemini-2.0-flash',
+              system: `You are an AI Strategic Advisor for the Omuto Foundation. Return ONLY valid JSON matching: { "insights": [ { "emoji": "...", "title": "...", "description": "...", "recommendation": "..." } ] }`,
+              prompt,
+          });
+          
+          const text = response.text;
+          const jsonMatch = text?.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+              return JSON.parse(jsonMatch[0]);
           }
-          lastError += ' | Gemini returned empty';
+          lastError += ' | Gemini returned non-JSON text';
       } catch (error: any) {
           lastError += ` | Gemini: ${error?.message || String(error)}`;
           console.error('[StrategicAdvisor] Gemini failed:', error?.message);

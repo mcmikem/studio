@@ -83,9 +83,16 @@ Return a plan with time blocks (8:30 AM to 5 PM), strategic alignments, required
   if (aiConfig.isConfigured) {
       try {
           console.log('[DailyPlanner] Attempting Gemini generation');
-          const response = await plannerPrompt({ input: prompt });
-          if (response.output) {
-              return response.output as DailyPlannerAIOutput;
+          const response = await ai.generate({
+              model: 'googleai/gemini-2.0-flash',
+              system: `You are an expert productivity assistant for the Omuto Foundation. Return ONLY valid JSON matching: { "timeBlocks": [...], "strategicAlignments": [...], "materials": "...", "challenges": "...", "bestPractice": "..." }`,
+              prompt,
+          });
+          
+          const text = response.text;
+          const jsonMatch = text?.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+              return JSON.parse(jsonMatch[0]) as DailyPlannerAIOutput;
           }
       } catch (error) {
           console.error('Daily Planner Gemini failed:', error);
