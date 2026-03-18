@@ -104,11 +104,12 @@ export async function runQualitativeAnalysis(input: QualitativeAnalysisInput) {
 
 export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
     const hasORKey = Boolean(aiConfig.openRouterApiKey);
-    const orPrefix = aiConfig.openRouterApiKey ? aiConfig.openRouterApiKey.substring(0, 10) : 'none';
-    console.log(`[omutoAI] Start. Provider: ${aiConfig.provider}, OR Key Present: ${hasORKey} (${orPrefix}), Gemini Key Present: ${Boolean(aiConfig.geminiApiKey)}`);
+    console.log(`[omutoAI] Start. Provider: ${aiConfig.provider}, OR Key: ${hasORKey}, Gemini Key: ${Boolean(aiConfig.geminiApiKey)}`);
     
-    // 1. Try OpenRouter if it's the active provider and configured
-    if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
+    let lastError = '';
+    
+    // 1. Try OpenRouter (primary)
+    if (aiConfig.openRouterApiKey) {
         try {
             const systemMessage = `You are an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda. Your name is Omuto AI.
             Be helpful, knowledgeable, and friendly. Be concise and actionable.`;
@@ -127,7 +128,7 @@ export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
                       role: (h?.role === 'model' ? 'assistant' : 'user') as 'user' | 'assistant',
                       content: text
                     };
-                  }).filter((m: any) => m.content) // drop empty messages
+                  }).filter((m: any) => m.content)
                 : [];
             
             const messages = [
@@ -136,25 +137,45 @@ export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
                 { role: 'user' as const, content: input.question || '' }
             ];
             
-            console.log('[omutoAI] Sending request to OpenRouter');
+            console.log(`[omutoAI] Sending to OpenRouter (model: ${DEFAULT_MODEL}, messages: ${messages.length})`);
             const answer = await chatWithOpenRouter(messages, DEFAULT_MODEL);
-            if (answer) return { answer };
+            if (answer && answer.trim()) {
+                console.log('[omutoAI] OpenRouter success, length:', answer.length);
+                return { answer };
+            }
+            lastError = 'OpenRouter returned empty response';
+            console.warn('[omutoAI] OpenRouter returned empty, trying fallback');
         } catch (error: any) {
-            console.error('omutoAI OpenRouter failed:', error?.message || error);
-            // Don't return yet, try fallback
+            lastError = `OpenRouter: ${error?.message || String(error)}`;
+            console.error('[omutoAI] OpenRouter failed:', lastError);
         }
+    } else {
+        lastError = 'OpenRouter API key not configured';
     }
     
-    // 2. Try Gemini Flow (Genkit) if configured
-    try {
-        console.log('[omutoAI] Attempting Gemini Flow fallback');
-        return await omutoAIFlow(input);
-    } catch (error: any) {
-        console.error('omutoAI Gemini fallback failed:', error?.message || error);
-        return {
-            answer: "I'm temporarily unable to reach the AI service right now. Please check your API configuration or retry in a moment."
-        };
+    // 2. Try Gemini (simplified flow — no history/tools to avoid Genkit crashes)
+    if (aiConfig.geminiApiKey) {
+        try {
+            console.log('[omutoAI] Trying Gemini fallback');
+            const result = await omutoAIFlow({ question: input.question, userId: input.userId });
+            if (result?.answer && result.answer.trim()) {
+                console.log('[omutoAI] Gemini success');
+                return result;
+            }
+            lastError += ' | Gemini returned empty';
+        } catch (error: any) {
+            lastError += ` | Gemini: ${error?.message || String(error)}`;
+            console.error('[omutoAI] Gemini fallback failed:', error?.message);
+        }
+    } else {
+        lastError += ' | Gemini API key not configured';
     }
+    
+    // 3. All providers failed
+    console.error('[omutoAI] All providers failed:', lastError);
+    return {
+        answer: `I'm temporarily unable to process your request. Debug: ${lastError.substring(0, 200)}`
+    };
 }
 
 
