@@ -7,6 +7,8 @@ export const CheckinSchema = z.object({
     primaryMission: z.string(),
     mood: z.string(),
     details: z.any(),
+    workingStartTime: z.string().optional(),
+    workingEndTime: z.string().optional(),
     timestamp: z.any(),
 });
 

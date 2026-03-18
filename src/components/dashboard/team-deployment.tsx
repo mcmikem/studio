@@ -27,8 +27,25 @@ function getTimeOfDayGreeting(): { emoji: string; message: string; icon: any } {
   return { emoji: '🌙', message: 'Evening wind-down', icon: Moon };
 }
 
-function determineCurrentFocus(timeBlocks: any[], currentTime: Date, primaryMission?: string): { task: string; status: 'working' | 'break' | 'flexible' } {
-  // First try to get the primary mission if no time blocks
+function determineCurrentFocus(timeBlocks: any[], currentTime: Date, primaryMission?: string, workStart?: string, workEnd?: string): { task: string; status: 'working' | 'break' | 'flexible' } {
+  const now = currentTime;
+  const today = startOfDay(now);
+
+  // If we have specific working hours, check if we are outside of them
+  if (workStart && workEnd) {
+    try {
+      const startTime = parse(workStart.replace(/\s+(AM|PM)/i, ' $1').trim(), workStart.includes(':') ? 'HH:mm' : 'h:mm a', today);
+      const endTime = parse(workEnd.replace(/\s+(AM|PM)/i, ' $1').trim(), workEnd.includes(':') ? 'HH:mm' : 'h:mm a', today);
+      
+      if (isValid(startTime) && isValid(endTime)) {
+        if (isBefore(now, startTime) || isAfter(now, endTime)) {
+          return { task: 'Off-hours / Rest', status: 'break' };
+        }
+      }
+    } catch {}
+  }
+
+  // Then try to match a specific block
   if (!timeBlocks || !Array.isArray(timeBlocks) || timeBlocks.length === 0) {
     if (primaryMission) {
       return { task: primaryMission, status: 'flexible' };
@@ -36,21 +53,19 @@ function determineCurrentFocus(timeBlocks: any[], currentTime: Date, primaryMiss
     return { task: 'Flexible / async work', status: 'flexible' };
   }
 
-  const now = new Date();
-  const today = startOfDay(now);
-
   for (const block of timeBlocks) {
     if (!block || typeof block.startTime !== 'string' || typeof block.endTime !== 'string') continue;
     
     try {
-      const startTime = parse(block.startTime.replace(/\s+(AM|PM)/i, ' $1').trim(), 'h:mm a', today);
-      const endTime = parse(block.endTime.replace(/\s+(AM|PM)/i, ' $1').trim(), 'h:mm a', today);
+      // Handle various time formats (24h or 12h)
+      const parseFormat = block.startTime.includes('AM') || block.startTime.includes('PM') ? 'h:mm a' : 'HH:mm';
+      const startTime = parse(block.startTime.replace(/\s+(AM|PM)/i, ' $1').trim(), parseFormat, today);
+      const endTime = parse(block.endTime.replace(/\s+(AM|PM)/i, ' $1').trim(), parseFormat, today);
       
       if (isValid(startTime) && isValid(endTime)) {
         if (isWithinInterval(now, { start: startTime, end: endTime })) {
-          const isBreak = block.description?.toLowerCase().includes('break') || 
-                        block.description?.toLowerCase().includes('lunch') ||
-                        block.description?.toLowerCase().includes('flexible');
+          const desc = block.description?.toLowerCase() || '';
+          const isBreak = desc.includes('break') || desc.includes('lunch') || desc.includes('rest');
           return { 
             task: block.description || primaryMission || 'In scheduled block', 
             status: isBreak ? 'break' : 'working' 
@@ -60,7 +75,6 @@ function determineCurrentFocus(timeBlocks: any[], currentTime: Date, primaryMiss
     } catch {}
   }
 
-  // If no current block found, return primary mission or flexible
   return { task: primaryMission || 'Flexible / async work', status: 'flexible' };
 }
 
@@ -166,7 +180,13 @@ export function TeamDeployment() {
       const checkinDate = latestCheckin?.timestamp?.toDate?.();
       const minutesSinceCheckin = checkinDate ? differenceInMinutes(currentTime, checkinDate) : null;
       
-      const focus = determineCurrentFocus(latestCheckin?.details?.timeBlocks, currentTime, latestCheckin?.primaryMission);
+      const focus = determineCurrentFocus(
+        latestCheckin?.details?.timeBlocks, 
+        currentTime, 
+        latestCheckin?.primaryMission,
+        latestCheckin?.workingStartTime,
+        latestCheckin?.workingEndTime
+      );
 
       return {
         user,
@@ -175,6 +195,9 @@ export function TeamDeployment() {
         primaryMission: latestCheckin?.primaryMission || null,
         checkinTime: checkinDate ? format(checkinDate, 'h:mm a') : null,
         minutesSinceCheckin,
+        timeBlocks: latestCheckin?.details?.timeBlocks || [],
+        workingStartTime: latestCheckin?.workingStartTime,
+        workingEndTime: latestCheckin?.workingEndTime,
       };
     }).sort((a, b) => {
       if (a.status.status === 'active' && b.status.status !== 'active') return -1;
@@ -324,6 +347,29 @@ export function TeamDeployment() {
                         </p>
                       </div>
                     </div>
+
+                    {/* Full Time Stamps */}
+                    {selectedUserStatus.timeBlocks?.length > 0 && (
+                      <div className="space-y-3 pt-4">
+                        <div className="flex items-center gap-2 text-omuto-navy/70 font-bold text-[10px] uppercase tracking-widest">
+                          <Clock className="h-4 w-4" /> Full Time Stamps
+                        </div>
+                        <div className="space-y-2">
+                          {selectedUserStatus.timeBlocks.map((block: any, idx: number) => {
+                             const isCurrent = selectedUserStatus.focus.task === block.description;
+                             return (
+                               <div key={idx} className={`p-3 rounded-xl border-lg transition-all ${isCurrent ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-omuto-navy/5 opacity-70'}`}>
+                                 <div className="flex justify-between items-center mb-1">
+                                    <span className="font-black text-[10px] text-primary">{block.startTime} - {block.endTime}</span>
+                                    {isCurrent && <span className="text-[10px] font-black uppercase text-primary animate-pulse">Now</span>}
+                                 </div>
+                                 <p className="text-xs font-bold text-omuto-navy leading-tight">{block.description}</p>
+                               </div>
+                             );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

@@ -10,6 +10,8 @@ export const DailyPlannerAIInputSchema = z.object({
   primaryMission: z.string(),
   weeklyPriorities: z.array(z.string()).optional(),
   keyResults: z.array(z.any()).optional(),
+  workingStartTime: z.string().optional(),
+  workingEndTime: z.string().optional(),
 });
 export type DailyPlannerAIInput = z.infer<typeof DailyPlannerAIInputSchema>;
 

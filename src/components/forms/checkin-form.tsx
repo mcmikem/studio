@@ -27,7 +27,9 @@ import { createAlertAction as createAlert } from '@/actions/mutations';
 const checkinSchema = z.object({
   primaryMission: z.string().min(1, "Primary mission is required."),
   mood: z.string().min(1, "Mood is required."),
-  details: DailyPlannerAIOutputSchema, // Use the schema directly
+  workingStartTime: z.string().optional(),
+  workingEndTime: z.string().optional(),
+  details: DailyPlannerAIOutputSchema,
 });
 
 type CheckinFormValues = z.infer<typeof checkinSchema>;
@@ -59,6 +61,8 @@ function CheckinFormComponent() {
                 setValue('primaryMission', planData.primaryMission);
                 setValue('details', planData.details);
                 setValue('mood', planData.mood);
+                if (planData.workingStartTime) setValue('workingStartTime', planData.workingStartTime);
+                if (planData.workingEndTime) setValue('workingEndTime', planData.workingEndTime);
             } catch (error) {
                 console.error("Failed to parse plan data:", error);
                 toast({
@@ -88,6 +92,8 @@ function CheckinFormComponent() {
             name: profile.name,
             primaryMission: data.primaryMission,
             mood: data.mood,
+            workingStartTime: data.workingStartTime || "08:30",
+            workingEndTime: data.workingEndTime || "17:00",
             details: data.details,
             timestamp: serverTimestamp(),
         };

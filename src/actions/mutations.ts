@@ -216,6 +216,8 @@ export async function generateDailyPlanAction(input: DailyPlannerAIInput): Promi
             primaryMission: input.primaryMission,
             weeklyPriorities: input.weeklyPriorities,
             keyResults: input.keyResults,
+            workingStartTime: input.workingStartTime,
+            workingEndTime: input.workingEndTime,
         });
         return aiPlan;
     } catch (error) {

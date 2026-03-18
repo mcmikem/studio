@@ -26,10 +26,20 @@ const plannerInputSchema = z.object({
     description: z.string(),
     deadline: z.string(),
   })).optional(),
+  workingStartTime: z.string().optional(),
+  workingEndTime: z.string().optional(),
 });
 
 export async function generateDailyPlan(input: z.infer<typeof plannerInputSchema>): Promise<DailyPlannerAIOutput> {
-  const { userName, userRole, primaryMission, weeklyPriorities = [], keyResults = [] } = input;
+  const { 
+    userName, 
+    userRole, 
+    primaryMission, 
+    weeklyPriorities = [], 
+    keyResults = [],
+    workingStartTime = "08:30",
+    workingEndTime = "17:00"
+  } = input;
   
   const strategyContext = keyResults.length > 0 
     ? `\n\nStrategic Objectives to align with:\n${keyResults.map(kr => `- ${kr.title}: ${kr.description}`).join('\n')}`
@@ -52,10 +62,13 @@ JSON Schema:
 }`;
 
   const prompt = `
-Generate a daily plan for ${userName} (${userRole}).
+Generate a strategic daily plan for ${userName} (${userRole}).
 Primary Mission: ${primaryMission}
+Plan Duration: From ${workingStartTime} to ${workingEndTime}
 ${weeklyContext}
 ${strategyContext}
+
+Constraint: All time blocks MUST be strictly scheduled between ${workingStartTime} and ${workingEndTime}.
 
 Example Output Format:
 {

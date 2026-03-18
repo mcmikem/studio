@@ -25,6 +25,8 @@ export default function DailyPlannerPage() {
   const [primaryMission, setPrimaryMission] = useState('');
   const [mood, setMood] = useState<'good' | 'neutral' | 'bad' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [workingStartTime, setWorkingStartTime] = useState('08:30');
+  const [workingEndTime, setWorkingEndTime] = useState('17:00');
   const [aiPlan, setAiPlan] = useState<DailyPlannerAIOutput | null>(null);
   const [editablePlan, setEditablePlan] = useState<DailyPlannerAIOutput | null>(null);
 
@@ -59,6 +61,8 @@ export default function DailyPlannerPage() {
         primaryMission: primaryMission,
         weeklyPriorities: currentWeeklyPlan?.teamPriorities?.map((p: any) => p.activity) || [],
         keyResults: keyResults.map(kr => ({ title: kr.title, description: kr.description, deadline: formatDateSafe(kr.deadline, 'dateOnly') })),
+        workingStartTime,
+        workingEndTime,
       });
       setAiPlan(result);
       setEditablePlan(result);
@@ -106,6 +110,8 @@ export default function DailyPlannerPage() {
     const planData = {
       primaryMission,
       mood,
+      workingStartTime,
+      workingEndTime,
       details: editablePlan,
     };
     const encodedPlan = encodeURIComponent(JSON.stringify(planData));
@@ -137,6 +143,28 @@ export default function DailyPlannerPage() {
                 value={primaryMission}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setPrimaryMission(e.target.value)}
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="startTime" className="font-bold text-sm uppercase">Work Start</Label>
+                    <Input 
+                        id="startTime" 
+                        type="time" 
+                        value={workingStartTime} 
+                        onChange={(e) => setWorkingStartTime(e.target.value)}
+                        className="h-12 border-lg rounded-xl font-bold"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="endTime" className="font-bold text-sm uppercase">Work End</Label>
+                    <Input 
+                        id="endTime" 
+                        type="time" 
+                        value={workingEndTime} 
+                        onChange={(e) => setWorkingEndTime(e.target.value)}
+                        className="h-12 border-lg rounded-xl font-bold"
+                    />
+                </div>
             </div>
             <div className="space-y-3">
                 <Label className="font-bold text-lg">How are you feeling?</Label>

@@ -19,25 +19,14 @@ const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deploym
 const DashboardCalendar = dynamic(() => import('@/components/dashboard/dashboard-calendar').then(mod => mod.DashboardCalendar), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), { loading: () => <Skeleton className="h-96 rounded-2xl" />, ssr: false });
-const RecentCheckouts = dynamic(() => import('@/components/dashboard/recent-checkouts').then(mod => mod.RecentCheckouts), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 
 export function AdminDashboard({ profile }: DashboardProps) {
-  const firestore = useFirestore();
-  
-  const checkoutsQuery = useMemo(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5));
-  }, [firestore]);
-
-  const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
-
   return (
     <div className="flex flex-col gap-8">
         <DashboardHeader profile={profile} />
         <DashboardGrid className="mt-2 lg:grid-cols-3">
             <div className="lg:col-span-1 flex flex-col gap-8">
                  <TeamPerformanceLeaderboard />
-                 <RecentCheckouts checkouts={checkouts || null} />
             </div>
             <div className="lg:col-span-1 flex flex-col gap-8">
                 <TeamDeployment />
