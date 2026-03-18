@@ -116,17 +116,18 @@ export const omutoAIFlow = ai.defineFlow(
     } catch (error: any) {
         console.error('[OmutoAI] Error:', error);
         
-        const errorMessage = error?.message || String(error) || 'Unknown error';
+        const errorMessage = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+        console.error('[OmutoAI] Detailed Error:', errorMessage);
         
         if (errorMessage.includes('429') || errorMessage.includes('rate limit')) {
-          return { answer: "I'm receiving too many requests right now. Please wait a moment and try again." };
+          return { answer: "[V2-FIXED] I'm receiving too many requests right now. Please wait a moment and try again." };
         }
         
         if (errorMessage.includes('API key') || errorMessage.includes('not configured')) {
-          return { answer: "The AI service is not configured. Please contact the administrator." };
+          return { answer: "[V2-FIXED] The AI service is not configured correctly. Please check your Vercel Environment Variables." };
         }
         
-        return { answer: `[V2-FIXED] I encountered an error: ${errorMessage}. Please try again.` };
+        return { answer: `[V2-FIXED] I encountered an error: ${errorMessage.substring(0, 200)}. Please try again.` };
     }
   }
 );
