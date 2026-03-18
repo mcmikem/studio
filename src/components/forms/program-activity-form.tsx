@@ -33,6 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Textarea } from '../ui/textarea';
 import { formatCurrency } from '@/lib/utils';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { LocationPicker } from '@/components/ui/location-picker';
 import Link from 'next/link';
 
 const multipliers = [
@@ -76,6 +77,10 @@ export function ProgramActivityForm({
   const [selectedMultipliers, setSelectedMultipliers] = useState<string[]>([]);
   const [actualCost, setActualCost] = useState(45000);
   
+  const [district, setDistrict] = useState('Wakiso');
+  const [subcounty, setSubcounty] = useState('');
+  const [parish, setParish] = useState('');
+
   const [goalQuantity, setGoalQuantity] = useState(1);
   const [keyResultId, setKeyResultId] = useState<string | null>(null);
 
@@ -170,6 +175,9 @@ export function ProgramActivityForm({
         if (parsed.memorableMoment) setMemorableMoment(parsed.memorableMoment);
         if (parsed.challengesLearned) setChallengesLearned(parsed.challengesLearned);
         if (parsed.beneficiaryQuote) setBeneficiaryQuote(parsed.beneficiaryQuote);
+        if (parsed.district) setDistrict(parsed.district);
+        if (parsed.subcounty) setSubcounty(parsed.subcounty);
+        if (parsed.parish) setParish(parsed.parish);
         
         toast({
           title: "Draft Restored",
@@ -188,7 +196,8 @@ export function ProgramActivityForm({
     const draft = {
       activityName, ecosystemPhase, transportCost, staffTimeCost, materialsCost,
       selectedMultipliers, actualCost, goalQuantity, keyResultId, parentsAttended,
-      teachersAttended, treesPlanted, memorableMoment, challengesLearned, beneficiaryQuote
+      teachersAttended, treesPlanted, memorableMoment, challengesLearned, beneficiaryQuote,
+      district, subcounty, parish
     };
     
     localStorage.setItem(draftKey, JSON.stringify(draft));
@@ -196,6 +205,7 @@ export function ProgramActivityForm({
       activityName, ecosystemPhase, transportCost, staffTimeCost, materialsCost,
       selectedMultipliers, actualCost, goalQuantity, keyResultId, parentsAttended,
       teachersAttended, treesPlanted, memorableMoment, challengesLearned, beneficiaryQuote,
+      district, subcounty, parish,
       draftKey
   ]);
 
@@ -241,6 +251,9 @@ export function ProgramActivityForm({
       memorableMoment: memorableMoment,
       challengesLearned: challengesLearned,
       beneficiaryQuote: beneficiaryQuote,
+      district: district,
+      subcounty: subcounty,
+      parish: parish,
     };
 
     if (showParentsAttended) activityData.parents_attended = parentsAttended;
@@ -324,10 +337,23 @@ export function ProgramActivityForm({
                               <SelectContent>
                                   <SelectItem value="Identify & Inspire">Identify & Inspire</SelectItem>
                                   <SelectItem value="Equip & Empower">Equip & Empower</SelectItem>
-                                  <SelectItem value="Activate & Sustain">Activate & Sustain</SelectItem>
+                          <SelectItem value="Activate & Sustain">Activate & Sustain</SelectItem>
                               </SelectContent>
                           </Select>
                       </div>
+
+                      <div className="space-y-4 pt-2 border-t">
+                        <Label className="text-sm font-semibold text-primary">Activity Location</Label>
+                        <LocationPicker
+                          districtValue={district}
+                          subcountyValue={subcounty}
+                          parishValue={parish}
+                          onDistrictChange={setDistrict}
+                          onSubcountyChange={setSubcounty}
+                          onParishChange={setParish}
+                        />
+                      </div>
+
                       <Separator />
                       <h3 className="font-semibold">Primary Goal</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">

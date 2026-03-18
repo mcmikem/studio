@@ -14,7 +14,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Loader2, Building, ArrowRight, Sparkles } from 'lucide-react';
+import { Loader2, Building, ArrowRight, Sparkles, MapPin } from 'lucide-react';
+import { LocationPicker } from '@/components/ui/location-picker';
 
 const programs = [
     { id: 'YAC', label: 'Young Alive Clubs', desc: 'Health & Well-being' },
@@ -27,7 +28,9 @@ const programs = [
 const schoolApplicationSchema = z.object({
   email: z.string().email(),
   schoolName: z.string().min(3, "School name is required."),
-  schoolLocation: z.string().min(3, "School location is required."),
+  district: z.string().min(1, "District is required."),
+  subcounty: z.string().min(1, "Subcounty is required."),
+  parish: z.string().optional(),
   schoolType: z.enum(['Primary', 'Secondary']),
   studentCount: z.coerce.number().min(1, "Number of students is required."),
   contactName: z.string().min(3, "Contact name is required."),
@@ -58,10 +61,18 @@ export function SchoolApplicationForm() {
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<SchoolApplicationFormData>({
     resolver: zodResolver(schoolApplicationSchema),
+    defaultValues: {
+        district: 'Wakiso',
+    }
   });
+
+  const watchDistrict = watch('district');
+  const watchSubcounty = watch('subcounty');
+  const watchParish = watch('parish');
 
   const interestedPrograms = watch('interestedPrograms', []);
 
@@ -129,9 +140,18 @@ export function SchoolApplicationForm() {
                     <Label htmlFor="schoolName" className="font-bold text-[10px] uppercase tracking-widest pl-1">Official School Name</Label>
                     <Input id="schoolName" {...register('schoolName')} className="h-14 border-lg rounded-2xl text-omuto-navy font-bold" />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="schoolLocation" className="font-bold text-[10px] uppercase tracking-widest pl-1">Location / District</Label>
-                    <Input id="schoolLocation" {...register('schoolLocation')} className="h-14 border-lg rounded-2xl text-omuto-navy font-bold" />
+                <div className="space-y-6 md:col-span-2 pt-2 border-t">
+                    <Label className="font-bold text-[10px] uppercase tracking-widest pl-1 flex items-center gap-2 text-primary">
+                        <MapPin className="h-3 w-3" /> Geographic Tracking
+                    </Label>
+                    <LocationPicker
+                        districtValue={watchDistrict}
+                        subcountyValue={watchSubcounty}
+                        parishValue={watchParish}
+                        onDistrictChange={(val) => setValue('district', val)}
+                        onSubcountyChange={(val) => setValue('subcounty', val)}
+                        onParishChange={(val) => setValue('parish', val)}
+                    />
                 </div>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
