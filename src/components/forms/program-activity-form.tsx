@@ -136,10 +136,73 @@ export function ProgramActivityForm({
     return ((totalValue - preActivityCost) / preActivityCost) * 100;
   }, [totalValue, preActivityCost]);
 
-  const finalRoi = useMemo(() => {
-    if (actualCost === 0) return 0;
-    return ((totalValue - actualCost) / actualCost) * 100;
+  const [finalRoi, setFinalRoi] = useState(0);
+
+  useEffect(() => {
+    if (actualCost === 0) {
+      setFinalRoi(0);
+    } else {
+      setFinalRoi(((totalValue - actualCost) / actualCost) * 100);
+    }
   }, [totalValue, actualCost]);
+
+  // --- AUTO SAVE DRAFT LOGIC ---
+  const draftKey = useMemo(() => `omuto_draft_activity_${programId || 'new'}`, [programId]);
+
+  // Load draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.activityName) setActivityName(parsed.activityName);
+        if (parsed.ecosystemPhase) setEcosystemPhase(parsed.ecosystemPhase);
+        if (parsed.transportCost) setTransportCost(parsed.transportCost);
+        if (parsed.staffTimeCost) setStaffTimeCost(parsed.staffTimeCost);
+        if (parsed.materialsCost) setMaterialsCost(parsed.materialsCost);
+        if (parsed.selectedMultipliers) setSelectedMultipliers(parsed.selectedMultipliers);
+        if (parsed.actualCost) setActualCost(parsed.actualCost);
+        if (parsed.goalQuantity) setGoalQuantity(parsed.goalQuantity);
+        if (parsed.keyResultId) setKeyResultId(parsed.keyResultId);
+        if (parsed.parentsAttended) setParentsAttended(parsed.parentsAttended);
+        if (parsed.teachersAttended) setTeachersAttended(parsed.teachersAttended);
+        if (parsed.treesPlanted) setTreesPlanted(parsed.treesPlanted);
+        if (parsed.memorableMoment) setMemorableMoment(parsed.memorableMoment);
+        if (parsed.challengesLearned) setChallengesLearned(parsed.challengesLearned);
+        if (parsed.beneficiaryQuote) setBeneficiaryQuote(parsed.beneficiaryQuote);
+        
+        toast({
+          title: "Draft Restored",
+          description: "We restored your unsaved progress.",
+        });
+      }
+    } catch (e) {
+      console.error("Failed to load draft", e);
+    }
+  }, [draftKey, toast]);
+
+  // Save draft on every change
+  useEffect(() => {
+    if (!activityName && !memorableMoment && !challengesLearned && !beneficiaryQuote) return; // Don't save completely empty forms
+    
+    const draft = {
+      activityName, ecosystemPhase, transportCost, staffTimeCost, materialsCost,
+      selectedMultipliers, actualCost, goalQuantity, keyResultId, parentsAttended,
+      teachersAttended, treesPlanted, memorableMoment, challengesLearned, beneficiaryQuote
+    };
+    
+    localStorage.setItem(draftKey, JSON.stringify(draft));
+  }, [
+      activityName, ecosystemPhase, transportCost, staffTimeCost, materialsCost,
+      selectedMultipliers, actualCost, goalQuantity, keyResultId, parentsAttended,
+      teachersAttended, treesPlanted, memorableMoment, challengesLearned, beneficiaryQuote,
+      draftKey
+  ]);
+
+  const clearDraft = () => {
+    localStorage.removeItem(draftKey);
+  };
+  // -----------------------------
 
   const handleMultiplierChange = (id: string, checked: boolean) => {
     setSelectedMultipliers((prev) =>
@@ -188,6 +251,7 @@ export function ProgramActivityForm({
     
     try {
         await addDocumentNonBlocking(activitiesCollection, activityData);
+        clearDraft();
         toast({
           title: 'Activity Logged!',
           description: `${activityName} has been saved.`,

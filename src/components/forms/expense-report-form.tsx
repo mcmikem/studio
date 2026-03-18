@@ -142,6 +142,50 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
     setValue('totalAmount', totalAmount);
   }, [totalAmount, setValue]);
 
+  // --- AUTO SAVE DRAFT LOGIC ---
+  const draftKey = React.useMemo(() => `omuto_draft_expense_${isEditMode ? expense?.id : 'new'}`, [isEditMode, expense]);
+  const allFormValues = useWatch({ control });
+
+  // Load draft on mount (only if NOT in edit mode, to avoid overwriting real data with old drafts)
+  React.useEffect(() => {
+    if (isEditMode) return;
+    try {
+      const saved = localStorage.getItem(draftKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Only restore if there's actual typed content (title or items with description)
+        const hasContent = parsed.title || (parsed.items && parsed.items.some((i: any) => i.description));
+        if (hasContent) {
+           reset({ ...parsed, date: parsed.date || format(new Date(), 'yyyy-MM-dd') });
+           toast({
+             title: "Draft Restored",
+             description: "We restored your unsaved expense report.",
+           });
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load expense draft", e);
+    }
+  }, [draftKey, isEditMode, reset, toast]);
+
+  // Save draft on every change
+  React.useEffect(() => {
+    if (isEditMode) return; // Don't auto-save drafts over existing published records
+    
+    // Check if form is essentially empty
+    const isEmpty = !allFormValues.title && 
+                   (!allFormValues.items || allFormValues.items.every(i => !i?.description && !i?.amount));
+                   
+    if (isEmpty) return;
+    
+    localStorage.setItem(draftKey, JSON.stringify(allFormValues));
+  }, [allFormValues, draftKey, isEditMode]);
+
+  const clearDraft = () => {
+    localStorage.removeItem(draftKey);
+  };
+  // -----------------------------
+
   const onSubmit = async (data: ExpenseFormData) => {
     if (!firestore || !user || !profile) {
       toast({ variant: 'destructive', title: 'Authentication Error' });
@@ -227,7 +271,9 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             }
         }
         if (onSuccess) onSuccess();
-        else {
+        clearDraft();
+        
+        if (!isEditMode) {
             reset();
             setReceiptFile(null);
         }
