@@ -28,21 +28,6 @@ const plannerInputSchema = z.object({
   })).optional(),
 });
 
-const plannerPrompt = ai.definePrompt({
-    name: 'plannerPrompt',
-    model: 'googleai/gemini-2.0-flash',
-    system: `You are an expert productivity assistant for the Omuto Foundation, a youth-led NGO in Uganda.
-Your role is to help staff and volunteers plan their day strategically.
-- Be practical and realistic about time allocations
-- Consider the organization's strategic objectives (Key Results)
-- Be concise and action-oriented
-- When suggesting time blocks, always include specific descriptions of what to do
-- Prioritize impact over busyness`,
-    output: {
-        schema: DailyPlannerAIOutputSchema
-    }
-});
-
 export async function generateDailyPlan(input: z.infer<typeof plannerInputSchema>): Promise<DailyPlannerAIOutput> {
   const { userName, userRole, primaryMission, weeklyPriorities = [], keyResults = [] } = input;
   
@@ -54,20 +39,42 @@ export async function generateDailyPlan(input: z.infer<typeof plannerInputSchema
     ? `\n\nThis week's priorities:\n${weeklyPriorities.map(p => `- ${p}`).join('\n')}`
     : '';
 
-  const prompt = `
-Create a detailed daily plan for ${userName} (${userRole}) at Omuto Foundation.
+  const systemPrompt = `You are a high-performance productivity coach for the Omuto Foundation.
+Your goal is to transform a "Primary Mission" into a structured, strategic daily plan.
+You MUST return ONLY valid JSON. No markdown backticks, no preamble.
+JSON Schema:
+{
+  "timeBlocks": [ { "startTime": "HH:MM", "endTime": "HH:MM", "description": "string" } ],
+  "strategicAlignments": [ { "krTitle": "string", "alignmentJustification": "string" } ],
+  "materials": "string",
+  "challenges": "string",
+  "bestPractice": "string"
+}`;
 
+  const prompt = `
+Generate a daily plan for ${userName} (${userRole}).
 Primary Mission: ${primaryMission}
 ${weeklyContext}
 ${strategyContext}
 
-Return a plan with time blocks (8:30 AM to 5 PM), strategic alignments, required materials, potential challenges, and one best practice tip.
-`;
+Example Output Format:
+{
+  "timeBlocks": [
+    { "startTime": "08:30", "endTime": "10:30", "description": "Deep work on report" }
+  ],
+  "strategicAlignments": [
+    { "krTitle": "Goal 1", "alignmentJustification": "Critical for Q1 targets" }
+  ],
+  "materials": "Laptop, Drafts",
+  "challenges": "Power outage possibilities",
+  "bestPractice": "Focus on one thing at a time."
+}
+
+Return ONLY the JSON.`;
 
   // 1. Try OpenRouter if configured
   if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
     try {
-      const systemPrompt = `You are an expert productivity assistant for the Omuto Foundation. Return valid JSON only.`;
       const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.7);
       
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -87,7 +94,7 @@ Return a plan with time blocks (8:30 AM to 5 PM), strategic alignments, required
           console.log('[DailyPlanner] Attempting Gemini generation');
           const response = await ai.generate({
               model: 'googleai/gemini-2.0-flash',
-              system: `You are an expert productivity assistant for the Omuto Foundation. Return ONLY valid JSON matching: { "timeBlocks": [...], "strategicAlignments": [...], "materials": "...", "challenges": "...", "bestPractice": "..." }`,
+              system: systemPrompt,
               prompt,
           });
           
