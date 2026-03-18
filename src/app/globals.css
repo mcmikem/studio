@@ -63,6 +63,20 @@
     position: relative;
   }
 
+  /* Prevent overflow on all elements */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Ensure tables scroll horizontally instead of overflowing */
+  table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
   /* Support for modern mobile viewport height */
   :root {
     --vh: 1vh;

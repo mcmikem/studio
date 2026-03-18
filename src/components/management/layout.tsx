@@ -1,15 +1,20 @@
-
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks, DollarSign, Users, FileSignature, Bug, Camera, ChevronDown } from 'lucide-react';
+import { Briefcase, Handshake, Target, Receipt, FolderKanban, CalendarClock, Box, ListChecks, DollarSign, Users, FileSignature, Bug, Camera, ChevronDown, Menu, X } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
 import { useViewAs } from '@/hooks/use-view-as';
 import { useState } from 'react';
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 export default function ManagementLayoutComponent({
   children,
@@ -20,7 +25,7 @@ export default function ManagementLayoutComponent({
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const { viewAsRole } = useViewAs();
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const effectiveRole = viewAsRole || profile?.role;
 
@@ -66,30 +71,66 @@ export default function ManagementLayoutComponent({
   });
 
   const activeTab = tabs.find(tab => pathname.startsWith(tab.href));
-  const inactiveTabs = tabs.filter(tab => !pathname.startsWith(tab.href));
 
   return (
-    <div className="flex flex-col gap-4">
-       <div className="border-b border-border -mx-4 px-4">
-          <div className="flex items-center gap-1 -mb-px overflow-x-auto scrollbar-hide snap-x snap-mandatory">
-              {tabs.map((tab) => (
+    <div className="w-full">
+      {/* Mobile Navigation - Dropdown */}
+      <div className="lg:hidden mb-4">
+        <DropdownMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-full justify-between h-12 px-4">
+              <span className="flex items-center gap-2">
+                {activeTab ? <activeTab.icon className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                <span className="font-medium">{activeTab?.name || 'Select Section'}</span>
+              </span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-full min-w-[100vw] max-w-[100vw]">
+            {tabs.map((tab) => (
+              <DropdownMenuItem key={tab.href} asChild>
                 <Link
-                  key={tab.name}
                   href={tab.href}
                   className={cn(
-                    'flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-xs font-medium transition-colors whitespace-nowrap snap-start',
-                    pathname.startsWith(tab.href)
-                      ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/30'
+                    'flex items-center gap-3 w-full px-4 py-3',
+                    pathname.startsWith(tab.href) && 'bg-muted font-medium'
                   )}
+                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  <tab.icon className="h-3.5 w-3.5" />
-                  <span>{tab.name}</span>
+                  <tab.icon className="h-4 w-4" />
+                  {tab.name}
                 </Link>
-              ))}
-            </div>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-      <div className="-mx-4 px-4">{children}</div>
+
+      {/* Desktop Navigation - Horizontal Tabs */}
+      <div className="hidden lg:block mb-6">
+        <nav className="flex flex-wrap gap-1 p-1 bg-muted/50 rounded-lg w-fit">
+          {tabs.map((tab) => (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap',
+                pathname.startsWith(tab.href)
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+              )}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.name}
+            </Link>
+          ))}
+        </nav>
+      </div>
+
+      {/* Page Content - Full width, properly contained */}
+      <div className="w-full overflow-x-hidden">
+        {children}
+      </div>
     </div>
   );
 }
