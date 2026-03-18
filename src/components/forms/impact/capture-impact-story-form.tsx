@@ -18,13 +18,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Loader2, Save, Upload, Video } from 'lucide-react';
+import { LocationPicker } from '@/components/ui/location-picker';
+import { ArrowLeft, Loader2, Save, Upload, Video, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
 
 const impactStorySchema = z.object({
   title: z.string().min(5, 'Title is required.'),
   beneficiaryName: z.string().min(2, 'Beneficiary name is required.'),
+  district: z.string().min(1, 'District is required.'),
+  subcounty: z.string().min(1, 'Subcounty is required.'),
+  parish: z.string().optional(),
   project: z.string().min(1, 'Project is required.'),
   beforeSituation: z.string().min(20, 'Please describe the before situation.'),
   afterSituation: z.string().min(20, 'Please describe the after situation.'),
@@ -59,10 +64,19 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
     control,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<ImpactStoryFormData>({
     resolver: zodResolver(impactStorySchema),
-    defaultValues: { consentSigned: false },
+    defaultValues: { 
+      consentSigned: false,
+      district: 'Wakiso',
+    },
   });
+
+  const watchDistrict = watch('district');
+  const watchSubcounty = watch('subcounty');
+  const watchParish = watch('parish');
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) setMediaFiles(Array.from(e.target.files));
@@ -111,7 +125,23 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="pt-6 space-y-6">
-            <div className="space-y-2"><Label htmlFor="title">Story Title</Label><Input id="title" {...register('title')} />{errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}</div>
+            <div className="space-y-4 pt-2">
+              <h3 className="text-sm font-semibold flex items-center gap-2 text-primary">
+                <MapPin className="h-4 w-4" /> Story Location
+              </h3>
+              <LocationPicker
+                districtValue={watchDistrict}
+                subcountyValue={watchSubcounty}
+                parishValue={watchParish}
+                onDistrictChange={(val) => setValue('district', val)}
+                onSubcountyChange={(val) => setValue('subcounty', val)}
+                onParishChange={(val) => setValue('parish', val)}
+              />
+            </div>
+            
+            <Separator className="my-6" />
+
+            <div className="space-y-2"><Label htmlFor="title">Story Title</Label><Input id="title" {...register('title')} placeholder="e.g., How Jane found her spark in football" />{errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2"><Label htmlFor="beneficiaryName">Beneficiary Name</Label><Input id="beneficiaryName" {...register('beneficiaryName')} />{errors.beneficiaryName && <p className="text-sm text-destructive">{errors.beneficiaryName.message}</p>}</div>
               <div className="space-y-2">

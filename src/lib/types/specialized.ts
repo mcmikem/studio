@@ -22,6 +22,7 @@ export const OFATeamSchema = z.object({
   viceCaptainName: z.string().optional(),
   viceCaptainPhone: z.string().optional(),
   viceCaptainAttendance: z.string().optional(),
+  district: z.string().optional(),
   subcounty: z.string().optional(),
   parish: z.string().optional(),
   village: z.string().optional(),
@@ -362,6 +363,9 @@ export type Beneficiary = {
   name: string;
   dob: string;
   gender: string;
+  district: string;
+  subcounty: string;
+  parish: string;
   village: string;
   programEnrolled: string;
   school?: string;

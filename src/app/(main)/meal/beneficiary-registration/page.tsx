@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { uploadFile } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { LocationPicker } from '@/components/ui/location-picker';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -27,7 +28,10 @@ const beneficiarySchema = z.object({
   name: z.string().min(1, 'Beneficiary name is required.'),
   dob: z.string().optional(),
   gender: z.enum(['Male', 'Female']),
-  village: z.string().min(1, 'Village is required.'),
+  district: z.string().min(1, 'District is required.'),
+  subcounty: z.string().min(1, 'Subcounty is required.'),
+  parish: z.string().optional(),
+  village: z.string().optional(),
   programEnrolled: z.string().min(1, 'Please select a program.'),
   school: z.string().optional(),
   phone: z.string().optional(),
@@ -58,13 +62,19 @@ function BeneficiaryRegistrationForm() {
     control,
     reset,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<BeneficiaryFormData>({
     resolver: zodResolver(beneficiarySchema),
     defaultValues: {
         gender: 'Female',
+        district: 'Wakiso',
     }
   });
+
+  const watchDistrict = watch('district');
+  const watchSubcounty = watch('subcounty');
+  const watchParish = watch('parish');
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -91,7 +101,10 @@ function BeneficiaryRegistrationForm() {
             name: data.name,
             dob: data.dob || '',
             gender: data.gender,
-            village: data.village,
+            district: data.district,
+            subcounty: data.subcounty,
+            parish: data.parish || '',
+            village: data.village || '',
             programEnrolled: data.programEnrolled,
             createdAt: serverTimestamp() as Timestamp,
             ...(photoURL && { photoURL }),
@@ -159,10 +172,20 @@ function BeneficiaryRegistrationForm() {
                 )} />
                 {errors.gender && <p className="text-sm text-destructive">{errors.gender.message}</p>}
             </div>
-             <div className="space-y-2">
-              <Label htmlFor="village" className="text-xs sm:text-sm">Village / Location</Label>
-              <Input id="village" {...register('village')} className="h-12" />
-              {errors.village && <p className="text-sm text-destructive">{errors.village.message}</p>}
+             <div className="space-y-4 pt-2 border-t">
+              <Label className="text-sm font-semibold text-primary">Location Details</Label>
+              <LocationPicker
+                districtValue={watchDistrict}
+                subcountyValue={watchSubcounty}
+                parishValue={watchParish}
+                onDistrictChange={(val) => setValue('district', val)}
+                onSubcountyChange={(val) => setValue('subcounty', val)}
+                onParishChange={(val) => setValue('parish', val)}
+              />
+              <div className="space-y-2">
+                <Label htmlFor="village" className="text-xs sm:text-sm">Village / Zone</Label>
+                <Input id="village" {...register('village')} className="h-12" placeholder="Optional" />
+              </div>
             </div>
            </div>
            <div className="space-y-2">
