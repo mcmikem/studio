@@ -34,48 +34,70 @@ export function base64ToFile(base64: string, filename: string): File {
  * Compress image if too large
  */
 export async function compressImage(file: File, maxSizeKB: number = 500): Promise<File> {
+  // 1. Explicitly reject HEIC/HEIF which Canvas cannot process natively on most browsers
+  if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
+    throw new Error("HEIC (iPhone photo) format is not supported directly in the browser. Please convert to JPG/PNG or change your iPhone camera settings to 'Most Compatible'.");
+  }
+
   if (file.size <= maxSizeKB * 1024) {
     return file;
   }
 
-  return new Promise((resolve) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    
-    img.onload = () => {
-      // Calculate new dimensions
-      let { width, height } = img;
-      const maxDim = 1200;
+  return new Promise((resolve, reject) => {
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
       
-      if (width > maxDim || height > maxDim) {
-        if (width > height) {
-          height = (height / width) * maxDim;
-          width = maxDim;
-        } else {
-          width = (width / height) * maxDim;
-          height = maxDim;
-        }
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      ctx?.drawImage(img, 0, 0, width, height);
-      
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(new File([blob], file.name, { type: 'image/jpeg' }));
-          } else {
-            resolve(file);
+      img.onload = () => {
+        try {
+          // Calculate new dimensions
+          let { width, height } = img;
+          const maxDim = 1200;
+          
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = (height / width) * maxDim;
+              width = maxDim;
+            } else {
+              width = (width / height) * maxDim;
+              height = maxDim;
+            }
           }
-        },
-        'image/jpeg',
-        0.8
-      );
-    };
-    
-    img.src = URL.createObjectURL(file);
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+              } else {
+                console.warn("[Image Compress] Canvas toBlob failed, returning original file");
+                resolve(file);
+              }
+            },
+            'image/jpeg',
+            0.8
+          );
+        } catch (err) {
+          console.error("[Image Compress] Error during canvas draw/blob:", err);
+          // If canvas fails (e.g. memory limit on huge image), fallback to original
+          resolve(file);
+        }
+      };
+      
+      img.onerror = () => {
+         console.error("[Image Compress] Image failed to load into canvas");
+         reject(new Error("Failed to load image for compression. The file might be corrupted or in an unsupported format."));
+      };
+
+      img.src = URL.createObjectURL(file);
+    } catch (err) {
+      console.error("[Image Compress] Fatal compression error:", err);
+      resolve(file); // Hard fallback
+    }
   });
 }
 

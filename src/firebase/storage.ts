@@ -135,6 +135,11 @@ export async function uploadFile(
   } catch (error: any) {
     console.error("[Upload] Storage error:", error?.message);
     
+    // Bubble up explicitly thrown validation errors (like HEIC format errors)
+    if (error?.message && (error.message.includes('HEIC') || error.message.includes('supported') || error.message.includes('too large'))) {
+      throw error;
+    }
+    
     // User-friendly error messages
     if (error?.code === 'storage/unauthorized') {
       throw new Error("You don't have permission to upload files. Please check your login status.");
