@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useMemo, Suspense } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import {
   Card,
   CardContent,
@@ -14,8 +15,7 @@ import { useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkin } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Suspense } from 'react';
-import { formatDateSafe } from '@/lib/utils';
+import { formatDateSafe, getInitials } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -38,15 +38,6 @@ type TimeBlock = {
     endTime: string;
     description: string;
 }
-
-const getInitials = (name?: string) => {
-    if (!name) return 'U';
-    const parts = name.split(' ');
-    if (parts.length > 1 && parts[0] && parts[parts.length - 1]) {
-        return parts[0][0] + parts[parts.length - 1][0];
-    }
-    return name.substring(0, 2).toUpperCase();
-};
 
 function CheckinCard({ checkin }: { checkin: Checkin }) {
     const hasDetails = !!checkin.details;
@@ -127,52 +118,90 @@ function CheckinCard({ checkin }: { checkin: Checkin }) {
     )
 }
 
+
 function CheckinStream() {
-    const [limitCount, setLimitCount] = useState(50);
+    const [limitCount, setLimitCount] = useState(100);
+    const parentRef = useRef<HTMLDivElement>(null);
     
     const checkinsQuery = useMemoFirebase((db) => {
         return query(collection(db, 'checkins'), orderBy('timestamp', 'desc'), limit(limitCount));
     }, [limitCount]);
 
-    const { data: checkins, isLoading } = useCollection<Checkin>(checkinsQuery);
+    const { data: checkinsData, isLoading } = useCollection<Checkin>(checkinsQuery);
+    const checkins = checkinsData || [];
+
+    const virtualizer = useVirtualizer({
+        count: checkins.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => 400, // Checkin cards are taller than activity cards
+        overscan: 3,
+    });
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {isLoading && !checkins && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[400px] w-full rounded-xl" />)}
-                
-                {checkins && checkins.length > 0 ? (
-                    checkins.map(checkin => <CheckinCard key={checkin.id} checkin={checkin} />)
+        <div className="flex flex-col h-[calc(100vh-200px)]">
+            <div 
+                ref={parentRef}
+                className="flex-1 overflow-auto px-1 pb-6"
+            >
+                {isLoading && checkins.length === 0 ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[400px] w-full rounded-xl" />)}
+                    </div>
+                ) : checkins.length > 0 ? (
+                    <div
+                        style={{
+                            height: `${virtualizer.getTotalSize()}px`,
+                            width: '100%',
+                            position: 'relative',
+                        }}
+                    >
+                        {virtualizer.getVirtualItems().map((virtualItem) => {
+                            const checkin = checkins[virtualItem.index];
+                            return (
+                                <div
+                                    key={virtualItem.key}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        transform: `translateY(${virtualItem.start}px)`,
+                                        paddingBottom: '24px' // Gap replacement
+                                    }}
+                                >
+                                    <CheckinCard checkin={checkin} />
+                                </div>
+                            );
+                        })}
+                    </div>
                 ) : (
                     !isLoading && (
-                        <div className="col-span-1 lg:col-span-2">
-                          <EmptyState
-                              icon={LogIn}
-                              title="No Check-ins Yet!"
-                              description="Be the first to create a daily plan with the AI Daily Planner."
-                              className="min-h-[400px]"
-                          >
-                              <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
-                          </EmptyState>
-                        </div>
+                        <EmptyState
+                            icon={LogIn}
+                            title="No Check-ins Yet!"
+                            description="Be the first to create a daily plan with the AI Daily Planner."
+                            className="min-h-[400px]"
+                        >
+                            <Button asChild className="mt-4"><Link href="/daily-plan">Plan Your Day</Link></Button>
+                        </EmptyState>
                     )
                 )}
+
+                {checkins.length >= limitCount && (
+                    <div className="flex justify-center mt-8 pb-6">
+                        <Button 
+                            variant="outline" 
+                            size="lg"
+                            onClick={() => setLimitCount((prev: number) => prev + 50)} 
+                            disabled={isLoading}
+                            className="w-full sm:w-auto"
+                        >
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Load More Check-ins
+                        </Button>
+                    </div>
+                )}
             </div>
-            
-            {checkins && checkins.length >= limitCount && (
-              <div className="flex justify-center mt-8">
-                <Button 
-                  variant="outline" 
-                  size="lg"
-                  onClick={() => setLimitCount((prev: number) => prev + 50)} 
-                  disabled={isLoading}
-                  className="w-full sm:w-auto"
-                >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Load More Check-ins
-                </Button>
-              </div>
-            )}
         </div>
     );
 }

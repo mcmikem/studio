@@ -7,6 +7,7 @@ import type { SmartRemindersOutput } from '@/lib/types';
 import type { User } from '@/lib/types';
 import { Loader2, Wand } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function SmartReminders({ profile }: { profile: User }) {
   const [reminders, setReminders] = useState<SmartRemindersOutput | null>(null);
@@ -43,10 +44,15 @@ export function SmartReminders({ profile }: { profile: User }) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center text-sm text-muted-foreground">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        Computing your personal reminders...
-      </div>
+      <Alert className="border-accent/50 bg-accent/5">
+        <div className="flex items-center space-x-4">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+          </div>
+        </div>
+      </Alert>
     );
   }
 

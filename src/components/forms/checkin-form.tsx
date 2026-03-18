@@ -126,7 +126,7 @@ function CheckinFormComponent() {
     };
 
     const shouldRenderPlan = useMemo(() => {
-        return planDataString && submittedPlan && primaryMission;
+        return !!(planDataString && submittedPlan?.timeBlocks && primaryMission);
     }, [planDataString, submittedPlan, primaryMission]);
 
     if (!shouldRenderPlan) {
@@ -139,7 +139,7 @@ function CheckinFormComponent() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center py-12">
-                    <p className="text-muted-foreground">It looks like you haven't generated a plan yet.</p>
+                    <p className="text-muted-foreground">It looks like you haven't generated a plan yet or the plan is incomplete.</p>
                     <Button asChild className="mt-4">
                         <Link href="/daily-plan">
                             Go to AI Daily Planner
@@ -172,20 +172,26 @@ function CheckinFormComponent() {
                         <div className="space-y-4">
                              <h4 className="font-semibold text-md">Key Time Blocks</h4>
                             <ul className="list-disc list-inside space-y-2 text-base sm:text-sm">
-                                {submittedPlan.timeBlocks.map((block, index) => (
+                                {submittedPlan?.timeBlocks?.map((block, index) => (
                                     <li key={index}><strong>{block.startTime} - {block.endTime}:</strong> {block.description}</li>
                                 ))}
+                                {(!submittedPlan?.timeBlocks || submittedPlan.timeBlocks.length === 0) && (
+                                    <li className="text-muted-foreground italic">No specific time blocks generated.</li>
+                                )}
                             </ul>
                         </div>
                          <div className="space-y-4">
                              <h4 className="font-semibold text-md">Strategic Alignments</h4>
                             <ul className="list-inside space-y-3">
-                                {submittedPlan.strategicAlignments?.map((align, index) => (
+                                {submittedPlan?.strategicAlignments?.map((align, index) => (
                                     <li key={index} className="text-sm p-3 bg-muted/50 rounded-lg">
                                         <p className="font-bold">{align.krTitle}</p>
                                         <p className="text-muted-foreground mt-1">{align.alignmentJustification}</p>
                                     </li>
                                 ))}
+                                {(!submittedPlan?.strategicAlignments || submittedPlan.strategicAlignments.length === 0) && (
+                                    <li className="text-muted-foreground italic text-sm">No strategic alignments identified.</li>
+                                )}
                             </ul>
                         </div>
                     </div>

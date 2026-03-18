@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Briefcase } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const chartColors: { [key: string]: string } = {
   "On Track": "hsl(var(--chart-2))",
@@ -124,9 +125,19 @@ export function ProgramsOverview({ programs }: { programs: Program[] | null }) {
                  )}
                  {(!programs || programStats.chartData.length === 0) && (
                     <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-center text-muted-foreground">
-                        <Briefcase className="h-12 w-12" />
-                        <p className="mt-4 font-semibold">{programs ? 'No Active Programs' : 'Loading...'}</p>
-                        {programs && <p className="text-sm">Add a program to see stats.</p>}
+                        {!programs ? (
+                          <div className="space-y-4 w-full px-8">
+                             <Skeleton className="h-8 w-8 rounded-full mx-auto" />
+                             <Skeleton className="h-4 w-3/4 mx-auto" />
+                             <Skeleton className="h-4 w-1/2 mx-auto" />
+                          </div>
+                        ) : (
+                          <>
+                            <Briefcase className="h-12 w-12" />
+                            <p className="mt-4 font-semibold">No Active Programs</p>
+                            <p className="text-sm">Add a program to see stats.</p>
+                          </>
+                        )}
                     </div>
                  )}
             </div>
