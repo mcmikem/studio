@@ -14,12 +14,15 @@ import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } 
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { ArrowLeft, Loader2, UserPlus2 } from 'lucide-react';
 import Link from 'next/link';
+import { LocationPicker } from '@/components/ui/location-picker';
 
 const schema = z.object({
   name: z.string().min(2, 'Name is required.'),
   role: z.string().min(2, 'Role is required.'),
   contact: z.string().min(8, 'Contact is required.'),
+  district: z.string().optional(),
   subcounty: z.string().optional(),
+  parish: z.string().optional(),
   availability: z.enum(['Full Day', 'Morning', 'Afternoon', 'Flexible']).default('Flexible'),
   skills: z.string().optional(),
   notes: z.string().optional(),
@@ -41,7 +44,7 @@ export function VolunteerRegistrationForm() {
   const roleOptions = ['Logistics', 'Health & Safety', 'Referee Support', 'Media', 'Registration Desk', 'Team Coordination'];
   const subcountyOptions = Array.from(new Set((volunteers || []).map((v) => v.subcounty).filter(Boolean))).sort();
 
-  const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, control, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { availability: 'Flexible' },
   });
@@ -81,7 +84,16 @@ export function VolunteerRegistrationForm() {
                 )} />
                 {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
               </div>
-              <div className="space-y-2"><Label htmlFor="subcounty">Subcounty</Label><Input id="subcounty" list="subcounty-options" {...register('subcounty')} placeholder="e.g., Kasanje" /><datalist id="subcounty-options">{subcountyOptions.map(s => <option key={s} value={s} />)}</datalist></div>
+              <div className="space-y-2 md:col-span-2">
+                <LocationPicker
+                  districtValue={watch('district')}
+                  subcountyValue={watch('subcounty')}
+                  parishValue={watch('parish')}
+                  onDistrictChange={(val) => setValue('district', val)}
+                  onSubcountyChange={(val) => setValue('subcounty', val)}
+                  onParishChange={(val) => setValue('parish', val)}
+                />
+              </div>
               <div className="space-y-2 md:col-span-2">
                 <Label>Availability</Label>
                 <Controller name="availability" control={control} render={({ field }) => (

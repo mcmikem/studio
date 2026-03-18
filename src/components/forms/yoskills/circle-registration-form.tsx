@@ -13,11 +13,14 @@ import { collection, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LocationPicker } from '@/components/ui/location-picker';
 
 const circleSchema = z.object({
   circleName: z.string().min(3, 'Circle name is required.'),
   coach: z.string().min(3, 'Coach name is required.'),
-  location: z.string().min(3, 'Location is required.'),
+  district: z.string().optional(),
+  subcounty: z.string().optional(),
+  parish: z.string().optional(),
   membersCount: z.coerce.number().min(1, 'Number of members is required.'),
 });
 
@@ -31,6 +34,8 @@ export function CircleRegistrationForm() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CircleFormData>({
@@ -89,10 +94,15 @@ export function CircleRegistrationForm() {
               {errors.coach && <p className="text-sm text-destructive">{errors.coach.message}</p>}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="location">Location (Village/Parish)</Label>
-                <Input id="location" {...register('location')} />
-                {errors.location && <p className="text-sm text-destructive">{errors.location.message}</p>}
+              <div className="space-y-2 md:col-span-2">
+                <LocationPicker
+                  districtValue={watch('district')}
+                  subcountyValue={watch('subcounty')}
+                  parishValue={watch('parish')}
+                  onDistrictChange={(val) => setValue('district', val)}
+                  onSubcountyChange={(val) => setValue('subcounty', val)}
+                  onParishChange={(val) => setValue('parish', val)}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="membersCount">Number of Members</Label>

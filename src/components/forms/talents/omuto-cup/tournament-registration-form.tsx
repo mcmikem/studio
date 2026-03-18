@@ -16,6 +16,7 @@ import type { OFATeam } from '@/lib/types';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { ArrowLeft, Loader2, Trophy } from 'lucide-react';
 import Link from 'next/link';
+import { LocationPicker } from '@/components/ui/location-picker';
 
 const schema = z.object({
   teamId: z.string().min(1, 'Please select a team.'),
@@ -23,6 +24,8 @@ const schema = z.object({
   contactPhone: z.string().min(8, 'Contact phone required.'),
   ageCategory: z.enum(['U13', 'U15', 'U17', 'U19', 'Mixed']).default('U17'),
   district: z.string().optional(),
+  subcounty: z.string().optional(),
+  parish: z.string().optional(),
   kitColors: z.string().optional(),
   emergencyContact: z.string().optional(),
   notes: z.string().optional(),
@@ -102,7 +105,16 @@ export function TournamentRegistrationForm() {
               <div className="space-y-2"><Label>Age Category</Label><Controller name="ageCategory" control={control} render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['U13', 'U15', 'U17', 'U19', 'Mixed'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
               )} /></div>
-              <div className="space-y-2"><Label htmlFor="district">District / Subcounty</Label><Input id="district" list="district-options" {...register('district')} /><datalist id="district-options">{districtOptions.map(v => <option key={v} value={v} />)}</datalist></div>
+              <div className="space-y-2 md:col-span-2">
+                <LocationPicker
+                  districtValue={watch('district')}
+                  subcountyValue={watch('subcounty')}
+                  parishValue={watch('parish')}
+                  onDistrictChange={(val) => setValue('district', val)}
+                  onSubcountyChange={(val) => setValue('subcounty', val)}
+                  onParishChange={(val) => setValue('parish', val)}
+                />
+              </div>
               <div className="space-y-2"><Label htmlFor="kitColors">Kit Colors</Label><Input id="kitColors" {...register('kitColors')} /></div>
               <div className="space-y-2"><Label htmlFor="emergencyContact">Emergency Contact</Label><Input id="emergencyContact" {...register('emergencyContact')} /></div>
             </div>
