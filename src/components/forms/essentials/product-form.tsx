@@ -26,8 +26,13 @@ import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { starterProducts } from '@/lib/enterprise-starter-catalog';
+import { uploadFile } from '@/firebase/storage';
+import { buildUploadPath } from '@/lib/upload-paths';
+import { useFirebaseApp, useUser } from '@/firebase';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Upload } from 'lucide-react';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -36,9 +41,40 @@ interface ProductFormProps {
 
 export function ProductForm({ product, onSuccess }: ProductFormProps) {
   const firestore = useFirestore();
+  const app = useFirebaseApp();
+  const { user } = useUser();
   const { toast } = useToast();
   const isEditMode = !!product;
   const [newCategoryName, setNewCategoryName] = useState('');
+  
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>(product?.image_url || '');
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (photoPreview && photoPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
+
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast({ variant: 'destructive', title: 'Invalid file', description: 'Please select a JPG, PNG, or WebP image.' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ variant: 'destructive', title: 'Image too large', description: `This image is ${(file.size / 1024 / 1024).toFixed(1)}MB. Please use an image smaller than 5MB.` });
+      return;
+    }
+    if (photoPreview && photoPreview.startsWith('blob:')) URL.revokeObjectURL(photoPreview);
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
 
   const categoriesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -112,11 +148,31 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       categoryId = categoryRef.id;
     }
 
-    const submissionData = {
+    const submissionData: any = {
         ...data,
         categoryId,
         updatedAt: serverTimestamp(),
     };
+
+    // Handle Image Upload
+    if (photoFile && app) {
+        setIsPhotoUploading(true);
+        try {
+            const ext = photoFile.name.split('.').pop() || 'jpg';
+            const sku = data.sku || 'general';
+            const catId = categoryId || 'uncategorized';
+            const imageUrl = await uploadFile(app, photoFile, buildUploadPath.productImage(catId, sku, ext));
+            submissionData.image_url = imageUrl;
+        } catch (uploadError: any) {
+            console.error("Image upload failed:", uploadError);
+            toast({ variant: 'destructive', title: 'Image upload failed', description: uploadError.message });
+        } finally {
+            setIsPhotoUploading(false);
+        }
+    } else if (!photoPreview && isEditMode) {
+        // If user cleared the preview, remove the image URL
+        submissionData.image_url = null;
+    }
 
     if (isEditMode && product) {
         await updateDocumentNonBlocking(doc(firestore, 'products', product.id), submissionData);
@@ -148,6 +204,25 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
           </Select>
         </div>
       )}
+
+      {/* Image Upload Area */}
+      <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-2xl bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group" onClick={() => fileInputRef.current?.click()}>
+          <Avatar className="h-32 w-32 border-4 border-white shadow-comic-sm mb-2 rounded-2xl">
+              <AvatarImage src={photoPreview} className="object-cover" />
+              <AvatarFallback className="bg-omuto-navy/5 text-omuto-navy/20"><Upload className="h-10 w-10" /></AvatarFallback>
+          </Avatar>
+          {isPhotoUploading ? (
+              <div className="flex items-center gap-2 text-xs font-black uppercase text-primary animate-pulse">
+                  <Loader2 className="h-3 w-3 animate-spin"/> Processing...
+              </div>
+          ) : (
+              <p className="text-[10px] font-black uppercase text-muted-foreground group-hover:text-primary transition-colors">
+                  {photoPreview ? 'Tap to change photo' : 'Tap to add photo'}
+              </p>
+          )}
+          <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={onFileChange} />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Product/Material Name</Label>

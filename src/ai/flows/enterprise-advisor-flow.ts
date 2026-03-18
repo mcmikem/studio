@@ -55,7 +55,9 @@ Provide 1-2 strategic insights.
       
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-         return JSON.parse(jsonMatch[0]);
+         const parsed = JSON.parse(jsonMatch[0]);
+         const validated = EnterpriseAdvisorOutputSchema.safeParse(parsed);
+         if (validated.success) return validated.data;
       }
     } catch (error) {
       console.error('[EnterpriseAdvisor] OpenRouter failed:', error);
@@ -66,7 +68,8 @@ Provide 1-2 strategic insights.
   try {
     const response = await enterpriseAdvisorPrompt({ input: prompt });
     if (response.output) {
-      return response.output;
+      const validated = EnterpriseAdvisorOutputSchema.safeParse(response.output);
+      if (validated.success) return validated.data;
     }
   } catch (error) {
     console.error('[EnterpriseAdvisor] Gemini failed:', error);

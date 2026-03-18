@@ -15,119 +15,104 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { AttendanceRecord } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle } from 'lucide-react';
-import { EmptyState } from '@/components/ui/empty-state';
+import { CheckCircle, Calendar, User, Users, Clock } from 'lucide-react';
 import { formatDateSafe } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { DataTable } from '@/components/ui/data-table';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function AttendanceRecordsPage() {
+  const { user } = useUser();
+  const { profile } = useUserProfile(user);
   const firestore = useFirestore();
+
   const attendanceQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'attendance-records'), orderBy('createdAt', 'desc'), limit(50));
+    return query(collection(firestore, 'attendance-records'), orderBy('createdAt', 'desc'), limit(500));
   }, [firestore]);
 
   const { data: records, isLoading } = useCollection<AttendanceRecord>(attendanceQuery);
 
-  return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-          <CheckCircle className="h-8 w-8" />
-          Attendance Records
-        </h1>
-        <p className="text-muted-foreground">
-          A complete log of all participant attendance across all events and sessions.
-        </p>
-      </header>
-      <Card>
-        <CardContent className="pt-6">
-          {/* Mobile View */}
-          <div className="sm:hidden space-y-4">
-            {isLoading && Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
-            {records && records.length > 0 ? (
-              records.map(record => (
-                <Card key={record.id}>
-                  <CardHeader>
-                    <CardTitle className="text-base">{record.participantName}</CardTitle>
-                    <CardDescription>{record.eventName}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="text-sm space-y-1">
-                    <p><strong>Date:</strong> {formatDateSafe(record.date, 'dateOnly')}</p>
-                    <p><strong>Age:</strong> {record.age}</p>
-                    <p><strong>Gender:</strong> {record.gender}</p>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-               !isLoading && (
-                  <EmptyState
-                    icon={CheckCircle}
-                    title="No Attendance Logged"
-                    description="Use the attendance form in the MEAL Hub to start tracking participants."
-                  />
-                )
-            )}
-          </div>
+  const columns = [
+    {
+       header: 'Event / Session',
+       accessorKey: 'eventName',
+       cell: ({ row }: { row: any }) => (
+         <div className="flex flex-col">
+            <span className="font-bold text-sm uppercase tracking-tight">{row.original.eventName}</span>
+            <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-bold uppercase">
+                <Calendar className="h-2 w-2" /> {formatDateSafe(row.original.date, 'dateOnly')}
+            </div>
+         </div>
+       )
+    },
+    {
+       header: 'Participant',
+       accessorKey: 'participantName',
+       cell: ({ row }: { row: any }) => (
+         <div className="flex items-center gap-2">
+            <User className="h-3 w-3 text-primary/60" />
+            <span className="text-sm font-black uppercase text-omuto-navy/80">{row.original.participantName}</span>
+         </div>
+       )
+    },
+    {
+       header: 'Details',
+       cell: ({ row }: { row: any }) => (
+         <div className="flex items-center gap-3">
+            <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest">{row.original.gender}</Badge>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase">{row.original.age} YRS</span>
+         </div>
+       )
+    },
+    {
+       header: 'Logged By',
+       accessorKey: 'userName',
+       cell: ({ row }: { row: any }) => (
+         <div className="flex items-center gap-1 text-[10px] text-muted-foreground uppercase font-medium">
+            <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-black text-primary">
+                {(row.original.userName || 'U')[0]}
+            </div>
+            <span>{row.original.userName || 'System'}</span>
+         </div>
+       )
+    }
+  ];
 
-          {/* Desktop View */}
-          <div className="hidden sm:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Event Name</TableHead>
-                  <TableHead className="hidden md:table-cell">Participant Name</TableHead>
-                  <TableHead>Age</TableHead>
-                  <TableHead>Gender</TableHead>
-                  <TableHead className="hidden sm:table-cell">Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading &&
-                  Array.from({ length: 10 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-                      <TableCell className="hidden md:table-cell"><Skeleton className="h-4 w-28" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-                      <TableCell className="hidden sm:table-cell"><Skeleton className="h-4 w-24" /></TableCell>
-                    </TableRow>
-                  ))}
-                {records && records.length > 0 ? (
-                  records.map((record) => (
-                    <TableRow key={record.id}>
-                      <TableCell className="font-medium">{record.eventName}</TableCell>
-                      <TableCell className="hidden md:table-cell">{record.participantName}</TableCell>
-                      <TableCell>{record.age}</TableCell>
-                      <TableCell>{record.gender}</TableCell>
-                      <TableCell className="hidden sm:table-cell">{formatDateSafe(record.date, 'dateOnly')}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  !isLoading && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="h-48"
-                      >
-                        <EmptyState
-                          icon={CheckCircle}
-                          title="No Attendance Logged"
-                          description="Use the attendance form in the MEAL Hub to start tracking participants."
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+  return (
+    <div className="space-y-8">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+        <div className="flex items-center gap-4">
+             <div className="p-3 bg-white border-lg border-primary/20 shadow-comic-sm rounded-2xl">
+                <CheckCircle className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+                <h1 className="font-heading text-4xl font-black tracking-tight leading-none uppercase text-primary">
+                    Attendance <span className="underline decoration-4 underline-offset-4">Records</span>
+                </h1>
+                <p className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">Multi-Program Session Logs</p>
+            </div>
+        </div>
+        <Button variant="outline" asChild>
+            <Link href="/meal/attendance"><Users className="mr-2 h-4 w-4" />LOG NEW SESSION</Link>
+        </Button>
+      </header>
+
+      <DataTable 
+        columns={columns}
+        data={records || []}
+        isLoading={isLoading}
+        currentUser={user}
+        userProfile={profile}
+        editHref={(r: AttendanceRecord) => `/meal/attendance?id=${r.id}`}
+        deleteCollection="attendance-records"
+      />
     </div>
   );
 }

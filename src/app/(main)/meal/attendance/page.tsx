@@ -16,15 +16,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser, useDoc } from '@/firebase';
+import { collection, serverTimestamp, doc } from 'firebase/firestore';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Users, ArrowLeft } from 'lucide-react';
+import { Loader2, Users, ArrowLeft, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { createAttendanceAction, updateAttendanceAction } from '@/actions/mutations';
+import type { AttendanceRecord } from '@/lib/types';
+import { useEffect } from 'react';
 
 const attendanceSchema = z.object({
   eventName: z.string().min(3, 'Event name is required.'),
@@ -42,8 +46,16 @@ const attendanceSchema = z.object({
 type AttendanceFormData = z.infer<typeof attendanceSchema>;
 
 function AttendanceForm() {
+  const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const attendanceId = searchParams.get('id');
+
+  const { data: existingRecord, isLoading: isLoadingRecord } = useDoc<AttendanceRecord>(
+      firestore && attendanceId ? doc(firestore, 'attendance-records', attendanceId) : null
+  );
 
   const {
     register,
@@ -59,28 +71,56 @@ function AttendanceForm() {
     },
   });
 
+  useEffect(() => {
+    if (existingRecord) {
+        reset({
+            eventName: existingRecord.eventName,
+            date: existingRecord.date,
+            participantName: existingRecord.participantName,
+            gender: existingRecord.gender as any,
+            age: existingRecord.age,
+            signature: existingRecord.signature,
+        });
+    }
+  }, [existingRecord, reset]);
+
   const onSubmit = async (data: AttendanceFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
+    if (!firestore || !user) {
+      toast({ variant: 'destructive', title: 'Session not ready' });
       return;
     }
 
-    const record = { ...data, createdAt: serverTimestamp() };
+    const recordData = { 
+        ...data, 
+        userId: existingRecord?.userId || user.uid,
+        userName: existingRecord?.userName || user.displayName || user.email?.split('@')[0] || 'Unknown User',
+    };
 
     try {
-      await addDocumentNonBlocking(collection(firestore, 'attendance-records'), record);
-      toast({
-        title: 'Attendance Logged!',
-        description: `${data.participantName} has been marked as present.`,
-      });
-      // Reset only some fields to allow for quick entry for the same event
-      reset({
-        ...data,
-        participantName: '',
-        age: undefined,
-        contact: '',
-        signature: false,
-      });
+      const result = attendanceId 
+        ? await updateAttendanceAction(attendanceId, recordData)
+        : await createAttendanceAction(recordData);
+
+      if (result.success) {
+          toast({
+            title: attendanceId ? 'Record Updated!' : 'Attendance Logged!',
+            description: `${data.participantName} has been ${attendanceId ? 'updated' : 'marked as present'}.`,
+          });
+          
+          if (!attendanceId) {
+              // Reset only some fields to allow for quick entry for the same event
+              reset({
+                ...data,
+                participantName: '',
+                age: undefined as any,
+                signature: false,
+              });
+          } else {
+              router.push('/meal/data/attendance');
+          }
+      } else {
+          throw new Error((result as any).error);
+      }
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -98,10 +138,10 @@ function AttendanceForm() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-6 w-6" />
-            Session Attendance Form
+            {attendanceId ? 'Edit Attendance Record' : 'Session Attendance Form'}
           </CardTitle>
           <CardDescription>
-            Use this form to quickly log attendance for participants in any session or event.
+            {attendanceId ? `Updating record for ${existingRecord?.participantName || 'participant'}` : 'Use this form to quickly log attendance for participants in any session or event.'}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -169,7 +209,7 @@ function AttendanceForm() {
                 render={({ field }) => (
                   <Checkbox
                     id="signature"
-                    checked={field.value}
+                    checked={field.value === true}
                     onCheckedChange={field.onChange}
                   />
                 )}
@@ -185,9 +225,13 @@ function AttendanceForm() {
 
           </CardContent>
           <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Log Attendance
+            <Button type="submit" disabled={isSubmitting || !!(attendanceId && isLoadingRecord)} className="w-full">
+              {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                  attendanceId ? <Save className="mr-2 h-4 w-4" /> : <Users className="mr-2 h-4 w-4" />
+              )}
+              {attendanceId ? 'Update Record' : 'Log Attendance'}
             </Button>
           </CardFooter>
         </form>

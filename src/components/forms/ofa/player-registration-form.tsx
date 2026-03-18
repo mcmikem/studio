@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useFirebaseApp, useUser, useCollection, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { Loader2, ArrowLeft, UserPlus, Upload } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Loader2, ArrowLeft, UserPlus, Upload, Save, Edit } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { uploadFile } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
@@ -21,7 +21,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemoFirebase } from '@/firebase/provider';
-import type { OFATeam } from '@/lib/types';
+import type { OFATeam, OFAPlayer } from '@/lib/types';
+import { useDoc, updateDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const playerSchema = z.object({
   name: z.string().min(2, 'Player name is required.'),
@@ -56,11 +58,21 @@ export function PlayerRegistrationForm() {
   const [isPhotoUploading, setIsPhotoUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const searchParams = useSearchParams();
+  const playerId = searchParams.get('id');
+  const isEdit = !!playerId;
+
   const teamsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'ofa-teams'), orderBy('teamName'));
   }, [firestore]);
   const { data: teams, isLoading: isTeamsLoading } = useCollection<OFATeam>(teamsQuery);
+
+  const playerDocRef = useMemoFirebase(() => {
+    if (!firestore || !playerId) return null;
+    return doc(firestore, 'ofa-players', playerId);
+  }, [firestore, playerId]);
+  const { data: playerData, isLoading: isPlayerLoading } = useDoc<OFAPlayer>(playerDocRef);
 
   const { register, handleSubmit, control, reset, formState: { errors, isSubmitting } } = useForm<PlayerFormData>({
     resolver: zodResolver(playerSchema),
@@ -79,8 +91,34 @@ export function PlayerRegistrationForm() {
   }, [teams]);
 
   useEffect(() => {
+    if (playerData) {
+      reset({
+        name: playerData.name,
+        teamId: playerData.teamId,
+        ageCategory: playerData.ageCategory as any,
+        playingPosition: playerData.playingPosition as any,
+        school: playerData.school,
+        class: (playerData as any).class,
+        guardianContact: (playerData as any).guardianContact,
+        careerDream: (playerData as any).careerDream,
+        skillGoal: (playerData as any).skillGoal,
+        schoolGoal: (playerData as any).schoolGoal,
+        behaviourGoal: (playerData as any).behaviourGoal,
+        strengths: (playerData as any).strengths,
+        weaknesses: (playerData as any).weaknesses,
+        medicalConditions: (playerData as any).medicalConditions,
+        schoolAttendance: (playerData as any).schoolAttendance as any,
+        academicPerformance: (playerData as any).academicPerformance as any,
+      });
+      if (playerData.photoUrl) {
+          setPhotoPreview(playerData.photoUrl);
+      }
+    }
+  }, [playerData, reset]);
+
+  useEffect(() => {
     return () => {
-      if (photoPreview) URL.revokeObjectURL(photoPreview);
+      if (photoPreview && !photoPreview.startsWith('http')) URL.revokeObjectURL(photoPreview);
     };
   }, [photoPreview]);
 
@@ -113,7 +151,7 @@ export function PlayerRegistrationForm() {
     }
 
     try {
-      let photoUrl: string | null = null;
+      let photoUrl: string | null = playerData?.photoUrl || null;
       if (photoFile && app) {
         setIsPhotoUploading(true);
         try {
@@ -125,15 +163,25 @@ export function PlayerRegistrationForm() {
         }
       }
 
-      await addDocumentNonBlocking(collection(firestore, 'ofa-players'), {
+      const payload = {
         ...data,
         teamName,
         photoUrl,
-        createdBy: user.uid,
-        createdAt: serverTimestamp(),
-      });
+        updatedAt: serverTimestamp(),
+      };
 
-      toast({ title: 'Player Registered', description: `${data.name} has been added to OFA.` });
+      if (isEdit && playerId) {
+        await updateDocumentNonBlocking(doc(firestore, 'ofa-players', playerId), payload);
+        toast({ title: 'Player Updated', description: `${data.name}'s profile has been updated.` });
+      } else {
+        await addDocumentNonBlocking(collection(firestore, 'ofa-players'), {
+          ...payload,
+          createdBy: user.uid,
+          createdAt: serverTimestamp(),
+        });
+        toast({ title: 'Player Registered', description: `${data.name} has been added to OFA.` });
+      }
+
       reset();
       setPhotoFile(null);
       setPhotoPreview('');
@@ -153,9 +201,17 @@ export function PlayerRegistrationForm() {
       </Button>
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><UserPlus className="h-6 w-6" /> Player Registration</CardTitle>
-          <CardDescription>Register an OFA player profile with school and development data.</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            {isEdit ? <Edit className="h-6 w-6" /> : <UserPlus className="h-6 w-6" />} 
+            {isEdit ? 'Edit Player Profile' : 'Player Registration'}
+          </CardTitle>
+          <CardDescription>
+            {isEdit ? `Updating profile for ${playerData?.name || 'player'}...` : 'Register a new OFA player profile with school and development data.'}
+          </CardDescription>
         </CardHeader>
+        {isPlayerLoading ? (
+            <CardContent className="space-y-4"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-full" /></CardContent>
+        ) : (
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
             <div className="grid gap-6 md:grid-cols-[180px_1fr]">
@@ -254,11 +310,12 @@ export function PlayerRegistrationForm() {
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Player
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isEdit ? <Save className="mr-2 h-4 w-4" /> : null)}
+              {isEdit ? 'Update Player' : 'Save Player'}
             </Button>
           </CardFooter>
         </form>
+        )}
       </Card>
     </div>
   );

@@ -21,6 +21,9 @@ import { useEffect, useMemo } from 'react';
 import { formatCurrency } from '@/lib/utils';
 import { z } from 'zod';
 import { EnterpriseFormTips } from './enterprise-form-tips';
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ProductForm } from './product-form';
+import { useState } from 'react';
 
 const MaterialPurchaseFormSchema = z.object({
     material_id: z.string(),
@@ -37,6 +40,7 @@ export function MaterialPurchaseForm() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const { toast } = useToast();
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
 
   const materialsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -118,7 +122,30 @@ export function MaterialPurchaseForm() {
           <CardContent className="space-y-8 pt-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label className="font-bold text-xs uppercase tracking-widest">Select Material</Label>
+                    <div className="flex items-center justify-between">
+                        <Label className="font-bold text-xs uppercase tracking-widest">Select Material</Label>
+                        <Dialog open={isQuickAddOpen} onOpenChange={setIsQuickAddOpen}>
+                            <DialogTrigger asChild>
+                                <Button type="button" variant="ghost" className="h-6 text-[10px] font-black uppercase text-primary px-2 hover:bg-primary/5">
+                                    <PlusCircle className="h-3 w-3 mr-1" /> New Material
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[600px] h-[90vh] overflow-y-auto">
+                                <DialogHeader>
+                                    <DialogTitle>Quick Register Material</DialogTitle>
+                                    <DialogDescription>Add a new raw material or packaging type to your catalog.</DialogDescription>
+                                </DialogHeader>
+                                <ProductForm 
+                                    onSuccess={() => {
+                                        setIsQuickAddOpen(false);
+                                        toast({ title: 'Material added', description: 'You can now select it from the list.' });
+                                    }} 
+                                    // Pre-configuring for raw material
+                                    product={{ type: 'raw', is_active: true, unit: 'kg' } as any}
+                                />
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                     {isLoadingMaterials ? <Skeleton className="h-12 rounded-xl" /> : (
                         <Controller name="material_id" control={control} render={({ field }) => (
                             <Select onValueChange={field.onChange} value={field.value}>
@@ -129,8 +156,7 @@ export function MaterialPurchaseForm() {
                     )}
                     {!isLoadingMaterials && !hasMaterials && (
                         <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-xs font-semibold text-destructive">
-                            No raw/packaging materials available. Add materials first in{' '}
-                            <Link href="/enterprise/essentials/products" className="underline">Products</Link>.
+                            No materials found. Tap "+ New Material" to register one now.
                         </div>
                     )}
                     {errors.material_id && <p className="text-xs text-destructive font-bold">{errors.material_id.message}</p>}

@@ -48,7 +48,110 @@ export async function createTestimonyAction(data: any) {
         return { success: true, id: docRef.id };
     } catch (error) {
         console.error('Server Action Error - createTestimonyAction:', error);
-        return { success: false, error: 'Failed to securely construct the testimony record on the server.' };
+        return { success: false, error: 'Failed to create the testimony record.' };
+    }
+}
+
+export async function updateTestimonyAction(id: string, data: any) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        await firestore.collection('testimonies').doc(id).update({
+            ...data,
+            updatedAt: FieldValue.serverTimestamp()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Server Action Error - updateTestimonyAction:', error);
+        return { success: false, error: 'Failed to update the testimony record.' };
+    }
+}
+
+export async function deleteTestimonyAction(id: string) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        await firestore.collection('testimonies').doc(id).delete();
+        return { success: true };
+    } catch (error) {
+        console.error('Server Action Error - deleteTestimonyAction:', error);
+        return { success: false, error: 'Failed to delete the testimony record.' };
+    }
+}
+
+export async function createBeneficiaryAction(data: any) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        const docRef = await firestore.collection('beneficiaries').add({
+            ...data,
+            createdAt: FieldValue.serverTimestamp()
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        console.error('Server Action Error - createBeneficiaryAction:', error);
+        return { success: false, error: 'Failed to register beneficiary.' };
+    }
+}
+
+export async function updateBeneficiaryAction(id: string, data: any) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        await firestore.collection('beneficiaries').doc(id).update({
+            ...data,
+            updatedAt: FieldValue.serverTimestamp()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Server Action Error - updateBeneficiaryAction:', error);
+        return { success: false, error: 'Failed to update beneficiary record.' };
+    }
+}
+
+export async function deleteBeneficiaryAction(id: string) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        await firestore.collection('beneficiaries').doc(id).delete();
+        return { success: true };
+    } catch (error) {
+        console.error('Server Action Error - deleteBeneficiaryAction:', error);
+        return { success: false, error: 'Failed to delete beneficiary record.' };
+    }
+}
+
+export async function createAttendanceAction(data: any) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        const docRef = await firestore.collection('attendance-records').add({
+            ...data,
+            createdAt: FieldValue.serverTimestamp()
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        console.error('Server Action Error - createAttendanceAction:', error);
+        return { success: false, error: 'Failed to record attendance.' };
+    }
+}
+
+export async function updateAttendanceAction(id: string, data: any) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        await firestore.collection('attendance-records').doc(id).update({
+            ...data,
+            updatedAt: FieldValue.serverTimestamp()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Server Action Error - updateAttendanceAction:', error);
+        return { success: false, error: 'Failed to update attendance record.' };
+    }
+}
+
+export async function deleteAttendanceAction(id: string) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        await firestore.collection('attendance-records').doc(id).delete();
+        return { success: true };
+    } catch (error) {
+        console.error('Server Action Error - deleteAttendanceAction:', error);
+        return { success: false, error: 'Failed to delete attendance record.' };
     }
 }
 

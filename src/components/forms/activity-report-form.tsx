@@ -14,10 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase, useFirebaseApp, addDocumentNonBlocking } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase, useFirebaseApp, addDocumentNonBlocking, updateDocumentNonBlocking, useDoc } from '@/firebase';
 import { uploadFile } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, query, orderBy, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Zap, Target, TrendingUp, BarChart3, ArrowRight, Sparkles, MessageCircle, Clock, Wallet, Upload } from 'lucide-react';
 import {
@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { ImpactMetric, Program, KeyResult } from '@/lib/types';
+import type { ImpactMetric, Program, KeyResult, Activity } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
@@ -73,16 +73,29 @@ interface ActivityData {
   teachers_attended?: number;
   trees_planted?: number;
   mediaUrl?: string;
+  updatedAt?: any;
 }
 
-function ActivityReportFormComponent() {
+interface ActivityReportFormProps {
+  activity?: Activity;
+  onSuccess?: () => void;
+}
+
+function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: ActivityReportFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const programIdFromUrl = searchParams.get('programId');
+  const activityIdFromUrl = searchParams.get('id');
 
   const { user } = useUser();
-  const { profile } = useUserProfile(user);
   const firestore = useFirestore();
+
+  const { data: fetchedActivity, isLoading: isLoadingActivity } = useDoc<Activity>(
+    firestore && activityIdFromUrl ? doc(firestore, 'activities', activityIdFromUrl) : null
+  );
+
+  const activity = initialActivity || fetchedActivity;
+  const { profile } = useUserProfile(user);
   const firebaseApp = useFirebaseApp();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -123,7 +136,25 @@ function ActivityReportFormComponent() {
   const keyResultsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'key-results'), orderBy('title')) : null, [firestore]);
   const { data: keyResults, isLoading: isLoadingKeyResults } = useCollection<KeyResult>(keyResultsQuery);
 
-  const overallLoading = isLoadingMetrics || isLoadingPrograms || isLoadingKeyResults;
+  const overallLoading = isLoadingMetrics || isLoadingPrograms || isLoadingKeyResults || isLoadingActivity;
+
+  // Initialize form with activity data if editing
+  useEffect(() => {
+    if (activity) {
+      setActivityName(activity.title || '');
+      setEcosystemPhase(activity.ecosystem_phase || 'Identify & Inspire');
+      setGoalType(activity.primaryGoalType || 'Metric');
+      setSelectedGoalId(activity.primaryGoalId || null);
+      setGoalQuantity(activity.primaryGoalQuantity || 0);
+      setKeyResultId(activity.keyResultId || null);
+      setMemorableMoment(activity.memorableMoment || '');
+      setChallengesLearned(activity.challengesLearned || '');
+      setBeneficiaryQuote(activity.beneficiaryQuote || '');
+      setActualCost(activity.actualCost || 0);
+      // Note: We don't necessarily have the broken down costs (transport, etc.) in the saved doc
+      // but we have the actual cost.
+    }
+  }, [activity]);
 
   const selectedMetric = useMemo(() => {
     if (goalType !== 'Metric') return null;
@@ -197,10 +228,10 @@ function ActivityReportFormComponent() {
             setIsUploading(false);
         }
 
-        const activityData: ActivityData = {
+        const activityData: Partial<ActivityData> = {
           title: activityName,
-          userId: user.uid,
-          userName: profile.name,
+          userId: activity?.userId || user.uid,
+          userName: activity?.userName || profile.name,
           ecosystem_phase: ecosystemPhase,
           estimatedCost: preActivityCost,
           actualCost: actualCost,
@@ -209,7 +240,7 @@ function ActivityReportFormComponent() {
           totalValue: totalValue,
           estimatedRoi: ((totalValue - preActivityCost) / preActivityCost) * 100,
           finalRoi: finalRoi,
-          loggedAt: serverTimestamp(),
+          loggedAt: activity?.loggedAt || serverTimestamp(),
           primaryGoalType: goalType,
           primaryGoalId: selectedGoalId,
           primaryGoalQuantity: goalQuantity,
@@ -217,12 +248,23 @@ function ActivityReportFormComponent() {
           memorableMoment,
           challengesLearned,
           beneficiaryQuote,
-          mediaUrl: finalMediaUrl,
+          mediaUrl: finalMediaUrl || activity?.mediaUrl || '',
+          updatedAt: serverTimestamp(),
         };
 
-        await addDocumentNonBlocking(collection(firestore, 'activities'), activityData);
-        toast({ title: 'Impact Logged!', description: 'Activity successfully deployed to HQ.' });
-        router.push('/');
+        if (activity?.id) {
+            await updateDocumentNonBlocking(doc(firestore, 'activities', activity.id), activityData);
+            toast({ title: 'Impact Updated!', description: 'Activity report has been successfully refreshed.' });
+        } else {
+            await addDocumentNonBlocking(collection(firestore, 'activities'), activityData as ActivityData);
+            toast({ title: 'Impact Logged!', description: 'Activity successfully deployed to HQ.' });
+        }
+        
+        if (onSuccess) {
+            onSuccess();
+        } else {
+            router.push('/activity-log');
+        }
     } catch(e) {
         console.error(e);
         setIsUploading(false);
@@ -239,9 +281,11 @@ function ActivityReportFormComponent() {
                 <BarChart3 className="h-8 w-8 text-primary" />
             </div>
             <CardTitle className="font-heading text-2xl sm:text-4xl font-black tracking-tighter uppercase leading-none text-omuto-navy">
-                Activity <span className="text-omuto-red underline decoration-4 underline-offset-4">ROI Log</span>
+                {activity ? 'Update' : 'Activity'} <span className="text-omuto-red underline decoration-4 underline-offset-4">{activity ? 'Impact' : 'ROI Log'}</span>
             </CardTitle>
-            <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">Impact Verification Terminal</CardDescription>
+            <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">
+                {activity ? `Modifying Log: ${activity.id}` : 'Impact Verification Terminal'}
+            </CardDescription>
         </CardHeader>
         
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
@@ -510,7 +554,7 @@ function ActivityReportFormComponent() {
 
                         <Button type="button" className="btn-omuto w-full h-16 text-sm bg-omuto-red border-lg border-white text-white shadow-comic-sm hover:shadow-comic-sm" onClick={handleLogActivity} disabled={loading || isUploading}>
                             {(loading || isUploading) ? <Loader2 className="mr-3 h-5 w-5 animate-spin" /> : <Zap className="mr-3 h-5 w-5 fill-white" />}
-                            {isUploading ? 'UPLOADING...' : 'DEPLOY IMPACT DATA'}
+                            {isUploading ? 'UPLOADING...' : activity ? 'REFRESH IMPACT DATA' : 'DEPLOY IMPACT DATA'}
                         </Button>
                     </div>
                 </TabsContent>
@@ -520,10 +564,10 @@ function ActivityReportFormComponent() {
   );
 }
 
-export function ActivityReportForm() {
+export function ActivityReportForm(props: ActivityReportFormProps) {
     return (
         <Suspense fallback={<Skeleton className="h-96 w-full rounded-3xl" />}>
-            <ActivityReportFormComponent />
+            <ActivityReportFormComponent {...props} />
         </Suspense>
     )
 }

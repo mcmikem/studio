@@ -61,6 +61,7 @@ import { formatDateSafe, cn, formatCurrency } from '@/lib/utils';
 import { createAlertAction as createAlert } from '@/actions/mutations';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { ExpenseReportForm } from '@/components/forms/expense-report-form';
+import { canEdit, canDelete } from '@/lib/permissions';
 
 
 const statusColors: { [key: string]: string } = {
@@ -110,7 +111,7 @@ function ExpenseDetailsDialog({ expense, isOpen, onOpenChange }: { expense: Expe
     )
 }
 
-function ExpenseCard({ expense, highlightedExpenseId, currentUser, canApprove, canManageFinances, handleStatusUpdate, setViewingExpense, setEditingExpense, handleDelete }: any) {
+function ExpenseCard({ expense, highlightedExpenseId, currentUser, profile, canApprove, canManageFinances, handleStatusUpdate, setViewingExpense, setEditingExpense, handleDelete }: any) {
     const highlightClass = "ring-2 ring-primary bg-primary/5";
     return (
         <Card key={expense.id} id={`expense-${expense.id}`} className={cn(expense.id === highlightedExpenseId && highlightClass, "transition-all")}>
@@ -167,12 +168,14 @@ function ExpenseCard({ expense, highlightedExpenseId, currentUser, canApprove, c
                     </Button>
                 )}
 
-                {canManageFinances && (
-                    <>
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}>
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                        </Button>
+                {canEdit(expense, currentUser) && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}>
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
+                    </Button>
+                )}
+                
+                {canDelete(profile) && (
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
@@ -191,7 +194,6 @@ function ExpenseCard({ expense, highlightedExpenseId, currentUser, canApprove, c
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
-                    </>
                 )}
             </CardFooter>
         </Card>
@@ -203,6 +205,7 @@ function ExpensesTable({
     isLoading, 
     highlightedExpenseId, 
     currentUser, 
+    profile,
     canApprove, 
     canManageFinances, 
     handleStatusUpdate, 
@@ -224,6 +227,7 @@ function ExpensesTable({
                             expense={expense}
                             highlightedExpenseId={highlightedExpenseId}
                             currentUser={currentUser}
+                            profile={profile}
                             canApprove={canApprove}
                             canManageFinances={canManageFinances}
                             handleStatusUpdate={handleStatusUpdate}
@@ -324,12 +328,14 @@ function ExpensesTable({
                                                 </Button>
                                             )}
 
-                                            {canManageFinances && (
-                                                <>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}>
-                                                        <Edit className="h-4 w-4" />
-                                                        <span className="sr-only">Edit</span>
-                                                    </Button>
+                                            {canEdit(expense, currentUser) && (
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingExpense(expense)}>
+                                                    <Edit className="h-4 w-4" />
+                                                    <span className="sr-only">Edit</span>
+                                                </Button>
+                                            )}
+
+                                            {canDelete(profile) && (
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
                                                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
@@ -350,7 +356,6 @@ function ExpensesTable({
                                                             </AlertDialogFooter>
                                                         </AlertDialogContent>
                                                     </AlertDialog>
-                                                </>
                                             )}
                                         </div>
                                     </TableCell>
@@ -576,6 +581,7 @@ function ExpensesContent() {
                                 isLoading={isLoading} 
                                 highlightedExpenseId={highlightedExpenseId}
                                 currentUser={currentUser}
+                                profile={profile}
                                 canApprove={canApprove}
                                 canManageFinances={canManageFinances}
                                 handleStatusUpdate={handleStatusUpdate}
@@ -590,6 +596,7 @@ function ExpensesContent() {
                                 isLoading={isLoading} 
                                 highlightedExpenseId={highlightedExpenseId}
                                 currentUser={currentUser}
+                                profile={profile}
                                 canApprove={canApprove}
                                 canManageFinances={canManageFinances}
                                 handleStatusUpdate={handleStatusUpdate}
@@ -604,6 +611,7 @@ function ExpensesContent() {
                                 isLoading={isLoading} 
                                 highlightedExpenseId={highlightedExpenseId}
                                 currentUser={currentUser}
+                                profile={profile}
                                 canApprove={canApprove}
                                 canManageFinances={canManageFinances}
                                 handleStatusUpdate={handleStatusUpdate}

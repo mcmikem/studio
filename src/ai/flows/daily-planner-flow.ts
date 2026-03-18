@@ -59,7 +59,8 @@ JSON Schema:
   "materials": "string",
   "challenges": "string",
   "bestPractice": "string"
-}`;
+}
+Note: Use 24-hour HH:MM format (e.g., 09:00, 14:30) for all times.`;
 
   const prompt = `
 Generate a strategic daily plan for ${userName} (${userRole}).

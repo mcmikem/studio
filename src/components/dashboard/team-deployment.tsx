@@ -57,12 +57,26 @@ function determineCurrentFocus(timeBlocks: any[], currentTime: Date, primaryMiss
     if (!block || typeof block.startTime !== 'string' || typeof block.endTime !== 'string') continue;
     
     try {
-      // Handle various time formats (24h or 12h)
-      const parseFormat = block.startTime.includes('AM') || block.startTime.includes('PM') ? 'h:mm a' : 'HH:mm';
-      const startTime = parse(block.startTime.replace(/\s+(AM|PM)/i, ' $1').trim(), parseFormat, today);
-      const endTime = parse(block.endTime.replace(/\s+(AM|PM)/i, ' $1').trim(), parseFormat, today);
+      // Normalize time string: remove extra spaces, ensure space before AM/PM
+      const cleanStart = block.startTime.replace(/\s+/g, ' ').replace(/([ap]m)/i, ' $1').trim();
+      const cleanEnd = block.endTime.replace(/\s+/g, ' ').replace(/([ap]m)/i, ' $1').trim();
       
-      if (isValid(startTime) && isValid(endTime)) {
+      // Try multiple formats: HH:mm, H:mm, h:mm a, h:mma
+      const formats = ['HH:mm', 'H:mm', 'h:mm a', 'h:mma', 'h:mmA', 'HH.mm'];
+      let startTime: Date | null = null;
+      let endTime: Date | null = null;
+      
+      for (const fmt of formats) {
+        const s = parse(cleanStart, fmt, today);
+        if (isValid(s)) { startTime = s; break; }
+      }
+      
+      for (const fmt of formats) {
+        const e = parse(cleanEnd, fmt, today);
+        if (isValid(e)) { endTime = e; break; }
+      }
+      
+      if (startTime && endTime && isValid(startTime) && isValid(endTime)) {
         if (isWithinInterval(now, { start: startTime, end: endTime })) {
           const desc = block.description?.toLowerCase() || '';
           const isBreak = desc.includes('break') || desc.includes('lunch') || desc.includes('rest');
@@ -72,7 +86,9 @@ function determineCurrentFocus(timeBlocks: any[], currentTime: Date, primaryMiss
           };
         }
       }
-    } catch {}
+    } catch (e) {
+        console.error("Focus parsing error:", e);
+    }
   }
 
   return { task: primaryMission || 'Flexible / async work', status: 'flexible' };

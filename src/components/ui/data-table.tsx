@@ -18,12 +18,34 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "./skeleton"
 import React from "react"
+import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
+import { Button } from "./button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./dropdown-menu"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./alert-dialog"
+import { canEdit, canDelete } from "@/lib/permissions"
+import type { User as AuthUser } from "firebase/auth"
+import type { User as UserProfile } from "@/lib/types/user"
+import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
+import { deleteDocumentNonBlocking } from "@/firebase"
+import { doc } from "firebase/firestore"
+import { useFirestore } from "@/firebase"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[],
   isLoading?: boolean;
   renderMobileCard?: (item: TData) => React.ReactNode;
+  
+  // Permission Props
+  currentUser?: AuthUser | null;
+  userProfile?: UserProfile | null;
+  
+  // Action Actions
+  editHref?: (item: TData) => string;
+  viewHref?: (item: TData) => string;
+  deleteCollection?: string;
+  onDeleteSuccess?: (item: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -31,10 +53,86 @@ export function DataTable<TData, TValue>({
   data,
   isLoading = false,
   renderMobileCard,
+  currentUser,
+  userProfile,
+  editHref,
+  viewHref,
+  deleteCollection,
+  onDeleteSuccess,
 }: DataTableProps<TData, TValue>) {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const handleDelete = async (item: any) => {
+    if (!firestore || !deleteCollection || !item.id) return;
+    try {
+        await deleteDocumentNonBlocking(doc(firestore, deleteCollection, item.id));
+        toast({ title: "Deleted Successfully" });
+        onDeleteSuccess?.(item);
+    } catch (e: any) {
+        toast({ variant: 'destructive', title: "Delete Failed", description: e.message || "Permission denied." });
+    }
+  };
+
+  const actionsColumn: ColumnDef<TData> = {
+    id: "actions",
+    cell: ({ row }) => {
+      const item = row.original as any;
+      const editable = editHref && canEdit(item, currentUser || null);
+      const deletable = deleteCollection && canDelete(userProfile || null);
+
+      if (!editable && !deletable && !viewHref) return null;
+
+      return (
+        <div className="flex justify-end gap-1">
+          {viewHref && (
+            <Button variant="ghost" size="icon" asChild>
+                <Link href={viewHref(item)}><Eye className="h-4 w-4" /></Link>
+            </Button>
+          )}
+          {editable && (
+            <Button variant="ghost" size="icon" asChild>
+                <Link href={editHref(item)}><Edit className="h-4 w-4" /></Link>
+            </Button>
+          )}
+          {deletable && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the record.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDelete(item)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+      );
+    },
+  };
+
+  const finalColumns = React.useMemo(() => {
+    if (editHref || deleteCollection || viewHref) {
+        return [...columns, actionsColumn];
+    }
+    return columns;
+  }, [columns, editHref, deleteCollection, viewHref]);
+
   const table = useReactTable({
     data,
-    columns,
+    columns: finalColumns,
     getCoreRowModel: getCoreRowModel(),
   })
 

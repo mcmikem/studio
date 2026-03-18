@@ -23,4 +23,7 @@ export const buildUploadPath = {
 
   activityMedia: (userId: string, fileName: string) =>
     `activity-media/${userId}/${Date.now()}_${sanitizeFileName(fileName)}`,
+
+  productImage: (categoryId: string, sku: string, extension: string) =>
+    `products/${categoryId}/${sanitizeFileName(sku)}-${Date.now()}.${sanitizeFileName(extension)}`,
 };

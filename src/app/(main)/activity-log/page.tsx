@@ -20,10 +20,40 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { canEdit, canDelete } from '@/lib/permissions';
+import { ActivityReportForm } from '@/components/forms/activity-report-form';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { deleteDocumentNonBlocking, useUser, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { Edit, Trash2, Eye } from 'lucide-react';
 
 export default function ActivityLogPage() {
   const [limitCount, setLimitCount] = useState(100);
   const parentRef = useRef<HTMLDivElement>(null);
+  
+  const { user: currentUser } = useUser();
+  const { profile } = useUserProfile(currentUser);
+  const { toast } = useToast();
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   
   const activitiesQuery = useMemoFirebase((db) => {
     return query(collection(db, 'activities'), orderBy('loggedAt', 'desc'), limit(limitCount));
@@ -142,6 +172,46 @@ export default function ActivityLogPage() {
                               </Badge>
                             </div>
                           </div>
+                          <div className="flex justify-end gap-1 pt-2">
+                             {canEdit(activity, currentUser) && (
+                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditingActivity(activity)}>
+                                    <Edit className="h-4 w-4" />
+                                    <span className="sr-only">Edit</span>
+                                </Button>
+                            )}
+                            
+                            {canDelete(profile) && (
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-8 w-8">
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="sr-only">Delete</span>
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Delete Log?</AlertDialogTitle>
+                                            <AlertDialogDescription>Are you sure you want to delete this activity log? This cannot be undone.</AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction 
+                                                onClick={async () => {
+                                                    try {
+                                                        await deleteDocumentNonBlocking(doc(useFirestore()!, 'activities', activity.id));
+                                                        toast({ title: "Deleted", description: "Activity log has been removed." });
+                                                    } catch (e) {
+                                                        toast({ variant: 'destructive', title: "Error", description: "Failed to delete log." });
+                                                    }
+                                                }}
+                                            >
+                                                Delete
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            )}
+                          </div>
                         </CardContent>
                       </Card>
                     </div>
@@ -179,6 +249,23 @@ export default function ActivityLogPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={!!editingActivity} onOpenChange={(open) => !open && setEditingActivity(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+                <DialogTitle>Update Activity Impact</DialogTitle>
+                <DialogDescription>
+                    Refine the data for "{editingActivity?.title}".
+                </DialogDescription>
+            </DialogHeader>
+            {editingActivity && (
+                <ActivityReportForm 
+                    activity={editingActivity} 
+                    onSuccess={() => setEditingActivity(null)} 
+                />
+            )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

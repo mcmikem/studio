@@ -108,14 +108,20 @@ const dataHubSections = [
         description: 'Browse all submitted attendance sheets from events and sessions.',
         icon: CheckCircle2,
       },
-      {
-        href: '/meal/data/surveys',
-        title: 'Survey Results',
-        description: 'Analyze baseline and endline survey data to measure impact.',
-        icon: FileText,
-      },
-    ],
-  },
+        {
+          href: '/meal/data/surveys',
+          title: 'Survey Results',
+          description: 'Analyze baseline and endline survey data to measure impact.',
+          icon: FileText,
+        },
+        {
+          href: '/meal/data/impact-stories',
+          title: 'Impact Stories Archive',
+          description: 'Browse captured success stories and testimonies.',
+          icon: BookOpen,
+        },
+      ],
+    },
   {
     title: 'Program-Specific Data',
     links: [

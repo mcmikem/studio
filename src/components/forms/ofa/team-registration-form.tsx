@@ -9,11 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, useUser } from '@/firebase';
+import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, useUser, useDoc } from '@/firebase';
 import { collection, serverTimestamp, doc } from 'firebase/firestore';
-import { Loader2, ArrowLeft, Swords, Users, MapPin, Trophy, GraduationCap, HeartPulse } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useMemoFirebase } from '@/firebase/provider';
+import { Loader2, ArrowLeft, Swords, Users, MapPin, Trophy, GraduationCap, HeartPulse, Save } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LocationPicker } from '@/components/ui/location-picker';
@@ -78,9 +80,20 @@ export function OFATeamRegistrationForm({
   onSuccess?: () => void;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const teamIdFromUrl = searchParams.get('id');
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
+
+  const teamDocRef = useMemoFirebase(() => {
+    if (!firestore || !teamIdFromUrl || team) return null;
+    return doc(firestore, 'ofa-teams', teamIdFromUrl);
+  }, [firestore, teamIdFromUrl, team]);
+  const { data: teamDataFromUrl, isLoading: isTeamLoading } = useDoc<OFATeam>(teamDocRef);
+
+  const effectiveTeam = team || teamDataFromUrl;
+  const isEdit = !!effectiveTeam;
 
   const {
     register,
@@ -115,39 +128,39 @@ export function OFATeamRegistrationForm({
   }, [errors, toast]);
 
   useEffect(() => {
-    if (!team) return;
+    if (!effectiveTeam) return;
     reset({
-      teamName: team.teamName,
-      district: team.district ?? 'Wakiso',
-      subcounty: team.subcounty ?? '',
-      parish: team.parish ?? undefined,
-      village: team.village ?? undefined,
-      headCoachName: team.headCoachName ?? undefined,
-      headCoachPhone: team.headCoachPhone ?? undefined,
-      assistantCoachName: team.assistantCoachName ?? undefined,
-      assistantCoachPhone: team.assistantCoachPhone ?? undefined,
-      captainName: team.captainName ?? undefined,
-      captainPhone: team.captainPhone ?? undefined,
-      yearOfEstablishment: team.yearOfEstablishment ?? undefined,
-      homePitchName: team.homePitchName ?? undefined,
-      teamColours: team.teamColours ?? undefined,
-      motto: team.motto ?? undefined,
-      totalPlayers: team.totalPlayers ?? undefined,
-      u13: team.u13 ?? undefined,
-      u15: team.u15 ?? undefined,
-      u17: team.u17 ?? undefined,
-      u19: team.u19 ?? undefined,
-      percentageInSchool: team.percentageInSchool ?? undefined,
-      communitySupport: team.communitySupport as 'Low' | 'Moderate' | 'Strong' | undefined,
-      parentEngagement: team.parentEngagement as 'Low' | 'Moderate' | 'Strong' | undefined,
-      trainingDaysPerWeek: team.trainingDaysPerWeek ?? undefined,
-      avgTrainingAttendance: team.avgTrainingAttendance ?? undefined,
-      enforceSchoolAttendance: team.enforceSchoolAttendance ?? undefined,
-      mainAcademicChallenges: Array.isArray(team.mainAcademicChallenges)
-        ? team.mainAcademicChallenges.join(', ')
-        : team.mainAcademicChallenges ?? undefined,
+      teamName: effectiveTeam.teamName,
+      district: effectiveTeam.district ?? 'Wakiso',
+      subcounty: effectiveTeam.subcounty ?? '',
+      parish: effectiveTeam.parish ?? undefined,
+      village: effectiveTeam.village ?? undefined,
+      headCoachName: effectiveTeam.headCoachName ?? undefined,
+      headCoachPhone: effectiveTeam.headCoachPhone ?? undefined,
+      assistantCoachName: effectiveTeam.assistantCoachName ?? undefined,
+      assistantCoachPhone: effectiveTeam.assistantCoachPhone ?? undefined,
+      captainName: effectiveTeam.captainName ?? undefined,
+      captainPhone: effectiveTeam.captainPhone ?? undefined,
+      yearOfEstablishment: effectiveTeam.yearOfEstablishment ?? undefined,
+      homePitchName: effectiveTeam.homePitchName ?? undefined,
+      teamColours: effectiveTeam.teamColours ?? undefined,
+      motto: effectiveTeam.motto ?? undefined,
+      totalPlayers: effectiveTeam.totalPlayers ?? undefined,
+      u13: effectiveTeam.u13 ?? undefined,
+      u15: effectiveTeam.u15 ?? undefined,
+      u17: effectiveTeam.u17 ?? undefined,
+      u19: effectiveTeam.u19 ?? undefined,
+      percentageInSchool: effectiveTeam.percentageInSchool ?? undefined,
+      communitySupport: effectiveTeam.communitySupport as 'Low' | 'Moderate' | 'Strong' | undefined,
+      parentEngagement: effectiveTeam.parentEngagement as 'Low' | 'Moderate' | 'Strong' | undefined,
+      trainingDaysPerWeek: effectiveTeam.trainingDaysPerWeek ?? undefined,
+      avgTrainingAttendance: effectiveTeam.avgTrainingAttendance ?? undefined,
+      enforceSchoolAttendance: effectiveTeam.enforceSchoolAttendance ?? undefined,
+      mainAcademicChallenges: Array.isArray(effectiveTeam.mainAcademicChallenges)
+        ? effectiveTeam.mainAcademicChallenges.join(', ')
+        : effectiveTeam.mainAcademicChallenges ?? undefined,
     });
-  }, [team, reset]);
+  }, [effectiveTeam, reset]);
 
   const onSubmit = async (data: TeamFormData) => {
     if (!firestore || !user) {
@@ -169,17 +182,19 @@ export function OFATeamRegistrationForm({
         ...data,
         mainAcademicChallenges: academicChallenges,
         updatedAt: serverTimestamp(),
-        // Only add creation metadata if it's a new record
-        ...(!team ? { createdAt: serverTimestamp(), createdBy: user.uid } : {}),
       };
 
-      if (team?.id) {
-        console.log('[OFATeam] Updating team:', team.id);
-        await updateDocumentNonBlocking(doc(firestore, 'ofa-teams', team.id), payload);
+      if (effectiveTeam?.id) {
+        console.log('[OFATeam] Updating team:', effectiveTeam.id);
+        await updateDocumentNonBlocking(doc(firestore, 'ofa-teams', effectiveTeam.id), payload);
         toast({ title: 'Team Updated', description: `${data.teamName} has been updated successfully.` });
       } else {
         console.log('[OFATeam] Creating new team');
-        const docRef = await addDocumentNonBlocking(collection(firestore, 'ofa-teams'), payload);
+        const docRef = await addDocumentNonBlocking(collection(firestore, 'ofa-teams'), {
+          ...payload,
+          createdAt: serverTimestamp(),
+          createdBy: user.uid,
+        });
         toast({ title: 'Team Registered', description: `${data.teamName} has been added to the registry.` });
         
         // Reset form for next entry if success
@@ -213,12 +228,15 @@ export function OFATeamRegistrationForm({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Swords className="h-6 w-6" />
-            {team ? 'Edit OFA Team' : 'OFA Team Registration'}
+            {isEdit ? 'Edit OFA Team' : 'OFA Team Registration'}
           </CardTitle>
           <CardDescription>
-            Create or update a team profile, roster counts, and coaching information.
+            {isEdit ? `Updating profile for ${effectiveTeam?.teamName || 'team'}...` : 'Create a new team profile, roster counts, and coaching information.'}
           </CardDescription>
         </CardHeader>
+        {isTeamLoading ? (
+            <CardContent className="space-y-4"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-full" /></CardContent>
+        ) : (
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8">
             {/* Section 1: Basic Information */}
@@ -396,11 +414,12 @@ export function OFATeamRegistrationForm({
           </CardContent>
           <CardFooter>
             <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {team ? 'Update Team' : 'Register Team'}
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isEdit ? <Save className="mr-2 h-4 w-4" /> : null)}
+              {isEdit ? 'Update Team Details' : 'Register Team'}
             </Button>
           </CardFooter>
         </form>
+        )}
       </Card>
     </div>
   );

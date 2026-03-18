@@ -26,6 +26,9 @@ export const ActivitySchema = z.object({
   memorableMoment: z.string().optional(),
   challengesLearned: z.string().optional(),
   beneficiaryQuote: z.string().optional(),
+  keyResultId: z.string().optional(),
+  mediaUrl: z.string().optional(),
+  updatedAt: z.any().optional(),
 });
 
 export type Activity = z.infer<typeof ActivitySchema>;

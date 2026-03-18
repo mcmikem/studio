@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase, useUser, useFirebaseApp } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy, Timestamp, writeBatch, doc } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, useUser, useFirebaseApp, useDoc } from '@/firebase';
+import { collection, serverTimestamp, query, orderBy, Timestamp, doc } from 'firebase/firestore';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, UserPlus, Upload, ArrowLeft } from 'lucide-react';
+import { Loader2, UserPlus, Upload, ArrowLeft, Save } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Program, Beneficiary } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,7 +22,8 @@ import { buildUploadPath } from '@/lib/upload-paths';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { LocationPicker } from '@/components/ui/location-picker';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { createBeneficiaryAction, updateBeneficiaryAction } from '@/actions/mutations';
 
 const beneficiarySchema = z.object({
   name: z.string().min(1, 'Beneficiary name is required.'),
@@ -46,9 +47,16 @@ function BeneficiaryRegistrationForm() {
   const firestore = useFirestore();
   const firebaseApp = useFirebaseApp();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const beneficiaryId = searchParams.get('id');
+
+  const { data: existingBeneficiary, isLoading: isLoadingBeneficiary } = useDoc<Beneficiary>(
+      firestore && beneficiaryId ? doc(firestore, 'beneficiaries', beneficiaryId) : null
+  );
+
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
 
   const programsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -71,6 +79,27 @@ function BeneficiaryRegistrationForm() {
         district: 'Wakiso',
     }
   });
+
+  useEffect(() => {
+    if (existingBeneficiary) {
+        reset({
+            name: existingBeneficiary.name,
+            dob: existingBeneficiary.dob || '',
+            gender: existingBeneficiary.gender as any,
+            district: existingBeneficiary.district || 'Wakiso',
+            subcounty: existingBeneficiary.subcounty || '',
+            parish: existingBeneficiary.parish || '',
+            village: existingBeneficiary.village || '',
+            programEnrolled: existingBeneficiary.programEnrolled,
+            school: existingBeneficiary.school || '',
+            phone: existingBeneficiary.phone || '',
+            guardianContact: existingBeneficiary.guardianContact || '',
+        });
+        if (existingBeneficiary.photoURL) {
+            setPhotoPreview(existingBeneficiary.photoURL);
+        }
+    }
+  }, [existingBeneficiary, reset]);
 
   const watchDistrict = watch('district');
   const watchSubcounty = watch('subcounty');
@@ -97,7 +126,7 @@ function BeneficiaryRegistrationForm() {
             photoURL = await uploadFile(firebaseApp, data.photo, path);
         }
 
-        const beneficiaryData: Omit<Beneficiary, 'id'> = {
+        const beneficiaryData = {
             name: data.name,
             dob: data.dob || '',
             gender: data.gender,
@@ -106,21 +135,30 @@ function BeneficiaryRegistrationForm() {
             parish: data.parish || '',
             village: data.village || '',
             programEnrolled: data.programEnrolled,
-            createdAt: serverTimestamp() as Timestamp,
+            userId: existingBeneficiary?.userId || user.uid,
             ...(photoURL && { photoURL }),
             ...(data.school && { school: data.school }),
             ...(data.phone && { phone: data.phone }),
             ...(data.guardianContact && { guardianContact: data.guardianContact }),
         };
 
-        await addDocumentNonBlocking(collection(firestore, 'beneficiaries'), beneficiaryData);
-        toast({
-            title: 'Beneficiary Registered!',
-            description: `${data.name} has been added to the system.`,
-        });
-        reset();
-        setPhotoPreview(null);
-        router.push('/meal/data/beneficiaries');
+        const result = beneficiaryId 
+            ? await updateBeneficiaryAction(beneficiaryId, beneficiaryData)
+            : await createBeneficiaryAction(beneficiaryData);
+
+        if (result.success) {
+            toast({
+                title: beneficiaryId ? 'Profile Updated!' : 'Beneficiary Registered!',
+                description: `${data.name} has been ${beneficiaryId ? 'updated' : 'added'} in the system.`,
+            });
+            if (!beneficiaryId) {
+                reset();
+                setPhotoPreview(null);
+            }
+            router.push('/meal/data/beneficiaries');
+        } else {
+            throw new Error((result as any).error);
+        }
     } catch (error: any) {
         console.error("Firestore submission failed:", error);
         toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
@@ -132,10 +170,10 @@ function BeneficiaryRegistrationForm() {
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <UserPlus className="h-5 sm:h-6 w-5 sm:w-6" />
-          Beneficiary Registration Form
+          {beneficiaryId ? 'Edit Profile' : 'Beneficiary Registration Form'}
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          Create a new profile for a beneficiary to track their journey with Omuto.
+          {beneficiaryId ? `Updating records for ${existingBeneficiary?.name || 'beneficiary'}` : 'Create a new profile for a beneficiary to track their journey with Omuto.'}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -230,9 +268,13 @@ function BeneficiaryRegistrationForm() {
             </div>
         </CardContent>
         <CardFooter className="p-4 sm:p-6">
-          <Button type="submit" disabled={isSubmitting} className="w-full h-12">
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Register Beneficiary
+          <Button type="submit" disabled={isSubmitting || !!(beneficiaryId && isLoadingBeneficiary)} className="w-full h-12">
+            {isSubmitting ? (
+                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+                beneficiaryId ? <Save className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />
+            )}
+            {beneficiaryId ? 'Update Profile' : 'Register Beneficiary'}
           </Button>
         </CardFooter>
       </form>

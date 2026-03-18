@@ -13,11 +13,14 @@ import {
   useMemoFirebase,
   useFirebaseApp,
   addDocumentNonBlocking, 
-  updateDocumentNonBlocking
+  updateDocumentNonBlocking,
+  useDoc
 } from '@/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 import { uploadFile } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
 import { collection, serverTimestamp, doc, query, orderBy, getDocs, where } from 'firebase/firestore';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -86,6 +89,19 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   const firestore = useFirestore();
   const { user } = useUser();
   const { profile } = useUserProfile(user);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const expenseIdFromUrl = searchParams.get('id');
+
+  const expenseDocRef = useMemoFirebase(() => {
+    if (!firestore || !expenseIdFromUrl || expense) return null;
+    return doc(firestore, 'expenses', expenseIdFromUrl);
+  }, [firestore, expenseIdFromUrl, expense]);
+  
+  const { data: expenseFromUrl, isLoading: isExpenseLoading } = useDoc<Expense>(expenseDocRef);
+
+  const effectiveExpense = expense || expenseFromUrl;
+  const isEditMode = !!effectiveExpense;
 
   const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users'), orderBy('name')) : null, [firestore]);
   const { data: users } = useCollection<User>(usersQuery);
@@ -99,7 +115,6 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   const [isUploading, setIsUploading] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(false);
 
-  const isEditMode = !!expense;
   const financeRoles = ['Administrator', 'Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Programs & Partnerships Manager'];
   const canSubmitForOthers = profile && financeRoles.includes(profile.role);
 
@@ -112,12 +127,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
     reset,
   } = useForm<ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: isEditMode && expense ? {
-        ...expense,
-        date: formatDateSafe(expense.date, 'iso'),
-        items: expense.items.map(item => ({...item})),
-        submittedFor: expense.userId
-    } : {
+    defaultValues: {
       type: 'Reimbursement',
       date: format(new Date(), 'yyyy-MM-dd'),
       title: '',
@@ -127,6 +137,16 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
       otherUserName: '',
     },
   });
+
+  React.useEffect(() => {
+    if (!effectiveExpense) return;
+    reset({
+        ...effectiveExpense,
+        date: formatDateSafe(effectiveExpense.date, 'iso'),
+        items: effectiveExpense.items.map(item => ({...item})),
+        submittedFor: effectiveExpense.userId
+    });
+  }, [effectiveExpense, reset]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -145,7 +165,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   }, [totalAmount, setValue]);
 
   // --- AUTO SAVE DRAFT LOGIC ---
-  const draftKey = React.useMemo(() => `omuto_draft_expense_${isEditMode ? expense?.id : 'new'}`, [isEditMode, expense]);
+  const draftKey = React.useMemo(() => `omuto_draft_expense_${isEditMode ? effectiveExpense?.id : 'new'}`, [isEditMode, effectiveExpense]);
   const allFormValues = useWatch({ control });
 
   // Load draft on mount (only if NOT in edit mode, to avoid overwriting real data with old drafts)
@@ -289,8 +309,8 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             setIsUploading(false);
         }
 
-        if (isEditMode && expense) {
-            const docRef = doc(firestore, 'expenses', expense.id);
+        if (isEditMode && effectiveExpense) {
+            const docRef = doc(firestore, 'expenses', effectiveExpense.id);
             await updateDocumentNonBlocking(docRef, { ...expenseData, receiptUrl: finalReceiptUrl });
             toast({ title: 'Report Updated!' });
         } else {
@@ -320,6 +340,9 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
         if (!isEditMode) {
             reset();
             setReceiptFile(null);
+        } else if (!expense) {
+            // If we're on a dedicated edit page, maybe redirect back
+            router.push('/management/expenses');
         }
     } catch(e) {
         console.error(e);
@@ -346,8 +369,15 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             <CardTitle className="font-heading text-2xl sm:text-4xl font-bold tracking-tight uppercase leading-none text-omuto-navy">
                 Expense <span className="text-omuto-red underline decoration-4 underline-offset-4">Report</span>
             </CardTitle>
-            <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">Financial Accountability Terminal</CardDescription>
+            <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-[0.2em] mt-2">
+                {isEditMode ? 'Modification Authorized' : 'Financial Accountability Terminal'}
+            </CardDescription>
       </CardHeader>
+      {isExpenseLoading ? (
+          <CardContent className="p-8 space-y-4">
+              <Skeleton className="h-12 w-full" /><Skeleton className="h-16 w-3/4" /><Skeleton className="h-32 w-full" />
+          </CardContent>
+      ) : (
       <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         <CardContent className="p-5 sm:p-8 space-y-8 sm:space-y-12">
             
@@ -498,6 +528,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
         </CardContent>
       </form>
+      )}
     </Card>
   );
 }

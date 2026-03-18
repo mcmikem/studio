@@ -8,12 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
-// import type { Sale, Product, ProductionBatch } from '@/lib/types';
-import type { Sale, ProductionBatch } from '@/lib/types';
-import { PageHeader } from '@/components/page-header';
-import { DataTable } from '@/components/ui/data-table';
 import { type ColumnDef } from "@tanstack/react-table";
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
+import { type Product, type Sale, type ProductionBatch } from '@/lib/types';
+import { PageHeader } from '@/components/page-header';
+import { DataTable } from '@/components/ui/data-table';
 import { startOfMonth, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -76,14 +75,15 @@ function EssentialsHubPage() {
             limit(5)
         ) : null
     , []);
-
-    // const productsQuery = useMemoFirebase((db) => db ? query(collection(db, 'products')) : null, []);
+    
+    const productsQuery = useMemoFirebase((db) => db ? query(collection(db, 'products')) : null, []);
     // const productionQuery = useMemoFirebase((db) => db ? query(collection(db, 'production-batches'), orderBy('createdAt', 'desc'), limit(5)) : null, []);
 
     const { data: monthlySales, isLoading: isLoadingSales } = useCollection<Sale>(salesQuery);
     const { data: recentSales, isLoading: isLoadingRecent } = useCollection<Sale>(recentSalesQuery);
     const { data: monthlyProduction, isLoading: isLoadingProduction } = useCollection<ProductionBatch>(monthlyProductionQuery);
     const { data: recentProduction, isLoading: isLoadingRecentProduction } = useCollection<ProductionBatch>(recentProductionQuery);
+    const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
     
     const [insights, setInsights] = useState<any[]>([]);
     const [isInsightsLoading, setIsInsightsLoading] = useState(false);
@@ -96,7 +96,7 @@ function EssentialsHubPage() {
             try {
                 const result = await getEnterpriseInsightsAction({
                     sales: monthlySales,
-                    inventory: [], // Needs products query if we want stock insights
+                    inventory: products || [],
                     production: monthlyProduction || []
                 });
                 setInsights(result.insights || []);
@@ -116,8 +116,8 @@ function EssentialsHubPage() {
         const totalRevenue = monthlySales.reduce((sum, sale) => sum + sale.total_amount, 0);
 
         const productSales: Record<string, number> = {};
-        monthlySales.forEach(sale => {
-            sale.items.forEach(item => {
+        monthlySales.forEach((sale: Sale) => {
+            sale.items.forEach((item) => {
                 const productName = item.product_name || 'Unknown Product';
                 if (productSales[productName]) {
                     productSales[productName] += item.quantity;
@@ -136,7 +136,11 @@ function EssentialsHubPage() {
             }
         }
         
-        const lowStockCount = 0;
+        const lowStockCount = (products || []).filter(p => 
+            p.current_stock_quantity !== undefined && 
+            p.reorder_level !== undefined && 
+            p.current_stock_quantity <= p.reorder_level
+        ).length;
 
         const productionCost = (monthlyProduction || []).reduce((sum, batch) => sum + Number((batch as any).material_cost_total || 0), 0);
         const profit = totalRevenue - productionCost;

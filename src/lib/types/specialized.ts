@@ -237,7 +237,10 @@ export const AttendanceRecordSchema = z.object({
     gender: z.enum(['Male', 'Female', 'Other']),
     age: z.coerce.number(),
     signature: z.boolean(),
+    userId: z.string(),
+    userName: z.string().optional(),
     createdAt: z.any(),
+    updatedAt: z.any().optional(),
 });
 export type AttendanceRecord = z.infer<typeof AttendanceRecordSchema>;
 
@@ -372,7 +375,10 @@ export type Beneficiary = {
   phone?: string;
   guardianContact?: string;
   photoURL?: string | null;
+  userId: string;
+  userName?: string;
   createdAt: Timestamp;
+  updatedAt?: Timestamp;
 };
 
 export const EquipmentSchema = z.object({
