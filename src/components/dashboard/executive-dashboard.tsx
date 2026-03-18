@@ -9,14 +9,28 @@ import type { DashboardProps } from "./dashboard-loader"
 import { Skeleton } from "../ui/skeleton";
 import { RoleMissionCard } from "./role-mission-card";
 
+import { useFirestore, useCollection } from "@/firebase"
+import { collection, query, limit, orderBy } from "firebase/firestore"
+import { useMemo } from "react"
+import type { Checkout } from "@/lib/types"
+
 const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const ApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const EcosystemPulse = dynamic(() => import('@/components/dashboard/ecosystem-pulse').then(mod => mod.EcosystemPulse), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const KeyResultsTracker = dynamic(() => import('@/components/plan/key-results-tracker').then(mod => mod.KeyResultsTracker), { loading: () => <Skeleton className="h-96 rounded-2xl" />, ssr: false });
 const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), { loading: () => <Skeleton className="h-96 rounded-2xl" />, ssr: false });
 const AiStrategicAdvisor = dynamic(() => import('@/components/dashboard/ai-strategic-advisor').then(mod => mod.AiStrategicAdvisor), { loading: () => <Skeleton className="h-96 rounded-2xl" />, ssr: false });
+const RecentCheckouts = dynamic(() => import('@/components/dashboard/recent-checkouts').then(mod => mod.RecentCheckouts), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
+    const firestore = useFirestore();
+    
+    const checkoutsQuery = useMemo(() => {
+        if (!firestore) return null;
+        return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(5));
+    }, [firestore]);
+
+    const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
 
     return (
       <div className="flex flex-col gap-8">
@@ -27,6 +41,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
               <div className="lg:col-span-1 flex flex-col gap-8">
                    <ApprovalQueue />
                    <AiStrategicAdvisor />
+                   <RecentCheckouts checkouts={checkouts || null} />
               </div>
               <div className="lg:col-span-1 flex flex-col gap-8">
                   <TeamDeployment />

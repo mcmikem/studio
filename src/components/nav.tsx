@@ -129,20 +129,20 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['daily', 'ai', 'ops', 'enterprise', 'programs', 'team', 'data', 'content', 'system'],
-  'Executive Director': ['daily', 'ai', 'ops', 'enterprise', 'programs', 'team', 'data', 'content', 'system'],
-  'Programs & Partnerships Manager': ['daily', 'ai', 'enterprise', 'programs', 'team', 'data', 'content'],
-  'Operations & Field Manager': ['daily', 'ai', 'enterprise', 'programs', 'team', 'data', 'content'],
-  'Media & Finance Lead': ['daily', 'ai', 'ops', 'enterprise', 'data', 'content'],
-  'Media & Communications Lead': ['daily', 'ai', 'enterprise', 'data', 'content'],
-  'Essentials Manager': ['daily', 'ai', 'enterprise', 'ops', 'data'],
-  'Youth Center Manager': ['daily', 'ai', 'enterprise', 'team', 'data'],
-  'Field Coordinator': ['daily', 'programs', 'team', 'data'],
-  'Field Staff': ['daily', 'team', 'data'],
-  'Media & Communications': ['daily', 'content', 'data'],
-  'Accountant/Finance': ['daily', 'ops', 'data'],
-  'Intern': ['daily', 'team', 'content'],
-  'Volunteer': ['daily', 'team'],
+  'Administrator': ['daily', 'ai', 'ops', 'enterprise', 'programs', 'forms', 'team', 'data', 'content', 'system'],
+  'Executive Director': ['daily', 'ai', 'ops', 'enterprise', 'programs', 'forms', 'team', 'data', 'content', 'system'],
+  'Programs & Partnerships Manager': ['daily', 'ai', 'enterprise', 'programs', 'forms', 'team', 'data', 'content'],
+  'Operations & Field Manager': ['daily', 'ai', 'enterprise', 'programs', 'forms', 'team', 'data', 'content'],
+  'Media & Finance Lead': ['daily', 'ai', 'ops', 'enterprise', 'forms', 'data', 'content'],
+  'Media & Communications Lead': ['daily', 'ai', 'enterprise', 'forms', 'data', 'content'],
+  'Essentials Manager': ['daily', 'ai', 'enterprise', 'ops', 'forms', 'data'],
+  'Youth Center Manager': ['daily', 'ai', 'enterprise', 'forms', 'team', 'data'],
+  'Field Coordinator': ['daily', 'programs', 'forms', 'team', 'data'],
+  'Field Staff': ['daily', 'forms', 'team', 'data'],
+  'Media & Communications': ['daily', 'forms', 'content', 'data'],
+  'Accountant/Finance': ['daily', 'ops', 'forms', 'data'],
+  'Intern': ['daily', 'forms', 'team', 'content'],
+  'Volunteer': ['daily', 'forms', 'team'],
   'default': ['daily', 'team', 'data'],
 };
 
@@ -228,6 +228,8 @@ export function AppSidebar() {
         {renderNavSection('enterprise', 'Enterprise')}
         <div className="h-3" />
         {renderNavSection('programs', 'Programs')}
+        <div className="h-3" />
+        {renderNavSection('forms', 'Impact Forms')}
         <div className="h-3" />
         {renderNavSection('team', 'Team')}
         <div className="h-3" />
