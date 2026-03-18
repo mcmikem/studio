@@ -34,6 +34,15 @@ import {
   Flower2,
   Landmark,
   LogOut,
+  History,
+  ListChecks,
+  Wand2,
+  Handshake,
+  BookOpen,
+  Mic,
+  Trees,
+  ShieldCheck,
+  School,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -72,6 +81,7 @@ const navConfig = {
     { href: '/', icon: LayoutDashboard, label: 'Mission Control' },
     { href: '/daily-plan', icon: Zap, label: 'Daily Planner' },
     { href: '/workplan', icon: CheckCircle, label: 'Weekly Goals' },
+    { href: '/checklists', icon: ListChecks, label: 'SOP Checklists' },
     { href: '/profile?tab=tasks', icon: Bell, label: 'Task List' },
   ],
   forms: [
@@ -94,32 +104,42 @@ const navConfig = {
   programs: [
     { href: '/enterprise/youth-center', icon: UsersRound, label: 'Youth Center' },
     { href: '/meal/ofa', icon: Swords, label: 'OFA Football' },
+    { href: '/talents/omuto-cup', icon: Trophy, label: 'Omuto Cup' },
+    { href: '/meal/red-campaign', icon: ShieldCheck, label: 'RED Campaign' },
+    { href: '/meal/slf', icon: School, label: 'SLF Program' },
+    { href: '/meal/tree-survey', icon: Trees, label: 'Tree Survey' },
     { href: '/meal/yoskills', icon: GraduationCap, label: 'YOSkills' },
     { href: '/meal/yap', icon: Landmark, label: 'YAP' },
     { href: '/meal/greenschools', icon: Flower2, label: 'Green Schools' },
     { href: '/meal/purewater', icon: Droplets, label: 'PureWater' },
   ],
   team: [
-    { href: '/team-performance', icon: Trophy, label: 'Performance' },
+    { href: '/team-performance', icon: Trophy, label: 'Impact Stars' },
     { href: '/checkins', icon: LogIn, label: 'Check-ins' },
+    { href: '/activity-log', icon: History, label: 'Activity Log' },
     { href: '/stream', icon: Wind, label: 'Reports' },
     { href: '/calendar', icon: CalendarIcon, label: 'Calendar' },
   ],
   data: [
     { href: '/meal/data', icon: BarChart3, label: 'Dashboards' },
+    { href: '/meal/impact-studio', icon: Sparkles, label: 'Impact Studio' },
     { href: '/reports', icon: AreaChart, label: 'Reports' },
   ],
   ai: [
     { href: '/chat', icon: Sparkles, label: 'AI Coach' },
+    { href: '/know', icon: BookOpen, label: 'Knowledge Base' },
     { href: '/management/operational-plan', icon: Goal, label: 'Strategy' },
   ],
   ops: [
     { href: '/management', icon: Briefcase, label: 'Ops Desk' },
     { href: '/management/expenses', icon: Wallet, label: 'Expenses' },
+    { href: '/resources', icon: Handshake, label: 'Grant Finder' },
     { href: '/my-finances', icon: Wallet, label: 'My Finances' },
   ],
   content: [
     { href: '/testimonies', icon: Video, label: 'Stories' },
+    { href: '/record-testimony', icon: Mic, label: 'Capture Story' },
+    { href: '/impact-story', icon: Wand2, label: 'Impact Narratives' },
     { href: '/pulse', icon: Heart, label: 'Pulse' },
   ],
   system: [
@@ -137,12 +157,12 @@ const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
   'Media & Communications Lead': ['daily', 'ai', 'enterprise', 'forms', 'data', 'content'],
   'Essentials Manager': ['daily', 'ai', 'enterprise', 'ops', 'forms', 'data'],
   'Youth Center Manager': ['daily', 'ai', 'enterprise', 'forms', 'team', 'data'],
-  'Field Coordinator': ['daily', 'programs', 'forms', 'team', 'data'],
-  'Field Staff': ['daily', 'forms', 'team', 'data'],
-  'Media & Communications': ['daily', 'forms', 'content', 'data'],
-  'Accountant/Finance': ['daily', 'ops', 'forms', 'data'],
-  'Intern': ['daily', 'forms', 'team', 'content'],
-  'Volunteer': ['daily', 'forms', 'team'],
+  'Field Coordinator': ['daily', 'ai', 'programs', 'forms', 'team', 'data', 'content'],
+  'Field Staff': ['daily', 'ai', 'forms', 'team', 'data', 'content'],
+  'Media & Communications': ['daily', 'ai', 'forms', 'content', 'data'],
+  'Accountant/Finance': ['daily', 'ai', 'ops', 'forms', 'data'],
+  'Intern': ['daily', 'ai', 'forms', 'team', 'content'],
+  'Volunteer': ['daily', 'ai', 'forms', 'team'],
   'default': ['daily', 'team', 'data'],
 };
 
