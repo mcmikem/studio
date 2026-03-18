@@ -15,7 +15,7 @@ function getOpenRouterClient(): OpenAI | null {
 export async function callOpenRouter(
   prompt: string,
   systemPrompt: string,
-  model: string = 'openai/gpt-4o-mini',
+  model: string = DEFAULT_MODEL,
   temperature: number = 0.7
 ): Promise<string> {
   const client = getOpenRouterClient();
@@ -41,7 +41,7 @@ export async function callOpenRouter(
 
 export async function chatWithOpenRouter(
   messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
-  model: string = 'openai/gpt-4o-mini',
+  model: string = DEFAULT_MODEL,
   temperature: number = 0.7
 ): Promise<string> {
   const client = getOpenRouterClient();

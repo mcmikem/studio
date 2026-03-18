@@ -112,10 +112,20 @@ export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
             Be helpful, knowledgeable, and friendly. Be concise and actionable.`;
             
             const historyMessages = Array.isArray(input.history) 
-                ? input.history.map((h: any) => ({
-                    role: (h?.role === 'model' ? 'assistant' : 'user') as 'user' | 'assistant',
-                    content: h?.content?.[0]?.text || h?.content || ''
-                }))
+                ? input.history.map((h: any) => {
+                    let text = '';
+                    if (typeof h?.content === 'string') {
+                      text = h.content;
+                    } else if (Array.isArray(h?.content) && h.content[0]?.text) {
+                      text = h.content[0].text;
+                    } else if (typeof h?.text === 'string') {
+                      text = h.text;
+                    }
+                    return {
+                      role: (h?.role === 'model' ? 'assistant' : 'user') as 'user' | 'assistant',
+                      content: text
+                    };
+                  }).filter((m: any) => m.content) // drop empty messages
                 : [];
             
             const messages = [
