@@ -44,7 +44,10 @@ export async function callOpenRouter(
 }
 
 export async function chatWithOpenRouter(
-  messages: { role: 'user' | 'assistant' | 'system'; content: string }[],
+  messages: { 
+    role: 'user' | 'assistant' | 'system'; 
+    content: string | ({ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } })[] 
+  }[],
   model: string = DEFAULT_MODEL,
   temperature: number = 0.7
 ): Promise<string> {
@@ -56,7 +59,7 @@ export async function chatWithOpenRouter(
   try {
     const response = await client.chat.completions.create({
       model,
-      messages,
+      messages: messages as any,
       temperature,
     });
     return response.choices[0]?.message?.content || '';

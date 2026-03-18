@@ -72,10 +72,12 @@ Return a plan with time blocks (8:30 AM to 5 PM), strategic alignments, required
       
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
+        const parsed = JSON.parse(jsonMatch[0]);
+        // Validate with schema
+        return DailyPlannerAIOutputSchema.parse(parsed);
       }
     } catch (error) {
-      console.error('Daily Planner OpenRouter failed:', error);
+      console.error('Daily Planner OpenRouter failed or invalid schema:', error);
     }
   }
 
@@ -92,10 +94,12 @@ Return a plan with time blocks (8:30 AM to 5 PM), strategic alignments, required
           const text = response.text;
           const jsonMatch = text?.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
-              return JSON.parse(jsonMatch[0]) as DailyPlannerAIOutput;
+              const parsed = JSON.parse(jsonMatch[0]);
+              // Validate with schema
+              return DailyPlannerAIOutputSchema.parse(parsed);
           }
       } catch (error) {
-          console.error('Daily Planner Gemini failed:', error);
+          console.error('Daily Planner Gemini failed or invalid schema:', error);
       }
   }
   

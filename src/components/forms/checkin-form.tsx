@@ -126,8 +126,8 @@ function CheckinFormComponent() {
     };
 
     const shouldRenderPlan = useMemo(() => {
-        return !!(planDataString && submittedPlan?.timeBlocks && primaryMission);
-    }, [planDataString, submittedPlan, primaryMission]);
+        return !!(planDataString && primaryMission);
+    }, [planDataString, primaryMission]);
 
     if (!shouldRenderPlan) {
         return (
@@ -173,10 +173,10 @@ function CheckinFormComponent() {
                              <h4 className="font-semibold text-md">Key Time Blocks</h4>
                             <ul className="list-disc list-inside space-y-2 text-base sm:text-sm">
                                 {submittedPlan?.timeBlocks?.map((block, index) => (
-                                    <li key={index}><strong>{block.startTime} - {block.endTime}:</strong> {block.description}</li>
+                                    <li key={index}><strong>{block?.startTime} - {block?.endTime}:</strong> {block?.description}</li>
                                 ))}
                                 {(!submittedPlan?.timeBlocks || submittedPlan.timeBlocks.length === 0) && (
-                                    <li className="text-muted-foreground italic">No specific time blocks generated.</li>
+                                    <li className="text-muted-foreground italic text-sm">No specific time blocks generated.</li>
                                 )}
                             </ul>
                         </div>

@@ -171,12 +171,15 @@ export default function DailyPlannerPage() {
             {aiPlan.strategicAlignments && aiPlan.strategicAlignments.length > 0 && (
                 <div className="space-y-4">
                     <h4 className="font-black uppercase text-sm flex items-center gap-2"><Target className="text-primary" /> Strategic Alignment</h4>
-                    {aiPlan.strategicAlignments.map((align, i) => (
+                    {aiPlan.strategicAlignments?.map((align, i) => (
                         <div key={i} className="p-4 bg-muted/50 rounded-2xl border-lg border-omuto-navy/10">
                             <p className="font-bold text-xs uppercase tracking-tight text-omuto-navy/70">{align.krTitle}</p>
                             <p className="text-xs font-bold text-omuto-navy mt-1">{align.alignmentJustification}</p>
                         </div>
                     ))}
+                    {(!aiPlan.strategicAlignments || aiPlan.strategicAlignments.length === 0) && (
+                        <p className="text-xs text-muted-foreground italic">No specific strategic alignments identified.</p>
+                    )}
                 </div>
             )}
 
@@ -189,7 +192,7 @@ export default function DailyPlannerPage() {
                         </Button>
                     </div>
                     <div className="space-y-3">
-                        {editablePlan?.timeBlocks.map((block, i) => (
+                        {editablePlan?.timeBlocks?.map((block, i) => (
                             <div key={i} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-start p-4 bg-muted/30 rounded-2xl border-2 border-transparent hover:border-omuto-navy/10 transition-all group relative">
                                 <div className="flex sm:flex-col gap-2 w-full sm:w-32">
                                     <div className="flex-1 sm:flex-none">
@@ -227,6 +230,11 @@ export default function DailyPlannerPage() {
                                 </Button>
                             </div>
                         ))}
+                        {(!editablePlan?.timeBlocks || editablePlan.timeBlocks.length === 0) && (
+                            <p className="text-sm text-muted-foreground italic text-center py-4 bg-muted/10 rounded-2xl border-2 border-dashed">
+                                No time blocks generated. Tap "Add Task" to create one.
+                            </p>
+                        )}
                     </div>
                 </div>
                  <div className="space-y-3">

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ActivitySchema } from './activity';
 import { CheckinSchema } from './checkin-checkout';
-import { ExpenseSchema } from './finance';
+import { ExpenseSchema, expenseItemCategories } from './finance';
 import { KeyResultSchema } from './okr';
 
 export const DailyPlannerAIInputSchema = z.object({
@@ -153,3 +153,21 @@ export const SearchResultItemSchema = z.object({
   snippet: z.string(),
 });
 export type SearchResultItem = z.infer<typeof SearchResultItemSchema>;
+
+export const ReceiptOCRInputSchema = z.object({
+  imageUri: z.string().optional(), // Cloud Storage URI
+  imageBase64: z.string().optional(), // Base64 encoded image
+});
+export type ReceiptOCRInput = z.infer<typeof ReceiptOCRInputSchema>;
+
+export const ReceiptOCROutputSchema = z.object({
+  title: z.string(),
+  items: z.array(z.object({
+    description: z.string(),
+    category: z.enum(expenseItemCategories),
+    amount: z.number(),
+  })),
+  totalAmount: z.number(),
+  currency: z.string().default('UGX'),
+});
+export type ReceiptOCROutput = z.infer<typeof ReceiptOCROutputSchema>;

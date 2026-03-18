@@ -1,5 +1,7 @@
-
 'use client';
+
+import { useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 import {
   Card,
@@ -80,19 +82,62 @@ function CheckoutStream() {
 
     const { data: checkouts, isLoading } = useCollection<Checkout>(checkoutsQuery);
 
+    const parentRefMobile = useRef<HTMLDivElement>(null);
+    const parentRefDesktop = useRef<HTMLDivElement>(null);
+
+    const virtualizerMobile = useVirtualizer({
+        count: checkouts?.length || 0,
+        getScrollElement: () => parentRefMobile.current,
+        estimateSize: () => 180, // Approximate height of a Checkout card
+        overscan: 5,
+    });
+
+    const virtualizerDesktop = useVirtualizer({
+        count: checkouts?.length || 0,
+        getScrollElement: () => parentRefDesktop.current,
+        estimateSize: () => 73, // Approximate height of a table row
+        overscan: 5,
+    });
+
     return (
         <>
             {/* Mobile View */}
-            <div className="space-y-4 sm:hidden">
-                {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
+            <div className="sm:hidden h-[600px] overflow-auto px-1 no-scrollbar" ref={parentRefMobile}>
+                {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-44 w-full mb-4" />)}
                 {checkouts && checkouts.length > 0 ? (
-                    checkouts.map(checkout => <CheckoutCard key={checkout.id} checkout={checkout} />)
+                    <div
+                        style={{
+                            height: `${virtualizerMobile.getTotalSize()}px`,
+                            width: '100%',
+                            position: 'relative',
+                        }}
+                    >
+                        {virtualizerMobile.getVirtualItems().map((virtualItem) => {
+                            const checkout = checkouts[virtualItem.index];
+                            return (
+                                <div
+                                    key={virtualItem.key}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '100%',
+                                        transform: `translateY(${virtualItem.start}px)`,
+                                        paddingBottom: '16px'
+                                    }}
+                                >
+                                    <CheckoutCard checkout={checkout} />
+                                </div>
+                            );
+                        })}
+                    </div>
                 ) : (
                     !isLoading && (
                         <EmptyState
                             icon={Wind}
                             title="Quiet day so far..."
                             description="No one has checked out yet. Be the first to share your progress!"
+                            className="py-12"
                         >
                             <Button asChild className="mt-4"><Link href="/forms/check-out">Check Out Now</Link></Button>
                         </EmptyState>
@@ -102,70 +147,80 @@ function CheckoutStream() {
 
             {/* Desktop View */}
             <div className="hidden sm:block">
-                <Card>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[200px]">User</TableHead>
-                                <TableHead>Summary</TableHead>
-                                <TableHead className="w-[150px] text-right">Date</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading && Array.from({ length: 5 }).map((_, i) => (
-                                <TableRow key={i}>
-                                    <TableCell><Skeleton className="h-8 w-full" /></TableCell>
-                                    <TableCell><Skeleton className="h-8 w-full" /></TableCell>
-                                    <TableCell><Skeleton className="h-8 w-full" /></TableCell>
-                                </TableRow>
-                            ))}
-                            {checkouts && checkouts.length > 0 ? (
-                                checkouts.map((checkout) => {
+                <div className="border border-omuto-navy/10 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <div className="grid grid-cols-[200px,1fr,150px] gap-4 px-6 py-4 bg-muted/40 border-b border-omuto-navy/10 font-bold uppercase text-[10px] tracking-widest text-omuto-navy/60">
+                        <div>User</div>
+                        <div>Summary</div>
+                        <div className="text-right">Date</div>
+                    </div>
+                    <div className="h-[600px] overflow-auto no-scrollbar" ref={parentRefDesktop}>
+                        {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="grid grid-cols-[200px,1fr,150px] gap-4 px-6 py-4 border-b border-omuto-navy/5 last:border-0 items-center">
+                                <Skeleton className="h-10 w-32" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-24 ml-auto" />
+                            </div>
+                        ))}
+                        {checkouts && checkouts.length > 0 ? (
+                            <div
+                                style={{
+                                    height: `${virtualizerDesktop.getTotalSize()}px`,
+                                    width: '100%',
+                                    position: 'relative',
+                                }}
+                            >
+                                {virtualizerDesktop.getVirtualItems().map((virtualItem) => {
+                                    const checkout = checkouts[virtualItem.index];
                                     const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [];
                                     const completed = tasksArray.filter(t => t.status === 'Done').length;
                                     const notCompleted = tasksArray.filter(t => t.status === 'Not Done').length;
+                                    
                                     return (
-                                        <TableRow key={checkout.id}>
-                                            <TableCell>
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
-                                                        <AvatarImage src={checkout.avatar} />
-                                                        <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <span className="font-medium">{checkout.name}</span>
+                                        <div
+                                            key={virtualItem.key}
+                                            className="grid grid-cols-[200px,1fr,150px] gap-4 px-6 py-4 border-b border-omuto-navy/5 last:border-0 items-center hover:bg-muted/5 transition-colors"
+                                            style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                width: '100%',
+                                                height: `${virtualItem.size}px`,
+                                                transform: `translateY(${virtualItem.start}px)`,
+                                            }}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
+                                                    <AvatarImage src={checkout.avatar} />
+                                                    <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="font-bold text-sm text-omuto-navy">{checkout.name}</span>
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-sm truncate">{tasksArray[0]?.description || 'End of day report'}</p>
+                                                <div className="text-[10px] text-muted-foreground flex gap-2 font-bold uppercase tracking-tighter">
+                                                    {completed > 0 && <span className="text-green-600">{completed} COMPLETED</span>}
+                                                    {notCompleted > 0 && <span className="text-red-500">{notCompleted} REMAINING</span>}
+                                                    {checkout.learning && <span className="text-yellow-600">| LEARNING LOGGED</span>}
                                                 </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <p className="font-medium truncate">{tasksArray[0]?.description}</p>
-                                                <div className="text-xs text-muted-foreground space-x-2">
-                                                    {completed > 0 && <span className="text-green-600">{completed} done</span>}
-                                                    {notCompleted > 0 && <span className="text-red-600">{notCompleted} not done</span>}
-                                                    {checkout.learning && <span>| Key Learning</span>}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right text-muted-foreground text-xs">{formatDateSafe(checkout.timestamp)}</TableCell>
-                                        </TableRow>
+                                            </div>
+                                            <div className="text-right text-[11px] text-muted-foreground">{formatDateSafe(checkout.timestamp)}</div>
+                                        </div>
                                     );
-                                })
-                            ) : (
-                                !isLoading && (
-                                     <TableRow>
-                                        <TableCell colSpan={3} className="h-48">
-                                            <EmptyState
-                                                icon={Wind}
-                                                title="Quiet day so far..."
-                                                description="No one has checked out yet. Check-out reports will appear here."
-                                                className="min-h-0"
-                                            >
-                                                 <Button asChild className="mt-4" variant="outline"><Link href="/forms/check-out">Check Out Now</Link></Button>
-                                            </EmptyState>
-                                        </TableCell>
-                                     </TableRow>
-                                )
-                            )}
-                        </TableBody>
-                    </Table>
-                </Card>
+                                })}
+                            </div>
+                        ) : (
+                            !isLoading && (
+                                <div className="flex flex-col items-center justify-center py-20">
+                                    <Wind className="h-10 w-10 text-muted-foreground/30 mb-2" />
+                                    <p className="text-muted-foreground font-bold">Quiet day so far...</p>
+                                    <Button asChild className="mt-4" variant="outline" size="sm">
+                                        <Link href="/forms/check-out">Check Out Now</Link>
+                                    </Button>
+                                </div>
+                            )
+                        )}
+                    </div>
+                </div>
             </div>
         </>
     );

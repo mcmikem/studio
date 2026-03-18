@@ -1,5 +1,8 @@
 'use client';
 
+import { useRef, useMemo } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+
 import {
   Card,
   CardContent,
@@ -57,6 +60,23 @@ export default function UserManagementPage() {
 
   const { data: users, isLoading } = useCollection<User>(usersQuery);
 
+  const parentRefMobile = useRef<HTMLDivElement>(null);
+  const parentRefDesktop = useRef<HTMLDivElement>(null);
+
+  const virtualizerMobile = useVirtualizer({
+    count: users?.length || 0,
+    getScrollElement: () => parentRefMobile.current,
+    estimateSize: () => 100, // Approximate height of a mobile user card
+    overscan: 5,
+  });
+
+  const virtualizerDesktop = useVirtualizer({
+    count: users?.length || 0,
+    getScrollElement: () => parentRefDesktop.current,
+    estimateSize: () => 73, // Approximate height of a table row
+    overscan: 5,
+  });
+
   const handleRoleChange = (userId: string, newRole: string) => {
     if (!firestore) return;
     const userDocRef = doc(firestore, 'users', userId);
@@ -93,130 +113,171 @@ export default function UserManagementPage() {
         <CardTitle>User Management</CardTitle>
         <CardDescription>View, manage, and edit roles for all team members in the system.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0 sm:p-6">
          {/* Mobile View */}
-        <div className="space-y-4 sm:hidden">
-            {isLoading && Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
-            {users?.map(user => (
-                <Card key={user.id} className="p-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                                <AvatarImage src={user.photoURL} alt={user.name} />
-                                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-medium">{user.name}</p>
-                                <p className="text-sm text-muted-foreground">{user.email}</p>
+        <div className="sm:hidden h-[600px] overflow-auto px-4" ref={parentRefMobile}>
+            {isLoading && Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-20 w-full mb-4" />)}
+            {users && users.length > 0 ? (
+                <div
+                    style={{
+                        height: `${virtualizerMobile.getTotalSize()}px`,
+                        width: '100%',
+                        position: 'relative',
+                    }}
+                >
+                    {virtualizerMobile.getVirtualItems().map((virtualItem) => {
+                        const user = users[virtualItem.index];
+                        return (
+                            <div
+                                key={virtualItem.key}
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    transform: `translateY(${virtualItem.start}px)`,
+                                    paddingBottom: '16px'
+                                }}
+                            >
+                                <Card key={user.id} className="p-4 border-lg shadow-sm">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
+                                                <AvatarImage src={user.photoURL} alt={user.name} />
+                                                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0">
+                                                <p className="font-bold truncate">{user.name}</p>
+                                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="secondary" className="text-[10px] uppercase font-black tracking-wider">{user.role}</Badge>
+                                            <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                  <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end">
+                                                <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+                                                <DropdownMenuSeparator />
+                                                {userRoles.map(role => (
+                                                    <DropdownMenuItem key={role} onSelect={() => handleRoleChange(user.id, role)} disabled={user.role === role}>
+                                                        {role} {user.role === role && '(Current)'}
+                                                    </DropdownMenuItem>
+                                                ))}
+                                              </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                </Card>
                             </div>
-                        </div>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {userRoles.map(role => (
-                                <DropdownMenuItem key={role} onSelect={() => handleRoleChange(user.id, role)} disabled={user.role === role}>
-                                    {user.role === role ? `Set as ${role} (Current)` : `Set as ${role}`}
-                                </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                     <Badge variant="secondary" className="mt-2">{user.role}</Badge>
-                </Card>
-            ))}
+                        );
+                    })}
+                </div>
+            ) : (
+                !isLoading && (
+                    <EmptyState
+                        icon={UsersIcon}
+                        title="No Users Found"
+                        description="Could not find any users in the database."
+                        className="py-12"
+                    />
+                )
+            )}
         </div>
 
         {/* Desktop View */}
         <div className="hidden sm:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading &&
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Skeleton className="h-10 w-10 rounded-full" />
-                          <div className="space-y-1">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-3 w-32" />
-                          </div>
+            <div className="border border-omuto-navy/10 rounded-xl overflow-hidden bg-white shadow-sm">
+                <div className="grid grid-cols-[1fr,200px,100px] gap-4 px-6 py-4 bg-muted/40 border-b border-omuto-navy/10 font-bold uppercase text-[10px] tracking-widest text-omuto-navy/60">
+                    <div>User</div>
+                    <div>Role</div>
+                    <div className="text-right">Actions</div>
+                </div>
+                <div className="h-[600px] overflow-auto no-scrollbar" ref={parentRefDesktop}>
+                    {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="grid grid-cols-[1fr,200px,100px] gap-4 px-6 py-4 border-b border-omuto-navy/5 last:border-0 items-center">
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <div className="space-y-1">
+                                    <Skeleton className="h-4 w-24" />
+                                    <Skeleton className="h-3 w-32" />
+                                </div>
+                            </div>
+                            <Skeleton className="h-6 w-32" />
+                            <Skeleton className="h-8 w-8 ml-auto" />
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-6 w-32" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Skeleton className="h-8 w-8 ml-auto" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                {users && users.length > 0 ? (
-                  users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
-                            <AvatarImage src={user.photoURL} alt={user.name} />
-                            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{user.name}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
-                          </div>
+                    ))}
+                    {users && users.length > 0 ? (
+                        <div
+                            style={{
+                                height: `${virtualizerDesktop.getTotalSize()}px`,
+                                width: '100%',
+                                position: 'relative',
+                            }}
+                        >
+                            {virtualizerDesktop.getVirtualItems().map((virtualItem) => {
+                                const user = users[virtualItem.index];
+                                return (
+                                    <div
+                                        key={virtualItem.key}
+                                        className="grid grid-cols-[1fr,200px,100px] gap-4 px-6 py-4 border-b border-omuto-navy/5 last:border-0 items-center hover:bg-muted/10 transition-colors"
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: `${virtualItem.size}px`,
+                                            transform: `translateY(${virtualItem.start}px)`,
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <Avatar className="h-10 w-10 border-md border-omuto-navy/10 shadow-sm" data-ai-hint="person avatar">
+                                                <AvatarImage src={user.photoURL} alt={user.name} />
+                                                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-sm text-omuto-navy truncate">{user.name}</p>
+                                                <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <Badge variant="secondary" className="bg-omuto-navy/5 text-omuto-navy border-none font-bold text-[10px] uppercase">{user.role}</Badge>
+                                        </div>
+                                        <div className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-omuto-navy/5 rounded-xl">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+                                                    <DropdownMenuSeparator />
+                                                    {userRoles.map(role => (
+                                                        <DropdownMenuItem key={role} onSelect={() => handleRoleChange(user.id, role)} disabled={user.role === role}>
+                                                            {role} {user.role === role && '(Current)'}
+                                                        </DropdownMenuItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">{user.role}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-                            {userRoles.map(role => (
-                                <DropdownMenuItem key={role} onSelect={() => handleRoleChange(user.id, role)} disabled={user.role === role}>
-                                    {user.role === role ? `Set as ${role} (Current)` : `Set as ${role}`}
-                                </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  !isLoading && (
-                    <TableRow>
-                      <TableCell colSpan={3} className="h-48">
-                        <EmptyState
-                            icon={UsersIcon}
-                            title="No Users Found"
-                            description="Could not find any users in the database."
-                            className="min-h-0"
-                        />
-                      </TableCell>
-                    </TableRow>
-                  )
-                )}
-              </TableBody>
-            </Table>
+                    ) : (
+                        !isLoading && (
+                            <div className="flex flex-col items-center justify-center h-48">
+                                <UsersIcon className="h-12 w-12 text-muted-foreground/30 mb-2" />
+                                <p className="text-muted-foreground font-bold">No Users Found</p>
+                            </div>
+                        )
+                    )}
+                </div>
+            </div>
         </div>
       </CardContent>
     </Card>

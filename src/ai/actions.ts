@@ -26,7 +26,8 @@ import {
     OmutoAIInput,
     OmutoAIOutput,
 
-
+    ReceiptOCRInput,
+    ReceiptOCROutput,
 } from '@/lib/types';
 
 
@@ -193,4 +194,9 @@ export async function runTestimonyProcessor(input: TestimonyInput) {
 export async function getEnterpriseInsightsAction(input: { sales: any[]; inventory: any[]; production: any[] }) {
   const { getEnterpriseInsights } = await import('@/ai/flows/enterprise-advisor-flow');
   return await getEnterpriseInsights(input);
+}
+
+export async function processReceiptAction(input: ReceiptOCRInput): Promise<ReceiptOCROutput> {
+  const { processReceipt } = await import('./flows/receipt-ocr-flow');
+  return await processReceipt(input);
 }

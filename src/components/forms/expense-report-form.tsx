@@ -28,11 +28,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { Loader2, FilePlus2, PlusCircle, Trash2, Receipt, Wallet, Sparkles, ArrowRight, Upload } from 'lucide-react';
+import { Loader2, FilePlus2, PlusCircle, Trash2, Receipt, Wallet, Sparkles, ArrowRight, Upload, Wand2 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { createAlertAction as createAlert } from '@/actions/mutations';
+import { processReceiptAction } from '@/ai/actions';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import type { Expense, User, Project, ExpenseItem } from '@/lib/types';
 import { expenseItemCategories } from '@/lib/types';
@@ -96,6 +97,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
   const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = React.useState<string>('');
   const [isUploading, setIsUploading] = React.useState(false);
+  const [isScanning, setIsScanning] = React.useState(false);
 
   const isEditMode = !!expense;
   const financeRoles = ['Administrator', 'Executive Director', 'Media & Finance Lead', 'Media & Communications Lead', 'Programs & Partnerships Manager'];
@@ -183,6 +185,48 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
   const clearDraft = () => {
     localStorage.removeItem(draftKey);
+  };
+
+  const handleMagicScan = async () => {
+    if (!receiptFile) {
+        toast({ title: 'No receipt found', description: 'Please upload a receipt image first.' });
+        return;
+    }
+
+    try {
+        setIsScanning(true);
+        // Convert file to base64
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve) => {
+            reader.onload = () => {
+                const base64 = (reader.result as string).split(',')[1];
+                resolve(base64);
+            };
+        });
+        reader.readAsDataURL(receiptFile);
+        const base64 = await base64Promise;
+
+        const result = await processReceiptAction({ imageBase64: base64 });
+        
+        if (result.title === 'Extraction Failed' || result.items.length === 0) {
+            toast({ variant: 'destructive', title: 'Scan Failed', description: 'We couldn\'t read the receipt. Please try a clearer photo.' });
+        } else {
+            // Apply results to form
+            setValue('title', result.title);
+            setValue('items', result.items);
+            setValue('totalAmount', result.totalAmount);
+            
+            toast({
+                title: 'Magic Scan Complete!',
+                description: `Extracted ${result.items.length} items totaling ${formatCurrency(result.totalAmount)}.`,
+            });
+        }
+    } catch (error) {
+        console.error('Magic scan failed:', error);
+        toast({ variant: 'destructive', title: 'Scan Error', description: 'An unexpected error occurred during receipt analysis.' });
+    } finally {
+        setIsScanning(false);
+    }
   };
   // -----------------------------
 
@@ -364,6 +408,17 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                             <Upload className="h-5 w-5" />
                             {receiptFile ? receiptFile.name : 'Upload Receipt Image'}
                         </Label>
+                        {receiptFile && (
+                            <Button 
+                                type="button" 
+                                onClick={handleMagicScan} 
+                                disabled={isScanning}
+                                className="h-14 px-6 bg-omuto-yellow text-omuto-navy border-lg border-omuto-navy shadow-comic-sm hover:bg-omuto-yellow/90 hover:-translate-y-0.5"
+                            >
+                                {isScanning ? <Loader2 className="h-5 w-5 animate-spin" /> : <Wand2 className="h-5 w-5 mr-2" />}
+                                {isScanning ? 'SCANNING...' : 'MAGIC SCAN'}
+                            </Button>
+                        )}
                     </div>
                     {receiptPreview && (
                         <div className="mt-3 p-2 border rounded-xl bg-muted/20 inline-block">
