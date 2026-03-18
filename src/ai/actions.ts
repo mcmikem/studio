@@ -103,7 +103,9 @@ export async function runQualitativeAnalysis(input: QualitativeAnalysisInput) {
 
 
 export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
-    console.log('[omutoAI] Provider:', aiConfig.provider, 'Is configured:', aiConfig.isConfigured);
+    const hasORKey = Boolean(aiConfig.openRouterApiKey);
+    const orPrefix = aiConfig.openRouterApiKey ? aiConfig.openRouterApiKey.substring(0, 10) : 'none';
+    console.log(`[omutoAI] Start. Provider: ${aiConfig.provider}, OR Key Present: ${hasORKey} (${orPrefix}), Gemini Key Present: ${Boolean(aiConfig.geminiApiKey)}`);
     
     // 1. Try OpenRouter if it's the active provider and configured
     if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {

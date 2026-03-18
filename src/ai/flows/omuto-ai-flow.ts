@@ -126,7 +126,7 @@ export const omutoAIFlow = ai.defineFlow(
           return { answer: "The AI service is not configured. Please contact the administrator." };
         }
         
-        return { answer: `I encountered an error: ${errorMessage}. Please try again.` };
+        return { answer: `[V2-FIXED] I encountered an error: ${errorMessage}. Please try again.` };
     }
   }
 );

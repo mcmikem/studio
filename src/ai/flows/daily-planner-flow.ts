@@ -85,7 +85,7 @@ Return a plan with time blocks (8:30 AM to 5 PM), strategic alignments, required
           console.log('[DailyPlanner] Attempting Gemini generation');
           const response = await plannerPrompt({ input: prompt });
           if (response.output) {
-              return response.output;
+              return response.output as DailyPlannerAIOutput;
           }
       } catch (error) {
           console.error('Daily Planner Gemini failed:', error);
