@@ -9,6 +9,10 @@ function getOpenRouterClient(): OpenAI | null {
   return new OpenAI({
     apiKey,
     baseURL: 'https://openrouter.ai/api/v1',
+    defaultHeaders: {
+      'HTTP-Referer': 'https://omutofoundation.org',
+      'X-Title': 'Omuto Central Studio',
+    }
   });
 }
 

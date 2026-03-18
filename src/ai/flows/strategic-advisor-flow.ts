@@ -43,6 +43,8 @@ Analyze the last 30 days of data for Omuto Foundation:
 Provide 3-4 strategic insights with emoji, title, description, and recommendation.
 `;
 
+  let lastError = '';
+
   // 1. Try OpenRouter if configured
   if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
     try {
@@ -53,8 +55,10 @@ Provide 3-4 strategic insights with emoji, title, description, and recommendatio
       if (jsonMatch) {
          return JSON.parse(jsonMatch[0]);
       }
+      lastError = 'OpenRouter returned empty string';
     } catch (error: any) {
-      console.error('[StrategicAdvisor] OpenRouter failed:', error?.message || error);
+      lastError = `OpenRouter: ${error?.message || String(error)}`;
+      console.error('[StrategicAdvisor] OpenRouter failed:', lastError);
     }
   }
 
@@ -66,8 +70,10 @@ Provide 3-4 strategic insights with emoji, title, description, and recommendatio
           if (response.output) {
               return response.output as { insights: { emoji: string; title: string; description: string; recommendation: string }[] };
           }
-      } catch (error) {
-          console.error('[StrategicAdvisor] Gemini failed:', error);
+          lastError += ' | Gemini returned empty';
+      } catch (error: any) {
+          lastError += ` | Gemini: ${error?.message || String(error)}`;
+          console.error('[StrategicAdvisor] Gemini failed:', error?.message);
       }
   }
 
@@ -77,8 +83,8 @@ Provide 3-4 strategic insights with emoji, title, description, and recommendatio
       {
         emoji: "⚙️",
         title: "AI Analysis Unavailable",
-        description: "We couldn't reach the AI service to analyze your data.",
-        recommendation: "Please ensure your API keys (Gemini or OpenRouter) are correctly configured in .env.local."
+        description: `We couldn't reach the AI service to analyze your data.`,
+        recommendation: `Debug Info: ${lastError.substring(0, 200)}`
       }
     ]
   };
