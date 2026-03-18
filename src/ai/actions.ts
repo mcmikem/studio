@@ -2,7 +2,7 @@
 'use server';
 
 import { omutoAIFlow } from './flows/omuto-ai-flow';
-import { chatWithOpenRouter } from '@/lib/openrouter';
+import { chatWithOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
 import { aiConfig } from '@/lib/ai';
 
 import {
@@ -125,7 +125,7 @@ export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
             ];
             
             console.log('[omutoAI] Sending request to OpenRouter');
-            const answer = await chatWithOpenRouter(messages, 'openai/gpt-4o-mini');
+            const answer = await chatWithOpenRouter(messages, DEFAULT_MODEL);
             if (answer) return { answer };
         } catch (error: any) {
             console.error('omutoAI OpenRouter failed:', error?.message || error);

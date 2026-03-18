@@ -63,10 +63,10 @@ export async function chatWithOpenRouter(
 }
 
 export const OPENROUTER_FREE_MODELS = [
-  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'OpenAI', description: 'Best overall' },
-  { id: 'anthropic/claude-3-haiku', name: 'Claude 3 Haiku', provider: 'Anthropic', description: 'Fast & capable' },
-  { id: 'google/gemini-flash-1.5-8b', name: 'Gemini Flash 1.5', provider: 'Google', description: 'Free Google AI' },
-  { id: 'meta-llama/llama-3.1-8b-instruct', name: 'Llama 3.1 8B', provider: 'Meta', description: 'Open source' },
+  { id: 'google/gemini-2.0-flash-exp:free', name: 'Gemini 2.0 Flash', provider: 'Google', description: 'Best free model' },
+  { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B', provider: 'Meta', description: 'Powerful open source' },
+  { id: 'qwen/qwen-2.5-72b-instruct:free', name: 'Qwen 2.5 72B', provider: 'Alibaba', description: 'Strong multilingual' },
+  { id: 'mistralai/mistral-small-3.1-24b-instruct:free', name: 'Mistral Small 3.1', provider: 'Mistral', description: 'Fast & capable' },
 ];
 
-export const DEFAULT_MODEL = 'openai/gpt-4o-mini';
+export const DEFAULT_MODEL = 'google/gemini-2.0-flash-exp:free';

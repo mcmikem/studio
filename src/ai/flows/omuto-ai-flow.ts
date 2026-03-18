@@ -86,15 +86,23 @@ export const omutoAIFlow = ai.defineFlow(
             input: question,
         });
         
-        // Handle different response formats safely
+        // Genkit prompt response has .text as a getter property
         let answer = '';
         
-        if (typeof llmResponse === 'string') {
-          answer = llmResponse;
-        } else if (llmResponse && typeof llmResponse === 'object') {
-          // Try various possible response formats - use type assertion
-          const response = llmResponse as any;
-          answer = response.text || response.content || response.output || response.message || JSON.stringify(response);
+        try {
+          // .text is a getter on Genkit GenerateResponse
+          const textValue = llmResponse.text;
+          if (textValue && typeof textValue === 'string') {
+            answer = textValue;
+          } else if (llmResponse.output && typeof llmResponse.output === 'object') {
+            const output = llmResponse.output as any;
+            answer = output.answer || output.text || JSON.stringify(output);
+          } else {
+            answer = String(llmResponse);
+          }
+        } catch (parseError) {
+          console.error('[OmutoAI] Error parsing response:', parseError);
+          answer = '';
         }
         
         if (!answer || answer.trim() === '') {
