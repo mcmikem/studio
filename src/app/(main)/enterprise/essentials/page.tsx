@@ -1,8 +1,8 @@
 
 'use client';
 
-import { Suspense, useMemo } from 'react';
-import { Loader2, Package, DollarSign, List, ArrowLeft, TrendingUp, ShoppingCart, Store, ClipboardList, Factory, Boxes, AlertCircle, ShoppingBag, History } from 'lucide-react';
+import { Suspense, useMemo, useState, useEffect } from 'react';
+import { Loader2, Package, DollarSign, List, ArrowLeft, TrendingUp, ShoppingCart, Store, ClipboardList, Factory, Boxes, AlertCircle, ShoppingBag, History, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import { startOfMonth, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getEnterpriseInsightsAction } from '@/actions/mutations';
 
 function StatCard({ title, value, icon: Icon, description, trend, variant = 'default' }: { title: string; value: string; icon: React.ElementType, description?: string, trend?: string, variant?: 'default' | 'urgent' }) {
     return (
@@ -83,9 +84,32 @@ function EssentialsHubPage() {
     const { data: recentSales, isLoading: isLoadingRecent } = useCollection<Sale>(recentSalesQuery);
     const { data: monthlyProduction, isLoading: isLoadingProduction } = useCollection<ProductionBatch>(monthlyProductionQuery);
     const { data: recentProduction, isLoading: isLoadingRecentProduction } = useCollection<ProductionBatch>(recentProductionQuery);
-    // const { data: products, isLoading: isLoadingProducts } = useCollection<Product>(productsQuery);
-    // const { data: recentProduction, isLoading: isLoadingProduction } = useCollection<ProductionBatch>(productionQuery);
     
+    const [insights, setInsights] = useState<any[]>([]);
+    const [isInsightsLoading, setIsInsightsLoading] = useState(false);
+
+    useEffect(() => {
+        if (!monthlySales || !recentProduction || isInsightsLoading || insights.length > 0) return;
+
+        const fetchInsights = async () => {
+            setIsInsightsLoading(true);
+            try {
+                const result = await getEnterpriseInsightsAction({
+                    sales: monthlySales,
+                    inventory: [], // Needs products query if we want stock insights
+                    production: monthlyProduction || []
+                });
+                setInsights(result.insights || []);
+            } catch (error) {
+                console.error("Failed to fetch AI insights:", error);
+            } finally {
+                setIsInsightsLoading(false);
+            }
+        };
+
+        fetchInsights();
+    }, [monthlySales, monthlyProduction, recentProduction]);
+
     const stats = useMemo(() => {
         if (!monthlySales) return { totalRevenue: 0, totalSales: 0, topProduct: 'N/A', lowStockCount: 0, productionBatches: 0, productionCost: 0, profit: 0 };
         
@@ -383,16 +407,44 @@ function EssentialsHubPage() {
                         </Button>
                     </div>
 
-                    <Card className="bg-omuto-yellow/10 border-lg border-omuto-yellow/20 rounded-3xl p-6 mt-8">
-                        <div className="flex gap-4">
-                            <div className="p-3 bg-omuto-yellow rounded-2xl h-fit text-omuto-brown">
-                                <AlertCircle className="h-6 w-6"/>
+                    <Card className="bg-primary/10 border-lg border-primary/20 rounded-3xl p-6 mt-8 overflow-hidden relative">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Sparkles className="h-12 w-12 text-primary" />
+                        </div>
+                        <div className="flex gap-4 relative">
+                            <div className="p-3 bg-primary rounded-2xl h-fit text-white">
+                                <Sparkles className="h-6 w-6"/>
                             </div>
-                            <div className="space-y-1">
-                                <h4 className="font-black text-sm uppercase tracking-tighter text-omuto-brown">System Intelligence</h4>
-                                <p className="text-[10px] font-bold text-omuto-brown/70 leading-relaxed uppercase tracking-wide">
-                                    Suggested task: Review stock of packaging materials. Current consumption rate indicates stock-out risk in 7 days.
-                                </p>
+                            <div className="space-y-3 flex-grow">
+                                <h4 className="font-black text-sm uppercase tracking-tighter text-primary">AI Enterprise Advisor</h4>
+                                
+                                {isInsightsLoading ? (
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-3/4" />
+                                    </div>
+                                ) : insights.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {insights.map((insight, idx) => (
+                                            <div key={idx} className="space-y-1">
+                                                <p className="text-[10px] font-black uppercase text-primary/70 tracking-widest leading-none mb-1">
+                                                    {insight.title} • {insight.priority} Priority
+                                                </p>
+                                                <p className="text-xs font-bold text-omuto-navy leading-relaxed">
+                                                    {insight.insight}
+                                                </p>
+                                                <div className="mt-2 p-2 bg-white/50 rounded-lg border border-primary/10">
+                                                    <p className="text-[9px] font-black uppercase text-muted-foreground tracking-tighter mb-1">Actionable Step</p>
+                                                    <p className="text-[11px] font-bold text-omuto-navy">{insight.actionableStep}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-[10px] font-bold text-muted-foreground leading-relaxed uppercase tracking-wide">
+                                        Analyzing enterprise data... Insights will appear as soon as sales and production trends are identified.
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </Card>

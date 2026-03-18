@@ -239,3 +239,8 @@ export async function generateTemplateAction(input: GenerateTemplateInput): Prom
         return generateOfflineTemplate(input);
     }
 }
+
+export async function getEnterpriseInsightsAction(input: { sales: any[]; inventory: any[]; production: any[] }) {
+  const { getEnterpriseInsights } = await import('@/ai/flows/enterprise-advisor-flow');
+  return await getEnterpriseInsights(input);
+}

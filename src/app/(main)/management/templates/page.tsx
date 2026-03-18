@@ -39,7 +39,7 @@ import {
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, Edit, Trash2, ListChecks, Loader2, Wand } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, ListChecks, Loader2, Wand, Sparkles } from 'lucide-react';
 import type { TaskTemplate } from '@/lib/types';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Textarea } from '@/components/ui/textarea';
@@ -178,16 +178,21 @@ function NewTemplateDialog() {
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    New Template
+                <Button className="btn-omuto-yellow shadow-comic-sm">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    AI Template Builder
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Create New Task Template</DialogTitle>
-                    <DialogDescription>
-                        {aiGeneratedData ? "Review and edit the selected SOP template below." : "Describe the process (e.g., 'Volunteer', 'Safety'), and we will find a matching standard for you."}
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 bg-omuto-yellow/20 rounded-lg">
+                            <Sparkles className="h-5 w-5 text-omuto-yellow" />
+                        </div>
+                        <DialogTitle>AI SOP Generator</DialogTitle>
+                    </div>
+                    <DialogDescription className="font-bold text-omuto-navy/70 uppercase text-[10px] tracking-widest">
+                        {aiGeneratedData ? "Review and refine your AI-generated SOP." : "Tell us the process name or describe the steps, and our AI will build a standard checklist for your team."}
                     </DialogDescription>
                 </DialogHeader>
                 {!aiGeneratedData ? (
@@ -202,9 +207,9 @@ function NewTemplateDialog() {
                                 className="min-h-[120px]"
                             />
                         </div>
-                        <Button onClick={handleGenerate} disabled={isLoading} className="w-full">
-                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
-                            Find Standard SOP
+                        <Button onClick={handleGenerate} disabled={isLoading} className="w-full h-12 btn-omuto shadow-comic-md bg-omuto-navy">
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
+                            Generate Standard SOP
                         </Button>
                     </div>
                 ) : (

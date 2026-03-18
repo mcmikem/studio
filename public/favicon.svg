@@ -1,11 +1,6 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- White rounded background -->
+<svg width="32" height="32" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="512" height="512" rx="112" fill="white"/>
-  
-  <!-- Outer ring - filled red with slight transparency for depth -->
   <circle cx="256" cy="256" r="185" fill="hsl(0 72% 65%)" opacity="0.35"/>
   <circle cx="256" cy="256" r="185" fill="none" stroke="hsl(0 84% 60%)" stroke-width="48"/>
-  
-  <!-- Inner filled disc -->
   <circle cx="256" cy="256" r="88" fill="hsl(0 84% 60%)"/>
 </svg>

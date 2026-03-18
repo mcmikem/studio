@@ -7,25 +7,24 @@ import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
 import { aiConfig } from '@/lib/ai';
 import { QualitativeAnalysisInputSchema, QualitativeAnalysisOutputSchema } from '@/lib/types';
 
+import { ai } from '@/ai/genkit';
+
+const qualitativeParserPrompt = ai.definePrompt({
+  name: 'qualitativeParserPrompt',
+  model: 'googleai/gemini-2.0-flash',
+  system: `You are an expert M&E (Monitoring and Evaluation) analyst for a youth-led NGO in Uganda. Analyze qualitative data and provide actionable insights.`,
+  output: {
+    schema: QualitativeAnalysisOutputSchema
+  }
+});
+
 export async function analyzeQualitativeData(input: { programName: string; programId: string; startDate: string; endDate: string; data?: any[] }): Promise<{ summary: string; recurringSuccesses: string[]; commonChallenges: string[]; keyLearnings: string[] }> {
-  const systemPrompt = `You are an expert M&E (Monitoring and Evaluation) analyst for a youth-led NGO in Uganda.
-Analyze qualitative data and provide actionable insights.`;
+  const prompt = `Analyze the following qualitative data from field reports for program "${input.programName}":\n\n${JSON.stringify(input.data || [], null, 2).substring(0, 3000)}\n\nReturn JSON with summary, recurringSuccesses, commonChallenges, keyLearnings.`;
 
-  const prompt = `You are an expert M&E analyst. Analyze the following qualitative data from field reports.
-
-Provide a JSON response with:
-1. summary - Executive summary of findings
-2. recurringSuccesses - Array of what's going well
-3. commonChallenges - Array of obstacles faced
-4. keyLearnings - Array of important takeaways
-
-Data:
-${JSON.stringify(input.data || [], null, 2).substring(0, 3000)}
-
-Return JSON with summary, recurringSuccesses, commonChallenges, keyLearnings.`;
-
-  if (aiConfig.provider === 'openrouter') {
+  // 1. Try OpenRouter First
+  if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
     try {
+      const systemPrompt = `You are an expert M&E analyst for a youth-led NGO in Uganda. Return valid JSON only.`;
       const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.5);
       
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -38,26 +37,24 @@ Return JSON with summary, recurringSuccesses, commonChallenges, keyLearnings.`;
           keyLearnings: parsed.keyLearnings || []
         };
       }
-      
-      return {
-        summary: 'Could not analyze data at this time',
-        recurringSuccesses: [],
-        commonChallenges: [],
-        keyLearnings: []
-      };
     } catch (error) {
-      console.error('Qualitative analysis failed:', error);
-      return {
-        summary: 'Error analyzing data',
-        recurringSuccesses: [],
-        commonChallenges: [],
-        keyLearnings: []
-      };
+      console.error('Qualitative analysis OpenRouter failed:', error);
     }
   }
 
+  // 2. Try Gemini
+  try {
+    console.log('[QualitativeAnalysis] Attempting Gemini fallback');
+    const response = await qualitativeParserPrompt({ input: prompt });
+    if (response.output) {
+       return response.output;
+    }
+  } catch (error) {
+    console.error('Qualitative analysis Gemini failed:', error);
+  }
+
   return {
-    summary: 'AI not configured. Set up OpenRouter.',
+    summary: 'AI analysis unavailable at this time',
     recurringSuccesses: [],
     commonChallenges: [],
     keyLearnings: []

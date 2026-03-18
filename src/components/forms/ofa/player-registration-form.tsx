@@ -53,6 +53,7 @@ export function PlayerRegistrationForm() {
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>('');
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const teamsQuery = useMemoFirebase(() => {
@@ -87,7 +88,11 @@ export function PlayerRegistrationForm() {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      toast({ variant: 'destructive', title: 'Invalid file', description: 'Please select an image file.' });
+      toast({ variant: 'destructive', title: 'Invalid file', description: 'Please select a JPG, PNG, or WebP image.' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ variant: 'destructive', title: 'Image too large', description: `This image is ${(file.size / 1024 / 1024).toFixed(1)}MB. Please use an image smaller than 5MB.` });
       return;
     }
     if (photoPreview) URL.revokeObjectURL(photoPreview);
@@ -110,9 +115,14 @@ export function PlayerRegistrationForm() {
     try {
       let photoUrl: string | null = null;
       if (photoFile && app) {
-        const ext = photoFile.name.split('.').pop() || 'jpg';
-        const safeName = data.name.replace(/\s+/g, '-').toLowerCase();
-        photoUrl = await uploadFile(app, photoFile, buildUploadPath.ofaPlayerPhoto(data.teamId, safeName, ext));
+        setIsPhotoUploading(true);
+        try {
+          const ext = photoFile.name.split('.').pop() || 'jpg';
+          const safeName = data.name.replace(/\s+/g, '-').toLowerCase();
+          photoUrl = await uploadFile(app, photoFile, buildUploadPath.ofaPlayerPhoto(data.teamId, safeName, ext));
+        } finally {
+          setIsPhotoUploading(false);
+        }
       }
 
       await addDocumentNonBlocking(collection(firestore, 'ofa-players'), {
@@ -151,14 +161,21 @@ export function PlayerRegistrationForm() {
             <div className="grid gap-6 md:grid-cols-[180px_1fr]">
               <div className="space-y-3">
                 <Label>Player Photo</Label>
-                <Avatar className="h-28 w-28 border">
-                  <AvatarImage src={photoPreview} alt="player" />
-                  <AvatarFallback>{'P'}</AvatarFallback>
-                </Avatar>
-                <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={onFileChange} />
-                <Button type="button" variant="secondary" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="mr-2 h-4 w-4" /> Upload
-                </Button>
+                <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                  <Avatar className="h-28 w-28 border-2 border-primary/30">
+                    <AvatarImage src={photoPreview} alt="player" />
+                    <AvatarFallback className="text-2xl bg-muted">{'P'}</AvatarFallback>
+                  </Avatar>
+                  <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    {isPhotoUploading ? (
+                      <Loader2 className="h-8 w-8 text-white animate-spin" />
+                    ) : (
+                      <Upload className="h-8 w-8 text-white" />
+                    )}
+                  </div>
+                </div>
+                <input ref={fileInputRef} type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={onFileChange} />
+                <p className="text-[10px] text-muted-foreground text-center">Tap to {photoPreview ? 'change' : 'add'} photo</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">

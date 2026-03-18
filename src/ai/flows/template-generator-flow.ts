@@ -5,6 +5,8 @@
  */
 
 import { ai } from '@/ai/genkit';
+import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
 import { 
   GenerateTemplateInputSchema, 
   GenerateTemplateOutputSchema,
@@ -48,6 +50,22 @@ Return a JSON object with:
 Make the items specific and actionable for NGO field operations in Uganda.
 `;
 
+    // 1. Try OpenRouter First
+    if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
+      try {
+        const systemPrompt = `You are an expert operational assistant for the Omuto Foundation. Return valid JSON only.`;
+        const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.7);
+        
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+      } catch (error) {
+        console.error('Template Generator OpenRouter failed:', error);
+      }
+    }
+
+    // 2. Try Gemini
     try {
       const response = await templatePrompt({ input: prompt });
       
@@ -63,12 +81,13 @@ Make the items specific and actionable for NGO field operations in Uganda.
         const parsed = JSON.parse(jsonMatch[0]);
         return parsed;
       }
-      
-      throw new Error('Could not parse AI response');
     } catch (error) {
-      console.error('Template AI failed:', error);
-      throw error;
+      console.error('Template AI Gemini failed:', error);
     }
+
+    // 3. Last Fallback: Offline
+    console.log('[TemplateGenerator] Using offline fallback');
+    return generateOfflineTemplate(input);
   }
 );
 

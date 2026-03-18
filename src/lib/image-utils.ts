@@ -46,7 +46,7 @@ export async function compressImage(file: File, maxSizeKB: number = 500): Promis
     img.onload = () => {
       // Calculate new dimensions
       let { width, height } = img;
-      const maxDim = 800;
+      const maxDim = 1200;
       
       if (width > maxDim || height > maxDim) {
         if (width > height) {

@@ -28,6 +28,9 @@ const grantWriterPrompt = ai.definePrompt({
 `
 });
 
+import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
+import { aiConfig } from '@/lib/ai';
+
 export const writeConceptNote = ai.defineFlow(
   {
     name: 'grantWriterFlow',
@@ -35,10 +38,38 @@ export const writeConceptNote = ai.defineFlow(
     outputSchema: GrantWriterOutputSchema
   },
   async (input) => {
-    const { output } = await grantWriterPrompt(input);
-    if (!output) {
-      throw new Error('AI failed to generate a concept note.');
+    const { partnerName, proposalTitle, amountRequested } = input;
+    
+    const prompt = `Draft a professional concept note for a proposal titled "${proposalTitle}" to be sent to ${partnerName}. The amount we are requesting is ${amountRequested} UGX. 
+Connect to Omuto's Ecosystem Model: Identify & Inspire, Equip & Empower, Activate & Sustain.
+Include: Introduction, Problem Statement, Our Proven Solution, Budget Overview.
+Return a JSON object with a 'conceptNote' field containing markdown.`;
+
+    // 1. Try OpenRouter First
+    if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
+      try {
+        const systemPrompt = `You are a professional grant writer for Omuto Foundation. Return valid JSON: {"conceptNote": "markdown content"}`;
+        const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.7);
+        
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+      } catch (error) {
+        console.error('Grant Writer OpenRouter failed:', error);
+      }
     }
-    return output;
+
+    // 2. Fallback to Gemini
+    try {
+      const { output } = await grantWriterPrompt(input);
+      if (!output) {
+        throw new Error('AI failed to generate a concept note.');
+      }
+      return output;
+    } catch (error) {
+      console.error('Grant Writer Gemini failed:', error);
+      throw error;
+    }
   }
 );

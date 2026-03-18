@@ -165,19 +165,45 @@ export function AppHeader() {
     return () => document.removeEventListener("keydown", down)
   }, [setOpen]);
 
+  // Page title mapping
+  const getPageTitle = () => {
+    if (pathname === '/') return 'Mission Control';
+    if (pathname.startsWith('/daily-plan')) return 'Daily Planner';
+    if (pathname.startsWith('/chat')) return 'AI Coach';
+    if (pathname.startsWith('/profile')) return 'Profile';
+    if (pathname.startsWith('/meal/activity')) return 'Activity Log';
+    if (pathname.startsWith('/meal/ofa')) return 'OFA Football';
+    if (pathname.startsWith('/meal/data')) return 'Dashboards';
+    if (pathname.startsWith('/meal')) return 'MEAL';
+    if (pathname.startsWith('/enterprise')) return 'Enterprise';
+    if (pathname.startsWith('/management/expenses')) return 'Expenses';
+    if (pathname.startsWith('/management')) return 'Ops Desk';
+    if (pathname.startsWith('/forms')) return 'Forms';
+    if (pathname.startsWith('/reports')) return 'Reports';
+    if (pathname.startsWith('/checkins')) return 'Check-ins';
+    if (pathname.startsWith('/testimonies')) return 'Stories';
+    if (pathname.startsWith('/help')) return 'Help';
+    return '';
+  };
+
+  const pageTitle = getPageTitle();
+
   return (
     <header className={cn(
-        "flex h-16 items-center justify-between gap-4 px-4 sm:px-6 w-full border-b",
+        "flex h-14 items-center justify-between gap-4 px-3 sm:px-6 w-full border-b bg-background/95 backdrop-blur-sm sticky top-0 z-30",
     )}>
-       <div className="flex items-center gap-4">
+       <div className="flex items-center gap-3">
         <SidebarTrigger className={cn(
-            "text-foreground",
+            "text-foreground hover:bg-muted/50 rounded-lg",
         )} />
+        {pageTitle && (
+          <span className="hidden sm:inline text-sm font-bold text-foreground/70 tracking-tight">{pageTitle}</span>
+        )}
       </div>
       <div className={cn(
-        "flex items-center gap-1.5"
+        "flex items-center gap-1"
       )}>
-        <Button variant="ghost" size="icon" className="text-foreground" onClick={() => setOpen(true)}><Search className="h-5 w-5" /></Button>
+        <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50 rounded-lg" onClick={() => setOpen(true)}><Search className="h-5 w-5" /></Button>
         {canViewAs && <div className="hidden sm:block"><ViewAsMenu /></div>}
         <div className="hidden sm:block"><QuickAddMenu /></div>
         <NotificationsMenu />

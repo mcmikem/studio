@@ -88,6 +88,7 @@ function ActivityReportFormComponent() {
   const [loading, setLoading] = useState(false);
   const [currentTab, setCurrentTab] = useState("planning");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
 
   const [activityName, setActivityName] = useState('');
@@ -471,10 +472,20 @@ function ActivityReportFormComponent() {
                                 <div className="flex items-center gap-4">
                                     <Input 
                                         type="file" 
-                                        accept="image/*,video/*" 
+                                        accept="image/png, image/jpeg, image/webp, video/mp4, video/quicktime" 
                                         onChange={(e) => {
-                                            if (e.target.files?.[0]) {
-                                                setMediaFile(e.target.files[0]);
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                if (file.size > 5 * 1024 * 1024 && file.type.startsWith('image/')) {
+                                                    toast({ variant: 'destructive', title: 'File too large', description: `${(file.size / 1024 / 1024).toFixed(1)}MB — please use an image under 5MB.` });
+                                                    return;
+                                                }
+                                                setMediaFile(file);
+                                                if (file.type.startsWith('image/')) {
+                                                    setMediaPreview(URL.createObjectURL(file));
+                                                } else {
+                                                    setMediaPreview('');
+                                                }
                                             }
                                         }}
                                         className="hidden" 
@@ -488,6 +499,12 @@ function ActivityReportFormComponent() {
                                         {mediaFile ? mediaFile.name : 'Upload Event Photo or Video'}
                                     </Label>
                                 </div>
+                                {mediaPreview && (
+                                    <div className="mt-2 p-2 border rounded-xl bg-muted/20 inline-block">
+                                        <img src={mediaPreview} alt="Media preview" className="max-h-32 rounded-lg object-contain" />
+                                        <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-1 text-center">Preview</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

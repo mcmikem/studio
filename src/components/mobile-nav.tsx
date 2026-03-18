@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard, ChevronUp, ChevronDown } from 'lucide-react';
+import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -50,14 +50,8 @@ export function MobileBottomNav() {
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe" aria-label="Mobile navigation">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -top-6 right-4 bg-white border-2 border-b-0 border-omuto-navy rounded-t-lg px-3 py-1 shadow-comic-sm z-[900]"
-        aria-label={isExpanded ? 'Hide menu' : 'Show menu'}
-      >
-        {isExpanded ? <ChevronDown className="w-4 h-4 text-omuto-navy" /> : <ChevronUp className="w-4 h-4 text-omuto-navy" />}
-      </button>
       
+      {/* Action drawer overlay */}
       {isActionMenuOpen && (
         <div
           className="fixed inset-0 bg-omuto-navy/80 backdrop-blur-sm z-[700] animate-in fade-in duration-300"
@@ -89,10 +83,11 @@ export function MobileBottomNav() {
         </div>
       )}
 
+      {/* Bottom nav bar */}
       <div 
         className={cn(
-          "mx-4 mb-4 bg-white border-xl border-omuto-navy shadow-comic rounded-3xl relative z-[800] transition-all duration-300 overflow-hidden",
-          isExpanded ? "h-20 py-4 flex items-center justify-between px-4" : "h-0 py-0 border-none shadow-none"
+          "mx-4 mb-4 bg-white border-xl border-omuto-navy shadow-comic rounded-3xl relative z-[800] transition-all duration-300 ease-in-out overflow-hidden",
+          isExpanded ? "h-20 py-4 flex items-center justify-between px-4 opacity-100" : "h-2 py-0 opacity-60 pointer-events-none"
         )}
       >
         <Link
@@ -146,6 +141,38 @@ export function MobileBottomNav() {
           <span className="text-[11px] font-black uppercase mt-1">More</span>
         </button>
       </div>
+
+      {/* Hide/Show toggle — pill button anchored to bottom center */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={cn(
+          "absolute left-1/2 -translate-x-1/2 z-[900] transition-all duration-300 ease-in-out",
+          isExpanded ? "-top-3" : "bottom-2"
+        )}
+        aria-label={isExpanded ? 'Hide menu' : 'Show menu'}
+      >
+        <div className={cn(
+          "flex items-center gap-1.5 px-4 py-1.5 rounded-full border-2 border-omuto-navy/20 shadow-md transition-all",
+          isExpanded 
+            ? "bg-white/90 backdrop-blur-sm hover:bg-white" 
+            : "bg-omuto-red text-white border-omuto-navy hover:scale-105 shadow-comic-sm"
+        )}>
+          <div className={cn(
+            "w-1.5 h-1.5 rounded-full transition-colors",
+            isExpanded ? "bg-omuto-navy/30" : "bg-white"
+          )} />
+          <span className={cn(
+            "text-[9px] font-black uppercase tracking-[0.15em]",
+            isExpanded ? "text-omuto-navy/50" : "text-white"
+          )}>
+            {isExpanded ? 'Hide' : 'Menu'}
+          </span>
+          <div className={cn(
+            "w-1.5 h-1.5 rounded-full transition-colors",
+            isExpanded ? "bg-omuto-navy/30" : "bg-white"
+          )} />
+        </div>
+      </button>
     </div>
   );
 }

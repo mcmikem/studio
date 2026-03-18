@@ -14,6 +14,8 @@ import {
 } from '@/lib/types';
 import { z } from 'zod';
 
+import { ai } from '@/ai/genkit';
+
 const plannerInputSchema = z.object({
   userName: z.string(),
   userRole: z.string(),
@@ -26,14 +28,20 @@ const plannerInputSchema = z.object({
   })).optional(),
 });
 
-const systemPrompt = `You are an expert productivity assistant for the Omuto Foundation, a youth-led NGO in Uganda.
+const plannerPrompt = ai.definePrompt({
+    name: 'plannerPrompt',
+    model: 'googleai/gemini-2.0-flash',
+    system: `You are an expert productivity assistant for the Omuto Foundation, a youth-led NGO in Uganda.
 Your role is to help staff and volunteers plan their day strategically.
 - Be practical and realistic about time allocations
 - Consider the organization's strategic objectives (Key Results)
 - Be concise and action-oriented
 - When suggesting time blocks, always include specific descriptions of what to do
-- Prioritize impact over busyness
-Return valid JSON only.`;
+- Prioritize impact over busyness`,
+    output: {
+        schema: DailyPlannerAIOutputSchema
+    }
+});
 
 export async function generateDailyPlan(input: z.infer<typeof plannerInputSchema>): Promise<DailyPlannerAIOutput> {
   const { userName, userRole, primaryMission, weeklyPriorities = [], keyResults = [] } = input;
@@ -53,35 +61,39 @@ Primary Mission: ${primaryMission}
 ${weeklyContext}
 ${strategyContext}
 
-Return a JSON object with:
-1. timeBlocks: Array of {startTime, endTime, description} - 6-8 time blocks for a productive day
-2. strategicAlignments: Array of {krTitle, alignmentJustification} - How the day's work connects to strategic objectives
-3. materials: String - What materials/resources are needed
-4. challenges: String - Potential challenges to anticipate
-5. bestPractice: String - One actionable productivity tip
-
-Keep time blocks realistic (8:30 AM to 5 PM with lunch break).
-Ensure strategic alignments are specific to the mission and actual key results.
+Return a plan with time blocks (8:30 AM to 5 PM), strategic alignments, required materials, potential challenges, and one best practice tip.
 `;
 
-  // Use OpenRouter if configured
-  if (aiConfig.provider === 'openrouter') {
+  // 1. Try OpenRouter if configured
+  if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
     try {
+      const systemPrompt = `You are an expert productivity assistant for the Omuto Foundation. Return valid JSON only.`;
       const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.7);
       
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed;
+        return JSON.parse(jsonMatch[0]);
       }
-      throw new Error('Could not parse AI response');
     } catch (error) {
-      console.error('Daily Planner AI failed:', error);
-      return generateOfflinePlan({ primaryMission, keyResults });
+      console.error('Daily Planner OpenRouter failed:', error);
     }
   }
+
+  // 2. Try Gemini (Genkit) if configured
+  if (aiConfig.isConfigured) {
+      try {
+          console.log('[DailyPlanner] Attempting Gemini generation');
+          const response = await plannerPrompt({ input: prompt });
+          if (response.output) {
+              return response.output;
+          }
+      } catch (error) {
+          console.error('Daily Planner Gemini failed:', error);
+      }
+  }
   
-  // Fallback to offline algorithm
+  // 3. Last Fallback: offline algorithm
+  console.log('[DailyPlanner] Using offline fallback');
   return generateOfflinePlan({ primaryMission, keyResults });
 }
 

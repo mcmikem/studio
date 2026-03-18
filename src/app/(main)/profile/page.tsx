@@ -114,6 +114,7 @@ function UserProfileCard() {
   const [isUploading, setIsUploading] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState('');
+  const [localPhotoSrc, setLocalPhotoSrc] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getInitials = (name?: string, email?: string | null) => {
@@ -154,6 +155,8 @@ function UserProfileCard() {
     try {
       const result = await uploadImageAndUpdateProfile(firebaseApp, file, user, firestore);
       console.log('[Profile] Upload success:', result);
+      // Immediately update the local avatar to show the new image
+      setLocalPhotoSrc(result);
       toast({
         title: "Profile Picture Updated!",
         description: "Your new picture has been saved.",
@@ -163,7 +166,7 @@ function UserProfileCard() {
       toast({
         variant: "destructive",
         title: "Upload Failed",
-        description: error?.message || "Could not upload your picture. Please try again.",
+        description: error?.message || "Could not upload your picture. Please try a smaller image.",
       });
     } finally {
       setIsUploading(false);
@@ -238,7 +241,7 @@ function UserProfileCard() {
             <div className="flex flex-col items-center text-center">
                 <div className="relative group cursor-pointer" onClick={handleAvatarClick}>
                     <Avatar className="h-24 w-24 mb-4 border-2 border-primary">
-                        {(profile?.photoURL || user?.photoURL) && <AvatarImage src={profile?.photoURL || user?.photoURL || ''} alt="User avatar" />}
+                        {(localPhotoSrc || profile?.photoURL || user?.photoURL) && <AvatarImage src={localPhotoSrc || profile?.photoURL || user?.photoURL || ''} alt="User avatar" />}
                         <AvatarFallback className="text-3xl">{getInitials(profile?.name, user?.email)}</AvatarFallback>
                     </Avatar>
                      <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">

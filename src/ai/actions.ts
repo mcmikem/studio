@@ -105,13 +105,12 @@ export async function runQualitativeAnalysis(input: QualitativeAnalysisInput) {
 export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
     console.log('[omutoAI] Provider:', aiConfig.provider, 'Is configured:', aiConfig.isConfigured);
     
-    // Try OpenRouter first
-    if (aiConfig.provider === 'openrouter' || aiConfig.isConfigured) {
+    // 1. Try OpenRouter if it's the active provider and configured
+    if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
         try {
             const systemMessage = `You are an expert assistant for the Omuto Foundation, a youth-led NGO in Uganda. Your name is Omuto AI.
             Be helpful, knowledgeable, and friendly. Be concise and actionable.`;
             
-            // Safely handle history
             const historyMessages = Array.isArray(input.history) 
                 ? input.history.map((h: any) => ({
                     role: (h?.role === 'model' ? 'assistant' : 'user') as 'user' | 'assistant',
@@ -125,23 +124,23 @@ export async function omutoAI(input: OmutoAIInput): Promise<OmutoAIOutput> {
                 { role: 'user' as const, content: input.question || '' }
             ];
             
-            console.log('[omutoAI] Sending request to OpenRouter, messages:', messages.length);
-            
+            console.log('[omutoAI] Sending request to OpenRouter');
             const answer = await chatWithOpenRouter(messages, 'openai/gpt-4o-mini');
-            return { answer };
+            if (answer) return { answer };
         } catch (error: any) {
             console.error('omutoAI OpenRouter failed:', error?.message || error);
-            return { answer: "I'm temporarily unable to reach the AI service right now. Please retry in a moment." };
+            // Don't return yet, try fallback
         }
     }
     
-    // Fall back - try old flow but catch any errors
+    // 2. Try Gemini Flow (Genkit) if configured
     try {
+        console.log('[omutoAI] Attempting Gemini Flow fallback');
         return await omutoAIFlow(input);
     } catch (error: any) {
-        console.error('omutoAI fallback failed:', error?.message || error);
+        console.error('omutoAI Gemini fallback failed:', error?.message || error);
         return {
-            answer: "I'm temporarily unable to reach the AI service right now. Please retry in a moment."
+            answer: "I'm temporarily unable to reach the AI service right now. Please check your API configuration or retry in a moment."
         };
     }
 }
@@ -156,4 +155,9 @@ export async function runImpactStoryGenerator(input: ImpactStoryInput) {
 
 export async function runTestimonyProcessor(input: TestimonyInput) {
   return processTestimony(input);
+}
+
+export async function getEnterpriseInsightsAction(input: { sales: any[]; inventory: any[]; production: any[] }) {
+  const { getEnterpriseInsights } = await import('@/ai/flows/enterprise-advisor-flow');
+  return await getEnterpriseInsights(input);
 }

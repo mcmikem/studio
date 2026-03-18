@@ -57,8 +57,8 @@ import Image from 'next/image';
 
 const OmutoLogo = () => (
     <div className="flex items-center gap-3 px-2 py-6" data-ai-hint="logo">
-        <div className="p-1 border-lg border-omuto-navy shadow-comic-sm bg-white rounded-lg">
-            <Image src="/logo.svg" alt="Omuto Foundation Logo" width={36} height={36} />
+        <div className="p-0.5 rounded-xl overflow-hidden shadow-md">
+            <Image src="/logo.svg" alt="Omuto Foundation Logo" width={40} height={40} className="rounded-xl" />
         </div>
         <div className="flex flex-col">
             <span className="font-heading font-black text-xl tracking-tight leading-none text-omuto-navy">OMUTO</span>

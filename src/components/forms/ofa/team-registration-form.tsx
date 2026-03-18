@@ -137,62 +137,50 @@ export function OFATeamRegistrationForm({
 
   const onSubmit = async (data: TeamFormData) => {
     if (!firestore || !user) {
-      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to submit.' });
       return;
     }
 
-    const payload = {
-      ...data,
-      mainAcademicChallenges: data.mainAcademicChallenges
+    try {
+      // 1. Process array fields safely
+      const academicChallenges = typeof data.mainAcademicChallenges === 'string'
         ? data.mainAcademicChallenges
           .split(',')
           .map((v) => v.trim())
           .filter(Boolean)
-        : [],
-      updatedAt: serverTimestamp(),
-      ...(team ? {} : { createdAt: serverTimestamp(), createdBy: user.uid }),
-    };
+        : [];
 
-    try {
+      // 2. Build sanitized payload
+      const payload = {
+        ...data,
+        mainAcademicChallenges: academicChallenges,
+        updatedAt: serverTimestamp(),
+        // Only add creation metadata if it's a new record
+        ...(!team ? { createdAt: serverTimestamp(), createdBy: user.uid } : {}),
+      };
+
       if (team?.id) {
+        console.log('[OFATeam] Updating team:', team.id);
         await updateDocumentNonBlocking(doc(firestore, 'ofa-teams', team.id), payload);
-        toast({ title: 'Team Updated', description: `${data.teamName} has been updated.` });
+        toast({ title: 'Team Updated', description: `${data.teamName} has been updated successfully.` });
       } else {
-        await addDocumentNonBlocking(collection(firestore, 'ofa-teams'), payload);
-        toast({ title: 'Team Registered', description: `${data.teamName} has been added.` });
-        reset({
-          teamName: '',
-          subcounty: '',
-          parish: '',
-          village: '',
-          headCoachName: '',
-          headCoachPhone: '',
-          assistantCoachName: '',
-          assistantCoachPhone: '',
-          captainName: '',
-          captainPhone: '',
-          yearOfEstablishment: undefined,
-          homePitchName: '',
-          teamColours: '',
-          motto: '',
-          totalPlayers: undefined,
-          u13: undefined,
-          u15: undefined,
-          u17: undefined,
-          u19: undefined,
-          percentageInSchool: undefined,
-          communitySupport: undefined,
-          parentEngagement: undefined,
-          trainingDaysPerWeek: undefined,
-          avgTrainingAttendance: undefined,
-          mainAcademicChallenges: '',
-          enforceSchoolAttendance: '',
-        });
+        console.log('[OFATeam] Creating new team');
+        const docRef = await addDocumentNonBlocking(collection(firestore, 'ofa-teams'), payload);
+        toast({ title: 'Team Registered', description: `${data.teamName} has been added to the registry.` });
+        
+        // Reset form for next entry if success
+        reset();
       }
+      
       onSuccess?.();
       if (!team) router.push('/meal/data/ofa/teams');
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+      console.error('[OFATeam] Submission failed:', error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Submission Failed', 
+        description: error.message || 'An unexpected error occurred. Please try again.' 
+      });
     }
   };
 

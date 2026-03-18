@@ -94,6 +94,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
 
   const firebaseApp = useFirebaseApp();
   const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = React.useState<string>('');
   const [isUploading, setIsUploading] = React.useState(false);
 
   const isEditMode = !!expense;
@@ -295,10 +296,16 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                     <div className="flex items-center gap-4">
                         <Input 
                             type="file" 
-                            accept="image/*" 
+                            accept="image/png, image/jpeg, image/webp" 
                             onChange={(e) => {
-                                if (e.target.files?.[0]) {
-                                    setReceiptFile(e.target.files[0]);
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    if (file.size > 5 * 1024 * 1024) {
+                                        toast({ variant: 'destructive', title: 'Receipt too large', description: `${(file.size / 1024 / 1024).toFixed(1)}MB — please use an image under 5MB.` });
+                                        return;
+                                    }
+                                    setReceiptFile(file);
+                                    setReceiptPreview(URL.createObjectURL(file));
                                 }
                             }}
                             className="hidden" 
@@ -312,7 +319,13 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                             {receiptFile ? receiptFile.name : 'Upload Receipt Image'}
                         </Label>
                     </div>
-                    {expense?.receiptUrl && (
+                    {receiptPreview && (
+                        <div className="mt-3 p-2 border rounded-xl bg-muted/20 inline-block">
+                            <img src={receiptPreview} alt="Receipt preview" className="max-h-32 rounded-lg object-contain" />
+                            <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-1 text-center">Preview</p>
+                        </div>
+                    )}
+                    {expense?.receiptUrl && !receiptPreview && (
                         <p className="text-xs text-muted-foreground">Current receipt attached. Upload new to replace.</p>
                     )}
                 </div>

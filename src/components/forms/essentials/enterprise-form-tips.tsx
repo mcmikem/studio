@@ -1,5 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, Sparkles, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { getEnterpriseInsightsAction } from '@/actions/mutations';
+import { Button } from '@/components/ui/button';
 
 type TipKey = 'sales' | 'production' | 'inventory' | 'procurement' | 'feedback' | 'products';
 
@@ -37,19 +40,59 @@ const tipsByType: Record<TipKey, string[]> = {
 };
 
 export function EnterpriseFormTips({ type }: { type: TipKey }) {
-  const tips = tipsByType[type];
+  const [staticTips] = useState(tipsByType[type]);
+  const [aiTip, setAiTip] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchAiTip = async () => {
+    setIsLoading(true);
+    try {
+      // For now, we reuse the insights flow but ask for a specific form tip
+      const result = await getEnterpriseInsightsAction({
+        sales: [],
+        inventory: [],
+        production: []
+      });
+      if (result.insights && result.insights.length > 0) {
+        setAiTip(result.insights[0].insight);
+      }
+    } catch (e) {
+      console.error("Failed to fetch AI tip", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Card className="border-lg border-primary/20 bg-primary/5 shadow-comic-sm">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
           <Lightbulb className="h-4 w-4 text-primary" />
-          Quick Tips
+          Pro Tips
         </CardTitle>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={fetchAiTip} 
+          disabled={isLoading}
+          className="h-7 text-[10px] font-black uppercase tracking-widest text-primary hover:bg-primary/10"
+        >
+          {isLoading ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+          Get AI Tip
+        </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
+        {aiTip && (
+          <div className="p-3 bg-primary/10 rounded-xl border border-primary/20 relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-2 opacity-10">
+                <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <p className="text-[9px] font-black uppercase text-primary tracking-widest mb-1">AI Suggestion</p>
+            <p className="text-xs font-bold text-omuto-navy leading-relaxed">{aiTip}</p>
+          </div>
+        )}
         <ul className="list-disc space-y-1 pl-5 text-xs sm:text-sm text-muted-foreground">
-          {tips.map((tip) => (
+          {staticTips.map((tip) => (
             <li key={tip}>{tip}</li>
           ))}
         </ul>

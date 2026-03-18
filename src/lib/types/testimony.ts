@@ -21,7 +21,8 @@ export const TestimonySchema = z.object({
 export type Testimony = z.infer<typeof TestimonySchema>;
 
 export const TestimonyInputSchema = z.object({
-  mediaUri: z.string().url(),
+  mediaUri: z.string().url().optional(),
+  transcription: z.string().optional(),
 });
 export type TestimonyInput = z.infer<typeof TestimonyInputSchema>;
 
