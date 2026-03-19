@@ -138,78 +138,78 @@ export function PartnershipForm({ initialData, onSuccess }: PartnershipFormProps
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <ScrollArea className="h-[70vh] p-4 -mx-4">
+        <ScrollArea className="h-[60vh] sm:h-[70vh] p-4 -mx-4 sm:mx-0 sm:p-4">
             <div className="space-y-6 px-2">
-                <h3 className="text-lg font-medium">Core Identity</h3>
-                <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Partner Name</FormLabel><FormControl><Input placeholder="e.g., Green Earth NGO" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel>Partner Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.type as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                <h3 className="text-base sm:text-lg font-medium">Core Identity</h3>
+                <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Partner Name</FormLabel><FormControl><Input placeholder="e.g., Green Earth NGO" className="h-10 sm:h-11" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                <FormField control={form.control} name="type" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Partner Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.type as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="contactPerson" render={({ field }) => (<FormItem><FormLabel>Contact Person</FormLabel><FormControl><Input placeholder="e.g., Jane Doe" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                    <FormField control={form.control} name="contactRole" render={({ field }) => (<FormItem><FormLabel>Role</FormLabel><FormControl><Input placeholder="e.g., Programs Manager" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="contactPerson" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Contact Person</FormLabel><FormControl><Input placeholder="e.g., Jane Doe" className="h-10 sm:h-11" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="contactRole" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Role</FormLabel><FormControl><Input placeholder="e.g., Programs Manager" className="h-10 sm:h-11" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="contactEmail" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="e.g., jane.doe@example.com" {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                    <FormField control={form.control} name="contactPhone" render={({ field }) => (<FormItem><FormLabel>Phone</FormLabel><FormControl><Input type="tel" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="contactEmail" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Email</FormLabel><FormControl><Input type="email" placeholder="e.g., jane@example.com" className="h-10 sm:h-11" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="contactPhone" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Phone</FormLabel><FormControl><Input type="tel" className="h-10 sm:h-11" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
 
                 {isSchool && (
                     <div className="space-y-4 pt-4 border-t">
-                        <h3 className="text-lg font-medium">School Details</h3>
+                        <h3 className="text-base sm:text-lg font-medium">School Details</h3>
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <FormField control={form.control} name="schoolDetails.headTeacher" render={({ field }) => (<FormItem><FormLabel>Head Teacher</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                            <FormField control={form.control} name="schoolDetails.studentPopulation" render={({ field }) => (<FormItem><FormLabel>Student Population</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} /></FormControl><FormMessage /></FormItem>)}/>
+                            <FormField control={form.control} name="schoolDetails.headTeacher" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Head Teacher</FormLabel><FormControl><Input className="h-10 sm:h-11" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                            <FormField control={form.control} name="schoolDetails.studentPopulation" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Students</FormLabel><FormControl><Input type="number" className="h-10 sm:h-11" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} /></FormControl><FormMessage /></FormItem>)}/>
                          </div>
-                         <FormField control={form.control} name="schoolDetails.level" render={({ field }) => (<FormItem><FormLabel>School Level</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.schoolDetails.unwrap().shape.level.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="schoolDetails.level" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Level</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-10 sm:h-11"><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.schoolDetails.unwrap().shape.level.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
                     </div>
                 )}
                 
                 <div className="space-y-4 pt-4 border-t">
-                    <h3 className="text-lg font-medium">Value Exchange</h3>
-                     <FormField control={form.control} name="focusAreas" render={({ field }) => (<FormItem><FormLabel>Focus Areas</FormLabel><FormControl><MultiSelect options={focusAreaOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="Select areas..." /></FormControl><FormMessage /></FormItem>)}/>
+                    <h3 className="text-base sm:text-lg font-medium">Value Exchange</h3>
+                     <FormField control={form.control} name="focusAreas" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Focus Areas</FormLabel><FormControl><MultiSelect options={focusAreaOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="Select areas..." /></FormControl><FormMessage /></FormItem>)}/>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                         <FormField control={form.control} name="offers" render={({ field }) => (<FormItem><FormLabel>What They Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="e.g., Funding..." /></FormControl><FormMessage /></FormItem>)}/>
-                         <FormField control={form.control} name="receives" render={({ field }) => (<FormItem><FormLabel>What We Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="e.g., Community Access..." /></FormControl><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="offers" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">They Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="Select..." /></FormControl><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="receives" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">We Offer</FormLabel><FormControl><MultiSelect options={valueOptions} onValueChange={field.onChange} defaultValue={Array.isArray(field.value) ? field.value : []} placeholder="Select..." /></FormControl><FormMessage /></FormItem>)}/>
                     </div>
                 </div>
 
                 <div className="space-y-4 pt-4 border-t">
-                    <h3 className="text-lg font-medium">Internal Assessment</h3>
+                    <h3 className="text-base sm:text-lg font-medium">Assessment</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FormField control={form.control} name="financialValue" render={({ field }) => (<FormItem><FormLabel>Annual Financial Value (UGX)</FormLabel><FormControl><Input type="number" {...field} onChange={e => field.onChange(parseInt(e.target.value,10))} /></FormControl><FormMessage /></FormItem>)}/>
-                        <FormField control={form.control} name="inKindValue" render={({ field }) => (<FormItem><FormLabel>In-Kind Value</FormLabel><FormControl><Input placeholder="e.g., Volunteers, venue" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                        <FormField control={form.control} name="financialValue" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Financial Value (UGX)</FormLabel><FormControl><Input type="number" className="h-10 sm:h-11" {...field} onChange={e => field.onChange(parseInt(e.target.value,10))} /></FormControl><FormMessage /></FormItem>)}/>
+                        <FormField control={form.control} name="inKindValue" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">In-Kind Value</FormLabel><FormControl><Input placeholder="e.g., Volunteers" className="h-10 sm:h-11" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                     </div>
-                    <FormField control={form.control} name="strategicValue" render={({ field }) => (<FormItem><FormLabel>Strategic Value</FormLabel><FormControl><Textarea placeholder="e.g., Access to a new district, enhances our brand credibility..." {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="strategicValue" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Strategic Value</FormLabel><FormControl><Textarea placeholder="e.g., Access to new district..." className="min-h-[60px] sm:min-h-[80px] text-sm" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                     <FormField control={form.control} name="strategicFit" render={({ field: { value, onChange } }) => (
                       <FormItem>
-                        <FormLabel>Strategic Fit (1-5)</FormLabel>
+                        <FormLabel className="text-xs sm:text-sm">Strategic Fit (1-5)</FormLabel>
                         <FormControl>
-                          <div className="flex items-center gap-4">
-                            <Slider defaultValue={[value || 3]} min={1} max={5} step={1} onValueChange={(vals) => onChange(vals[0])} />
-                            <span className="font-bold text-lg w-10 text-center">{value}</span>
+                          <div className="flex items-center gap-3 sm:gap-4">
+                            <Slider defaultValue={[value || 3]} min={1} max={5} step={1} onValueChange={(vals) => onChange(vals[0])} className="flex-1" />
+                            <span className="font-bold text-base w-8 sm:w-10 text-center">{value}</span>
                           </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
-                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                         <FormField control={form.control} name="resourcePotential" render={({ field }) => (<FormItem><FormLabel>Resource Potential</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.resourcePotential.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
-                         <FormField control={form.control} name="riskLevel" render={({ field }) => (<FormItem><FormLabel>Risk Level</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.riskLevel.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
-                         <FormField control={form.control} name="priority" render={({ field }) => (<FormItem><FormLabel>Priority</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.priority.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                     <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                         <FormField control={form.control} name="resourcePotential" render={({ field }) => (<FormItem><FormLabel className="text-[10px] sm:text-xs">Resource</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-10"><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.resourcePotential.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="riskLevel" render={({ field }) => (<FormItem><FormLabel className="text-[10px] sm:text-xs">Risk</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-10"><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.riskLevel.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                         <FormField control={form.control} name="priority" render={({ field }) => (<FormItem><FormLabel className="text-[10px] sm:text-xs">Priority</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-10"><SelectValue/></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.priority.unwrap() as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
                      </div>
                 </div>
 
                 <div className="space-y-4 pt-4 border-t">
-                    <h3 className="text-lg font-medium">Action Plan</h3>
-                     <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.status as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
-                     <FormField control={form.control} name="nextStep" render={({ field }) => (<FormItem><FormLabel>Next Step</FormLabel><FormControl><Textarea placeholder="e.g., Schedule follow-up meeting to discuss MoU..." {...field} /></FormControl><FormMessage /></FormItem>)}/>
-                     <FormField control={form.control} name="nextActionDate" render={({ field }) => (<FormItem><FormLabel>Next Action Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                    <h3 className="text-base sm:text-lg font-medium">Action Plan</h3>
+                     <FormField control={form.control} name="status" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger></FormControl><SelectContent>{(PartnershipFormSchema.shape.status as z.ZodEnum<any>).options.map((o: string) => (<SelectItem key={o} value={o}>{o}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
+                     <FormField control={form.control} name="nextStep" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Next Step</FormLabel><FormControl><Textarea placeholder="e.g., Schedule follow-up..." className="min-h-[60px] sm:min-h-[80px] text-sm" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+                     <FormField control={form.control} name="nextActionDate" render={({ field }) => (<FormItem><FormLabel className="text-xs sm:text-sm">Next Action Date</FormLabel><FormControl><Input type="date" className="h-10 sm:h-11" {...field} /></FormControl><FormMessage /></FormItem>)}/>
                 </div>
             </div>
         </ScrollArea>
-        <DialogFooter className="pt-6 border-t px-6 pb-6">
-          <Button type="submit" disabled={isSubmitting}>
+        <DialogFooter className="pt-4 sm:pt-6 border-t p-4 sm:px-6 sm:pb-6">
+          <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto h-10 sm:h-11">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {initialData ? "Save Changes" : "Create Partnership"}
+            {initialData ? "Save" : "Create"}
           </Button>
         </DialogFooter>
       </form>

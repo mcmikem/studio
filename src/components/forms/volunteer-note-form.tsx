@@ -85,48 +85,48 @@ export function VolunteerNoteForm() {
   };
 
   return (
-       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <MessageCircle className="h-8 w-8 text-primary" />
-            <div>
-              <CardTitle>End-of-Day Note</CardTitle>
-              <CardDescription>
-                Briefly share your accomplishments and what you learned today.
+       <Card className="w-full overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 bg-muted/30 border-b">
+          <div className="flex items-center gap-3">
+            <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-lg sm:text-xl truncate">End-of-Day Note</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
+                Share your accomplishments and learnings.
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="accomplishment">What did you accomplish today?</Label>
+              <Label htmlFor="accomplishment" className="text-xs sm:text-sm font-medium">What did you accomplish?</Label>
               <Textarea
                 id="accomplishment"
-                placeholder="e.g., I helped organize the files for the RED Campaign and learned how the filing system works."
-                className="min-h-[120px]"
+                placeholder="e.g., I helped organize files for RED Campaign..."
+                className="min-h-[80px] sm:min-h-[100px] text-sm"
                 {...register('accomplishment')}
               />
-              {errors.accomplishment && <p className="text-sm text-destructive">{errors.accomplishment.message}</p>}
+              {errors.accomplishment && <p className="text-xs text-destructive">{errors.accomplishment.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="learning">What is one thing you learned?</Label>
+              <Label htmlFor="learning" className="text-xs sm:text-sm font-medium">What did you learn?</Label>
               <Textarea
                 id="learning"
-                placeholder="e.g., I learned that community engagement requires a lot of patience and clear communication."
-                className="min-h-[120px]"
+                placeholder="e.g., I learned that community engagement requires patience..."
+                className="min-h-[80px] sm:min-h-[100px] text-sm"
                 {...register('learning')}
               />
-              {errors.learning && <p className="text-sm text-destructive">{errors.learning.message}</p>}
+              {errors.learning && <p className="text-xs text-destructive">{errors.learning.message}</p>}
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">
+          <CardFooter className="p-4 sm:p-6 pt-0">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-11 sm:h-12">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit Note
             </Button>
           </CardFooter>
         </form>
        </Card>
-  );
+   );
 }
