@@ -149,7 +149,7 @@ function ImpactStoryGeneratorContent() {
   const isLoadingData = isLoadingActivities || isLoadingCheckouts;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
       <Card>
         <CardHeader>
           <CardTitle>Select a Source</CardTitle>

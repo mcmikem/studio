@@ -214,7 +214,7 @@ export function PlayerRegistrationForm() {
         ) : (
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-[180px_1fr]">
+            <div className="grid gap-6 sm:grid-cols-[180px_1fr]">
               <div className="space-y-3">
                 <Label>Player Photo</Label>
                 <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>

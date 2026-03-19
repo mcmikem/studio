@@ -365,7 +365,7 @@ export function ProductionBatchForm() {
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8 pt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="font-bold text-xs uppercase tracking-widest">Select Product</Label>
                 {isLoadingProducts ? (
@@ -396,7 +396,7 @@ export function ProductionBatchForm() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-dashed">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-dashed">
               <div className="space-y-2">
                 <Label className="font-bold text-xs uppercase tracking-widest">Batch Number</Label>
                 <Input {...register('batch_number')} readOnly className="border-lg rounded-xl h-12 font-bold bg-muted/50" />
@@ -448,8 +448,8 @@ export function ProductionBatchForm() {
               ) : (
                 <div className="space-y-3">
                   {materialsUsed.map((line, index) => (
-                    <div key={`${line.material_id}-${index}`} className="grid grid-cols-1 md:grid-cols-12 gap-2 rounded-lg border p-3">
-                      <div className="md:col-span-4">
+                    <div key={`${line.material_id}-${index}`} className="grid grid-cols-1 sm:grid-cols-12 gap-2 rounded-lg border p-3">
+                      <div className="sm:col-span-4">
                         <Select
                           onValueChange={(value) => {
                             const selected = materialProducts?.find((m) => m.id === value);
@@ -470,17 +470,17 @@ export function ProductionBatchForm() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="md:col-span-2">
+                      <div className="sm:col-span-2">
                         <Input type="number" value={line.quantity_used} onChange={(e) => updateMaterialLine(index, { quantity_used: Number(e.target.value || 0) })} placeholder="Qty" />
                       </div>
-                      <div className="md:col-span-2">
-                        <Input value={line.unit} onChange={(e) => updateMaterialLine(index, { unit: e.target.value })} placeholder="Unit" />
-                      </div>
-                      <div className="md:col-span-2">
-                        <Input type="number" value={line.unit_cost} onChange={(e) => updateMaterialLine(index, { unit_cost: Number(e.target.value || 0) })} placeholder="Cost" />
-                      </div>
-                      <div className="md:col-span-1 flex items-center text-sm font-semibold">{formatCurrency(line.total_cost || 0)}</div>
-                      <div className="md:col-span-1 flex items-center justify-end">
+                      <div className="sm:col-span-2">
+</div>
+                      <div className="sm:col-span-2">
+</div>
+                      <div className="sm:col-span-2">
+</div>
+                      <div className="sm:col-span-1 flex items-center text-sm font-semibold">{formatCurrency(line.total_cost || 0)}</div>
+                      <div className="sm:col-span-1 flex items-center justify-end">
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeMaterialLine(index)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>

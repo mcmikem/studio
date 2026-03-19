@@ -271,7 +271,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
           <Label htmlFor="description">Description</Label>
           <Textarea id="description" {...register('description')} />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2"><Label htmlFor="sku">SKU</Label><Input id="sku" {...register('sku')} /></div>
           <div className="space-y-2"><Label htmlFor="unit">Unit</Label><Input id="unit" {...register('unit')} placeholder="e.g., piece, kg, liter" /></div>
       </div>

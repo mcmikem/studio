@@ -163,7 +163,7 @@ export function SalesTrackingForm() {
             </CardHeader>
             <form onSubmit={form.handleSubmit(onSubmit, onInvalid)}>
             <CardContent className="space-y-8 pt-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <Label className="font-bold text-xs uppercase tracking-widest">Sale Date</Label>
                         <Input type="date" {...form.register('sale_date')} className="border-lg rounded-xl h-12 font-bold" />
@@ -178,7 +178,7 @@ export function SalesTrackingForm() {
 
                  <div className="p-6 bg-primary/5 border-lg border-primary/20 rounded-3xl space-y-4">
                     <h3 className="font-black uppercase text-xs tracking-widest text-primary flex items-center gap-2"><UserCheck className="h-4 w-4"/> Customer Information</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                          <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Existing Partner (Auto-fill)</Label>
                             {isLoadingPartners ? <Skeleton className="h-11 rounded-xl" /> : (
@@ -207,31 +207,19 @@ export function SalesTrackingForm() {
                     <div className="space-y-3">
                         {fields.map((field, index) => (
                             <div key={field.id} className="grid grid-cols-12 gap-3 items-end p-4 bg-muted/20 border-lg rounded-2xl relative">
-                                <div className="col-span-12 md:col-span-4 space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Product</Label>
-                                    {isLoadingProducts ? <Skeleton className="h-10 rounded-xl"/> : (
-                                        <Controller name={`items.${index}.product_id`} control={form.control} render={({ field }) => (
-                                            <Select onValueChange={(value) => handleProductChange(index, value)} value={field.value}><SelectTrigger className="h-11 border-lg rounded-xl font-bold bg-white"><SelectValue placeholder="Select product..." /></SelectTrigger><SelectContent>{products?.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent></Select>
-                                        )}/>
-                                    )}
-                                    {!isLoadingProducts && !hasSellableProducts && (
-                                      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-2 text-[11px] font-semibold text-destructive">
-                                        No active finished products found. Add one in{' '}
-                                        <Link href="/enterprise/essentials/products" className="underline">Products</Link>.
-                                      </div>
-                                    )}
-                                </div>
-                                <div className="col-span-4 md:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Qty</Label><Input type="number" {...form.register(`items.${index}.quantity`)} className="h-11 border-lg rounded-xl font-bold bg-white" onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}/></div>
-                                <div className="col-span-4 md:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price</Label><Input type="number" readOnly value={form.watch(`items.${index}.unit_price`)} className="h-11 border-lg rounded-xl font-bold bg-muted/50" /></div>
-                                <div className="col-span-4 md:col-span-3 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total</Label><div className="h-11 border-lg rounded-xl flex items-center px-4 bg-muted/50 font-bold text-omuto-navy">{formatCurrency(form.watch(`items.${index}.total`))}</div></div>
-                                <div className="col-span-12 md:col-span-1"><Button type="button" variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 rounded-xl" onClick={() => remove(index)}><Trash2 className="h-5 w-5"/></Button></div>
+                                <div className="col-span-12 sm:col-span-4 space-y-2">
+</div>
+                                <div className="col-span-4 sm:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Qty</Label><Input type="number" {...form.register(`items.${index}.quantity`)} className="h-11 border-lg rounded-xl font-bold bg-white" onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}/></div>
+                                <div className="col-span-4 sm:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price</Label><Input type="number" readOnly value={form.watch(`items.${index}.unit_price`)} className="h-11 border-lg rounded-xl font-bold bg-muted/50" /></div>
+                                <div className="col-span-4 sm:col-span-3 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total</Label><div className="h-11 border-lg rounded-xl flex items-center px-4 bg-muted/50 font-bold text-omuto-navy">{formatCurrency(form.watch(`items.${index}.total`))}</div></div>
+                                <div className="col-span-12 sm:col-span-1"><Button type="button" variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 rounded-xl" onClick={() => remove(index)}><Trash2 className="h-5 w-5"/></Button></div>
                             </div>
                         ))}
                     </div>
                     <Button type="button" variant="outline" size="sm" onClick={() => append({ product_id: '', product_name: '', quantity: 1, unit_price: 0, total: 0 })} className="font-black text-xs uppercase tracking-widest border-lg rounded-xl h-10 px-4"><PlusCircle className="mr-2 h-4 w-4" />Add Product Item</Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-dashed">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 border-t border-dashed">
                     <div className="space-y-2"><Label className="font-bold text-xs uppercase tracking-widest">Payment Method</Label><Controller name="payment_method" control={form.control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-12 border-lg rounded-xl font-bold"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Cash" className="font-bold">Cash</SelectItem><SelectItem value="Mobile Money" className="font-bold">Mobile Money</SelectItem><SelectItem value="Bank Transfer" className="font-bold">Bank Transfer</SelectItem></SelectContent></Select>)}/></div>
                     <div className="space-y-2"><Label className="font-bold text-xs uppercase tracking-widest">Transaction Status</Label><Controller name="status" control={form.control} render={({field}) => (<Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-12 border-lg rounded-xl font-bold"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="completed" className="font-bold text-green-600">Completed (Paid)</SelectItem><SelectItem value="pending" className="font-bold text-orange-600">Pending (Invoice)</SelectItem></SelectContent></Select>)}/></div>
                 </div>
