@@ -172,6 +172,122 @@
   .enterprise-form-footer {
     @apply bg-muted/30 border-t-lg border-omuto-navy/10 p-4 sm:p-6;
   }
+
+  /* =============================================================================
+     MOBILE-FIRST SPACING UTILITIES
+     =============================================================================
+     Use these classes for consistent spacing across all pages and components
+  */
+
+  /* Page spacing - responsive vertical gaps */
+  .page-spacing {
+    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+  }
+
+  /* Card padding - responsive */
+  .card-padding {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+
+  /* Section spacing within cards */
+  .section-spacing {
+    @apply space-y-3 sm:space-y-4;
+  }
+
+  /* Grid gaps */
+  .grid-gap {
+    @apply gap-3 sm:gap-4 lg:gap-6;
+  }
+
+  /* =============================================================================
+     TYPOGRAPHY UTILITIES
+     =============================================================================
+  */
+
+  /* Headings - mobile-first scaling */
+  .heading-xl {
+    @apply text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight;
+  }
+
+  .heading-lg {
+    @apply text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight;
+  }
+
+  .heading-md {
+    @apply text-lg sm:text-xl font-bold tracking-tight;
+  }
+
+  /* Meta text - labels, descriptions */
+  .text-meta {
+    @apply text-xs sm:text-sm text-muted-foreground;
+  }
+
+  .text-label {
+    @apply text-xs sm:text-sm font-medium;
+  }
+
+  .text-caption {
+    @apply text-[10px] sm:text-xs uppercase tracking-widest font-black;
+  }
+
+  /* =============================================================================
+     FORM UTILITIES
+     =============================================================================
+  */
+
+  /* Standard form field */
+  .form-field {
+    @apply space-y-2;
+  }
+
+  /* Input within form - ensures 16px font on mobile */
+  .form-input {
+    @apply h-10 sm:h-11 px-3 sm:px-4 text-sm sm:text-base;
+  }
+
+  /* Form grid */
+  .form-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+
+  .form-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+  }
+
+  /* =============================================================================
+     RESPONSIVE UTILITIES
+     =============================================================================
+  */
+
+  /* Truncate with ellipsis */
+  .truncate {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
+
+  /* Hide on mobile, show on desktop */
+  .hide-mobile {
+    @apply hidden md:block;
+  }
+
+  /* Show on mobile, hide on desktop */
+  .show-mobile {
+    @apply md:hidden;
+  }
+
+  /* =============================================================================
+     TOUCH & INTERACTION
+     =============================================================================
+  */
+
+  /* Minimum touch target (44x44px) */
+  .touch-target {
+    @apply min-h-11 min-w-11;
+  }
+
+  /* Safe area padding for bottom actions */
+  .safe-bottom {
+    @apply pb-[calc(1rem+env(safe-area-inset-bottom))];
+  }
 }
 
 
