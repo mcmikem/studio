@@ -177,7 +177,7 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
           </p>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="pt-6 space-y-6">
+          <CardContent className="pt-4 sm:pt-6 space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-4 pt-2">
               <h3 className="text-sm font-semibold flex items-center gap-2 text-primary">
                 <MapPin className="h-4 w-4" /> Story Location
@@ -192,24 +192,24 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
               />
             </div>
             
-            <Separator className="my-6" />
-
-            <div className="space-y-2"><Label htmlFor="title">Story Title</Label><Input id="title" {...register('title')} placeholder="e.g., How Jane found her spark in football" />{errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}</div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label htmlFor="beneficiaryName">Beneficiary Name</Label><Input id="beneficiaryName" {...register('beneficiaryName')} />{errors.beneficiaryName && <p className="text-sm text-destructive">{errors.beneficiaryName.message}</p>}</div>
+            <Separator className="my-4 sm:my-6" />
+ 
+            <div className="space-y-2"><Label htmlFor="title">Story Title</Label><Input id="title" {...register('title')} placeholder="e.g., How Jane found her spark in football" className="h-10 sm:h-11" />{errors.title && <p className="text-xs sm:text-sm text-destructive">{errors.title.message}</p>}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2"><Label htmlFor="beneficiaryName">Beneficiary Name</Label><Input id="beneficiaryName" {...register('beneficiaryName')} className="h-10 sm:h-11" />{errors.beneficiaryName && <p className="text-xs sm:text-sm text-destructive">{errors.beneficiaryName.message}</p>}</div>
               <div className="space-y-2">
                 <Label htmlFor="project">Project</Label>
-                {isLoadingPrograms ? <Skeleton className="h-10" /> : (
+                {isLoadingPrograms ? <Skeleton className="h-10 sm:h-11" /> : (
                   <Controller name="project" control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select a project..." /></SelectTrigger><SelectContent>{programs?.map((p) => <SelectItem key={p.id} value={p.title}>{p.title}</SelectItem>)}</SelectContent></Select>
+                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue placeholder="Select a project..." /></SelectTrigger><SelectContent>{programs?.map((p) => <SelectItem key={p.id} value={p.title}>{p.title}</SelectItem>)}</SelectContent></Select>
                   )} />
                 )}
-                {errors.project && <p className="text-sm text-destructive">{errors.project.message}</p>}
+                {errors.project && <p className="text-xs sm:text-sm text-destructive">{errors.project.message}</p>}
               </div>
             </div>
-            <div className="space-y-2"><Label htmlFor="beforeSituation">"Before" Situation</Label><Textarea id="beforeSituation" {...register('beforeSituation')} className="min-h-[100px]" />{errors.beforeSituation && <p className="text-sm text-destructive">{errors.beforeSituation.message}</p>}</div>
-            <div className="space-y-2"><Label htmlFor="afterSituation">"After" Situation</Label><Textarea id="afterSituation" {...register('afterSituation')} className="min-h-[100px]" />{errors.afterSituation && <p className="text-sm text-destructive">{errors.afterSituation.message}</p>}</div>
-            <div className="space-y-2"><Label htmlFor="quote">Direct Quote</Label><Textarea id="quote" {...register('quote')} className="min-h-[80px]" />{errors.quote && <p className="text-sm text-destructive">{errors.quote.message}</p>}</div>
+            <div className="space-y-2"><Label htmlFor="beforeSituation">"Before" Situation</Label><Textarea id="beforeSituation" {...register('beforeSituation')} className="min-h-[80px] sm:min-h-[100px]" />{errors.beforeSituation && <p className="text-xs sm:text-sm text-destructive">{errors.beforeSituation.message}</p>}</div>
+            <div className="space-y-2"><Label htmlFor="afterSituation">"After" Situation</Label><Textarea id="afterSituation" {...register('afterSituation')} className="min-h-[80px] sm:min-h-[100px]" />{errors.afterSituation && <p className="text-xs sm:text-sm text-destructive">{errors.afterSituation.message}</p>}</div>
+            <div className="space-y-2"><Label htmlFor="quote">Direct Quote</Label><Textarea id="quote" {...register('quote')} className="min-h-[80px] sm:min-h-[100px]" />{errors.quote && <p className="text-xs sm:text-sm text-destructive">{errors.quote.message}</p>}</div>
             <div className="space-y-4 pt-4">
               <Label>Photos/Videos</Label>
               <div className="flex flex-wrap gap-4 mb-4">
@@ -244,10 +244,10 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
               )} />
               <Label htmlFor="consent">I confirm that a signed media consent form has been obtained from the beneficiary.</Label>
             </div>
-            {errors.consentSigned && <p className="text-sm text-destructive">{errors.consentSigned.message}</p>}
+            {errors.consentSigned && <p className="text-xs sm:text-sm text-destructive">{errors.consentSigned.message}</p>}
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSaving || !!(testimonyId && isLoadingTestimony)} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSaving || !!(testimonyId && isLoadingTestimony)} className="w-full h-10 sm:h-11">
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 {testimonyId ? 'REFRESH STORYLINE' : 'SAVE IMPACT STORY'}
             </Button>
