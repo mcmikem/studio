@@ -59,14 +59,40 @@ function extractJSON(text: string): object | null {
   return null;
 }
 
+function parseMetricValue(input: string | number): { target: number; unit: string } {
+  if (typeof input === 'number') {
+    return { target: input, unit: '' };
+  }
+  
+  const str = String(input).trim();
+  const match = str.match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+  
+  if (match) {
+    return {
+      target: parseFloat(match[1]) || 0,
+      unit: match[2]?.trim() || ''
+    };
+  }
+  
+  const numMatch = str.match(/\d+/);
+  return {
+    target: numMatch ? parseFloat(numMatch[0]) : 0,
+    unit: str.replace(/\d+/, '').trim()
+  };
+}
+
 function sanitizeKeyResult(kr: any, index: number): any {
+  const { target, unit } = parseMetricValue(kr.target);
+  
   return {
     title: String(kr.title || `KR${index + 1}`).substring(0, 200),
     description: String(kr.description || '').substring(0, 500),
-    target: Number(kr.target) || 0,
+    target: target,
+    unit: unit || kr.unit || '',
     deadline: String(kr.deadline || '').substring(0, 10),
     priority: ['High', 'Medium', 'Low'].includes(kr.priority) ? kr.priority : 'Medium',
     currentProgress: 0,
+    current: kr.current || 0,
   };
 }
 
@@ -76,20 +102,28 @@ export async function parseOperationalPlan(input: ParsePlanInput): Promise<Parse
     throw new Error('Invalid input: ' + validation.error.message);
   }
 
-  const prompt = `Extract Key Results from this operational plan. Return ONLY valid JSON:
+  const prompt = `Extract Key Results from this operational plan. Return ONLY valid JSON.
 
-${input.planText}
+For each Key Result, extract:
+- title: The name of the result
+- description: What this measures
+- target: The TARGET NUMBER only (extract just the number, e.g., "50 students" → 50, "1.5M UGX" → 1500000)
+- unit: The unit type if mentioned (e.g., "students", "trees", "youth", "sessions")
+- deadline: YYYY-MM-DD format
+- priority: "High", "Medium", or "Low"
 
-Format required:
-{"keyResults": [{"title": "KR name", "description": "details", "target": 100, "deadline": "2024-12-31", "priority": "High"}]}`;
+Format:
+{"keyResults": [{"title": "Reach 50 youth", "description": "Train youth in vocational skills", "target": 50, "unit": "youth", "deadline": "2024-12-31", "priority": "High"}]}
+
+Text to parse:
+${input.planText}`;
 
   let lastError = '';
 
-  // 1. Try OpenRouter First
   if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
     try {
       console.log('[parseOperationalPlan] Attempting OpenRouter...');
-      const systemPrompt = `You are an expert M&E assistant. Return ONLY valid JSON. No markdown, no explanations.`;
+      const systemPrompt = `You are an expert M&E assistant. Return ONLY valid JSON. No markdown, no explanations. Always extract numbers from metric descriptions (e.g., "50 youth" → target: 50, unit: "youth").`;
       const text = await withTimeout(
         callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.2),
         TIMEOUT_MS,
@@ -109,7 +143,6 @@ Format required:
     }
   }
 
-  // 2. Try Gemini fallback
   if (aiConfig.geminiApiKey) {
     try {
       console.log('[parseOperationalPlan] Attempting Gemini fallback...');
@@ -131,6 +164,5 @@ Format required:
     }
   }
 
-  // All providers failed
   throw new Error(`AI parsing failed: ${lastError || 'No AI provider configured'}`);
 }

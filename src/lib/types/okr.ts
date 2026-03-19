@@ -6,6 +6,7 @@ export const KeyResultSchema = z.object({
   description: z.string(),
   currentProgress: z.coerce.number(),
   target: z.coerce.number(),
+  unit: z.string().optional(),
   deadline: z.any(),
   priority: z.enum(['High', 'Medium', 'Low']),
 });
@@ -20,6 +21,7 @@ export const ImpactMetricSchema = z.object({
     unit: z.string().optional(),
     valuePerUnit: z.coerce.number().optional(),
     createdAt: z.any(),
+    linkedKeyResultId: z.string().optional(),
 });
 
 export type ImpactMetric = z.infer<typeof ImpactMetricSchema>;

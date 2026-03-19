@@ -27,7 +27,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useMemoFirebase, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import { collection, writeBatch, getDocs, doc, Timestamp, query, orderBy, where } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc, Timestamp, query, orderBy, where, serverTimestamp } from 'firebase/firestore';
 import type { KeyResult } from '@/lib/types';
 import { Loader2, Wand, FileSignature, CheckCircle, Goal, MessageSquare, Target, Sparkles, TrendingUp, Calendar, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import { parseOperationalPlan } from '@/ai/actions';
@@ -64,9 +64,13 @@ function KeyResultCard({ kr }: { kr: KeyResult }) {
     const deadlineDate = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
     const deadlinePast = isPast(deadlineDate) && progress < 100;
     const formatTarget = (kr: KeyResult) => {
-        if (kr.title?.includes('KR1') || kr.description?.toLowerCase().includes('ugx')) return `${((kr.target || 0) / 1000000).toFixed(1)}M UGX`;
+        const unit = (kr as any).unit || '';
+        if (kr.description?.toLowerCase().includes('ugx') || kr.description?.toLowerCase().includes('shilling')) {
+            return `${((kr.target || 0) / 1000000).toFixed(1)}M UGX`;
+        }
         if (kr.target === 100) return `${kr.target}%`;
-        return kr.target.toLocaleString();
+        const num = kr.target.toLocaleString();
+        return unit ? `${num} ${unit}` : num;
     };
 
     const handleUpdate = async () => {
@@ -186,7 +190,8 @@ function OperationalPlanViewer() {
 const krSchema = z.object({
   title: z.string().min(2, 'Title is required.'),
   description: z.string().min(5, 'Description is required.'),
-  target: z.number().min(0),
+  target: z.coerce.number().min(0),
+  unit: z.string().optional(),
   deadline: z.string().min(1, 'Deadline is required.'),
   priority: z.enum(['High', 'Medium', 'Low']),
 });
@@ -205,40 +210,43 @@ function KeyResultFormItem({
     control: any;
 }) {
     return (
-        <div className="p-6 border-lg border-omuto-navy/10 rounded-2xl bg-white space-y-4 relative group">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-4 sm:p-6 border border-omuto-navy/10 rounded-xl sm:rounded-2xl bg-white space-y-4 relative group">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                    <Label>Key Result Title</Label>
-                    <Input {...register(`keyResults.${index}.title`)} placeholder="e.g., KR1: Monthly Fundraising" />
-                    {errors.keyResults?.[index]?.title && <p className="text-xs text-destructive font-bold">{errors.keyResults[index].title.message}</p>}
+                    <Label className="text-xs sm:text-sm font-medium">Key Result</Label>
+                    <Input {...register(`keyResults.${index}.title`)} placeholder="e.g., Train 50 youth" className="h-10 sm:h-11" />
+                    {errors.keyResults?.[index]?.title && <p className="text-xs text-destructive">{errors.keyResults[index].title.message}</p>}
                 </div>
                 <div className="space-y-2">
-                    <Label>Target Value (Number)</Label>
-                    <Input type="number" {...register(`keyResults.${index}.target`, { valueAsNumber: true })} placeholder="e.g., 150000000" />
-                    {errors.keyResults?.[index]?.target && <p className="text-xs text-destructive font-bold">{errors.keyResults[index].target.message}</p>}
+                    <Label className="text-xs sm:text-sm font-medium">Metric Value</Label>
+                    <div className="flex gap-2">
+                        <Input type="number" {...register(`keyResults.${index}.target`, { valueAsNumber: true })} placeholder="e.g., 50" className="h-10 sm:h-11 w-24 sm:w-32" />
+                        <Input {...register(`keyResults.${index}.unit`)} placeholder="e.g., youth" className="h-10 sm:h-11 flex-1" />
+                    </div>
+                    {errors.keyResults?.[index]?.target && <p className="text-xs text-destructive">{errors.keyResults[index].target.message}</p>}
                 </div>
             </div>
             
             <div className="space-y-2">
-                <Label>Description</Label>
-                <Textarea {...register(`keyResults.${index}.description`)} placeholder="Describe what success looks like..." />
-                {errors.keyResults?.[index]?.description && <p className="text-xs text-destructive font-bold">{errors.keyResults[index].description.message}</p>}
+                <Label className="text-xs sm:text-sm font-medium">Description</Label>
+                <Textarea {...register(`keyResults.${index}.description`)} placeholder="Describe what success looks like..." className="min-h-[60px] sm:min-h-[80px] text-sm" />
+                {errors.keyResults?.[index]?.description && <p className="text-xs text-destructive">{errors.keyResults[index].description.message}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                    <Label>Deadline</Label>
-                    <Input type="date" {...register(`keyResults.${index}.deadline`)} />
-                    {errors.keyResults?.[index]?.deadline && <p className="text-xs text-destructive font-bold">{errors.keyResults[index].deadline.message}</p>}
+                    <Label className="text-xs sm:text-sm font-medium">Deadline</Label>
+                    <Input type="date" {...register(`keyResults.${index}.deadline`)} className="h-10 sm:h-11" />
+                    {errors.keyResults?.[index]?.deadline && <p className="text-xs text-destructive">{errors.keyResults[index].deadline.message}</p>}
                 </div>
                 <div className="space-y-2">
-                    <Label>Priority</Label>
+                    <Label className="text-xs sm:text-sm font-medium">Priority</Label>
                     <Controller
                         control={control}
                         name={`keyResults.${index}.priority`}
                         render={({ field }: { field: any }) => (
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <SelectTrigger>
+                                <SelectTrigger className="h-10 sm:h-11">
                                     <SelectValue placeholder="Select priority" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -252,7 +260,7 @@ function KeyResultFormItem({
                 </div>
             </div>
 
-            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => remove(index)}>
+            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8" onClick={() => remove(index)}>
                 <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
         </div>
@@ -274,7 +282,7 @@ function OperationalPlanUpdater() {
       formState: { errors, isSubmitting }
   } = useForm({
       defaultValues: {
-          keyResults: [{ title: '', description: '', target: 0, deadline: '', priority: 'Medium' }]
+          keyResults: [{ title: '', description: '', target: 0, unit: '', deadline: '', priority: 'Medium' }]
       }
   });
 
@@ -298,12 +306,13 @@ function OperationalPlanUpdater() {
           title: kr.title,
           description: kr.description,
           target: Number(kr.target) || 0,
+          unit: kr.unit || '',
           deadline: kr.deadline ? formatDateForInput(kr.deadline) : '',
           priority: (kr.priority as any) || 'Medium'
       }));
       reset({ keyResults: mappedResults });
       setIsImporting(false);
-      toast({ title: 'Import Successful', description: `Loaded ${result.keyResults.length} Key Results.` });
+      toast({ title: 'Import Successful', description: `Loaded ${result.keyResults.length} Key Results with metrics.` });
     } catch (error: any) {
       console.error('Import error:', error);
       toast({ 
@@ -319,11 +328,15 @@ function OperationalPlanUpdater() {
   const onSubmit = async (data: any) => {
     if (!firestore) return;
     const krCollection = collection(firestore, 'key-results');
+    const metricsCollection = collection(firestore, 'impact-metrics');
     const batch = writeBatch(firestore);
 
     try {
-      const existingDocsSnapshot = await getDocs(krCollection);
-      existingDocsSnapshot.forEach(docSnapshot => batch.delete(docSnapshot.ref));
+      const existingKRsSnapshot = await getDocs(krCollection);
+      existingKRsSnapshot.forEach(docSnapshot => batch.delete(docSnapshot.ref));
+
+      const existingMetricsSnapshot = await getDocs(metricsCollection);
+      existingMetricsSnapshot.forEach(docSnapshot => batch.delete(docSnapshot.ref));
 
       data.keyResults.forEach((kr: any) => {
         const newDocRef = doc(krCollection);
@@ -331,13 +344,27 @@ function OperationalPlanUpdater() {
         batch.set(newDocRef, { 
             ...kr, 
             id: newDocRef.id,
+            target: Number(kr.target) || 0,
+            unit: kr.unit || '',
             deadline: Timestamp.fromDate(isNaN(deadlineDate.getTime()) ? new Date() : deadlineDate),
             currentProgress: 0
+        });
+
+        const metricDocRef = doc(metricsCollection);
+        batch.set(metricDocRef, {
+            id: metricDocRef.id,
+            metric: kr.title,
+            target: Number(kr.target) || 0,
+            current: 0,
+            unit: kr.unit || '',
+            valuePerUnit: 0,
+            linkedKeyResultId: newDocRef.id,
+            createdAt: serverTimestamp()
         });
       });
 
       await batch.commit();
-      toast({ title: 'Plan Activated', description: 'Organizational strategy has been updated.' });
+      toast({ title: 'Plan Activated', description: `${data.keyResults.length} Key Results and Metrics synced to dashboards.` });
     } catch (error) {
       console.error('Save error:', error);
       toast({ variant: 'destructive', title: 'Error', description: 'Could not save strategy.' });
@@ -396,10 +423,10 @@ function OperationalPlanUpdater() {
                 <Button 
                     type="button" 
                     variant="outline" 
-                    className="flex-1 h-16 border-2 border-dashed border-omuto-navy/20 hover:border-omuto-navy/40 rounded-2xl"
-                    onClick={() => append({ title: '', description: '', target: 0, deadline: '', priority: 'Medium' })}
+                    className="flex-1 h-14 sm:h-16 border-2 border-dashed border-omuto-navy/20 hover:border-omuto-navy/40 rounded-xl sm:rounded-2xl"
+                    onClick={() => append({ title: '', description: '', target: 0, unit: '', deadline: '', priority: 'Medium' })}
                 >
-                    <PlusCircle className="mr-2 h-5 w-5" /> Add Manual Key Result
+                    <PlusCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Add Key Result
                 </Button>
                 
                 <Button 
