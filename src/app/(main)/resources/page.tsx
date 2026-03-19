@@ -39,6 +39,7 @@ import { formatDateSafe } from '@/lib/utils';
 import { format } from 'date-fns';
 import { findGrantsAction as runGrantFinder } from '@/actions/mutations';
 import type { GrantFinderOutput } from '@/lib/types';
+import { GrantDeadlineAlert } from '@/components/dashboard/grant-deadline-alert';
 
 
 const formatCurrency = (value: number) => {
@@ -531,6 +532,8 @@ export default function ResourcesPage() {
           Manage donor relations, funding opportunities, and proposals.
         </p>
       </header>
+
+      <GrantDeadlineAlert />
 
       <GrantDiscovery />
 
