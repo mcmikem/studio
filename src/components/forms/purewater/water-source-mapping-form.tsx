@@ -81,11 +81,11 @@ export function WaterSourceMappingForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label htmlFor="sourceName">Source Name/Identifier</Label>
-              <Input id="sourceName" {...register('sourceName')} placeholder="e.g., Ggaba Community Borehole" />
-              {errors.sourceName && <p className="text-sm text-destructive">{errors.sourceName.message}</p>}
+              <Input id="sourceName" {...register('sourceName')} placeholder="e.g., Ggaba Community Borehole" className="h-10 sm:h-11" />
+              {errors.sourceName && <p className="text-xs sm:text-sm text-destructive">{errors.sourceName.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="type">Source Type</Label>
@@ -94,7 +94,7 @@ export function WaterSourceMappingForm() {
                 control={control}
                 render={({ field }) => (
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Borehole">Borehole</SelectItem>
                       <SelectItem value="Spring">Protected Spring</SelectItem>
@@ -107,7 +107,7 @@ export function WaterSourceMappingForm() {
             </div>
              <div className="space-y-2">
               <Label htmlFor="gpsCoordinates">GPS Coordinates (Optional)</Label>
-              <Input id="gpsCoordinates" {...register('gpsCoordinates')} placeholder="e.g., 0.2678, 32.6145" />
+              <Input id="gpsCoordinates" {...register('gpsCoordinates')} placeholder="e.g., 0.2678, 32.6145" className="h-10 sm:h-11" />
             </div>
             <div className="flex items-center space-x-2">
                 <Controller
@@ -121,11 +121,11 @@ export function WaterSourceMappingForm() {
             </div>
              <div className="space-y-2">
               <Label htmlFor="photoUrl">Photo URL (Optional)</Label>
-              <Input id="photoUrl" {...register('photoUrl')} placeholder="Link to a photo of the source"/>
+              <Input id="photoUrl" {...register('photoUrl')} placeholder="Link to a photo of the source" className="h-10 sm:h-11"/>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Water Source
             </Button>

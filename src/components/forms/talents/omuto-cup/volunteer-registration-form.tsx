@@ -73,18 +73,18 @@ export function VolunteerRegistrationForm() {
           <CardDescription>Register volunteers for Omuto Cup operations and planning.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label htmlFor="name">Full Name</Label><Input id="name" {...register('name')} />{errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}</div>
-              <div className="space-y-2"><Label htmlFor="contact">Phone Contact</Label><Input id="contact" {...register('contact')} />{errors.contact && <p className="text-sm text-destructive">{errors.contact.message}</p>}</div>
-              <div className="space-y-2">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2"><Label htmlFor="name">Full Name</Label><Input id="name" {...register('name')} className="h-10 sm:h-11" />{errors.name && <p className="text-xs sm:text-sm text-destructive">{errors.name.message}</p>}</div>
+              <div className="space-y-2"><Label htmlFor="contact">Phone Contact</Label><Input id="contact" {...register('contact')} className="h-10 sm:h-11" />{errors.contact && <p className="text-xs sm:text-sm text-destructive">{errors.contact.message}</p>}</div>
+              <div className="space-y-2 sm:col-span-2">
                 <Label>Role</Label>
                 <Controller name="role" control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger><SelectContent>{roleOptions.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}</SelectContent></Select>
+                  <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue placeholder="Select role" /></SelectTrigger><SelectContent>{roleOptions.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}</SelectContent></Select>
                 )} />
-                {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
+                {errors.role && <p className="text-xs sm:text-sm text-destructive">{errors.role.message}</p>}
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2 sm:col-span-2">
                 <LocationPicker
                   districtValue={watch('district')}
                   subcountyValue={watch('subcounty')}
@@ -94,17 +94,17 @@ export function VolunteerRegistrationForm() {
                   onParishChange={(val) => setValue('parish', val)}
                 />
               </div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2 sm:col-span-2">
                 <Label>Availability</Label>
                 <Controller name="availability" control={control} render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['Full Day', 'Morning', 'Afternoon', 'Flexible'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select>
+                  <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger><SelectContent>{['Full Day', 'Morning', 'Afternoon', 'Flexible'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select>
                 )} />
               </div>
             </div>
-            <div className="space-y-2"><Label htmlFor="skills">Skills / Experience</Label><Textarea id="skills" {...register('skills')} placeholder="First aid, crowd management, social media coverage..." /></div>
-            <div className="space-y-2"><Label htmlFor="notes">Notes</Label><Textarea id="notes" {...register('notes')} /></div>
+            <div className="space-y-2"><Label htmlFor="skills">Skills / Experience</Label><Textarea id="skills" {...register('skills')} placeholder="First aid, crowd management, social media coverage..." className="min-h-[80px] sm:min-h-[100px]" /></div>
+            <div className="space-y-2"><Label htmlFor="notes">Notes</Label><Textarea id="notes" {...register('notes')} className="min-h-[80px] sm:min-h-[100px]" /></div>
           </CardContent>
-          <CardFooter><Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Register Volunteer</Button></CardFooter>
+          <CardFooter className="p-4 sm:p-6"><Button type="submit" className="w-full h-10 sm:h-11" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Register Volunteer</Button></CardFooter>
         </form>
       </Card>
     </div>

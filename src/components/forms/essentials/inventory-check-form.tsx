@@ -93,17 +93,17 @@ export function InventoryCheckForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
       <EnterpriseFormTips type="inventory" />
       <div className="space-y-2">
         <Label htmlFor="productId">Product</Label>
-        {isLoadingProducts ? <Skeleton className="h-10" /> : (
+        {isLoadingProducts ? <Skeleton className="h-10 sm:h-11" /> : (
             <Controller
             name="productId"
             control={control}
             render={({ field }) => (
                 <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger id="productId"><SelectValue placeholder="Select a product..." /></SelectTrigger>
+                    <SelectTrigger id="productId" className="h-10 sm:h-11"><SelectValue placeholder="Select a product..." /></SelectTrigger>
                     <SelectContent>{products?.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.type})</SelectItem>)}</SelectContent>
                 </Select>
             )}
@@ -115,27 +115,27 @@ export function InventoryCheckForm() {
             <Link href="/enterprise/essentials/products" className="underline">Products</Link>.
           </div>
         )}
-        {errors.productId && <p className="text-sm text-destructive">{errors.productId.message}</p>}
+        {errors.productId && <p className="text-xs sm:text-sm text-destructive">{errors.productId.message}</p>}
       </div>
 
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
            <div className="space-y-2">
             <Label htmlFor="countedQuantity">Physical Count</Label>
-            <Input id="countedQuantity" type="number" {...register('countedQuantity')} />
-            {errors.countedQuantity && <p className="text-sm text-destructive">{errors.countedQuantity.message}</p>}
+            <Input id="countedQuantity" type="number" {...register('countedQuantity')} className="h-10 sm:h-11" />
+            {errors.countedQuantity && <p className="text-xs sm:text-sm text-destructive">{errors.countedQuantity.message}</p>}
           </div>
             <div className="space-y-2">
                 <Label htmlFor="date">Date of Count</Label>
-                <Input id="date" type="date" {...register('date')} />
-                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11" />
+                {errors.date && <p className="text-xs sm:text-sm text-destructive">{errors.date.message}</p>}
             </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="notes">Notes (Reason for discrepancy, etc.)</Label>
-        <Textarea id="notes" {...register('notes')} />
+        <Textarea id="notes" {...register('notes')} className="min-h-[80px] sm:min-h-[100px]" />
       </div>
       <DialogFooter>
-        <Button type="submit" disabled={isSubmitting || !hasProducts}>
+        <Button type="submit" disabled={isSubmitting || !hasProducts} className="h-10 sm:h-11 w-full sm:w-auto">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Update Stock Count
         </Button>

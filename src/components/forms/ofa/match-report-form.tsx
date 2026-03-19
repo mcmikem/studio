@@ -88,55 +88,55 @@ export function MatchReportForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
              <div className="space-y-2">
                 <Label htmlFor="date">Date of Match</Label>
-                <Input id="date" type="date" {...register('date')} />
-                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11" />
+                {errors.date && <p className="text-xs sm:text-sm text-destructive">{errors.date.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="homeTeam">Home Team</Label>
-                    <Input id="homeTeam" {...register('homeTeam')} />
-                    {errors.homeTeam && <p className="text-sm text-destructive">{errors.homeTeam.message}</p>}
+                    <Input id="homeTeam" {...register('homeTeam')} className="h-10 sm:h-11" />
+                    {errors.homeTeam && <p className="text-xs sm:text-sm text-destructive">{errors.homeTeam.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="awayTeam">Away Team</Label>
-                    <Input id="awayTeam" {...register('awayTeam')} />
-                    {errors.awayTeam && <p className="text-sm text-destructive">{errors.awayTeam.message}</p>}
+                    <Input id="awayTeam" {...register('awayTeam')} className="h-10 sm:h-11" />
+                    {errors.awayTeam && <p className="text-xs sm:text-sm text-destructive">{errors.awayTeam.message}</p>}
                 </div>
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="homeScore">Home Score</Label>
-                    <Input id="homeScore" type="number" {...register('homeScore')} />
-                    {errors.homeScore && <p className="text-sm text-destructive">{errors.homeScore.message}</p>}
+                    <Input id="homeScore" type="number" {...register('homeScore')} className="h-10 sm:h-11" />
+                    {errors.homeScore && <p className="text-xs sm:text-sm text-destructive">{errors.homeScore.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="awayScore">Away Score</Label>
-                    <Input id="awayScore" type="number" {...register('awayScore')} />
-                    {errors.awayScore && <p className="text-sm text-destructive">{errors.awayScore.message}</p>}
+                    <Input id="awayScore" type="number" {...register('awayScore')} className="h-10 sm:h-11" />
+                    {errors.awayScore && <p className="text-xs sm:text-sm text-destructive">{errors.awayScore.message}</p>}
                 </div>
             </div>
              <div className="space-y-2">
                 <Label htmlFor="goalScorers">Goal Scorers &amp; Minutes (Optional)</Label>
-                <Textarea id="goalScorers" {...register('goalScorers')} placeholder="e.g., John Doe (23', 78'), Jane Smith (45')" />
+                <Textarea id="goalScorers" {...register('goalScorers')} placeholder="e.g., John Doe (23', 78'), Jane Smith (45')" className="min-h-[80px] sm:min-h-[100px]" />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="assists">Assists (Optional)</Label>
-                <Textarea id="assists" {...register('assists')} placeholder="e.g., Player A (2), Player C (1)" />
+                <Textarea id="assists" {...register('assists')} placeholder="e.g., Player A (2), Player C (1)" className="min-h-[80px] sm:min-h-[100px]" />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="cards">Yellow/Red Cards (Optional)</Label>
-                <Textarea id="cards" {...register('cards')} placeholder="e.g., Player X (Yellow), Player Y (Red)" />
+                <Textarea id="cards" {...register('cards')} placeholder="e.g., Player X (Yellow), Player Y (Red)" className="min-h-[80px] sm:min-h-[100px]" />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="referee">Referee Name (Optional)</Label>
-                <Input id="referee" {...register('referee')} />
+                <Input id="referee" {...register('referee')} className="h-10 sm:h-11" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Match Report
             </Button>

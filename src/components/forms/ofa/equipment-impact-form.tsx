@@ -80,28 +80,28 @@ export function OFAEquipmentImpactForm() {
           <CardDescription>Track support items given to teams and follow-up outcomes.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Team</Label>
-                {teamsLoading ? <Skeleton className="h-10 w-full" /> : (
+                {teamsLoading ? <Skeleton className="h-10 sm:h-11 w-full" /> : (
                   <Controller name="teamId" control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger><SelectContent>{teams?.map((team) => <SelectItem key={team.id} value={team.id}>{team.teamName}</SelectItem>)}</SelectContent></Select>
+                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue placeholder="Select team" /></SelectTrigger><SelectContent>{teams?.map((team) => <SelectItem key={team.id} value={team.id}>{team.teamName}</SelectItem>)}</SelectContent></Select>
                   )} />
                 )}
-                {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
+                {errors.teamId && <p className="text-xs sm:text-sm text-destructive">{errors.teamId.message}</p>}
               </div>
-              <div className="space-y-2"><Label htmlFor="dateGiven">Date Given</Label><Input id="dateGiven" type="date" {...register('dateGiven')} /></div>
-              <div className="space-y-2"><Label htmlFor="item">Item</Label><Input id="item" {...register('item')} placeholder="e.g., Jerseys, Balls" />{errors.item && <p className="text-sm text-destructive">{errors.item.message}</p>}</div>
-              <div className="space-y-2"><Label htmlFor="quantity">Quantity</Label><Input id="quantity" type="number" {...register('quantity')} />{errors.quantity && <p className="text-sm text-destructive">{errors.quantity.message}</p>}</div>
+              <div className="space-y-2"><Label htmlFor="dateGiven">Date Given</Label><Input id="dateGiven" type="date" {...register('dateGiven')} className="h-10 sm:h-11" /></div>
+              <div className="space-y-2"><Label htmlFor="item">Item</Label><Input id="item" {...register('item')} placeholder="e.g., Jerseys, Balls" className="h-10 sm:h-11" /></div>
+              <div className="space-y-2"><Label htmlFor="quantity">Quantity</Label><Input id="quantity" type="number" {...register('quantity')} className="h-10 sm:h-11" /></div>
             </div>
-            <div className="space-y-2"><Label htmlFor="beforeSupport">Before Support (baseline)</Label><Textarea id="beforeSupport" {...register('beforeSupport')} /></div>
-            <div className="space-y-2"><Label htmlFor="thirtyDays">30-Day Follow-up</Label><Textarea id="thirtyDays" {...register('thirtyDays')} /></div>
-            <div className="space-y-2"><Label htmlFor="sixtyDays">60-Day Follow-up</Label><Textarea id="sixtyDays" {...register('sixtyDays')} /></div>
-            <div className="space-y-2"><Label htmlFor="ninetyDays">90-Day Follow-up</Label><Textarea id="ninetyDays" {...register('ninetyDays')} /></div>
-            <div className="space-y-2"><Label htmlFor="realImpact">Observed Real Impact</Label><Textarea id="realImpact" {...register('realImpact')} /></div>
+            <div className="space-y-2"><Label htmlFor="beforeSupport">Before Support (baseline)</Label><Textarea id="beforeSupport" {...register('beforeSupport')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+            <div className="space-y-2"><Label htmlFor="thirtyDays">30-Day Follow-up</Label><Textarea id="thirtyDays" {...register('thirtyDays')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+            <div className="space-y-2"><Label htmlFor="sixtyDays">60-Day Follow-up</Label><Textarea id="sixtyDays" {...register('sixtyDays')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+            <div className="space-y-2"><Label htmlFor="ninetyDays">90-Day Follow-up</Label><Textarea id="ninetyDays" {...register('ninetyDays')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+            <div className="space-y-2"><Label htmlFor="realImpact">Observed Real Impact</Label><Textarea id="realImpact" {...register('realImpact')} className="min-h-[80px] sm:min-h-[100px]" /></div>
           </CardContent>
-          <CardFooter><Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save Impact Log</Button></CardFooter>
+          <CardFooter className="p-4 sm:p-6"><Button type="submit" className="w-full h-10 sm:h-11" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save Impact Log</Button></CardFooter>
         </form>
       </Card>
     </div>

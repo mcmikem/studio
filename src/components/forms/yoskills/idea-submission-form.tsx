@@ -93,16 +93,16 @@ export function IdeaSubmissionForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label htmlFor="youthId">Participant</Label>
-              {isLoadingYouth ? <Skeleton className="h-10" /> : (
+              {isLoadingYouth ? <Skeleton className="h-10 sm:h-11" /> : (
                 <Controller
                   name="youthId"
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="youthId"><SelectValue placeholder="Select a participant..." /></SelectTrigger>
+                      <SelectTrigger id="youthId" className="h-10 sm:h-11"><SelectValue placeholder="Select a participant..." /></SelectTrigger>
                       <SelectContent>
                         {youth?.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}
                       </SelectContent>
@@ -110,31 +110,31 @@ export function IdeaSubmissionForm() {
                   )}
                 />
               )}
-              {errors.youthId && <p className="text-sm text-destructive">{errors.youthId.message}</p>}
+              {errors.youthId && <p className="text-xs sm:text-sm text-destructive">{errors.youthId.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="businessName">Business Name / Idea Title</Label>
-              <Input id="businessName" {...register('businessName')} />
-              {errors.businessName && <p className="text-sm text-destructive">{errors.businessName.message}</p>}
+              <Input id="businessName" {...register('businessName')} className="h-10 sm:h-11" />
+              {errors.businessName && <p className="text-xs sm:text-sm text-destructive">{errors.businessName.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="problemSolved">Problem Solved</Label>
-              <Textarea id="problemSolved" {...register('problemSolved')} placeholder="What problem does this business solve for the community?"/>
-              {errors.problemSolved && <p className="text-sm text-destructive">{errors.problemSolved.message}</p>}
+              <Textarea id="problemSolved" {...register('problemSolved')} placeholder="What problem does this business solve for the community?" className="min-h-[80px] sm:min-h-[100px]"/>
+              {errors.problemSolved && <p className="text-xs sm:text-sm text-destructive">{errors.problemSolved.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="targetCustomer">Target Customer</Label>
-              <Input id="targetCustomer" {...register('targetCustomer')} placeholder="Who is the primary customer?" />
-              {errors.targetCustomer && <p className="text-sm text-destructive">{errors.targetCustomer.message}</p>}
+              <Input id="targetCustomer" {...register('targetCustomer')} placeholder="Who is the primary customer?" className="h-10 sm:h-11" />
+              {errors.targetCustomer && <p className="text-xs sm:text-sm text-destructive">{errors.targetCustomer.message}</p>}
             </div>
             <div className="space-y-2">
                 <Label htmlFor="startupCapitalNeeded">Startup Capital Needed (UGX)</Label>
-                <Input id="startupCapitalNeeded" type="number" {...register('startupCapitalNeeded')} />
-                {errors.startupCapitalNeeded && <p className="text-sm text-destructive">{errors.startupCapitalNeeded.message}</p>}
+                <Input id="startupCapitalNeeded" type="number" {...register('startupCapitalNeeded')} className="h-10 sm:h-11" />
+                {errors.startupCapitalNeeded && <p className="text-xs sm:text-sm text-destructive">{errors.startupCapitalNeeded.message}</p>}
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit Business Idea
             </Button>

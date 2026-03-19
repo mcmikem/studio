@@ -133,8 +133,8 @@ export function SessionAttendanceForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="circleId">Select Circle</Label>
                 <Controller
@@ -142,25 +142,25 @@ export function SessionAttendanceForm() {
                     control={control}
                     render={({ field }) => (
                     <Select onValueChange={(value) => { field.onChange(value); setSelectedCircleId(value); }} value={field.value}>
-                        <SelectTrigger id="circleId"><SelectValue placeholder="Select a circle..." /></SelectTrigger>
+                        <SelectTrigger id="circleId" className="h-10 sm:h-11"><SelectValue placeholder="Select a circle..." /></SelectTrigger>
                         <SelectContent>
                             {circles?.map(c => <SelectItem key={c.id} value={c.id}>{c.circleName}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     )}
                 />
-                {errors.circleId && <p className="text-sm text-destructive">{errors.circleId.message}</p>}
+                {errors.circleId && <p className="text-xs sm:text-sm text-destructive">{errors.circleId.message}</p>}
               </div>
                <div className="space-y-2">
                 <Label htmlFor="date">Date of Session</Label>
-                <Input id="date" type="date" {...register('date')} />
-                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11" />
+                {errors.date && <p className="text-xs sm:text-sm text-destructive">{errors.date.message}</p>}
               </div>
             </div>
              <div className="space-y-2">
               <Label htmlFor="topic">Session Topic</Label>
-              <Input id="topic" {...register('topic')} />
-              {errors.topic && <p className="text-sm text-destructive">{errors.topic.message}</p>}
+              <Input id="topic" {...register('topic')} className="h-10 sm:h-11" />
+              {errors.topic && <p className="text-xs sm:text-sm text-destructive">{errors.topic.message}</p>}
             </div>
 
             {selectedCircleId && (
@@ -168,7 +168,7 @@ export function SessionAttendanceForm() {
                 <h3 className="text-lg font-semibold">Mark Attendance</h3>
                 <div className="space-y-2">
                   {fields.length > 0 && fields.map((field, index) => (
-                    <div key={field.memberId} className="flex items-center gap-4 p-2 border rounded-md">
+                    <div key={field.memberId} className="flex items-center gap-4 p-3 border rounded-lg">
                       <Controller
                         name={`members.${index}.present`}
                         control={control}
@@ -188,8 +188,8 @@ export function SessionAttendanceForm() {
               </div>
             )}
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting || !selectedCircleId || fields.length === 0} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting || !selectedCircleId || fields.length === 0} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Session Attendance
             </Button>

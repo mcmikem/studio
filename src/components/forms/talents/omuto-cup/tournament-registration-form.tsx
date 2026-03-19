@@ -79,7 +79,7 @@ export function TournamentRegistrationForm() {
           <CardDescription>Register participating teams and key focal contacts for Omuto Cup.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label>Team</Label>
               <Controller name="teamId" control={control} render={({ field }) => (
@@ -92,20 +92,20 @@ export function TournamentRegistrationForm() {
                   }}
                   value={field.value}
                 >
-                  <SelectTrigger><SelectValue placeholder="Select OFA team" /></SelectTrigger>
+                  <SelectTrigger className="h-10 sm:h-11"><SelectValue placeholder="Select OFA team" /></SelectTrigger>
                   <SelectContent>{teams?.map((team) => <SelectItem key={team.id} value={team.id}>{team.teamName}</SelectItem>)}</SelectContent>
                 </Select>
               )} />
-              {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
+              {errors.teamId && <p className="text-xs sm:text-sm text-destructive">{errors.teamId.message}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label htmlFor="contactPerson">Contact Person</Label><Input id="contactPerson" {...register('contactPerson')} />{errors.contactPerson && <p className="text-sm text-destructive">{errors.contactPerson.message}</p>}</div>
-              <div className="space-y-2"><Label htmlFor="contactPhone">Contact Phone</Label><Input id="contactPhone" {...register('contactPhone')} />{errors.contactPhone && <p className="text-sm text-destructive">{errors.contactPhone.message}</p>}</div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2"><Label htmlFor="contactPerson">Contact Person</Label><Input id="contactPerson" {...register('contactPerson')} className="h-10 sm:h-11" />{errors.contactPerson && <p className="text-xs sm:text-sm text-destructive">{errors.contactPerson.message}</p>}</div>
+              <div className="space-y-2"><Label htmlFor="contactPhone">Contact Phone</Label><Input id="contactPhone" {...register('contactPhone')} className="h-10 sm:h-11" />{errors.contactPhone && <p className="text-xs sm:text-sm text-destructive">{errors.contactPhone.message}</p>}</div>
               <div className="space-y-2"><Label>Age Category</Label><Controller name="ageCategory" control={control} render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['U13', 'U15', 'U17', 'U19', 'Mixed'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
+                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger><SelectContent>{['U13', 'U15', 'U17', 'U19', 'Mixed'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select>
               )} /></div>
-              <div className="space-y-2 md:col-span-2">
+              <div className="space-y-2 sm:col-span-2">
                 <LocationPicker
                   districtValue={watch('district')}
                   subcountyValue={watch('subcounty')}
@@ -115,13 +115,13 @@ export function TournamentRegistrationForm() {
                   onParishChange={(val) => setValue('parish', val)}
                 />
               </div>
-              <div className="space-y-2"><Label htmlFor="kitColors">Kit Colors</Label><Input id="kitColors" {...register('kitColors')} /></div>
-              <div className="space-y-2"><Label htmlFor="emergencyContact">Emergency Contact</Label><Input id="emergencyContact" {...register('emergencyContact')} /></div>
+              <div className="space-y-2"><Label htmlFor="kitColors">Kit Colors</Label><Input id="kitColors" {...register('kitColors')} className="h-10 sm:h-11" /></div>
+              <div className="space-y-2"><Label htmlFor="emergencyContact">Emergency Contact</Label><Input id="emergencyContact" {...register('emergencyContact')} className="h-10 sm:h-11" /></div>
             </div>
 
-            <div className="space-y-2"><Label htmlFor="notes">Notes</Label><Textarea id="notes" {...register('notes')} placeholder={selectedTeamId ? 'Special requests, transport notes, roster issues...' : 'Select a team first'} /></div>
+            <div className="space-y-2"><Label htmlFor="notes">Notes</Label><Textarea id="notes" {...register('notes')} placeholder={selectedTeamId ? 'Special requests, transport notes, roster issues...' : 'Select a team first'} className="min-h-[80px] sm:min-h-[100px]" /></div>
           </CardContent>
-          <CardFooter><Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Register Team for Tournament</Button></CardFooter>
+          <CardFooter className="p-4 sm:p-6"><Button type="submit" className="w-full h-10 sm:h-11" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Register Team for Tournament</Button></CardFooter>
         </form>
       </Card>
     </div>

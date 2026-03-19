@@ -90,16 +90,16 @@ export function BusinessProgressForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label htmlFor="businessIdeaId">Business</Label>
-              {isLoadingIdeas ? <Skeleton className="h-10" /> : (
+              {isLoadingIdeas ? <Skeleton className="h-10 sm:h-11" /> : (
                 <Controller
                   name="businessIdeaId"
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="businessIdeaId"><SelectValue placeholder="Select a business..." /></SelectTrigger>
+                      <SelectTrigger id="businessIdeaId" className="h-10 sm:h-11"><SelectValue placeholder="Select a business..." /></SelectTrigger>
                       <SelectContent>
                         {ideas?.map(i => <SelectItem key={i.id} value={i.id}>{i.businessName}</SelectItem>)}
                       </SelectContent>
@@ -107,31 +107,31 @@ export function BusinessProgressForm() {
                   )}
                 />
               )}
-              {errors.businessIdeaId && <p className="text-sm text-destructive">{errors.businessIdeaId.message}</p>}
+              {errors.businessIdeaId && <p className="text-xs sm:text-sm text-destructive">{errors.businessIdeaId.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="month">Month</Label>
-                <Input id="month" type="month" {...register('month')} />
-                {errors.month && <p className="text-sm text-destructive">{errors.month.message}</p>}
+                <Input id="month" type="month" {...register('month')} className="h-10 sm:h-11" />
+                {errors.month && <p className="text-xs sm:text-sm text-destructive">{errors.month.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="monthlySales">Monthly Sales (UGX)</Label>
-                <Input id="monthlySales" type="number" {...register('monthlySales')} />
-                {errors.monthlySales && <p className="text-sm text-destructive">{errors.monthlySales.message}</p>}
+                <Input id="monthlySales" type="number" {...register('monthlySales')} className="h-10 sm:h-11" />
+                {errors.monthlySales && <p className="text-xs sm:text-sm text-destructive">{errors.monthlySales.message}</p>}
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="challenges">Challenges Faced This Month (Optional)</Label>
-              <Textarea id="challenges" {...register('challenges')} />
+              <Textarea id="challenges" {...register('challenges')} className="min-h-[80px] sm:min-h-[100px]" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="supportNeeded">Support Needed (Optional)</Label>
-              <Textarea id="supportNeeded" {...register('supportNeeded')} />
+              <Textarea id="supportNeeded" {...register('supportNeeded')} className="min-h-[80px] sm:min-h-[100px]" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Progress Report
             </Button>

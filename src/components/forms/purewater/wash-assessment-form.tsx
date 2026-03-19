@@ -82,17 +82,17 @@ export function WashAssessmentForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label htmlFor="school">School Name</Label>
-              <Input id="school" {...register('school')} />
-              {errors.school && <p className="text-sm text-destructive">{errors.school.message}</p>}
+              <Input id="school" {...register('school')} className="h-10 sm:h-11" />
+              {errors.school && <p className="text-xs sm:text-sm text-destructive">{errors.school.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="handwashingStations">Number of Handwashing Stations</Label>
-                    <Input id="handwashingStations" type="number" {...register('handwashingStations')} />
-                    {errors.handwashingStations && <p className="text-sm text-destructive">{errors.handwashingStations.message}</p>}
+                    <Input id="handwashingStations" type="number" {...register('handwashingStations')} className="h-10 sm:h-11" />
+                    {errors.handwashingStations && <p className="text-xs sm:text-sm text-destructive">{errors.handwashingStations.message}</p>}
                 </div>
                  <div className="flex items-center space-x-2 pt-8">
                     <Controller name="soapAvailable" control={control} render={({ field }) => (
@@ -117,11 +117,11 @@ export function WashAssessmentForm() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="assessorComments">Assessor's Comments (Optional)</Label>
-              <Textarea id="assessorComments" {...register('assessorComments')} placeholder="e.g., Latrines are clean but lack doors..." />
+              <Textarea id="assessorComments" {...register('assessorComments')} placeholder="e.g., Latrines are clean but lack doors..." className="min-h-[80px] sm:min-h-[100px]" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save WASH Assessment
             </Button>

@@ -87,10 +87,10 @@ export function TreeSurveyForm() {
           <CardDescription>Follow-up survey for tree planting activities with auto survival-rate calculation.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label>Related Planting Activity (optional)</Label>
-              {activitiesLoading ? <Skeleton className="h-10 w-full" /> : (
+              {activitiesLoading ? <Skeleton className="h-10 sm:h-11 w-full" /> : (
                 <Controller name="sourceActivityId" control={control} render={({ field }) => (
                   <Select
                     onValueChange={(value) => {
@@ -100,7 +100,7 @@ export function TreeSurveyForm() {
                     }}
                     value={field.value}
                   >
-                    <SelectTrigger><SelectValue placeholder="Select activity" /></SelectTrigger>
+                    <SelectTrigger className="h-10 sm:h-11"><SelectValue placeholder="Select activity" /></SelectTrigger>
                     <SelectContent>
                       {activities?.filter((a) => (a.trees_planted || 0) > 0).map((a) => (
                         <SelectItem key={a.id} value={a.id}>{a.title || 'Activity'} ({a.trees_planted} trees)</SelectItem>
@@ -111,23 +111,23 @@ export function TreeSurveyForm() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="schoolName">School Name</Label>
-                <Input id="schoolName" list="school-options" {...register('schoolName')} placeholder="Start typing to use suggestions" />
+                <Input id="schoolName" list="school-options" {...register('schoolName')} className="h-10 sm:h-11" placeholder="Start typing to use suggestions" />
                 <datalist id="school-options">{schoolOptions.map((name) => <option key={name} value={name} />)}</datalist>
-                {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName.message}</p>}
+                {errors.schoolName && <p className="text-xs sm:text-sm text-destructive">{errors.schoolName.message}</p>}
               </div>
-              <div className="space-y-2"><Label htmlFor="surveyDate">Survey Date</Label><Input id="surveyDate" type="date" {...register('surveyDate')} /></div>
-              <div className="space-y-2"><Label htmlFor="totalTreesAtPlanting">Trees Planted Initially</Label><Input id="totalTreesAtPlanting" type="number" {...register('totalTreesAtPlanting')} /></div>
-              <div className="space-y-2"><Label htmlFor="numberOfTreesSurvived">Trees Survived</Label><Input id="numberOfTreesSurvived" type="number" {...register('numberOfTreesSurvived')} /></div>
+              <div className="space-y-2"><Label htmlFor="surveyDate">Survey Date</Label><Input id="surveyDate" type="date" {...register('surveyDate')} className="h-10 sm:h-11" /></div>
+              <div className="space-y-2"><Label htmlFor="totalTreesAtPlanting">Trees Planted Initially</Label><Input id="totalTreesAtPlanting" type="number" {...register('totalTreesAtPlanting')} className="h-10 sm:h-11" /></div>
+              <div className="space-y-2"><Label htmlFor="numberOfTreesSurvived">Trees Survived</Label><Input id="numberOfTreesSurvived" type="number" {...register('numberOfTreesSurvived')} className="h-10 sm:h-11" /></div>
             </div>
 
             <div className="rounded-lg border p-3 bg-muted/40 text-sm">Current survival rate: <span className="font-bold">{survivalRate.toFixed(1)}%</span></div>
 
-            <div className="space-y-2"><Label htmlFor="notes">Notes</Label><Textarea id="notes" {...register('notes')} placeholder="Observed challenges, weather conditions, maintenance actions..." /></div>
+            <div className="space-y-2"><Label htmlFor="notes">Notes</Label><Textarea id="notes" {...register('notes')} placeholder="Observed challenges, weather conditions, maintenance actions..." className="min-h-[80px] sm:min-h-[100px]" /></div>
           </CardContent>
-          <CardFooter><Button type="submit" disabled={isSubmitting} className="w-full">{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Submit Survey</Button></CardFooter>
+          <CardFooter className="p-4 sm:p-6"><Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Submit Survey</Button></CardFooter>
         </form>
       </Card>
     </div>

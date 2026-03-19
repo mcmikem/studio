@@ -93,30 +93,30 @@ export function OFAMatchSummaryForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <h3 className="text-lg font-semibold border-b pb-2">Match Details</h3>
             <div className="space-y-2">
               <Label htmlFor="region">Region</Label>
-              <Input id="region" {...register('region')} />
-              {errors.region && <p className="text-sm text-destructive">{errors.region.message}</p>}
+              <Input id="region" {...register('region')} className="h-10 sm:h-11" />
+              {errors.region && <p className="text-xs sm:text-sm text-destructive">{errors.region.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="teamA">Team A</Label>
-                    <Input id="teamA" {...register('teamA')} />
-                    {errors.teamA && <p className="text-sm text-destructive">{errors.teamA.message}</p>}
+                    <Input id="teamA" {...register('teamA')} className="h-10 sm:h-11" />
+                    {errors.teamA && <p className="text-xs sm:text-sm text-destructive">{errors.teamA.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="teamB">Team B</Label>
-                    <Input id="teamB" {...register('teamB')} />
-                    {errors.teamB && <p className="text-sm text-destructive">{errors.teamB.message}</p>}
+                    <Input id="teamB" {...register('teamB')} className="h-10 sm:h-11" />
+                    {errors.teamB && <p className="text-xs sm:text-sm text-destructive">{errors.teamB.message}</p>}
                 </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="finalScore">Final Score (e.g., 2 - 1)</Label>
-                    <Input id="finalScore" {...register('finalScore')} />
-                    {errors.finalScore && <p className="text-sm text-destructive">{errors.finalScore.message}</p>}
+                    <Input id="finalScore" {...register('finalScore')} className="h-10 sm:h-11" />
+                    {errors.finalScore && <p className="text-xs sm:text-sm text-destructive">{errors.finalScore.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label>Any Injuries?</Label>
@@ -134,41 +134,41 @@ export function OFAMatchSummaryForm() {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="bestPerformers">Best 3 Performers (Optional)</Label>
-                <Input id="bestPerformers" {...register('bestPerformers')} placeholder="e.g., Player 1, Player 2, Player 3" />
+                <Input id="bestPerformers" {...register('bestPerformers')} className="h-10 sm:h-11" placeholder="e.g., Player 1, Player 2, Player 3" />
             </div>
 
             <h3 className="text-lg font-semibold border-b pb-2 pt-4">Behaviour & Discipline</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-4 p-4 border rounded-lg">
                     <Label className="font-semibold">Team A: {watch('teamA') || '...'}</Label>
                     <div className="space-y-2">
                         <Label>Discipline Score (1-5)</Label>
-                        <Input type="number" min="1" max="5" {...register('teamADiscipline')} />
+                        <Input type="number" min="1" max="5" {...register('teamADiscipline')} className="h-10 sm:h-11" />
                     </div>
                      <div className="space-y-2">
                         <Label>Cards</Label>
-                        <Input {...register('teamACards')} placeholder="e.g., 2 Yellow, 1 Red" />
+                        <Input {...register('teamACards')} placeholder="e.g., 2 Yellow, 1 Red" className="h-10 sm:h-11" />
                     </div>
                 </div>
                  <div className="space-y-4 p-4 border rounded-lg">
                     <Label className="font-semibold">Team B: {watch('teamB') || '...'}</Label>
                     <div className="space-y-2">
                         <Label>Discipline Score (1-5)</Label>
-                        <Input type="number" min="1" max="5" {...register('teamBDiscipline')} />
+                        <Input type="number" min="1" max="5" {...register('teamBDiscipline')} className="h-10 sm:h-11" />
                     </div>
                      <div className="space-y-2">
                         <Label>Cards</Label>
-                        <Input {...register('teamBCards')} placeholder="e.g., 1 Yellow" />
+                        <Input {...register('teamBCards')} placeholder="e.g., 1 Yellow" className="h-10 sm:h-11" />
                     </div>
                 </div>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="quickNotes">Quick Notes (max 40 words)</Label>
-                <Textarea id="quickNotes" {...register('quickNotes')} />
+                <Textarea id="quickNotes" {...register('quickNotes')} className="min-h-[80px] sm:min-h-[100px]" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Match Summary
             </Button>

@@ -90,16 +90,16 @@ export function YouthRegistrationForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label htmlFor="circleId">Select Circle</Label>
-              {isLoadingCircles ? <Skeleton className="h-10" /> : (
+              {isLoadingCircles ? <Skeleton className="h-10 sm:h-11" /> : (
                 <Controller
                   name="circleId"
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="circleId"><SelectValue placeholder="Select a circle..." /></SelectTrigger>
+                      <SelectTrigger id="circleId" className="h-10 sm:h-11"><SelectValue placeholder="Select a circle..." /></SelectTrigger>
                       <SelectContent>
                         {circles?.map(c => <SelectItem key={c.id} value={c.id}>{c.circleName}</SelectItem>)}
                       </SelectContent>
@@ -107,36 +107,36 @@ export function YouthRegistrationForm() {
                   )}
                 />
               )}
-              {errors.circleId && <p className="text-sm text-destructive">{errors.circleId.message}</p>}
+              {errors.circleId && <p className="text-xs sm:text-sm text-destructive">{errors.circleId.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" {...register('name')} />
-                    {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+                    <Input id="name" {...register('name')} className="h-10 sm:h-11" />
+                    {errors.name && <p className="text-xs sm:text-sm text-destructive">{errors.name.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="age">Age</Label>
-                    <Input id="age" type="number" {...register('age')} />
-                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
+                    <Input id="age" type="number" {...register('age')} className="h-10 sm:h-11" />
+                    {errors.age && <p className="text-xs sm:text-sm text-destructive">{errors.age.message}</p>}
                 </div>
             </div>
              <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number (Optional)</Label>
-                <Input id="phone" type="tel" {...register('phone')} />
+                <Input id="phone" type="tel" {...register('phone')} className="h-10 sm:h-11" />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="educationLevel">Education Level (Optional)</Label>
-                <Input id="educationLevel" {...register('educationLevel')} placeholder="e.g., S.4 Leaver" />
+                <Input id="educationLevel" {...register('educationLevel')} placeholder="e.g., S.4 Leaver" className="h-10 sm:h-11" />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="businessInterest">Business Interest</Label>
-                <Input id="businessInterest" {...register('businessInterest')} placeholder="e.g., Poultry, Tailoring" />
-                {errors.businessInterest && <p className="text-sm text-destructive">{errors.businessInterest.message}</p>}
+                <Input id="businessInterest" {...register('businessInterest')} placeholder="e.g., Poultry, Tailoring" className="h-10 sm:h-11" />
+                {errors.businessInterest && <p className="text-xs sm:text-sm text-destructive">{errors.businessInterest.message}</p>}
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Register Youth
             </Button>

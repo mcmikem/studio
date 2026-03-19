@@ -88,36 +88,36 @@ export function WasteAuditForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="schoolName">School Name</Label>
-                <Input id="schoolName" {...register('schoolName')} />
-                {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName.message}</p>}
+                <Input id="schoolName" {...register('schoolName')} className="h-10 sm:h-11" />
+                {errors.schoolName && <p className="text-xs sm:text-sm text-destructive">{errors.schoolName.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="date">Date of Audit</Label>
-                <Input id="date" type="date" {...register('date')} />
-                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11" />
+                {errors.date && <p className="text-xs sm:text-sm text-destructive">{errors.date.message}</p>}
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="wasteSources">Main Sources of Waste Found</Label>
-              <Textarea id="wasteSources" {...register('wasteSources')} placeholder="e.g., Plastic bottles, food leftovers, paper..." />
-              {errors.wasteSources && <p className="text-sm text-destructive">{errors.wasteSources.message}</p>}
+              <Textarea id="wasteSources" {...register('wasteSources')} placeholder="e.g., Plastic bottles, food leftovers, paper..." className="min-h-[80px] sm:min-h-[100px]" />
+              {errors.wasteSources && <p className="text-xs sm:text-sm text-destructive">{errors.wasteSources.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="disposalMethod">Current Method of Waste Disposal</Label>
-              <Textarea id="disposalMethod" {...register('disposalMethod')} placeholder="e.g., Open pit burning, collection by local service..." />
-              {errors.disposalMethod && <p className="text-sm text-destructive">{errors.disposalMethod.message}</p>}
+              <Textarea id="disposalMethod" {...register('disposalMethod')} placeholder="e.g., Open pit burning, collection by local service..." className="min-h-[80px] sm:min-h-[100px]" />
+              {errors.disposalMethod && <p className="text-xs sm:text-sm text-destructive">{errors.disposalMethod.message}</p>}
             </div>
              <div className="space-y-2">
               <Label htmlFor="recommendations">Recommendations (Optional)</Label>
-              <Textarea id="recommendations" {...register('recommendations')} placeholder="e.g., Introduce separation bins, start a compost pit..." />
+              <Textarea id="recommendations" {...register('recommendations')} placeholder="e.g., Introduce separation bins, start a compost pit..." className="min-h-[80px] sm:min-h-[100px]" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Waste Audit
             </Button>

@@ -96,19 +96,19 @@ export function PrintingJobForm({ job, onSuccess }: PrintingJobFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="clientName">Client Name</Label>
-          <Input id="clientName" {...register('clientName')} />
-          {errors.clientName && <p className="text-sm text-destructive">
+          <Input id="clientName" {...register('clientName')} className="h-10 sm:h-11" />
+          {errors.clientName && <p className="text-xs sm:text-sm text-destructive">
   {errors.clientName && (errors.clientName as any).message}
 </p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="jobDate">Job Date</Label>
-          <Input id="jobDate" type="date" {...register('jobDate')} />
-          {errors.jobDate && <p className="text-sm text-destructive">
+          <Input id="jobDate" type="date" {...register('jobDate')} className="h-10 sm:h-11" />
+          {errors.jobDate && <p className="text-xs sm:text-sm text-destructive">
   {errors.jobDate && (errors.jobDate as any).message}
 </p>}
         </div>
@@ -116,26 +116,26 @@ export function PrintingJobForm({ job, onSuccess }: PrintingJobFormProps) {
       <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>B&W Pages</Label>
-            <Input type="number" {...register('pages_bw')} />
+            <Input type="number" {...register('pages_bw')} className="h-10 sm:h-11" />
           </div>
            <div className="space-y-2">
             <Label>Color Pages</Label>
-            <Input type="number" {...register('pages_color')} />
+            <Input type="number" {...register('pages_color')} className="h-10 sm:h-11" />
           </div>
       </div>
        <div className="space-y-2">
         <Label>Total Amount</Label>
-        <Input type="number" {...register('totalAmount')} readOnly />
+        <Input type="number" {...register('totalAmount')} readOnly className="h-10 sm:h-11" />
       </div>
        <div className="space-y-2">
         <Label htmlFor="paymentStatus">Payment Status</Label>
         <Controller name="paymentStatus" control={control} render={({ field }) => (
-            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Paid">Paid</SelectItem><SelectItem value="Partial">Partial</SelectItem><SelectItem value="Unpaid">Unpaid</SelectItem></SelectContent></Select>
+            <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="Paid">Paid</SelectItem><SelectItem value="Partial">Partial</SelectItem><SelectItem value="Unpaid">Unpaid</SelectItem></SelectContent></Select>
         )}/>
       </div>
 
       <DialogFooter>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="h-10 sm:h-11 w-full sm:w-auto">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isEditMode ? 'Save Changes' : 'Create Job'}
         </Button>

@@ -130,16 +130,16 @@ export function PitchScoreForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label htmlFor="businessIdeaId">Business Idea</Label>
-              {isLoadingIdeas ? <Skeleton className="h-10" /> : (
+              {isLoadingIdeas ? <Skeleton className="h-10 sm:h-11" /> : (
                 <Controller
                   name="businessIdeaId"
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="businessIdeaId"><SelectValue placeholder="Select an idea..." /></SelectTrigger>
+                      <SelectTrigger id="businessIdeaId" className="h-10 sm:h-11"><SelectValue placeholder="Select an idea..." /></SelectTrigger>
                       <SelectContent>
                         {ideas?.map(i => <SelectItem key={i.id} value={i.id}>{i.businessName}</SelectItem>)}
                       </SelectContent>
@@ -147,12 +147,12 @@ export function PitchScoreForm() {
                   )}
                 />
               )}
-              {errors.businessIdeaId && <p className="text-sm text-destructive">{errors.businessIdeaId.message}</p>}
+              {errors.businessIdeaId && <p className="text-xs sm:text-sm text-destructive">{errors.businessIdeaId.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="judgeName">Judge's Name</Label>
-              <Input id="judgeName" {...register('judgeName')} />
-              {errors.judgeName && <p className="text-sm text-destructive">{errors.judgeName.message}</p>}
+              <Input id="judgeName" {...register('judgeName')} className="h-10 sm:h-11" />
+              {errors.judgeName && <p className="text-xs sm:text-sm text-destructive">{errors.judgeName.message}</p>}
             </div>
             
             <div className="space-y-4 pt-4 border-t">
@@ -166,8 +166,8 @@ export function PitchScoreForm() {
                 <span className="font-bold text-xl">{totalScore} / 30</span>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Pitch Score
             </Button>

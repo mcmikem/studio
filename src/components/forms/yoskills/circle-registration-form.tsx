@@ -82,19 +82,19 @@ export function CircleRegistrationForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
               <Label htmlFor="circleName">Circle Name</Label>
-              <Input id="circleName" {...register('circleName')} placeholder="e.g., Ggaba Fish Mongers" />
-              {errors.circleName && <p className="text-sm text-destructive">{errors.circleName.message}</p>}
+              <Input id="circleName" {...register('circleName')} placeholder="e.g., Ggaba Fish Mongers" className="h-10 sm:h-11" />
+              {errors.circleName && <p className="text-xs sm:text-sm text-destructive">{errors.circleName.message}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="coach">Coach Name</Label>
-              <Input id="coach" {...register('coach')} placeholder="e.g., Dianah Nansikombi"/>
-              {errors.coach && <p className="text-sm text-destructive">{errors.coach.message}</p>}
+              <Input id="coach" {...register('coach')} placeholder="e.g., Dianah Nansikombi" className="h-10 sm:h-11"/>
+              {errors.coach && <p className="text-xs sm:text-sm text-destructive">{errors.coach.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2 md:col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2 sm:col-span-2">
                 <LocationPicker
                   districtValue={watch('district')}
                   subcountyValue={watch('subcounty')}
@@ -106,13 +106,13 @@ export function CircleRegistrationForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="membersCount">Number of Members</Label>
-                <Input id="membersCount" type="number" {...register('membersCount')} />
-                {errors.membersCount && <p className="text-sm text-destructive">{errors.membersCount.message}</p>}
+                <Input id="membersCount" type="number" {...register('membersCount')} className="h-10 sm:h-11" />
+                {errors.membersCount && <p className="text-xs sm:text-sm text-destructive">{errors.membersCount.message}</p>}
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create Circle
             </Button>

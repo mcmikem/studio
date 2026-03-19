@@ -238,34 +238,34 @@ export function OFATeamRegistrationForm({
             <CardContent className="space-y-4"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /><Skeleton className="h-4 w-full" /></CardContent>
         ) : (
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-6 sm:space-y-8 p-4 sm:p-6">
             {/* Section 1: Basic Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
                 <Trophy className="h-5 w-5" /> Basic Information
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="teamName">Team Name</Label>
-                  <Input id="teamName" {...register('teamName')} placeholder="e.g., Kasanje Lions FC" />
-                  {errors.teamName && <p className="text-sm text-destructive">{errors.teamName.message}</p>}
+                  <Input id="teamName" {...register('teamName')} placeholder="e.g., Kasanje Lions FC" className="h-10 sm:h-11" />
+                  {errors.teamName && <p className="text-xs sm:text-sm text-destructive">{errors.teamName.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="yearOfEstablishment">Year Established</Label>
-                  <Input id="yearOfEstablishment" type="number" {...register('yearOfEstablishment')} placeholder="e.g., 2012" />
-                  {errors.yearOfEstablishment && <p className="text-sm text-destructive">{errors.yearOfEstablishment.message}</p>}
+                  <Input id="yearOfEstablishment" type="number" {...register('yearOfEstablishment')} placeholder="e.g., 2012" className="h-10 sm:h-11" />
+                  {errors.yearOfEstablishment && <p className="text-xs sm:text-sm text-destructive">{errors.yearOfEstablishment.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="teamColours">Team Colours</Label>
-                  <Input id="teamColours" {...register('teamColours')} placeholder="e.g., Red and White" />
+                  <Input id="teamColours" {...register('teamColours')} placeholder="e.g., Red and White" className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="homePitchName">Home Pitch Name</Label>
-                  <Input id="homePitchName" {...register('homePitchName')} placeholder="e.g., Kasanje Ground" />
+                  <Input id="homePitchName" {...register('homePitchName')} placeholder="e.g., Kasanje Ground" className="h-10 sm:h-11" />
                 </div>
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="motto">Motto</Label>
-                  <Input id="motto" {...register('motto')} placeholder="e.g., Excellence Through Sport" />
+                  <Input id="motto" {...register('motto')} placeholder="e.g., Excellence Through Sport" className="h-10 sm:h-11" />
                 </div>
               </div>
             </div>
@@ -285,7 +285,7 @@ export function OFATeamRegistrationForm({
               />
               <div className="space-y-2">
                 <Label htmlFor="village">Village / Zone</Label>
-                <Input id="village" {...register('village')} placeholder="Optional" />
+                <Input id="village" {...register('village')} placeholder="Optional" className="h-10 sm:h-11" />
               </div>
             </div>
 
@@ -294,26 +294,26 @@ export function OFATeamRegistrationForm({
               <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
                 <Users className="h-5 w-5" /> Coaching & Leadership
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="headCoachName">Head Coach Name</Label>
-                  <Input id="headCoachName" {...register('headCoachName')} />
+                  <Input id="headCoachName" {...register('headCoachName')} className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="headCoachPhone">Head Coach Phone</Label>
-                  <Input id="headCoachPhone" {...register('headCoachPhone')} />
+                  <Input id="headCoachPhone" {...register('headCoachPhone')} className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="assistantCoachName">Assistant Coach Name</Label>
-                  <Input id="assistantCoachName" {...register('assistantCoachName')} />
+                  <Input id="assistantCoachName" {...register('assistantCoachName')} className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="assistantCoachPhone">Assistant Coach Phone</Label>
-                  <Input id="assistantCoachPhone" {...register('assistantCoachPhone')} />
+                  <Input id="assistantCoachPhone" {...register('assistantCoachPhone')} className="h-10 sm:h-11" />
                 </div>
-                <div className="space-y-2 border-t pt-2 md:col-span-2">
+                <div className="space-y-2 sm:col-span-2 pt-2 border-t">
                   <Label htmlFor="captainName">Team Captain Name</Label>
-                  <Input id="captainName" {...register('captainName')} />
+                  <Input id="captainName" {...register('captainName')} className="h-10 sm:h-11" />
                 </div>
               </div>
             </div>
@@ -323,40 +323,40 @@ export function OFATeamRegistrationForm({
               <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
                 <GraduationCap className="h-5 w-5" /> Roster & Schooling
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
                 <div className="space-y-2">
                   <Label>Total Players</Label>
-                  <Input type="number" {...register('totalPlayers')} />
+                  <Input type="number" {...register('totalPlayers')} className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label>U13</Label>
-                  <Input type="number" {...register('u13')} />
+                  <Input type="number" {...register('u13')} className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label>U15</Label>
-                  <Input type="number" {...register('u15')} />
+                  <Input type="number" {...register('u15')} className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label>U17</Label>
-                  <Input type="number" {...register('u17')} />
+                  <Input type="number" {...register('u17')} className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label>U19</Label>
-                  <Input type="number" {...register('u19')} />
+                  <Input type="number" {...register('u19')} className="h-10 sm:h-11" />
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>% of Players in School</Label>
-                  <Input type="number" {...register('percentageInSchool')} placeholder="0-100" />
+                  <Input type="number" {...register('percentageInSchool')} placeholder="0-100" className="h-10 sm:h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label>School Attendance Enforcement</Label>
-                  <Input {...register('enforceSchoolAttendance')} placeholder="e.g., Weekly card checks" />
+                  <Input {...register('enforceSchoolAttendance')} placeholder="e.g., Weekly card checks" className="h-10 sm:h-11" />
                 </div>
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="mainAcademicChallenges">Main Academic Challenges</Label>
-                  <Textarea id="mainAcademicChallenges" {...register('mainAcademicChallenges')} placeholder="List challenges separated by commas..." />
+                  <Textarea id="mainAcademicChallenges" {...register('mainAcademicChallenges')} placeholder="List challenges separated by commas..." className="min-h-[80px] sm:min-h-[100px]" />
                 </div>
               </div>
             </div>
@@ -366,14 +366,14 @@ export function OFATeamRegistrationForm({
               <h3 className="text-lg font-semibold flex items-center gap-2 text-primary">
                 <HeartPulse className="h-5 w-5" /> Training & Community
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Training Days/Week</Label>
-                    <Input type="number" {...register('trainingDaysPerWeek')} placeholder="0-7" />
+                    <Input type="number" {...register('trainingDaysPerWeek')} placeholder="0-7" className="h-10 sm:h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label>Avg Training Attendance %</Label>
-                    <Input type="number" {...register('avgTrainingAttendance')} placeholder="0-100" />
+                    <Input type="number" {...register('avgTrainingAttendance')} placeholder="0-100" className="h-10 sm:h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label>Community Support Level</Label>
@@ -382,7 +382,7 @@ export function OFATeamRegistrationForm({
                       control={control}
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Low">Low</SelectItem>
                             <SelectItem value="Moderate">Moderate</SelectItem>
@@ -399,7 +399,7 @@ export function OFATeamRegistrationForm({
                       control={control}
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Low">Low</SelectItem>
                             <SelectItem value="Moderate">Moderate</SelectItem>
@@ -412,8 +412,8 @@ export function OFATeamRegistrationForm({
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isEdit ? <Save className="mr-2 h-4 w-4" /> : null)}
               {isEdit ? 'Update Team Details' : 'Register Team'}
             </Button>

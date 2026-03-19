@@ -223,16 +223,16 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
           <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={onFileChange} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Product/Material Name</Label>
-            <Input id="name" {...register('name')} />
-            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            <Input id="name" {...register('name')} className="h-10 sm:h-11" />
+            {errors.name && <p className="text-xs sm:text-sm text-destructive">{errors.name.message}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="type">Type</Label>
             <Controller name="type" control={control} render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="finished">Finished Good</SelectItem><SelectItem value="raw">Raw Material</SelectItem><SelectItem value="packaging">Packaging</SelectItem></SelectContent></Select>
+                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="finished">Finished Good</SelectItem><SelectItem value="raw">Raw Material</SelectItem><SelectItem value="packaging">Packaging</SelectItem></SelectContent></Select>
             )}/>
           </div>
       </div>
@@ -255,9 +255,17 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
           </div>
         )}
         {!isLoadingCategories && (!categories || categories.length === 0) && (
-          <p className="text-xs text-muted-foreground">No categories found yet. Select “Create new category” to add one now.</p>
+          <p className="text-xs text-muted-foreground">No categories found yet. Select "Create new category" to add one now.</p>
         )}
-        {errors.categoryId && <p className="text-sm text-destructive">{errors.categoryId.message}</p>}
+        {errors.categoryId && <p className="text-xs sm:text-sm text-destructive">{errors.categoryId.message}</p>}
+      </div>
+      <div className="space-y-2">
+          <Label htmlFor="description">Description</Label>
+          <Textarea id="description" {...register('description')} className="min-h-[80px] sm:min-h-[100px]" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2"><Label htmlFor="sku">SKU</Label><Input id="sku" {...register('sku')} className="h-10 sm:h-11" /></div>
+          <div className="space-y-2"><Label htmlFor="unit">Unit</Label><Input id="unit" {...register('unit')} placeholder="e.g., piece, kg, liter" className="h-10 sm:h-11" /></div>
       </div>
       <div className="space-y-2">
           <Label htmlFor="description">Description</Label>
@@ -271,20 +279,20 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       {productType === 'finished' ? (
         <div className="space-y-4 p-4 border rounded-md bg-muted/50">
             <h4 className="font-semibold text-sm">Finished Good Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Default Selling Price</Label><Input type="number" {...register('default_selling_price')} /></div>
-                <div className="space-y-2"><Label>Quantity on Hand</Label><Input type="number" {...register('quantity_on_hand')} /></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>Default Selling Price</Label><Input type="number" {...register('default_selling_price')} className="h-10 sm:h-11" /></div>
+                <div className="space-y-2"><Label>Quantity on Hand</Label><Input type="number" {...register('quantity_on_hand')} className="h-10 sm:h-11" /></div>
             </div>
-            <div className="space-y-2"><Label>Storage Location</Label><Input {...register('location')} placeholder="e.g., Main Store" /></div>
+            <div className="space-y-2"><Label>Storage Location</Label><Input {...register('location')} placeholder="e.g., Main Store" className="h-10 sm:h-11" /></div>
         </div>
       ) : (
         <div className="space-y-4 p-4 border rounded-md bg-muted/50">
             <h4 className="font-semibold text-sm">Raw Material/Packaging Details</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2"><Label>Cost per Unit</Label><Input type="number" {...register('cost_per_unit')} /></div>
-                <div className="space-y-2"><Label>Current Stock Quantity</Label><Input type="number" {...register('current_stock_quantity')} /></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2"><Label>Cost per Unit</Label><Input type="number" {...register('cost_per_unit')} className="h-10 sm:h-11" /></div>
+                <div className="space-y-2"><Label>Current Stock Quantity</Label><Input type="number" {...register('current_stock_quantity')} className="h-10 sm:h-11" /></div>
             </div>
-             <div className="space-y-2"><Label>Re-order Level</Label><Input type="number" {...register('reorder_level')} /></div>
+             <div className="space-y-2"><Label>Re-order Level</Label><Input type="number" {...register('reorder_level')} className="h-10 sm:h-11" /></div>
         </div>
       )}
        <div className="flex items-center space-x-2">
@@ -295,7 +303,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         </div>
 
       <DialogFooter>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting} className="h-10 sm:h-11">
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isEditMode ? 'Save Changes' : 'Create Product'}
         </Button>

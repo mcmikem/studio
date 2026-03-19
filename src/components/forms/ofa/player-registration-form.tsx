@@ -233,21 +233,21 @@ export function PlayerRegistrationForm() {
                 <input ref={fileInputRef} type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={onFileChange} />
                 <p className="text-[10px] text-muted-foreground text-center">Tap to {photoPreview ? 'change' : 'add'} photo</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2 md:col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" {...register('name')} placeholder="e.g., Kato Ibrahim" />
-                  {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+                  <Input id="name" {...register('name')} placeholder="e.g., Kato Ibrahim" className="h-10 sm:h-11" />
+                  {errors.name && <p className="text-xs sm:text-sm text-destructive">{errors.name.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>Team</Label>
-                  {isTeamsLoading ? <Skeleton className="h-10 w-full" /> : (
+                  {isTeamsLoading ? <Skeleton className="h-10 sm:h-11 w-full" /> : (
                     <Controller
                       name="teamId"
                       control={control}
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
+                          <SelectTrigger className="h-10 sm:h-11"><SelectValue placeholder="Select team" /></SelectTrigger>
                           <SelectContent>
                             {teams?.map((team) => <SelectItem key={team.id} value={team.id}>{team.teamName}</SelectItem>)}
                           </SelectContent>
@@ -255,7 +255,7 @@ export function PlayerRegistrationForm() {
                       )}
                     />
                   )}
-                  {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
+                  {errors.teamId && <p className="text-xs sm:text-sm text-destructive">{errors.teamId.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>Age Category</Label>
@@ -264,7 +264,7 @@ export function PlayerRegistrationForm() {
                     control={control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger>
                         <SelectContent>{['U13', 'U15', 'U17', 'U19'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
                       </Select>
                     )}
@@ -277,39 +277,39 @@ export function PlayerRegistrationForm() {
                     control={control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger>
                         <SelectContent>{['Goalkeeper', 'Defender', 'Midfielder', 'Forward'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
                       </Select>
                     )}
                   />
                 </div>
-                <div className="space-y-2"><Label htmlFor="school">School</Label><Input id="school" {...register('school')} /></div>
-                <div className="space-y-2"><Label htmlFor="class">Class</Label><Input id="class" {...register('class')} /></div>
-                <div className="space-y-2 md:col-span-2"><Label htmlFor="guardianContact">Guardian Contact</Label><Input id="guardianContact" {...register('guardianContact')} /></div>
+                <div className="space-y-2"><Label htmlFor="school">School</Label><Input id="school" {...register('school')} className="h-10 sm:h-11" /></div>
+                <div className="space-y-2"><Label htmlFor="class">Class</Label><Input id="class" {...register('class')} className="h-10 sm:h-11" /></div>
+                <div className="space-y-2 sm:col-span-2"><Label htmlFor="guardianContact">Guardian Contact</Label><Input id="guardianContact" {...register('guardianContact')} className="h-10 sm:h-11" /></div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2"><Label>School Attendance</Label><Controller name="schoolAttendance" control={control} render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['Good', 'Fair', 'Poor', 'Not Applicable'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select>
+                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger><SelectContent>{['Good', 'Fair', 'Poor', 'Not Applicable'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select>
               )} /></div>
               <div className="space-y-2"><Label>Academic Performance</Label><Controller name="academicPerformance" control={control} render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{['Good', 'Fair', 'Poor', 'Not Applicable'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select>
+                <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue /></SelectTrigger><SelectContent>{['Good', 'Fair', 'Poor', 'Not Applicable'].map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent></Select>
               )} /></div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2"><Label htmlFor="careerDream">Career Dream</Label><Textarea id="careerDream" {...register('careerDream')} /></div>
-              <div className="space-y-2"><Label htmlFor="skillGoal">Skill Goal</Label><Textarea id="skillGoal" {...register('skillGoal')} /></div>
-              <div className="space-y-2"><Label htmlFor="schoolGoal">School Goal</Label><Textarea id="schoolGoal" {...register('schoolGoal')} /></div>
-              <div className="space-y-2"><Label htmlFor="behaviourGoal">Behaviour Goal</Label><Textarea id="behaviourGoal" {...register('behaviourGoal')} /></div>
-              <div className="space-y-2"><Label htmlFor="strengths">Strengths</Label><Textarea id="strengths" {...register('strengths')} /></div>
-              <div className="space-y-2"><Label htmlFor="weaknesses">Weaknesses</Label><Textarea id="weaknesses" {...register('weaknesses')} /></div>
-              <div className="space-y-2 md:col-span-2"><Label htmlFor="medicalConditions">Medical Notes</Label><Textarea id="medicalConditions" {...register('medicalConditions')} /></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2"><Label htmlFor="careerDream">Career Dream</Label><Textarea id="careerDream" {...register('careerDream')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+              <div className="space-y-2"><Label htmlFor="skillGoal">Skill Goal</Label><Textarea id="skillGoal" {...register('skillGoal')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+              <div className="space-y-2"><Label htmlFor="schoolGoal">School Goal</Label><Textarea id="schoolGoal" {...register('schoolGoal')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+              <div className="space-y-2"><Label htmlFor="behaviourGoal">Behaviour Goal</Label><Textarea id="behaviourGoal" {...register('behaviourGoal')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+              <div className="space-y-2"><Label htmlFor="strengths">Strengths</Label><Textarea id="strengths" {...register('strengths')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+              <div className="space-y-2"><Label htmlFor="weaknesses">Weaknesses</Label><Textarea id="weaknesses" {...register('weaknesses')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+              <div className="space-y-2 sm:col-span-2"><Label htmlFor="medicalConditions">Medical Notes</Label><Textarea id="medicalConditions" {...register('medicalConditions')} className="min-h-[80px] sm:min-h-[100px]" /></div>
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : (isEdit ? <Save className="mr-2 h-4 w-4" /> : null)}
               {isEdit ? 'Update Player' : 'Save Player'}
             </Button>

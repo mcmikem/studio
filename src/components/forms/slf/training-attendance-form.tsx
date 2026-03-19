@@ -172,7 +172,7 @@ export function TrainingAttendanceForm() {
                         <SelectTrigger id="schoolId" className="h-10 sm:h-11 border-lg rounded-xl font-bold font-mono text-xs sm:text-sm tracking-widest uppercase truncate">
                             <SelectValue placeholder="Which school?" />
                         </SelectTrigger>
-                        <SelectContent className="border-lg rounded-xl overflow-x-auto">
+                        <SelectContent className="border-lg rounded-xl">
                             {schools?.map(s => <SelectItem key={s.id} value={s.id} className="font-bold uppercase text-[10px] sm:text-xs tracking-widest truncate">{s.schoolName}</SelectItem>)}
                         </SelectContent>
                     </Select>

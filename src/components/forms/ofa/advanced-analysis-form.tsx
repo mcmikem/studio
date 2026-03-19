@@ -89,62 +89,62 @@ export function OFAAdvancedAnalysisForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <h3 className="text-lg font-semibold border-b pb-2">Match Stats</h3>
              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="homeTeam">Home Team</Label>
-                    <Input id="homeTeam" {...register('homeTeam')} />
-                    {errors.homeTeam && <p className="text-sm text-destructive">{errors.homeTeam.message}</p>}
+                    <Input id="homeTeam" {...register('homeTeam')} className="h-10 sm:h-11" />
+                    {errors.homeTeam && <p className="text-xs sm:text-sm text-destructive">{errors.homeTeam.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="awayTeam">Away Team</Label>
-                    <Input id="awayTeam" {...register('awayTeam')} />
-                    {errors.awayTeam && <p className="text-sm text-destructive">{errors.awayTeam.message}</p>}
+                    <Input id="awayTeam" {...register('awayTeam')} className="h-10 sm:h-11" />
+                    {errors.awayTeam && <p className="text-xs sm:text-sm text-destructive">{errors.awayTeam.message}</p>}
                 </div>
             </div>
-            <div className="grid grid-cols-3 items-center gap-x-4 gap-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
               <span/>
               <Label className="text-center font-semibold">{watch('homeTeam') || 'Home'}</Label>
               <Label className="text-center font-semibold">{watch('awayTeam') || 'Away'}</Label>
 
               <Label>Possession %</Label>
-              <Input type="number" {...register('homePossession')} />
-              <Input type="number" {...register('awayPossession')} />
+              <Input type="number" {...register('homePossession')} className="h-10 sm:h-11" />
+              <Input type="number" {...register('awayPossession')} className="h-10 sm:h-11" />
               
               <Label>Shots on Target</Label>
-              <Input type="number" {...register('homeShots')} />
-              <Input type="number" {...register('awayShots')} />
+              <Input type="number" {...register('homeShots')} className="h-10 sm:h-11" />
+              <Input type="number" {...register('awayShots')} className="h-10 sm:h-11" />
 
               <Label>Saves</Label>
-              <Input type="number" {...register('homeSaves')} />
-              <Input type="number" {...register('awaySaves')} />
+              <Input type="number" {...register('homeSaves')} className="h-10 sm:h-11" />
+              <Input type="number" {...register('awaySaves')} className="h-10 sm:h-11" />
               
               <Label>Pass Success %</Label>
-              <Input type="number" {...register('homePassSuccess')} />
-              <Input type="number" {...register('awayPassSuccess')} />
+              <Input type="number" {...register('homePassSuccess')} className="h-10 sm:h-11" />
+              <Input type="number" {...register('awayPassSuccess')} className="h-10 sm:h-11" />
             </div>
 
             <h3 className="text-lg font-semibold border-b pb-2 pt-4">Coaching Review</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-4 p-4 border rounded-lg">
                 <h4 className="font-semibold">{watch('homeTeam') || 'Home Team'} Review</h4>
-                <div className="space-y-2"><Label>Formation</Label><Input {...register('homeFormation')} /></div>
-                <div className="space-y-2"><Label>Strengths</Label><Textarea {...register('homeStrengths')} /></div>
-                <div className="space-y-2"><Label>Weaknesses</Label><Textarea {...register('homeWeaknesses')} /></div>
-                <div className="space-y-2"><Label>Tactical Adjustments Needed</Label><Textarea {...register('homeAdjustments')} /></div>
+                <div className="space-y-2"><Label>Formation</Label><Input {...register('homeFormation')} className="h-10 sm:h-11" /></div>
+                <div className="space-y-2"><Label>Strengths</Label><Textarea {...register('homeStrengths')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+                <div className="space-y-2"><Label>Weaknesses</Label><Textarea {...register('homeWeaknesses')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+                <div className="space-y-2"><Label>Tactical Adjustments Needed</Label><Textarea {...register('homeAdjustments')} className="min-h-[80px] sm:min-h-[100px]" /></div>
               </div>
                <div className="space-y-4 p-4 border rounded-lg">
                 <h4 className="font-semibold">{watch('awayTeam') || 'Away Team'} Review</h4>
-                <div className="space-y-2"><Label>Formation</Label><Input {...register('awayFormation')} /></div>
-                <div className="space-y-2"><Label>Strengths</Label><Textarea {...register('awayStrengths')} /></div>
-                <div className="space-y-2"><Label>Weaknesses</Label><Textarea {...register('awayWeaknesses')} /></div>
-                <div className="space-y-2"><Label>Tactical Adjustments Needed</Label><Textarea {...register('awayAdjustments')} /></div>
+                <div className="space-y-2"><Label>Formation</Label><Input {...register('awayFormation')} className="h-10 sm:h-11" /></div>
+                <div className="space-y-2"><Label>Strengths</Label><Textarea {...register('awayStrengths')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+                <div className="space-y-2"><Label>Weaknesses</Label><Textarea {...register('awayWeaknesses')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+                <div className="space-y-2"><Label>Tactical Adjustments Needed</Label><Textarea {...register('awayAdjustments')} className="min-h-[80px] sm:min-h-[100px]" /></div>
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Advanced Analysis
             </Button>

@@ -88,54 +88,54 @@ export function ContentSubmissionForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="space-y-2">
                 <Label htmlFor="contentTitle">Content Title</Label>
-                <Input id="contentTitle" {...register('contentTitle')} />
-                {errors.contentTitle && <p className="text-sm text-destructive">{errors.contentTitle.message}</p>}
+                <Input id="contentTitle" {...register('contentTitle')} className="h-10 sm:h-11" />
+                {errors.contentTitle && <p className="text-xs sm:text-sm text-destructive">{errors.contentTitle.message}</p>}
             </div>
              <div className="space-y-2">
                 <Label htmlFor="creatorName">Creator Name</Label>
-                <Input id="creatorName" {...register('creatorName')} />
-                {errors.creatorName && <p className="text-sm text-destructive">{errors.creatorName.message}</p>}
+                <Input id="creatorName" {...register('creatorName')} className="h-10 sm:h-11" />
+                {errors.creatorName && <p className="text-xs sm:text-sm text-destructive">{errors.creatorName.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="format">Format</Label>
                    <Controller
-                    name="format"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <SelectTrigger id="format"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Video">Video</SelectItem>
-                          <SelectItem value="Podcast">Podcast</SelectItem>
-                          <SelectItem value="Article">Article</SelectItem>
-                           <SelectItem value="Photo">Photo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
+                     name="format"
+                     control={control}
+                     render={({ field }) => (
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                         <SelectTrigger id="format" className="h-10 sm:h-11"><SelectValue /></SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="Video">Video</SelectItem>
+                           <SelectItem value="Podcast">Podcast</SelectItem>
+                           <SelectItem value="Article">Article</SelectItem>
+                            <SelectItem value="Photo">Photo</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     )}
+                   />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="dateCreated">Date Created</Label>
-                    <Input id="dateCreated" type="date" {...register('dateCreated')} />
-                    {errors.dateCreated && <p className="text-sm text-destructive">{errors.dateCreated.message}</p>}
+                    <Input id="dateCreated" type="date" {...register('dateCreated')} className="h-10 sm:h-11" />
+                    {errors.dateCreated && <p className="text-xs sm:text-sm text-destructive">{errors.dateCreated.message}</p>}
                 </div>
             </div>
              <div className="space-y-2">
                 <Label htmlFor="link">Link to Content (URL)</Label>
-                <Input id="link" {...register('link')} placeholder="e.g., https://youtube.com/watch?v=..." />
-                {errors.link && <p className="text-sm text-destructive">{errors.link.message}</p>}
+                <Input id="link" {...register('link')} placeholder="e.g., https://youtube.com/watch?v=..." className="h-10 sm:h-11" />
+                {errors.link && <p className="text-xs sm:text-sm text-destructive">{errors.link.message}</p>}
             </div>
-            <div className="space-y-2">
+             <div className="space-y-2">
                 <Label htmlFor="description">Brief Description (Optional)</Label>
-                <Textarea id="description" {...register('description')} />
+                <Textarea id="description" {...register('description')} className="min-h-[80px] sm:min-h-[100px]" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit Content
             </Button>

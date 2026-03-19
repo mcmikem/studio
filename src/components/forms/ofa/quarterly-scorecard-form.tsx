@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Slider } from '@/components/ui/slider';
@@ -97,18 +98,22 @@ export function QuarterlyScorecardForm() {
           <CardDescription>Rate key performance dimensions and track team development by month.</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-4 sm:space-y-5 p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Team</Label>
-                {teamsLoading ? <Skeleton className="h-10 w-full" /> : (
+                {teamsLoading ? <Skeleton className="h-10 sm:h-11 w-full" /> : (
                   <Controller name="teamId" control={control} render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger><SelectContent>{teams?.map((team) => <SelectItem key={team.id} value={team.id}>{team.teamName}</SelectItem>)}</SelectContent></Select>
+                    <Select onValueChange={field.onChange} value={field.value}><SelectTrigger className="h-10 sm:h-11"><SelectValue placeholder="Select team" /></SelectTrigger><SelectContent>{teams?.map((team) => <SelectItem key={team.id} value={team.id}>{team.teamName}</SelectItem>)}</SelectContent></Select>
                   )} />
                 )}
-                {errors.teamId && <p className="text-sm text-destructive">{errors.teamId.message}</p>}
+                {errors.teamId && <p className="text-xs sm:text-sm text-destructive">{errors.teamId.message}</p>}
               </div>
-              <div className="space-y-2"><Label htmlFor="month">Month</Label><input id="month" type="month" className="w-full h-10 rounded-md border px-3" {...register('month')} /></div>
+              <div className="space-y-2">
+                <Label htmlFor="month">Month</Label>
+                <Input id="month" type="month" {...register('month')} className="h-10 sm:h-11" />
+                {errors.month && <p className="text-xs sm:text-sm text-destructive">{errors.month.message}</p>}
+              </div>
             </div>
 
             {[
@@ -127,11 +132,11 @@ export function QuarterlyScorecardForm() {
               />
             ))}
 
-            <div className="space-y-2"><Label htmlFor="achievements">Major Achievements</Label><Textarea id="achievements" {...register('achievements')} /></div>
-            <div className="space-y-2"><Label htmlFor="challenges">Major Challenges</Label><Textarea id="challenges" {...register('challenges')} /></div>
-            <div className="space-y-2"><Label htmlFor="supportNeeded">Support Needed Next Quarter</Label><Textarea id="supportNeeded" {...register('supportNeeded')} /></div>
+            <div className="space-y-2"><Label htmlFor="achievements">Major Achievements</Label><Textarea id="achievements" {...register('achievements')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+            <div className="space-y-2"><Label htmlFor="challenges">Major Challenges</Label><Textarea id="challenges" {...register('challenges')} className="min-h-[80px] sm:min-h-[100px]" /></div>
+            <div className="space-y-2"><Label htmlFor="supportNeeded">Support Needed Next Quarter</Label><Textarea id="supportNeeded" {...register('supportNeeded')} className="min-h-[80px] sm:min-h-[100px]" /></div>
           </CardContent>
-          <CardFooter><Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Submit Scorecard</Button></CardFooter>
+          <CardFooter className="p-4 sm:p-6"><Button type="submit" className="w-full h-10 sm:h-11" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Submit Scorecard</Button></CardFooter>
         </form>
       </Card>
     </div>

@@ -40,7 +40,7 @@ export function LocationPicker({
   }, [districtValue, subcountyValue]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {/* District */}
       <div className="space-y-2">
         <Label>District</Label>
@@ -53,7 +53,7 @@ export function LocationPicker({
             onParishChange('');
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-10 sm:h-11">
             <SelectValue placeholder="Select District..." />
           </SelectTrigger>
           <SelectContent>
@@ -62,7 +62,6 @@ export function LocationPicker({
                 {d}
               </SelectItem>
             ))}
-            {/* Allow custom if not found */}
              <SelectItem value="Other">Other...</SelectItem>
           </SelectContent>
         </Select>
@@ -79,7 +78,7 @@ export function LocationPicker({
             onParishChange(''); // Reset child
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-10 sm:h-11">
             <SelectValue placeholder="Select Subcounty..." />
           </SelectTrigger>
           <SelectContent>
@@ -103,7 +102,7 @@ export function LocationPicker({
           value={parishValue || undefined}
           onValueChange={onParishChange}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-10 sm:h-11">
             <SelectValue placeholder="Select Parish..." />
           </SelectTrigger>
           <SelectContent>
@@ -112,7 +111,7 @@ export function LocationPicker({
                  <SelectItem key={p} value={p}>{p}</SelectItem>
                ))
              ) : (
-                 <SelectItem value="Other" disabled>Select Subcounty first</SelectItem>
+                  <SelectItem value="Other" disabled>Select Subcounty first</SelectItem>
              )}
              {parishes.length > 0 && <SelectItem value="Other">Other...</SelectItem>}
           </SelectContent>
