@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const PRIORITY_ORDER = { High: 0, Medium: 1, Low: 2 };
+const PRIORITY_ORDER: Record<string, number> = { High: 0, Medium: 1, Low: 2 };
 
 function PriorityBadge({ priority }: { priority: string }) {
     return (
@@ -32,14 +32,7 @@ function PriorityBadge({ priority }: { priority: string }) {
 
 export function KeyResultsTracker() {
     const firestore = useFirestore();
-    const [currentMonth, setCurrentMonth] = React.useState('');
-    const [displayDate, setDisplayDate] = React.useState<Date | null>(null);
-    const [isInitialized, setIsInitialized] = React.useState(false);
-
-    React.useEffect(() => {
-        const now = new Date();
-        setCurrentMonth(format(now, 'MMMM yyyy'));
-    }, []);
+    const now = new Date();
 
     const keyResultsQuery = useMemoFirebase((db) => {
         if (!db) return null;
@@ -48,47 +41,21 @@ export function KeyResultsTracker() {
 
     const { data: allKeyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
 
-    React.useEffect(() => {
-        if (!allKeyResults || allKeyResults.length === 0) {
-            setDisplayDate(null);
-            setIsInitialized(true);
-            return;
-        }
-
-        const now = new Date();
-        const currentMonthResults = allKeyResults.filter(kr => {
-            const deadline = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
-            return isSameMonth(deadline, now);
-        });
-
-        if (currentMonthResults.length > 0) {
-            setDisplayDate(now);
-        } else {
-            const mostRecent = allKeyResults.reduce((latest, kr) => {
-                const deadline = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
-                if (!latest || deadline > latest) return deadline;
-                return latest;
-            }, null as Date | null);
-            setDisplayDate(mostRecent);
-        }
-        setIsInitialized(true);
-    }, [allKeyResults]);
-
     const keyResults = React.useMemo(() => {
-        if (!allKeyResults || !displayDate) return [];
+        if (!allKeyResults) return [];
         return allKeyResults
             .filter(kr => {
                 const deadline = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
-                return isSameMonth(deadline, displayDate);
+                return isSameMonth(deadline, now);
             })
             .sort((a, b) => {
-                const pOrder = (PRIORITY_ORDER as any)[a.priority] - (PRIORITY_ORDER as any)[b.priority];
+                const pOrder = (PRIORITY_ORDER[a.priority] ?? 3) - (PRIORITY_ORDER[b.priority] ?? 3);
                 if (pOrder !== 0) return pOrder;
                 const aDate = a.deadline instanceof Timestamp ? a.deadline.toDate() : new Date(a.deadline);
                 const bDate = b.deadline instanceof Timestamp ? b.deadline.toDate() : new Date(b.deadline);
                 return aDate.getTime() - bDate.getTime();
             });
-    }, [allKeyResults, displayDate]);
+    }, [allKeyResults, now]);
 
     const formatTarget = (kr: KeyResult) => {
         if (kr.description?.toLowerCase().includes('ugx') || kr.description?.toLowerCase().includes('shilling') || kr.description?.toLowerCase().includes('kes')) {
@@ -101,47 +68,34 @@ export function KeyResultsTracker() {
         return `${kr.target.toLocaleString()} ${kr.unit || ''}`.trim();
     };
 
-    const hasCurrentMonthData = React.useMemo(() => {
-        if (!allKeyResults) return false;
-        const now = new Date();
-        return allKeyResults.some(kr => {
-            const deadline = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
-            return isSameMonth(deadline, now);
-        });
-    }, [allKeyResults]);
+    const highCount = keyResults.filter(k => k.priority === 'High').length;
+    const mediumCount = keyResults.filter(k => k.priority === 'Medium').length;
+    const lowCount = keyResults.filter(k => k.priority === 'Low').length;
 
-    if (isLoading || !isInitialized) {
+    if (isLoading) {
         return (
             <Card>
                 <CardHeader>
                     <Skeleton className="h-6 w-1/2" />
                     <Skeleton className="h-4 w-3/4" />
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-40" />)}
                 </CardContent>
             </Card>
         );
     }
 
-    const displayMonth = displayDate ? format(displayDate, 'MMMM yyyy') : currentMonth;
-    const isViewingOtherMonth = displayDate && !isSameMonth(displayDate, new Date());
-
     return (
         <Card>
             <CardHeader>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                        {isViewingOtherMonth && (
-                            <p className="text-[9px] font-black uppercase tracking-widest text-omuto-yellow mb-1">
-                                Viewing: {displayMonth}
-                            </p>
-                        )}
-                        <CardTitle>{displayMonth} Operational Plan</CardTitle>
+                        <CardTitle>{format(now, 'MMMM yyyy')} Operational Plan</CardTitle>
                         <CardDescription>
                             {keyResults.length > 0
-                                ? `Priorities arranged by importance — ${keyResults.filter(k => k.priority === 'High').length} High, ${keyResults.filter(k => k.priority === 'Medium').length} Medium, ${keyResults.filter(k => k.priority === 'Low').length} Low`
-                                : 'Live progress against our strategic objectives.'}
+                                ? `${keyResults.length} priorities — ${highCount} High, ${mediumCount} Medium, ${lowCount} Low`
+                                : 'Track and update progress on your monthly strategic objectives.'}
                         </CardDescription>
                     </div>
                     <Button asChild variant="secondary" className="flex-shrink-0">
@@ -210,14 +164,9 @@ export function KeyResultsTracker() {
                 ) : (
                     <div className="text-center p-8 bg-muted rounded-lg">
                         <div className="mx-auto h-12 w-12 text-muted-foreground"><Goal /></div>
-                        <h3 className="mt-4 text-lg font-semibold">
-                            {isViewingOtherMonth
-                                ? `No Plan for ${displayMonth}`
-                                : `The ${currentMonth} Plan is Not Set`
-                            }
-                        </h3>
+                        <h3 className="mt-4 text-lg font-semibold">The {format(now, 'MMMM yyyy')} Plan is Not Set</h3>
                         <p className="mt-2 text-sm text-muted-foreground">
-                            Upload the monthly operational plan to activate the tracker.
+                            Upload this month&apos;s operational plan to activate the tracker.
                         </p>
                         <Button asChild className="mt-4">
                             <Link href="/management/operational-plan">

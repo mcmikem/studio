@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Card,
   CardContent,
@@ -43,7 +43,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { formatDateSafe, formatDateForInput } from '@/lib/utils';
 import { ProgressRing } from '@/components/ui/progress-ring';
-import { isPast, format, startOfWeek, isSameMonth, subMonths, addMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { isPast, format, startOfWeek, isSameMonth, subMonths, addMonths } from 'date-fns';
 import { CommentsSection } from '@/components/ui/comments';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -144,19 +144,6 @@ function OperationalPlanViewer() {
 
     const { data: allKeyResults, isLoading } = useCollection<KeyResult>(keyResultsQuery);
 
-    useEffect(() => {
-        if (allKeyResults && allKeyResults.length > 0) {
-            const mostRecent = allKeyResults.reduce((latest, kr) => {
-                const deadline = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
-                if (!latest || deadline > latest) return deadline;
-                return latest;
-            }, null as Date | null);
-            if (mostRecent) {
-                setCurrentDate(mostRecent);
-            }
-        }
-    }, [allKeyResults]);
-
     const filteredKeyResults = useMemo(() => {
         if (!allKeyResults) return [];
         return allKeyResults.filter(kr => {
@@ -167,7 +154,7 @@ function OperationalPlanViewer() {
     
     if (isLoading) {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1,2,3].map(i => <Skeleton key={i} className="h-64 w-full" />)}
             </div>
         );
@@ -345,32 +332,11 @@ function OperationalPlanUpdater() {
     const batch = writeBatch(firestore);
 
     try {
-      const targetMonthStart = data.keyResults.reduce((earliest: Date, kr: any) => {
-        const d = new Date(kr.deadline);
-        if (!earliest || d < earliest) return d;
-        return earliest;
-      }, null as Date | null);
-      const monthStart = startOfMonth(targetMonthStart || new Date());
-      const monthEnd = endOfMonth(monthStart);
-
       const existingKRsSnapshot = await getDocs(krCollection);
-      const existingMetricSnapshot = await getDocs(metricsCollection);
+      existingKRsSnapshot.forEach(docSnapshot => batch.delete(docSnapshot.ref));
 
-      existingKRsSnapshot.forEach(docSnapshot => {
-        const kr = docSnapshot.data() as KeyResult;
-        const deadline = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
-        if (deadline >= monthStart && deadline <= monthEnd) {
-          batch.delete(docSnapshot.ref);
-          existingMetricSnapshot.forEach(metricDoc => {
-            const metric = metricDoc.data() as any;
-            if (metric.linkedKeyResultId === kr.id) {
-              batch.delete(metricDoc.ref);
-            }
-          });
-        }
-      });
-
-      const planMonth = format(monthStart, 'yyyy-MM');
+      const existingMetricsSnapshot = await getDocs(metricsCollection);
+      existingMetricsSnapshot.forEach(docSnapshot => batch.delete(docSnapshot.ref));
 
       data.keyResults.forEach((kr: any) => {
         const newDocRef = doc(krCollection);
@@ -381,8 +347,7 @@ function OperationalPlanUpdater() {
             target: Number(kr.target) || 0,
             unit: kr.unit || '',
             deadline: Timestamp.fromDate(isNaN(deadlineDate.getTime()) ? new Date() : deadlineDate),
-            currentProgress: 0,
-            planMonth
+            currentProgress: 0
         });
 
         const metricDocRef = doc(metricsCollection);
@@ -394,7 +359,6 @@ function OperationalPlanUpdater() {
             unit: kr.unit || '',
             valuePerUnit: 0,
             linkedKeyResultId: newDocRef.id,
-            planMonth,
             createdAt: serverTimestamp()
         });
       });
@@ -477,9 +441,9 @@ function OperationalPlanUpdater() {
             
             <Alert className="bg-omuto-yellow/10 border-omuto-yellow/30">
                 <Target className="h-4 w-4 text-omuto-yellow" />
-                <AlertTitle className="text-xs font-black uppercase tracking-widest">Plan-Per-Month</AlertTitle>
+                <AlertTitle className="text-xs font-black uppercase tracking-widest">Caution: Overwrite Warning</AlertTitle>
                 <AlertDescription className="text-xs font-bold text-omuto-navy/70">
-                    Activating this strategy will replace Key Results for the target month (based on your earliest deadline). Plans for other months are preserved.
+                    Activating this strategy will replace all existing Key Results. Only one active plan at a time.
                 </AlertDescription>
             </Alert>
         </form>
