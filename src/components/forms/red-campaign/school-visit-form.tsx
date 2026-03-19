@@ -100,50 +100,50 @@ export function SchoolVisitForm() {
                 Back to RED Campaign Hub
             </Link>
         </Button>
-        <Card>
-            <CardHeader>
-                <div className="flex items-center gap-4">
-                    <Heart className="h-8 w-8 text-primary" />
+        <Card className="overflow-hidden">
+            <CardHeader className="p-4 sm:p-6 lg:p-8">
+                <div className="flex items-center gap-4 flex-wrap">
+                    <Heart className="h-8 w-8 text-primary flex-shrink-0" />
                     <div>
-                        <CardTitle>RED Campaign School Visit M&E</CardTitle>
-                        <CardDescription>Log observations and feedback from a school visit.</CardDescription>
+                        <CardTitle className="text-xl sm:text-2xl lg:text-3xl">RED Campaign School Visit M&E</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">Log observations and feedback from a school visit.</CardDescription>
                     </div>
                 </div>
           </CardHeader>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="schoolName">School Name</Label>
-                        <Input id="schoolName" {...register('schoolName')} placeholder="e.g., St. Mary's College Kisubi" />
-                        {errors.schoolName && <p className="text-sm text-destructive">{errors.schoolName.message}</p>}
+                        <Label htmlFor="schoolName" className="text-xs sm:text-sm truncate">School Name</Label>
+                        <Input id="schoolName" {...register('schoolName')} placeholder="e.g., St. Mary's College Kisubi" className="h-10 sm:h-11" />
+                        {errors.schoolName && <p className="text-xs sm:text-sm text-destructive">{errors.schoolName.message}</p>}
                     </div>
                      <div className="space-y-2">
-                        <Label htmlFor="dateOfVisit">Date of Visit</Label>
-                        <Input id="dateOfVisit" type="date" {...register('dateOfVisit')} />
-                        {errors.dateOfVisit && <p className="text-sm text-destructive">{errors.dateOfVisit.message}</p>}
+                        <Label htmlFor="dateOfVisit" className="text-xs sm:text-sm">Date of Visit</Label>
+                        <Input id="dateOfVisit" type="date" {...register('dateOfVisit')} className="h-10 sm:h-11" />
+                        {errors.dateOfVisit && <p className="text-xs sm:text-sm text-destructive">{errors.dateOfVisit.message}</p>}
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="objectivesMet">Objectives Met</Label>
-                    <Textarea id="objectivesMet" {...register('objectivesMet')} placeholder="Describe which of the visit's goals were achieved..." className="min-h-[100px]" />
-                    {errors.objectivesMet && <p className="text-sm text-destructive">{errors.objectivesMet.message}</p>}
+                    <Label htmlFor="objectivesMet" className="text-xs sm:text-sm">Objectives Met</Label>
+                    <Textarea id="objectivesMet" {...register('objectivesMet')} placeholder="Describe which of the visit's goals were achieved..." className="min-h-[80px] sm:min-h-[100px]" />
+                    {errors.objectivesMet && <p className="text-xs sm:text-sm text-destructive">{errors.objectivesMet.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="challengesObserved">Challenges Observed</Label>
-                    <Textarea id="challengesObserved" {...register('challengesObserved')} placeholder="e.g., Low student participation, lack of teacher support..." className="min-h-[100px]" />
+                    <Label htmlFor="challengesObserved" className="text-xs sm:text-sm">Challenges Observed</Label>
+                    <Textarea id="challengesObserved" {...register('challengesObserved')} placeholder="e.g., Low student participation, lack of teacher support..." className="min-h-[80px] sm:min-h-[100px]" />
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="teacherFeedback">Teacher Feedback</Label>
-                    <Textarea id="teacherFeedback" {...register('teacherFeedback')} placeholder="Summarize key feedback points from teachers..." className="min-h-[100px]" />
+                    <Label htmlFor="teacherFeedback" className="text-xs sm:text-sm">Teacher Feedback</Label>
+                    <Textarea id="teacherFeedback" {...register('teacherFeedback')} placeholder="Summarize key feedback points from teachers..." className="min-h-[80px] sm:min-h-[100px]" />
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="studentFeedback">Student Feedback</Label>
-                    <Textarea id="studentFeedback" {...register('studentFeedback')} placeholder="Summarize key feedback points from students..." className="min-h-[100px]" />
+                    <Label htmlFor="studentFeedback" className="text-xs sm:text-sm">Student Feedback</Label>
+                    <Textarea id="studentFeedback" {...register('studentFeedback')} placeholder="Summarize key feedback points from students..." className="min-h-[80px] sm:min-h-[100px]" />
                 </div>
             </CardContent>
-            <CardFooter>
-                <Button type="submit" disabled={isSubmitting} className="w-full">
+            <CardFooter className="p-4 sm:p-6 lg:p-8">
+                <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save Visit Report
                 </Button>

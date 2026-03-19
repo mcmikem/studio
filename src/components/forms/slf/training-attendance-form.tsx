@@ -150,57 +150,57 @@ export function TrainingAttendanceForm() {
         </Link>
       </Button>
       <Card className="border-lg shadow-comic-sm overflow-hidden">
-        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
-          <CardTitle className="flex items-center gap-2 text-2xl font-black uppercase tracking-tighter">
+        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10 p-4 sm:p-6 lg:p-8">
+          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl lg:text-3xl font-black uppercase tracking-tighter">
             <CheckSquare className="h-8 w-8 text-primary" />
             Training Attendance
           </CardTitle>
-          <CardDescription className="font-bold text-xs uppercase tracking-widest text-muted-foreground">
+          <CardDescription className="font-bold text-xs sm:text-sm uppercase tracking-widest text-muted-foreground">
             Log participation and auto-update organizational Key Results.
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-8 pt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-8 pt-8 p-4 sm:p-6 lg:p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="schoolId" className="font-bold text-xs uppercase tracking-widest">Select School</Label>
+                <Label htmlFor="schoolId" className="font-bold text-xs sm:text-sm uppercase tracking-widest truncate">Select School</Label>
                 <Controller
                     name="schoolId"
                     control={control}
                     render={({ field }) => (
                     <Select onValueChange={(value) => { field.onChange(value); setSelectedSchoolId(value); }} value={field.value}>
-                        <SelectTrigger id="schoolId" className="h-12 border-lg rounded-xl font-bold font-mono text-xs tracking-widest uppercase">
+                        <SelectTrigger id="schoolId" className="h-10 sm:h-11 border-lg rounded-xl font-bold font-mono text-xs sm:text-sm tracking-widest uppercase truncate">
                             <SelectValue placeholder="Which school?" />
                         </SelectTrigger>
-                        <SelectContent className="border-lg rounded-xl">
-                            {schools?.map(s => <SelectItem key={s.id} value={s.id} className="font-bold uppercase text-[10px] tracking-widest">{s.schoolName}</SelectItem>)}
+                        <SelectContent className="border-lg rounded-xl overflow-x-auto">
+                            {schools?.map(s => <SelectItem key={s.id} value={s.id} className="font-bold uppercase text-[10px] sm:text-xs tracking-widest truncate">{s.schoolName}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     )}
                 />
-                {errors.schoolId && <p className="text-xs text-destructive font-bold">{errors.schoolId.message}</p>}
+                {errors.schoolId && <p className="text-xs sm:text-sm text-destructive font-bold">{errors.schoolId.message}</p>}
               </div>
                <div className="space-y-2">
-                <Label htmlFor="date" className="font-bold text-xs uppercase tracking-widest">Training Date</Label>
-                <Input id="date" type="date" {...register('date')} className="h-12 border-lg rounded-xl font-bold" />
-                {errors.date && <p className="text-xs text-destructive font-bold">{errors.date.message}</p>}
+                <Label htmlFor="date" className="font-bold text-xs sm:text-sm uppercase tracking-widest">Training Date</Label>
+                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11 border-lg rounded-xl font-bold" />
+                {errors.date && <p className="text-xs sm:text-sm text-destructive font-bold">{errors.date.message}</p>}
               </div>
             </div>
              <div className="space-y-2 pt-4 border-t border-dashed">
-              <Label htmlFor="session" className="font-bold text-xs uppercase tracking-widest">Session Title / Core Topic</Label>
-              <Input id="session" {...register('session')} placeholder="e.g., Emotional Intelligence & Leadership" className="h-12 border-lg rounded-xl font-bold" />
-              {errors.session && <p className="text-xs text-destructive font-bold">{errors.session.message}</p>}
+              <Label htmlFor="session" className="font-bold text-xs sm:text-sm uppercase tracking-widest truncate">Session Title / Core Topic</Label>
+              <Input id="session" {...register('session')} placeholder="e.g., Emotional Intelligence & Leadership" className="h-10 sm:h-11 border-lg rounded-xl font-bold" />
+              {errors.session && <p className="text-xs sm:text-sm text-destructive font-bold">{errors.session.message}</p>}
             </div>
 
             {selectedSchoolId && (
               <div className="space-y-4 pt-6 border-t-lg border-omuto-navy/10">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                     <h3 className="font-black uppercase text-sm tracking-tighter">Mark Leader Attendance</h3>
                     <Badge variant="outline" className="font-black text-xs border-lg">{presentCount} PRESENT</Badge>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {fields.length > 0 && fields.map((field, index) => (
-                    <div key={field.prefectId} className="flex items-center gap-4 p-3 border-lg rounded-2xl bg-muted/20 hover:bg-primary/5 transition-colors cursor-pointer group">
+                    <div key={field.prefectId} className="flex items-center gap-4 p-3 border-lg rounded-2xl bg-muted/20 hover:bg-primary/5 transition-colors cursor-pointer group overflow-hidden">
                       <Controller
                         name={`attendees.${index}.attended`}
                         control={control}
@@ -213,16 +213,16 @@ export function TrainingAttendanceForm() {
                           />
                         )}
                       />
-                      <Label htmlFor={`attendees.${index}.attended`} className="flex-1 cursor-pointer font-bold text-xs uppercase tracking-tight group-hover:text-primary transition-colors">{field.prefectName}</Label>
+                      <Label htmlFor={`attendees.${index}.attended`} className="flex-1 cursor-pointer font-bold text-xs sm:text-sm uppercase tracking-tight group-hover:text-primary transition-colors truncate">{field.prefectName}</Label>
                     </div>
                   ))}
-                  {fields.length === 0 && <p className="text-xs font-bold text-muted-foreground text-center p-8 bg-muted/10 rounded-2xl border-lg border-dashed">No prefects found for this school.</p>}
+                  {fields.length === 0 && <p className="text-xs sm:text-sm font-bold text-muted-foreground text-center p-8 bg-muted/10 rounded-2xl border-lg border-dashed">No prefects found for this school.</p>}
                 </div>
               </div>
             )}
           </CardContent>
-          <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-8">
-            <Button type="submit" disabled={isSubmitting || !selectedSchoolId || fields.length === 0} className="btn-omuto w-full h-16 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl border-white">
+          <CardFooter className="bg-muted/30 border-t-lg border-omuto-navy/10 p-4 sm:p-6 lg:p-8">
+            <Button type="submit" disabled={isSubmitting || !selectedSchoolId || fields.length === 0} className="btn-omuto w-full h-12 sm:h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl border-white">
               {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckSquare className="mr-2 h-5 w-5" />}
               Save Attendance & Update Progress
             </Button>

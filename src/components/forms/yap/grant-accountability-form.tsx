@@ -82,9 +82,9 @@ export function GrantAccountabilityForm() {
           Back to YAP Hub
         </Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 lg:p-8">
+          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl lg:text-3xl">
             <FileUp className="h-6 w-6" />
             Seed Grant Accountability
           </CardTitle>
@@ -93,49 +93,49 @@ export function GrantAccountabilityForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
             <div className="space-y-2">
-              <Label htmlFor="grantId">Select Grant</Label>
-              {isLoadingGrants ? <Skeleton className="h-10" /> : (
+              <Label htmlFor="grantId" className="text-xs sm:text-sm truncate">Select Grant</Label>
+              {isLoadingGrants ? <Skeleton className="h-10 sm:h-11" /> : (
                 <Controller
                   name="grantId"
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="grantId"><SelectValue placeholder="Select a grant..." /></SelectTrigger>
+                      <SelectTrigger id="grantId" className="h-10 sm:h-11 truncate"><SelectValue placeholder="Select a grant..." /></SelectTrigger>
                       <SelectContent>
-                        {grants?.map(g => <SelectItem key={g.id} value={g.id}>{g.projectTitle} ({g.applicantName})</SelectItem>)}
+                        {grants?.map(g => <SelectItem key={g.id} value={g.id} className="truncate">{g.projectTitle} ({g.applicantName})</SelectItem>)}
                       </SelectContent>
                     </Select>
                   )}
                 />
               )}
-              {errors.grantId && <p className="text-sm text-destructive">{errors.grantId.message}</p>}
+              {errors.grantId && <p className="text-xs sm:text-sm text-destructive">{errors.grantId.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="totalSpent">Total Amount Spent (UGX)</Label>
-              <Input id="totalSpent" type="number" {...register('totalSpent')} />
-              {errors.totalSpent && <p className="text-sm text-destructive">{errors.totalSpent.message}</p>}
+              <Label htmlFor="totalSpent" className="text-xs sm:text-sm">Total Amount Spent (UGX)</Label>
+              <Input id="totalSpent" type="number" {...register('totalSpent')} className="h-10 sm:h-11" />
+              {errors.totalSpent && <p className="text-xs sm:text-sm text-destructive">{errors.totalSpent.message}</p>}
             </div>
              <div className="space-y-2">
-              <Label>Receipt URLs</Label>
+              <Label className="text-xs sm:text-sm">Receipt URLs</Label>
               {fields.map((field, index) => (
-                <div key={field.id} className="flex items-center gap-2">
-                  <Input {...register(`receiptUrls.${index}.value`)} placeholder="Link to receipt image/doc" />
+                <div key={field.id} className="flex items-center gap-2 overflow-x-auto">
+                  <Input {...register(`receiptUrls.${index}.value`)} placeholder="Link to receipt image/doc" className="h-10 sm:h-11 flex-1 min-w-0" />
                   <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}><Trash2 className="h-4 w-4" /></Button>
                 </div>
               ))}
               <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Link</Button>
-              {errors.receiptUrls && <p className="text-sm text-destructive">{errors.receiptUrls.message}</p>}
+              {errors.receiptUrls && <p className="text-xs sm:text-sm text-destructive">{errors.receiptUrls.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="outputDescription">Description of Outputs/Results</Label>
-              <Textarea id="outputDescription" {...register('outputDescription')} />
-              {errors.outputDescription && <p className="text-sm text-destructive">{errors.outputDescription.message}</p>}
+              <Label htmlFor="outputDescription" className="text-xs sm:text-sm">Description of Outputs/Results</Label>
+              <Textarea id="outputDescription" {...register('outputDescription')} className="min-h-[80px] sm:min-h-[100px]" />
+              {errors.outputDescription && <p className="text-xs sm:text-sm text-destructive">{errors.outputDescription.message}</p>}
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6 lg:p-8">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit Accountability
             </Button>

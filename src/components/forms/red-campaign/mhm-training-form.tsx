@@ -96,9 +96,9 @@ export function MhmTrainingForm() {
           Back to MEAL Hub
         </Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 lg:p-8">
+          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl lg:text-3xl">
             <Droplets className="h-6 w-6" />
             MHM Training Report
           </CardTitle>
@@ -107,53 +107,55 @@ export function MhmTrainingForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="session">Session Title</Label>
-                <Input id="session" {...register('session')} placeholder="e.g., MHM Basics at St. Annes" />
-                {errors.session && <p className="text-sm text-destructive">{errors.session.message}</p>}
+                <Label htmlFor="session" className="text-xs sm:text-sm truncate">Session Title</Label>
+                <Input id="session" {...register('session')} placeholder="e.g., MHM Basics at St. Annes" className="h-10 sm:h-11" />
+                {errors.session && <p className="text-xs sm:text-sm text-destructive">{errors.session.message}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="date">Date of Training</Label>
-                <Input id="date" type="date" {...register('date')} />
-                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+                <Label htmlFor="date" className="text-xs sm:text-sm">Date of Training</Label>
+                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11" />
+                {errors.date && <p className="text-xs sm:text-sm text-destructive">{errors.date.message}</p>}
               </div>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold border-b pb-2">Participants</h3>
-               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Age</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead><span className="sr-only">Actions</span></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fields.map((field, index) => (
-                    <TableRow key={field.id}>
-                      <TableCell><Input {...register(`participants.${index}.name`)} placeholder="Participant's Name" /></TableCell>
-                      <TableCell><Input type="number" {...register(`participants.${index}.age`)} placeholder="Age"/></TableCell>
-                      <TableCell><Input {...register(`participants.${index}.class`)} placeholder="e.g. P.7" /></TableCell>
-                      <TableCell>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-               </Table>
+            <div className="space-y-4 overflow-x-auto">
+              <h3 className="text-lg sm:text-xl font-semibold border-b pb-2">Participants</h3>
+               <div className="min-w-[500px]">
+                <Table>
+                 <TableHeader>
+                   <TableRow>
+                     <TableHead>Name</TableHead>
+                     <TableHead>Age</TableHead>
+                     <TableHead>Class</TableHead>
+                     <TableHead><span className="sr-only">Actions</span></TableHead>
+                   </TableRow>
+                 </TableHeader>
+                 <TableBody>
+                   {fields.map((field, index) => (
+                     <TableRow key={field.id}>
+                       <TableCell><Input {...register(`participants.${index}.name`)} placeholder="Participant's Name" className="h-10 sm:h-11" /></TableCell>
+                       <TableCell><Input type="number" {...register(`participants.${index}.age`)} placeholder="Age" className="h-10 sm:h-11" /></TableCell>
+                       <TableCell><Input {...register(`participants.${index}.class`)} placeholder="e.g. P.7" className="h-10 sm:h-11" /></TableCell>
+                       <TableCell>
+                         <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                           <Trash2 className="h-4 w-4" />
+                         </Button>
+                       </TableCell>
+                     </TableRow>
+                   ))}
+                 </TableBody>
+                </Table>
+               </div>
                <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', age: 0, class: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Participant</Button>
-               {errors.participants && <p className="text-sm text-destructive">{errors.participants.message}</p>}
+               {errors.participants && <p className="text-xs sm:text-sm text-destructive">{errors.participants.message}</p>}
             </div>
 
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6 lg:p-8">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Training Report
             </Button>

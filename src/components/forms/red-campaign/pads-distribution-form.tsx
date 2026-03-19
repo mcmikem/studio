@@ -71,7 +71,7 @@ export function PadsDistributionForm() {
 
   return (
     <div className="space-y-4">
-      <Button variant="outline" size="sm" asChild>
+      <Button variant="outline" size="sm" asChild className="h-10 sm:h-11">
         <Link href="/meal/red-campaign">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to RED Campaign Hub
@@ -88,29 +88,29 @@ export function PadsDistributionForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date" className="text-xs sm:text-sm">Date of Distribution</Label>
-                <Input id="date" type="date" {...register('date')} className="h-12" />
-                {errors.date && <p className="text-sm text-destructive">{errors.date.message}</p>}
+                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11" />
+                {errors.date && <p className="text-xs sm:text-sm text-destructive">{errors.date.message}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="school" className="text-xs sm:text-sm">School/Community Name</Label>
-                <Input id="school" {...register('school')} className="h-12" />
-                {errors.school && <p className="text-sm text-destructive">{errors.school.message}</p>}
+                <Label htmlFor="school" className="text-xs sm:text-sm truncate">School/Community Name</Label>
+                <Input id="school" {...register('school')} className="h-10 sm:h-11" />
+                {errors.school && <p className="text-xs sm:text-sm text-destructive">{errors.school.message}</p>}
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-2">
                 <Label htmlFor="numberOfPads" className="text-xs sm:text-sm">Number of Pads Distributed</Label>
-                <Input id="numberOfPads" type="number" {...register('numberOfPads')} className="h-12" />
-                {errors.numberOfPads && <p className="text-sm text-destructive">{errors.numberOfPads.message}</p>}
+                <Input id="numberOfPads" type="number" {...register('numberOfPads')} className="h-10 sm:h-11" />
+                {errors.numberOfPads && <p className="text-xs sm:text-sm text-destructive">{errors.numberOfPads.message}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="girlsReached" className="text-xs sm:text-sm">Number of Girls Reached</Label>
-                <Input id="girlsReached" type="number" {...register('girlsReached')} className="h-12" />
-                {errors.girlsReached && <p className="text-sm text-destructive">{errors.girlsReached.message}</p>}
+                <Input id="girlsReached" type="number" {...register('girlsReached')} className="h-10 sm:h-11" />
+                {errors.girlsReached && <p className="text-xs sm:text-sm text-destructive">{errors.girlsReached.message}</p>}
               </div>
             </div>
             <div className="space-y-2">
@@ -118,8 +118,8 @@ export function PadsDistributionForm() {
               <Textarea id="notes" {...register('notes')} placeholder="e.g., Coordinated with head teacher, distributed after MHM session..." className="min-h-[80px] sm:min-h-[100px]" />
             </div>
           </CardContent>
-          <CardFooter className="p-4 sm:p-6">
-            <Button type="submit" disabled={isSubmitting} className="w-full h-12">
+          <CardFooter className="p-4 sm:p-6 lg:p-8">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Distribution Log
             </Button>

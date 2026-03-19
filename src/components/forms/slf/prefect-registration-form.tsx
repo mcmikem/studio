@@ -104,9 +104,9 @@ export function PrefectRegistrationForm() {
           Back to SLF Hub
         </Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 lg:p-8">
+          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl lg:text-3xl">
             <UserPlus className="h-6 w-6" />
             SLF Prefect Registration
           </CardTitle>
@@ -115,68 +115,68 @@ export function PrefectRegistrationForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
             <div className="space-y-2">
-              <Label htmlFor="schoolId">School</Label>
-               {isLoadingSchools ? <Skeleton className="h-10" /> : (
+              <Label htmlFor="schoolId" className="text-xs sm:text-sm truncate">School</Label>
+               {isLoadingSchools ? <Skeleton className="h-10 sm:h-11" /> : (
                 <Controller
                     name="schoolId"
                     control={control}
                     render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger id="schoolId"><SelectValue placeholder="Select a school..." /></SelectTrigger>
+                        <SelectTrigger id="schoolId" className="h-10 sm:h-11 truncate"><SelectValue placeholder="Select a school..." /></SelectTrigger>
                         <SelectContent>
-                            {schools?.map(s => <SelectItem key={s.id} value={s.id}>{s.schoolName}</SelectItem>)}
+                            {schools?.map(s => <SelectItem key={s.id} value={s.id} className="truncate">{s.schoolName}</SelectItem>)}
                         </SelectContent>
                     </Select>
                     )}
                 />
                )}
-              {errors.schoolId && <p className="text-sm text-destructive">{errors.schoolId.message}</p>}
+              {errors.schoolId && <p className="text-xs sm:text-sm text-destructive">{errors.schoolId.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Prefect's Full Name</Label>
-              <Input id="name" {...register('name')} />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+              <Label htmlFor="name" className="text-xs sm:text-sm truncate">Prefect's Full Name</Label>
+              <Input id="name" {...register('name')} className="h-10 sm:h-11" />
+              {errors.name && <p className="text-xs sm:text-sm text-destructive">{errors.name.message}</p>}
             </div>
              <div className="space-y-2">
-              <Label htmlFor="position">Position/Post</Label>
-              <Input id="position" {...register('position')} placeholder="e.g., Head Prefect, Health Minister"/>
-              {errors.position && <p className="text-sm text-destructive">{errors.position.message}</p>}
+              <Label htmlFor="position" className="text-xs sm:text-sm truncate">Position/Post</Label>
+              <Input id="position" {...register('position')} placeholder="e.g., Head Prefect, Health Minister" className="h-10 sm:h-11"/>
+              {errors.position && <p className="text-xs sm:text-sm text-destructive">{errors.position.message}</p>}
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="class">Class/Form</Label>
-                    <Input id="class" {...register('class')} placeholder="e.g., S.4" />
+                    <Label htmlFor="class" className="text-xs sm:text-sm">Class/Form</Label>
+                    <Input id="class" {...register('class')} placeholder="e.g., S.4" className="h-10 sm:h-11" />
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
-                    <Input id="age" type="number" {...register('age')} />
-                    {errors.age && <p className="text-sm text-destructive">{errors.age.message}</p>}
+                    <Label htmlFor="age" className="text-xs sm:text-sm">Age</Label>
+                    <Input id="age" type="number" {...register('age')} className="h-10 sm:h-11" />
+                    {errors.age && <p className="text-xs sm:text-sm text-destructive">{errors.age.message}</p>}
                 </div>
             </div>
             <div className="space-y-2">
-              <Label>Gender</Label>
+              <Label className="text-xs sm:text-sm">Gender</Label>
               <Controller
                 name="gender"
                 control={control}
                 render={({ field }) => (
-                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 pt-2">
-                    <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male">Male</Label></div>
-                    <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female">Female</Label></div>
-                    <div className="flex items-center space-x-2"><RadioGroupItem value="Other" id="other" /><Label htmlFor="other">Other</Label></div>
+                  <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-2 sm:gap-4 pt-2 flex-wrap">
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male" className="text-xs sm:text-sm">Male</Label></div>
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female" className="text-xs sm:text-sm">Female</Label></div>
+                    <div className="flex items-center space-x-2"><RadioGroupItem value="Other" id="other" /><Label htmlFor="other" className="text-xs sm:text-sm">Other</Label></div>
                   </RadioGroup>
                 )}
               />
-               {errors.gender && <p className="text-sm text-destructive">{errors.gender.message}</p>}
+               {errors.gender && <p className="text-xs sm:text-sm text-destructive">{errors.gender.message}</p>}
             </div>
              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
-                <Input id="phone" type="tel" {...register('phone')} />
+                <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number (Optional)</Label>
+                <Input id="phone" type="tel" {...register('phone')} className="h-10 sm:h-11" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6 lg:p-8">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Register Prefect
             </Button>

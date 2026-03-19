@@ -68,9 +68,9 @@ export function SeedGrantApplicationForm() {
           Back to MEAL Hub
         </Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 lg:p-8">
+          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl lg:text-3xl">
             <DollarSign className="h-6 w-6" />
             Seed Grant Application
           </CardTitle>
@@ -79,44 +79,44 @@ export function SeedGrantApplicationForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="applicantName">Applicant Name / Chapter Name</Label>
-                  <Input id="applicantName" {...register('applicantName')} />
-                  {errors.applicantName && <p className="text-sm text-destructive">{errors.applicantName.message}</p>}
+                  <Label htmlFor="applicantName" className="text-xs sm:text-sm truncate">Applicant Name / Chapter Name</Label>
+                  <Input id="applicantName" {...register('applicantName')} className="h-10 sm:h-11" />
+                  {errors.applicantName && <p className="text-xs sm:text-sm text-destructive">{errors.applicantName.message}</p>}
                 </div>
                  <div className="space-y-2">
-                  <Label htmlFor="projectTitle">Project Title</Label>
-                  <Input id="projectTitle" {...register('projectTitle')} />
-                  {errors.projectTitle && <p className="text-sm text-destructive">{errors.projectTitle.message}</p>}
+                  <Label htmlFor="projectTitle" className="text-xs sm:text-sm truncate">Project Title</Label>
+                  <Input id="projectTitle" {...register('projectTitle')} className="h-10 sm:h-11" />
+                  {errors.projectTitle && <p className="text-xs sm:text-sm text-destructive">{errors.projectTitle.message}</p>}
                 </div>
             </div>
             <div className="space-y-2">
-                <Label htmlFor="amountRequested">Amount Requested (UGX)</Label>
-                <Input id="amountRequested" type="number" {...register('amountRequested')} />
-                {errors.amountRequested && <p className="text-sm text-destructive">{errors.amountRequested.message}</p>}
+                <Label htmlFor="amountRequested" className="text-xs sm:text-sm">Amount Requested (UGX)</Label>
+                <Input id="amountRequested" type="number" {...register('amountRequested')} className="h-10 sm:h-11" />
+                {errors.amountRequested && <p className="text-xs sm:text-sm text-destructive">{errors.amountRequested.message}</p>}
             </div>
              <div className="space-y-2">
-              <Label htmlFor="budgetSummaryUrl">Budget Summary URL (Optional)</Label>
-              <Input id="budgetSummaryUrl" {...register('budgetSummaryUrl')} placeholder="Link to Google Doc/Sheet" />
-              {errors.budgetSummaryUrl && <p className="text-sm text-destructive">{errors.budgetSummaryUrl.message}</p>}
+              <Label htmlFor="budgetSummaryUrl" className="text-xs sm:text-sm truncate">Budget Summary URL (Optional)</Label>
+              <Input id="budgetSummaryUrl" {...register('budgetSummaryUrl')} placeholder="Link to Google Doc/Sheet" className="h-10 sm:h-11" />
+              {errors.budgetSummaryUrl && <p className="text-xs sm:text-sm text-destructive">{errors.budgetSummaryUrl.message}</p>}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                <div className="space-y-2">
-                <Label htmlFor="startDate">Proposed Start Date</Label>
-                <Input id="startDate" type="date" {...register('startDate')} />
-                {errors.startDate && <p className="text-sm text-destructive">{errors.startDate.message}</p>}
+                <Label htmlFor="startDate" className="text-xs sm:text-sm">Proposed Start Date</Label>
+                <Input id="startDate" type="date" {...register('startDate')} className="h-10 sm:h-11" />
+                {errors.startDate && <p className="text-xs sm:text-sm text-destructive">{errors.startDate.message}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endDate">Proposed End Date</Label>
-                <Input id="endDate" type="date" {...register('endDate')} />
-                {errors.endDate && <p className="text-sm text-destructive">{errors.endDate.message}</p>}
+                <Label htmlFor="endDate" className="text-xs sm:text-sm">Proposed End Date</Label>
+                <Input id="endDate" type="date" {...register('endDate')} className="h-10 sm:h-11" />
+                {errors.endDate && <p className="text-xs sm:text-sm text-destructive">{errors.endDate.message}</p>}
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6 lg:p-8">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit Application
             </Button>

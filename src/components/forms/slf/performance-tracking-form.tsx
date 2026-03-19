@@ -36,7 +36,7 @@ function StarRating({ name, label, control }: { name: "visibilityScore" | "disci
     
     return (
         <div className="space-y-2">
-            <Label>{label}</Label>
+            <Label className="text-xs sm:text-sm">{label}</Label>
             <Controller
                 name={name}
                 control={control}
@@ -125,9 +125,9 @@ export function PerformanceTrackingForm() {
           Back to SLF Hub
         </Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 lg:p-8">
+          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl lg:text-3xl">
             <BarChart className="h-6 w-6" />
             Prefect Performance Tracking
           </CardTitle>
@@ -136,48 +136,48 @@ export function PerformanceTrackingForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               <div className="space-y-2">
-                <Label htmlFor="prefectId">Select Prefect</Label>
-                {isLoadingPrefects ? <Skeleton className="h-10 w-full" /> : (
+                <Label htmlFor="prefectId" className="text-xs sm:text-sm truncate">Select Prefect</Label>
+                {isLoadingPrefects ? <Skeleton className="h-10 sm:h-11 w-full" /> : (
                 <Controller
                     name="prefectId"
                     control={control}
                     render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger id="prefectId"><SelectValue placeholder="Select a prefect..." /></SelectTrigger>
+                        <SelectTrigger id="prefectId" className="h-10 sm:h-11 truncate"><SelectValue placeholder="Select a prefect..." /></SelectTrigger>
                         <SelectContent>
                             {prefects?.map(p => (
-                                <SelectItem key={p.id} value={p.id}>{p.name} ({p.schoolName})</SelectItem>
+                                <SelectItem key={p.id} value={p.id} className="truncate">{p.name} ({p.schoolName})</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                     )}
                 />
                 )}
-                {errors.prefectId && <p className="text-sm text-destructive">{errors.prefectId.message}</p>}
+                {errors.prefectId && <p className="text-xs sm:text-sm text-destructive">{errors.prefectId.message}</p>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="month">Month</Label>
-                <Input id="month" type="month" {...register('month')} />
-                {errors.month && <p className="text-sm text-destructive">{errors.month.message}</p>}
+                <Label htmlFor="month" className="text-xs sm:text-sm">Month</Label>
+                <Input id="month" type="month" {...register('month')} className="h-10 sm:h-11" />
+                {errors.month && <p className="text-xs sm:text-sm text-destructive">{errors.month.message}</p>}
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 sm:gap-6">
                 <StarRating name="visibilityScore" label="Visibility Score" control={control} />
                 <StarRating name="disciplineScore" label="Discipline Score" control={control} />
                 <StarRating name="initiativeScore" label="Initiative Score" control={control} />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="teacherComments">Teacher/Patron Comments (Optional)</Label>
-              <Textarea id="teacherComments" {...register('teacherComments')} placeholder="e.g., Showed great leadership during the assembly..." />
+              <Label htmlFor="teacherComments" className="text-xs sm:text-sm">Teacher/Patron Comments (Optional)</Label>
+              <Textarea id="teacherComments" {...register('teacherComments')} placeholder="e.g., Showed great leadership during the assembly..." className="min-h-[80px] sm:min-h-[100px]" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6 lg:p-8">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Performance Report
             </Button>

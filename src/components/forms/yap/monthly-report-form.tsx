@@ -79,9 +79,9 @@ export function MonthlyReportForm() {
           Back to MEAL Hub
         </Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+      <Card className="overflow-hidden">
+        <CardHeader className="p-4 sm:p-6 lg:p-8">
+          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl lg:text-3xl">
             <FileText className="h-6 w-6" />
             YAP Monthly Report
           </CardTitle>
@@ -90,52 +90,52 @@ export function MonthlyReportForm() {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="chapterId">Chapter</Label>
-                     {isLoading ? <Skeleton className="h-10 w-full" /> : (
+                    <Label htmlFor="chapterId" className="text-xs sm:text-sm truncate">Chapter</Label>
+                     {isLoading ? <Skeleton className="h-10 sm:h-11 w-full" /> : (
                         <Controller
                             name="chapterId"
                             control={control}
                             render={({ field }) => (
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <SelectTrigger id="chapterId"><SelectValue placeholder="Select a chapter..." /></SelectTrigger>
-                                <SelectContent>{chapters?.map(c => <SelectItem key={c.id} value={c.id}>{c.chapterName}</SelectItem>)}</SelectContent>
+                                <SelectTrigger id="chapterId" className="h-10 sm:h-11"><SelectValue placeholder="Select a chapter..." /></SelectTrigger>
+                                <SelectContent>{chapters?.map(c => <SelectItem key={c.id} value={c.id} className="truncate">{c.chapterName}</SelectItem>)}</SelectContent>
                             </Select>
                             )}
                         />
                     )}
-                    {errors.chapterId && <p className="text-sm text-destructive">{errors.chapterId.message}</p>}
+                    {errors.chapterId && <p className="text-xs sm:text-sm text-destructive">{errors.chapterId.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="month">Report Month</Label>
-                    <Input id="month" type="month" {...register('month')} />
-                    {errors.month && <p className="text-sm text-destructive">{errors.month.message}</p>}
+                    <Label htmlFor="month" className="text-xs sm:text-sm">Report Month</Label>
+                    <Input id="month" type="month" {...register('month')} className="h-10 sm:h-11" />
+                    {errors.month && <p className="text-xs sm:text-sm text-destructive">{errors.month.message}</p>}
                 </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="activities">Activities This Month</Label>
-              <Textarea id="activities" {...register('activities')} />
-              {errors.activities && <p className="text-sm text-destructive">{errors.activities.message}</p>}
+              <Label htmlFor="activities" className="text-xs sm:text-sm">Activities This Month</Label>
+              <Textarea id="activities" {...register('activities')} className="min-h-[80px] sm:min-h-[100px]" />
+              {errors.activities && <p className="text-xs sm:text-sm text-destructive">{errors.activities.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="attendance">Average Session Attendance</Label>
-              <Input id="attendance" type="number" {...register('attendance')} />
-              {errors.attendance && <p className="text-sm text-destructive">{errors.attendance.message}</p>}
+              <Label htmlFor="attendance" className="text-xs sm:text-sm">Average Session Attendance</Label>
+              <Input id="attendance" type="number" {...register('attendance')} className="h-10 sm:h-11" />
+              {errors.attendance && <p className="text-xs sm:text-sm text-destructive">{errors.attendance.message}</p>}
             </div>
              <div className="space-y-2">
-              <Label htmlFor="outcomes">Outcomes & Successes</Label>
-              <Textarea id="outcomes" {...register('outcomes')} />
-              {errors.outcomes && <p className="text-sm text-destructive">{errors.outcomes.message}</p>}
+              <Label htmlFor="outcomes" className="text-xs sm:text-sm">Outcomes & Successes</Label>
+              <Textarea id="outcomes" {...register('outcomes')} className="min-h-[80px] sm:min-h-[100px]" />
+              {errors.outcomes && <p className="text-xs sm:text-sm text-destructive">{errors.outcomes.message}</p>}
             </div>
              <div className="space-y-2">
-              <Label htmlFor="challenges">Challenges Faced (Optional)</Label>
-              <Textarea id="challenges" {...register('challenges')} />
+              <Label htmlFor="challenges" className="text-xs sm:text-sm">Challenges Faced (Optional)</Label>
+              <Textarea id="challenges" {...register('challenges')} className="min-h-[80px] sm:min-h-[100px]" />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={isSubmitting} className="w-full">
+          <CardFooter className="p-4 sm:p-6 lg:p-8">
+            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Monthly Report
             </Button>
