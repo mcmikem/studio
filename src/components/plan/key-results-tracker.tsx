@@ -35,7 +35,7 @@ export function KeyResultsTracker() {
     if (!allKeyResults) return [];
     const now = new Date();
     return allKeyResults.filter(kr => {
-        const deadline = kr.deadline.toDate();
+        const deadline = kr.deadline instanceof Timestamp ? kr.deadline.toDate() : new Date(kr.deadline);
         return isSameMonth(deadline, now);
     })
   }, [allKeyResults]);
