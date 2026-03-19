@@ -71,6 +71,126 @@
  *    - Reset form on success
  * 
  * =============================================================================
+ * CRUD & DATA OPERATIONS
+ * =============================================================================
+ * 
+ * USE FIREBASE HOOKS:
+ * import { useFirestore, addDocumentNonBlocking, updateDocumentNonBlocking, deleteDocumentNonBlocking } from '@/firebase';
+ * 
+ * 1. CREATE (Add Document)
+ *    import { collection } from 'firebase/firestore';
+ *    const collectionRef = collection(firestore, 'collection-name');
+ *    await addDocumentNonBlocking(collectionRef, data);
+ * 
+ * 2. READ (Fetch Document)
+ *    import { doc } from 'firebase/firestore';
+ *    const docRef = doc(firestore, 'collection-name', id);
+ *    const { data } = useDoc(collection-type>(docRef);
+ * 
+ * 3. UPDATE (Edit Document)
+ *    await updateDocumentNonBlocking(docRef, { field: newValue });
+ * 
+ * 4. DELETE (Remove Document)
+ *    await deleteDocumentNonBlocking(docRef);
+ * 
+ * =============================================================================
+ * EDIT MODE PATTERN (Forms)
+ * =============================================================================
+ * 
+ * All forms that support both create AND edit must follow this pattern:
+ * 
+ * interface FormProps {
+ *   id?: string;  // If provided, form is in edit mode
+ * }
+ * 
+ * function MyForm({ id }: FormProps) {
+ *   // Fetch existing data if editing
+ *   const docRef = id ? doc(firestore, 'collection', id) : null;
+ *   const { data: existingData } = useDoc<Type>(docRef);
+ * 
+ *   // Initialize form with existing data
+ *   useEffect(() => {
+ *     if (existingData) {
+ *       reset(existingData);
+ *     }
+ *   }, [existingData, reset]);
+ * 
+ *   // Toggle between create/update
+ *   const onSubmit = async (data) => {
+ *     if (id && existingData) {
+ *       await updateDocumentNonBlocking(doc(firestore, 'collection', id), data);
+ *     } else {
+ *       await addDocumentNonBlocking(collection(firestore, 'collection'), data);
+ *     }
+ *   };
+ * }
+ * 
+ * =============================================================================
+ * PERMISSIONS & ACCESS CONTROL
+ * =============================================================================
+ * 
+ * IMPORT PERMISSIONS:
+ * import { canEdit, canDelete, isManagement } from '@/lib/permissions';
+ * 
+ * 1. CHECKING PERMISSIONS
+ *    const { profile } = useUserProfile(user);
+ *    const canUserEdit = canEdit(item, profile);
+ *    const canUserDelete = canDelete(profile);
+ *    const isManager = isManagement(profile);
+ * 
+ * 2. DATA-TABLE WITH ACTIONS
+ *    Use the enhanced DataTable with permission-based actions:
+ *    <DataTable
+ *      data={items}
+ *      columns={columns}
+ *      currentUser={user}
+ *      userProfile={profile}
+ *      editHref={(item) => `/path/to/edit?id=${item.id}`}
+ *      deleteCollection="collection-name"
+ *      viewHref={(item) => `/path/to/view?id=${item.id}`}
+ *    />
+ * 
+ * 3. MANUAL ACTION BUTTONS (if not using DataTable)
+ *    // Edit button - only for owner
+ *    {canEdit(item, profile) && (
+ *      <Button onClick={() => router.push(`/edit/${item.id}`)}>
+ *        <Pencil className="h-4 w-4" /> Edit
+ *      </Button>
+ *    )}
+ * 
+ *    // Delete button - only for ED/Admin
+ *    {canDelete(profile) && (
+ *      <AlertDialog>
+ *        <AlertDialogTrigger><Button variant="destructive"><Trash2 /></Button></AlertDialogTrigger>
+ *        <AlertDialogContent>
+ *          <AlertDialogTitle>Delete?</AlertDialogTitle>
+ *          <AlertDialogFooter>
+ *            <AlertDialogCancel>Cancel</AlertDialogCancel>
+ *            <AlertDialogAction onClick={() => deleteDocumentNonBlocking(doc(firestore, 'collection', item.id))}>
+ *              Delete
+ *            </AlertDialogAction>
+ *          </AlertDialogFooter>
+ *        </AlertDialogContent>
+ *      </AlertDialog>
+ *    )}
+ * 
+ * PERMISSION RULES:
+ * - EDIT: User can edit if they created the item OR are Admin/ED
+ *         canEdit(item, profile) returns true if:
+ *           - item.userId === profile.uid (owner)
+ *           - profile.role is 'Administrator' or 'Executive Director'
+ * 
+ * - DELETE: Only Executive Director can delete
+ *           canDelete(profile) returns true if:
+ *             - profile.role === 'Executive Director'
+ * 
+ * - MANAGEMENT: Users with management roles can access management sections
+ *               isManagement(profile) returns true for:
+ *                 - Administrator, Executive Director, Programs & Partnerships Manager,
+ *                   Operations & Field Manager, Media & Finance Lead,
+ *                   Media & Communications Lead, Resource Mobilization Lead
+ * 
+ * =============================================================================
  * BUTTON STANDARDS
  * =============================================================================
  * 
