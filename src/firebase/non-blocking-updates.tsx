@@ -1,6 +1,5 @@
-
 'use client';
-    
+     
 import {
   setDoc,
   addDoc,
@@ -11,83 +10,150 @@ import {
   type SetOptions,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
-import {FirestorePermissionError} from '@/firebase/errors';
+import { FirestorePermissionError } from '@/firebase/errors';
+import { addPendingSync, isOnline } from '@/lib/offline-sync';
 
+const MAX_RETRIES = 5;
 
-/**
- * Initiates a setDoc operation for a document reference.
- * It catches permission errors and emits them globally.
- * Returns the promise from the setDoc operation.
- */
-export function setDocumentNonBlocking(docRef: DocumentReference, data: any, options?: SetOptions) {
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function shouldQueue(error: unknown): boolean {
+  if (!isOnline()) return true;
+  const err = error as { code?: string };
+  return err.code === 'unavailable' || err.code === 'deadline-exceeded';
+}
+
+export function setDocumentNonBlocking(
+  docRef: DocumentReference,
+  data: any,
+  options?: SetOptions
+) {
   const operation = options && 'merge' in options ? 'update' : 'create';
-  return setDoc(docRef, data, options || {}).catch(error => {
+  const syncId = `${docRef.path}-${Date.now()}`;
+
+  return setDoc(docRef, data, options || {}).then(() => {
+    return { id: docRef.id, syncId, status: 'synced' as const };
+  }).catch(async (error) => {
+    if (shouldQueue(error)) {
+      const pending = {
+        id: syncId,
+        type: 'create' as const,
+        collection: docRef.path.includes('/') ? docRef.path.split('/')[0] : docRef.path,
+        data: { id: docRef.id, ...data },
+        timestamp: Date.now(),
+      };
+      try {
+        await addPendingSync(pending);
+        return { id: docRef.id, syncId, status: 'queued' as const };
+      } catch (queueError) {
+        console.error('Failed to queue offline:', queueError);
+      }
+    }
+
     const permissionError = new FirestorePermissionError({
       path: docRef.path,
-      operation: operation,
+      operation,
       requestResourceData: data,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Let the original error propagate for local handling if needed
     throw error;
   });
 }
 
-
-/**
- * Initiates an addDoc operation for a collection reference.
- * It catches permission errors and emits them globally.
- * Returns the promise which resolves with the new DocumentReference.
- */
 export function addDocumentNonBlocking(colRef: CollectionReference, data: any) {
-  return addDoc(colRef, data).catch(error => {
-    console.error("addDocumentNonBlocking failed:", error);
+  const syncId = generateId();
+  const collectionName = colRef.path;
+
+  return addDoc(colRef, data).then((docRef) => {
+    return { id: docRef.id, syncId, status: 'synced' as const };
+  }).catch(async (error) => {
+    if (shouldQueue(error)) {
+      const pending = {
+        id: syncId,
+        type: 'create' as const,
+        collection: collectionName,
+        data,
+        timestamp: Date.now(),
+      };
+      try {
+        await addPendingSync(pending);
+        return { id: syncId, syncId, status: 'queued' as const, pending: true };
+      } catch (queueError) {
+        console.error('Failed to queue offline:', queueError);
+      }
+    }
+
     const permissionError = new FirestorePermissionError({
-      path: colRef.path,
+      path: collectionName,
       operation: 'create',
       requestResourceData: data,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Let the original error propagate
     throw error;
   });
 }
 
-
-/**
- * Initiates an updateDoc operation for a document reference.
- * It catches permission errors and emits them globally.
- * Returns the promise from the updateDoc operation.
- */
 export function updateDocumentNonBlocking(docRef: DocumentReference, data: any) {
-  return updateDoc(docRef, data).catch(error => {
-    console.error("updateDocumentNonBlocking failed:", error);
+  const syncId = `${docRef.path}-${Date.now()}`;
+
+  return updateDoc(docRef, data).then(() => {
+    return { id: docRef.id, syncId, status: 'synced' as const };
+  }).catch(async (error) => {
+    if (shouldQueue(error)) {
+      const pending = {
+        id: syncId,
+        type: 'update' as const,
+        collection: docRef.path.includes('/') ? docRef.path.split('/')[0] : docRef.path,
+        data: { id: docRef.id, ...data },
+        timestamp: Date.now(),
+      };
+      try {
+        await addPendingSync(pending);
+        return { id: docRef.id, syncId, status: 'queued' as const };
+      } catch (queueError) {
+        console.error('Failed to queue offline:', queueError);
+      }
+    }
+
     const permissionError = new FirestorePermissionError({
       path: docRef.path,
       operation: 'update',
       requestResourceData: data,
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Let the original error propagate
     throw error;
   });
 }
 
-
-/**
- * Initiates a deleteDoc operation for a document reference.
- * It catches permission errors and emits them globally.
- * Returns the promise from the deleteDoc operation.
- */
 export function deleteDocumentNonBlocking(docRef: DocumentReference) {
-  return deleteDoc(docRef).catch(error => {
-    console.error("deleteDocumentNonBlocking failed:", error);
+  const syncId = `${docRef.path}-${Date.now()}`;
+
+  return deleteDoc(docRef).then(() => {
+    return { id: docRef.id, syncId, status: 'synced' as const };
+  }).catch(async (error) => {
+    if (shouldQueue(error)) {
+      const pending = {
+        id: syncId,
+        type: 'delete' as const,
+        collection: docRef.path.includes('/') ? docRef.path.split('/')[0] : docRef.path,
+        data: { id: docRef.id },
+        timestamp: Date.now(),
+      };
+      try {
+        await addPendingSync(pending);
+        return { id: docRef.id, syncId, status: 'queued' as const };
+      } catch (queueError) {
+        console.error('Failed to queue offline:', queueError);
+      }
+    }
+
     const permissionError = new FirestorePermissionError({
       path: docRef.path,
       operation: 'delete',
     });
     errorEmitter.emit('permission-error', permissionError);
-    // Let the original error propagate
     throw error;
   });
 }
