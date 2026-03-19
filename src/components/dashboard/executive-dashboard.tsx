@@ -18,6 +18,7 @@ const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deploym
 const ApprovalQueue = dynamic(() => import('@/components/dashboard/approval-queue').then(mod => mod.ApprovalQueue), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const EcosystemPulse = dynamic(() => import('@/components/dashboard/ecosystem-pulse').then(mod => mod.EcosystemPulse), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const KeyResultsTracker = dynamic(() => import('@/components/plan/key-results-tracker').then(mod => mod.KeyResultsTracker), { loading: () => <Skeleton className="h-96 rounded-2xl" />, ssr: false });
+const ProgramHealthScore = dynamic(() => import('@/components/dashboard/program-health-score').then(mod => mod.ProgramHealthScore), { loading: () => <Skeleton className="h-64 rounded-2xl" />, ssr: false });
 const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), { loading: () => <Skeleton className="h-96 rounded-2xl" />, ssr: false });
 const AiStrategicAdvisor = dynamic(() => import('@/components/dashboard/ai-strategic-advisor').then(mod => mod.AiStrategicAdvisor), { loading: () => <Skeleton className="h-96 rounded-2xl" />, ssr: false });
 
@@ -40,9 +41,12 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                    <TeamPerformanceLeaderboard />
               </div>
           </DashboardGrid>
-            <DashboardGrid>
-                 <KeyResultsTracker />
-            </DashboardGrid>
+             <DashboardGrid>
+                  <KeyResultsTracker />
+             </DashboardGrid>
+             <DashboardGrid>
+                  <ProgramHealthScore />
+             </DashboardGrid>
             <RoleMissionCard profile={profile} />
       </div>
     )

@@ -33,6 +33,11 @@ const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/
     ssr: false,
 });
 
+const ProgramHealthScore = dynamic(() => import('@/components/dashboard/program-health-score').then(mod => mod.ProgramHealthScore), {
+    loading: () => <Skeleton className="h-64" />,
+    ssr: false,
+});
+
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-8">
@@ -49,6 +54,9 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
                 <QuickInsights />
                 <TeamDeployment />
             </div>
+        </DashboardGrid>
+        <DashboardGrid>
+            <ProgramHealthScore />
         </DashboardGrid>
         <RoleMissionCard profile={profile} />
     </div>
