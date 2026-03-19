@@ -166,37 +166,37 @@ function CheckinFormComponent() {
                         Review your plan below and submit it to the team stream.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div>
-                        <h3 className="font-bold text-lg">{primaryMission}</h3>
-                        <p className="text-sm text-muted-foreground">Your main focus for today.</p>
+                <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                    <div className="space-y-2">
+                        <h3 className="font-bold text-base sm:text-lg">{primaryMission}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground">Your main focus for today.</p>
                     </div>
 
                     <Separator />
-                    
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                             <h4 className="font-semibold text-md">Key Time Blocks</h4>
-                            <ul className="list-disc list-inside space-y-2 text-base sm:text-sm">
+                     
+                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="space-y-3">
+                             <h4 className="font-semibold text-sm sm:text-base">Key Time Blocks</h4>
+                            <ul className="list-disc list-inside space-y-2 text-xs sm:text-sm">
                                 {submittedPlan?.timeBlocks?.map((block, index) => (
-                                    <li key={index}><strong>{block?.startTime} - {block?.endTime}:</strong> {block?.description}</li>
+                                    <li key={index} className="break-words"><strong>{block?.startTime} - {block?.endTime}:</strong> {block?.description}</li>
                                 ))}
                                 {(!submittedPlan?.timeBlocks || submittedPlan.timeBlocks.length === 0) && (
-                                    <li className="text-muted-foreground italic text-sm">No specific time blocks generated.</li>
+                                    <li className="text-muted-foreground italic text-xs sm:text-sm">No time blocks generated.</li>
                                 )}
                             </ul>
                         </div>
-                         <div className="space-y-4">
-                             <h4 className="font-semibold text-md">Strategic Alignments</h4>
-                            <ul className="list-inside space-y-3">
+                         <div className="space-y-3">
+                             <h4 className="font-semibold text-sm sm:text-base">Strategic Alignments</h4>
+                            <ul className="list-inside space-y-2">
                                 {submittedPlan?.strategicAlignments?.map((align, index) => (
-                                    <li key={index} className="text-sm p-3 bg-muted/50 rounded-lg">
+                                    <li key={index} className="text-xs sm:text-sm p-3 bg-muted/50 rounded-lg">
                                         <p className="font-bold">{align.krTitle}</p>
-                                        <p className="text-muted-foreground mt-1">{align.alignmentJustification}</p>
+                                        <p className="text-muted-foreground mt-1 text-xs">{align.alignmentJustification}</p>
                                     </li>
                                 ))}
                                 {(!submittedPlan?.strategicAlignments || submittedPlan.strategicAlignments.length === 0) && (
-                                    <li className="text-muted-foreground italic text-sm">No strategic alignments identified.</li>
+                                    <li className="text-muted-foreground italic text-xs sm:text-sm">No alignments identified.</li>
                                 )}
                             </ul>
                         </div>
