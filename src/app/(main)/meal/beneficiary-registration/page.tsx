@@ -166,19 +166,19 @@ function BeneficiaryRegistrationForm() {
   };
 
   return (
-    <Card>
+    <Card className="w-full overflow-hidden">
       <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <UserPlus className="h-5 sm:h-6 w-5 sm:w-6" />
-          {beneficiaryId ? 'Edit Profile' : 'Beneficiary Registration Form'}
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl truncate">
+          <UserPlus className="h-5 sm:h-6 w-5 sm:w-6 flex-shrink-0" />
+          {beneficiaryId ? 'Edit Profile' : 'Beneficiary Registration'}
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          {beneficiaryId ? `Updating records for ${existingBeneficiary?.name || 'beneficiary'}` : 'Create a new profile for a beneficiary to track their journey with Omuto.'}
+          {beneficiaryId ? `Updating records for ${existingBeneficiary?.name || 'beneficiary'}` : 'Create a new profile to track their journey with Omuto.'}
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-          <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+        <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="flex flex-col items-center space-y-3">
               <Avatar className="h-20 sm:h-24 w-20 sm:w-24 border-2 border-dashed" data-ai-hint="person avatar">
                   <AvatarImage src={photoPreview || ''} />
                   <AvatarFallback className="bg-muted"><UserPlus className="h-8 sm:h-10 w-8 sm:w-10 text-muted-foreground"/></AvatarFallback>
@@ -190,28 +190,29 @@ function BeneficiaryRegistrationForm() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs sm:text-sm">Full Name</Label>
-              <Input id="name" {...register('name')} className="h-12" />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+              <Label htmlFor="name" className="text-xs sm:text-sm font-medium">Full Name</Label>
+              <Input id="name" {...register('name')} className="h-10 sm:h-11" />
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dob" className="text-xs sm:text-sm">Date of Birth (optional)</Label>
-              <Input id="dob" type="date" {...register('dob')} className="h-12" />
+              <Label htmlFor="dob" className="text-xs sm:text-sm font-medium">Date of Birth</Label>
+              <Input id="dob" type="date" {...register('dob')} className="h-10 sm:h-11" />
             </div>
           </div>
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-                <Label className="text-xs sm:text-sm">Gender</Label>
+                <Label className="text-xs sm:text-sm font-medium">Gender</Label>
                 <Controller name="gender" control={control} render={({ field }) => (
                     <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-3 sm:gap-4 pt-2">
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male" className="text-xs sm:text-sm">Male</Label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female" className="text-xs sm:text-sm">Female</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male" className="text-xs sm:text-sm font-medium">Male</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female" className="text-xs sm:text-sm font-medium">Female</Label></div>
                     </RadioGroup>
                 )} />
-                {errors.gender && <p className="text-sm text-destructive">{errors.gender.message}</p>}
+                {errors.gender && <p className="text-xs text-destructive">{errors.gender.message}</p>}
             </div>
-             <div className="space-y-4 pt-2 border-t">
-              <Label className="text-sm font-semibold text-primary">Location Details</Label>
+            </div>
+            <div className="space-y-4 pt-2 border-t">
+              <Label className="text-sm font-medium text-primary">Location Details</Label>
               <LocationPicker
                 districtValue={watchDistrict}
                 subcountyValue={watchSubcounty}
@@ -221,60 +222,60 @@ function BeneficiaryRegistrationForm() {
                 onParishChange={(val) => setValue('parish', val)}
               />
               <div className="space-y-2">
-                <Label htmlFor="village" className="text-xs sm:text-sm">Village / Zone</Label>
-                <Input id="village" {...register('village')} className="h-12" placeholder="Optional" />
+                <Label htmlFor="village" className="text-xs sm:text-sm font-medium">Village / Zone</Label>
+                <Input id="village" {...register('village')} className="h-10 sm:h-11" placeholder="Optional" />
               </div>
             </div>
-           </div>
-           <div className="space-y-2">
-               <Label htmlFor="programEnrolled" className="text-xs sm:text-sm">Program Enrolled In</Label>
-                {isLoadingPrograms ? <Skeleton className="h-12 w-full" /> : (
-                <Controller
-                    name="programEnrolled"
-                    control={control}
-                    render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger id="programEnrolled" className="h-12">
-                            <SelectValue placeholder="Select a program..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {programs?.map(p => (
-                                <SelectItem key={p.id} value={p.title}>{p.title}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    )}
-                />
-               )}
-              {errors.programEnrolled && <p className="text-sm text-destructive">{errors.programEnrolled.message}</p>}
+            <div className="space-y-2">
+               <Label htmlFor="programEnrolled" className="text-xs sm:text-sm font-medium">Program Enrolled In</Label>
+                 {isLoadingPrograms ? <Skeleton className="h-10 sm:h-11 w-full" /> : (
+                 <Controller
+                     name="programEnrolled"
+                     control={control}
+                     render={({ field }) => (
+                     <Select onValueChange={field.onChange} value={field.value}>
+                         <SelectTrigger id="programEnrolled" className="h-10 sm:h-11">
+                             <SelectValue placeholder="Select a program..." />
+                         </SelectTrigger>
+                         <SelectContent>
+                             {programs?.map(p => (
+                                 <SelectItem key={p.id} value={p.title}>{p.title}</SelectItem>
+                             ))}
+                         </SelectContent>
+                     </Select>
+                     )}
+                 />
+                )}
+              {errors.programEnrolled && <p className="text-xs text-destructive">{errors.programEnrolled.message}</p>}
             </div>
-          
-          <div className="my-4 sm:my-6 border-t-2 border-dashed" />
-            <h3 className="text-sm sm:text-md font-semibold text-muted-foreground">Optional Information</h3>
+           
+           <div className="border-t-2 border-dashed pt-4">
+             <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-3">Optional Information</h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="school" className="text-xs sm:text-sm">School (if applicable)</Label>
-                    <Input id="school" {...register('school')} className="h-12" />
-                </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-xs sm:text-sm">Phone Number</Label>
-                    <Input id="phone" {...register('phone')} className="h-12" />
-                </div>
-            </div>
-             <div className="space-y-2">
-                 <Label htmlFor="guardianContact" className="text-xs sm:text-sm">Guardian's Name & Contact</Label>
-                 <Input id="guardianContact" {...register('guardianContact')} className="h-12" />
-            </div>
+                     <Label htmlFor="school" className="text-xs sm:text-sm font-medium">School</Label>
+                     <Input id="school" {...register('school')} className="h-10 sm:h-11" />
+                 </div>
+                  <div className="space-y-2">
+                     <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">Phone Number</Label>
+                     <Input id="phone" {...register('phone')} className="h-10 sm:h-11" />
+                 </div>
+             </div>
+              <div className="space-y-2 mt-3 sm:mt-4">
+                  <Label htmlFor="guardianContact" className="text-xs sm:text-sm font-medium">Guardian's Name & Contact</Label>
+                  <Input id="guardianContact" {...register('guardianContact')} className="h-10 sm:h-11" />
+             </div>
+           </div>
         </CardContent>
         <CardFooter className="p-4 sm:p-6">
-          <Button type="submit" disabled={isSubmitting || !!(beneficiaryId && isLoadingBeneficiary)} className="w-full h-12">
+          <Button type="submit" disabled={isSubmitting || !!(beneficiaryId && isLoadingBeneficiary)} className="w-full h-10 sm:h-11">
             {isSubmitting ? (
                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
                 beneficiaryId ? <Save className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />
             )}
-            {beneficiaryId ? 'Update Profile' : 'Register Beneficiary'}
+            {beneficiaryId ? 'Update Profile' : 'Register'}
           </Button>
         </CardFooter>
       </form>
