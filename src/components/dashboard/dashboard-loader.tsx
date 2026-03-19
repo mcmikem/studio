@@ -8,6 +8,7 @@ import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { DefaultDashboard } from './default-dashboard';
 import { DashboardSkeleton } from './dashboard-skeleton';
+import { NotificationPrompt } from '@/components/notifications/notification-prompt';
 
 export interface DashboardProps {
   profile: UserProfileType;
@@ -49,7 +50,12 @@ export function DashboardLoader() {
   
   const DashboardComponent = dashboardMap[profile.role] || DefaultDashboard;
 
-  return <DashboardComponent profile={profile} />;
+  return (
+    <div className="w-full space-y-4">
+      <NotificationPrompt />
+      <DashboardComponent profile={profile} />
+    </div>
+  );
 }
 
     

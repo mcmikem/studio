@@ -229,35 +229,46 @@ export const onAlertCreated = functions.firestore
   .document('alerts/{alertId}')
   .onCreate(async (snap) => {
     const alert = snap.data();
-    if (!alert.targetUserIds || !Array.isArray(alert.targetUserIds) || alert.targetUserIds.length === 0) {
-        console.log('[onAlertCreated] No target users specified for this alert.');
-        return;
+    const isTargeted = alert.targetUserIds && Array.isArray(alert.targetUserIds) && alert.targetUserIds.length > 0;
+
+    let tokens: string[] = [];
+
+    if (isTargeted) {
+      const targetUserIds = alert.targetUserIds;
+      const usersSnapshot = await db.collection('users')
+        .where(admin.firestore.FieldPath.documentId(), 'in', targetUserIds)
+        .get();
+      usersSnapshot.forEach(doc => {
+        const userData = doc.data();
+        if (userData.fcmToken) {
+          tokens.push(userData.fcmToken);
+        }
+      });
+    } else {
+      const allUsersSnapshot = await db.collection('users').where('fcmToken', '!=', null).get();
+      allUsersSnapshot.forEach(doc => {
+        const userData = doc.data();
+        if (userData.fcmToken && typeof userData.fcmToken === 'string') {
+          tokens.push(userData.fcmToken);
+        }
+      });
     }
-
-    const targetUserIds = alert.targetUserIds;
-    
-    // Fetch user documents to get FCM tokens
-    const usersSnapshot = await db.collection('users')
-      .where(admin.firestore.FieldPath.documentId(), 'in', targetUserIds)
-      .get();
-
-    const tokens: string[] = [];
-    usersSnapshot.forEach(doc => {
-      const userData = doc.data();
-      if (userData.fcmToken) {
-        tokens.push(userData.fcmToken);
-      }
-    });
 
     if (tokens.length === 0) {
-      console.log('[onAlertCreated] No FCM tokens found for target users.');
+      console.log('[onAlertCreated] No FCM tokens found.');
       return;
     }
+
+    const titleMap: Record<string, string> = {
+      Urgent: '🚨 URGENT: Omuto Central',
+      Warning: '⚠️ Alert: Omuto Central',
+      Info: '🔔 Omuto Central',
+    };
 
     const message: admin.messaging.MulticastMessage = {
       tokens,
       notification: {
-        title: alert.type === 'Urgent' ? '🚨 URGENT: Omuto Central' : '🔔 Omuto Notification',
+        title: titleMap[alert.type] || '🔔 Omuto Central',
         body: alert.message,
       },
       webpush: {
@@ -265,26 +276,31 @@ export const onAlertCreated = functions.firestore
             link: alert.action || '/',
         },
         notification: {
-            icon: 'https://omuto-central.web.app/icon-192x192.png' // Use public app icon if available
+            icon: 'https://omuto-central.web.app/icon-192x192.png',
+            badge: 'https://omuto-central.web.app/icon-192x192.png',
         }
       },
-      // Data payload for potential in-app handling
       data: {
         alertId: snap.id,
         action: alert.action || '/',
+        priority: alert.priority || 'Medium',
+        type: alert.type || 'Info',
+      },
+      android: {
+        priority: alert.priority === 'High' || alert.type === 'Urgent' ? 'high' : 'normal',
       }
     };
 
     try {
       const response = await admin.messaging().sendEachForMulticast(message);
-      console.log(`[onAlertCreated] Successfully sent ${response.successCount} push notifications.`);
+      console.log(`[onAlertCreated] Sent ${response.successCount}/${tokens.length} push notifications.`);
       if (response.failureCount > 0) {
-        console.warn(`[onAlertCreated] Failed to send ${response.failureCount} notifications.`);
+        response.responses.forEach((res, i) => {
+          if (!res.success) {
+            console.warn(`[onAlertCreated] Failed token ${i}:`, res.error?.message);
+          }
+        });
       }
-      
-      // NOTE: WhatsApp/SMS integration would be triggered here if Twilio/Meta API was configured.
-      // Example: await sendWhatsAppMessage(phones, alert.message);
-      
     } catch (error) {
       console.error('[onAlertCreated] FCM Error:', error);
     }

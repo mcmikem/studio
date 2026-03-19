@@ -79,7 +79,7 @@ function KeyResultCard({ kr }: { kr: KeyResult }) {
             </div>
             <CardHeader className="pb-4">
                 <div className="flex justify-between items-start mb-4">
-                    <Badge className={`badge-omuto-outline ${kr.priority === 'High' ? 'border-omuto-red/30 text-omuto-red' : 'border-omuto-navy/20 text-omuto-navy/70'}`}>
+                    <Badge className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest border ${kr.priority === 'High' ? 'border-omuto-red/30 bg-omuto-red/10 text-omuto-red' : kr.priority === 'Medium' ? 'border-omuto-yellow/30 bg-omuto-yellow/10 text-omuto-yellow' : 'border-green-500/30 bg-green-500/10 text-green-600'}`}>
                         {kr.priority} Priority
                     </Badge>
                     <ProgressRing progress={progress} size={48} strokeWidth={5} />
