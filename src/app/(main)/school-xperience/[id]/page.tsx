@@ -300,8 +300,18 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
         <TabsContent value="scorecards">
           <Card className="border-lg shadow-comic-sm">
             <CardHeader className="bg-muted/30 border-b-lg">
-              <CardTitle className="text-lg font-black">Termly Scorecards</CardTitle>
-              <CardDescription>Monthly performance scores for {school.schoolName}</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-black">Termly Scorecards</CardTitle>
+                  <CardDescription>Monthly performance scores for {school.schoolName}</CardDescription>
+                </div>
+                <Button size="sm" asChild className="h-9 rounded-xl text-xs font-bold btn-omuto">
+                  <Link href={`/school-xperience/submit-scorecard?schoolId=${id}&schoolName=${encodeURIComponent(school.schoolName || '')}`}>
+                    <StarHalf className="mr-1 h-3 w-3" />
+                    Submit Scorecard
+                  </Link>
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="pt-6">
               {scorecardsLoading ? (
@@ -367,6 +377,12 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
                   <CardTitle className="text-lg font-black">Student Leaders</CardTitle>
                   <CardDescription>Commissioned leaders at {school.schoolName}</CardDescription>
                 </div>
+                <Button size="sm" asChild className="h-9 rounded-xl text-xs font-bold btn-omuto">
+                  <Link href={`/school-xperience/add-leader?schoolId=${id}&schoolName=${encodeURIComponent(school.schoolName || '')}`}>
+                    <Users className="mr-1 h-3 w-3" />
+                    Add Leader
+                  </Link>
+                </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-6">

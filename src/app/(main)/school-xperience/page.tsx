@@ -10,7 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where } from 'firebase/firestore';
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
 import {
   Building2,
   Plus,
@@ -28,7 +27,9 @@ import {
   Filter,
   ArrowRight,
   AlertCircle,
+  StarHalf,
 } from 'lucide-react';
+import Link from 'next/link';
 import type { SchoolXperience, SchoolVisitXperience } from '@/lib/types';
 import { format } from 'date-fns';
 
@@ -171,6 +172,30 @@ export default function SchoolXperienceHubPage() {
           sub="2026 Academic Year"
           color="text-purple-600"
         />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic-sm">
+          <Link href="/school-xperience/log-visit">
+            <ClipboardCheck className="h-6 w-6" />
+            <span className="font-black text-sm uppercase tracking-widest">Log Visit</span>
+            <span className="font-normal text-xs opacity-80">After a field visit</span>
+          </Link>
+        </Button>
+        <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic-sm">
+          <Link href="/school-xperience/submit-scorecard">
+            <StarHalf className="h-6 w-6" />
+            <span className="font-black text-sm uppercase tracking-widest">Submit Scorecard</span>
+            <span className="font-normal text-xs opacity-80">Monthly per school</span>
+          </Link>
+        </Button>
+        <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic-sm">
+          <Link href="/school-xperience/add-leader">
+            <Users className="h-6 w-6" />
+            <span className="font-black text-sm uppercase tracking-widest">Add Leader</span>
+            <span className="font-normal text-xs opacity-80">Register a student leader</span>
+          </Link>
+        </Button>
       </div>
 
       <Card className="border-lg shadow-comic-sm">
