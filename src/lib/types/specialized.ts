@@ -392,3 +392,91 @@ export const EquipmentSchema = z.object({
   createdAt: z.any().optional(),
 });
 export type Equipment = z.infer<typeof EquipmentSchema>;
+
+export const SchoolXperienceSchema = z.object({
+  id: z.string(),
+  schoolName: z.string().min(3, 'School name is required'),
+  location: z.string().min(2, 'Location is required'),
+  subCounty: z.string().optional(),
+  district: z.string().optional(),
+  patronTeacher: z.string().min(3, 'Patron teacher name is required'),
+  patronPhone: z.string().optional(),
+  patronEmail: z.string().email().optional().or(z.literal('')),
+  headTeacher: z.string().optional(),
+  enrollmentSize: z.coerce.number().min(1).optional(),
+  tier: z.enum(['Partner', 'Active', 'Advanced', 'Flagship']).default('Partner'),
+  status: z.enum(['Registered', 'Launched', 'Active', 'Completed', 'Inactive']).default('Registered'),
+  activeProgrammes: z.array(z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater'])).default([]),
+  term: z.enum(['Term 1', 'Term 2', 'Term 3']).default('Term 1'),
+  academicYear: z.string().optional(),
+  notes: z.string().optional(),
+  createdAt: z.any(),
+  createdBy: z.string(),
+  updatedAt: z.any().optional(),
+});
+export type SchoolXperience = z.infer<typeof SchoolXperienceSchema>;
+
+export const SchoolVisitXperienceSchema = z.object({
+  id: z.string(),
+  schoolId: z.string(),
+  schoolName: z.string(),
+  date: z.string(),
+  visitor: z.string(),
+  programmesCovered: z.array(z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater'])),
+  objectivesMet: z.string().min(10, 'Please describe objectives met'),
+  challengesObserved: z.string().optional(),
+  teacherFeedback: z.string().optional(),
+  studentFeedback: z.string().optional(),
+  followUpActions: z.string().optional(),
+  flagForStory: z.boolean().default(false),
+  photos: z.array(z.string()).optional(),
+  createdAt: z.any(),
+  createdBy: z.string(),
+});
+export type SchoolVisitXperience = z.infer<typeof SchoolVisitXperienceSchema>;
+
+export const SchoolScorecardSchema = z.object({
+  id: z.string(),
+  schoolId: z.string(),
+  schoolName: z.string(),
+  term: z.enum(['Term 1', 'Term 2', 'Term 3']),
+  academicYear: z.string(),
+  month: z.string(),
+  attendanceScore: z.coerce.number().min(1).max(5),
+  activitiesCompleted: z.coerce.number().min(1).max(5),
+  studentEngagement: z.coerce.number().min(1).max(5),
+  teacherSupport: z.coerce.number().min(1).max(5),
+  overallScore: z.number().optional(),
+  rating: z.enum(['Red', 'Amber', 'Green']).optional(),
+  notes: z.string().optional(),
+  createdAt: z.any(),
+  createdBy: z.string(),
+});
+export type SchoolScorecard = z.infer<typeof SchoolScorecardSchema>;
+
+export const SchoolLeaderSchema = z.object({
+  id: z.string(),
+  schoolId: z.string(),
+  name: z.string().min(2, 'Name is required'),
+  role: z.string(),
+  gender: z.enum(['Male', 'Female', 'Other']).optional(),
+  year: z.string().optional(),
+  contact: z.string().optional(),
+  createdAt: z.any(),
+});
+export type SchoolLeader = z.infer<typeof SchoolLeaderSchema>;
+
+export const SchoolProgrammeActivitySchema = z.object({
+  id: z.string(),
+  schoolId: z.string(),
+  schoolName: z.string(),
+  programme: z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater']),
+  activityType: z.string(),
+  description: z.string().optional(),
+  date: z.string(),
+  studentsReached: z.coerce.number().optional(),
+  notes: z.string().optional(),
+  createdAt: z.any(),
+  createdBy: z.string(),
+});
+export type SchoolProgrammeActivity = z.infer<typeof SchoolProgrammeActivitySchema>;

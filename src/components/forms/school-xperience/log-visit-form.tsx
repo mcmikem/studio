@@ -1,0 +1,267 @@
+'use client';
+
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { Loader2, ArrowLeft, ClipboardCheck, Check, Star } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useState, Suspense } from 'react';
+import type { SchoolXperience } from '@/lib/types';
+
+const visitSchema = z.object({
+  schoolId: z.string().min(1, 'School is required'),
+  schoolName: z.string().min(1, 'School name is required'),
+  date: z.string().min(1, 'Date is required'),
+  visitor: z.string().min(2, 'Visitor name is required'),
+  programmesCovered: z.array(z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater'])).min(1, 'Select at least one programme'),
+  objectivesMet: z.string().min(10, 'Please describe the objectives met (at least 10 characters)'),
+  challengesObserved: z.string().optional(),
+  teacherFeedback: z.string().optional(),
+  studentFeedback: z.string().optional(),
+  followUpActions: z.string().optional(),
+  flagForStory: z.boolean().default(false),
+});
+
+type VisitFormData = z.infer<typeof visitSchema>;
+
+const PROGRAMMES = ['SLF', 'RED', 'GreenSchools', 'PureWater'] as const;
+
+function LogVisitFormInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [programmes, setProgrammes] = useState<string[]>([]);
+
+  const schoolsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'sx-schools'), orderBy('schoolName'));
+  }, [firestore]);
+
+  const { data: schools } = useCollection<SchoolXperience>(schoolsQuery);
+
+  const preselectedSchoolId = searchParams.get('schoolId') || '';
+  const preselectedSchoolName = searchParams.get('schoolName') || '';
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<VisitFormData>({
+    resolver: zodResolver(visitSchema),
+    defaultValues: {
+      schoolId: preselectedSchoolId,
+      schoolName: preselectedSchoolName,
+      date: new Date().toISOString().split('T')[0],
+      programmesCovered: [],
+      flagForStory: false,
+    },
+  });
+
+  const selectedSchoolId = watch('schoolId');
+  const selectedSchool = schools?.find((s) => s.id === selectedSchoolId);
+
+  const onSubmit = (data: VisitFormData) => {
+    if (!firestore) {
+      toast({ variant: 'destructive', title: 'Database connection failed.' });
+      return;
+    }
+
+    addDocumentNonBlocking(collection(firestore, 'sx-visits'), {
+      ...data,
+      createdAt: serverTimestamp(),
+      createdBy: 'system',
+    });
+
+    toast({
+      title: 'Visit Logged',
+      description: data.flagForStory
+        ? 'Visit recorded. This has been flagged for a story!'
+        : 'Visit successfully recorded.',
+    });
+    router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
+  };
+
+  return (
+    <div className="enterprise-form-shell">
+      <Button variant="outline" asChild className="rounded-xl border-lg">
+        <Link href="/school-xperience"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Hub</Link>
+      </Button>
+      <Card className="border-lg shadow-comic-sm">
+        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
+          <CardTitle className="flex items-center gap-3 text-2xl font-black uppercase tracking-tighter">
+            <ClipboardCheck className="h-8 w-8 text-primary" />
+            Log Monitoring Visit
+          </CardTitle>
+          <CardDescription className="font-bold text-xs uppercase tracking-widest">
+            Record details from a field visit to a partner school.
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <CardContent className="space-y-8 pt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="font-bold text-xs uppercase tracking-widest">School *</Label>
+                <Controller
+                  name="schoolId"
+                  control={control}
+                  render={({ field }) => (
+                    <select
+                      value={field.value}
+                      onChange={(e) => {
+                        const school = schools?.find((s) => s.id === e.target.value);
+                        field.onChange(e.target.value);
+                        setValue('schoolName', school?.schoolName || '');
+                      }}
+                      className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
+                    >
+                      <option value="">Select school...</option>
+                      {schools?.map((s) => (
+                        <option key={s.id} value={s.id}>{s.schoolName}</option>
+                      ))}
+                    </select>
+                  )}
+                />
+                {errors.schoolId && <p className="text-xs text-destructive font-bold">{errors.schoolId.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label className="font-bold text-xs uppercase tracking-widest">Visit Date *</Label>
+                <Input type="date" {...register('date')} className="border-lg rounded-xl h-12 font-bold" />
+                {errors.date && <p className="text-xs text-destructive font-bold">{errors.date.message}</p>}
+              </div>
+            </div>
+
+            {selectedSchool && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs">
+                <span className="font-bold">Selected:</span> {selectedSchool.schoolName}
+                {selectedSchool.location && ` — ${selectedSchool.location}`}
+                {selectedSchool.activeProgrammes && selectedSchool.activeProgrammes.length > 0 && (
+                  <span className="ml-2">
+                    ({selectedSchool.activeProgrammes.join(', ')})
+                  </span>
+                )}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="font-bold text-xs uppercase tracking-widest">Visitor Name *</Label>
+                <Input {...register('visitor')} placeholder="e.g., Dianah Nakato" className="border-lg rounded-xl h-12 font-bold" />
+                {errors.visitor && <p className="text-xs text-destructive font-bold">{errors.visitor.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label className="font-bold text-xs uppercase tracking-widest">Programmes Covered *</Label>
+                <Controller
+                  name="programmesCovered"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex flex-wrap gap-2">
+                      {PROGRAMMES.map((p) => (
+                        <Button
+                          key={p}
+                          type="button"
+                          variant={field.value?.includes(p) ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => {
+                            const current = field.value || [];
+                            if (current.includes(p)) {
+                              field.onChange(current.filter((x) => x !== p));
+                            } else {
+                              field.onChange([...current, p]);
+                            }
+                          }}
+                          className={`h-10 rounded-xl font-bold text-xs ${
+                            field.value?.includes(p) ? 'bg-primary text-primary-foreground border-primary' : ''
+                          }`}
+                        >
+                          {field.value?.includes(p) && <Check className="mr-1 h-3 w-3" />}
+                          {p}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                />
+                {errors.programmesCovered && <p className="text-xs text-destructive font-bold">{errors.programmesCovered.message}</p>}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-dashed space-y-6">
+              <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Visit Report</h3>
+              <div className="space-y-2">
+                <Label className="font-bold text-xs uppercase tracking-widest">Objectives Met *</Label>
+                <Textarea
+                  {...register('objectivesMet')}
+                  placeholder="Describe what objectives were achieved during this visit..."
+                  className="border-lg rounded-xl min-h-[100px] font-bold"
+                />
+                {errors.objectivesMet && <p className="text-xs text-destructive font-bold">{errors.objectivesMet.message}</p>}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="font-bold text-xs uppercase tracking-widest">Challenges Observed</Label>
+                  <Textarea {...register('challengesObserved')} placeholder="Any challenges encountered..." className="border-lg rounded-xl min-h-[80px] font-bold" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-bold text-xs uppercase tracking-widest">Teacher Feedback</Label>
+                  <Textarea {...register('teacherFeedback')} placeholder="Feedback from the patron teacher..." className="border-lg rounded-xl min-h-[80px] font-bold" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-bold text-xs uppercase tracking-widest">Student Feedback</Label>
+                  <Textarea {...register('studentFeedback')} placeholder="Feedback from students..." className="border-lg rounded-xl min-h-[80px] font-bold" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-bold text-xs uppercase tracking-widest">Follow-up Actions</Label>
+                  <Textarea {...register('followUpActions')} placeholder="What needs to be done next..." className="border-lg rounded-xl min-h-[80px] font-bold" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <div className="flex items-center gap-3">
+                <Star className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-bold text-sm">Flag for Story</p>
+                  <p className="text-xs text-muted-foreground">Mark this visit as a story candidate for Alex's media team</p>
+                </div>
+              </div>
+              <Controller
+                name="flagForStory"
+                control={control}
+                render={({ field }) => (
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                )}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="enterprise-form-footer">
+            <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-14 text-sm font-black uppercase tracking-widest shadow-comic-lg rounded-2xl">
+              {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ClipboardCheck className="mr-2 h-5 w-5" />}
+              Log Visit
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+export function LogVisitForm() {
+  return (
+    <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+      <LogVisitFormInner />
+    </Suspense>
+  );
+}

@@ -43,6 +43,7 @@ import {
   Trees,
   ShieldCheck,
   School,
+  Building2,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -112,6 +113,7 @@ const navConfig = {
     { href: '/meal/yap', icon: Landmark, label: 'YAP' },
     { href: '/meal/greenschools', icon: Flower2, label: 'Green Schools' },
     { href: '/meal/purewater', icon: Droplets, label: 'PureWater' },
+    { href: '/school-xperience', icon: Building2, label: 'School Xperience' },
   ],
   team: [
     { href: '/team-performance', icon: Trophy, label: 'Impact Stars' },
