@@ -29,6 +29,8 @@ import {
   AlertCircle,
   StarHalf,
   GitBranch,
+  Video,
+  Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolXperience, SchoolVisitXperience } from '@/lib/types';
@@ -182,35 +184,47 @@ export default function SchoolXperienceHubPage() {
         />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2">
+        <Button asChild className="btn-omuto h-auto py-2.5 rounded-xl flex-col gap-1 shadow-comic-sm">
           <Link href="/school-xperience/log-visit">
-            <ClipboardCheck className="h-5 w-5" />
-            <span className="font-black text-xs uppercase tracking-widest">Log Visit</span>
+            <ClipboardCheck className="h-4 w-4" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Log Visit</span>
           </Link>
         </Button>
-        <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm">
+        <Button asChild className="btn-omuto h-auto py-2.5 rounded-xl flex-col gap-1 shadow-comic-sm">
           <Link href="/school-xperience/submit-scorecard">
-            <StarHalf className="h-5 w-5" />
-            <span className="font-black text-xs uppercase tracking-widest">Scorecard</span>
+            <StarHalf className="h-4 w-4" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Scorecard</span>
           </Link>
         </Button>
-        <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm">
+        <Button asChild className="btn-omuto h-auto py-2.5 rounded-xl flex-col gap-1 shadow-comic-sm">
           <Link href="/school-xperience/add-leader">
-            <Users className="h-5 w-5" />
-            <span className="font-black text-xs uppercase tracking-widest">Add Leader</span>
+            <Users className="h-4 w-4" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Add Leader</span>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2">
+        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
           <Link href="/school-xperience/pipeline">
-            <GitBranch className="h-5 w-5 text-blue-600" />
-            <span className="font-black text-xs uppercase tracking-widest">Pipeline</span>
+            <GitBranch className="h-4 w-4 text-blue-600" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Pipeline</span>
           </Link>
         </Button>
-        <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2">
+        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
           <Link href="/school-xperience/planner">
-            <Calendar className="h-5 w-5 text-purple-600" />
-            <span className="font-black text-xs uppercase tracking-widest">Planner</span>
+            <Calendar className="h-4 w-4 text-purple-600" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Planner</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
+          <Link href="/school-xperience/stories">
+            <Video className="h-4 w-4 text-amber-600" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Stories</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
+          <Link href="/school-xperience/impact">
+            <Sparkles className="h-4 w-4 text-teal-600" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Impact</span>
           </Link>
         </Button>
       </div>

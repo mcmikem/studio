@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, where } from 'firebase/firestore';
+import { collection, query, orderBy, doc } from 'firebase/firestore';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { useState } from 'react';
 import Link from 'next/link';
 import {
@@ -23,7 +24,12 @@ import {
   Star,
   Phone,
   Mail,
+  CheckSquare,
+  Square,
+  ArrowRight,
+  X,
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import type { SchoolXperience } from '@/lib/types';
 
 const PIPELINE_STAGES = [
@@ -49,7 +55,10 @@ const TIER_COLORS: Record<string, string> = {
 
 export default function RegistrationPipelinePage() {
   const firestore = useFirestore();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>('All');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkStage, setBulkStage] = useState<string>('');
 
   const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -57,6 +66,39 @@ export default function RegistrationPipelinePage() {
   }, [firestore]);
 
   const { data: schools, isLoading } = useCollection<SchoolXperience>(schoolsQuery);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllInStage = (stage: string) => {
+    const stageSchools = filtered(stage);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      stageSchools.forEach((s) => next.add(s.id));
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const applyBulkStage = () => {
+    if (!bulkStage || selectedIds.size === 0 || !firestore) return;
+    const count = selectedIds.size;
+    selectedIds.forEach((id) => {
+      updateDocumentNonBlocking(doc(firestore, 'sx-schools', id), {
+        pipelineStage: bulkStage,
+      });
+    });
+    toast({ title: `${count} school${count > 1 ? 's' : ''} moved to ${bulkStage}` });
+    setSelectedIds(new Set());
+    setBulkStage('');
+  };
 
   const filtered = (stageFilter: string) => {
     if (!schools) return [];
@@ -136,18 +178,63 @@ export default function RegistrationPipelinePage() {
         </Button>
       </div>
 
+      {selectedIds.size > 0 && (
+        <Card className="border-primary/30 bg-primary/5 shadow-comic-sm sticky top-20 z-10">
+          <CardContent className="p-3 flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex items-center gap-2 flex-1">
+              <CheckSquare className="h-5 w-5 text-primary" />
+              <span className="font-bold text-sm">{selectedIds.size} selected</span>
+              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={clearSelection}>
+                <X className="h-3 w-3 mr-1" /> Clear
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-muted-foreground">Move to:</span>
+              <select
+                value={bulkStage}
+                onChange={(e) => setBulkStage(e.target.value)}
+                className="h-9 rounded-lg border border-input bg-background px-2 text-xs font-bold"
+              >
+                <option value="">Select stage...</option>
+                <option value="Inquiry">Inquiry</option>
+                <option value="Meeting Booked">Meeting Booked</option>
+                <option value="MOU Signed">MOU Signed</option>
+                <option value="Onboarded">Onboarded</option>
+              </select>
+              <Button
+                size="sm"
+                className="h-9 rounded-lg text-xs font-bold btn-omuto"
+                disabled={!bulkStage}
+                onClick={applyBulkStage}
+              >
+                <ArrowRight className="mr-1 h-3 w-3" />
+                Apply
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-4 overflow-x-auto pb-4">
         {PIPELINE_STAGES.map((stage) => {
           const schoolsInStage = stage.id === 'Onboarded' ? pipelineSchools : otherSchools.filter((s) => s.pipelineStage === stage.id);
           return (
             <div key={stage.id} className={`flex-shrink-0 w-full sm:w-80 rounded-2xl border-2 ${stage.border} ${stage.bg}`}>
-              <div className={`p-4 border-b-2 ${stage.border}`}>
-                <div className="flex items-center justify-between">
-                  <h3 className={`font-black text-sm uppercase tracking-widest ${stage.color}`}>{stage.label}</h3>
+              <div className={`p-3 border-b-2 ${stage.border}`}>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className={`font-black text-xs uppercase tracking-widest ${stage.color}`}>{stage.label}</h3>
                   <Badge variant="outline" className={`font-black text-xs ${stage.color}`}>{schoolsInStage.length}</Badge>
                 </div>
+                {schoolsInStage.length > 1 && (
+                  <button
+                    onClick={() => selectAllInStage(stage.id)}
+                    className="text-[10px] font-bold text-muted-foreground hover:text-foreground underline"
+                  >
+                    Select all {schoolsInStage.length}
+                  </button>
+                )}
               </div>
-              <div className="p-3 space-y-3 max-h-[600px] overflow-y-auto">
+              <div className="p-2 space-y-2 max-h-[600px] overflow-y-auto">
                 {isLoading ? (
                   [1, 2].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)
                 ) : schoolsInStage.length === 0 ? (
@@ -157,7 +244,12 @@ export default function RegistrationPipelinePage() {
                   </div>
                 ) : (
                   schoolsInStage.map((school) => (
-                    <SchoolCard key={school.id} school={school} />
+                    <SchoolCard
+                      key={school.id}
+                      school={school}
+                      selected={selectedIds.has(school.id)}
+                      onToggle={() => toggleSelect(school.id)}
+                    />
                   ))
                 )}
               </div>
@@ -178,12 +270,25 @@ export default function RegistrationPipelinePage() {
   );
 }
 
-function SchoolCard({ school }: { school: SchoolXperience }) {
+function SchoolCard({ school, selected, onToggle }: { school: SchoolXperience; selected?: boolean; onToggle?: () => void }) {
   return (
-    <Card className="border shadow-sm hover:shadow-md transition-shadow">
+    <Card className={`border shadow-sm hover:shadow-md transition-all ${selected ? 'ring-2 ring-primary ring-offset-1' : ''}`}>
       <CardContent className="p-3 space-y-2">
-        <div className="flex items-start justify-between gap-2">
-          <h4 className="font-bold text-sm line-clamp-1">{school.schoolName}</h4>
+        <div className="flex items-start gap-2">
+          <button
+            onClick={onToggle}
+            className="mt-0.5 flex-shrink-0"
+            aria-label={selected ? 'Deselect' : 'Select'}
+          >
+            {selected ? (
+              <CheckSquare className="h-4 w-4 text-primary" />
+            ) : (
+              <Square className="h-4 w-4 text-muted-foreground" />
+            )}
+          </button>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-bold text-sm line-clamp-1">{school.schoolName}</h4>
+          </div>
           <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0" asChild>
             <Link href={`/school-xperience/${school.id}`}>
               <ChevronRight className="h-3 w-3" />
@@ -192,34 +297,34 @@ function SchoolCard({ school }: { school: SchoolXperience }) {
         </div>
 
         {school.location && (
-          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          <p className="flex items-center gap-1 text-xs text-muted-foreground pl-7">
             <MapPin className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">{school.location}</span>
           </p>
         )}
 
         {school.patronTeacher && (
-          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          <p className="flex items-center gap-1 text-xs text-muted-foreground pl-7">
             <Users className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">{school.patronTeacher}</span>
           </p>
         )}
 
         {school.patronPhone && (
-          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          <p className="flex items-center gap-1 text-xs text-muted-foreground pl-7">
             <Phone className="h-3 w-3 flex-shrink-0" />
             <span>{school.patronPhone}</span>
           </p>
         )}
 
         {school.patronEmail && (
-          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+          <p className="flex items-center gap-1 text-xs text-muted-foreground pl-7">
             <Mail className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">{school.patronEmail}</span>
           </p>
         )}
 
-        <div className="flex flex-wrap gap-1 pt-1">
+        <div className="flex flex-wrap gap-1 pt-1 pl-7">
           {school.activeProgrammes?.map((p) => {
             const Icon = PROGRAMME_ICONS[p] || Star;
             return (
@@ -232,13 +337,13 @@ function SchoolCard({ school }: { school: SchoolXperience }) {
         </div>
 
         {school.tier && (
-          <Badge className={`text-xs font-bold ${TIER_COLORS[school.tier] || ''}`}>
+          <Badge className={`text-xs font-bold ml-7 ${TIER_COLORS[school.tier] || ''}`}>
             {school.tier}
           </Badge>
         )}
 
-        <div className="pt-1">
-          <Button size="sm" variant="outline" className="w-full h-7 rounded-lg text-xs font-bold" asChild>
+        <div className="pt-1 pl-7">
+          <Button size="sm" variant="outline" className="h-7 rounded-lg text-xs font-bold" asChild>
             <Link href={`/school-xperience/${school.id}`}>
               View Profile
             </Link>
