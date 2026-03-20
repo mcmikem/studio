@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, getDocs, Timestamp } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
@@ -21,8 +22,13 @@ import {
   TreePine,
   Award,
   RefreshCw,
+  Map as MapIcon,
+  Target,
 } from 'lucide-react';
 import type { SchoolXperience, SchoolLeader, SchoolVisitXperience } from '@/lib/types';
+import { ScopeImpactDashboard } from '@/components/school-xperience/scope-impact-dashboard';
+import { ImpactMap } from '@/components/school-xperience/impact-map';
+import { UGANDA_LOCATIONS } from '@/lib/uganda-data';
 
 type ImpactStats = {
   totalSchools: number;
@@ -164,130 +170,169 @@ export default function ImpactSnapshotPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <ImpactCard
-          icon={Building2}
-          label="Partner Schools"
-          value={stats.totalSchools}
-          sub={`${stats.activeSchools} active`}
-          color="text-blue-600"
-          bg="bg-blue-50"
-          loading={loading}
-        />
-        <ImpactCard
-          icon={Heart}
-          label="Girls Reached (RED)"
-          value={stats.girlsReachedRED}
-          sub="estimated via visit count"
-          color="text-pink-600"
-          bg="bg-pink-50"
-          loading={loading}
-        />
-        <ImpactCard
-          icon={TreePine}
-          label="Trees Planted (GS)"
-          value={stats.treesPlantedGS}
-          sub="estimated via visit count"
-          color="text-green-600"
-          bg="bg-green-50"
-          loading={loading}
-        />
-        <ImpactCard
-          icon={Award}
-          label="Student Leaders (SLF)"
-          value={stats.studentLeadersSLF}
-          sub="across all schools"
-          color="text-orange-600"
-          bg="bg-orange-50"
-          loading={loading}
-        />
-        <ImpactCard
-          icon={Users}
-          label="Total Leaders"
-          value={stats.totalLeaders}
-          sub="all programmes"
-          color="text-purple-600"
-          bg="bg-purple-50"
-          loading={loading}
-        />
-        <ImpactCard
-          icon={GraduationCap}
-          label="Schools Visited"
-          value={stats.totalVisits}
-          sub={`${stats.visitsThisTerm} this term`}
-          color="text-teal-600"
-          bg="bg-teal-50"
-          loading={loading}
-        />
-        <ImpactCard
-          icon={Droplets}
-          label="Clean Water Reached"
-          value={stats.waterReachedPW}
-          sub="estimated via visit count"
-          color="text-cyan-600"
-          bg="bg-cyan-50"
-          loading={loading}
-        />
-        <ImpactCard
-          icon={Star}
-          label="Story Candidates"
-          value={stats.flaggedStories}
-          sub="flagged by field team"
-          color="text-amber-600"
-          bg="bg-amber-50"
-          loading={loading}
-        />
-      </div>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList className="h-12 rounded-xl bg-muted/50 p-1">
+          <TabsTrigger value="overview" className="h-9 rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-background">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="scope" className="h-9 rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-background">
+            <Target className="mr-2 h-4 w-4" />
+            Scope vs Impact
+          </TabsTrigger>
+          <TabsTrigger value="map" className="h-9 rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-background">
+            <MapIcon className="mr-2 h-4 w-4" />
+            Map
+          </TabsTrigger>
+        </TabsList>
 
-      <Card className="border-lg shadow-comic-sm">
-        <CardHeader className="bg-muted/30 border-b-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-black">Programme Breakdown</CardTitle>
-              <CardDescription>Schools and visits per programme</CardDescription>
-            </div>
+        <TabsContent value="overview">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <ImpactCard
+              icon={Building2}
+              label="Partner Schools"
+              value={stats.totalSchools}
+              sub={`${stats.activeSchools} active`}
+              color="text-blue-600"
+              bg="bg-blue-50"
+              loading={loading}
+            />
+            <ImpactCard
+              icon={Heart}
+              label="Girls Reached (RED)"
+              value={stats.girlsReachedRED}
+              sub="estimated via visit count"
+              color="text-pink-600"
+              bg="bg-pink-50"
+              loading={loading}
+            />
+            <ImpactCard
+              icon={TreePine}
+              label="Trees Planted (GS)"
+              value={stats.treesPlantedGS}
+              sub="estimated via visit count"
+              color="text-green-600"
+              bg="bg-green-50"
+              loading={loading}
+            />
+            <ImpactCard
+              icon={Award}
+              label="Student Leaders (SLF)"
+              value={stats.studentLeadersSLF}
+              sub="across all schools"
+              color="text-orange-600"
+              bg="bg-orange-50"
+              loading={loading}
+            />
+            <ImpactCard
+              icon={Users}
+              label="Total Leaders"
+              value={stats.totalLeaders}
+              sub="all programmes"
+              color="text-purple-600"
+              bg="bg-purple-50"
+              loading={loading}
+            />
+            <ImpactCard
+              icon={GraduationCap}
+              label="Schools Visited"
+              value={stats.totalVisits}
+              sub={`${stats.visitsThisTerm} this term`}
+              color="text-teal-600"
+              bg="bg-teal-50"
+              loading={loading}
+            />
+            <ImpactCard
+              icon={Droplets}
+              label="Clean Water Reached"
+              value={stats.waterReachedPW}
+              sub="estimated via visit count"
+              color="text-cyan-600"
+              bg="bg-cyan-50"
+              loading={loading}
+            />
+            <ImpactCard
+              icon={Star}
+              label="Story Candidates"
+              value={stats.flaggedStories}
+              sub="flagged by field team"
+              color="text-amber-600"
+              bg="bg-amber-50"
+              loading={loading}
+            />
           </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            {[
-              { prog: 'RED Campaign', icon: Heart, color: 'text-pink-600', bg: 'bg-pink-50', col: 'border-pink-200' },
-              { prog: 'GreenSchools', icon: Flower2, color: 'text-green-600', bg: 'bg-green-50', col: 'border-green-200' },
-              { prog: 'SLF', icon: GraduationCap, color: 'text-blue-600', bg: 'bg-blue-50', col: 'border-blue-200' },
-              { prog: 'PureWater', icon: Droplets, color: 'text-cyan-600', bg: 'bg-cyan-50', col: 'border-cyan-200' },
-            ].map(({ prog, icon: Icon, color, bg, col }) => {
-              const progSchools = (schools || []).filter((s) => s.activeProgrammes?.includes(prog as any));
-              const progVisits = (visits || []).filter((v) => v.programmesCovered?.includes(prog as any));
-              const progLeaders = (leaders || []).filter((l) => {
-                const school = (schools || []).find((s) => s.id === l.schoolId);
-                return school?.activeProgrammes?.includes(prog as any);
-              });
-              return (
-                <div key={prog} className={`border rounded-2xl p-4 ${col} ${bg}`}>
-                  <div className="flex items-center gap-3 mb-3">
-                    <Icon className={`h-5 w-5 ${color}`} />
-                    <h3 className="font-black text-sm uppercase tracking-widest">{prog}</h3>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-black">{progSchools.length}</p>
-                      <p className="text-xs font-bold text-muted-foreground">Schools</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-black">{progVisits.length}</p>
-                      <p className="text-xs font-bold text-muted-foreground">Visits</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-black">{progLeaders.length}</p>
-                      <p className="text-xs font-bold text-muted-foreground">Leaders</p>
-                    </div>
-                  </div>
+
+          <Card className="border-lg shadow-comic-sm mt-6">
+            <CardHeader className="bg-muted/30 border-b-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-black">Programme Breakdown</CardTitle>
+                  <CardDescription>Schools and visits per programme</CardDescription>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                {[
+                  { prog: 'RED Campaign', icon: Heart, color: 'text-pink-600', bg: 'bg-pink-50', col: 'border-pink-200' },
+                  { prog: 'GreenSchools', icon: Flower2, color: 'text-green-600', bg: 'bg-green-50', col: 'border-green-200' },
+                  { prog: 'SLF', icon: GraduationCap, color: 'text-blue-600', bg: 'bg-blue-50', col: 'border-blue-200' },
+                  { prog: 'PureWater', icon: Droplets, color: 'text-cyan-600', bg: 'bg-cyan-50', col: 'border-cyan-200' },
+                ].map(({ prog, icon: Icon, color, bg, col }) => {
+                  const progSchools = (schools || []).filter((s) => s.activeProgrammes?.includes(prog as any));
+                  const progVisits = (visits || []).filter((v) => v.programmesCovered?.includes(prog as any));
+                  const progLeaders = (leaders || []).filter((l) => {
+                    const school = (schools || []).find((s) => s.id === l.schoolId);
+                    return school?.activeProgrammes?.includes(prog as any);
+                  });
+                  return (
+                    <div key={prog} className={`border rounded-2xl p-4 ${col} ${bg}`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <Icon className={`h-5 w-5 ${color}`} />
+                        <h3 className="font-black text-sm uppercase tracking-widest">{prog}</h3>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center">
+                          <p className="text-2xl font-black">{progSchools.length}</p>
+                          <p className="text-xs font-bold text-muted-foreground">Schools</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-black">{progVisits.length}</p>
+                          <p className="text-xs font-bold text-muted-foreground">Visits</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-black">{progLeaders.length}</p>
+                          <p className="text-xs font-bold text-muted-foreground">Leaders</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="scope">
+          <ScopeImpactDashboard district="mpigi" />
+        </TabsContent>
+
+        <TabsContent value="map">
+          <ImpactMap 
+            schools={(schools || []).map(s => ({
+              id: s.id || '',
+              name: s.schoolName || 'Unknown',
+              location: s.location,
+              subCounty: s.subCounty,
+              district: s.district,
+              coordinates: (s as any).coordinates,
+              type: 'school' as const,
+              programme: s.activeProgrammes?.[0],
+            }))}
+            selectedDistrict="Mpigi"
+          />
+        </TabsContent>
+      </Tabs>
 
       <div className="flex gap-4">
         <Button asChild className="flex-1 btn-omuto h-11 rounded-xl text-xs font-black uppercase tracking-widest">
