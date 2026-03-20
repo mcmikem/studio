@@ -27,7 +27,8 @@ import {
 } from 'lucide-react';
 import type { SchoolXperience, SchoolLeader, SchoolVisitXperience } from '@/lib/types';
 import { ScopeImpactDashboard } from '@/components/school-xperience/scope-impact-dashboard';
-import { ImpactMap } from '@/components/school-xperience/impact-map';
+import { InteractiveMap, type MapLocation } from '@/components/school-xperience/interactive-map';
+import { SyncedStatsDashboard } from '@/components/school-xperience/synced-stats-dashboard';
 import { UGANDA_LOCATIONS } from '@/lib/uganda-data';
 
 type ImpactStats = {
@@ -315,21 +316,44 @@ export default function ImpactSnapshotPage() {
 
         <TabsContent value="scope">
           <ScopeImpactDashboard district="mpigi" />
+          <div className="mt-6">
+            <SyncedStatsDashboard
+              stats={{
+                totalSchools: stats.totalSchools,
+                schoolsWithCoords: (schools || []).filter(s => (s as any).coordinates).length,
+                totalBeneficiaries: stats.girlsReachedRED + stats.studentLeadersSLF,
+                totalVisits: stats.totalVisits,
+                visitsThisMonth: Math.round(stats.totalVisits / 4),
+                totalLeaders: stats.totalLeaders,
+                girlsReachedRED: stats.girlsReachedRED,
+                treesPlantedGS: stats.treesPlantedGS,
+                waterReachedPW: stats.waterReachedPW,
+                activeProgrammes: 4,
+                pendingFollowUps: 0,
+              }}
+              filters={{ district: 'mpigi' }}
+              locations={(schools || []).map(s => ({
+                district: s.district,
+                subcounty: s.subCounty,
+                type: 'school',
+              }))}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="map">
-          <ImpactMap 
-            schools={(schools || []).map(s => ({
+          <InteractiveMap
+            locations={(schools || []).map(s => ({
               id: s.id || '',
               name: s.schoolName || 'Unknown',
-              location: s.location,
-              subCounty: s.subCounty,
-              district: s.district,
-              coordinates: (s as any).coordinates,
               type: 'school' as const,
+              coordinates: (s as any).coordinates,
+              subcounty: s.subCounty,
+              district: s.district,
               programme: s.activeProgrammes?.[0],
             }))}
-            selectedDistrict="Mpigi"
+            center={{ lat: 0.233, lng: 32.333 }}
+            zoom={11}
           />
         </TabsContent>
       </Tabs>

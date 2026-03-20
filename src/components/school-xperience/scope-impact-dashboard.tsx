@@ -8,6 +8,7 @@ import {
   Target, TrendingUp, Award, AlertCircle
 } from 'lucide-react';
 import { OMMUTO_TARGETS, UGANDA_STATS } from '@/lib/uganda-data';
+import { UGANDA_LOCATIONS } from '@/lib/uganda-data';
 
 interface ScopeImpactProps {
   district?: 'mpigi' | 'butambala';

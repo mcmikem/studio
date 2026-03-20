@@ -13,6 +13,8 @@ import { collection, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Building2, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useState } from 'react';
+import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
 
 const schoolSchema = z.object({
   schoolName: z.string().min(3, 'School name is required'),
@@ -30,6 +32,10 @@ const schoolSchema = z.object({
   activeProgrammes: z.array(z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater'])).min(1, 'Select at least one programme'),
   term: z.enum(['Term 1', 'Term 2', 'Term 3']).default('Term 1'),
   academicYear: z.string().optional(),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
   notes: z.string().optional(),
 });
 
@@ -41,6 +47,7 @@ export function RegisterSchoolForm() {
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   const {
     register,
@@ -70,6 +77,7 @@ export function RegisterSchoolForm() {
 
     addDocumentNonBlocking(collection(firestore, 'sx-schools'), {
       ...data,
+      coordinates: coordinates || undefined,
       academicYear: data.academicYear || new Date().getFullYear().toString(),
       createdAt: serverTimestamp(),
       createdBy: 'system',
@@ -120,6 +128,15 @@ export function RegisterSchoolForm() {
                 <Label className="font-bold text-xs uppercase tracking-widest">Enrollment Size</Label>
                 <Input type="number" {...register('enrollmentSize')} placeholder="e.g., 450" className="border-lg rounded-xl h-12 font-bold" />
               </div>
+            </div>
+
+            <div className="pt-4 border-t border-dashed">
+              <GPSLocationPicker
+                coordinates={coordinates}
+                onCoordinatesChange={setCoordinates}
+                label="School GPS Location"
+                description="Capture the school's exact coordinates for the interactive map"
+              />
             </div>
 
             <div className="pt-4 border-t border-dashed space-y-6">

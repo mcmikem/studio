@@ -18,6 +18,7 @@ import Link from 'next/link';
 import { useState, Suspense } from 'react';
 import type { SchoolXperience } from '@/lib/types';
 import { PhotoUpload } from './photo-upload';
+import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
 
 const visitSchema = z.object({
   schoolId: z.string().min(1, 'School is required'),
@@ -31,6 +32,10 @@ const visitSchema = z.object({
   studentFeedback: z.string().optional(),
   followUpActions: z.string().optional(),
   photos: z.array(z.string()).optional(),
+  coordinates: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }).optional(),
   flagForStory: z.boolean().default(false),
 });
 
@@ -45,6 +50,7 @@ function LogVisitFormInner() {
   const { toast } = useToast();
   const [programmes, setProgrammes] = useState<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -87,6 +93,7 @@ function LogVisitFormInner() {
     addDocumentNonBlocking(collection(firestore, 'sx-visits'), {
       ...data,
       photos: photos,
+      coordinates: coordinates || undefined,
       createdAt: serverTimestamp(),
       createdBy: 'system',
     });
@@ -238,6 +245,15 @@ function LogVisitFormInner() {
                   photos={photos}
                   onPhotosChange={setPhotos}
                   maxPhotos={5}
+                />
+              </div>
+
+              <div className="pt-4 border-t border-dashed">
+                <GPSLocationPicker
+                  coordinates={coordinates}
+                  onCoordinatesChange={setCoordinates}
+                  label="Visit GPS Location"
+                  description="Capture your current location or enter coordinates manually"
                 />
               </div>
             </div>
