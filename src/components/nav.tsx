@@ -44,6 +44,7 @@ import {
   ShieldCheck,
   School,
   Building2,
+  Map as MapIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -126,6 +127,7 @@ const navConfig = {
     { href: '/meal/data', icon: BarChart3, label: 'Dashboards' },
     { href: '/meal/impact-studio', icon: Sparkles, label: 'Impact Studio' },
     { href: '/reports', icon: AreaChart, label: 'Reports' },
+    { href: '/school-xperience/impact-data/map', icon: MapIcon, label: 'Impact Map' },
   ],
   ai: [
     { href: '/chat', icon: Sparkles, label: 'AI Coach' },
