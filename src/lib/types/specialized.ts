@@ -406,6 +406,7 @@ export const SchoolXperienceSchema = z.object({
   enrollmentSize: z.coerce.number().min(1).optional(),
   tier: z.enum(['Partner', 'Active', 'Advanced', 'Flagship']).default('Partner'),
   status: z.enum(['Registered', 'Launched', 'Active', 'Completed', 'Inactive']).default('Registered'),
+  pipelineStage: z.enum(['Inquiry', 'Meeting Booked', 'MOU Signed', 'Onboarded']).default('Inquiry'),
   activeProgrammes: z.array(z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater'])).default([]),
   term: z.enum(['Term 1', 'Term 2', 'Term 3']).default('Term 1'),
   academicYear: z.string().optional(),

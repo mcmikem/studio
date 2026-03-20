@@ -28,6 +28,7 @@ import {
   ArrowRight,
   AlertCircle,
   StarHalf,
+  GitBranch,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolXperience, SchoolVisitXperience } from '@/lib/types';
@@ -174,26 +175,35 @@ export default function SchoolXperienceHubPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic-sm">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm">
           <Link href="/school-xperience/log-visit">
-            <ClipboardCheck className="h-6 w-6" />
-            <span className="font-black text-sm uppercase tracking-widest">Log Visit</span>
-            <span className="font-normal text-xs opacity-80">After a field visit</span>
+            <ClipboardCheck className="h-5 w-5" />
+            <span className="font-black text-xs uppercase tracking-widest">Log Visit</span>
           </Link>
         </Button>
-        <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic-sm">
+        <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm">
           <Link href="/school-xperience/submit-scorecard">
-            <StarHalf className="h-6 w-6" />
-            <span className="font-black text-sm uppercase tracking-widest">Submit Scorecard</span>
-            <span className="font-normal text-xs opacity-80">Monthly per school</span>
+            <StarHalf className="h-5 w-5" />
+            <span className="font-black text-xs uppercase tracking-widest">Scorecard</span>
           </Link>
         </Button>
-        <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic-sm">
+        <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm">
           <Link href="/school-xperience/add-leader">
-            <Users className="h-6 w-6" />
-            <span className="font-black text-sm uppercase tracking-widest">Add Leader</span>
-            <span className="font-normal text-xs opacity-80">Register a student leader</span>
+            <Users className="h-5 w-5" />
+            <span className="font-black text-xs uppercase tracking-widest">Add Leader</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2">
+          <Link href="/school-xperience/pipeline">
+            <GitBranch className="h-5 w-5 text-blue-600" />
+            <span className="font-black text-xs uppercase tracking-widest">Pipeline</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2">
+          <Link href="/school-xperience/planner">
+            <Calendar className="h-5 w-5 text-purple-600" />
+            <span className="font-black text-xs uppercase tracking-widest">Planner</span>
           </Link>
         </Button>
       </div>
