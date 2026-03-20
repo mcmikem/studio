@@ -224,6 +224,12 @@ export default function SchoolXperienceHubPage() {
           </Link>
         </Button>
         <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
+          <Link href="/school-xperience/impact-data">
+            <MapIcon className="h-4 w-4 text-cyan-600" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Impact Data</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
           <Link href="/school-xperience/stories">
             <Video className="h-4 w-4 text-amber-600" />
             <span className="font-black text-[10px] uppercase tracking-widest">Stories</span>
