@@ -31,6 +31,8 @@ import {
   GitBranch,
   Video,
   Sparkles,
+  Map as MapIcon,
+  TreePine,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolXperience, SchoolVisitXperience } from '@/lib/types';
@@ -201,6 +203,12 @@ export default function SchoolXperienceHubPage() {
           <Link href="/school-xperience/add-leader">
             <Users className="h-4 w-4" />
             <span className="font-black text-[10px] uppercase tracking-widest">Add Leader</span>
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
+          <Link href="/school-xperience/log-impact">
+            <MapIcon className="h-4 w-4 text-green-600" />
+            <span className="font-black text-[10px] uppercase tracking-widest">Log Impact</span>
           </Link>
         </Button>
         <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">

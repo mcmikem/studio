@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { SchoolXperience, SchoolVisitXperience, SchoolScorecard, SchoolLeader } from '@/lib/types';
 import { format } from 'date-fns';
+import { InteractiveMap } from '@/components/school-xperience/interactive-map';
 
 const PROGRAMME_ICONS: Record<string, React.ElementType> = {
   SLF: GraduationCap,
@@ -223,6 +224,10 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
           <TabsTrigger value="info" className="h-9 rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-background">
             <FileText className="mr-2 h-4 w-4" />
             Details
+          </TabsTrigger>
+          <TabsTrigger value="map" className="h-9 rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-background">
+            <MapPin className="mr-2 h-4 w-4" />
+            Map
           </TabsTrigger>
         </TabsList>
 
@@ -463,6 +468,43 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
                 <div className="mt-6 pt-6 border-t">
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Notes</p>
                   <p className="text-sm">{school.notes}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="map">
+          <Card className="border-lg shadow-comic-sm">
+            <CardHeader className="bg-muted/30 border-b-lg">
+              <CardTitle className="text-lg font-black">School Location</CardTitle>
+              <CardDescription>GPS coordinates for {school.schoolName}</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {(school as any).coordinates ? (
+                <div className="h-[400px]">
+                  <InteractiveMap
+                    locations={[{
+                      id: school.id || '',
+                      name: school.schoolName || 'Unknown',
+                      type: 'school',
+                      coordinates: (school as any).coordinates,
+                      subcounty: school.subCounty,
+                      district: school.district,
+                      programme: school.activeProgrammes?.[0],
+                    }]}
+                    center={{ 
+                      lat: (school as any).coordinates?.lat || 0.233, 
+                      lng: (school as any).coordinates?.lng || 32.333 
+                    }}
+                    zoom={15}
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
+                  <MapPin className="h-12 w-12 mb-3 opacity-30" />
+                  <p className="font-bold">No GPS coordinates recorded</p>
+                  <p className="text-sm mt-1">Edit this school to add GPS coordinates</p>
                 </div>
               )}
             </CardContent>
