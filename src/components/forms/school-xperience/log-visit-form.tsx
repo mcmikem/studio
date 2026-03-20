@@ -17,6 +17,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState, Suspense } from 'react';
 import type { SchoolXperience } from '@/lib/types';
+import { PhotoUpload } from './photo-upload';
 
 const visitSchema = z.object({
   schoolId: z.string().min(1, 'School is required'),
@@ -29,6 +30,7 @@ const visitSchema = z.object({
   teacherFeedback: z.string().optional(),
   studentFeedback: z.string().optional(),
   followUpActions: z.string().optional(),
+  photos: z.array(z.string()).optional(),
   flagForStory: z.boolean().default(false),
 });
 
@@ -42,6 +44,7 @@ function LogVisitFormInner() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [programmes, setProgrammes] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<string[]>([]);
 
   const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -67,6 +70,7 @@ function LogVisitFormInner() {
       schoolName: preselectedSchoolName,
       date: new Date().toISOString().split('T')[0],
       programmesCovered: [],
+      photos: [],
       flagForStory: false,
     },
   });
@@ -82,6 +86,7 @@ function LogVisitFormInner() {
 
     addDocumentNonBlocking(collection(firestore, 'sx-visits'), {
       ...data,
+      photos: photos,
       createdAt: serverTimestamp(),
       createdBy: 'system',
     });
@@ -89,7 +94,7 @@ function LogVisitFormInner() {
     toast({
       title: 'Visit Logged',
       description: data.flagForStory
-        ? 'Visit recorded. This has been flagged for a story!'
+        ? 'Visit recorded with photos. This has been flagged for a story!'
         : 'Visit successfully recorded.',
     });
     router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
@@ -226,6 +231,14 @@ function LogVisitFormInner() {
                   <Label className="font-bold text-xs uppercase tracking-widest">Follow-up Actions</Label>
                   <Textarea {...register('followUpActions')} placeholder="What needs to be done next..." className="border-lg rounded-xl min-h-[80px] font-bold" />
                 </div>
+              </div>
+
+              <div className="pt-4 border-t border-dashed">
+                <PhotoUpload
+                  photos={photos}
+                  onPhotosChange={setPhotos}
+                  maxPhotos={5}
+                />
               </div>
             </div>
 

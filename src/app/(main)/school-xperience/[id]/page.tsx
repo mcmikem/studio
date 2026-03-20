@@ -289,6 +289,31 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
                           )}
                         </div>
                       </div>
+
+                      {/* Photo gallery for this visit */}
+                      {visit.photos && visit.photos.length > 0 && (
+                        <div className="mt-3 pt-3 border-t">
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {visit.photos.slice(0, 4).map((photo, idx) => (
+                              <div
+                                key={idx}
+                                className="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-muted cursor-pointer hover:opacity-80 transition-opacity"
+                              >
+                                <img
+                                  src={photo}
+                                  alt={`Visit photo ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                {idx === 3 && visit.photos && visit.photos.length > 4 && (
+                                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                    <span className="text-white font-bold text-sm">+{visit.photos.length - 4}</span>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
