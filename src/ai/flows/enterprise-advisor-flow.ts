@@ -58,7 +58,7 @@ Provide 1-2 strategic insights.
         try {
           const parsed = JSON.parse(jsonMatch[0]);
           const validated = EnterpriseAdvisorOutputSchema.safeParse(parsed);
-          if (validated.success) return validated.data;
+          if (validated.success) return validated.data as { insights: { title: string; insight: string; priority: 'Low' | 'Medium' | 'High'; actionableStep: string }[] };
         } catch (parseError) {
           console.error('[EnterpriseAdvisor] JSON parse failed:', parseError);
         }
@@ -73,7 +73,7 @@ Provide 1-2 strategic insights.
     const response = await enterpriseAdvisorPrompt({ input: prompt });
     if (response.output) {
       const validated = EnterpriseAdvisorOutputSchema.safeParse(response.output);
-      if (validated.success) return validated.data;
+      if (validated.success) return validated.data as { insights: { title: string; insight: string; priority: 'Low' | 'Medium' | 'High'; actionableStep: string }[] };
     }
   } catch (error) {
     console.error('[EnterpriseAdvisor] Gemini failed:', error);
