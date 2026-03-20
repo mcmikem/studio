@@ -56,6 +56,13 @@ const STATUS_COLORS: Record<string, string> = {
   Inactive: 'bg-red-100 text-red-700 border-red-200',
 };
 
+const PIPELINE_COLORS: Record<string, string> = {
+  Inquiry: 'bg-gray-100 text-gray-600 border-gray-200',
+  'Meeting Booked': 'bg-blue-100 text-blue-600 border-blue-200',
+  'MOU Signed': 'bg-orange-100 text-orange-600 border-orange-200',
+  Onboarded: 'bg-green-100 text-green-600 border-green-200',
+};
+
 export default function SchoolXperienceHubPage() {
   const firestore = useFirestore();
   const [search, setSearch] = useState('');
@@ -302,6 +309,9 @@ export default function SchoolXperienceHubPage() {
                           <h3 className="font-bold text-base truncate">{school.schoolName}</h3>
                           <Badge className={`text-xs font-bold border ${TIER_COLORS[school.tier || 'Partner']}`}>
                             {school.tier || 'Partner'}
+                          </Badge>
+                          <Badge className={`text-xs font-bold border ${PIPELINE_COLORS[school.pipelineStage || 'Inquiry']}`}>
+                            {school.pipelineStage || 'Inquiry'}
                           </Badge>
                           <Badge className={`text-xs font-bold border ${STATUS_COLORS[school.status || 'Registered']}`}>
                             {school.status || 'Registered'}

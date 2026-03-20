@@ -135,7 +135,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
             </Link>
           </Button>
           <Button asChild className="btn-omuto h-10 rounded-xl text-xs font-black uppercase tracking-widest shadow-comic-sm">
-            <Link href="/school-xperience/register-school">
+            <Link href={`/school-xperience/${id}/edit`}>
               <Building2 className="mr-2 h-4 w-4" />
               Edit School
             </Link>
