@@ -9,6 +9,7 @@ export interface Parish {
 export interface Subcounty {
   name: string;
   parishes: Parish[];
+  coordinates?: { lat: number; lng: number };
 }
 
 export interface District {
@@ -20,6 +21,82 @@ export interface District {
 export interface UgandaLocationData {
   [district: string]: District;
 }
+
+// Omuto Foundation Locations
+export const OMUTO_LOCATIONS = {
+  office: {
+    name: "Omuto Foundation HQ",
+    type: "office" as const,
+    address: "Kyebando, Kanalukya Road",
+    district: "Wakiso",
+    subcounty: "Kiswa",
+    description: "Omuto Foundation Headquarters - Main Office",
+    coordinates: { lat: 0.3512, lng: 32.4985 },
+  },
+  youthCenter: {
+    name: "Omuto Youth Center",
+    type: "youth_center" as const,
+    address: "Nabbuzi, Kammengo",
+    district: "Mpigi",
+    subcounty: "Kammengo",
+    description: "Omuto Youth Center - Skills training and programmes",
+    coordinates: { lat: 0.0897, lng: 32.2456 },
+  },
+} as const;
+
+// GeoJSON boundaries for areas (simplified polygons)
+export const AREA_BOUNDARIES: Record<string, { type: string; coordinates: number[][][] }> = {
+  "Kyebando": {
+    type: "Polygon",
+    coordinates: [[
+      [32.4900, 0.3480],
+      [32.5050, 0.3480],
+      [32.5050, 0.3550],
+      [32.4900, 0.3550],
+      [32.4900, 0.3480],
+    ]],
+  },
+  "Kammengo": {
+    type: "Polygon",
+    coordinates: [[
+      [32.2200, 0.0700],
+      [32.2700, 0.0700],
+      [32.2700, 0.1100],
+      [32.2200, 0.1100],
+      [32.2200, 0.0700],
+    ]],
+  },
+  "Nabbuzi": {
+    type: "Polygon",
+    coordinates: [[
+      [32.2350, 0.0850],
+      [32.2550, 0.0850],
+      [32.2550, 0.0950],
+      [32.2350, 0.0950],
+      [32.2350, 0.0850],
+    ]],
+  },
+  "Mpigi": {
+    type: "Polygon",
+    coordinates: [[
+      [32.2800, 0.1800],
+      [32.3800, 0.1800],
+      [32.3800, 0.2800],
+      [32.2800, 0.2800],
+      [32.2800, 0.1800],
+    ]],
+  },
+  "Kiringente": {
+    type: "Polygon",
+    coordinates: [[
+      [32.1500, 0.1000],
+      [32.2200, 0.1000],
+      [32.2200, 0.1600],
+      [32.1500, 0.1600],
+      [32.1500, 0.1000],
+    ]],
+  },
+};
 
 // Key UBOS Statistics for Central Region districts where Omuto operates
 export const UGANDA_LOCATIONS: UgandaLocationData = {
@@ -40,11 +117,12 @@ export const UGANDA_LOCATIONS: UgandaLocationData = {
       {
         name: "Kammengo",
         parishes: [
-          { name: "Kammengo", villages: ["Kammengo I", "Kammengo II", "Kammengo III"] },
+          { name: "Kammengo", villages: ["Kammengo I", "Kammengo II", "Kammengo III", "Moka"] },
           { name: "Luba", villages: ["Luba I", "Luba II", "Luba III"] },
           { name: "Misenyi", villages: ["Misenyi A", "Misenyi B"] },
           { name: "Bunya", villages: ["Bunya I", "Bunya II"] },
           { name: "Nabitende", villages: ["Nabitende A", "Nabitende B"] },
+          { name: "Nabbuzi", villages: ["Nabbuzi I", "Nabbuzi II", "Nabbuzi Central"] },
         ]
       },
       {
@@ -200,6 +278,14 @@ export const UGANDA_LOCATIONS: UgandaLocationData = {
     population: 2840000,
     coordinates: { lat: 0.208, lng: 32.479 },
     subcounties: [
+      {
+        name: "Kyebando",
+        parishes: [
+          { name: "Kiswa", villages: ["Kiswa I", "Kiswa II", "Kiswa III", "Kanalukya"] },
+          { name: "Kireka", villages: ["Kireka A", "Kireka B", "Kireka Central"] },
+          { name: "Bweyogerere", villages: ["Bweyogerere I", "Bweyogerere II", "Bweyogerere III"] },
+        ]
+      },
       {
         name: "Kasanje",
         parishes: [

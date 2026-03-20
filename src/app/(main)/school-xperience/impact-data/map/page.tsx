@@ -1,43 +1,51 @@
 'use client';
 
-import { PageHeader } from '@/components/page-header';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
-import { useState, useEffect, useRef, useMemo } from 'react';
-import Link from 'next/link';
 import {
   MapPin, Search, X, Plus, GraduationCap, Droplets, TreePine, Users,
-  Building2, Eye, EyeOff, Navigation, Loader2, Layers,
-  GraduationCap as GradIcon, Heart, Flower2, Check
+  Building2, Loader2, Layers, Check, Home, UsersRound, ChevronRight, Info
 } from 'lucide-react';
 import { InteractiveMap, type MapLocation } from '@/components/school-xperience/interactive-map';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
-import { UGANDA_LOCATIONS } from '@/lib/uganda-data';
+import { UGANDA_LOCATIONS, OMUTO_LOCATIONS, AREA_BOUNDARIES } from '@/lib/uganda-data';
 
 interface SearchResult {
-  type: 'district' | 'subcounty' | 'parish' | 'village' | 'school';
+  type: 'omuto_office' | 'youth_center' | 'district' | 'subcounty' | 'parish' | 'village' | 'school';
   name: string;
-  district?: string;
-  subcounty?: string;
-  parish?: string;
-  coordinates?: { lat: number; lng: number };
   description: string;
+  details?: {
+    address?: string;
+    district?: string;
+    subcounty?: string;
+    parish?: string;
+    activities?: string[];
+    schools?: number;
+    beneficiaries?: number;
+    waterSources?: number;
+    trees?: number;
+    trainings?: number;
+  };
+  coordinates?: { lat: number; lng: number };
+  boundary?: { type: string; coordinates: number[][][] };
 }
 
 export default function MapPage() {
   const firestore = useFirestore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<MapLocation | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<SearchResult | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addType, setAddType] = useState<'school' | 'water' | 'tree' | 'beneficiary' | 'training'>('school');
-  const [mapCenter, setMapCenter] = useState({ lat: 0.233, lng: 32.333 });
-  const [mapZoom, setMapZoom] = useState(11);
+  const [mapCenter, setMapCenter] = useState({ lat: 0.208, lng: 32.479 });
+  const [mapZoom, setMapZoom] = useState(12);
+  const [showBoundary, setShowBoundary] = useState<string | null>(null);
 
   const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -73,6 +81,26 @@ export default function MapPage() {
   const getSchool = (schoolId: string) => schools?.find(s => s.id === schoolId);
 
   const allLocations: MapLocation[] = [
+    // Omuto HQ
+    {
+      id: 'omuto-office',
+      name: 'Omuto Foundation HQ',
+      type: 'training',
+      coordinates: OMUTO_LOCATIONS.office.coordinates,
+      district: OMUTO_LOCATIONS.office.district,
+      subcounty: OMUTO_LOCATIONS.office.subcounty,
+      programme: 'HQ',
+    },
+    // Youth Center
+    {
+      id: 'youth-center',
+      name: 'Omuto Youth Center',
+      type: 'training',
+      coordinates: OMUTO_LOCATIONS.youthCenter.coordinates,
+      district: OMUTO_LOCATIONS.youthCenter.district,
+      subcounty: OMUTO_LOCATIONS.youthCenter.subcounty,
+      programme: 'Youth',
+    },
     ...(schools || []).map(s => ({
       id: s.id,
       name: s.schoolName || 'Unknown',
@@ -120,29 +148,95 @@ export default function MapPage() {
     })),
   ];
 
-  const searchResults: SearchResult[] = useMemo(() => {
+  // Calculate stats per area
+  const areaStats = useMemo(() => {
+    const stats: Record<string, { schools: number; beneficiaries: number; waterSources: number; trees: number; trainings: number }> = {};
+    
+    ['Kyebando', 'Kammengo', 'Nabbuzi', 'Mpigi'].forEach(area => {
+      const schoolsInArea = (schools || []).filter((s: any) => 
+        s.subCounty?.toLowerCase().includes(area.toLowerCase()) ||
+        s.district?.toLowerCase().includes(area.toLowerCase()) ||
+        s.location?.toLowerCase().includes(area.toLowerCase())
+      ).length;
+      const beneficiariesInArea = (beneficiaries || []).filter((b: any) => 
+        getSchool(b.schoolId)?.subCounty?.toLowerCase().includes(area.toLowerCase())
+      ).length;
+      const waterInArea = (waterSources || []).filter((w: any) => 
+        getSchool(w.schoolId)?.subCounty?.toLowerCase().includes(area.toLowerCase())
+      ).length;
+      const treesInArea = (trees || []).filter((t: any) => 
+        getSchool(t.schoolId)?.subCounty?.toLowerCase().includes(area.toLowerCase())
+      ).length;
+      const trainingsInArea = (trainings || []).filter((t: any) => 
+        getSchool(t.schoolId)?.subCounty?.toLowerCase().includes(area.toLowerCase())
+      ).length;
+      
+      stats[area] = { schools: schoolsInArea, beneficiaries: beneficiariesInArea, waterSources: waterInArea, trees: treesInArea, trainings: trainingsInArea };
+    });
+    
+    return stats;
+  }, [schools, beneficiaries, waterSources, trees, trainings]);
+
+  const searchResults = useMemo((): SearchResult[] => {
     if (!searchQuery.trim()) return [];
     const query = searchQuery.toLowerCase();
     const results: SearchResult[] = [];
 
+    // Check Omuto locations first
+    if ('omuto'.includes(query) || 'headquarters'.includes(query) || 'kyebando'.includes(query) || 'kanalukya'.includes(query)) {
+      results.push({
+        type: 'omuto_office',
+        name: OMUTO_LOCATIONS.office.name,
+        description: 'Omuto Foundation Headquarters',
+        details: {
+          address: OMUTO_LOCATIONS.office.address,
+          district: OMUTO_LOCATIONS.office.district,
+          subcounty: OMUTO_LOCATIONS.office.subcounty,
+          activities: ['Administration', 'Staff Coordination', 'Programme Management'],
+          ...areaStats['Kyebando'],
+        },
+        coordinates: OMUTO_LOCATIONS.office.coordinates,
+        boundary: AREA_BOUNDARIES['Kyebando'],
+      });
+    }
+
+    if ('youth'.includes(query) || 'nabbuzi'.includes(query) || 'moka'.includes(query) || 'kammengo'.includes(query)) {
+      results.push({
+        type: 'youth_center',
+        name: OMUTO_LOCATIONS.youthCenter.name,
+        description: 'Omuto Youth Center - Skills training hub',
+        details: {
+          address: OMUTO_LOCATIONS.youthCenter.address,
+          district: OMUTO_LOCATIONS.youthCenter.district,
+          subcounty: OMUTO_LOCATIONS.youthCenter.subcounty,
+          activities: ['Youth Skills Training', 'SLF Programme', 'RED Campaign', 'Career Guidance'],
+          ...areaStats['Nabbuzi'],
+        },
+        coordinates: OMUTO_LOCATIONS.youthCenter.coordinates,
+        boundary: AREA_BOUNDARIES['Nabbuzi'],
+      });
+    }
+
+    // Search UBOS data
     Object.entries(UGANDA_LOCATIONS).forEach(([districtKey, districtData]: [string, any]) => {
-      if (districtKey.toLowerCase().includes(query)) {
+      if (districtKey.toLowerCase().includes(query) || districtData.name?.toLowerCase().includes(query)) {
         results.push({
           type: 'district',
-          name: districtData.name,
+          name: districtKey,
           description: `${districtData.subcounties?.length || 0} subcounties, ${districtData.population?.toLocaleString() || 'N/A'} population`,
-          coordinates: districtData.center,
+          coordinates: districtData.coordinates,
         });
       }
 
       districtData.subcounties?.forEach((sc: any) => {
-        if (sc.name.toLowerCase().includes(query)) {
+        if (sc.name.toLowerCase().includes(query) || sc.name.toLowerCase().replace(/\s+/g, '').includes(query.replace(/\s+/g, ''))) {
+          const scStats = areaStats[sc.name] || areaStats[Object.keys(areaStats).find(k => sc.name.toLowerCase().includes(k.toLowerCase())) || ''] || { schools: 0, beneficiaries: 0, waterSources: 0, trees: 0, trainings: 0 };
           results.push({
             type: 'subcounty',
             name: sc.name,
-            district: districtData.name,
             description: `${sc.parishes?.length || 0} parishes`,
-            coordinates: sc.center,
+            details: { ...scStats },
+            coordinates: sc.coordinates,
           });
         }
 
@@ -151,9 +245,9 @@ export default function MapPage() {
             results.push({
               type: 'parish',
               name: p.name,
-              district: districtData.name,
-              subcounty: sc.name,
               description: `${p.villages?.length || 0} villages`,
+              details: { subcounty: sc.name, district: districtKey },
+              coordinates: sc.coordinates,
             });
           }
 
@@ -162,10 +256,8 @@ export default function MapPage() {
               results.push({
                 type: 'village',
                 name: v,
-                district: districtData.name,
-                subcounty: sc.name,
-                parish: p.name,
                 description: 'Village',
+                details: { parish: p.name, subcounty: sc.name, district: districtKey },
               });
             }
           });
@@ -173,264 +265,276 @@ export default function MapPage() {
       });
     });
 
+    // Search schools
     (schools || []).forEach((s: any) => {
       if (
         s.schoolName?.toLowerCase().includes(query) ||
         s.location?.toLowerCase().includes(query) ||
-        s.subCounty?.toLowerCase().includes(query) ||
-        s.district?.toLowerCase().includes(query)
+        s.subCounty?.toLowerCase().includes(query)
       ) {
         results.push({
           type: 'school',
           name: s.schoolName,
-          district: s.district,
-          subcounty: s.subCounty,
           description: s.location,
+          details: { address: s.location, district: s.district, subcounty: s.subCounty },
           coordinates: s.coordinates,
         });
       }
     });
 
-    return results.slice(0, 20);
-  }, [searchQuery, schools]);
+    return results.slice(0, 15);
+  }, [searchQuery, schools, areaStats]);
 
   const handleSearchResultClick = (result: SearchResult) => {
     if (result.coordinates) {
       setMapCenter(result.coordinates);
-      setMapZoom(14);
-    } else if (result.type === 'subcounty') {
-      const districtData = Object.values(UGANDA_LOCATIONS).find((d: any) => d.name === result.district) as any;
-      const subcountyData = districtData?.subcounties?.find((sc: any) => sc.name === result.name);
-      if (subcountyData?.center) {
-        setMapCenter(subcountyData.center);
-        setMapZoom(13);
-      }
+      setMapZoom(result.type === 'district' ? 11 : result.type === 'subcounty' ? 13 : 14);
     }
+    if (result.boundary) {
+      setShowBoundary(result.name);
+    }
+    setSelectedPlace(result);
     setSearchQuery('');
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        icon={MapPin}
-        title="Impact Map"
-        description="Explore and add schools, water sources, trees, beneficiaries, and training sessions across Uganda."
-        breadcrumbs={[
-          { name: 'Dashboard', href: '/' },
-          { name: 'School Xperience', href: '/school-xperience' },
-          { name: 'Map', href: '/school-xperience/impact-data' },
-        ]}
-      />
+    <div className="flex h-[calc(100vh-8rem)]">
+      {/* Left Sidebar */}
+      <div className="w-96 border-r bg-background flex flex-col overflow-hidden">
+        <div className="p-4 border-b space-y-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            <h2 className="font-black text-lg">Impact Map</h2>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3">
-          <Card className="border-lg shadow-comic-sm overflow-hidden">
-            <CardContent className="p-0">
-              <InteractiveMap
-                locations={allLocations}
-                center={mapCenter}
-                zoom={mapZoom}
-                onLocationClick={setSelectedLocation}
-                editable={false}
-              />
-            </CardContent>
-          </Card>
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search Kyebando, Kammengo, schools..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 border-lg rounded-xl h-11"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+
+          {/* Quick Links */}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={selectedPlace?.name === 'Omuto Foundation HQ' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleSearchResultClick({
+                type: 'omuto_office',
+                name: 'Omuto Foundation HQ',
+                description: 'Headquarters',
+                coordinates: OMUTO_LOCATIONS.office.coordinates,
+                boundary: AREA_BOUNDARIES['Kyebando'],
+              })}
+              className="h-8 rounded-lg text-xs font-bold"
+            >
+              <Home className="h-3 w-3 mr-1" />
+              Office
+            </Button>
+            <Button
+              variant={selectedPlace?.name === 'Omuto Youth Center' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => handleSearchResultClick({
+                type: 'youth_center',
+                name: 'Omuto Youth Center',
+                description: 'Nabbuzi, Kammengo',
+                coordinates: OMUTO_LOCATIONS.youthCenter.coordinates,
+                boundary: AREA_BOUNDARIES['Nabbuzi'],
+              })}
+              className="h-8 rounded-lg text-xs font-bold"
+            >
+              <UsersRound className="h-3 w-3 mr-1" />
+              Youth Center
+            </Button>
+          </div>
         </div>
 
-        <div className="space-y-4">
-          <Card className="border-lg shadow-comic-sm">
-            <CardHeader className="bg-muted/30 border-b p-4">
-              <CardTitle className="text-base font-black flex items-center gap-2">
-                <Search className="h-4 w-4" />
-                Search
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              <div className="relative">
-                <Input
-                  placeholder="Search village, parish, subcounty..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="border-lg rounded-xl h-10"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
-                    <X className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                )}
+        {/* Search Results */}
+        {searchResults.length > 0 && (
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 border-b">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              {searchResults.length} results
+            </p>
+            {searchResults.map((result, i) => (
+              <button
+                key={`${result.type}-${result.name}-${i}`}
+                onClick={() => handleSearchResultClick(result)}
+                className="w-full text-left p-3 rounded-xl border hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <Badge variant={result.type === 'omuto_office' || result.type === 'youth_center' ? 'default' : 'outline'} className="text-xs font-bold">
+                    {result.type.replace('_', ' ')}
+                  </Badge>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <p className="font-bold text-sm mt-1">{result.name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{result.description}</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Selected Place Details */}
+        {selectedPlace && (
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Selected Place</p>
+              <button onClick={() => { setSelectedPlace(null); setShowBoundary(null); }} className="p-1 hover:bg-muted rounded">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <div>
+                <Badge variant={selectedPlace.type === 'omuto_office' || selectedPlace.type === 'youth_center' ? 'default' : 'outline'}>
+                  {selectedPlace.type.replace('_', ' ')}
+                </Badge>
+                <h3 className="font-black text-xl mt-2">{selectedPlace.name}</h3>
+                <p className="text-sm text-muted-foreground">{selectedPlace.description}</p>
               </div>
 
-              {searchResults.length > 0 && (
-                <div className="space-y-1 max-h-64 overflow-y-auto">
-                  {searchResults.map((result, i) => (
-                    <button
-                      key={`${result.type}-${result.name}-${i}`}
-                      onClick={() => handleSearchResultClick(result)}
-                      className="w-full text-left p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs font-bold">
-                          {result.type}
-                        </Badge>
-                        <span className="font-bold text-sm truncate">{result.name}</span>
+              {selectedPlace.details && (
+                <div className="space-y-2">
+                  {selectedPlace.details.address && (
+                    <div className="flex items-start gap-2 text-sm">
+                      <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                      <span>{selectedPlace.details.address}</span>
+                    </div>
+                  )}
+                  {selectedPlace.details.district && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Building2 className="h-4 w-4 text-muted-foreground" />
+                      <span>{selectedPlace.details.district} District</span>
+                      {selectedPlace.details.subcounty && ` > ${selectedPlace.details.subcounty}`}
+                    </div>
+                  )}
+                  {selectedPlace.details.activities && selectedPlace.details.activities.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Activities</p>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedPlace.details.activities.map(a => (
+                          <Badge key={a} variant="secondary" className="text-xs">{a}</Badge>
+                        ))}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {result.district && `${result.district}`}
-                        {result.subcounty && ` > ${result.subcounty}`}
-                        {result.parish && ` > ${result.parish}`}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{result.description}</p>
-                    </button>
-                  ))}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {searchQuery && searchResults.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  No results found for "{searchQuery}"
-                </p>
-              )}
-
-              {!searchQuery && (
-                <div className="space-y-2">
-                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                    Quick Stats
-                  </p>
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between">
-                      <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3 text-blue-600" /> Schools</span>
-                      <span className="font-bold">{schools?.length || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="flex items-center gap-1"><Users className="h-3 w-3 text-purple-600" /> Beneficiaries</span>
-                      <span className="font-bold">{beneficiaries?.length || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="flex items-center gap-1"><Droplets className="h-3 w-3 text-cyan-600" /> Water Sources</span>
-                      <span className="font-bold">{waterSources?.length || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="flex items-center gap-1"><TreePine className="h-3 w-3 text-green-600" /> Trees</span>
-                      <span className="font-bold">{trees?.reduce((sum: number, t: any) => sum + (t.quantity || 0), 0) || 0}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="flex items-center gap-1"><GraduationCap className="h-3 w-3 text-amber-600" /> Trainings</span>
-                      <span className="font-bold">{trainings?.length || 0}</span>
-                    </div>
+              {/* Area Stats */}
+              {(selectedPlace.details?.schools !== undefined || selectedPlace.details?.beneficiaries !== undefined) && (
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <div className="bg-muted/50 rounded-lg p-2 text-center">
+                    <p className="text-xl font-black">{selectedPlace.details.schools || 0}</p>
+                    <p className="text-xs text-muted-foreground">Schools</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-2 text-center">
+                    <p className="text-xl font-black">{selectedPlace.details.beneficiaries || 0}</p>
+                    <p className="text-xs text-muted-foreground">Beneficiaries</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-2 text-center">
+                    <p className="text-xl font-black">{selectedPlace.details.waterSources || 0}</p>
+                    <p className="text-xs text-muted-foreground">Water Sources</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-2 text-center">
+                    <p className="text-xl font-black">{selectedPlace.details.trees || 0}</p>
+                    <p className="text-xs text-muted-foreground">Trees</p>
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        )}
 
-          <Card className="border-lg shadow-comic-sm">
-            <CardHeader className="bg-muted/30 border-b p-4">
-              <CardTitle className="text-base font-black flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add New
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start h-10 rounded-lg"
-                onClick={() => {
-                  setAddType('school');
-                  setShowAddModal(true);
-                }}
-              >
-                <GraduationCap className="h-4 w-4 mr-2 text-blue-600" />
-                Add School
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start h-10 rounded-lg"
-                onClick={() => {
-                  setAddType('water');
-                  setShowAddModal(true);
-                }}
-              >
-                <Droplets className="h-4 w-4 mr-2 text-cyan-600" />
-                Add Water Source
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start h-10 rounded-lg"
-                onClick={() => {
-                  setAddType('tree');
-                  setShowAddModal(true);
-                }}
-              >
-                <TreePine className="h-4 w-4 mr-2 text-green-600" />
-                Add Trees
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start h-10 rounded-lg"
-                onClick={() => {
-                  setAddType('beneficiary');
-                  setShowAddModal(true);
-                }}
-              >
-                <Users className="h-4 w-4 mr-2 text-purple-600" />
-                Add Beneficiary
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start h-10 rounded-lg"
-                onClick={() => {
-                  setAddType('training');
-                  setShowAddModal(true);
-                }}
-              >
-                <GraduationCap className="h-4 w-4 mr-2 text-amber-600" />
-                Add Training
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Quick Stats */}
+        {!selectedPlace && searchResults.length === 0 && (
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Overview</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-blue-600" /> Schools</span>
+                <span className="font-bold">{schools?.length || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="flex items-center gap-2"><Users className="h-4 w-4 text-purple-600" /> Beneficiaries</span>
+                <span className="font-bold">{beneficiaries?.length || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="flex items-center gap-2"><Droplets className="h-4 w-4 text-cyan-600" /> Water Sources</span>
+                <span className="font-bold">{waterSources?.length || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="flex items-center gap-2"><TreePine className="h-4 w-4 text-green-600" /> Trees</span>
+                <span className="font-bold">{trees?.reduce((sum: number, t: any) => sum + (t.quantity || 0), 0) || 0}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="flex items-center gap-2"><Building2 className="h-4 w-4 text-amber-600" /> Trainings</span>
+                <span className="font-bold">{trainings?.length || 0}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
-          <Button asChild className="btn-omuto w-full h-11 rounded-xl text-xs font-black uppercase tracking-widest">
-            <Link href="/school-xperience/log-impact">
-              <Plus className="mr-2 h-4 w-4" />
-              Log Full Impact
-            </Link>
+        {/* Add Buttons */}
+        <div className="p-4 border-t space-y-2">
+          <Button onClick={() => { setAddType('school'); setShowAddModal(true); }} variant="outline" className="w-full justify-start h-10 rounded-lg">
+            <GraduationCap className="h-4 w-4 mr-2 text-blue-600" /> Add School
+          </Button>
+          <Button onClick={() => { setAddType('water'); setShowAddModal(true); }} variant="outline" className="w-full justify-start h-10 rounded-lg">
+            <Droplets className="h-4 w-4 mr-2 text-cyan-600" /> Add Water Source
+          </Button>
+          <Button asChild className="btn-omuto w-full h-10 rounded-lg text-xs font-black uppercase tracking-widest">
+            <a href="/school-xperience/log-impact">
+              <Plus className="h-4 w-4 mr-2" /> Log Full Impact
+            </a>
           </Button>
         </div>
       </div>
 
-      {showAddModal && (
-        <AddPlaceModal
-          type={addType}
-          onClose={() => setShowAddModal(false)}
-          schools={schools || []}
-          firestore={firestore}
-          onSuccess={() => {
-            setShowAddModal(false);
-            window.location.reload();
-          }}
-        />
-      )}
+      {/* Map */}
+      <div className="flex-1 relative">
+        <div className="absolute inset-0 z-0">
+          <InteractiveMap
+            locations={allLocations}
+            center={mapCenter}
+            zoom={mapZoom}
+            onLocationClick={setSelectedLocation}
+          />
+        </div>
+
+        {/* Add Modal */}
+        {showAddModal && (
+          <AddPlaceModal
+            type={addType}
+            onClose={() => setShowAddModal(false)}
+            schools={schools || []}
+          />
+        )}
+      </div>
     </div>
   );
 }
 
-function AddPlaceModal({ type, onClose, schools, firestore, onSuccess }: {
+function AddPlaceModal({ type, onClose, schools }: {
   type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training';
   onClose: () => void;
   schools: any[];
-  firestore: any;
-  onSuccess: () => void;
 }) {
-  const fs = firestore;
+  const firestore = useFirestore();
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [name, setName] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [quantity, setQuantity] = useState(10);
   const [sourceType, setSourceType] = useState('borehole');
-  const [status, setStatus] = useState('functional');
 
   const handleSubmit = () => {
     if (!firestore) return;
@@ -446,89 +550,79 @@ function AddPlaceModal({ type, onClose, schools, firestore, onSuccess }: {
         createdAt: serverTimestamp(),
         createdBy: 'system',
       });
-    } else if (type === 'water') {
-      addDocumentNonBlocking(collection(firestore, 'sx-water-sources'), {
+    } else {
+      const school = schools.find(s => s.id === selectedSchoolId);
+      const baseData = {
         schoolId: selectedSchoolId,
-        schoolName: schools.find(s => s.id === selectedSchoolId)?.schoolName || '',
-        sourceType,
-        status,
-        waterQuality: 'safe',
-        estimatedBeneficiaries: 50,
+        schoolName: school?.schoolName || '',
         date: new Date().toISOString().split('T')[0],
         recordedBy: 'Staff',
         coordinates: coordinates || undefined,
         createdAt: serverTimestamp(),
         createdBy: 'system',
-      });
-    } else if (type === 'tree') {
-      addDocumentNonBlocking(collection(firestore, 'sx-trees'), {
-        schoolId: selectedSchoolId,
-        schoolName: schools.find(s => s.id === selectedSchoolId)?.schoolName || '',
-        treeType: 'native',
-        quantity,
-        date: new Date().toISOString().split('T')[0],
-        recordedBy: 'Staff',
-        coordinates: coordinates || undefined,
-        createdAt: serverTimestamp(),
-        createdBy: 'system',
-      });
-    } else if (type === 'beneficiary') {
-      addDocumentNonBlocking(collection(firestore, 'sx-beneficiaries'), {
-        schoolId: selectedSchoolId,
-        schoolName: schools.find(s => s.id === selectedSchoolId)?.schoolName || '',
-        beneficiaryType: 'student',
-        gender: 'female',
-        ageGroup: '15_19',
-        programme: 'SLF',
-        servicesProvided: [],
-        date: new Date().toISOString().split('T')[0],
-        recordedBy: 'Staff',
-        coordinates: coordinates || undefined,
-        createdAt: serverTimestamp(),
-        createdBy: 'system',
-      });
-    } else if (type === 'training') {
-      addDocumentNonBlocking(collection(firestore, 'sx-trainings'), {
-        schoolId: selectedSchoolId,
-        schoolName: schools.find(s => s.id === selectedSchoolId)?.schoolName || '',
-        trainingType: name,
-        programme: 'SLF',
-        participantsMale: 0,
-        participantsFemale: 0,
-        topicsCovered: 'General training',
-        date: new Date().toISOString().split('T')[0],
-        trainerName: 'Staff',
-        coordinates: coordinates || undefined,
-        createdAt: serverTimestamp(),
-        createdBy: 'system',
-      });
+      };
+
+      if (type === 'water') {
+        addDocumentNonBlocking(collection(firestore, 'sx-water-sources'), {
+          ...baseData,
+          sourceType,
+          status: 'functional',
+          waterQuality: 'safe',
+          estimatedBeneficiaries: 50,
+        });
+      } else if (type === 'tree') {
+        addDocumentNonBlocking(collection(firestore, 'sx-trees'), {
+          ...baseData,
+          treeType: 'native',
+          quantity,
+        });
+      } else if (type === 'beneficiary') {
+        addDocumentNonBlocking(collection(firestore, 'sx-beneficiaries'), {
+          ...baseData,
+          beneficiaryType: 'student',
+          gender: 'female',
+          ageGroup: '15_19',
+          programme: 'SLF',
+          servicesProvided: [],
+        });
+      } else if (type === 'training') {
+        addDocumentNonBlocking(collection(firestore, 'sx-trainings'), {
+          ...baseData,
+          trainingType: name,
+          programme: 'SLF',
+          participantsMale: 0,
+          participantsFemale: 0,
+          topicsCovered: 'General training',
+          trainerName: 'Staff',
+        });
+      }
     }
 
-    onSuccess();
+    window.location.reload();
   };
 
+  const titleMap = { school: 'Add School', water: 'Add Water Source', tree: 'Add Trees', beneficiary: 'Add Beneficiary', training: 'Add Training' };
+  const iconMap = { school: GraduationCap, water: Droplets, tree: TreePine, beneficiary: Users, training: Building2 };
+  const Icon = iconMap[type];
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md border-lg shadow-comic-lg">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+      <Card className="w-full max-w-md border-lg shadow-2xl">
         <CardHeader className="bg-muted/30 border-b">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-black flex items-center gap-2">
-              {type === 'school' && <GraduationCap className="h-5 w-5 text-blue-600" />}
-              {type === 'water' && <Droplets className="h-5 w-5 text-cyan-600" />}
-              {type === 'tree' && <TreePine className="h-5 w-5 text-green-600" />}
-              {type === 'beneficiary' && <Users className="h-5 w-5 text-purple-600" />}
-              {type === 'training' && <GraduationCap className="h-5 w-5 text-amber-600" />}
-              Add {type === 'school' ? 'School' : type === 'water' ? 'Water Source' : type === 'tree' ? 'Trees' : type === 'beneficiary' ? 'Beneficiary' : 'Training'}
+            <CardTitle className="flex items-center gap-2">
+              <Icon className="h-5 w-5 text-primary" />
+              {titleMap[type]}
             </CardTitle>
             <button onClick={onClose} className="p-1 hover:bg-muted rounded-lg">
               <X className="h-5 w-5" />
             </button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4 pt-4">
+        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           {type !== 'school' && (
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest">School</label>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-widest block mb-1">School *</label>
               <select
                 value={selectedSchoolId}
                 onChange={(e) => setSelectedSchoolId(e.target.value)}
@@ -542,33 +636,21 @@ function AddPlaceModal({ type, onClose, schools, firestore, onSuccess }: {
             </div>
           )}
 
-          {type === 'school' && (
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest">School Name</label>
+          {(type === 'school' || type === 'training') && (
+            <div>
+              <label className="text-xs font-bold uppercase tracking-widest block mb-1">{type === 'school' ? 'School Name' : 'Training Type'} *</label>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., St. Mary's Primary School"
-                className="border-lg rounded-xl h-10 font-bold"
-              />
-            </div>
-          )}
-
-          {type === 'training' && (
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest">Training Type</label>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g., Leadership Training"
+                placeholder={type === 'school' ? 'e.g., St. Mary\'s Primary' : 'e.g., Leadership Training'}
                 className="border-lg rounded-xl h-10 font-bold"
               />
             </div>
           )}
 
           {type === 'tree' && (
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest">Quantity</label>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-widest block mb-1">Quantity *</label>
               <Input
                 type="number"
                 value={quantity}
@@ -579,8 +661,8 @@ function AddPlaceModal({ type, onClose, schools, firestore, onSuccess }: {
           )}
 
           {type === 'water' && (
-            <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest">Source Type</label>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-widest block mb-1">Source Type</label>
               <select
                 value={sourceType}
                 onChange={(e) => setSourceType(e.target.value)}
@@ -598,24 +680,22 @@ function AddPlaceModal({ type, onClose, schools, firestore, onSuccess }: {
           <GPSLocationPicker
             coordinates={coordinates}
             onCoordinatesChange={setCoordinates}
-            label="Location"
+            label="Location *"
             description="Click to use GPS or enter coordinates"
           />
-
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" onClick={onClose} className="flex-1 h-10 rounded-xl font-bold">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={type === 'school' ? !name || !coordinates : !selectedSchoolId || !coordinates}
-              className="btn-omuto flex-1 h-10 rounded-xl font-black"
-            >
-              <Check className="mr-1 h-4 w-4" />
-              Save
-            </Button>
-          </div>
-        </CardContent>
+        </div>
+        <div className="p-4 border-t flex gap-2">
+          <Button variant="outline" onClick={onClose} className="flex-1 h-10 rounded-xl font-bold">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={type === 'school' ? !name || !coordinates : !selectedSchoolId || !coordinates}
+            className="btn-omuto flex-1 h-10 rounded-xl font-black"
+          >
+            <Check className="mr-1 h-4 w-4" /> Save
+          </Button>
+        </div>
       </Card>
     </div>
   );
