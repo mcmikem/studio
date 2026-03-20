@@ -26,6 +26,7 @@ const schoolSchema = z.object({
   enrollmentSize: z.coerce.number().min(1).optional(),
   tier: z.enum(['Partner', 'Active', 'Advanced', 'Flagship']).default('Partner'),
   status: z.enum(['Registered', 'Launched', 'Active', 'Completed', 'Inactive']).default('Registered'),
+  pipelineStage: z.enum(['Inquiry', 'Meeting Booked', 'MOU Signed', 'Onboarded']).default('Inquiry'),
   activeProgrammes: z.array(z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater'])).min(1, 'Select at least one programme'),
   term: z.enum(['Term 1', 'Term 2', 'Term 3']).default('Term 1'),
   academicYear: z.string().optional(),
@@ -53,6 +54,7 @@ export function RegisterSchoolForm() {
     defaultValues: {
       tier: 'Partner',
       status: 'Registered',
+      pipelineStage: 'Inquiry',
       term: 'Term 1',
       activeProgrammes: [],
     },
@@ -188,6 +190,15 @@ export function RegisterSchoolForm() {
                     <option value="Active">Active</option>
                     <option value="Advanced">Advanced</option>
                     <option value="Flagship">Flagship</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-bold text-xs uppercase tracking-widest">Pipeline Stage</Label>
+                  <select {...register('pipelineStage')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
+                    <option value="Inquiry">Inquiry</option>
+                    <option value="Meeting Booked">Meeting Booked</option>
+                    <option value="MOU Signed">MOU Signed</option>
+                    <option value="Onboarded">Onboarded</option>
                   </select>
                 </div>
                 <div className="space-y-2">
