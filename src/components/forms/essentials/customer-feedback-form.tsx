@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
-import { collection, serverTimestamp, addDoc, query, where, orderBy } from 'firebase/firestore';
+import { collection, serverTimestamp, query, where } from 'firebase/firestore';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Loader2, ArrowLeft, MessageSquare, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -56,22 +57,17 @@ export function CustomerFeedbackForm() {
 
   const { register, handleSubmit, control, formState: { errors, isSubmitting }, reset } = form;
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = (data: any) => {
     if (!firestore || !user || !profile) return;
 
-    try {
-        await addDoc(collection(firestore, 'customer-feedback'), {
-            ...data,
-            logged_by: profile.name,
-            createdAt: serverTimestamp(),
-        });
+    addDocumentNonBlocking(collection(firestore, 'customer-feedback'), {
+        ...data,
+        logged_by: profile.name,
+        createdAt: serverTimestamp(),
+    });
 
-        toast({ title: 'Feedback Recorded', description: 'Thank you for capturing customer insights!' });
-        router.push('/enterprise/essentials');
-    } catch (e: any) {
-        console.error("Feedback log failed:", e);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not record feedback.' });
-    }
+    toast({ title: 'Feedback Recorded', description: 'Thank you for capturing customer insights!' });
+    router.push('/enterprise/essentials');
   };
 
   return (

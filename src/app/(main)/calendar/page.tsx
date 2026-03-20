@@ -159,7 +159,10 @@ export default function CalendarPage() {
 
     const getEventsForDay = (day: Date) => {
         if (!events) return [];
-        return events.filter(event => isSameDay(event.date.toDate(), day));
+        return events.filter(event => {
+            const eventDate = event.date instanceof Timestamp ? event.date.toDate() : new Date(event.date);
+            return isSameDay(eventDate, day);
+        });
     };
 
     const handleDayClick = (day: Date) => {

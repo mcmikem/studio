@@ -138,7 +138,10 @@ export function DashboardCalendar() {
 
   const selectedDayEvents = useMemo(() => {
     if (!currentDate) return [];
-    return events?.filter(event => isSameDay(event.date.toDate(), currentDate)) || [];
+    return events?.filter(event => {
+      const eventDate = event.date instanceof Timestamp ? event.date.toDate() : new Date(event.date);
+      return isSameDay(eventDate, currentDate);
+    }) || [];
   }, [events, currentDate]);
 
 

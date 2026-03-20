@@ -31,7 +31,7 @@ export async function getUpcomingEvents(firestore: Firestore, userId: string) {
     const data = doc.data();
     return {
       title: data.title,
-      date: format(data.date.toDate(), 'eeee, MMM d'),
+      date: format(data.date instanceof Timestamp ? data.date.toDate() : new Date(data.date), 'eeee, MMM d'),
       category: data.category,
       responsible: data.responsible,
     };
