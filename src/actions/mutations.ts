@@ -1,6 +1,6 @@
 'use server';
 
-import { getFirebaseAdmin } from '@/firebase/server';
+import { getFirebaseAdmin } from '@/firebase/server-only';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { format } from 'date-fns';
 import { roleKpis } from '@/lib/data';

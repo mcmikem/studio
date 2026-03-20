@@ -9,7 +9,7 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
 
-import { getFirebaseAdmin } from '@/firebase/server';
+import { getFirebaseAdmin } from '@/firebase/server-only';
 import { ai } from './genkit';
 
 // Ensure the admin instance is initialized and data is seeded on startup.

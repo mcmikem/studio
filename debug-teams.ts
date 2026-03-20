@@ -1,5 +1,5 @@
 
-import { getFirebaseAdmin } from './src/firebase/server';
+import { getFirebaseAdmin } from './src/firebase/server-only';
 
 const debugTeams = async () => {
     try {

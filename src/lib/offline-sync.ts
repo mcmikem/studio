@@ -119,36 +119,6 @@ export function isOnline(): boolean {
 }
 
 export async function syncPendingChanges(): Promise<{ synced: number; failed: number }> {
-  if (!isOnline()) {
-    return { synced: 0, failed: 0 };
-  }
-
-  const pendingSyncs = await getPendingSyncs();
-  let synced = 0;
-  let failed = 0;
-
-  for (const sync of pendingSyncs) {
-    try {
-      const { getFirebaseAdmin } = await import('@/firebase/server');
-      const { firestore } = getFirebaseAdmin();
-
-      if (sync.type === 'create') {
-        await firestore.collection(sync.collection).add(sync.data);
-      } else if (sync.type === 'update') {
-        await firestore.collection(sync.collection).doc(sync.data.id).set(sync.data, { merge: true });
-      } else if (sync.type === 'delete') {
-        const docId = sync.data?.id || sync.id;
-        await firestore.collection(sync.collection).doc(docId).delete();
-      }
-
-      await removePendingSync(sync.id);
-      synced++;
-    } catch (error) {
-      console.error('Sync failed for:', sync.id, error);
-      await updateSyncRetry(sync.id);
-      failed++;
-    }
-  }
-
-  return { synced, failed };
+  const { syncPendingChangesToServer } = await import('./offline-sync.server');
+  return syncPendingChangesToServer();
 }

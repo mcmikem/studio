@@ -1,11 +1,7 @@
-
-
 import { initializeApp, getApps, cert, type App } from 'firebase-admin/app';
 import { getFirestore, type Firestore } from 'firebase-admin/firestore';
 import { getStorage as getAdminStorage, type Storage } from 'firebase-admin/storage';
 import { firebaseConfig } from './config';
-import fs from 'fs';
-import path from 'path';
 
 // Function to get service account credentials
 const getServiceAccount = () => {
@@ -17,6 +13,9 @@ const getServiceAccount = () => {
     }
   }
 
+  // Lazy load Node.js modules to prevent client bundling issues
+  const path = require('path');
+  const fs = require('fs');
   const serviceAccountPath = path.join(process.cwd(), 'secrets', 'serviceAccountKey.json');
   if (fs.existsSync(serviceAccountPath)) {
     try {

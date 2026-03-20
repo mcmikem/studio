@@ -58,7 +58,7 @@ let adminDb: any = null;
 
 async function getAdminFirestore() {
   if (!adminDb) {
-    const { getFirebaseAdmin } = await import('@/firebase/server');
+    const { getFirebaseAdmin } = await import('@/firebase/server-only');
     adminDb = getFirebaseAdmin();
   }
   return adminDb.firestore;
@@ -98,7 +98,7 @@ export async function logAction(
   details?: Record<string, unknown>
 ) {
   try {
-    const { getFirebaseAdmin } = await import('@/firebase/server');
+    const { getFirebaseAdmin } = await import('@/firebase/server-only');
     const { firestore } = getFirebaseAdmin();
     const { FieldValue } = await import('firebase-admin/firestore');
 
