@@ -102,8 +102,7 @@ export default function StoryHubPage() {
           <div>
             <p className="font-bold text-sm">For Alex's Media Team</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {isLoading ? 'Counting...' : `${flaggedVisits?.length || 0} visit${(flaggedVisits?.length || 0) !== 1 ? 's' : ''} flagged across ${schoolsWithFlagged.length} school${schoolsWithFlagged.length !== 1 ? 's' : ''}. 
-              Each story candidate has been identified by the field team as having strong narrative potential.
+              {isLoading ? 'Counting...' : `${flaggedVisits?.length || 0} visit${(flaggedVisits?.length || 0) !== 1 ? 's' : ''} flagged across ${schoolsWithFlagged.length} school${schoolsWithFlagged.length !== 1 ? 's' : ''}. Each story candidate has been identified by the field team as having strong narrative potential.`}
             </p>
           </div>
         </CardContent>

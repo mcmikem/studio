@@ -137,7 +137,8 @@ export async function syncPendingChanges(): Promise<{ synced: number; failed: nu
       } else if (sync.type === 'update') {
         await firestore.collection(sync.collection).doc(sync.data.id).set(sync.data, { merge: true });
       } else if (sync.type === 'delete') {
-        await firestore.collection(sync.collection).doc(sync.id).delete();
+        const docId = sync.data?.id || sync.id;
+        await firestore.collection(sync.collection).doc(docId).delete();
       }
 
       await removePendingSync(sync.id);

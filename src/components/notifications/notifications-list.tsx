@@ -80,13 +80,21 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
     };
 
     if (onUnreadStatusChange) {
-        // Real-time listeners
+        let userSnapshots: any[] = [];
+        let broadcastSnapshots: any[] = [];
+        let mergeTimeout: NodeJS.Timeout | null = null;
+
+        const scheduleMerge = () => {
+            if (mergeTimeout) clearTimeout(mergeTimeout);
+            mergeTimeout = setTimeout(() => {
+                mergeAlerts(userSnapshots, broadcastSnapshots);
+            }, 0);
+        };
+
         const unsubscribeUser = onSnapshot(userAlertsQuery, 
             (userSnap) => {
-                // Fetch broadcast alerts once (or set up another listener if needed, but two listeners is fine)
-                getDocs(broadcastAlertsQuery).then(broadcastSnap => {
-                    mergeAlerts(userSnap.docs, broadcastSnap.docs);
-                });
+                userSnapshots = userSnap.docs;
+                scheduleMerge();
             }, 
             (error) => {
                 console.error("Failed to subscribe to user alerts:", error);
@@ -96,9 +104,8 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
 
         const unsubscribeBroadcast = onSnapshot(broadcastAlertsQuery,
             (broadcastSnap) => {
-                 getDocs(userAlertsQuery).then(userSnap => {
-                    mergeAlerts(userSnap.docs, broadcastSnap.docs);
-                });
+                broadcastSnapshots = broadcastSnap.docs;
+                scheduleMerge();
             },
             (error) => console.error("Failed to subscribe to broadcast alerts", error)
         );
@@ -106,6 +113,7 @@ export function NotificationsList({ isPage = false, onUnreadStatusChange, onUnre
         return () => {
             unsubscribeUser();
             unsubscribeBroadcast();
+            if (mergeTimeout) clearTimeout(mergeTimeout);
         };
 
     } else {

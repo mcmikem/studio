@@ -217,7 +217,6 @@ export async function findGrantsAction(input: GrantFinderInput): Promise<GrantFi
     });
 
     // Return matches sorted by relevance, or all if nothing matched
-    // Return matches sorted by relevance, or all if nothing matched
     const matches = scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score);
     return {
         opportunities: matches.length > 0 ? matches.map(m => m.op) : GRANT_OPPORTUNITIES,

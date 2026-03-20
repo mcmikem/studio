@@ -32,7 +32,7 @@ export function NotificationToast() {
     const { user } = useUser();
     const [toasts, setToasts] = useState<ToastItem[]>([]);
     const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-    const initialLoadRef = useRef(true);
+    const initialLoadRef = useRef({ user: true, broadcast: true });
 
     useEffect(() => {
         if (!user || !firestore) return;
@@ -52,8 +52,8 @@ export function NotificationToast() {
         );
 
         const unsubscribeUser = onSnapshot(userAlertsQuery, (userSnap) => {
-            if (initialLoadRef.current) {
-                initialLoadRef.current = false;
+            if (initialLoadRef.current.user) {
+                initialLoadRef.current.user = false;
                 return;
             }
             const newAlerts = userSnap.docs
@@ -73,7 +73,10 @@ export function NotificationToast() {
         });
 
         const unsubscribeBroadcast = onSnapshot(broadcastAlertsQuery, (broadcastSnap) => {
-            if (initialLoadRef.current) return;
+            if (initialLoadRef.current.broadcast) {
+                initialLoadRef.current.broadcast = false;
+                return;
+            }
             const newAlerts = broadcastSnap.docs
                 .filter(doc => {
                     const createdAt = doc.data().createdAt as Timestamp | undefined;

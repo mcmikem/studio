@@ -1,12 +1,15 @@
 import { useFirestore } from '@/firebase';
 import { getBase64Image } from '@/firebase/storage';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export function useResolvedPhotoURL(photoURL: string | null | undefined): string | null {
   const firestore = useFirestore();
   const [resolvedURL, setResolvedURL] = useState<string | null>(photoURL || null);
+  const currentPhotoRef = useRef(photoURL);
 
   useEffect(() => {
+    currentPhotoRef.current = photoURL;
+    
     if (!photoURL) {
       setResolvedURL(null);
       return;
@@ -15,7 +18,7 @@ export function useResolvedPhotoURL(photoURL: string | null | undefined): string
     if (photoURL.startsWith('base64:')) {
       if (firestore) {
         getBase64Image(photoURL, firestore).then((data) => {
-          if (data) {
+          if (data && currentPhotoRef.current === photoURL) {
             setResolvedURL(data);
           }
         });

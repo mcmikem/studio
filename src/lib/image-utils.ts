@@ -20,8 +20,12 @@ export async function fileToBase64(file: File): Promise<string> {
  */
 export function base64ToFile(base64: string, filename: string): File {
   const arr = base64.split(',');
-  const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
-  const bstr = atob(arr[1]);
+  const mime = arr[0]?.match(/:(.*?);/)?.[1] || 'image/png';
+  const base64Data = arr[1];
+  if (!base64Data) {
+    throw new Error('Invalid base64 string: missing data after comma');
+  }
+  const bstr = atob(base64Data);
   let n = bstr.length;
   const u8arr = new Uint8Array(n);
   while (n--) {
@@ -34,7 +38,6 @@ export function base64ToFile(base64: string, filename: string): File {
  * Compress image if too large
  */
 export async function compressImage(file: File, maxSizeKB: number = 500): Promise<File> {
-  // 1. Explicitly reject HEIC/HEIF which Canvas cannot process natively on most browsers
   if (file.type === 'image/heic' || file.type === 'image/heif' || file.name.toLowerCase().endsWith('.heic')) {
     throw new Error("HEIC (iPhone photo) format is not supported directly in the browser. Please convert to JPG/PNG or change your iPhone camera settings to 'Most Compatible'.");
   }
@@ -48,10 +51,10 @@ export async function compressImage(file: File, maxSizeKB: number = 500): Promis
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
       
       img.onload = () => {
         try {
-          // Calculate new dimensions
           let { width, height } = img;
           const maxDim = 1200;
           
@@ -68,6 +71,7 @@ export async function compressImage(file: File, maxSizeKB: number = 500): Promis
           canvas.width = width;
           canvas.height = height;
           ctx?.drawImage(img, 0, 0, width, height);
+          URL.revokeObjectURL(objectUrl);
           
           canvas.toBlob(
             (blob) => {
@@ -82,21 +86,22 @@ export async function compressImage(file: File, maxSizeKB: number = 500): Promis
             0.8
           );
         } catch (err) {
+          URL.revokeObjectURL(objectUrl);
           console.error("[Image Compress] Error during canvas draw/blob:", err);
-          // If canvas fails (e.g. memory limit on huge image), fallback to original
           resolve(file);
         }
       };
       
       img.onerror = () => {
+         URL.revokeObjectURL(objectUrl);
          console.error("[Image Compress] Image failed to load into canvas");
          reject(new Error("Failed to load image for compression. The file might be corrupted or in an unsupported format."));
       };
 
-      img.src = URL.createObjectURL(file);
+      img.src = objectUrl;
     } catch (err) {
       console.error("[Image Compress] Fatal compression error:", err);
-      resolve(file); // Hard fallback
+      resolve(file);
     }
   });
 }
@@ -114,7 +119,15 @@ export function isBase64Url(url: string): boolean {
 export function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
   return new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => resolve({ width: img.width, height: img.height });
-    img.src = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve({ width: img.width, height: img.height });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve({ width: 0, height: 0 });
+    };
+    img.src = objectUrl;
   });
 }

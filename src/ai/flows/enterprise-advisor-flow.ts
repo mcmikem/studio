@@ -35,7 +35,7 @@ export async function getEnterpriseInsights(input: {
   sales: any[]; 
   inventory: any[]; 
   production: any[] 
-}) {
+}): Promise<{ insights: { title: string; insight: string; priority: 'Low' | 'Medium' | 'High'; actionableStep: string }[] }> {
   const { sales, inventory, production } = input;
   
   const prompt = `
@@ -55,9 +55,13 @@ Provide 1-2 strategic insights.
       
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-         const parsed = JSON.parse(jsonMatch[0]);
-         const validated = EnterpriseAdvisorOutputSchema.safeParse(parsed);
-         if (validated.success) return validated.data;
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          const validated = EnterpriseAdvisorOutputSchema.safeParse(parsed);
+          if (validated.success) return validated.data;
+        } catch (parseError) {
+          console.error('[EnterpriseAdvisor] JSON parse failed:', parseError);
+        }
       }
     } catch (error) {
       console.error('[EnterpriseAdvisor] OpenRouter failed:', error);

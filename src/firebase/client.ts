@@ -20,18 +20,24 @@ const db = initializeFirestore(app, {
 });
 
 // Initialize Storage with explicit bucket URL
-let storage: FirebaseStorage;
+let storage: FirebaseStorage | undefined;
 try {
-  // Try to get the default storage bucket
   storage = getStorage(app);
   console.log("[Firebase] Storage initialized with default bucket");
 } catch (error) {
   console.error("[Firebase] Failed to initialize storage:", error);
-  // Fallback: try with explicit bucket URL from config
   if (firebaseConfig.storageBucket) {
-    storage = getStorage(app, `gs://${firebaseConfig.storageBucket}`);
-    console.log("[Firebase] Storage initialized with explicit bucket");
+    try {
+      storage = getStorage(app, `gs://${firebaseConfig.storageBucket}`);
+      console.log("[Firebase] Storage initialized with explicit bucket");
+    } catch (fallbackError) {
+      console.error("[Firebase] Fallback storage initialization also failed:", fallbackError);
+    }
   }
+}
+
+if (!storage) {
+  console.warn("[Firebase] Storage not available - file uploads will not work");
 }
 
 // Use a promise to handle the async nature of isSupported() for messaging
@@ -54,7 +60,7 @@ export interface FirebaseServices {
     firebaseApp: FirebaseApp;
     firestore: Firestore;
     auth: Auth;
-    storage: FirebaseStorage;
+    storage: FirebaseStorage | undefined;
     messaging: Messaging | null;
 }
 

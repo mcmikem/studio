@@ -53,7 +53,12 @@ Provide 3-4 strategic insights with emoji, title, description, and recommendatio
       
       const jsonMatch = text?.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-         return JSON.parse(jsonMatch[0]);
+        try {
+          return JSON.parse(jsonMatch[0]);
+        } catch (parseError) {
+          lastError = 'JSON parse failed';
+          console.error('[StrategicAdvisor] OpenRouter JSON parse failed:', parseError);
+        }
       }
       lastError = 'OpenRouter returned empty string';
     } catch (error: any) {
@@ -75,7 +80,12 @@ Provide 3-4 strategic insights with emoji, title, description, and recommendatio
           const text = response.text;
           const jsonMatch = text?.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
+            try {
               return JSON.parse(jsonMatch[0]);
+            } catch (parseError) {
+              lastError += ' | Gemini JSON parse failed';
+              console.error('[StrategicAdvisor] Gemini JSON parse failed:', parseError);
+            }
           }
           lastError += ' | Gemini returned non-JSON text';
       } catch (error: any) {

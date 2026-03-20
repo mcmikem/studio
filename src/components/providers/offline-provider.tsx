@@ -74,7 +74,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 
     const handleOnline = () => {
       setIsOnline(true);
-      syncNow();
+      syncPendingChanges().then(() => refreshPending()).catch(console.warn);
     };
     const handleOffline = () => {
       setIsOnline(false);
@@ -82,7 +82,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
 
     setIsOnline(navigator.onLine);
     if (navigator.onLine) {
-      syncNow();
+      syncPendingChanges().then(() => refreshPending()).catch(console.warn);
     }
 
     window.addEventListener('online', handleOnline);
@@ -92,7 +92,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [syncNow, refreshPending]);
+  }, [refreshPending]);
 
   const value: OfflineContextValue = {
     isOnline,

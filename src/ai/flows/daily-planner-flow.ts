@@ -93,12 +93,15 @@ Return ONLY the JSON.`;
       
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        // Validate with schema
-        return DailyPlannerAIOutputSchema.parse(parsed);
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          return DailyPlannerAIOutputSchema.parse(parsed);
+        } catch (parseError) {
+          console.error('Daily Planner JSON parse failed:', parseError);
+        }
       }
     } catch (error) {
-      console.error('Daily Planner OpenRouter failed or invalid schema:', error);
+      console.error('Daily Planner OpenRouter failed:', error);
     }
   }
 
@@ -115,12 +118,15 @@ Return ONLY the JSON.`;
           const text = response.text;
           const jsonMatch = text?.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
+            try {
               const parsed = JSON.parse(jsonMatch[0]);
-              // Validate with schema
               return DailyPlannerAIOutputSchema.parse(parsed);
+            } catch (parseError) {
+              console.error('Daily Planner Gemini JSON parse failed:', parseError);
+            }
           }
       } catch (error) {
-          console.error('Daily Planner Gemini failed or invalid schema:', error);
+          console.error('Daily Planner Gemini failed:', error);
       }
   }
   

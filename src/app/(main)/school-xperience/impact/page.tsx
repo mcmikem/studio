@@ -69,13 +69,20 @@ export default function ImpactSnapshotPage() {
       const termStart = new Date(now.getFullYear(), now.getMonth(), 1);
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+      const toDate = (date: any): Date => {
+        if (date instanceof Timestamp) {
+          return date.toDate();
+        }
+        return new Date(date);
+      };
+
       const visitsThisTerm = (visits || []).filter((v) => {
-        const d = v.date instanceof Timestamp ? v.date.toDate() : new Date(v.date);
+        const d = toDate(v.date);
         return d >= termStart;
       }).length;
 
       const visitsThisMonth = (visits || []).filter((v) => {
-        const d = v.date instanceof Timestamp ? v.date.toDate() : new Date(v.date);
+        const d = toDate(v.date);
         return d >= thirtyDaysAgo;
       }).length;
 
@@ -165,6 +172,7 @@ export default function ImpactSnapshotPage() {
           sub={`${stats.activeSchools} active`}
           color="text-blue-600"
           bg="bg-blue-50"
+          loading={loading}
         />
         <ImpactCard
           icon={Heart}
@@ -173,6 +181,7 @@ export default function ImpactSnapshotPage() {
           sub="estimated via visit count"
           color="text-pink-600"
           bg="bg-pink-50"
+          loading={loading}
         />
         <ImpactCard
           icon={TreePine}
@@ -181,6 +190,7 @@ export default function ImpactSnapshotPage() {
           sub="estimated via visit count"
           color="text-green-600"
           bg="bg-green-50"
+          loading={loading}
         />
         <ImpactCard
           icon={Award}
@@ -189,6 +199,7 @@ export default function ImpactSnapshotPage() {
           sub="across all schools"
           color="text-orange-600"
           bg="bg-orange-50"
+          loading={loading}
         />
         <ImpactCard
           icon={Users}
@@ -197,6 +208,7 @@ export default function ImpactSnapshotPage() {
           sub="all programmes"
           color="text-purple-600"
           bg="bg-purple-50"
+          loading={loading}
         />
         <ImpactCard
           icon={GraduationCap}
@@ -205,6 +217,7 @@ export default function ImpactSnapshotPage() {
           sub={`${stats.visitsThisTerm} this term`}
           color="text-teal-600"
           bg="bg-teal-50"
+          loading={loading}
         />
         <ImpactCard
           icon={Droplets}
@@ -213,6 +226,7 @@ export default function ImpactSnapshotPage() {
           sub="estimated via visit count"
           color="text-cyan-600"
           bg="bg-cyan-50"
+          loading={loading}
         />
         <ImpactCard
           icon={Star}
@@ -221,6 +235,7 @@ export default function ImpactSnapshotPage() {
           sub="flagged by field team"
           color="text-amber-600"
           bg="bg-amber-50"
+          loading={loading}
         />
       </div>
 
@@ -286,13 +301,14 @@ export default function ImpactSnapshotPage() {
   );
 }
 
-function ImpactCard({ icon: Icon, label, value, sub, color, bg }: {
+function ImpactCard({ icon: Icon, label, value, sub, color, bg, loading = false }: {
   icon: React.ElementType;
   label: string;
   value: number;
   sub: string;
   color: string;
   bg: string;
+  loading?: boolean;
 }) {
   const formatValue = (v: number) => {
     if (v >= 1000) return `${(v / 1000).toFixed(1)}k`;

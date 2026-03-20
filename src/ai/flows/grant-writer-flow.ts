@@ -53,7 +53,11 @@ Return a JSON object with a 'conceptNote' field containing markdown.`;
         
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
+          try {
+            return JSON.parse(jsonMatch[0]);
+          } catch (parseError) {
+            console.error('Grant Writer JSON parse failed:', parseError);
+          }
         }
       } catch (error) {
         console.error('Grant Writer OpenRouter failed:', error);

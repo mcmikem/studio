@@ -44,13 +44,17 @@ export async function processReceipt(input: ReceiptOCRInput): Promise<ReceiptOCR
       
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return ReceiptOCROutputSchema.parse({
-          title: parsed.title || 'Receipt Scan',
-          items: parsed.items || [],
-          totalAmount: parsed.totalAmount || 0,
-          currency: parsed.currency || 'UGX'
-        });
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          return ReceiptOCROutputSchema.parse({
+            title: parsed.title || 'Receipt Scan',
+            items: parsed.items || [],
+            totalAmount: parsed.totalAmount || 0,
+            currency: parsed.currency || 'UGX'
+          });
+        } catch (parseError) {
+          console.error('Receipt OCR JSON parse failed:', parseError);
+        }
       }
     } catch (error) {
       console.error('Receipt OCR OpenRouter failed:', error);
