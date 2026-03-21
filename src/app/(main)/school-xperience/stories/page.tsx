@@ -11,9 +11,10 @@ import Link from 'next/link';
 import {
   Star, StarHalf, Video, Calendar, MapPin, 
   Heart, Flower2, GraduationCap, Droplets, Building2,
-  ArrowLeft, ExternalLink, Image as ImageIcon
+  ArrowLeft, ExternalLink, Image as ImageIcon, Sparkles, Camera
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { useMemo } from 'react';
 
 const PROGRAMME_ICONS: Record<string, React.ElementType> = {
   SLF: GraduationCap,
@@ -44,6 +45,19 @@ export default function StoriesPage() {
 
   const getSchool = (schoolId: string) => schools?.find(s => s.id === schoolId);
 
+  const programmeCounts = useMemo(() => {
+    if (!flaggedVisits) return {};
+    const counts: Record<string, number> = {};
+    flaggedVisits.forEach(v => {
+      (v.programmesCovered || []).forEach((p: string) => {
+        counts[p] = (counts[p] || 0) + 1;
+      });
+    });
+    return counts;
+  }, [flaggedVisits]);
+
+  const photosWithStories = flaggedVisits?.filter(v => v.photos && v.photos.length > 0).length || 0;
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -57,17 +71,72 @@ export default function StoriesPage() {
         ]}
       />
 
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-            <Video className="h-6 w-6 text-amber-600" />
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <Card className="border-lg shadow-comic-sm border-l-4 border-l-amber-500">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-amber-100 rounded-xl">
+              <Video className="h-4 w-4 text-amber-600" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Total</p>
+              <p className="text-xl font-black text-omuto-navy">{visitsLoading ? '—' : flaggedVisits?.length || 0}</p>
+              <p className="text-[10px] text-muted-foreground">story candidates</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-lg shadow-comic-sm">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-xl">
+              <ImageIcon className="h-4 w-4 text-green-600" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">With Photos</p>
+              <p className="text-xl font-black text-omuto-navy">{visitsLoading ? '—' : photosWithStories}</p>
+              <p className="text-[10px] text-muted-foreground">ready to publish</p>
+            </div>
+          </CardContent>
+        </Card>
+        {['SLF', 'RED', 'GreenSchools', 'PureWater'].map(p => {
+          const Icon = PROGRAMME_ICONS[p];
+          const count = visitsLoading ? 0 : programmeCounts[p] || 0;
+          const colors: Record<string, string> = { SLF: 'bg-blue-100 text-blue-600', RED: 'bg-pink-100 text-pink-600', GreenSchools: 'bg-green-100 text-green-600', PureWater: 'bg-cyan-100 text-cyan-600' };
+          return (
+            <Card key={p} className="border-lg shadow-comic-sm">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`p-2 rounded-xl ${colors[p].split(' ')[0]}`}>
+                  <Icon className={`h-4 w-4 ${colors[p].split(' ')[1]}`} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{p}</p>
+                  <p className="text-xl font-black text-omuto-navy">{count}</p>
+                  <p className="text-[10px] text-muted-foreground">stories</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <Video className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <h2 className="font-black text-base">Story Candidates</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Visits flagged by field officers for strong storytelling potential.
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-black text-lg">Story Candidates</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              These visits have been flagged by field officers as having strong storytelling potential.
-              Click on any story to see visit details and photos.
-            </p>
+          <div className="flex gap-2 flex-shrink-0">
+            <Button asChild size="sm" className="btn-omuto h-9 rounded-xl text-xs font-black uppercase tracking-wider shadow-comic-sm">
+              <Link href="/record-testimony">
+                <Camera className="mr-1.5 h-3.5 w-3.5" />
+                Capture Story
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

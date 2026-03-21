@@ -161,14 +161,29 @@ export default function ImpactSnapshotPage() {
         ]}
       />
 
-      <div className="flex items-center justify-between">
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-          Real-time from Firestore · Updated {new Date().toLocaleTimeString()}
-        </p>
-        <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold" onClick={() => window.location.reload()}>
-          <RefreshCw className="mr-1 h-3 w-3" />
-          Refresh
-        </Button>
+      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-5 shadow-comic-sm flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Live Data</p>
+            <p className="text-xs text-muted-foreground">Updated {new Date().toLocaleTimeString()}</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold border-2" asChild>
+            <Link href="/school-xperience/impact-data">
+              <MapIcon className="mr-1 h-3 w-3" />
+              View Impact Data
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold border-2" onClick={() => window.location.reload()}>
+            <RefreshCw className="mr-1 h-3 w-3" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
@@ -287,10 +302,22 @@ export default function ImpactSnapshotPage() {
                     return school?.activeProgrammes?.includes(prog as any);
                   });
                   return (
-                    <div key={prog} className={`border rounded-2xl p-4 ${col} ${bg}`}>
-                      <div className="flex items-center gap-3 mb-3">
-                        <Icon className={`h-5 w-5 ${color}`} />
-                        <h3 className="font-black text-sm uppercase tracking-widest">{prog}</h3>
+                    <div key={prog} className={`border-2 rounded-2xl p-4 ${col} ${bg}`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <Icon className={`h-5 w-5 ${color}`} />
+                          <h3 className="font-black text-sm uppercase tracking-widest">{prog}</h3>
+                        </div>
+                        {progSchools.length > 0 ? (
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-white/80 text-muted-foreground">
+                            {Math.round((progVisits.length / progSchools.length) * 100)}% coverage
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-red-100 text-red-600">No schools</span>
+                        )}
+                      </div>
+                      <div className="h-1.5 bg-white/50 rounded-full overflow-hidden mb-4 border border-black/5">
+                        <div className={`h-full rounded-full ${color.replace('text-', 'bg-')}`} style={{ width: `${Math.min(100, (progVisits.length / Math.max(1, progSchools.length)) * 30)}%` }} />
                       </div>
                       <div className="grid grid-cols-3 gap-4">
                         <div className="text-center">

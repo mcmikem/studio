@@ -13,7 +13,8 @@ import Link from 'next/link';
 import {
   Users, Droplets, TreePine, MapPin, Calendar,
   Heart, CheckCircle2, AlertCircle, Map as MapIcon,
-  Plus, Eye, Filter, GraduationCap, Building2
+  Plus, Eye, Filter, GraduationCap, Building2,
+  Sparkles, TrendingUp
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { InteractiveMap, type MapLocation } from '@/components/school-xperience/interactive-map';
@@ -159,14 +160,18 @@ export default function ImpactDataPage() {
       />
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Beneficiaries" value={stats.totalBeneficiaries} sub={`${stats.femaleBeneficiaries}F, ${stats.maleBeneficiaries}M`} color="text-purple-600" bg="bg-purple-50" />
-        <StatCard icon={Droplets} label="Water Sources" value={stats.totalWaterSources} sub={`${stats.functionalWater} functional`} color="text-cyan-600" bg="bg-cyan-50" />
-        <StatCard icon={TreePine} label="Trees Planted" value={stats.totalTrees} sub="across all schools" color="text-green-600" bg="bg-green-50" />
-        <StatCard icon={GraduationCap} label="Trainings" value={stats.totalTrainings} sub="sessions conducted" color="text-blue-600" bg="bg-blue-50" />
+        <StatCard icon={Users} label="Beneficiaries" value={stats.totalBeneficiaries} sub={`${stats.femaleBeneficiaries}F, ${stats.maleBeneficiaries}M`} color="text-purple-600" bg="bg-purple-50" alertLevel={stats.totalBeneficiaries === 0 ? 'yellow' : 'green'} />
+        <StatCard icon={Droplets} label="Water Sources" value={stats.totalWaterSources} sub={`${stats.functionalWater} functional`} color="text-cyan-600" bg="bg-cyan-50" alertLevel={stats.nonFunctionalWater > 0 ? 'yellow' : 'green'} />
+        <StatCard icon={TreePine} label="Trees Planted" value={stats.totalTrees} sub="across all schools" color="text-green-600" bg="bg-green-50" alertLevel={stats.totalTrees === 0 ? 'yellow' : 'green'} />
+        <StatCard icon={GraduationCap} label="Trainings" value={stats.totalTrainings} sub="sessions conducted" color="text-blue-600" bg="bg-blue-50" alertLevel={stats.totalTrainings === 0 ? 'yellow' : 'green'} />
       </div>
 
       <Tabs defaultValue="beneficiaries" className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2 mb-2 sm:mb-0">
+            <Sparkles className="h-4 w-4 text-omuto-red" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Data Hub</span>
+          </div>
           <TabsList className="h-12 rounded-xl bg-muted/50 p-1">
             <TabsTrigger value="beneficiaries" className="h-9 rounded-lg font-bold text-xs uppercase tracking-widest data-[state=active]:bg-background">
               <Users className="mr-2 h-4 w-4" />
@@ -243,14 +248,20 @@ export default function ImpactDataPage() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub, color, bg }: {
-  icon: any; label: string; value: number; sub: string; color: string; bg: string;
+function StatCard({ icon: Icon, label, value, sub, color, bg, alertLevel }: {
+  icon: any; label: string; value: number; sub: string; color: string; bg: string; alertLevel?: 'green' | 'yellow' | 'red';
 }) {
+  const dotColor = alertLevel === 'red' ? 'bg-red-500' : alertLevel === 'yellow' ? 'bg-yellow-500' : 'bg-green-500';
+  const borderColor = alertLevel === 'red' ? 'border-l-4 border-l-red-500' : alertLevel === 'yellow' ? 'border-l-4 border-l-yellow-500' : alertLevel === 'green' ? 'border-l-4 border-l-green-500' : '';
+
   return (
-    <Card className="border-lg shadow-comic-sm">
+    <Card className={`border-lg shadow-comic-sm ${borderColor}`}>
       <CardContent className="p-4">
-        <div className={`inline-flex items-center justify-center p-2 rounded-xl ${bg} mb-2`}>
-          <Icon className={`h-5 w-5 ${color}`} />
+        <div className="flex items-center justify-between mb-2">
+          <div className={`inline-flex items-center justify-center p-2 rounded-xl ${bg}`}>
+            <Icon className={`h-5 w-5 ${color}`} />
+          </div>
+          {alertLevel && <span className={`w-2.5 h-2.5 rounded-full ${dotColor} ${alertLevel === 'green' ? 'animate-pulse' : ''}`} />}
         </div>
         <p className="text-2xl font-black">{value.toLocaleString()}</p>
         <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mt-1">{label}</p>

@@ -228,24 +228,39 @@ function BudgetHealth() {
         };
     }, [income, expenses]);
 
+  const expenseRatio = totalIncome > 0 ? (totalExpenses / totalIncome) * 100 : 0;
+  const balanceHealth: 'green' | 'yellow' | 'red' = cashBalance < 0 ? 'red' : expenseRatio > 90 ? 'red' : expenseRatio > 70 ? 'yellow' : 'green';
+  const healthColors = { green: 'bg-green-50 border-green-200 text-green-700', yellow: 'bg-yellow-50 border-yellow-200 text-yellow-700', red: 'bg-red-50 border-red-200 text-red-700' };
+  const healthDotColors = { green: 'bg-green-500', yellow: 'bg-yellow-500', red: 'bg-red-500' };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Wallet /> Budget Health</CardTitle>
-        <CardDescription>A real-time overview of the organization's cash flow.</CardDescription>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <CardTitle className="flex items-center gap-2"><Wallet /> Budget Health</CardTitle>
+            <CardDescription>A real-time overview of the organization's cash flow.</CardDescription>
+          </div>
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-black ${healthColors[balanceHealth]}`}>
+            <span className={`w-2 h-2 rounded-full ${healthDotColors[balanceHealth]} ${balanceHealth === 'green' ? 'animate-pulse' : ''}`} />
+            {balanceHealth === 'green' ? 'Healthy' : balanceHealth === 'yellow' ? 'Caution' : 'Critical'}
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 bg-muted rounded-lg text-center">
+        <div className={`p-4 rounded-xl border-2 text-center ${cashBalance < 0 ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}`}>
             <p className="text-sm font-medium text-muted-foreground">Cash Balance</p>
-            <p className="text-3xl font-bold">{formatCurrency(cashBalance)}</p>
+            <p className={`text-3xl font-bold ${cashBalance < 0 ? 'text-red-600' : 'text-green-600'}`}>{formatCurrency(cashBalance)}</p>
+            {cashBalance < 0 && <p className="text-[10px] text-red-500 font-bold mt-1">In deficit</p>}
         </div>
-        <div className="p-4 bg-muted rounded-lg text-center">
+        <div className="p-4 bg-muted rounded-xl border border-omuto-navy/10 text-center">
             <p className="text-sm font-medium text-muted-foreground">Total Income</p>
-            <p className="text-3xl font-bold text-green-500">{formatCurrency(totalIncome)}</p>
+            <p className="text-3xl font-bold text-green-600">{formatCurrency(totalIncome)}</p>
         </div>
-        <div className="p-4 bg-muted rounded-lg text-center">
+        <div className={`p-4 rounded-xl border-2 text-center ${expenseRatio > 90 ? 'border-red-200 bg-red-50' : expenseRatio > 70 ? 'border-yellow-200 bg-yellow-50' : 'border-green-200 bg-green-50'}`}>
             <p className="text-sm font-medium text-muted-foreground">Total Expenses</p>
-            <p className="text-3xl font-bold text-red-500">{formatCurrency(totalExpenses)}</p>
+            <p className={`text-3xl font-bold ${expenseRatio > 90 ? 'text-red-600' : expenseRatio > 70 ? 'text-yellow-600' : 'text-green-600'}`}>{formatCurrency(totalExpenses)}</p>
+            <p className="text-[10px] text-muted-foreground font-bold mt-1">{Math.round(expenseRatio)}% of income</p>
         </div>
       </CardContent>
     </Card>

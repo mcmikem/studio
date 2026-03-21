@@ -139,6 +139,27 @@ export default function TermPlannerPage() {
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
+  const thisMonthEvents = useMemo(() => {
+    return allEvents.filter((e) => {
+      const eventDate = e.date instanceof Timestamp ? e.date.toDate() : new Date(e.date);
+      return isSameMonth(eventDate, currentMonth);
+    });
+  }, [allEvents, currentMonth]);
+
+  const overdueSchools = useMemo(() => {
+    if (!visits || !schools) return [];
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    return schools.filter((s) => {
+      const schoolVisits = visits.filter((v) => v.schoolId === s.id);
+      const lastVisit = schoolVisits[0];
+      if (!lastVisit) return true;
+      const dateVal = lastVisit.date as any;
+      const d = dateVal?.toDate ? dateVal.toDate() : new Date(dateVal);
+      return d < thirtyDaysAgo;
+    });
+  }, [visits, schools]);
+
   const getCategoryColor = (cat: string) => {
     switch (cat) {
       case 'Field Visits': return 'bg-green-100 text-green-700 border-green-200';
@@ -161,16 +182,98 @@ export default function TermPlannerPage() {
         ]}
       />
 
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card className="border-lg shadow-comic-sm">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-xl">
+              <ClipboardCheck className="h-4 w-4 text-green-600" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">This Month</p>
+              <p className="text-xl font-black text-omuto-navy">{thisMonthEvents.length}</p>
+              <p className="text-[10px] text-muted-foreground">events scheduled</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-lg shadow-comic-sm">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-xl">
+              <CalendarIcon className="h-4 w-4 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Visits</p>
+              <p className="text-xl font-black text-omuto-navy">{thisMonthEvents.filter(e => e.category === 'Field Visits').length}</p>
+              <p className="text-[10px] text-muted-foreground">this month</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={`border-lg shadow-comic-sm ${overdueSchools.length > 0 ? 'border-l-4 border-l-red-500' : ''}`}>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className={`p-2 rounded-xl ${overdueSchools.length > 0 ? 'bg-red-100' : 'bg-green-100'}`}>
+              <Star className={`h-4 w-4 ${overdueSchools.length > 0 ? 'text-red-600' : 'text-green-600'}`} />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Overdue</p>
+              <p className={`text-xl font-black ${overdueSchools.length > 0 ? 'text-red-600' : 'text-green-600'}`}>{overdueSchools.length}</p>
+              <p className="text-[10px] text-muted-foreground">{overdueSchools.length > 0 ? 'schools need visits' : 'all schools visited'}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-lg shadow-comic-sm">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="p-2 bg-purple-100 rounded-xl">
+              <Building2 className="h-4 w-4 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Total</p>
+              <p className="text-xl font-black text-omuto-navy">{allEvents.length}</p>
+              <p className="text-[10px] text-muted-foreground">events tracked</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {overdueSchools.length > 0 && (
+        <Card className="border-red-200 shadow-comic-sm border-l-4 border-l-red-500">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
+              </div>
+              <span className="text-xs font-black uppercase tracking-widest text-red-600">{overdueSchools.length} Schools Overdue for a Visit</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {overdueSchools.slice(0, 8).map(s => (
+                <Badge key={s.id} variant="outline" className="text-xs font-bold border-red-200 text-red-700 bg-red-50">
+                  <Building2 className="h-3 w-3 mr-1" />
+                  {s.schoolName}
+                </Badge>
+              ))}
+              {overdueSchools.length > 8 && (
+                <Badge variant="outline" className="text-xs font-bold border-red-200 text-red-700 bg-red-50">
+                  +{overdueSchools.length - 8} more
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2">
           <Card className="border-lg shadow-comic-sm">
             <CardHeader className="bg-muted/30 border-b-lg">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <CardTitle className="text-lg font-black">{format(currentMonth, 'MMMM yyyy')}</CardTitle>
-                  <CardDescription>School Xperience term calendar</CardDescription>
+                  <CardDescription>
+                    {thisMonthEvents.length} event{thisMonthEvents.length !== 1 ? 's' : ''} this month
+                    <span className="mx-2">·</span>
+                    <span className="text-green-600 font-bold">{thisMonthEvents.filter(e => e.category === 'Field Visits').length} visits</span>
+                  </CardDescription>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl" onClick={prevMonth}>
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
