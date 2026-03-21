@@ -4,11 +4,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import type { Expense } from "@/lib/types"
 import { useCollection, useFirestore, useUser, updateDocumentNonBlocking } from "@/firebase"
-import { collection, query, where, orderBy, doc, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, orderBy, doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Button } from "../ui/button";
-import { Check, X, Wallet } from 'lucide-react';
+import { Check, X, Wallet, Clock, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createAlertAction as createAlert } from '@/actions/mutations';
 import { formatCurrency } from '@/lib/utils';
@@ -81,17 +81,38 @@ export function ApprovalQueue() {
         }
     };
     
+    const getUrgency = (expense: Expense): { color: string; label: string } => {
+        const createdAt = expense.createdAt instanceof Timestamp ? expense.createdAt.toDate() : new Date(expense.createdAt || Date.now());
+        const daysOld = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysOld >= 7) return { color: 'text-red-600 bg-red-100', label: `${daysOld}d old` };
+        if (daysOld >= 3) return { color: 'text-yellow-600 bg-yellow-100', label: `${daysOld}d old` };
+        return { color: 'text-green-600 bg-green-100', label: `${daysOld}d old` };
+    };
+
     return (
         <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden flex flex-col">
             <CardHeader className="bg-omuto-cream/50 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-xl text-primary"><Wallet className="h-5 w-5" /></div>
-                    <div>
-                        <CardTitle className="font-heading text-xl font-bold tracking-tight text-omuto-navy">Financial Queue</CardTitle>
-                        <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest mt-1">
-                            Action new expense reports
-                        </CardDescription>
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-xl text-primary"><Wallet className="h-5 w-5" /></div>
+                        <div>
+                            <CardTitle className="font-heading text-xl font-bold tracking-tight text-omuto-navy">Financial Queue</CardTitle>
+                            <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest mt-1">
+                                Action new expense reports
+                            </CardDescription>
+                        </div>
                     </div>
+                    {pendingExpenses && pendingExpenses.length > 0 && (
+                        <div className="flex items-center gap-2">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                                pendingExpenses.length > 5 ? 'bg-red-100 text-red-600 border border-red-200' :
+                                pendingExpenses.length > 2 ? 'bg-yellow-100 text-yellow-600 border border-yellow-200' :
+                                'bg-green-100 text-green-600 border border-green-200'
+                            }`}>
+                                {pendingExpenses.length} pending
+                            </span>
+                        </div>
+                    )}
                 </div>
             </CardHeader>
             <CardContent className="flex-1 p-0 flex flex-col">
@@ -115,26 +136,41 @@ export function ApprovalQueue() {
                             </TableRow>
                         ))}
                         {pendingExpenses && pendingExpenses.length > 0 ? (
-                            pendingExpenses.map((expense) => (
-                                <TableRow key={expense.id}>
+                            pendingExpenses.map((expense) => {
+                                const urgency = getUrgency(expense);
+                                return (
+                                <TableRow key={expense.id} className="border-l-2 border-l-transparent hover:border-l-primary/30 transition-colors">
                                     <TableCell>
-                                        <div className="font-medium">{expense.userName}</div>
-                                        <div className="text-sm text-muted-foreground">
-                                            {expense.title} - {formatCurrency(expense.totalAmount)}
+                                        <div className="flex items-center gap-2">
+                                            {urgency.label.includes('7d') || urgency.label.includes('8d') || urgency.label.includes('9d') || urgency.label.includes('10d') || parseInt(urgency.label) >= 7 ? (
+                                                <AlertCircle className="h-3 w-3 text-red-500 flex-shrink-0" />
+                                            ) : (
+                                                <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                            )}
+                                            <div>
+                                                <div className="font-medium">{expense.userName}</div>
+                                                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                                                    {expense.title} - {formatCurrency(expense.totalAmount)}
+                                                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${urgency.color}`}>
+                                                        {urgency.label}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" className="text-green-500 hover:text-green-600" onClick={() => handleStatusUpdate(expense, 'Approved')}>
+                                            <Button variant="ghost" size="icon" className="text-green-500 hover:text-green-600 hover:bg-green-50" onClick={() => handleStatusUpdate(expense, 'Approved')}>
                                                 <Check className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleStatusUpdate(expense, 'Rejected')}>
+                                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleStatusUpdate(expense, 'Rejected')}>
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                            ))
+                                );
+                            })
                         ) : (
                             !isLoading && (
                                 <TableRow>

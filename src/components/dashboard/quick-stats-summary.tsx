@@ -41,7 +41,19 @@ export function QuickStatsSummary() {
             return aIndex - bIndex;
         })
         .slice(0, 4);
-  }, [metrics])
+  }, [metrics]);
+
+  const getProgressColor = (progress: number) => {
+    if (progress >= 70) return 'bg-green-500';
+    if (progress >= 30) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  const getProgressTextColor = (progress: number) => {
+    if (progress >= 70) return 'text-green-600';
+    if (progress >= 30) return 'text-yellow-600';
+    return 'text-red-600';
+  };
 
   if (metrics === null) {
      return (
@@ -64,8 +76,11 @@ export function QuickStatsSummary() {
             <Card className="card-comic-clean h-36">
                 <CardContent className="p-6 h-full flex flex-col">
                     <div className="flex justify-between items-center mb-4">
-                        <div className="p-2 bg-primary/10 text-primary rounded-lg">
-                            <Icon className="h-4 w-4" />
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-primary/10 text-primary rounded-lg">
+                                <Icon className="h-4 w-4" />
+                            </div>
+                            <div className={`w-2.5 h-2.5 rounded-full ${progress >= 70 ? 'bg-green-500 animate-pulse' : progress >= 30 ? 'bg-yellow-500' : 'bg-red-500'}`} />
                         </div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{metric.unit || 'UNITS'}</span>
                     </div>
@@ -81,11 +96,11 @@ export function QuickStatsSummary() {
                         <div className="flex items-center gap-2 pt-1">
                             <div className="flex-1 h-1.5 bg-muted/40 rounded-full overflow-hidden border border-omuto-navy/10">
                                 <div 
-                                    className="h-full bg-primary rounded-full transition-all duration-1000" 
+                                    className={`h-full rounded-full transition-all duration-1000 ${getProgressColor(progress)}`} 
                                     style={{ width: `${progress}%` }}
                                 />
                             </div>
-                            <span className="text-[10px] font-black text-primary">{progress}%</span>
+                            <span className={`text-[10px] font-black ${getProgressTextColor(progress)}`}>{progress}%</span>
                         </div>
                     </div>
                 </CardContent>

@@ -60,17 +60,33 @@ export function EcosystemPulse() {
         return <Skeleton className="h-96 rounded-[2rem]" />
     }
 
+    const overallHealth = Math.round((stats.inspireProgress + stats.equipProgress + stats.sustainProgress) / 3);
+    const overallColor = overallHealth >= 70 ? 'bg-green-500' : overallHealth >= 40 ? 'bg-yellow-500' : 'bg-red-500';
+    const overallLabel = overallHealth >= 70 ? 'Healthy' : overallHealth >= 40 ? 'Building' : 'Critical';
+
     return (
         <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
             <CardHeader className="bg-omuto-cream/50 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-primary/10 rounded-xl">
-                        <ActivityIcon className="h-5 w-5 text-primary" />
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className="p-2 bg-primary/10 rounded-xl">
+                            <ActivityIcon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-xl font-black tracking-tight">Ecosystem Pulse</CardTitle>
+                            <CardDescription className="font-medium text-xs">Model Health & Impact Velocity</CardDescription>
+                        </div>
                     </div>
-                    <div>
-                        <CardTitle className="text-xl font-black tracking-tight">Ecosystem Pulse</CardTitle>
-                        <CardDescription className="font-medium text-xs">Model Health & Impact Velocity</CardDescription>
+                    <div className="flex items-center gap-3 bg-white rounded-xl border border-omuto-navy/20 px-4 py-2 shadow-sm">
+                        <div className={`w-2.5 h-2.5 rounded-full ${overallColor} ${overallHealth >= 70 ? 'animate-pulse' : ''}`} />
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Overall</p>
+                            <p className={`font-black text-sm ${overallHealth >= 70 ? 'text-green-600' : overallHealth >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>{overallLabel}</p>
+                        </div>
                     </div>
+                </div>
+                <div className="mt-3 h-1.5 bg-muted/50 rounded-full overflow-hidden border border-omuto-navy/10">
+                    <div className={`h-full rounded-full transition-all ${overallColor}`} style={{ width: `${overallHealth}%` }} />
                 </div>
             </CardHeader>
             <CardContent className="space-y-6 p-6">

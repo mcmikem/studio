@@ -62,28 +62,28 @@ export function ProgramsOverview({ programs }: { programs: Program[] | null }) {
       </CardHeader>
       <CardContent>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-            {/* Stats List */}
+             {/* Stats List */}
             <div className="md:col-span-1 grid grid-cols-1 gap-4">
-                <div className="flex items-center gap-4">
-                    <span className="h-2 w-2 rounded-full bg-[--chart-2]" />
-                    <div>
-                        <p className="text-muted-foreground">On Track</p>
-                        <p className="font-bold text-lg">{programs ? programStats.onTrack : '...'}</p>
+                <div className="flex items-center justify-between p-3 rounded-xl bg-green-50 border border-green-200">
+                    <div className="flex items-center gap-3">
+                        <span className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
+                        <p className="text-muted-foreground font-semibold text-sm">On Track</p>
                     </div>
+                    <p className="font-black text-lg text-green-600">{programs ? programStats.onTrack : '...'}</p>
                 </div>
-                 <div className="flex items-center gap-4">
-                    <span className="h-2 w-2 rounded-full bg-[--chart-3]" />
-                    <div>
-                        <p className="text-muted-foreground">At Risk</p>
-                        <p className="font-bold text-lg">{programs ? programStats.atRisk : '...'}</p>
+                 <div className="flex items-center justify-between p-3 rounded-xl bg-yellow-50 border border-yellow-200">
+                    <div className="flex items-center gap-3">
+                        <span className="h-3 w-3 rounded-full bg-yellow-500" />
+                        <p className="text-muted-foreground font-semibold text-sm">At Risk</p>
                     </div>
+                    <p className="font-black text-lg text-yellow-600">{programs ? programStats.atRisk : '...'}</p>
                 </div>
-                 <div className="flex items-center gap-4">
-                    <span className="h-2 w-2 rounded-full bg-[--chart-1]" />
-                    <div>
-                        <p className="text-muted-foreground">Delayed</p>
-                        <p className="font-bold text-lg">{programs ? programStats.delayed : '...'}</p>
+                 <div className="flex items-center justify-between p-3 rounded-xl bg-red-50 border border-red-200">
+                    <div className="flex items-center gap-3">
+                        <span className="h-3 w-3 rounded-full bg-red-500" />
+                        <p className="text-muted-foreground font-semibold text-sm">Delayed</p>
                     </div>
+                    <p className="font-black text-lg text-red-600">{programs ? programStats.delayed : '...'}</p>
                 </div>
             </div>
             

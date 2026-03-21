@@ -28,6 +28,7 @@ import {
   Square,
   ArrowRight,
   X,
+  TrendingUp,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { SchoolXperience } from '@/lib/types';
@@ -119,6 +120,13 @@ export default function RegistrationPipelinePage() {
   const totalPipeline = otherSchools.length;
   const onboardedCount = pipelineSchools.length;
 
+  const stageCounts = {
+    Inquiry: filtered('Inquiry').length,
+    'Meeting Booked': filtered('Meeting Booked').length,
+    'MOU Signed': filtered('MOU Signed').length,
+    Onboarded: onboardedCount,
+  };
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -131,6 +139,38 @@ export default function RegistrationPipelinePage() {
           { name: 'Pipeline', href: '/school-xperience/pipeline' },
         ]}
       />
+
+      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-5 shadow-comic-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="h-4 w-4 text-omuto-red" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Pipeline Funnel</span>
+        </div>
+        <div className="flex gap-3 overflow-x-auto">
+          {PIPELINE_STAGES.map((stage, i) => {
+            const count = stageCounts[stage.id as keyof typeof stageCounts] || 0;
+            const total = schools?.length || 1;
+            const pct = Math.round((count / total) * 100);
+            const isLast = i === PIPELINE_STAGES.length - 1;
+            return (
+              <div key={stage.id} className="flex items-center gap-0">
+                <div className={`flex flex-col items-center p-3 rounded-xl border-2 min-w-[80px] ${stage.border} ${stage.bg}`}>
+                  <p className={`font-black text-xl ${stage.color}`}>{count}</p>
+                  <p className={`text-[9px] font-bold uppercase tracking-wider ${stage.color}`}>{pct}%</p>
+                  <p className={`text-[9px] font-black uppercase mt-1 ${stage.color}`}>{stage.label}</p>
+                </div>
+                {!isLast && (
+                  <ChevronRight className={`h-4 w-4 mx-1 flex-shrink-0 ${stage.color}`} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-3 flex items-center gap-4 text-[10px] font-bold text-muted-foreground">
+          <span>Total: <strong className="text-omuto-navy">{schools?.length || 0}</strong> schools</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" />Onboarded: <strong className="text-green-600">{onboardedCount}</strong></span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-400" />In progress: <strong className="text-gray-600">{totalPipeline}</strong></span>
+        </div>
+      </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex flex-wrap gap-2">

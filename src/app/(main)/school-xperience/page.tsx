@@ -33,6 +33,8 @@ import {
   Sparkles,
   Map as MapIcon,
   TreePine,
+  Clock,
+  CheckCircle2,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolXperience, SchoolVisitXperience } from '@/lib/types';
@@ -146,6 +148,24 @@ export default function SchoolXperienceHubPage() {
     return visits.find((v) => v.schoolId === schoolId);
   };
 
+  const getVisitStatus = (schoolId: string): { label: string; color: string; bgColor: string; urgency: 'red' | 'yellow' | 'green' } => {
+    const schoolVisits = visits?.filter((v) => v.schoolId === schoolId) || [];
+    const lastVisit = schoolVisits[0];
+    if (!lastVisit) {
+      return { label: 'No visits', color: 'text-red-600', bgColor: 'bg-red-100', urgency: 'red' };
+    }
+    const dateVal = lastVisit.date as any;
+    const d = dateVal?.toDate ? dateVal.toDate() : new Date(dateVal);
+    const daysSince = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysSince > 30) {
+      return { label: `${daysSince}d overdue`, color: 'text-red-600', bgColor: 'bg-red-100', urgency: 'red' };
+    }
+    if (daysSince > 14) {
+      return { label: `Due soon (${daysSince}d ago)`, color: 'text-yellow-600', bgColor: 'bg-yellow-100', urgency: 'yellow' };
+    }
+    return { label: `${daysSince}d ago`, color: 'text-green-600', bgColor: 'bg-green-100', urgency: 'green' };
+  };
+
   return (
     <div className="space-y-8">
       <PageHeader
@@ -162,6 +182,7 @@ export default function SchoolXperienceHubPage() {
           value={schoolsLoading ? '—' : stats.total}
           sub={`${stats.tierCounts.Flagship} Flagship, ${stats.tierCounts.Advanced} Advanced`}
           color="text-blue-600"
+          alertLevel={stats.total === 0 ? 'red' : stats.total < 5 ? 'yellow' : 'green'}
         />
         <StatCard
           icon={ClipboardCheck}
@@ -169,6 +190,7 @@ export default function SchoolXperienceHubPage() {
           value={stats.visitsThisMonth}
           sub="monitoring visits logged"
           color="text-green-600"
+          alertLevel={stats.visitsThisMonth === 0 ? 'red' : 'green'}
         />
         <StatCard
           icon={AlertCircle}
@@ -176,6 +198,7 @@ export default function SchoolXperienceHubPage() {
           value={stats.schoolsDue}
           sub="overdue by 30+ days"
           color={stats.schoolsDue > 0 ? 'text-red-600' : 'text-green-600'}
+          alertLevel={stats.schoolsDue > 5 ? 'red' : stats.schoolsDue > 0 ? 'yellow' : 'green'}
         />
         <StatCard
           icon={Calendar}
@@ -183,64 +206,74 @@ export default function SchoolXperienceHubPage() {
           value="Term 1"
           sub="2026 Academic Year"
           color="text-purple-600"
+          alertLevel="green"
         />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2">
-        <Button asChild className="btn-omuto h-auto py-2.5 rounded-xl flex-col gap-1 shadow-comic-sm">
-          <Link href="/school-xperience/log-visit">
-            <ClipboardCheck className="h-4 w-4" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Log Visit</span>
-          </Link>
-        </Button>
-        <Button asChild className="btn-omuto h-auto py-2.5 rounded-xl flex-col gap-1 shadow-comic-sm">
-          <Link href="/school-xperience/submit-scorecard">
-            <StarHalf className="h-4 w-4" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Scorecard</span>
-          </Link>
-        </Button>
-        <Button asChild className="btn-omuto h-auto py-2.5 rounded-xl flex-col gap-1 shadow-comic-sm">
-          <Link href="/school-xperience/add-leader">
-            <Users className="h-4 w-4" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Add Leader</span>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
-          <Link href="/school-xperience/log-impact">
-            <MapIcon className="h-4 w-4 text-green-600" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Log Impact</span>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
-          <Link href="/school-xperience/pipeline">
-            <GitBranch className="h-4 w-4 text-blue-600" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Pipeline</span>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
-          <Link href="/school-xperience/planner">
-            <Calendar className="h-4 w-4 text-purple-600" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Planner</span>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
-          <Link href="/school-xperience/impact-data">
-            <MapIcon className="h-4 w-4 text-cyan-600" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Impact Data</span>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
-          <Link href="/school-xperience/stories">
-            <Video className="h-4 w-4 text-amber-600" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Stories</span>
-          </Link>
-        </Button>
-        <Button asChild variant="outline" className="h-auto py-2.5 rounded-xl flex-col gap-1 shadow-sm border-2">
-          <Link href="/school-xperience/impact">
-            <Sparkles className="h-4 w-4 text-teal-600" />
-            <span className="font-black text-[10px] uppercase tracking-widest">Impact</span>
-          </Link>
-        </Button>
+      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-4 shadow-comic-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="h-4 w-4 text-omuto-red" />
+          <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Quick Actions</span>
+        </div>
+        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
+          <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm relative overflow-hidden group">
+            <Link href="/school-xperience/log-visit">
+              <span className="absolute top-0 right-0 w-2 h-2 rounded-bl-full bg-white/30" />
+              <ClipboardCheck className="h-5 w-5" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight">Log Visit</span>
+            </Link>
+          </Button>
+          <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm relative overflow-hidden">
+            <Link href="/school-xperience/submit-scorecard">
+              <span className="absolute top-0 right-0 w-2 h-2 rounded-bl-full bg-white/30" />
+              <StarHalf className="h-5 w-5" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight">Scorecard</span>
+            </Link>
+          </Button>
+          <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm relative overflow-hidden">
+            <Link href="/school-xperience/add-leader">
+              <span className="absolute top-0 right-0 w-2 h-2 rounded-bl-full bg-white/30" />
+              <Users className="h-5 w-5" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight">Add Leader</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-green-200 bg-green-50 hover:bg-green-100 hover:border-green-300 hover:-translate-y-0.5 transition-all">
+            <Link href="/school-xperience/log-impact">
+              <MapIcon className="h-5 w-5 text-green-600" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-green-700">Log Impact</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 hover:-translate-y-0.5 transition-all">
+            <Link href="/school-xperience/pipeline">
+              <GitBranch className="h-5 w-5 text-blue-600" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-blue-700">Pipeline</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-purple-200 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 hover:-translate-y-0.5 transition-all">
+            <Link href="/school-xperience/planner">
+              <Calendar className="h-5 w-5 text-purple-600" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-purple-700">Planner</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-cyan-200 bg-cyan-50 hover:bg-cyan-100 hover:border-cyan-300 hover:-translate-y-0.5 transition-all">
+            <Link href="/school-xperience/impact-data">
+              <MapIcon className="h-5 w-5 text-cyan-600" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-cyan-700">Impact Data</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-300 hover:-translate-y-0.5 transition-all">
+            <Link href="/school-xperience/stories">
+              <Video className="h-5 w-5 text-amber-600" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-amber-700">Stories</span>
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-teal-200 bg-teal-50 hover:bg-teal-100 hover:border-teal-300 hover:-translate-y-0.5 transition-all">
+            <Link href="/school-xperience/impact">
+              <Sparkles className="h-5 w-5 text-teal-600" />
+              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-teal-700">Impact</span>
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card className="border-lg shadow-comic-sm">
@@ -324,12 +357,16 @@ export default function SchoolXperienceHubPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredSchools.map((school) => {
-                const lastVisit = getLastVisit(school.id);
+                  {filteredSchools.map((school) => {
+                const visitStatus = getVisitStatus(school.id);
                 return (
                   <div
                     key={school.id}
-                    className="border-lg rounded-2xl p-4 hover:bg-muted/30 transition-colors"
+                    className={`border-lg rounded-2xl p-4 hover:bg-muted/30 transition-colors border-l-4 ${
+                      visitStatus.urgency === 'red' ? 'border-l-red-500' :
+                      visitStatus.urgency === 'yellow' ? 'border-l-yellow-500' :
+                      'border-l-green-500'
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
@@ -344,6 +381,12 @@ export default function SchoolXperienceHubPage() {
                           <Badge className={`text-xs font-bold border ${STATUS_COLORS[school.status || 'Registered']}`}>
                             {school.status || 'Registered'}
                           </Badge>
+                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${visitStatus.bgColor} ${visitStatus.color}`}>
+                            {visitStatus.urgency === 'red' ? <AlertCircle className="h-3 w-3 inline mr-1" /> :
+                             visitStatus.urgency === 'yellow' ? <Clock className="h-3 w-3 inline mr-1" /> :
+                             <CheckCircle2 className="h-3 w-3 inline mr-1" />}
+                            {visitStatus.label}
+                          </span>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
@@ -379,21 +422,6 @@ export default function SchoolXperienceHubPage() {
                         )}
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        {lastVisit ? (
-                          <span className="text-xs text-muted-foreground">
-                            Last visit:{' '}
-                            {(() => {
-                              const dateVal = lastVisit.date as any;
-                              const d = dateVal?.toDate ? dateVal.toDate() : new Date(dateVal);
-                              return format(d, 'MMM d');
-                            })()}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-red-500 font-bold flex items-center gap-1">
-                            <AlertCircle className="h-3 w-3" />
-                            No visits yet
-                          </span>
-                        )}
                         <div className="flex gap-2">
                           <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
                             <Link href={`/school-xperience/log-visit?schoolId=${school.id}&schoolName=${encodeURIComponent(school.schoolName || '')}`}>
@@ -421,19 +449,36 @@ export default function SchoolXperienceHubPage() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub, color }: {
+function StatCard({ icon: Icon, label, value, sub, color, alertLevel }: {
   icon: React.ElementType;
   label: string;
   value: string | number;
   sub: string;
   color: string;
+  alertLevel?: 'green' | 'yellow' | 'red';
 }) {
+  const alertDot = alertLevel === 'red' ? (
+    <span className="relative flex h-3 w-3">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
+    </span>
+  ) : alertLevel === 'yellow' ? (
+    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+  ) : alertLevel === 'green' ? (
+    <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+  ) : null;
+
+  const borderColor = alertLevel === 'red' ? 'border-l-4 border-l-red-500' : alertLevel === 'yellow' ? 'border-l-4 border-l-yellow-500' : alertLevel === 'green' ? 'border-l-4 border-l-green-500' : '';
+
   return (
-    <Card className="border-lg shadow-comic-sm">
+    <Card className={`border-lg shadow-comic-sm ${borderColor}`}>
       <CardContent className="p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Icon className={`h-5 w-5 ${color}`} />
-          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Icon className={`h-5 w-5 ${color}`} />
+            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
+          </div>
+          {alertDot}
         </div>
         <p className="text-2xl font-black">{value}</p>
         <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>

@@ -2,7 +2,6 @@
 'use client';
 
 import {
-  Home,
   Sparkles,
   Briefcase,
   AreaChart,
@@ -15,6 +14,7 @@ import {
   LayoutDashboard,
   Users,
   CheckCircle,
+  CheckSquare,
   LifeBuoy,
   Heart,
   Swords,
@@ -88,12 +88,12 @@ const navConfig = {
   ],
   forms: [
     { href: '/meal/beneficiary-registration', icon: Users, label: 'Register Beneficiary' },
-    { href: '/forms/school', icon: Book, label: 'Register School' },
     { href: '/meal/activity', icon: BarChart3, label: 'Log Activity' },
-    { href: '/meal/attendance', icon: Users, label: 'Take Attendance' },
+    { href: '/meal/attendance', icon: CheckCircle, label: 'Take Attendance' },
     { href: '/meal/baseline-survey', icon: Book, label: 'Baseline Survey' },
-    { href: '/meal/endline-survey', icon: Book, label: 'Endline Survey' },
+    { href: '/meal/endline-survey', icon: CheckSquare, label: 'Endline Survey' },
     { href: '/meal/pulse', icon: Heart, label: 'Pulse Content' },
+    { href: '/forms/school', icon: School, label: 'Register School' },
     { href: '/forms/check-in', icon: LogIn, label: 'Check-in' },
     { href: '/forms/check-out', icon: LogOut, label: 'Check-out' },
   ],
@@ -115,10 +115,9 @@ const navConfig = {
     { href: '/meal/greenschools', icon: Flower2, label: 'Green Schools' },
     { href: '/meal/purewater', icon: Droplets, label: 'PureWater' },
     { href: '/school-xperience', icon: Building2, label: 'School Xperience' },
-    { href: '/school-xperience/seed', icon: Sparkles, label: 'Seed Demo' },
   ],
   team: [
-    { href: '/team-performance', icon: Trophy, label: 'Impact Stars' },
+    { href: '/team-performance', icon: TrendingUp, label: 'Impact Stars' },
     { href: '/checkins', icon: LogIn, label: 'Check-ins' },
     { href: '/activity-log', icon: History, label: 'Activity Log' },
     { href: '/stream', icon: Wind, label: 'Reports' },
@@ -154,20 +153,20 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['daily', 'ai', 'ops', 'enterprise', 'programs', 'forms', 'team', 'data', 'content', 'system'],
-  'Executive Director': ['daily', 'ai', 'ops', 'enterprise', 'programs', 'forms', 'team', 'data', 'content', 'system'],
-  'Programs & Partnerships Manager': ['daily', 'ai', 'enterprise', 'programs', 'forms', 'team', 'data', 'content'],
-  'Operations & Field Manager': ['daily', 'ai', 'enterprise', 'programs', 'forms', 'team', 'data', 'content'],
-  'Media & Finance Lead': ['daily', 'ai', 'ops', 'enterprise', 'forms', 'data', 'content'],
-  'Media & Communications Lead': ['daily', 'ai', 'enterprise', 'forms', 'data', 'content'],
-  'Essentials Manager': ['daily', 'ai', 'enterprise', 'ops', 'forms', 'data'],
-  'Youth Center Manager': ['daily', 'ai', 'enterprise', 'forms', 'team', 'data'],
-  'Field Coordinator': ['daily', 'ai', 'programs', 'forms', 'team', 'data', 'content'],
-  'Field Staff': ['daily', 'ai', 'forms', 'team', 'data', 'content'],
-  'Media & Communications': ['daily', 'ai', 'forms', 'content', 'data'],
-  'Accountant/Finance': ['daily', 'ai', 'ops', 'forms', 'data'],
-  'Intern': ['daily', 'ai', 'forms', 'team', 'content'],
-  'Volunteer': ['daily', 'ai', 'forms', 'team'],
+  'Administrator': ['daily', 'forms', 'programs', 'enterprise', 'ops', 'team', 'data', 'ai', 'content', 'system'],
+  'Executive Director': ['daily', 'forms', 'programs', 'enterprise', 'ops', 'team', 'data', 'ai', 'content', 'system'],
+  'Programs & Partnerships Manager': ['daily', 'forms', 'programs', 'enterprise', 'team', 'data', 'ai', 'content'],
+  'Operations & Field Manager': ['daily', 'forms', 'programs', 'enterprise', 'team', 'data', 'ai', 'content'],
+  'Media & Finance Lead': ['daily', 'forms', 'enterprise', 'ops', 'data', 'ai', 'content'],
+  'Media & Communications Lead': ['daily', 'forms', 'enterprise', 'data', 'ai', 'content'],
+  'Essentials Manager': ['daily', 'forms', 'enterprise', 'ops', 'data', 'ai'],
+  'Youth Center Manager': ['daily', 'forms', 'enterprise', 'team', 'data', 'ai'],
+  'Field Coordinator': ['daily', 'forms', 'programs', 'team', 'data', 'ai', 'content'],
+  'Field Staff': ['daily', 'forms', 'team', 'data', 'ai', 'content'],
+  'Media & Communications': ['daily', 'forms', 'content', 'data', 'ai'],
+  'Accountant/Finance': ['daily', 'forms', 'ops', 'data', 'ai'],
+  'Intern': ['daily', 'forms', 'team', 'content', 'ai'],
+  'Volunteer': ['daily', 'forms', 'team', 'ai'],
   'default': ['daily', 'team', 'data'],
 };
 
@@ -246,19 +245,19 @@ export function AppSidebar() {
       <SidebarContent className="no-scrollbar pt-2">
         {renderNavSection('daily', 'Daily Ops')}
         <div className="h-3" />
-        {renderNavSection('ai', 'AI & Strategy')}
-        <div className="h-3" />
-        {renderNavSection('ops', 'Operations')}
-        <div className="h-3" />
-        {renderNavSection('enterprise', 'Enterprise')}
+        {renderNavSection('forms', 'Impact Forms')}
         <div className="h-3" />
         {renderNavSection('programs', 'Programs')}
         <div className="h-3" />
-        {renderNavSection('forms', 'Impact Forms')}
+        {renderNavSection('enterprise', 'Enterprise')}
+        <div className="h-3" />
+        {renderNavSection('ops', 'Operations')}
         <div className="h-3" />
         {renderNavSection('team', 'Team')}
         <div className="h-3" />
         {renderNavSection('data', 'Data')}
+        <div className="h-3" />
+        {renderNavSection('ai', 'AI & Strategy')}
         <div className="h-3" />
         {renderNavSection('content', 'Content')}
         <Separator className="mx-7 my-5 bg-omuto-navy/10 border-none h-[2px]" />
