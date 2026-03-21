@@ -115,6 +115,7 @@ const navConfig = {
     { href: '/meal/greenschools', icon: Flower2, label: 'Green Schools' },
     { href: '/meal/purewater', icon: Droplets, label: 'PureWater' },
     { href: '/school-xperience', icon: Building2, label: 'School Xperience' },
+    { href: '/school-xperience/seed', icon: Sparkles, label: 'Seed Demo' },
   ],
   team: [
     { href: '/team-performance', icon: Trophy, label: 'Impact Stars' },
