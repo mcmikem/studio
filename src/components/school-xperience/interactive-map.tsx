@@ -1,28 +1,23 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { 
-  MapPin, Layers, Navigation, Loader2, Search, X, 
-  GraduationCap, Droplets, TreePine, Users, Building2,
-  Eye, EyeOff
+  MapPin, Loader2, GraduationCap, Droplets, TreePine, Users, 
+  Building2, Eye, EyeOff, Navigation, Home, UsersRound
 } from 'lucide-react';
-import { UGANDA_LOCATIONS } from '@/lib/uganda-data';
 
 export interface MapLocation {
   id: string;
   name: string;
-  type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training';
+  type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office';
   coordinates?: { lat: number; lng: number };
   subcounty?: string;
   district?: string;
   parish?: string;
   programme?: string;
-  data?: any;
+  description?: string;
 }
 
 interface InteractiveMapProps {
@@ -33,14 +28,17 @@ interface InteractiveMapProps {
   editable?: boolean;
   center?: { lat: number; lng: number };
   zoom?: number;
+  highlightBoundary?: { type: string; coordinates: number[][][] } | null;
+  className?: string;
 }
 
-const LAYER_COLORS = {
-  school: { marker: '#3b82f6', fill: '#3b82f6' }, // blue
-  water: { marker: '#06b6d4', fill: '#06b6d4' },   // cyan
-  tree: { marker: '#22c55e', fill: '#22c55e' },    // green
-  beneficiary: { marker: '#ec4899', fill: '#ec4899' }, // pink
-  training: { marker: '#f59e0b', fill: '#f59e0b' }, // amber
+const LAYER_COLORS: Record<string, { marker: string; fill: string }> = {
+  school: { marker: '#3b82f6', fill: 'rgba(59,130,246,0.3)' },
+  water: { marker: '#06b6d4', fill: 'rgba(6,182,212,0.3)' },
+  tree: { marker: '#22c55e', fill: 'rgba(34,197,94,0.3)' },
+  beneficiary: { marker: '#ec4899', fill: 'rgba(236,72,153,0.3)' },
+  training: { marker: '#f59e0b', fill: 'rgba(245,158,11,0.3)' },
+  office: { marker: '#dc2626', fill: 'rgba(220,38,38,0.3)' },
 };
 
 export function InteractiveMap({ 
@@ -49,40 +47,32 @@ export function InteractiveMap({
   selectedLocation,
   onCoordinatesChange,
   editable = false,
-  center = { lat: 0.233, lng: 32.333 },
-  zoom = 11
+  center = { lat: 0.208, lng: 32.479 },
+  zoom = 12,
+  highlightBoundary = null,
+  className = '',
 }: InteractiveMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const boundaryRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(['school', 'water', 'tree']));
-  const [searchQuery, setSearchQuery] = useState('');
+  const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(['school', 'water', 'tree', 'beneficiary', 'training', 'office']));
   const [clickedCoords, setClickedCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [showSubcountyLabels, setShowSubcountyLabels] = useState(true);
-  const clickMarkerRef = useRef<any>(null);
 
-  // Filter locations based on active layers and search
+  // Filter locations
   const filteredLocations = locations.filter(loc => {
-    if (!activeLayers.has(loc.type)) return false;
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        loc.name.toLowerCase().includes(query) ||
-        loc.subcounty?.toLowerCase().includes(query) ||
-        loc.district?.toLowerCase().includes(query)
-      );
-    }
-    return true;
+    return activeLayers.has(loc.type) && loc.coordinates;
   });
 
-  // Count by type
+  // Counts
   const counts = {
-    school: locations.filter(l => l.type === 'school').length,
-    water: locations.filter(l => l.type === 'water').length,
-    tree: locations.filter(l => l.type === 'tree').length,
-    beneficiary: locations.filter(l => l.type === 'beneficiary').length,
-    training: locations.filter(l => l.type === 'training').length,
+    school: locations.filter(l => l.type === 'school' && l.coordinates).length,
+    water: locations.filter(l => l.type === 'water' && l.coordinates).length,
+    tree: locations.filter(l => l.type === 'tree' && l.coordinates).length,
+    beneficiary: locations.filter(l => l.type === 'beneficiary' && l.coordinates).length,
+    training: locations.filter(l => l.type === 'training' && l.coordinates).length,
+    office: locations.filter(l => l.type === 'office' && l.coordinates).length,
   };
 
   const toggleLayer = (layer: string) => {
@@ -105,7 +95,7 @@ export function InteractiveMap({
       try {
         const L = (await import('leaflet')).default;
         
-        // Import Leaflet CSS
+        // Load Leaflet CSS
         if (!document.getElementById('leaflet-css')) {
           const link = document.createElement('link');
           link.id = 'leaflet-css';
@@ -114,14 +104,18 @@ export function InteractiveMap({
           document.head.appendChild(link);
         }
 
-        const map = L.map(mapRef.current!).setView([center.lat, center.lng], zoom);
+        const map = L.map(mapRef.current!, {
+          center: [center.lat, center.lng],
+          zoom: zoom,
+          zoomControl: true,
+        });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors',
-          maxZoom: 18,
+          maxZoom: 19,
         }).addTo(map);
 
-        // Click handler for editable mode
+        // Add click handler for editable mode
         if (editable) {
           map.on('click', (e: any) => {
             const coords = { lat: e.latlng.lat, lng: e.latlng.lng };
@@ -129,26 +123,13 @@ export function InteractiveMap({
             if (onCoordinatesChange) {
               onCoordinatesChange(coords);
             }
-            
-            // Add/update click marker
-            if (clickMarkerRef.current) {
-              map.removeLayer(clickMarkerRef.current);
-            }
-            clickMarkerRef.current = L.marker([coords.lat, coords.lng], {
-              icon: L.divIcon({
-                className: 'click-marker',
-                html: `<div style="background:#ef4444;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 2px 5px rgba(0,0,0,0.3)"></div>`,
-                iconSize: [20, 20],
-                iconAnchor: [10, 10],
-              })
-            }).addTo(map).bindPopup(`Selected: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
           });
         }
 
-        mapInstanceRef.current = map;
+        mapInstanceRef.current = { map, L };
         setIsLoading(false);
       } catch (error) {
-        console.error('Failed to initialize map:', error);
+        console.error('Map init error:', error);
         setIsLoading(false);
       }
     };
@@ -157,183 +138,209 @@ export function InteractiveMap({
 
     return () => {
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        mapInstanceRef.current.map.remove();
         mapInstanceRef.current = null;
       }
     };
-  }, [editable, center.lat, center.lng, zoom]);
+  }, []);
 
-  // Update markers when data changes
+  // Update view when center/zoom changes
   useEffect(() => {
     if (!mapInstanceRef.current) return;
+    const { map } = mapInstanceRef.current;
+    map.setView([center.lat, center.lng], zoom);
+  }, [center.lat, center.lng, zoom]);
 
-    const updateMarkers = async () => {
-      const L = (await import('leaflet')).default;
-      const map = mapInstanceRef.current;
+  // Update markers
+  useEffect(() => {
+    if (!mapInstanceRef.current || isLoading) return;
 
-      // Clear existing markers
-      markersRef.current.forEach(marker => map.removeLayer(marker));
-      markersRef.current = [];
+    const { map, L } = mapInstanceRef.current;
 
-      // Add markers for filtered locations
-      filteredLocations.forEach(loc => {
-        if (!loc.coordinates) return;
-        
-        const colors = LAYER_COLORS[loc.type] || { marker: '#888' };
-        
-        const marker = L.marker([loc.coordinates.lat, loc.coordinates.lng], {
-          icon: L.divIcon({
-            className: `${loc.type}-marker`,
-            html: `<div style="background:${colors.marker};width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>`,
-            iconSize: [12, 12],
-            iconAnchor: [6, 6],
-          })
-        }).addTo(map);
+    // Clear existing markers
+    markersRef.current.forEach(marker => map.removeLayer(marker));
+    markersRef.current = [];
 
-        marker.bindPopup(`
-          <div style="min-width:150px">
-            <strong>${loc.name}</strong>
-            <br/>
-            <small style="color:#666">${loc.type}${loc.subcounty ? ` • ${loc.subcounty}` : ''}</small>
-            ${loc.programme ? `<br/><span style="background:${colors.marker};color:white;padding:1px 4px;border-radius:3px;font-size:10px">${loc.programme}</span>` : ''}
-          </div>
-        `);
+    // Clear boundary
+    if (boundaryRef.current) {
+      map.removeLayer(boundaryRef.current);
+      boundaryRef.current = null;
+    }
 
-        marker.on('click', () => {
-          if (onLocationClick) {
-            onLocationClick(loc);
-          }
-        });
+    // Add boundary highlight if exists
+    if (highlightBoundary && highlightBoundary.coordinates) {
+      const coords = highlightBoundary.coordinates[0].map(([lng, lat]) => [lat, lng]);
+      boundaryRef.current = L.polygon(coords, {
+        color: '#dc2626',
+        fillColor: '#dc2626',
+        fillOpacity: 0.2,
+        weight: 3,
+      }).addTo(map);
+    }
 
-        markersRef.current.push(marker);
+    // Add markers
+    filteredLocations.forEach(loc => {
+      if (!loc.coordinates) return;
+
+      const colors = LAYER_COLORS[loc.type] || { marker: '#888' };
+      const isSelected = selectedLocation?.id === loc.id;
+      const size = isSelected ? 20 : 14;
+      const isOmuto = loc.type === 'office';
+
+      const icon = L.divIcon({
+        className: `${loc.type}-marker`,
+        html: isOmuto 
+          ? `<div style="background:${colors.marker};width:${size}px;height:${size}px;border-radius:50%;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">
+               <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+             </div>`
+          : `<div style="background:${colors.marker};width:${size}px;height:${size}px;border-radius:50%;border:${isSelected ? '4px' : '2px'} solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);${isSelected ? 'transform:scale(1.2);' : ''}"></div>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
       });
-    };
 
-    updateMarkers();
-  }, [filteredLocations, onLocationClick]);
+      const marker = L.marker([loc.coordinates.lat, loc.coordinates.lng], { icon }).addTo(map);
+
+      // Popup content
+      const typeLabel = loc.type === 'office' ? 'Omuto HQ' : loc.type.charAt(0).toUpperCase() + loc.type.slice(1);
+      const popupContent = `
+        <div style="min-width:180px;font-family:system-ui,sans-serif;">
+          <strong style="font-size:14px;">${loc.name}</strong>
+          <div style="margin-top:4px;">
+            <span style="background:${colors.marker};color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;">${typeLabel}</span>
+          </div>
+          ${loc.subcounty || loc.district ? `<div style="margin-top:6px;font-size:12px;color:#666;">${loc.subcounty || ''}${loc.subcounty && loc.district ? ' • ' : ''}${loc.district || ''}</div>` : ''}
+          ${loc.programme ? `<div style="margin-top:4px;font-size:11px;color:#888;">${loc.programme}</div>` : ''}
+        </div>
+      `;
+
+      marker.bindPopup(popupContent);
+
+      marker.on('click', () => {
+        if (onLocationClick) {
+          onLocationClick(loc);
+        }
+      });
+
+      markersRef.current.push(marker);
+    });
+
+    // Fit bounds if we have markers
+    if (filteredLocations.length > 0 && filteredLocations.some(l => l.coordinates)) {
+      const validLocations = filteredLocations.filter(l => l.coordinates);
+      if (validLocations.length > 1) {
+        const group = L.featureGroup(validLocations.map(l => 
+          L.marker([l.coordinates!.lat, l.coordinates!.lng])
+        ));
+        // Don't auto-fit if we're highlighting a specific boundary
+        if (!highlightBoundary) {
+          // map.fitBounds(group.getBounds(), { padding: [30, 30] });
+        }
+      }
+    }
+  }, [filteredLocations, selectedLocation, highlightBoundary, isLoading, onLocationClick]);
+
+  const totalVisible = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return (
-    <Card className="border-lg shadow-comic-sm overflow-hidden">
-      <CardHeader className="bg-muted/30 border-b-lg p-4">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg font-black">Impact Map</CardTitle>
+    <div className={`relative ${className}`}>
+      {/* Map Container */}
+      <div ref={mapRef} className="w-full h-full min-h-[400px]" />
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/80 z-10">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <span className="text-sm font-bold text-muted-foreground">Loading map...</span>
           </div>
-          
-          {/* Layer toggles */}
-          <div className="flex flex-wrap gap-2">
-            {(['school', 'water', 'tree', 'beneficiary', 'training'] as const).map(type => (
-              <Button
+        </div>
+      )}
+
+      {/* Layer Controls - Top Right */}
+      <div className="absolute top-4 right-4 z-[1000] space-y-2">
+        {/* Stats */}
+        <div className="bg-white/95 rounded-xl p-3 shadow-lg border min-w-[160px]">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Locations</p>
+          <div className="space-y-1.5">
+            <LayerRow icon={Home} label="Office" count={counts.office} color="#dc2626" />
+            <LayerRow icon={GraduationCap} label="Schools" count={counts.school} color="#3b82f6" />
+            <LayerRow icon={Users} label="Beneficiaries" count={counts.beneficiary} color="#ec4899" />
+            <LayerRow icon={Droplets} label="Water" count={counts.water} color="#06b6d4" />
+            <LayerRow icon={TreePine} label="Trees" count={counts.tree} color="#22c55e" />
+            <LayerRow icon={Building2} label="Trainings" count={counts.training} color="#f59e0b" />
+          </div>
+        </div>
+
+        {/* Layer Toggles */}
+        <div className="bg-white/95 rounded-xl p-3 shadow-lg border">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Layers</p>
+          <div className="space-y-1">
+            {(['office', 'school', 'beneficiary', 'water', 'tree', 'training'] as const).map(type => (
+              <button
                 key={type}
-                size="sm"
-                variant={activeLayers.has(type) ? 'default' : 'outline'}
                 onClick={() => toggleLayer(type)}
-                className="h-8 rounded-lg text-xs font-bold gap-1"
+                className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                  activeLayers.has(type) ? 'bg-muted' : 'opacity-50'
+                }`}
               >
-                {activeLayers.has(type) ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                {counts[type]}
-                {type === 'school' && <GraduationCap className="h-3 w-3" />}
-                {type === 'water' && <Droplets className="h-3 w-3" />}
-                {type === 'tree' && <TreePine className="h-3 w-3" />}
-                {type === 'beneficiary' && <Users className="h-3 w-3" />}
-                {type === 'training' && <Building2 className="h-3 w-3" />}
-              </Button>
+                <div 
+                  className="w-3 h-3 rounded-full border-2" 
+                  style={{ 
+                    backgroundColor: activeLayers.has(type) ? LAYER_COLORS[type].marker : 'transparent',
+                    borderColor: LAYER_COLORS[type].marker 
+                  }} 
+                />
+                <span className="capitalize">{type}</span>
+              </button>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Search */}
-        <div className="flex gap-2 mt-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search schools, locations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 rounded-lg text-sm"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2"
-              >
-                <X className="h-4 w-4 text-muted-foreground" />
-              </button>
-            )}
-          </div>
-          <Button
-            variant={showSubcountyLabels ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setShowSubcountyLabels(!showSubcountyLabels)}
-            className="h-9 rounded-lg text-xs font-bold"
-          >
-            Subcounties
-          </Button>
+      {/* Legend - Bottom Left */}
+      <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 rounded-xl p-3 shadow-lg border">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Legend</p>
+        <div className="space-y-1.5">
+          <LegendItem color="#dc2626" label="Omuto HQ" />
+          <LegendItem color="#3b82f6" label="Partner Schools" />
+          <LegendItem color="#ec4899" label="Beneficiaries" />
+          <LegendItem color="#06b6d4" label="Water Sources" />
+          <LegendItem color="#22c55e" label="Trees Planted" />
+          <LegendItem color="#f59e0b" label="Training Sessions" />
         </div>
+      </div>
 
-        {editable && clickedCoords && (
-          <div className="mt-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
-            <p className="text-xs font-bold text-primary">
-              Selected: {clickedCoords.lat.toFixed(6)}, {clickedCoords.lng.toFixed(6)}
-            </p>
-          </div>
-        )}
-
-        <CardDescription className="text-xs mt-1">
-          {filteredLocations.length} locations visible • Click map to select coordinates
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="p-0">
-        <div className="relative h-[500px] bg-muted/20">
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="text-sm font-bold">Loading map...</span>
-              </div>
-            </div>
-          )}
-          <div ref={mapRef} className="h-full w-full" />
-          
-          {/* Stats overlay */}
-          <div className="absolute top-4 right-4 bg-background/95 rounded-xl p-3 border shadow-lg z-[1000] max-w-[180px]">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2">Coverage</p>
-            <div className="space-y-1.5">
-              <LayerStat icon={GraduationCap} label="Schools" count={counts.school} color="text-blue-600" />
-              <LayerStat icon={Droplets} label="Water Points" count={counts.water} color="text-cyan-600" />
-              <LayerStat icon={TreePine} label="Trees" count={counts.tree} color="text-green-600" />
-              <LayerStat icon={Users} label="Beneficiaries" count={counts.beneficiary} color="text-pink-600" />
-              <LayerStat icon={Building2} label="Trainings" count={counts.training} color="text-amber-600" />
-            </div>
-          </div>
-
-          {/* Legend */}
-          <div className="absolute bottom-4 left-4 bg-background/95 rounded-xl p-3 border shadow-lg z-[1000]">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2">Legend</p>
-            <div className="space-y-1">
-              <LegendItem color="#3b82f6" label="Partner Schools" />
-              <LegendItem color="#06b6d4" label="Water Sources" />
-              <LegendItem color="#22c55e" label="Trees Planted" />
-              <LegendItem color="#ec4899" label="Beneficiaries" />
-              <LegendItem color="#f59e0b" label="Training Sessions" />
-            </div>
-          </div>
+      {/* Coordinates Display */}
+      {editable && clickedCoords && (
+        <div className="absolute bottom-4 right-4 z-[1000] bg-white/95 rounded-lg p-2 shadow-lg border">
+          <p className="text-xs font-bold text-primary">
+            <Navigation className="inline h-3 w-3 mr-1" />
+            {clickedCoords.lat.toFixed(6)}, {clickedCoords.lng.toFixed(6)}
+          </p>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      {/* Zoom Info */}
+      {!isLoading && (
+        <div className="absolute top-4 left-4 z-[1000] bg-white/95 rounded-lg px-3 py-2 shadow-lg border">
+          <p className="text-xs text-muted-foreground">
+            <MapPin className="inline h-3 w-3 mr-1 text-primary" />
+            {totalVisible} locations visible
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
-function LayerStat({ icon: Icon, label, count, color }: { icon: any; label: string; count: number; color: string }) {
+function LayerRow({ icon: Icon, label, count, color }: { icon: any; label: string; count: number; color: string }) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1.5">
-        <Icon className={`h-3 w-3 ${color}`} />
+        <Icon className="h-3.5 w-3.5" style={{ color }} />
         <span className="text-xs">{label}</span>
       </div>
-      <span className={`text-xs font-bold ${color}`}>{count}</span>
+      <span className="text-xs font-bold" style={{ color }}>{count}</span>
     </div>
   );
 }
