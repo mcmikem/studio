@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   MapPin, Loader2, GraduationCap, Droplets, TreePine, Users, 
-  Building2, Navigation, Home, Crosshair, Plus, X, Layers, Sparkles
+  Building2, Navigation, Home, Crosshair, Plus, X, Layers, Sparkles, MessageSquare
 } from 'lucide-react';
 
 export interface MapLocation {
