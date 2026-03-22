@@ -471,7 +471,7 @@ export const SchoolProgrammeActivitySchema = z.object({
   id: z.string(),
   schoolId: z.string(),
   schoolName: z.string(),
-  programme: z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater']),
+  programme: z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater', 'YoSkills']),
   activityType: z.string(),
   description: z.string().optional(),
   date: z.string(),

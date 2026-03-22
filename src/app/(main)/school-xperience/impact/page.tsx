@@ -366,11 +366,11 @@ export default function ImpactSnapshotPage() {
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {PROGRAMMES.map(({ key, label, icon: Icon, color, bg, col }) => {
-                  const progSchools = schools.filter(s => s.activeProgrammes?.includes(key));
-                  const progVisits = visits.filter(v => v.programmesCovered?.includes(key));
-                  const progLeaders = leaders.filter(l => {
+                  const progSchools = (schools || []).filter(s => (s.activeProgrammes as string[] | undefined)?.includes(key));
+                  const progVisits = (visits || []).filter(v => (v.programmesCovered as string[] | undefined)?.includes(key));
+                  const progLeaders = (leaders || []).filter(l => {
                     const school = schools.find(s => s.id === l.schoolId);
-                    return school?.activeProgrammes?.includes(key);
+                    return (school?.activeProgrammes as string[] | undefined)?.includes(key);
                   });
                   return (
                     <div key={key} className={`border-2 rounded-2xl p-4 ${col} ${bg}`}>
