@@ -313,21 +313,21 @@ export function ProgramHealthScore() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
           {scores.map(program => {
             const Icon = program.icon;
             return (
               <div
                 key={program.id}
                 className={cn(
-                  'rounded-xl border p-3 flex flex-col gap-3 hover:shadow-md transition-shadow',
+                  'rounded-xl border p-3 flex flex-col gap-3 hover:shadow-md transition-shadow min-w-[200px] snap-start',
                   program.bgColor
                 )}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <Icon className={cn('h-4 w-4', program.color)} />
-                    <span className="font-bold text-[11px] sm:text-xs uppercase tracking-wider text-muted-foreground line-clamp-1">
+                    <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground line-clamp-1'>
                       {program.name}
                     </span>
                   </div>

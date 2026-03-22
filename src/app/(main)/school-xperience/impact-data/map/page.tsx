@@ -24,6 +24,7 @@ export default function MapPage() {
   const [showBoundary, setShowBoundary] = useState<{ type: string; coordinates: number[][][] } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [addType, setAddType] = useState<'school' | 'water' | 'tree' | 'beneficiary' | 'training'>('school');
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Fetch data
   const schoolsQuery = useMemoFirebase(() => {
@@ -242,9 +243,22 @@ export default function MapPage() {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-8rem)]">
+    <div className="flex flex-col lg:flex-row h-[calc(100vh-8rem)]">
+      {/* Mobile Sidebar Toggle */}
+      <div className="lg:hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+          className="m-2 h-9 rounded-lg text-xs font-bold shadow-sm"
+        >
+          <MapPin className="h-4 w-4 mr-1" />
+          {showMobileSidebar ? 'Hide' : 'Show'} Panel ({schools?.length || 0} schools)
+        </Button>
+      </div>
+
       {/* Left Sidebar */}
-      <div className="w-96 border-r bg-background flex flex-col overflow-hidden">
+      <div className={`w-full lg:w-96 border-r bg-background flex flex-col overflow-hidden ${showMobileSidebar ? 'flex' : 'hidden lg:flex'}`}>
         {/* Header */}
         <div className="p-4 border-b">
           <div className="flex items-center gap-2 mb-4">
@@ -421,7 +435,7 @@ export default function MapPage() {
       </div>
 
       {/* Map */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative min-h-[50vh] lg:min-h-0">
         <InteractiveMap
           locations={allLocations}
           center={mapCenter}
