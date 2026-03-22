@@ -592,10 +592,11 @@ export default function SeedDataPage() {
 
     for (const w of MIGRATION_DATA.water) {
         await addDocumentNonBlocking(collection(firestore, 'sx-water-sources'), {
-            schoolName: w.school,
+            schoolName: w.name,
             sourceType: 'Purifier',
-            status: 'functional',
-            estimatedBeneficiaries: parseInt(w.ben) || 50,
+            status: w.status === 'working' ? 'functional' : 'needs_repair',
+            estimatedBeneficiaries: 5,
+            village: w.village,
             createdAt: serverTimestamp()
         });
     }
