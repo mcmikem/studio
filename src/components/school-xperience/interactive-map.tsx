@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   MapPin, Loader2, GraduationCap, Droplets, TreePine, Users, 
-  Building2, Eye, EyeOff, Navigation, Home, UsersRound
+  Building2, Eye, EyeOff, Navigation, Home, UsersRound, Crosshair
 } from 'lucide-react';
 
 export interface MapLocation {
@@ -59,6 +59,9 @@ export function InteractiveMap({
   const [isLoading, setIsLoading] = useState(true);
   const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(['school', 'water', 'tree', 'beneficiary', 'training', 'office']));
   const [clickedCoords, setClickedCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const dragMarkerRef = useRef<any>(null);
 
   // Filter locations
   const filteredLocations = locations.filter(loc => {
@@ -74,6 +77,23 @@ export function InteractiveMap({
     training: locations.filter(l => l.type === 'training' && l.coordinates).length,
     office: locations.filter(l => l.type === 'office' && l.coordinates).length,
   };
+
+  const getCurrentPosition = useCallback(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCurrentPosition(coords);
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.map.setView([coords.lat, coords.lng], 16);
+        }
+        setGpsLoading(false);
+      },
+      () => setGpsLoading(false),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  }, []);
 
   const toggleLayer = (layer: string) => {
     setActiveLayers(prev => {
@@ -117,12 +137,33 @@ export function InteractiveMap({
 
         // Add click handler for editable mode
         if (editable) {
+          const defaultIcon = L.divIcon({
+            className: 'draggable-marker',
+            html: `<div style="background:#dc2626;width:20px;height:20px;border-radius:50%;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);cursor:move;display:flex;align-items:center;justify-content:center;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            </div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+          });
+          const startCoords = clickedCoords || { lat: center.lat, lng: center.lng };
+          const marker = L.marker([startCoords.lat, startCoords.lng], { 
+            icon: defaultIcon, 
+            draggable: true 
+          }).addTo(map);
+          dragMarkerRef.current = marker;
+
+          marker.on('dragend', () => {
+            const pos = marker.getLatLng();
+            const coords = { lat: pos.lat, lng: pos.lng };
+            setClickedCoords(coords);
+            if (onCoordinatesChange) onCoordinatesChange(coords);
+          });
+
           map.on('click', (e: any) => {
+            marker.setLatLng([e.latlng.lat, e.latlng.lng]);
             const coords = { lat: e.latlng.lat, lng: e.latlng.lng };
             setClickedCoords(coords);
-            if (onCoordinatesChange) {
-              onCoordinatesChange(coords);
-            }
+            if (onCoordinatesChange) onCoordinatesChange(coords);
           });
         }
 
@@ -150,6 +191,13 @@ export function InteractiveMap({
     const { map } = mapInstanceRef.current;
     map.setView([center.lat, center.lng], zoom);
   }, [center.lat, center.lng, zoom]);
+
+  // Sync draggable marker with external coord changes (e.g., from GPS button)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !editable || !dragMarkerRef.current) return;
+    if (!clickedCoords) return;
+    dragMarkerRef.current.setLatLng([clickedCoords.lat, clickedCoords.lng]);
+  }, [clickedCoords, editable]);
 
   // Update markers
   useEffect(() => {
@@ -319,6 +367,21 @@ export function InteractiveMap({
           </p>
         </div>
       )}
+
+      {/* GPS / Current Location Button */}
+      <button
+        onClick={getCurrentPosition}
+        disabled={gpsLoading}
+        className="absolute top-4 left-4 z-[1000] bg-white/95 rounded-lg px-3 py-2 shadow-lg border hover:bg-muted transition-colors flex items-center gap-2 text-xs font-bold"
+        title="Center on my location"
+      >
+        {gpsLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+        ) : (
+          <Crosshair className="h-4 w-4 text-primary" />
+        )}
+        <span className="hidden sm:inline">My Location</span>
+      </button>
 
       {/* Zoom Info */}
       {!isLoading && (

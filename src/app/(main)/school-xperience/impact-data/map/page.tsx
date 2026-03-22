@@ -5,8 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { useFormSubmission } from '@/hooks/use-form-submission';
 import {
   MapPin, Search, X, Plus, GraduationCap, Droplets, TreePine, Users,
   Building2, Check, Home, UsersRound, ChevronRight
@@ -413,6 +414,30 @@ export default function MapPage() {
                 <span className="font-bold">{trainings?.length || 0}</span>
               </div>
             </div>
+
+            {/* Schools needing coordinates */}
+            {(() => {
+              const needsCoords = (schools || []).filter((s: any) => !s.coordinates);
+              if (needsCoords.length === 0) return null;
+              return (
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> {needsCoords.length} Schools Need GPS
+                  </p>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                    {needsCoords.slice(0, 10).map((s: any) => (
+                      <div key={s.id} className="flex items-center justify-between p-2 rounded-lg bg-amber-50 border border-amber-200 text-xs">
+                        <span className="font-bold truncate flex-1 mr-2">{s.schoolName}</span>
+                        <span className="text-amber-600 whitespace-nowrap">{s.subCounty || s.location || '—'}</span>
+                      </div>
+                    ))}
+                    {needsCoords.length > 10 && (
+                      <p className="text-[10px] text-center text-muted-foreground">+{needsCoords.length - 10} more</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         )}
 
@@ -459,52 +484,43 @@ export default function MapPage() {
 }
 
 function AddPlaceModal({ type, onClose, schools }: { type: string; onClose: () => void; schools: any[] }) {
-  const firestore = useFirestore();
+  const { submit, isSubmitting } = useFormSubmission();
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
   const [name, setName] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [quantity, setQuantity] = useState(10);
+  const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = () => {
-    if (!firestore) return;
-
+  const handleSubmit = async () => {
+    if (submitted) return;
     const school = schools.find(s => s.id === selectedSchoolId);
+    const idempotencyKey = `${type}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     const baseData = {
       schoolId: selectedSchoolId,
       schoolName: school?.schoolName || '',
       date: new Date().toISOString().split('T')[0],
-      recordedBy: 'Staff',
       coordinates: coordinates || undefined,
-      createdAt: serverTimestamp(),
-      createdBy: 'system',
     };
 
     if (type === 'school') {
-      addDocumentNonBlocking(collection(firestore, 'sx-schools'), {
-        schoolName: name,
-        location: name,
-        coordinates: coordinates || undefined,
-        status: 'Registered',
-        pipelineStage: 'Inquiry',
-        activeProgrammes: [],
-        createdAt: serverTimestamp(),
-        createdBy: 'system',
-      });
+      await submit({ collectionName: 'sx-schools', idempotencyKey, data: { schoolName: name, location: name, coordinates: coordinates || undefined, status: 'Registered', pipelineStage: 'Inquiry', activeProgrammes: [] } });
     } else if (type === 'water') {
-      addDocumentNonBlocking(collection(firestore, 'sx-water-sources'), { ...baseData, sourceType: 'borehole', status: 'functional', waterQuality: 'safe', estimatedBeneficiaries: 50 });
+      await submit({ collectionName: 'sx-water-sources', idempotencyKey, data: { ...baseData, sourceType: 'borehole', status: 'functional', waterQuality: 'safe', estimatedBeneficiaries: 50 } });
     } else if (type === 'tree') {
-      addDocumentNonBlocking(collection(firestore, 'sx-trees'), { ...baseData, treeType: 'native', quantity });
+      await submit({ collectionName: 'sx-trees', idempotencyKey, data: { ...baseData, treeType: 'native', quantity } });
     } else if (type === 'beneficiary') {
-      addDocumentNonBlocking(collection(firestore, 'sx-beneficiaries'), { ...baseData, beneficiaryType: 'student', gender: 'female', ageGroup: '15_19', programme: 'SLF', servicesProvided: [] });
+      await submit({ collectionName: 'sx-beneficiaries', idempotencyKey, data: { ...baseData, beneficiaryType: 'student', gender: 'female', ageGroup: '15_19', programme: 'SLF', servicesProvided: [] } });
     } else if (type === 'training') {
-      addDocumentNonBlocking(collection(firestore, 'sx-trainings'), { ...baseData, trainingType: name, programme: 'SLF', participantsMale: 0, participantsFemale: 0, topicsCovered: 'General', trainerName: 'Staff' });
+      await submit({ collectionName: 'sx-trainings', idempotencyKey, data: { ...baseData, trainingType: name, programme: 'SLF', participantsMale: 0, participantsFemale: 0, topicsCovered: 'General', trainerName: 'Staff' } });
     }
-
-    window.location.reload();
+    setSubmitted(true);
+    onClose();
   };
 
   const icons: Record<string, any> = { school: GraduationCap, water: Droplets, tree: TreePine, beneficiary: Users, training: Building2 };
   const Icon = icons[type] || Building2;
+  const canSubmit = submitted || isSubmitting || (type === 'school' ? !name || !coordinates : !selectedSchoolId || !coordinates);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
@@ -542,13 +558,13 @@ function AddPlaceModal({ type, onClose, schools }: { type: string; onClose: () =
             </div>
           )}
 
-          <GPSLocationPicker coordinates={coordinates} onCoordinatesChange={setCoordinates} label="Location" description="Click to use GPS or enter manually" />
+          <GPSLocationPicker coordinates={coordinates} onCoordinatesChange={setCoordinates} label="Location" description="Tap map to pin, drag marker, or enter manually" />
         </div>
 
         <div className="p-4 border-t flex gap-2">
           <Button variant="outline" onClick={onClose} className="flex-1 h-10 rounded-xl font-bold">Cancel</Button>
-          <Button onClick={handleSubmit} disabled={(type === 'school' ? !name || !coordinates : !selectedSchoolId || !coordinates)} className="btn-omuto flex-1 h-10 rounded-xl font-black">
-            <Check className="h-4 w-4 mr-1" /> Save
+          <Button onClick={handleSubmit} disabled={canSubmit} className="btn-omuto flex-1 h-10 rounded-xl font-black">
+            <Check className="h-4 w-4 mr-1" /> {isSubmitting ? 'Saving...' : 'Save'}
           </Button>
         </div>
       </Card>
