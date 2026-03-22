@@ -58,6 +58,10 @@ export function InteractiveMap({
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const boundaryRef = useRef<any>(null);
+  const onLocationClickRef = useRef(onLocationClick);
+  const onCoordinatesChangeRef = useRef(onCoordinatesChange);
+  onLocationClickRef.current = onLocationClick;
+  onCoordinatesChangeRef.current = onCoordinatesChange;
   const [isLoading, setIsLoading] = useState(true);
   const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(['school', 'water', 'tree', 'beneficiary', 'training', 'office']));
   const [clickedCoords, setClickedCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -112,14 +116,16 @@ export function InteractiveMap({
   };
 
   // Initialize map
+  // Init map — runs once
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
+
+    let isMounted = true;
 
     const initMap = async () => {
       try {
         const L = (await import('leaflet')).default;
         
-        // Load Leaflet CSS
         if (!document.getElementById('leaflet-css')) {
           const link = document.createElement('link');
           link.id = 'leaflet-css';
@@ -127,6 +133,8 @@ export function InteractiveMap({
           link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
           document.head.appendChild(link);
         }
+
+        if (!isMounted) return;
 
         const map = L.map(mapRef.current!, {
           center: [center.lat, center.lng],
@@ -139,38 +147,6 @@ export function InteractiveMap({
           maxZoom: 19,
         }).addTo(map);
 
-        // Add click handler for editable mode
-        if (editable) {
-          const defaultIcon = L.divIcon({
-            className: 'draggable-marker',
-            html: `<div style="background:#dc2626;width:20px;height:20px;border-radius:50%;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);cursor:move;display:flex;align-items:center;justify-content:center;">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-            </div>`,
-            iconSize: [20, 20],
-            iconAnchor: [10, 10],
-          });
-          const startCoords = clickedCoords || { lat: center.lat, lng: center.lng };
-          const marker = L.marker([startCoords.lat, startCoords.lng], { 
-            icon: defaultIcon, 
-            draggable: true 
-          }).addTo(map);
-          dragMarkerRef.current = marker;
-
-          marker.on('dragend', () => {
-            const pos = marker.getLatLng();
-            const coords = { lat: pos.lat, lng: pos.lng };
-            setClickedCoords(coords);
-            if (onCoordinatesChange) onCoordinatesChange(coords);
-          });
-
-          map.on('click', (e: any) => {
-            marker.setLatLng([e.latlng.lat, e.latlng.lng]);
-            const coords = { lat: e.latlng.lat, lng: e.latlng.lng };
-            setClickedCoords(coords);
-            if (onCoordinatesChange) onCoordinatesChange(coords);
-          });
-        }
-
         mapInstanceRef.current = { map, L };
         setIsLoading(false);
       } catch (error) {
@@ -182,11 +158,13 @@ export function InteractiveMap({
     initMap();
 
     return () => {
+      isMounted = false;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.map.remove();
         mapInstanceRef.current = null;
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update view when center/zoom changes
@@ -196,7 +174,50 @@ export function InteractiveMap({
     map.setView([center.lat, center.lng], zoom);
   }, [center.lat, center.lng, zoom]);
 
-  // Sync draggable marker with external coord changes (e.g., from GPS button)
+  // Setup draggable marker when editable changes
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const { map, L } = mapInstanceRef.current;
+
+    if (dragMarkerRef.current) {
+      map.removeLayer(dragMarkerRef.current);
+      dragMarkerRef.current = null;
+    }
+
+    if (!editable) return;
+
+    const defaultIcon = L.divIcon({
+      className: 'draggable-marker',
+      html: `<div style="background:#dc2626;width:20px;height:20px;border-radius:50%;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);cursor:move;display:flex;align-items:center;justify-content:center;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </div>`,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    });
+
+    const startCoords = clickedCoords || { lat: center.lat, lng: center.lng };
+    const marker = L.marker([startCoords.lat, startCoords.lng], { 
+      icon: defaultIcon, 
+      draggable: true 
+    }).addTo(map);
+    dragMarkerRef.current = marker;
+
+    marker.on('dragend', () => {
+      const pos = marker.getLatLng();
+      const coords = { lat: pos.lat, lng: pos.lng };
+      setClickedCoords(coords);
+      if (onCoordinatesChangeRef.current) onCoordinatesChangeRef.current(coords);
+    });
+
+    map.on('click', (e: any) => {
+      marker.setLatLng([e.latlng.lat, e.latlng.lng]);
+      const coords = { lat: e.latlng.lat, lng: e.latlng.lng };
+      setClickedCoords(coords);
+      if (onCoordinatesChangeRef.current) onCoordinatesChangeRef.current(coords);
+    });
+  }, [editable, center.lat, center.lng]);
+
+  // Sync draggable marker when coords change externally (GPS button)
   useEffect(() => {
     if (!mapInstanceRef.current || !editable || !dragMarkerRef.current) return;
     if (!clickedCoords) return;
@@ -268,8 +289,8 @@ export function InteractiveMap({
       marker.bindPopup(popupContent);
 
       marker.on('click', () => {
-        if (onLocationClick) {
-          onLocationClick(loc);
+        if (onLocationClickRef.current) {
+          onLocationClickRef.current(loc);
         }
       });
 
@@ -289,7 +310,7 @@ export function InteractiveMap({
         }
       }
     }
-  }, [filteredLocations, selectedLocation, highlightBoundary, isLoading, onLocationClick]);
+  }, [filteredLocations, selectedLocation, highlightBoundary, isLoading]);
 
   const totalVisible = Object.values(counts).reduce((a, b) => a + b, 0);
 

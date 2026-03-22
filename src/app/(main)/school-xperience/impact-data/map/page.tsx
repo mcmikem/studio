@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useDeferredValue } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -126,8 +126,8 @@ export default function MapPage() {
       name: `${b.beneficiaryType} (${b.gender})`,
       type: 'beneficiary' as const,
       coordinates: b.coordinates,
-      subcounty: (schools?.find(s => s.id === b.schoolId) as any)?.subCounty,
-      district: (schools?.find(s => s.id === b.schoolId) as any)?.district,
+      subcounty: '',
+      district: '',
       programme: b.programme,
     })),
     // Water Sources
@@ -136,8 +136,8 @@ export default function MapPage() {
       name: `${w.sourceType} - ${w.status}`,
       type: 'water' as const,
       coordinates: w.coordinates,
-      subcounty: (schools?.find(s => s.id === w.schoolId) as any)?.subCounty,
-      district: (schools?.find(s => s.id === w.schoolId) as any)?.district,
+      subcounty: '',
+      district: '',
       programme: 'PureWater',
     })),
     // Trees
@@ -146,8 +146,8 @@ export default function MapPage() {
       name: `${t.quantity} ${t.treeType} trees`,
       type: 'tree' as const,
       coordinates: t.coordinates,
-      subcounty: (schools?.find(s => s.id === t.schoolId) as any)?.subCounty,
-      district: (schools?.find(s => s.id === t.schoolId) as any)?.district,
+      subcounty: '',
+      district: '',
       programme: 'GreenSchools',
     })),
     // Trainings
@@ -156,16 +156,19 @@ export default function MapPage() {
       name: t.trainingType || 'Training',
       type: 'training' as const,
       coordinates: t.coordinates,
-      subcounty: (schools?.find(s => s.id === t.schoolId) as any)?.subCounty,
-      district: (schools?.find(s => s.id === t.schoolId) as any)?.district,
+      subcounty: '',
+      district: '',
       programme: t.programme,
     })),
   ];
 
+  // Debounce search to avoid jank on slow devices
+  const deferredQuery = useDeferredValue(searchQuery);
+
   // Search results
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const query = searchQuery.toLowerCase();
+    if (deferredQuery.length < 2) return [];
+    const query = deferredQuery.toLowerCase();
     const results: any[] = [];
 
     // Omuto locations
@@ -228,7 +231,7 @@ export default function MapPage() {
     });
 
     return results.slice(0, 10);
-  }, [searchQuery, schools]);
+  }, [deferredQuery, schools]);
 
   // Handle search result click
   const handleSearchClick = (result: any) => {
@@ -252,7 +255,7 @@ export default function MapPage() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row h-[calc(100vh-8rem)] overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-[calc(100dvh-8rem)] overflow-hidden">
       {/* Mobile Sidebar Toggle */}
       <div className="lg:hidden shrink-0">
         <Button
@@ -394,7 +397,17 @@ export default function MapPage() {
                       <p className="text-[10px] text-muted-foreground">Schools Here</p>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-2 text-center">
-                      <p className="text-lg font-black">{beneficiaries?.length || 0}</p>
+                      <p className="text-lg font-black">
+                        {selectedLocation.subcounty
+                          ? beneficiaries?.filter((b: any) => {
+                              const school = (schools || []).find((s: any) => s.id === b.schoolId);
+                              return school?.subCounty === selectedLocation.subcounty;
+                            }).length || 0
+                          : beneficiaries?.filter((b: any) => {
+                              const school = (schools || []).find((s: any) => s.id === b.schoolId);
+                              return school?.district === selectedLocation.district;
+                            }).length || 0}
+                      </p>
                       <p className="text-[10px] text-muted-foreground">Beneficiaries</p>
                     </div>
                   </div>
@@ -543,34 +556,49 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [quantity, setQuantity] = useState(10);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    if (submitted) return;
-    const school = schools.find(s => s.id === selectedSchoolId);
-    const idempotencyKey = `${type}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    if (submitted || isSubmitting) return;
+    setError(null);
+    try {
+      const school = schools.find(s => s.id === selectedSchoolId);
+      const idempotencyKey = `${type}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-    const baseData = {
-      schoolId: selectedSchoolId,
-      schoolName: school?.schoolName || '',
-      date: new Date().toISOString().split('T')[0],
-      coordinates: coordinates || undefined,
-    };
+      const baseData = {
+        schoolId: selectedSchoolId,
+        schoolName: school?.schoolName || '',
+        date: new Date().toISOString().split('T')[0],
+        coordinates: coordinates || undefined,
+      };
 
-    if (type === 'school') {
-      await submit({ collectionName: 'sx-schools', idempotencyKey, data: { schoolName: name, location: name, coordinates: coordinates || undefined, status: 'Registered', pipelineStage: 'Inquiry', activeProgrammes: [] } });
-    } else if (type === 'water') {
-      await submit({ collectionName: 'sx-water-sources', idempotencyKey, data: { ...baseData, sourceType: 'borehole', status: 'functional', waterQuality: 'safe', estimatedBeneficiaries: 50 } });
-    } else if (type === 'tree') {
-      await submit({ collectionName: 'sx-trees', idempotencyKey, data: { ...baseData, treeType: 'native', quantity } });
-    } else if (type === 'beneficiary') {
-      await submit({ collectionName: 'sx-beneficiaries', idempotencyKey, data: { ...baseData, beneficiaryType: 'student', gender: 'female', ageGroup: '15_19', programme: 'SLF', servicesProvided: [] } });
-    } else if (type === 'training') {
-      await submit({ collectionName: 'sx-trainings', idempotencyKey, data: { ...baseData, trainingType: name, programme: 'SLF', participantsMale: 0, participantsFemale: 0, topicsCovered: 'General', trainerName: 'Staff' } });
-    } else if (type === 'office') {
-      await submit({ collectionName: 'sx-locations', idempotencyKey, data: { name: name || 'New Office', locationType: 'office', coordinates: coordinates || undefined } });
+      let result;
+      if (type === 'school') {
+        result = await submit({ collectionName: 'sx-schools', idempotencyKey, data: { schoolName: name, location: name, coordinates: coordinates || undefined, status: 'Registered', pipelineStage: 'Inquiry', activeProgrammes: [] } });
+      } else if (type === 'water') {
+        result = await submit({ collectionName: 'sx-water-sources', idempotencyKey, data: { ...baseData, sourceType: 'borehole', status: 'functional', waterQuality: 'safe', estimatedBeneficiaries: 50 } });
+      } else if (type === 'tree') {
+        result = await submit({ collectionName: 'sx-trees', idempotencyKey, data: { ...baseData, treeType: 'native', quantity } });
+      } else if (type === 'beneficiary') {
+        result = await submit({ collectionName: 'sx-beneficiaries', idempotencyKey, data: { ...baseData, beneficiaryType: 'student', gender: 'female', ageGroup: '15_19', programme: 'SLF', servicesProvided: [] } });
+      } else if (type === 'training') {
+        result = await submit({ collectionName: 'sx-trainings', idempotencyKey, data: { ...baseData, trainingType: name, programme: 'SLF', participantsMale: 0, participantsFemale: 0, topicsCovered: 'General', trainerName: 'Staff' } });
+      } else {
+        result = await submit({ collectionName: 'sx-locations', idempotencyKey, data: { name: name || 'New Office', locationType: 'office', coordinates: coordinates || undefined } });
+      }
+
+      if (result?.isOffline || result?.isQueued) {
+        setSubmitted(true);
+        onClose();
+      } else if (result?.error) {
+        setError('Failed to save. Check your connection and try again.');
+      } else {
+        setSubmitted(true);
+        onClose();
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
     }
-    setSubmitted(true);
-    onClose();
   };
 
   const icons: Record<string, any> = { school: GraduationCap, water: Droplets, tree: TreePine, beneficiary: Users, training: Building2, office: Home };
@@ -610,6 +638,12 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
             <div>
               <label className="text-xs font-bold uppercase tracking-widest block mb-1">Quantity</label>
               <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} className="border-lg rounded-xl h-10 font-bold" />
+            </div>
+          )}
+
+          {error && (
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-bold">
+              {error}
             </div>
           )}
 
