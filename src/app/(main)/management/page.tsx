@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser, useFirestore, useCollection } from '@/firebase';
 import { useViewAs } from '@/hooks/use-view-as';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { 
     Briefcase, 

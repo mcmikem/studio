@@ -31,7 +31,7 @@ const schoolSchema = z.object({
   tier: z.enum(['Partner', 'Active', 'Advanced', 'Flagship']),
   status: z.enum(['Registered', 'Launched', 'Active', 'Completed', 'Inactive']),
   pipelineStage: z.enum(['Inquiry', 'Meeting Booked', 'MOU Signed', 'Onboarded']),
-  activeProgrammes: z.array(z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater'])).min(1, 'Select at least one programme'),
+  activeProgrammes: z.array(z.enum(['SLF', 'RED', 'GreenSchools', 'PureWater', 'YoSkills'])).min(1, 'Select at least one programme'),
   term: z.enum(['Term 1', 'Term 2', 'Term 3']),
   academicYear: z.string().optional(),
   notes: z.string().optional(),
@@ -39,7 +39,7 @@ const schoolSchema = z.object({
 
 type SchoolFormData = z.infer<typeof schoolSchema>;
 
-const PROGRAMMES = ['SLF', 'RED', 'GreenSchools', 'PureWater'] as const;
+const PROGRAMMES = ['SLF', 'RED', 'GreenSchools', 'PureWater', 'YoSkills'] as const;
 
 export function EditSchoolForm({ schoolId }: { schoolId: string }) {
   const router = useRouter();
