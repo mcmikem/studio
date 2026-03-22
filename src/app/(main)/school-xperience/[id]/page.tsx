@@ -331,9 +331,9 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
 
             {/* Program Wall */}
             <div className="flex flex-wrap gap-4">
-                {['SLF', 'RED', 'GreenSchools', 'PureWater'].map(prog => {
+                {(['SLF', 'RED', 'GreenSchools', 'PureWater'] as const).map(prog => {
                     const Icon = PROGRAMME_ICONS[prog] || Star;
-                    const isActive = school.activeProgrammes?.includes(prog);
+                    const isActive = school?.activeProgrammes?.includes(prog as any);
                     return (
                         <div 
                             key={prog} 
