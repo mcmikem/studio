@@ -601,7 +601,19 @@ export default function SeedDataPage() {
     }
     msgs.push(`Added ${MIGRATION_DATA.water.length} purifier records`);
 
-    // 5. Map Beneficiaries
+    // 5. Map Players
+    for (const p of MIGRATION_DATA.players) {
+        await addDocumentNonBlocking(collection(firestore, 'sx-ofa-players'), {
+            playerName: p.name,
+            teamName: p.team,
+            age: p.age,
+            academicClass: p.class,
+            createdAt: serverTimestamp()
+        });
+    }
+    msgs.push(`Added ${MIGRATION_DATA.players.length} player records`);
+
+    // 6. Map Beneficiaries (440+)
     for (const b of MIGRATION_DATA.beneficiaries) {
          await addDocumentNonBlocking(collection(firestore, 'sx-beneficiaries'), {
             name: b.name,
@@ -685,11 +697,12 @@ export default function SeedDataPage() {
           <div className="bg-indigo-50/30 rounded-xl p-4 space-y-2">
             <p className="font-bold text-sm text-indigo-900">This will migrate:</p>
             <ul className="text-sm space-y-1 text-indigo-800">
-              <li className="flex items-center gap-2"><GraduationCap className="h-4 w-4" /> Comprehensive School Database (40+ entries)</li>
-              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> OFA Football Teams & Players</li>
+              <li className="flex items-center gap-2"><GraduationCap className="h-4 w-4" /> Comprehensive School Database (60 entries)</li>
+              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> OFA Football Teams (22 entries)</li>
+              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> OFA Player Database (Individual records)</li>
               <li className="flex items-center gap-2"><TreePine className="h-4 w-4" /> 2025 Tree Survival Data</li>
               <li className="flex items-center gap-2"><Droplets className="h-4 w-4" /> Purifier Beneficiary Records</li>
-              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> SLF, Debate, and YoSkills Participants</li>
+              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> SLF, Debate, YoSkills & Menstrual (440+ Participants)</li>
             </ul>
           </div>
 
