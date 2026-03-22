@@ -240,6 +240,7 @@ export default function MapPage() {
       setShowBoundary(result.boundary);
     }
     setSearchQuery('');
+    setShowMobileSidebar(false);
   };
 
   // Quick location buttons
@@ -251,9 +252,9 @@ export default function MapPage() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row h-[calc(100vh-8rem)]">
+    <div className="flex flex-col lg:flex-row h-[calc(100vh-8rem)] overflow-hidden">
       {/* Mobile Sidebar Toggle */}
-      <div className="lg:hidden">
+      <div className="lg:hidden shrink-0">
         <Button
           variant="outline"
           size="sm"
@@ -266,7 +267,7 @@ export default function MapPage() {
       </div>
 
       {/* Left Sidebar */}
-      <div className={`w-full lg:w-96 border-r bg-background flex flex-col overflow-hidden ${showMobileSidebar ? 'flex' : 'hidden lg:flex'}`}>
+      <div className={`w-full lg:w-96 border-r bg-background flex flex-col overflow-y-auto overflow-x-hidden shrink-0 ${showMobileSidebar ? 'flex' : 'hidden lg:flex'}`}>
         {/* Header */}
         <div className="p-4 border-b">
           <div className="flex items-center gap-2 mb-4">

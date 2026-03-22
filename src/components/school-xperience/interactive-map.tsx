@@ -3,10 +3,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   MapPin, Loader2, GraduationCap, Droplets, TreePine, Users, 
-  Building2, Eye, EyeOff, Navigation, Home, UsersRound, Crosshair, Plus
+  Building2, Navigation, Home, Crosshair, Plus, X, Layers
 } from 'lucide-react';
 
 export interface MapLocation {
@@ -64,6 +63,8 @@ export function InteractiveMap({
   const [clickedCoords, setClickedCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [currentPosition, setCurrentPosition] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showLayers, setShowLayers] = useState(false);
   const dragMarkerRef = useRef<any>(null);
 
   // Filter locations
@@ -307,49 +308,61 @@ export function InteractiveMap({
         </div>
       )}
 
-      {/* Layer Controls - Top Right */}
+      {/* Layer Controls - Top Right (desktop always visible, mobile toggle) */}
       <div className="absolute top-4 right-4 z-[1000] space-y-2">
-        {/* Stats */}
-        <div className="bg-white/95 rounded-xl p-3 shadow-lg border min-w-[160px]">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Locations</p>
-          <div className="space-y-1.5">
-            <LayerRow icon={Home} label="Office" count={counts.office} color="#dc2626" />
-            <LayerRow icon={GraduationCap} label="Schools" count={counts.school} color="#3b82f6" />
-            <LayerRow icon={Users} label="Beneficiaries" count={counts.beneficiary} color="#ec4899" />
-            <LayerRow icon={Droplets} label="Water" count={counts.water} color="#06b6d4" />
-            <LayerRow icon={TreePine} label="Trees" count={counts.tree} color="#22c55e" />
-            <LayerRow icon={Building2} label="Trainings" count={counts.training} color="#f59e0b" />
-          </div>
-        </div>
+        {/* Mobile toggle */}
+        <button
+          onClick={() => setShowLayers(!showLayers)}
+          className="md:hidden bg-white/95 rounded-xl shadow-lg border p-2 flex items-center gap-2 text-xs font-bold"
+        >
+          <Layers className="h-4 w-4" />
+          {showLayers ? 'Hide' : 'Layers'}
+        </button>
 
-        {/* Layer Toggles */}
-        <div className="bg-white/95 rounded-xl p-3 shadow-lg border">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Layers</p>
-          <div className="space-y-1">
-            {(['office', 'school', 'beneficiary', 'water', 'tree', 'training'] as const).map(type => (
-              <button
-                key={type}
-                onClick={() => toggleLayer(type)}
-                className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-                  activeLayers.has(type) ? 'bg-muted' : 'opacity-50'
-                }`}
-              >
-                <div 
-                  className="w-3 h-3 rounded-full border-2" 
-                  style={{ 
-                    backgroundColor: activeLayers.has(type) ? LAYER_COLORS[type].marker : 'transparent',
-                    borderColor: LAYER_COLORS[type].marker 
-                  }} 
-                />
-                <span className="capitalize">{type}</span>
-              </button>
-            ))}
+        {/* Desktop always visible, mobile toggled */}
+        <div className={`${showLayers ? 'flex' : 'hidden md:flex'} flex-col gap-2`}>
+          {/* Stats */}
+          <div className="bg-white/95 rounded-xl p-3 shadow-lg border min-w-[160px]">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Locations</p>
+            <div className="space-y-1.5">
+              <LayerRow icon={Home} label="Office" count={counts.office} color="#dc2626" />
+              <LayerRow icon={GraduationCap} label="Schools" count={counts.school} color="#3b82f6" />
+              <LayerRow icon={Users} label="Beneficiaries" count={counts.beneficiary} color="#ec4899" />
+              <LayerRow icon={Droplets} label="Water" count={counts.water} color="#06b6d4" />
+              <LayerRow icon={TreePine} label="Trees" count={counts.tree} color="#22c55e" />
+              <LayerRow icon={Building2} label="Trainings" count={counts.training} color="#f59e0b" />
+            </div>
+          </div>
+
+          {/* Layer Toggles */}
+          <div className="bg-white/95 rounded-xl p-3 shadow-lg border">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Layers</p>
+            <div className="space-y-1">
+              {(['office', 'school', 'beneficiary', 'water', 'tree', 'training'] as const).map(type => (
+                <button
+                  key={type}
+                  onClick={() => toggleLayer(type)}
+                  className={`flex items-center gap-2 w-full px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                    activeLayers.has(type) ? 'bg-muted' : 'opacity-50'
+                  }`}
+                >
+                  <div 
+                    className="w-3 h-3 rounded-full border-2" 
+                    style={{ 
+                      backgroundColor: activeLayers.has(type) ? LAYER_COLORS[type].marker : 'transparent',
+                      borderColor: LAYER_COLORS[type].marker 
+                    }} 
+                  />
+                  <span className="capitalize">{type}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Legend - Bottom Left */}
-      <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 rounded-xl p-3 shadow-lg border">
+      {/* Legend - Bottom Left (desktop only) */}
+      <div className="hidden md:block absolute bottom-4 left-4 z-[1000] bg-white/95 rounded-xl p-3 shadow-lg border">
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Legend</p>
         <div className="space-y-1.5">
           <LegendItem color="#dc2626" label="Omuto HQ" />
@@ -361,69 +374,55 @@ export function InteractiveMap({
         </div>
       </div>
 
-      {/* Quick Add Popover */}
+      {/* Quick Add Menu */}
       {editable && clickedCoords && (
         <div className="absolute bottom-16 right-4 z-[1000]">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                size="sm"
-                className="btn-omuto h-10 rounded-xl shadow-lg font-black text-xs gap-1"
-              >
-                <Plus className="h-4 w-4" />
-                Add Here
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent side="top" align="end" className="w-52 p-2">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2 pb-2">
-                Add at {clickedCoords.lat.toFixed(4)}, {clickedCoords.lng.toFixed(4)}
-              </p>
-              <div className="grid grid-cols-2 gap-1">
-                <button
-                  onClick={() => onMapPlace?.(clickedCoords, 'school')}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  <GraduationCap className="h-5 w-5 text-blue-600" />
+          {!showAddMenu ? (
+            <Button
+              size="sm"
+              onClick={() => setShowAddMenu(true)}
+              className="btn-omuto h-11 w-11 rounded-xl shadow-lg gap-0 p-0"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-2xl border-2 p-3 min-w-[200px]">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  Add at {clickedCoords.lat.toFixed(4)}, {clickedCoords.lng.toFixed(4)}
+                </p>
+                <button onClick={() => setShowAddMenu(false)} className="p-1 rounded hover:bg-muted">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-1">
+                <button onClick={() => { onMapPlace?.(clickedCoords, 'school'); setShowAddMenu(false); }} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-blue-50 active:scale-95 transition-all">
+                  <GraduationCap className="h-6 w-6 text-blue-600" />
                   <span className="text-[10px] font-bold">School</span>
                 </button>
-                <button
-                  onClick={() => onMapPlace?.(clickedCoords, 'office')}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  <Home className="h-5 w-5 text-red-600" />
+                <button onClick={() => { onMapPlace?.(clickedCoords, 'office'); setShowAddMenu(false); }} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-red-50 active:scale-95 transition-all">
+                  <Home className="h-6 w-6 text-red-600" />
                   <span className="text-[10px] font-bold">Office</span>
                 </button>
-                <button
-                  onClick={() => onMapPlace?.(clickedCoords, 'water')}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-cyan-50 transition-colors"
-                >
-                  <Droplets className="h-5 w-5 text-cyan-600" />
+                <button onClick={() => { onMapPlace?.(clickedCoords, 'water'); setShowAddMenu(false); }} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-cyan-50 active:scale-95 transition-all">
+                  <Droplets className="h-6 w-6 text-cyan-600" />
                   <span className="text-[10px] font-bold">Water</span>
                 </button>
-                <button
-                  onClick={() => onMapPlace?.(clickedCoords, 'tree')}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-green-50 transition-colors"
-                >
-                  <TreePine className="h-5 w-5 text-green-600" />
+                <button onClick={() => { onMapPlace?.(clickedCoords, 'tree'); setShowAddMenu(false); }} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-green-50 active:scale-95 transition-all">
+                  <TreePine className="h-6 w-6 text-green-600" />
                   <span className="text-[10px] font-bold">Trees</span>
                 </button>
-                <button
-                  onClick={() => onMapPlace?.(clickedCoords, 'beneficiary')}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-pink-50 transition-colors"
-                >
-                  <Users className="h-5 w-5 text-pink-600" />
-                  <span className="text-[10px] font-bold">Beneficiary</span>
+                <button onClick={() => { onMapPlace?.(clickedCoords, 'beneficiary'); setShowAddMenu(false); }} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-pink-50 active:scale-95 transition-all">
+                  <Users className="h-6 w-6 text-pink-600" />
+                  <span className="text-[10px] font-bold">People</span>
                 </button>
-                <button
-                  onClick={() => onMapPlace?.(clickedCoords, 'training')}
-                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-amber-50 transition-colors"
-                >
-                  <Building2 className="h-5 w-5 text-amber-600" />
+                <button onClick={() => { onMapPlace?.(clickedCoords, 'training'); setShowAddMenu(false); }} className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-amber-50 active:scale-95 transition-all">
+                  <Building2 className="h-6 w-6 text-amber-600" />
                   <span className="text-[10px] font-bold">Training</span>
                 </button>
               </div>
-            </PopoverContent>
-          </Popover>
+            </div>
+          )}
         </div>
       )}
 
@@ -442,9 +441,9 @@ export function InteractiveMap({
         <span className="hidden sm:inline">My Location</span>
       </button>
 
-      {/* Zoom Info */}
+      {/* Zoom Info (desktop only - hidden on mobile to reduce clutter) */}
       {!isLoading && (
-        <div className="absolute top-4 left-4 z-[1000] bg-white/95 rounded-lg px-3 py-2 shadow-lg border">
+        <div className="hidden md:block absolute top-4 left-4 z-[1000] bg-white/95 rounded-lg px-3 py-2 shadow-lg border">
           <p className="text-xs text-muted-foreground">
             <MapPin className="inline h-3 w-3 mr-1 text-primary" />
             {totalVisible} locations visible
