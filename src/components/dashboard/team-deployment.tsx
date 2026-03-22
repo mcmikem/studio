@@ -227,24 +227,35 @@ export function TeamDeployment() {
   const notStartedCount = teamStatus?.filter(s => s.status.status === 'not-started').length || 0;
 
   return (
-    <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
-      <CardHeader className="bg-omuto-cream/50 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
+    <Card className="rounded-[2.5rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden transition-all hover:shadow-comic">
+      <CardHeader className="bg-omuto-cream/30 border-b-lg border-omuto-navy/5 pb-4 pt-7 px-8">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl text-primary"><Signal className="h-5 w-5" /></div>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="absolute -inset-1 bg-omuto-red/20 rounded-xl blur-sm animate-pulse" />
+              <div className="relative p-2.5 bg-omuto-navy text-white rounded-xl shadow-sm">
+                <Signal className="h-5 w-5" />
+              </div>
+            </div>
             <div>
-              <CardTitle className="font-heading text-xl font-bold tracking-tight text-omuto-navy">Live Team Status</CardTitle>
-              <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest mt-1">
-                {greeting.message} • {format(currentTime, 'h:mm a')}
+              <div className="flex items-center gap-2">
+                <CardTitle className="font-heading text-2xl font-black tracking-tighter text-omuto-navy uppercase">Team Pulse</CardTitle>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-omuto-red text-white text-[8px] font-black uppercase tracking-widest rounded-full animate-pulse">
+                  <div className="w-1 h-1 bg-white rounded-full" />
+                  Live
+                </div>
+              </div>
+              <CardDescription className="font-bold text-omuto-navy/40 text-[10px] uppercase tracking-[0.2em] mt-1">
+                {greeting.message} • HQ Sync active
               </CardDescription>
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full font-black text-[10px] uppercase">
-              {activeCount} Active
+            <div className="px-4 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-black text-[9px] uppercase tracking-wider shadow-sm">
+              {activeCount} Active Now
             </div>
-            <div className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full font-black text-[10px] uppercase">
-              {notStartedCount} Not Started
+            <div className="px-4 py-1.5 bg-gray-50 text-gray-400 border border-gray-200 rounded-full font-black text-[9px] uppercase tracking-wider">
+              {notStartedCount} Offline
             </div>
           </div>
         </div>

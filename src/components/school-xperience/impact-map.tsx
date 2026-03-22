@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Layers, Navigation, Loader2 } from 'lucide-react';
-import { UGANDA_LOCATIONS } from '@/lib/uganda-data';
+import { MapPin, Loader2, GraduationCap, Droplets, Users, Navigation } from 'lucide-react';
+import { renderToString } from 'react-dom/server';
 
 interface School {
   id: string;
@@ -27,17 +27,48 @@ export function ImpactMap({ schools = [], selectedDistrict, onSchoolClick }: Imp
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedLayer, setSelectedLayer] = useState<'schools' | 'water' | 'beneficiaries'>('schools');
+  const [selectedLayer, setSelectedLayer] = useState<'all' | 'schools' | 'water' | 'beneficiaries'>('all');
+
+  // Custom Marker Icons
+  const createCustomIcon = (L: any, type: string) => {
+    const colors = {
+      school: '#3b82f6', // blue-500
+      water: '#06b6d4',  // cyan-500
+      beneficiary: '#ec4899', // pink-500
+    };
+    
+    const color = colors[type as keyof typeof colors] || colors.school;
+    
+    return L.divIcon({
+      className: 'custom-div-icon',
+      html: `
+        <div class="relative group">
+          <div class="absolute -inset-2 bg-white/20 rounded-full blur-sm group-hover:bg-white/40 transition-all"></div>
+          <div class="relative flex items-center justify-center w-8 h-8 rounded-full border-2 border-white shadow-lg transform transition-transform group-hover:scale-110" style="background-color: ${color}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              ${type === 'school' ? '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>' : 
+                type === 'water' ? '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>' : 
+                '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'}
+            </svg>
+          </div>
+          <div class="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-0.5 bg-omuto-navy text-white text-[8px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-sm pointer-events-none">
+            ${type.toUpperCase()}
+          </div>
+        </div>
+      `,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -16]
+    });
+  };
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
 
     const initMap = async () => {
       try {
-        // Dynamically import Leaflet to avoid SSR issues
         const L = (await import('leaflet')).default;
         
-        // Import Leaflet CSS
         if (!document.getElementById('leaflet-css')) {
           const link = document.createElement('link');
           link.id = 'leaflet-css';
@@ -47,32 +78,17 @@ export function ImpactMap({ schools = [], selectedDistrict, onSchoolClick }: Imp
         }
 
         // Initialize map centered on Mpigi District
-        const map = L.map(mapRef.current!).setView([0.233, 32.333], 10);
+        const map = L.map(mapRef.current!, {
+          zoomControl: false,
+          attributionControl: false
+        }).setView([0.233, 32.333], 10);
 
-        // Add OpenStreetMap tiles (free, no API key)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 18,
+        // Add custom theme-aware tiles or standard OSM with filter
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
         }).addTo(map);
 
-        // Add markers for schools
-        schools.forEach((school) => {
-          if (school.coordinates) {
-            const marker = L.marker([school.coordinates.lat, school.coordinates.lng])
-              .addTo(map)
-              .bindPopup(`
-                <div class="p-2">
-                  <strong>${school.name}</strong>
-                  ${school.location ? `<br/><small>${school.location}</small>` : ''}
-                  ${school.programme ? `<br/><span class="badge">${school.programme}</span>` : ''}
-                </div>
-              `);
-            
-            if (onSchoolClick) {
-              marker.on('click', () => onSchoolClick(school));
-            }
-          }
-        });
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         mapInstanceRef.current = map;
         setIsLoading(false);
@@ -90,9 +106,9 @@ export function ImpactMap({ schools = [], selectedDistrict, onSchoolClick }: Imp
         mapInstanceRef.current = null;
       }
     };
-  }, [schools, onSchoolClick]);
+  }, []);
 
-  // Update markers when schools change
+  // Update markers when schools or selectedLayer changes
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
@@ -109,6 +125,7 @@ export function ImpactMap({ schools = [], selectedDistrict, onSchoolClick }: Imp
 
       // Add new markers
       const filteredSchools = schools.filter((s) => {
+        if (selectedLayer === 'all') return true;
         if (selectedLayer === 'schools') return s.type === 'school';
         if (selectedLayer === 'water') return s.type === 'water';
         if (selectedLayer === 'beneficiaries') return s.type === 'beneficiary';
@@ -117,99 +134,146 @@ export function ImpactMap({ schools = [], selectedDistrict, onSchoolClick }: Imp
 
       filteredSchools.forEach((school) => {
         if (school.coordinates) {
-          L.marker([school.coordinates.lat, school.coordinates.lng])
+          const marker = L.marker([school.coordinates.lat, school.coordinates.lng], {
+            icon: createCustomIcon(L, school.type)
+          })
             .addTo(map)
             .bindPopup(`
-              <div class="p-2">
-                <strong>${school.name}</strong>
-                ${school.location ? `<br/><small>${school.location}</small>` : ''}
+              <div class="p-3 w-48 font-sans">
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="w-2 h-2 rounded-full" style="background-color: ${school.type === 'school' ? '#3b82f6' : school.type === 'water' ? '#06b6d4' : '#ec4899'}"></div>
+                  <span class="text-[10px] font-black uppercase tracking-widest text-muted-foreground">${school.type}</span>
+                </div>
+                <h4 class="font-bold text-omuto-navy text-sm leading-tight mb-1">${school.name}</h4>
+                <p class="text-[10px] text-omuto-navy/60 mb-2">${school.location || 'Central Uganda'}</p>
+                ${school.programme ? `<div class="bg-primary/10 text-primary text-[9px] font-black px-2 py-0.5 rounded-full inline-block uppercase tracking-wider">${school.programme}</div>` : ''}
+                <hr class="my-3 border-muted/50" />
+                <button class="w-full py-1.5 bg-omuto-navy text-white text-[10px] font-black rounded-lg uppercase tracking-widest hover:bg-omuto-red transition-colors shadow-sm">
+                  View Case Profile
+                </button>
               </div>
-            `);
+            `, {
+              className: 'custom-popup',
+              maxWidth: 240
+            });
+          
+          if (onSchoolClick) {
+            marker.on('click', () => onSchoolClick(school));
+          }
         }
       });
+
+      // Fit bounds if there are markers
+      if (filteredSchools.length > 0) {
+        const group = new L.FeatureGroup(filteredSchools.map(s => L.marker([s.coordinates!.lat, s.coordinates!.lng])));
+        map.fitBounds(group.getBounds().pad(0.1), { animate: true });
+      }
     };
 
     updateMarkers();
-  }, [schools, selectedLayer]);
+  }, [schools, selectedLayer, onSchoolClick]);
 
   return (
-    <Card className="border-lg shadow-comic-sm overflow-hidden">
-      <CardHeader className="bg-muted/30 border-b-lg p-4">
-        <div className="flex items-center justify-between">
+    <Card className="border-lg shadow-comic-sm overflow-hidden flex flex-col h-[500px]">
+      <CardHeader className="bg-white border-b-lg p-4 shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg font-black">Impact Map</CardTitle>
+            <div className="p-2 bg-primary/10 rounded-xl">
+              <MapPin className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-black tracking-tight text-omuto-navy">Impact Pulse</CardTitle>
+              <CardDescription className="text-[10px] font-bold uppercase tracking-widest">
+                {schools.length} Active points across Central Uganda
+              </CardDescription>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            <Button
+              size="sm"
+              variant={selectedLayer === 'all' ? 'default' : 'outline'}
+              onClick={() => setSelectedLayer('all')}
+              className="h-7 rounded-lg text-[9px] font-black uppercase tracking-wider px-3"
+            >
+              All
+            </Button>
             <Button
               size="sm"
               variant={selectedLayer === 'schools' ? 'default' : 'outline'}
               onClick={() => setSelectedLayer('schools')}
-              className="h-8 rounded-lg text-xs font-bold"
+              className="h-7 rounded-lg text-[9px] font-black uppercase tracking-wider px-3"
             >
-              <GraduationCap className="mr-1 h-3 w-3" />
               Schools
             </Button>
             <Button
               size="sm"
               variant={selectedLayer === 'water' ? 'default' : 'outline'}
               onClick={() => setSelectedLayer('water')}
-              className="h-8 rounded-lg text-xs font-bold"
+              className="h-7 rounded-lg text-[9px] font-black uppercase tracking-wider px-3"
             >
-              <Droplets className="mr-1 h-3 w-3" />
               Water
+            </Button>
+            <Button
+              size="sm"
+              variant={selectedLayer === 'beneficiaries' ? 'default' : 'outline'}
+              onClick={() => setSelectedLayer('beneficiaries')}
+              className="h-7 rounded-lg text-[9px] font-black uppercase tracking-wider px-3"
+            >
+              Impact
             </Button>
           </div>
         </div>
-        <CardDescription className="text-xs mt-1">
-          {schools.length} locations mapped in Central Uganda
-        </CardDescription>
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="relative h-[400px] bg-muted/20">
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
-              <div className="flex flex-col items-center gap-2">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span className="text-sm font-bold">Loading map...</span>
+      <CardContent className="p-0 flex-1 relative bg-muted/20">
+        <style dangerouslySetInnerHTML={{ __html: `
+          .leaflet-container { font-family: inherit; background: #f8fafc; }
+          .custom-popup .leaflet-popup-content-wrapper { border-radius: 12px; border: 2px solid #001f3f; box-shadow: 4px 4px 0px #001f3f; }
+          .custom-popup .leaflet-popup-tip { border: 2px solid #001f3f; }
+          .leaflet-div-icon { background: transparent; border: none; }
+          .dark .leaflet-layer img { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
+        `}} />
+        
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 z-[2000] backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <MapPin className="h-4 w-4 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
               </div>
-            </div>
-          )}
-          <div ref={mapRef} className="h-full w-full" />
-          
-          {/* Map Legend */}
-          <div className="absolute bottom-4 left-4 bg-background/95 rounded-xl p-3 border shadow-lg z-[1000]">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2">Legend</p>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500" />
-                <span className="text-xs">Partner Schools</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-cyan-500" />
-                <span className="text-xs">Water Sources</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-pink-500" />
-                <span className="text-xs">Beneficiaries</span>
-              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-omuto-navy">Calibrating Map...</span>
             </div>
           </div>
+        )}
+        
+        <div ref={mapRef} className="h-full w-full z-0" />
+        
+        {/* Map Legend Overlay */}
+        <div className="absolute bottom-6 left-6 bg-white/95 rounded-2xl p-4 border-2 border-omuto-navy shadow-comic-sm z-[1000] hidden sm:block">
+          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-omuto-navy/60 mb-3 underline decoration-omuto-red decoration-2 underline-offset-4">Impact Legend</p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-blue-500 border-2 border-white shadow-sm" />
+              <span className="text-[10px] font-bold text-omuto-navy">Partner Schools</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-cyan-500 border-2 border-white shadow-sm" />
+              <span className="text-[10px] font-bold text-omuto-navy">Water Facilities</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-pink-500 border-2 border-white shadow-sm" />
+              <span className="text-[10px] font-bold text-omuto-navy">Direct Beneficiaries</span>
+            </div>
+          </div>
+        </div>
 
-          {/* Quick Stats */}
-          <div className="absolute top-4 right-4 bg-background/95 rounded-xl p-3 border shadow-lg z-[1000]">
-            <p className="text-xs font-bold uppercase tracking-widest mb-2">Coverage</p>
-            <div className="space-y-1 text-xs">
-              <p><span className="font-bold text-blue-600">{schools.filter(s => s.type === 'school').length}</span> schools</p>
-              <p><span className="font-bold text-cyan-600">{schools.filter(s => s.type === 'water').length}</span> water points</p>
-              <p><span className="font-bold text-pink-600">{schools.filter(s => s.type === 'beneficiary').length}</span> beneficiaries</p>
-            </div>
-          </div>
+        {/* Floating Quick Action */}
+        <div className="absolute top-6 right-6 z-[1000]">
+          <Button size="sm" className="h-9 rounded-xl bg-omuto-navy text-white font-black text-[10px] uppercase tracking-widest shadow-comic-sm hover:translate-y-[-2px] transition-transform">
+             <Navigation className="h-3 w-3 mr-2" />
+             Field View
+          </Button>
         </div>
       </CardContent>
     </Card>
   );
 }
-
-// Import icons needed for the component
-import { GraduationCap, Droplets } from 'lucide-react';
