@@ -33,8 +33,8 @@ export function ScopeImpactDashboard({
   treesPlanted = 0,
   waterReached = 0,
 }: ScopeImpactProps) {
-  const targets = OMUTO_TARGETS[district];
-  const stats = UGANDA_STATS[district];
+  const targets = OMUTO_TARGETS[district] || OMUTO_TARGETS.mpigi;
+  const stats = UGANDA_STATS[district] || UGANDA_STATS.mpigi;
   const waterAccess = (stats as any).waterAccessRural ?? (stats as any).waterAccessUrban ?? 50;
   const teenPregnancy = (stats as any).teenagePregnancy ?? 0;
   const label = DISTRICT_LABELS[district];
@@ -103,7 +103,7 @@ export function ScopeImpactDashboard({
             <StatCard
               label="Youth (15-24)"
               value={stats.youthPopulation.toLocaleString()}
-              sub={`${Math.round((stats.youthPopulation / stats.population) * 100)}% of population`}
+              sub={`${Math.round((stats.youthPopulation / Math.max(1, stats.population)) * 100)}% of population`}
             />
             <StatCard
               label="Female Youth"
@@ -129,14 +129,14 @@ export function ScopeImpactDashboard({
               />
               <GapCard
                 label="Girls Needing MHM Support"
-                gap={Math.round((stats.femaleYouth / stats.population) * 100 * 0.4)}
+                gap={Math.round((stats.femaleYouth / Math.max(1, stats.population)) * 100 * 0.4)}
                 total={stats.femaleYouth}
                 icon={Heart}
                 color="text-pink-600"
               />
               <GapCard
                 label="Vulnerable Youth"
-                gap={Math.round((stats.youthPopulation / stats.population) * 100 * 0.2)}
+                gap={Math.round((stats.youthPopulation / Math.max(1, stats.population)) * 100 * 0.2)}
                 total={stats.youthPopulation}
                 icon={Users}
                 color="text-purple-600"
@@ -180,11 +180,11 @@ export function ScopeImpactDashboard({
               </span>
             </div>
             <Progress
-              value={(targets.students.yearlyTarget / targets.students.total) * 100}
+              value={(targets.students.yearlyTarget / Math.max(1, targets.students.total)) * 100}
               className="h-2"
             />
             <p className="text-xs text-muted-foreground">
-              {Math.round((targets.students.yearlyTarget / targets.students.total) * 100)}% of students targeted per year
+              {Math.round((targets.students.yearlyTarget / Math.max(1, targets.students.total)) * 100)}% of students targeted per year
             </p>
           </div>
 
@@ -196,11 +196,11 @@ export function ScopeImpactDashboard({
               </span>
             </div>
             <Progress
-              value={(targets.youth.yearlyTarget / targets.youth.total) * 100}
+              value={(targets.youth.yearlyTarget / Math.max(1, targets.youth.total)) * 100}
               className="h-2"
             />
             <p className="text-xs text-muted-foreground">
-              {Math.round((targets.youth.yearlyTarget / targets.youth.total) * 100)}% of youth targeted per year
+              {Math.round((targets.youth.yearlyTarget / Math.max(1, targets.youth.total)) * 100)}% of youth targeted per year
             </p>
           </div>
 
@@ -212,11 +212,11 @@ export function ScopeImpactDashboard({
               </span>
             </div>
             <Progress
-              value={(targets.schools.partnerTarget / targets.schools.total) * 100}
+              value={(targets.schools.partnerTarget / Math.max(1, targets.schools.total)) * 100}
               className="h-2"
             />
             <p className="text-xs text-muted-foreground">
-              {Math.round((targets.schools.partnerTarget / targets.schools.total) * 100)}% school partnership goal
+              {Math.round((targets.schools.partnerTarget / Math.max(1, targets.schools.total)) * 100)}% school partnership goal
             </p>
           </div>
         </CardContent>
