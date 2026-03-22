@@ -288,6 +288,44 @@
   .safe-bottom {
     @apply pb-[calc(1rem+env(safe-area-inset-bottom))];
   }
+
+  /* PREMIUM MAP INTERACTIVITY */
+  @keyframes pulse-urgent {
+    0% { box-shadow: 0 0 0 0 rgba(236, 28, 36, 0.7); transform: scale(1); }
+    70% { box-shadow: 0 0 0 15px rgba(236, 28, 36, 0); transform: scale(1.1); }
+    100% { box-shadow: 0 0 0 0 rgba(236, 28, 36, 0); transform: scale(1); }
+  }
+
+  .pulse-urgent {
+    animation: pulse-urgent 2s infinite;
+  }
+
+  .omuto-premium-popup .leaflet-popup-content-wrapper {
+    @apply rounded-2xl border-2 border-omuto-navy/10 shadow-2xl p-0 overflow-hidden bg-white/95 backdrop-blur-md;
+  }
+
+  .omuto-premium-popup .leaflet-popup-tip {
+    @apply bg-white/95 backdrop-blur-md border-r-2 border-b-2 border-omuto-navy/10;
+  }
+
+  .omuto-premium-popup .leaflet-popup-content {
+    @apply m-0 p-0;
+  }
+
+  /* Marker Hover States */
+  .marker-container {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .marker-container:hover {
+    transform: scale(1.4);
+    z-index: 1000 !important;
+  }
+
+  .is-selected .marker-container {
+    transform: scale(1.2);
+    z-index: 1001 !important;
+  }
 }
 
 

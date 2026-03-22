@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   MapPin, Loader2, GraduationCap, Droplets, TreePine, Users, 
-  Building2, Navigation, Home, Crosshair, Plus, X, Layers
+  Building2, Navigation, Home, Crosshair, Plus, X, Layers, Sparkles
 } from 'lucide-react';
 
 export interface MapLocation {
@@ -69,6 +71,9 @@ export function InteractiveMap({
   const [gpsLoading, setGpsLoading] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showLayers, setShowLayers] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
+  const [activeLocation, setActiveLocation] = useState<MapLocation | null>(null);
   const dragMarkerRef = useRef<any>(null);
 
   // Filter locations
@@ -251,27 +256,57 @@ export function InteractiveMap({
       }).addTo(map);
     }
 
-    // Add markers
+    // Coordinates collision map for spiderfying
+    const coordMap = new Map<string, MapLocation[]>();
     filteredLocations.forEach(loc => {
       if (!loc.coordinates) return;
+      const key = `${loc.coordinates.lat.toFixed(6)},${loc.coordinates.lng.toFixed(6)}`;
+      if (!coordMap.has(key)) coordMap.set(key, []);
+      coordMap.get(key)!.push(loc);
+    });
 
-      const colors = LAYER_COLORS[loc.type] || { marker: '#888' };
-      const isSelected = selectedLocation?.id === loc.id;
-      const size = isSelected ? 20 : 14;
-      const isOmuto = loc.type === 'office';
+    // Add markers
+    coordMap.forEach((locs, key) => {
+      const isMultiple = locs.length > 1;
+      
+      locs.forEach((loc, index) => {
+        if (!loc.coordinates) return;
 
-      const icon = L.divIcon({
-        className: `${loc.type}-marker`,
-        html: isOmuto 
-          ? `<div style="background:${colors.marker};width:${size}px;height:${size}px;border-radius:50%;border:4px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;">
-               <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-             </div>`
-          : `<div style="background:${colors.marker};width:${size}px;height:${size}px;border-radius:50%;border:${isSelected ? '4px' : '2px'} solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);${isSelected ? 'transform:scale(1.2);' : ''}"></div>`,
-        iconSize: [size, size],
-        iconAnchor: [size / 2, size / 2],
-      });
+        let lat = loc.coordinates.lat;
+        let lng = loc.coordinates.lng;
 
-      const marker = L.marker([loc.coordinates.lat, loc.coordinates.lng], { icon }).addTo(map);
+        // Apply spiderfy offset if multiple
+        if (isMultiple) {
+          const angle = (index / locs.length) * Math.PI * 2;
+          const radius = 0.00015; // Jitter radius
+          lat += Math.cos(angle) * radius;
+          lng += Math.sin(angle) * radius;
+        }
+
+        const colors = LAYER_COLORS[loc.type] || { marker: '#888' };
+        const isSelected = selectedLocation?.id === loc.id || activeLocation?.id === loc.id;
+        const size = isSelected ? 24 : 16;
+        const isOmuto = loc.type === 'office';
+        
+        // Logic for overdue pulse
+        const isOverdue = loc.type === 'school' && loc.description?.includes('overdue');
+
+        const icon = L.divIcon({
+          className: `omuto-marker-${loc.type} ${isSelected ? 'is-selected' : ''}`,
+          html: `
+            <div class="marker-container ${isOverdue ? 'pulse-urgent' : ''}" style="position:relative;">
+              ${isSelected ? `<div class="selection-ring" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size+16}px;height:${size+16}px;border:2px solid ${colors.marker};border-radius:50%;opacity:0.4;animation:ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>` : ''}
+              <div style="background:${colors.marker};width:${size}px;height:${size}px;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                ${isOmuto ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>` : ''}
+                ${loc.type === 'school' && !isOmuto ? `<svg width="8" height="8" viewBox="0 0 24 24" fill="white"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>` : ''}
+              </div>
+            </div>
+          `,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        });
+
+        const marker = L.marker([lat, lng], { icon }).addTo(map);
 
       // Popup content
       const typeLabel = loc.type === 'office' ? 'Omuto HQ' : loc.type.charAt(0).toUpperCase() + loc.type.slice(1);
@@ -286,9 +321,18 @@ export function InteractiveMap({
         </div>
       `;
 
-      marker.bindPopup(popupContent);
+      marker.bindPopup(popupContent, { 
+        closeButton: false, 
+        className: 'omuto-premium-popup',
+        offset: [0, -size/2]
+      });
 
       marker.on('click', () => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.map.flyTo([lat, lng], 15, { duration: 1.5 });
+        }
+        setActiveLocation(loc);
+        setSidePanelOpen(true);
         if (onLocationClickRef.current) {
           onLocationClickRef.current(loc);
         }
@@ -315,7 +359,126 @@ export function InteractiveMap({
   const totalVisible = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative group/map ${className}`}>
+      {/* Search Overlay */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-xs px-4 md:max-w-md transition-all duration-500 opacity-90 hover:opacity-100">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border-2 border-omuto-navy/5 p-2 flex items-center gap-2">
+            <Search className="h-4 w-4 text-omuto-navy/40 ml-2" />
+            <input 
+                type="text" 
+                placeholder="Search schools or locations..." 
+                className="bg-transparent border-none focus:ring-0 text-sm font-bold w-full text-omuto-navy"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+                <button 
+                    onClick={() => setSearchQuery('')}
+                    className="p-1 hover:bg-muted rounded-lg"
+                >
+                    <X className="h-3 w-3 text-omuto-navy/40" />
+                </button>
+            )}
+        </div>
+        
+        {/* Search Results */}
+        {searchQuery.length > 1 && (
+            <div className="mt-2 bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-omuto-navy/5 overflow-hidden max-h-[300px] overflow-y-auto animate-in slide-in-from-top-2 duration-300">
+                {locations
+                    .filter(loc => loc.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map(loc => (
+                        <button
+                            key={loc.id}
+                            onClick={() => {
+                                if (loc.coordinates && mapInstanceRef.current) {
+                                    mapInstanceRef.current.map.flyTo([loc.coordinates.lat, loc.coordinates.lng], 15);
+                                    setActiveLocation(loc);
+                                    setSidePanelOpen(true);
+                                    setSearchQuery('');
+                                }
+                            }}
+                            className="flex items-center gap-3 w-full p-4 hover:bg-primary/5 text-left border-b border-omuto-navy/5 last:border-0 transition-colors"
+                        >
+                            <div className={`p-2 rounded-xl bg-muted/50 ${LAYER_COLORS[loc.type].marker.replace('#', 'text-[#]')}`}>
+                                {loc.type === 'school' ? <GraduationCap className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
+                            </div>
+                            <div className="space-y-0.5">
+                                <p className="text-xs font-black text-omuto-navy uppercase tracking-tight">{loc.name}</p>
+                                <p className="text-[10px] font-bold text-omuto-navy/40">{loc.district} • {loc.type}</p>
+                            </div>
+                        </button>
+                    ))
+                }
+            </div>
+        )}
+      </div>
+
+      {/* Side Detail Panel */}
+      {sidePanelOpen && activeLocation && (
+        <div className="absolute top-4 bottom-4 left-4 z-[1001] w-[320px] md:w-[380px] animate-in slide-in-from-left duration-500">
+            <Card className="h-full border-4 border-omuto-navy/10 shadow-2xl rounded-[2.5rem] overflow-hidden flex flex-col bg-white/95 backdrop-blur-md">
+                <div className="p-6 pb-0 flex justify-between items-start">
+                    <div className={`p-3 rounded-2xl ${LAYER_COLORS[activeLocation.type].marker.replace('#', 'bg-[#]')}/10 ${LAYER_COLORS[activeLocation.type].marker.replace('#', 'text-[#]')}`}>
+                        {activeLocation.type === 'school' ? <Building2 className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}
+                    </div>
+                    <button 
+                        onClick={() => setSidePanelOpen(false)}
+                        className="p-2 hover:bg-muted rounded-2xl transition-colors"
+                    >
+                        <X className="h-5 w-5 text-omuto-navy/40" />
+                    </button>
+                </div>
+                
+                <CardContent className="p-8 space-y-6 overflow-y-auto">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="rounded-full font-black text-[9px] uppercase tracking-widest border-2">
+                                {activeLocation.type}
+                            </Badge>
+                            {activeLocation.programme && (
+                                <Badge className="bg-primary/10 text-primary border-primary/20 rounded-full font-black text-[9px] uppercase tracking-widest">
+                                    {activeLocation.programme}
+                                </Badge>
+                            )}
+                        </div>
+                        <h3 className="font-heading text-3xl font-black text-omuto-navy leading-tight tracking-tighter uppercase">{activeLocation.name}</h3>
+                        <p className="text-xs font-bold text-omuto-navy/50">{activeLocation.subcounty}, {activeLocation.district}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-6 border-t border-omuto-navy/5">
+                        <div className="p-4 bg-muted/30 rounded-2xl space-y-1">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-omuto-navy/40">Status</p>
+                            <p className="font-bold text-sm text-omuto-navy">Active</p>
+                        </div>
+                        <div className="p-4 bg-muted/30 rounded-2xl space-y-1">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-omuto-navy/40">Last Visit</p>
+                            <p className="font-bold text-sm text-omuto-navy">12d ago</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Programme Activity</p>
+                        <div className="flex items-center justify-between p-4 border-2 border-emerald-500/10 bg-emerald-500/5 rounded-2xl">
+                           <div className="flex items-center gap-3">
+                                <div className="p-2 bg-emerald-500 text-white rounded-lg">
+                                    <Sparkles className="h-4 w-4" />
+                                </div>
+                                <span className="text-xs font-black text-omuto-navy">Impact Score</span>
+                           </div>
+                           <span className="font-heading text-xl font-black text-emerald-600">9.4</span>
+                        </div>
+                    </div>
+
+                    <div className="pt-6 border-t border-omuto-navy/5">
+                         <Button className="w-full btn-omuto h-12 rounded-2xl text-xs font-black uppercase tracking-widest" asChild>
+                            <Link href={`/school-xperience/${activeLocation.id}`}>View Full Profile</Link>
+                         </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      )}
+
       {/* Map Container */}
       <div ref={mapRef} className="w-full h-full min-h-[400px]" />
 

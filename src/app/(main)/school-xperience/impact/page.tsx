@@ -176,15 +176,22 @@ export default function ImpactSnapshotPage() {
       subcounty: 'Kyebando',
       programme: 'Administration',
     }] : []),
-    ...schools.map(s => ({
-      id: s.id || '',
-      name: s.schoolName || 'Unknown',
-      type: 'school' as const,
-      coordinates: (s as SchoolXperience & { coordinates?: { lat: number; lng: number } }).coordinates,
-      subcounty: s.subCounty,
-      district: s.district,
-      programme: s.activeProgrammes?.[0],
-    })),
+    ...schools.map(s => {
+      const schoolVisits = (allVisits || []).filter(v => v.schoolId === s.id);
+      const lastVisit = schoolVisits[0];
+      const isOverdue = !lastVisit || toDate(lastVisit.date) < thirtyDaysAgo;
+      
+      return {
+        id: s.id || '',
+        name: s.schoolName || 'Unknown',
+        type: 'school' as const,
+        coordinates: (s as SchoolXperience & { coordinates?: { lat: number; lng: number } }).coordinates,
+        subcounty: s.subCounty,
+        district: s.district,
+        programme: s.activeProgrammes?.[0],
+        description: isOverdue ? 'overdue' : 'up-to-date',
+      };
+    }),
   ];
 
   if (loading) {
