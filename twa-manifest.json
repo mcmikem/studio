@@ -1,10 +1,10 @@
 {
   "packageName": "com.omuto.central",
-  "host": "YOUR_VERCEL_URL.vercel.app",
+  "host": "central.omuto.org",
   "name": "Omuto Central",
   "shortName": "Omuto",
-  "iconUrl": "https://YOUR_VERCEL_URL.vercel.app/icon-512x512.png",
-  "maskableIconUrl": "https://YOUR_VERCEL_URL.vercel.app/icon-512x512.png",
+  "iconUrl": "https://central.omuto.org/icon-512x512.png",
+  "maskableIconUrl": "https://central.omuto.org/icon-512x512.png",
   "launchWebField": "standalone",
   "themeColor": "#991B1B",
   "backgroundColor": "#F9F7F0",
