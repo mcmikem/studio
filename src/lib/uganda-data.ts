@@ -536,6 +536,42 @@ export const SUBCOUNTY_ALIASES: Record<string, string> = {
 // Type exports
 export type DistrictName = keyof typeof UGANDA_LOCATIONS;
 export type SubcountyName<T extends DistrictName> = keyof typeof UGANDA_LOCATIONS[T]['subcounties'];
+export type DistrictKey = keyof typeof OMUTO_TARGETS;
+
+// Omuto Foundation programme targets per district
+export const OMUTO_TARGETS = {
+  mpigi: {
+    students: { total: 45234, yearlyTarget: 1800, targetReach: 0.04 },
+    menstrualHealth: { schoolGirls: 8900 },
+    water: { targetInterventions: 45, populationWithoutAccess: 14940 },
+    schools: { total: 89, partnerTarget: 15 },
+    youth: { total: 98007, yearlyTarget: 300 },
+  },
+  butambala: {
+    students: { total: 20312, yearlyTarget: 800, targetReach: 0.04 },
+    menstrualHealth: { schoolGirls: 3900 },
+    water: { targetInterventions: 20, populationWithoutAccess: 5548 },
+    schools: { total: 42, partnerTarget: 8 },
+    youth: { total: 43955, yearlyTarget: 150 },
+  },
+  masaka: {
+    students: { total: 27850, yearlyTarget: 1100, targetReach: 0.04 },
+    menstrualHealth: { schoolGirls: 5400 },
+    water: { targetInterventions: 25, populationWithoutAccess: 8440 },
+    schools: { total: 58, partnerTarget: 10 },
+    youth: { total: 60231, yearlyTarget: 200 },
+  },
+  wakiso: {
+    students: { total: 395000, yearlyTarget: 5000, targetReach: 0.013 },
+    menstrualHealth: { schoolGirls: 78000 },
+    water: { targetInterventions: 100, populationWithoutAccess: 31120 },
+    schools: { total: 420, partnerTarget: 20 },
+    youth: { total: 852000, yearlyTarget: 1000 },
+  },
+} as const;
+
+// Alias for backward compatibility
+export const OMMUTO_TARGETS = OMUTO_TARGETS;
 
 // UBOS 2024 Statistics
 export const UGANDA_STATS = {

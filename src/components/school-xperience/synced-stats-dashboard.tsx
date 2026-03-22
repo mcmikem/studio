@@ -10,7 +10,7 @@ import {
   Target, TrendingUp, Award, AlertCircle, MapPin,
   Building2, Clock, Calendar
 } from 'lucide-react';
-import { OMMUTO_TARGETS, UGANDA_STATS, UGANDA_LOCATIONS } from '@/lib/uganda-data';
+import { OMMUTO_TARGETS, UGANDA_STATS, UGANDA_LOCATIONS, type DistrictKey } from '@/lib/uganda-data';
 
 interface Location {
   district?: string;
@@ -55,9 +55,11 @@ export function SyncedStatsDashboard({
   onFilterChange,
   loading = false 
 }: SyncedStatsDashboardProps) {
-  const district = (filters.district || 'mpigi') as keyof typeof OMMUTO_TARGETS;
+  const district = (filters.district || 'mpigi') as DistrictKey;
   const targets = OMMUTO_TARGETS[district] || OMMUTO_TARGETS.mpigi;
   const stats_ug = UGANDA_STATS[district] || UGANDA_STATS.mpigi;
+  const waterAccess = (stats_ug as any).waterAccessRural ?? (stats_ug as any).waterAccessUrban ?? 50;
+  const teenPregnancy = (stats_ug as any).teenagePregnancy ?? 0;
 
   // Calculate reach percentages
   const studentReach = stats ? Math.round((stats.totalLeaders / targets.students.yearlyTarget) * 100) : 0;
@@ -273,12 +275,12 @@ export function SyncedStatsDashboard({
               <div className="space-y-4">
                 <GapBar
                   label="Without Clean Water"
-                  gap={100 - (stats_ug.waterAccessRural || 50)}
+                  gap={100 - waterAccess}
                   color="bg-cyan-500"
                 />
                 <GapBar
                   label="Girls Needing MHM Support"
-                  gap={Math.round(stats_ug.teenagePregnancy * 1.5)}
+                  gap={Math.round(teenPregnancy * 1.5)}
                   color="bg-pink-500"
                 />
                 <GapBar
@@ -297,7 +299,7 @@ export function SyncedStatsDashboard({
               <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
                 <p className="font-bold text-sm text-amber-800">Teenage Pregnancy Context</p>
                 <p className="text-xs text-amber-700 mt-1">
-                  {stats_ug.teenagePregnancy}% of girls aged 15-19 in {district} have begun childbearing (UBOS).
+                  {teenPregnancy}% of girls aged 15-19 in {district} have begun childbearing (UBOS).
                   Your RED Campaign menstrual health support is critical for keeping girls in school.
                 </p>
               </div>
@@ -313,7 +315,7 @@ export function SyncedStatsDashboard({
                   <p className="text-xs text-muted-foreground">Youth (15-24)</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-muted/30">
-                  <p className="text-2xl font-black">{Math.round((stats_ug.waterAccessRural || 50) / 100 * stats_ug.population).toLocaleString()}</p>
+                  <p className="text-2xl font-black">{Math.round(waterAccess / 100 * stats_ug.population).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground">With Water Access</p>
                 </div>
                 <div className="text-center p-3 rounded-xl bg-muted/30">
