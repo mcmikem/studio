@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { DistrictKey } from '@/lib/uganda-data';
 import { UGANDA_LOCATIONS } from '@/lib/uganda-data';
 import Link from 'next/link';
@@ -113,31 +113,23 @@ export default function ImpactSnapshotPage() {
   const districtLabel = districtMeta.label;
 
   const schools = (allSchools || []).filter(s => !districtKey || s.district === districtLabel);
-  const visits = (allVisits || []).filter(v => {
-    if (!districtKey) return true;
-    const school = (allSchools || []).find(s => s.id === v.schoolId);
-    return school?.district === districtLabel;
-  });
-  const leaders = (allLeaders || []).filter(l => {
-    if (!districtKey) return true;
-    const school = (allSchools || []).find(s => s.id === l.schoolId);
-    return school?.district === districtLabel;
-  });
-  const beneficiaries = (allBeneficiaries || []).filter(b => {
-    if (!districtKey) return true;
-    const school = (allSchools || []).find(s => s.id === b.schoolId);
-    return school?.district === districtLabel;
-  });
-  const trees = (allTrees || []).filter(t => {
-    if (!districtKey) return true;
-    const school = (allSchools || []).find(s => s.id === t.schoolId);
-    return school?.district === districtLabel;
-  });
-  const water = (allWater || []).filter(w => {
-    if (!districtKey) return true;
-    const school = (allSchools || []).find(s => s.id === w.schoolId);
-    return school?.district === districtLabel;
-  });
+
+  const schoolDistrictMap = useMemo(() => {
+    const map = new Map<string, string>();
+    (allSchools || []).forEach(s => { if (s.id) map.set(s.id, s.district || ''); });
+    return map;
+  }, [allSchools]);
+
+  const belongsToDistrict = useCallback((schoolId?: string) => {
+    if (!districtKey || !schoolId) return true;
+    return schoolDistrictMap.get(schoolId) === districtLabel;
+  }, [districtKey, districtLabel, schoolDistrictMap]);
+
+  const visits = (allVisits || []).filter(v => belongsToDistrict(v.schoolId));
+  const leaders = (allLeaders || []).filter(l => belongsToDistrict(l.schoolId));
+  const beneficiaries = (allBeneficiaries || []).filter(b => belongsToDistrict(b.schoolId));
+  const trees = (allTrees || []).filter(t => belongsToDistrict(t.schoolId));
+  const water = (allWater || []).filter(w => belongsToDistrict(w.schoolId));
 
   const now = new Date();
   const termStart = new Date(now.getFullYear(), now.getMonth(), 1);
