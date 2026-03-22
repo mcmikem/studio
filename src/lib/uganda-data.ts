@@ -568,6 +568,20 @@ export const OMUTO_TARGETS = {
     schools: { total: 420, partnerTarget: 20 },
     youth: { total: 852000, yearlyTarget: 1000 },
   },
+  kalungu: {
+    students: { total: 19800, yearlyTarget: 800, targetReach: 0.04 },
+    menstrualHealth: { schoolGirls: 3800 },
+    water: { targetInterventions: 15, populationWithoutAccess: 7300 },
+    schools: { total: 38, partnerTarget: 6 },
+    youth: { total: 56250, yearlyTarget: 100 },
+  },
+  kampala: {
+    students: { total: 248000, yearlyTarget: 2000, targetReach: 0.008 },
+    menstrualHealth: { schoolGirls: 48000 },
+    water: { targetInterventions: 50, populationWithoutAccess: 8960 },
+    schools: { total: 280, partnerTarget: 10 },
+    youth: { total: 539317, yearlyTarget: 500 },
+  },
 } as const;
 
 // Alias for backward compatibility
@@ -621,5 +635,30 @@ export const UGANDA_STATS = {
     waterAccessUrban: 89,
     sanitationAccess: 82,
     primarySchoolEnrollment: 395000,
+    teenagePregnancy: 18,
+  },
+  kalungu: {
+    population: 187500,
+    male: 93750,
+    female: 93750,
+    households: 45100,
+    youthPopulation: 56250,
+    femaleYouth: 28125,
+    waterAccessRural: 61,
+    sanitationAccess: 63,
+    primarySchoolEnrollment: 19800,
+    teenagePregnancy: 26,
+  },
+  kampala: {
+    population: 1797722,
+    male: 898861,
+    female: 898861,
+    households: 432000,
+    youthPopulation: 539317,
+    femaleYouth: 269658,
+    waterAccessUrban: 95,
+    sanitationAccess: 88,
+    primarySchoolEnrollment: 248000,
+    teenagePregnancy: 15,
   },
 };

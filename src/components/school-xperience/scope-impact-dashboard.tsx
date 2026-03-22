@@ -7,32 +7,41 @@ import {
   Users, GraduationCap, Heart, Droplets, TreePine,
   Target, TrendingUp, Award, AlertCircle
 } from 'lucide-react';
-import { OMMUTO_TARGETS, UGANDA_STATS } from '@/lib/uganda-data';
-import { UGANDA_LOCATIONS } from '@/lib/uganda-data';
+import { OMMUTO_TARGETS, UGANDA_STATS, type DistrictKey } from '@/lib/uganda-data';
+
+const DISTRICT_LABELS: Record<DistrictKey, string> = {
+  mpigi: 'Mpigi',
+  butambala: 'Butambala',
+  masaka: 'Masaka',
+  wakiso: 'Wakiso',
+  kalungu: 'Kalungu',
+  kampala: 'Kampala',
+};
 
 interface ScopeImpactProps {
-  district?: 'mpigi' | 'butambala';
+  district?: DistrictKey;
 }
 
 export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
   const targets = OMMUTO_TARGETS[district];
   const stats = UGANDA_STATS[district];
+  const waterAccess = (stats as any).waterAccessRural ?? (stats as any).waterAccessUrban ?? 50;
+  const teenPregnancy = (stats as any).teenagePregnancy ?? 0;
+  const label = DISTRICT_LABELS[district];
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Student Leaders - SLF */}
         <ScopeCard
           icon={GraduationCap}
           title="Student Leaders (SLF)"
-          reached={0} // Will be synced from data
+          reached={0}
           target={Math.round(targets.students.total * targets.students.targetReach)}
           total={targets.students.total}
           color="text-blue-600"
           bgColor="bg-blue-50"
         />
 
-        {/* Girls Reached - RED */}
         <ScopeCard
           icon={Heart}
           title="Girls Supported (RED)"
@@ -43,7 +52,6 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
           bgColor="bg-pink-50"
         />
 
-        {/* Trees Planted - GreenSchools */}
         <ScopeCard
           icon={TreePine}
           title="Trees Planted (GS)"
@@ -54,7 +62,6 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
           bgColor="bg-green-50"
         />
 
-        {/* Clean Water - PureWater */}
         <ScopeCard
           icon={Droplets}
           title="Clean Water Reached"
@@ -66,7 +73,6 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
         />
       </div>
 
-      {/* Impact Gaps */}
       <Card className="border-lg shadow-comic-sm">
         <CardHeader className="bg-muted/30 border-b-lg">
           <CardTitle className="flex items-center gap-2 text-lg font-black">
@@ -74,11 +80,10 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
             Scope vs Impact Analysis
           </CardTitle>
           <CardDescription>
-            {district === 'mpigi' ? 'Mpigi' : 'Butambala'} District — UBOS 2024 Census Data
+            {label} District — UBOS 2024 Census Data
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6 space-y-6">
-          {/* Population Overview */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <StatCard
               label="Total Population"
@@ -102,13 +107,12 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
             />
           </div>
 
-          {/* Service Access Gaps */}
           <div className="space-y-4">
             <h4 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Service Access Gaps</h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <GapCard
                 label="Without Clean Water"
-                gap={100 - (stats.waterAccessRural || 50)}
+                gap={100 - waterAccess}
                 total={stats.population}
                 icon={Droplets}
                 color="text-cyan-600"
@@ -130,23 +134,23 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
             </div>
           </div>
 
-          {/* Teenage Pregnancy Context */}
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
-            <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
-            <div>
-              <p className="font-bold text-sm text-amber-800">
-                Teenage Pregnancy Context
-              </p>
-              <p className="text-xs text-amber-700 mt-1">
-                {stats.teenagePregnancy}% of girls aged 15-19 have begun childbearing (UBOS).
-                RED Campaign menstrual health support is critical for keeping girls in school.
-              </p>
+          {teenPregnancy > 0 && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 border border-amber-200">
+              <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+              <div>
+                <p className="font-bold text-sm text-amber-800">
+                  Teenage Pregnancy Context
+                </p>
+                <p className="text-xs text-amber-700 mt-1">
+                  {teenPregnancy}% of girls aged 15-19 have begun childbearing (UBOS).
+                  RED Campaign menstrual health support is critical for keeping girls in school.
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Programme Reach Targets */}
       <Card className="border-lg shadow-comic-sm">
         <CardHeader className="bg-muted/30 border-b-lg">
           <CardTitle className="flex items-center gap-2 text-lg font-black">
@@ -165,8 +169,8 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
                 {targets.students.yearlyTarget.toLocaleString()} / {targets.students.total.toLocaleString()}
               </span>
             </div>
-            <Progress 
-              value={(targets.students.yearlyTarget / targets.students.total) * 100} 
+            <Progress
+              value={(targets.students.yearlyTarget / targets.students.total) * 100}
               className="h-2"
             />
             <p className="text-xs text-muted-foreground">
@@ -181,8 +185,8 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
                 {targets.youth.yearlyTarget.toLocaleString()} / {targets.youth.total.toLocaleString()}
               </span>
             </div>
-            <Progress 
-              value={(targets.youth.yearlyTarget / targets.youth.total) * 100} 
+            <Progress
+              value={(targets.youth.yearlyTarget / targets.youth.total) * 100}
               className="h-2"
             />
             <p className="text-xs text-muted-foreground">
@@ -197,8 +201,8 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
                 {targets.schools.partnerTarget} / {targets.schools.total}
               </span>
             </div>
-            <Progress 
-              value={(targets.schools.partnerTarget / targets.schools.total) * 100} 
+            <Progress
+              value={(targets.schools.partnerTarget / targets.schools.total) * 100}
               className="h-2"
             />
             <p className="text-xs text-muted-foreground">
@@ -285,7 +289,7 @@ function GapCard({
   color: string;
 }) {
   const peopleAffected = Math.round((gap / 100) * total);
-  
+
   return (
     <div className="p-4 rounded-xl border border-muted">
       <div className="flex items-center gap-2 mb-2">

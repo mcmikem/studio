@@ -1,6 +1,3 @@
-
-'use server';
-
 import { z } from 'zod';
 import { callOpenRouter, DEFAULT_MODEL } from '@/lib/openrouter';
 import { aiConfig } from '@/lib/ai';
@@ -31,13 +28,13 @@ Analyze sales, production, and inventory data to provide 1-2 critical, actionabl
   }
 });
 
-export async function getEnterpriseInsights(input: { 
-  sales: any[]; 
-  inventory: any[]; 
-  production: any[] 
+export async function getEnterpriseInsights(input: {
+  sales: any[];
+  inventory: any[];
+  production: any[]
 }): Promise<{ insights: { title: string; insight: string; priority: 'Low' | 'Medium' | 'High'; actionableStep: string }[] }> {
   const { sales, inventory, production } = input;
-  
+
   const prompt = `
 Analyze this enterprise data:
 - Recent Sales: ${JSON.stringify(sales).substring(0, 1000)}
@@ -47,12 +44,11 @@ Analyze this enterprise data:
 Provide 1-2 strategic insights.
 `;
 
-  // 1. Try OpenRouter First
   if (aiConfig.provider === 'openrouter' && aiConfig.openRouterApiKey) {
     try {
       const systemPrompt = `You are an AI Enterprise Advisor. Return valid JSON only.`;
       const text = await callOpenRouter(prompt, systemPrompt, DEFAULT_MODEL, 0.5);
-      
+
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         try {
@@ -68,7 +64,6 @@ Provide 1-2 strategic insights.
     }
   }
 
-  // 2. Try Gemini (Genkit)
   try {
     const response = await enterpriseAdvisorPrompt({ input: prompt });
     if (response.output) {
@@ -79,7 +74,6 @@ Provide 1-2 strategic insights.
     console.error('[EnterpriseAdvisor] Gemini failed:', error);
   }
 
-  // 3. Fallback
   return {
     insights: [
       {

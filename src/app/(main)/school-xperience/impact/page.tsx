@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, getDocs, Timestamp } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
+import type { DistrictKey } from '@/lib/uganda-data';
 import Link from 'next/link';
 import {
   Building2,
@@ -48,6 +49,16 @@ export default function ImpactSnapshotPage() {
   const firestore = useFirestore();
   const [stats, setStats] = useState<ImpactStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedDistrict, setSelectedDistrict] = useState<DistrictKey>('mpigi');
+
+  const districts: { key: DistrictKey; label: string }[] = [
+    { key: 'mpigi', label: 'Mpigi' },
+    { key: 'butambala', label: 'Butambala' },
+    { key: 'masaka', label: 'Masaka' },
+    { key: 'wakiso', label: 'Wakiso' },
+    { key: 'kalungu', label: 'Kalungu' },
+    { key: 'kampala', label: 'Kampala' },
+  ];
 
   const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -342,7 +353,22 @@ export default function ImpactSnapshotPage() {
         </TabsContent>
 
         <TabsContent value="scope">
-          <ScopeImpactDashboard district="mpigi" />
+          <div className="flex flex-wrap gap-2 mb-6">
+            {districts.map(d => (
+              <button
+                key={d.key}
+                onClick={() => setSelectedDistrict(d.key)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors border-2 ${
+                  selectedDistrict === d.key
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-muted-foreground border-muted hover:border-primary'
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+          <ScopeImpactDashboard district={selectedDistrict} />
           <div className="mt-6">
             <SyncedStatsDashboard
               stats={{
@@ -358,7 +384,7 @@ export default function ImpactSnapshotPage() {
                 activeProgrammes: 4,
                 pendingFollowUps: 0,
               }}
-              filters={{ district: 'mpigi' }}
+              filters={{ district: selectedDistrict }}
               locations={(schools || []).map(s => ({
                 district: s.district,
                 subcounty: s.subCounty,

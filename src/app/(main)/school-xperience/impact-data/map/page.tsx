@@ -374,16 +374,59 @@ export default function MapPage() {
               </div>
 
               {/* Area Stats */}
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
-                  <p className="text-lg font-black">{schools?.length || 0}</p>
-                  <p className="text-[10px] text-muted-foreground">Schools</p>
+              {selectedLocation.type === 'school' || selectedLocation.type === 'beneficiary' || selectedLocation.type === 'office' ? (
+                <>
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <div className="bg-muted/50 rounded-lg p-2 text-center">
+                      <p className="text-lg font-black">
+                        {selectedLocation.subcounty
+                          ? (schools || []).filter((s: any) => s.subCounty === selectedLocation.subcounty).length
+                          : (schools || []).filter((s: any) => s.district === selectedLocation.district).length}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">Schools Here</p>
+                    </div>
+                    <div className="bg-muted/50 rounded-lg p-2 text-center">
+                      <p className="text-lg font-black">{beneficiaries?.length || 0}</p>
+                      <p className="text-[10px] text-muted-foreground">Beneficiaries</p>
+                    </div>
+                  </div>
+
+                  {/* Subcounty breakdown if in a district */}
+                  {selectedLocation.district && (() => {
+                    const districtKey = selectedLocation.district as keyof typeof UGANDA_LOCATIONS;
+                    const districtData = UGANDA_LOCATIONS[districtKey];
+                    if (!districtData?.subcounties) return null;
+                    const districtSchools = (schools || []).filter((s: any) => s.district === selectedLocation.district);
+                    return (
+                      <div className="pt-2">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Schools by Subcounty</p>
+                        <div className="space-y-1 max-h-40 overflow-y-auto">
+                          {districtData.subcounties.map((sc: any) => {
+                            const count = districtSchools.filter((s: any) => s.subCounty === sc.name).length;
+                            return (
+                              <div key={sc.name} className="flex items-center justify-between p-1.5 rounded-lg bg-muted/30">
+                                <span className="text-xs font-bold truncate flex-1 mr-2">{sc.name}</span>
+                                <span className={`text-xs font-black ${count > 0 ? 'text-primary' : 'text-muted-foreground'}`}>{count}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <div className="bg-muted/50 rounded-lg p-2 text-center">
+                    <p className="text-lg font-black">{schools?.length || 0}</p>
+                    <p className="text-[10px] text-muted-foreground">Schools</p>
+                  </div>
+                  <div className="bg-muted/50 rounded-lg p-2 text-center">
+                    <p className="text-lg font-black">{beneficiaries?.length || 0}</p>
+                    <p className="text-[10px] text-muted-foreground">Beneficiaries</p>
+                  </div>
                 </div>
-                <div className="bg-muted/50 rounded-lg p-2 text-center">
-                  <p className="text-lg font-black">{beneficiaries?.length || 0}</p>
-                  <p className="text-[10px] text-muted-foreground">Beneficiaries</p>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}
