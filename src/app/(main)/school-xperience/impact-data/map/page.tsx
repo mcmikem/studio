@@ -24,8 +24,15 @@ export default function MapPage() {
   const [mapZoom, setMapZoom] = useState(12);
   const [showBoundary, setShowBoundary] = useState<{ type: string; coordinates: number[][][] } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addType, setAddType] = useState<'school' | 'water' | 'tree' | 'beneficiary' | 'training'>('school');
+  const [addType, setAddType] = useState<'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office'>('school');
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  const handleMapPlace = (coords: { lat: number; lng: number }, type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office') => {
+    setMapCoords(coords);
+    setAddType(type);
+    setShowAddModal(true);
+  };
 
   // Fetch data
   const schoolsQuery = useMemoFirebase(() => {
@@ -510,6 +517,7 @@ export default function MapPage() {
           zoom={mapZoom}
           highlightBoundary={showBoundary}
           onLocationClick={setSelectedLocation}
+          onMapPlace={handleMapPlace}
           editable={true}
         />
 
@@ -517,8 +525,9 @@ export default function MapPage() {
         {showAddModal && (
           <AddPlaceModal
             type={addType}
-            onClose={() => setShowAddModal(false)}
+            onClose={() => { setShowAddModal(false); setMapCoords(null); }}
             schools={schools || []}
+            initialCoordinates={mapCoords}
           />
         )}
       </div>
@@ -526,9 +535,9 @@ export default function MapPage() {
   );
 }
 
-function AddPlaceModal({ type, onClose, schools }: { type: string; onClose: () => void; schools: any[] }) {
+function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: string; onClose: () => void; schools: any[]; initialCoordinates?: { lat: number; lng: number } | null }) {
   const { submit, isSubmitting } = useFormSubmission();
-  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(initialCoordinates || null);
   const [name, setName] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [quantity, setQuantity] = useState(10);
@@ -556,12 +565,14 @@ function AddPlaceModal({ type, onClose, schools }: { type: string; onClose: () =
       await submit({ collectionName: 'sx-beneficiaries', idempotencyKey, data: { ...baseData, beneficiaryType: 'student', gender: 'female', ageGroup: '15_19', programme: 'SLF', servicesProvided: [] } });
     } else if (type === 'training') {
       await submit({ collectionName: 'sx-trainings', idempotencyKey, data: { ...baseData, trainingType: name, programme: 'SLF', participantsMale: 0, participantsFemale: 0, topicsCovered: 'General', trainerName: 'Staff' } });
+    } else if (type === 'office') {
+      await submit({ collectionName: 'sx-locations', idempotencyKey, data: { name: name || 'New Office', locationType: 'office', coordinates: coordinates || undefined } });
     }
     setSubmitted(true);
     onClose();
   };
 
-  const icons: Record<string, any> = { school: GraduationCap, water: Droplets, tree: TreePine, beneficiary: Users, training: Building2 };
+  const icons: Record<string, any> = { school: GraduationCap, water: Droplets, tree: TreePine, beneficiary: Users, training: Building2, office: Home };
   const Icon = icons[type] || Building2;
   const canSubmit = submitted || isSubmitting || (type === 'school' ? !name || !coordinates : !selectedSchoolId || !coordinates);
 

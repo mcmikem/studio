@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   MapPin, Loader2, GraduationCap, Droplets, TreePine, Users, 
-  Building2, Eye, EyeOff, Navigation, Home, UsersRound, Crosshair
+  Building2, Eye, EyeOff, Navigation, Home, UsersRound, Crosshair, Plus
 } from 'lucide-react';
 
 export interface MapLocation {
@@ -25,6 +26,7 @@ interface InteractiveMapProps {
   onLocationClick?: (location: MapLocation) => void;
   selectedLocation?: MapLocation | null;
   onCoordinatesChange?: (coords: { lat: number; lng: number } | null) => void;
+  onMapPlace?: (coords: { lat: number; lng: number }, type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office') => void;
   editable?: boolean;
   center?: { lat: number; lng: number };
   zoom?: number;
@@ -46,6 +48,7 @@ export function InteractiveMap({
   onLocationClick,
   selectedLocation,
   onCoordinatesChange,
+  onMapPlace,
   editable = false,
   center = { lat: 0.208, lng: 32.479 },
   zoom = 12,
@@ -358,13 +361,69 @@ export function InteractiveMap({
         </div>
       </div>
 
-      {/* Coordinates Display */}
+      {/* Quick Add Popover */}
       {editable && clickedCoords && (
-        <div className="absolute bottom-4 right-4 z-[1000] bg-white/95 rounded-lg p-2 shadow-lg border">
-          <p className="text-xs font-bold text-primary">
-            <Navigation className="inline h-3 w-3 mr-1" />
-            {clickedCoords.lat.toFixed(6)}, {clickedCoords.lng.toFixed(6)}
-          </p>
+        <div className="absolute bottom-16 right-4 z-[1000]">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                size="sm"
+                className="btn-omuto h-10 rounded-xl shadow-lg font-black text-xs gap-1"
+              >
+                <Plus className="h-4 w-4" />
+                Add Here
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent side="top" align="end" className="w-52 p-2">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2 pb-2">
+                Add at {clickedCoords.lat.toFixed(4)}, {clickedCoords.lng.toFixed(4)}
+              </p>
+              <div className="grid grid-cols-2 gap-1">
+                <button
+                  onClick={() => onMapPlace?.(clickedCoords, 'school')}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  <GraduationCap className="h-5 w-5 text-blue-600" />
+                  <span className="text-[10px] font-bold">School</span>
+                </button>
+                <button
+                  onClick={() => onMapPlace?.(clickedCoords, 'office')}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  <Home className="h-5 w-5 text-red-600" />
+                  <span className="text-[10px] font-bold">Office</span>
+                </button>
+                <button
+                  onClick={() => onMapPlace?.(clickedCoords, 'water')}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-cyan-50 transition-colors"
+                >
+                  <Droplets className="h-5 w-5 text-cyan-600" />
+                  <span className="text-[10px] font-bold">Water</span>
+                </button>
+                <button
+                  onClick={() => onMapPlace?.(clickedCoords, 'tree')}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-green-50 transition-colors"
+                >
+                  <TreePine className="h-5 w-5 text-green-600" />
+                  <span className="text-[10px] font-bold">Trees</span>
+                </button>
+                <button
+                  onClick={() => onMapPlace?.(clickedCoords, 'beneficiary')}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-pink-50 transition-colors"
+                >
+                  <Users className="h-5 w-5 text-pink-600" />
+                  <span className="text-[10px] font-bold">Beneficiary</span>
+                </button>
+                <button
+                  onClick={() => onMapPlace?.(clickedCoords, 'training')}
+                  className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-amber-50 transition-colors"
+                >
+                  <Building2 className="h-5 w-5 text-amber-600" />
+                  <span className="text-[10px] font-bold">Training</span>
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       )}
 
