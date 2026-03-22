@@ -96,12 +96,12 @@ export default function ImpactSnapshotPage() {
     return query(collection(firestore, 'sx-water-sources'), orderBy('createdAt', 'desc'));
   }, [firestore, refreshKey]);
 
-  const { data: allSchools, isLoading: schoolsLoading } = useCollection<SchoolXperience>(schoolQuery, { key: schoolKey });
-  const { data: allVisits } = useCollection<SchoolVisitXperience>(visitsQuery, { key: visitsKey });
-  const { data: allLeaders } = useCollection<SchoolLeader>(leadersQuery, { key: leadersKey });
-  const { data: allBeneficiaries } = useCollection<any>(beneficiariesQuery, { key: beneficiariesKey });
-  const { data: allTrees } = useCollection<any>(treesQuery, { key: treesKey });
-  const { data: allWater } = useCollection<any>(waterQuery, { key: waterKey });
+  const { data: allSchools, isLoading: schoolsLoading } = useCollection<SchoolXperience>(schoolQuery);
+  const { data: allVisits } = useCollection<SchoolVisitXperience>(visitsQuery);
+  const { data: allLeaders } = useCollection<SchoolLeader>(leadersQuery);
+  const { data: allBeneficiaries } = useCollection<any>(beneficiariesQuery);
+  const { data: allTrees } = useCollection<any>(treesQuery);
+  const { data: allWater } = useCollection<any>(waterQuery);
 
   const toDate = (date: any): Date => {
     if (date instanceof Timestamp) return date.toDate();
