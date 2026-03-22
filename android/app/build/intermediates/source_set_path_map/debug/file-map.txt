@@ -1,0 +1,36 @@
+com.omuto.central.app-lifecycle-viewmodel-2.6.1-0 /Users/user/.gradle/caches/transforms-3/027c5341d540b7823ea4669c91bc8a6b/transformed/lifecycle-viewmodel-2.6.1/res
+com.omuto.central.app-appcompat-1.6.1-1 /Users/user/.gradle/caches/transforms-3/034f4539a3042884b3f4edc3f29f1c3c/transformed/appcompat-1.6.1/res
+com.omuto.central.app-drawerlayout-1.1.1-2 /Users/user/.gradle/caches/transforms-3/069279d4f81a918e98432e7cd34522f7/transformed/drawerlayout-1.1.1/res
+com.omuto.central.app-recyclerview-1.1.0-3 /Users/user/.gradle/caches/transforms-3/0beda9ebdd30834d4ca2d431f82da3da/transformed/recyclerview-1.1.0/res
+com.omuto.central.app-cardview-1.0.0-4 /Users/user/.gradle/caches/transforms-3/14a2b8171571b738a6fc311231cc503a/transformed/cardview-1.0.0/res
+com.omuto.central.app-jetified-savedstate-1.2.1-5 /Users/user/.gradle/caches/transforms-3/1b33cc2603b4b887440c9e087943049f/transformed/jetified-savedstate-1.2.1/res
+com.omuto.central.app-lifecycle-runtime-2.6.1-6 /Users/user/.gradle/caches/transforms-3/207f63b77313d001d37853b5c5c24de7/transformed/lifecycle-runtime-2.6.1/res
+com.omuto.central.app-lifecycle-livedata-core-2.6.1-7 /Users/user/.gradle/caches/transforms-3/3113ea33f993558b702f0bdf77f26d71/transformed/lifecycle-livedata-core-2.6.1/res
+com.omuto.central.app-transition-1.2.0-8 /Users/user/.gradle/caches/transforms-3/364ff4cbb66f8faaca5a33b89950ec01/transformed/transition-1.2.0/res
+com.omuto.central.app-coordinatorlayout-1.1.0-9 /Users/user/.gradle/caches/transforms-3/3d34eab03b2f80574ab100e2488d831e/transformed/coordinatorlayout-1.1.0/res
+com.omuto.central.app-jetified-emoji2-1.2.0-10 /Users/user/.gradle/caches/transforms-3/45da6333d280da72112b58413202a670/transformed/jetified-emoji2-1.2.0/res
+com.omuto.central.app-jetified-emoji2-views-helper-1.2.0-11 /Users/user/.gradle/caches/transforms-3/4aff234555bd288f1481cc58a5a0e94a/transformed/jetified-emoji2-views-helper-1.2.0/res
+com.omuto.central.app-jetified-viewpager2-1.0.0-12 /Users/user/.gradle/caches/transforms-3/625ee08f863c70a874128ab2072804a2/transformed/jetified-viewpager2-1.0.0/res
+com.omuto.central.app-jetified-core-ktx-1.12.0-13 /Users/user/.gradle/caches/transforms-3/750b29a07d7419ff87dd0c146a4704ce/transformed/jetified-core-ktx-1.12.0/res
+com.omuto.central.app-browser-1.4.0-14 /Users/user/.gradle/caches/transforms-3/8f48011aa2a037b5d0ceef06dd217c08/transformed/browser-1.4.0/res
+com.omuto.central.app-jetified-appcompat-resources-1.6.1-15 /Users/user/.gradle/caches/transforms-3/9808fb39775abf9650fcb558f99f6efe/transformed/jetified-appcompat-resources-1.6.1/res
+com.omuto.central.app-jetified-activity-1.8.0-16 /Users/user/.gradle/caches/transforms-3/9ad9cc4ca20c6c53dbde5260179036e2/transformed/jetified-activity-1.8.0/res
+com.omuto.central.app-jetified-startup-runtime-1.1.1-17 /Users/user/.gradle/caches/transforms-3/b487b6a26c5ddc07f64a1cebedae24ad/transformed/jetified-startup-runtime-1.1.1/res
+com.omuto.central.app-constraintlayout-2.0.1-18 /Users/user/.gradle/caches/transforms-3/c7f2bf0526a0a6a721eb5f7daec8008a/transformed/constraintlayout-2.0.1/res
+com.omuto.central.app-jetified-androidbrowserhelper-2.5.0-19 /Users/user/.gradle/caches/transforms-3/d5099b7f0024203d9367b36a7392d7fc/transformed/jetified-androidbrowserhelper-2.5.0/res
+com.omuto.central.app-material-1.11.0-20 /Users/user/.gradle/caches/transforms-3/d50f1891acb4ad256e6e760480ef526e/transformed/material-1.11.0/res
+com.omuto.central.app-lifecycle-livedata-2.6.1-21 /Users/user/.gradle/caches/transforms-3/d75d7e56a0e059f71fd3b87be44a4675/transformed/lifecycle-livedata-2.6.1/res
+com.omuto.central.app-core-runtime-2.2.0-22 /Users/user/.gradle/caches/transforms-3/d7f7431a5a248027d615f942b6d2ec6a/transformed/core-runtime-2.2.0/res
+com.omuto.central.app-fragment-1.3.6-23 /Users/user/.gradle/caches/transforms-3/df1174b0633be00d49ed422090d9609a/transformed/fragment-1.3.6/res
+com.omuto.central.app-jetified-annotation-experimental-1.3.0-24 /Users/user/.gradle/caches/transforms-3/df2502465a3d6f7b9646ae84c41f2d1d/transformed/jetified-annotation-experimental-1.3.0/res
+com.omuto.central.app-jetified-lifecycle-viewmodel-savedstate-2.6.1-25 /Users/user/.gradle/caches/transforms-3/e24fe897e9a57e44ab2b7085559f3295/transformed/jetified-lifecycle-viewmodel-savedstate-2.6.1/res
+com.omuto.central.app-jetified-lifecycle-process-2.6.1-26 /Users/user/.gradle/caches/transforms-3/e3cc5c8209503731050111cb3964c161/transformed/jetified-lifecycle-process-2.6.1/res
+com.omuto.central.app-core-1.12.0-27 /Users/user/.gradle/caches/transforms-3/f719b9aabe7e0617ebd6e005c8742d2d/transformed/core-1.12.0/res
+com.omuto.central.app-jetified-profileinstaller-1.3.0-28 /Users/user/.gradle/caches/transforms-3/fca1b0136ae67080151a18b41f632684/transformed/jetified-profileinstaller-1.3.0/res
+com.omuto.central.app-pngs-29 /Users/user/omuto central/studio/android/app/build/generated/res/pngs/debug
+com.omuto.central.app-resValues-30 /Users/user/omuto central/studio/android/app/build/generated/res/resValues/debug
+com.omuto.central.app-packageDebugResources-31 /Users/user/omuto central/studio/android/app/build/intermediates/incremental/debug/packageDebugResources/merged.dir
+com.omuto.central.app-packageDebugResources-32 /Users/user/omuto central/studio/android/app/build/intermediates/incremental/debug/packageDebugResources/stripped.dir
+com.omuto.central.app-merged_res-33 /Users/user/omuto central/studio/android/app/build/intermediates/merged_res/debug
+com.omuto.central.app-debug-34 /Users/user/omuto central/studio/android/app/src/debug/res
+com.omuto.central.app-main-35 /Users/user/omuto central/studio/android/app/src/main/res

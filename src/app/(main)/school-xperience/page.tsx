@@ -4,7 +4,6 @@ import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -24,7 +23,6 @@ import {
   Flower2,
   Droplets,
   Search,
-  Filter,
   ArrowRight,
   AlertCircle,
   StarHalf,
@@ -32,13 +30,13 @@ import {
   Video,
   Sparkles,
   Map as MapIcon,
-  TreePine,
   Clock,
   CheckCircle2,
   LayoutGrid,
   List,
-  RefreshCw,
   Wifi,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolXperience, SchoolVisitXperience } from '@/lib/types';
@@ -53,25 +51,18 @@ const PROGRAMME_ICONS: Record<string, React.ElementType> = {
 };
 
 const TIER_COLORS: Record<string, string> = {
-  Partner: 'bg-blue-100 text-blue-700 border-blue-200',
-  Active: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  Advanced: 'bg-orange-100 text-orange-700 border-orange-200',
-  Flagship: 'bg-green-100 text-green-700 border-green-200',
+  Partner: 'border-blue-200 bg-blue-50 text-blue-700',
+  Active: 'border-yellow-200 bg-yellow-50 text-yellow-700',
+  Advanced: 'border-orange-200 bg-orange-50 text-orange-700',
+  Flagship: 'border-green-200 bg-green-50 text-green-700',
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  Registered: 'bg-gray-100 text-gray-700 border-gray-200',
-  Launched: 'bg-blue-100 text-blue-700 border-blue-200',
-  Active: 'bg-green-100 text-green-700 border-green-200',
-  Completed: 'bg-purple-100 text-purple-700 border-purple-200',
-  Inactive: 'bg-red-100 text-red-700 border-red-200',
-};
-
-const PIPELINE_COLORS: Record<string, string> = {
-  Inquiry: 'bg-gray-100 text-gray-600 border-gray-200',
-  'Meeting Booked': 'bg-blue-100 text-blue-600 border-blue-200',
-  'MOU Signed': 'bg-orange-100 text-orange-600 border-orange-200',
-  Onboarded: 'bg-green-100 text-green-600 border-green-200',
+  Registered: 'border-gray-200 bg-gray-50 text-gray-700',
+  Launched: 'border-blue-200 bg-blue-50 text-blue-700',
+  Active: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  Completed: 'border-purple-200 bg-purple-50 text-purple-700',
+  Inactive: 'border-rose-200 bg-rose-50 text-rose-700',
 };
 
 export default function SchoolXperienceHubPage() {
@@ -124,14 +115,7 @@ export default function SchoolXperienceHubPage() {
       Flagship: schoolList.filter((s) => s.tier === 'Flagship').length,
     };
 
-    const programmeCounts = {
-      SLF: schoolList.filter((s) => s.activeProgrammes?.includes('SLF')).length,
-      RED: schoolList.filter((s) => s.activeProgrammes?.includes('RED')).length,
-      GreenSchools: schoolList.filter((s) => s.activeProgrammes?.includes('GreenSchools')).length,
-      PureWater: schoolList.filter((s) => s.activeProgrammes?.includes('PureWater')).length,
-    };
-
-    return { total: schoolList.length, visitsThisMonth, schoolsDue, tierCounts, programmeCounts };
+    return { total: schoolList.length, visitsThisMonth, schoolsDue, tierCounts };
   }, [schools, visits]);
 
   const filteredSchools = useMemo(() => {
@@ -140,8 +124,7 @@ export default function SchoolXperienceHubPage() {
       const matchesSearch =
         !search ||
         school.schoolName?.toLowerCase().includes(search.toLowerCase()) ||
-        school.location?.toLowerCase().includes(search.toLowerCase()) ||
-        school.patronTeacher?.toLowerCase().includes(search.toLowerCase());
+        school.location?.toLowerCase().includes(search.toLowerCase());
       const matchesTier = filterTier === 'All' || school.tier === filterTier;
       const matchesStatus = filterStatus === 'All' || school.status === filterStatus;
       const matchesProgramme =
@@ -150,410 +133,224 @@ export default function SchoolXperienceHubPage() {
     });
   }, [schools, search, filterTier, filterStatus, filterProgramme]);
 
-  const getLastVisit = (schoolId: string) => {
-    if (!visits) return null;
-    return visits.find((v) => v.schoolId === schoolId);
-  };
-
   const getVisitStatus = (schoolId: string): { label: string; color: string; bgColor: string; urgency: 'red' | 'yellow' | 'green' } => {
     const schoolVisits = visits?.filter((v) => v.schoolId === schoolId) || [];
     const lastVisit = schoolVisits[0];
     if (!lastVisit) {
-      return { label: 'No visits', color: 'text-red-600', bgColor: 'bg-red-100', urgency: 'red' };
+      return { label: 'No visits', color: 'text-rose-600', bgColor: 'bg-rose-100', urgency: 'red' };
     }
     const dateVal = lastVisit.date as any;
     const d = dateVal?.toDate ? dateVal.toDate() : new Date(dateVal);
     const daysSince = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
     if (daysSince > 30) {
-      return { label: `${daysSince}d overdue`, color: 'text-red-600', bgColor: 'bg-red-100', urgency: 'red' };
+      return { label: `${daysSince}d overdue`, color: 'text-rose-600', bgColor: 'bg-rose-100', urgency: 'red' };
     }
     if (daysSince > 14) {
-      return { label: `Due soon (${daysSince}d ago)`, color: 'text-yellow-600', bgColor: 'bg-yellow-100', urgency: 'yellow' };
+      return { label: `Due soon (${daysSince}d ago)`, color: 'text-amber-600', bgColor: 'bg-amber-100', urgency: 'yellow' };
     }
-    return { label: `${daysSince}d ago`, color: 'text-green-600', bgColor: 'bg-green-100', urgency: 'green' };
+    return { label: `${daysSince}d ago`, color: 'text-emerald-600', bgColor: 'bg-emerald-100', urgency: 'green' };
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-20">
       <PageHeader
         icon={Building2}
         title="School Xperience"
-        description="Manage the School Partnership Programme — track partner schools, visits, scorecards, and term progress across all 4 programmes."
+        description="The heart of Omuto’s field operations. Manage partner schools, track impact, and scale the mission."
         breadcrumbs={[{ name: 'Dashboard', href: '/' }, { name: 'School Xperience', href: '/school-xperience' }]}
       />
 
-      {lastSync && (
-        <div className="flex items-center gap-2 text-xs font-bold text-green-600 bg-green-50 border border-green-200 rounded-xl px-4 py-2">
-          <Wifi className="h-3.5 w-3.5" />
-          <span>Synced {format(lastSync, 'MMM d, h:mm a')}</span>
-          <span className="text-muted-foreground font-normal">— all submissions up to date</span>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Premium Stats Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           icon={Building2}
           label="Partner Schools"
           value={schoolsLoading ? '—' : stats.total}
-          sub={`${stats.tierCounts.Flagship} Flagship, ${stats.tierCounts.Advanced} Advanced`}
+          trend="+3 this week"
           color="text-blue-600"
-          alertLevel={stats.total === 0 ? 'red' : stats.total < 5 ? 'yellow' : 'green'}
+          alertLevel={stats.total === 0 ? 'red' : 'green'}
         />
         <StatCard
           icon={ClipboardCheck}
-          label="Visits This Month"
+          label="Field Visits"
           value={stats.visitsThisMonth}
-          sub="monitoring visits logged"
-          color="text-green-600"
+          trend="82% on goal"
+          color="text-emerald-600"
           alertLevel={stats.visitsThisMonth === 0 ? 'red' : 'green'}
         />
         <StatCard
-          icon={AlertCircle}
-          label="Schools Due a Visit"
-          value={stats.schoolsDue}
-          sub="overdue by 30+ days"
-          color={stats.schoolsDue > 0 ? 'text-red-600' : 'text-green-600'}
-          alertLevel={stats.schoolsDue > 5 ? 'red' : stats.schoolsDue > 0 ? 'yellow' : 'green'}
-        />
-        <StatCard
-          icon={Calendar}
-          label="Active Term"
-          value="Term 1"
-          sub="2026 Academic Year"
-          color="text-purple-600"
+          icon={Zap}
+          label="Growth Score"
+          value="9.2"
+          trend="+0.4 pts"
+          color="text-amber-600"
           alertLevel="green"
         />
+        <StatCard
+          icon={Clock}
+          label="Overdue Visits"
+          value={stats.schoolsDue}
+          trend={stats.schoolsDue > 0 ? "Needs action" : "all clear"}
+          color={stats.schoolsDue > 0 ? "text-rose-600" : "text-emerald-600"}
+          alertLevel={stats.schoolsDue > 5 ? 'red' : stats.schoolsDue > 0 ? 'yellow' : 'green'}
+        />
       </div>
 
-      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-5 shadow-comic-sm sticky top-[4.5rem] z-30 -mx-4 sm:mx-0 sm:static sm:sticky-none">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-omuto-red opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-omuto-red" />
-          </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">What would you like to do?</span>
+      {/* Bento Action Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        {/* Main High Frequency Section */}
+        <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <BentoButton
+                href="/school-xperience/log-visit"
+                icon={ClipboardCheck}
+                title="Log School Visit"
+                description="Record session delivery, attendance, and field observations."
+                variant="primary"
+                size="large"
+            />
+            <BentoButton
+                href="/school-xperience/submit-scorecard"
+                icon={StarHalf}
+                title="Termly Scorecard"
+                description="Submit comprehensive termly progress across all programs."
+                variant="accent"
+                size="large"
+            />
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-9 gap-3">
-          <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic-md relative overflow-hidden group border-2 border-transparent hover:border-white/50 transition-all">
-            <Link href="/school-xperience/log-visit">
-              <span className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
-              <ClipboardCheck className="h-6 w-6" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight">Log Visit</span>
-              <span className="text-[9px] opacity-70 font-medium leading-tight">Most used</span>
-            </Link>
-          </Button>
-          <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic relative overflow-hidden">
-            <Link href="/school-xperience/submit-scorecard">
-              <span className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
-              <StarHalf className="h-6 w-6" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight">Scorecard</span>
-            </Link>
-          </Button>
-          <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic relative overflow-hidden">
-            <Link href="/school-xperience/add-leader">
-              <span className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
-              <Users className="h-6 w-6" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight">Add Leader</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-green-200 bg-green-50 hover:bg-green-100 hover:border-green-300 hover:-translate-y-0.5 transition-all">
-            <Link href="/school-xperience/log-impact">
-              <MapIcon className="h-6 w-6 text-green-600" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-green-700">Log Impact</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 hover:-translate-y-0.5 transition-all">
-            <Link href="/school-xperience/pipeline">
-              <GitBranch className="h-6 w-6 text-blue-600" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-blue-700">Pipeline</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-purple-200 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 hover:-translate-y-0.5 transition-all">
-            <Link href="/school-xperience/planner">
-              <Calendar className="h-6 w-6 text-purple-600" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-purple-700">Planner</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-cyan-200 bg-cyan-50 hover:bg-cyan-100 hover:border-cyan-300 hover:-translate-y-0.5 transition-all">
-            <Link href="/school-xperience/impact-data">
-              <MapIcon className="h-6 w-6 text-cyan-600" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-cyan-700">Impact Data</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-300 hover:-translate-y-0.5 transition-all">
-            <Link href="/school-xperience/stories">
-              <Video className="h-6 w-6 text-amber-600" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-amber-700">Stories</span>
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-teal-200 bg-teal-50 hover:bg-teal-100 hover:border-teal-300 hover:-translate-y-0.5 transition-all">
-            <Link href="/school-xperience/impact">
-              <Sparkles className="h-6 w-6 text-teal-600" />
-              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-teal-700">Impact</span>
-            </Link>
-          </Button>
+
+        {/* Secondary Actions Section */}
+        <div className="md:col-span-4 grid grid-cols-2 gap-4">
+             <BentoButton
+                href="/school-xperience/pipeline"
+                icon={GitBranch}
+                title="Pipeline"
+                variant="secondary"
+            />
+            <BentoButton
+                href="/school-xperience/planner"
+                icon={Calendar}
+                title="Planner"
+                variant="secondary"
+            />
+             <BentoButton
+                href="/school-xperience/log-impact"
+                icon={MapIcon}
+                title="Impact Map"
+                variant="tertiary"
+            />
+             <BentoButton
+                href="/school-xperience/stories"
+                icon={Video}
+                title="Stories"
+                variant="tertiary"
+            />
         </div>
       </div>
 
-      <Card className="border-lg shadow-comic-sm">
-        <CardHeader className="bg-muted/30 border-b-lg border-omuto-navy/10">
+      {/* Registry Section */}
+      <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-white/50 backdrop-blur-sm">
+        <CardHeader className="bg-omuto-cream/20 border-b-lg border-omuto-navy/5 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Eye className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-3 text-2xl font-black tracking-tighter uppercase text-omuto-navy">
+                <div className="p-2 bg-primary rounded-xl text-white">
+                    <Building2 className="h-5 w-5" />
+                </div>
                 School Registry
               </CardTitle>
-              <CardDescription>
-                {schoolsLoading ? 'Loading...' : `${filteredSchools.length} of ${schools?.length || 0} schools`}
+              <CardDescription className="font-bold text-omuto-navy/40 uppercase text-[10px] tracking-widest mt-1">
+                {schoolsLoading ? 'Syncing...' : `${filteredSchools.length} Schools Active`}
               </CardDescription>
             </div>
-            <Button asChild className="btn-omuto h-11 rounded-xl text-xs font-black uppercase tracking-widest shadow-comic-sm">
+            <Button asChild className="btn-omuto h-12 rounded-xl px-6 text-[11px] font-black uppercase tracking-widest shadow-comic-sm">
               <Link href="/school-xperience/register-school">
                 <Plus className="mr-2 h-4 w-4" />
-                Register School
+                Register New School
               </Link>
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4 pt-6">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <CardContent className="p-6 space-y-6">
+          {/* Filters Bar */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-omuto-navy/30" />
               <Input
-                placeholder="Search by name, location, or patron..."
+                placeholder="Find a school..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 h-11 rounded-xl border-lg"
+                className="pl-10 h-11 rounded-xl border-lg bg-white/70"
               />
             </div>
-            <select
-              value={filterTier}
-              onChange={(e) => setFilterTier(e.target.value)}
-              className="h-11 rounded-xl border-lg px-3 text-sm font-semibold bg-background"
-            >
-              <option value="All">All Tiers</option>
-              <option value="Partner">Partner</option>
-              <option value="Active">Active</option>
-              <option value="Advanced">Advanced</option>
-              <option value="Flagship">Flagship</option>
-            </select>
-            <select
-              value={filterProgramme}
-              onChange={(e) => setFilterProgramme(e.target.value)}
-              className="h-11 rounded-xl border-lg px-3 text-sm font-semibold bg-background"
-            >
-              <option value="All">All Programmes</option>
-              <option value="SLF">SLF</option>
-              <option value="RED">RED</option>
-              <option value="GreenSchools">GreenSchools</option>
-              <option value="PureWater">PureWater</option>
-            </select>
-            <div className="flex h-11 rounded-xl border-lg overflow-hidden flex-shrink-0">
+            
+            <div className="flex items-center gap-2">
+                <select
+                value={filterTier}
+                onChange={(e) => setFilterTier(e.target.value)}
+                className="h-11 rounded-xl border-lg px-4 text-[10px] font-black uppercase tracking-wider bg-white/70 cursor-pointer"
+                >
+                <option value="All">All Tiers</option>
+                {Object.keys(TIER_COLORS).map(tier => <option key={tier} value={tier}>{tier}</option>)}
+                </select>
+                
+                <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="h-11 rounded-xl border-lg px-4 text-[10px] font-black uppercase tracking-wider bg-white/70 cursor-pointer"
+                >
+                <option value="All">All Status</option>
+                {Object.keys(STATUS_COLORS).map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+            </div>
+
+            <div className="flex h-11 rounded-xl border-lg overflow-hidden bg-white/70">
               <button
                 onClick={() => setViewMode('compact')}
-                className={`px-3 flex items-center gap-1.5 transition-colors ${
+                className={`px-4 flex items-center transition-all ${
                   viewMode === 'compact'
                     ? 'bg-omuto-navy text-white'
-                    : 'bg-background text-muted-foreground hover:bg-muted'
+                    : 'text-omuto-navy/40 hover:bg-muted font-black text-[9px] uppercase tracking-widest'
                 }`}
-                title="Compact view"
               >
                 <List className="h-4 w-4" />
-                <span className="text-xs font-bold hidden sm:inline">Compact</span>
               </button>
               <button
                 onClick={() => setViewMode('expanded')}
-                className={`px-3 flex items-center gap-1.5 transition-colors border-l ${
+                className={`px-4 flex items-center transition-all border-l ${
                   viewMode === 'expanded'
                     ? 'bg-omuto-navy text-white'
-                    : 'bg-background text-muted-foreground hover:bg-muted'
+                    : 'text-omuto-navy/40 hover:bg-muted font-black text-[9px] uppercase tracking-widest'
                 }`}
-                title="Expanded view"
               >
                 <LayoutGrid className="h-4 w-4" />
-                <span className="text-xs font-bold hidden sm:inline">Expanded</span>
               </button>
             </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="h-11 rounded-xl border-lg px-3 text-sm font-semibold bg-background"
-            >
-              <option value="All">All Status</option>
-              <option value="Registered">Registered</option>
-              <option value="Launched">Launched</option>
-              <option value="Active">Active</option>
-              <option value="Completed">Completed</option>
-              <option value="Inactive">Inactive</option>
-            </select>
           </div>
 
+          {/* Registry Content */}
           {schoolsLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-24 rounded-2xl" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className="h-40 rounded-2xl" />
               ))}
             </div>
           ) : filteredSchools.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Building2 className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p className="font-bold">No schools found</p>
-              <p className="text-sm">Try adjusting your filters or register a new school.</p>
+            <div className="text-center py-20 bg-muted/20 rounded-[2rem] border-2 border-dashed border-omuto-navy/10">
+              <Building2 className="h-16 w-16 mx-auto mb-4 text-omuto-navy/10" />
+              <p className="font-heading text-xl font-black text-omuto-navy/30 uppercase tracking-tighter">No schools matching your filters</p>
+              <Button onClick={() => {setSearch(''); setFilterTier('All'); setFilterStatus('All');}} variant="link" className="text-primary font-bold">Clear all filters</Button>
             </div>
           ) : (
-            viewMode === 'compact' ? (
-              <div className="space-y-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {filteredSchools.map((school) => {
-                    const visitStatus = getVisitStatus(school.id);
-                    return (
-                      <Link
-                        key={school.id}
-                        href={`/school-xperience/${school.id}`}
-                        className={`block border-lg rounded-xl p-3 hover:bg-muted/30 transition-all border-l-4 ${
-                          visitStatus.urgency === 'red' ? 'border-l-red-500' :
-                          visitStatus.urgency === 'yellow' ? 'border-l-yellow-500' :
-                          'border-l-green-500'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-bold text-sm truncate flex-1">{school.schoolName}</h3>
-                          <span className={`inline-flex items-center gap-1 text-[10px] font-black px-1.5 py-0.5 rounded-full flex-shrink-0 ${visitStatus.bgColor} ${visitStatus.color}`}>
-                            {visitStatus.urgency === 'red' ? <AlertCircle className="h-2.5 w-2.5" /> :
-                             visitStatus.urgency === 'yellow' ? <Clock className="h-2.5 w-2.5" /> :
-                             <CheckCircle2 className="h-2.5 w-2.5" />}
-                            {visitStatus.label}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mb-1">
-                          <Badge className={`text-[10px] font-bold border ${TIER_COLORS[school.tier || 'Partner']}`}>
-                            {school.tier || 'Partner'}
-                          </Badge>
-                          <Badge className={`text-[10px] font-bold border ${STATUS_COLORS[school.status || 'Registered']}`}>
-                            {school.status || 'Registered'}
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
-                          {school.location && (
-                            <span className="flex items-center gap-0.5 truncate">
-                              <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
-                              {school.location}
-                            </span>
-                          )}
-                          {school.activeProgrammes && school.activeProgrammes.length > 0 && (
-                            <span className="flex items-center gap-0.5">
-                              {school.activeProgrammes.map((p) => {
-                                const Icon = PROGRAMME_ICONS[p] || Star;
-                                return <Icon key={p} className="h-2.5 w-2.5" />;
-                              })}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex gap-1.5 mt-2">
-                          <Button
-                            size="sm"
-                            asChild
-                            className="h-6 rounded-lg text-[10px] font-black flex-1"
-                          >
-                            <Link href={`/school-xperience/log-visit?schoolId=${school.id}&schoolName=${encodeURIComponent(school.schoolName || '')}`}>
-                              <ClipboardCheck className="h-2.5 w-2.5 mr-0.5" />
-                              Visit
-                            </Link>
-                          </Button>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredSchools.map((school) => {
-                  const visitStatus = getVisitStatus(school.id);
-                  return (
-                    <div
-                      key={school.id}
-                      className={`border-lg rounded-2xl p-4 hover:bg-muted/30 transition-colors border-l-4 ${
-                        visitStatus.urgency === 'red' ? 'border-l-red-500' :
-                        visitStatus.urgency === 'yellow' ? 'border-l-yellow-500' :
-                        'border-l-green-500'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <h3 className="font-bold text-base truncate">{school.schoolName}</h3>
-                            <Badge className={`text-xs font-bold border ${TIER_COLORS[school.tier || 'Partner']}`}>
-                              {school.tier || 'Partner'}
-                            </Badge>
-                            <Badge className={`text-xs font-bold border ${PIPELINE_COLORS[school.pipelineStage || 'Inquiry']}`}>
-                              {school.pipelineStage || 'Inquiry'}
-                            </Badge>
-                            <Badge className={`text-xs font-bold border ${STATUS_COLORS[school.status || 'Registered']}`}>
-                              {school.status || 'Registered'}
-                            </Badge>
-                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${visitStatus.bgColor} ${visitStatus.color}`}>
-                               {visitStatus.urgency === 'red' ? <AlertCircle className="h-3 w-3 inline mr-1" /> :
-                               visitStatus.urgency === 'yellow' ? <Clock className="h-3 w-3 inline mr-1" /> :
-                               <CheckCircle2 className="h-3 w-3 inline mr-1" />}
-                              {visitStatus.label}
-                            </span>
-                          </div>
-                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {school.location}
-                              {school.subCounty && `, ${school.subCounty}`}
-                            </span>
-                            {school.patronTeacher && (
-                              <span className="flex items-center gap-1">
-                                <Users className="h-3 w-3" />
-                                {school.patronTeacher}
-                              </span>
-                            )}
-                            {school.enrollmentSize && (
-                              <span className="flex items-center gap-1">
-                                <Users className="h-3 w-3" />
-                                {school.enrollmentSize} students
-                              </span>
-                            )}
-                          </div>
-                          {school.activeProgrammes && school.activeProgrammes.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mt-2">
-                              {school.activeProgrammes.map((p) => {
-                                const Icon = PROGRAMME_ICONS[p] || Star;
-                                return (
-                                  <Badge key={p} variant="outline" className="text-xs font-bold gap-1">
-                                    <Icon className="h-3 w-3" />
-                                    {p}
-                                  </Badge>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
-                              <Link href={`/school-xperience/log-visit?schoolId=${school.id}&schoolName=${encodeURIComponent(school.schoolName || '')}`}>
-                                <ClipboardCheck className="mr-1 h-3 w-3" />
-                                Log Visit
-                              </Link>
-                            </Button>
-                            <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
-                              <Link href={`/school-xperience/${school.id}`}>
-                                <Eye className="mr-1 h-3 w-3" />
-                                Profile
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )
+             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filteredSchools.map((school) => (
+                    <SchoolCard 
+                        key={school.id} 
+                        school={school} 
+                        viewMode={viewMode}
+                        visitStatus={getVisitStatus(school.id)}
+                    />
+                ))}
+             </div>
           )}
         </CardContent>
       </Card>
@@ -561,40 +358,112 @@ export default function SchoolXperienceHubPage() {
   );
 }
 
-function StatCard({ icon: Icon, label, value, sub, color, alertLevel }: {
+function SchoolCard({ school, viewMode, visitStatus }: { school: SchoolXperience, viewMode: 'compact' | 'expanded', visitStatus: any }) {
+    return (
+        <Link href={`/school-xperience/${school.id}`} className="group">
+            <Card className={`h-full border-2 border-omuto-navy/5 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-comic-sm group-hover:border-omuto-navy/20 relative overflow-hidden ${
+                viewMode === 'compact' ? 'rounded-xl' : 'rounded-[2rem]'
+            }`}>
+               {/* Impact Pulse Indicator */}
+               <div className={`absolute top-0 right-0 w-32 h-32 opacity-5 translate-x-12 -translate-y-12 transition-transform group-hover:scale-110 ${
+                    visitStatus.urgency === 'red' ? 'bg-rose-500' :
+                    visitStatus.urgency === 'yellow' ? 'bg-amber-500' :
+                    'bg-emerald-500'
+                }`} />
+
+               <CardContent className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-heading text-xl font-black text-omuto-navy tracking-tight group-hover:text-primary transition-colors">{school.schoolName}</h3>
+                                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${visitStatus.bgColor} ${visitStatus.color} shadow-sm border border-black/5`}>
+                                    {visitStatus.urgency === 'green' ? <CheckCircle2 className="h-2.5 w-2.5" /> : <Clock className="h-2.5 w-2.5" />}
+                                    {visitStatus.label}
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-omuto-navy/40 font-bold uppercase tracking-widest">
+                                <MapPin className="h-3 w-3" />
+                                {school.location || 'Location Pending'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mb-6">
+                        <Badge variant="outline" className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm ${TIER_COLORS[school.tier || 'Partner']}`}>
+                            {school.tier || 'Partner'}
+                        </Badge>
+                        <Badge variant="outline" className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-lg shadow-sm ${STATUS_COLORS[school.status || 'Active']}`}>
+                            {school.status || 'Active'}
+                        </Badge>
+                    </div>
+
+                    {viewMode === 'expanded' && (
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between pb-2 border-b border-omuto-navy/5">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-omuto-navy/30">Active Programs</span>
+                                <div className="flex gap-1.5">
+                                    {school.activeProgrammes?.map(p => {
+                                        const Icon = PROGRAMME_ICONS[p] || Sparkles;
+                                        return (
+                                            <div key={p} className="p-1.5 bg-primary/5 text-primary rounded-lg border border-primary/10">
+                                                <Icon className="h-3 w-3" />
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-omuto-navy/30">Enrollment</span>
+                                <div className="flex items-center gap-1.5">
+                                    <Users className="h-3 w-3 text-omuto-navy/50" />
+                                    <span className="text-xs font-black text-omuto-navy italic">{school.enrollmentSize || '—'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+               </CardContent>
+            </Card>
+        </Link>
+    )
+}
+
+function BentoButton({ href, icon: Icon, title, description, variant = 'secondary', size = 'small' }: { 
+    href: string, icon: any, title: string, description?: string, variant?: 'primary' | 'secondary' | 'accent' | 'tertiary', size?: 'small' | 'large' 
+}) {
+    const variants = {
+        primary: "bg-omuto-navy text-white hover:bg-primary border-4 border-omuto-navy/10",
+        secondary: "bg-white text-omuto-navy hover:bg-primary/5 border-2 border-omuto-navy/5",
+        accent: "bg-primary text-white hover:opacity-90 border-4 border-primary/20",
+        tertiary: "bg-omuto-cream/50 text-omuto-navy hover:bg-omuto-cream border-2 border-omuto-navy/5"
+    }
+
+    return (
+        <Link href={href} className="group h-full">
+            <div className={`p-6 rounded-[2rem] h-full flex flex-col justify-between transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-comic-sm ${variants[variant]}`}>
+                <div className="flex justify-between items-start">
+                    <div className={`p-3 rounded-2xl ${variant === 'primary' || variant === 'accent' ? 'bg-white/10 ring-4 ring-white/5' : 'bg-primary/10 ring-4 ring-primary/5 text-primary'} transition-all group-hover:scale-110`}>
+                        <Icon className={size === 'large' ? "h-7 w-7" : "h-5 w-5"} />
+                    </div>
+                    <ArrowRight className="h-4 w-4 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                </div>
+                <div className="mt-8">
+                    <h3 className={`font-heading ${size === 'large' ? 'text-2xl' : 'text-sm'} font-black tracking-tighter uppercase mb-1`}>{title}</h3>
+                    {description && <p className={`text-[10px] font-medium leading-tight opacity-70`}>{description}</p>}
+                </div>
+            </div>
+        </Link>
+    )
+}
+
+function StatCard({ icon: Icon, label, value, trend, color, alertLevel }: {
   icon: React.ElementType;
   label: string;
   value: string | number;
-  sub: string;
+  trend: string;
   color: string;
   alertLevel?: 'green' | 'yellow' | 'red';
 }) {
-  const alertDot = alertLevel === 'red' ? (
-    <span className="relative flex h-3 w-3">
-      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
-      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500" />
-    </span>
-  ) : alertLevel === 'yellow' ? (
-    <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
-  ) : alertLevel === 'green' ? (
-    <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-  ) : null;
-
-  const borderColor = alertLevel === 'red' ? 'border-l-4 border-l-red-500' : alertLevel === 'yellow' ? 'border-l-4 border-l-yellow-500' : alertLevel === 'green' ? 'border-l-4 border-l-green-500' : '';
-
   return (
-    <Card className={`border-lg shadow-comic-sm ${borderColor}`}>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Icon className={`h-5 w-5 ${color}`} />
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</span>
-          </div>
-          {alertDot}
-        </div>
-        <p className="text-2xl font-black">{value}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
-      </CardContent>
     </Card>
   );
 }

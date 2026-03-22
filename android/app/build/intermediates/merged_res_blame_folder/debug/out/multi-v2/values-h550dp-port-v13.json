@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.omuto.central.app-mergeDebugResources-31:/values-h550dp-port-v13/values-h550dp-port-v13.xml",
+            "map": [
+                {
+                    "source": "/Users/user/.gradle/caches/transforms-3/d50f1891acb4ad256e6e760480ef526e/transformed/material-1.11.0/res/values-h550dp-port-v13/values-h550dp-port-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "64",
+                        "endOffsets": "115"
+                    }
+                }
+            ]
+        }
+    ]
+}

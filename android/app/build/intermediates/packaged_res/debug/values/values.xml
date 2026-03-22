@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Omuto</string>
+    <string name="asset_statements">[{\"relation\":[\"delegate_permission/common.query_webapks\"],\"service\":{\"packageName\":\"com.google.androidbrowserhelper\",\"version\":{\"major\":2,\"minor\":4,\"max\":3858}}}]</string>
+    <style name="Theme.OmutoCentral" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#991B1B</item>
+        <item name="android:colorPrimaryDark">#7F1D1D</item>
+        <item name="android:colorAccent">#991B1B</item>
+        <item name="android:windowBackground">#F9F7F0</item>
+        <item name="android:navigationBarColor">#991B1B</item>
+        <item name="android:statusBarColor">#991B1B</item>
+    </style>
+</resources>
