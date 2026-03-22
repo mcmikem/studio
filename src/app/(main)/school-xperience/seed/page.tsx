@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Plus, GraduationCap, Droplets, TreePine, Check } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, query, orderBy, serverTimestamp, setDoc, doc } from 'firebase/firestore';
+import { MIGRATION_DATA } from '@/lib/data/migration-data';
 
 const DEMO_SCHOOLS = [
   {
@@ -403,7 +404,9 @@ const DEMO_TREES = [
 export default function SeedDataPage() {
   const firestore = useFirestore();
   const [isLoading, setIsLoading] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
   const [result, setResult] = useState<string[]>([]);
+  const [migResult, setMigResult] = useState<string[]>([]);
 
   const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -509,6 +512,111 @@ export default function SeedDataPage() {
     setIsLoading(false);
   };
 
+  const runInstitutionalMigration = async () => {
+    if (!firestore) return;
+    setIsMigrating(true);
+    setMigResult([]);
+
+    const msgs: string[] = [];
+
+    // 1. Seed Subcounty Coords (Approximate for Mpigi)
+    const SUBCOUNTY_COORDS: any = {
+      'Mpigi': { lat: 0.2300, lng: 32.3330 },
+      'Kammengo': { lat: 0.0900, lng: 32.2480 },
+      'Kiringente': { lat: 0.1200, lng: 32.1800 },
+      'Muduuma': { lat: 0.2500, lng: 32.1500 },
+      'Buwama': { lat: 0.1800, lng: 32.2800 },
+      'Kibibi': { lat: 0.1700, lng: 32.1100 },
+      'Gombe': { lat: 0.1400, lng: 32.0900 },
+      'Mpigi Town Council': { lat: 0.2250, lng: 32.3250 }
+    };
+
+    // 2. Map Schools
+    const schoolIdMap = new Map();
+    const existingNames = (existingSchools || []).map((s: any) => s.schoolName?.toLowerCase());
+
+    for (const s of MIGRATION_DATA.schools) {
+        if (existingNames.includes(s.name.toLowerCase())) {
+            msgs.push(`Skipped: ${s.name} (exists)`);
+            continue;
+        }
+
+        const coords = SUBCOUNTY_COORDS[s.sc] || SUBCOUNTY_COORDS['Mpigi Town Council'];
+        const docRef = doc(collection(firestore, 'sx-schools'));
+        await setDoc(docRef, {
+            schoolName: s.name,
+            patronTeacher: s.patron || 'TBD',
+            subCounty: s.sc || 'Other',
+            district: 'Mpigi',
+            activeProgrammes: s.progs,
+            status: 'Active',
+            tier: 'Partner',
+            pipelineStage: 'Onboarded',
+            term: 'Term 1',
+            academicYear: '2026',
+            coordinates: {
+                lat: coords.lat + (Math.random() - 0.5) * 0.005,
+                lng: coords.lng + (Math.random() - 0.5) * 0.005
+            },
+            createdAt: serverTimestamp(),
+            createdBy: 'migration-institutional'
+        });
+        schoolIdMap.set(s.name.toLowerCase(), docRef.id);
+        msgs.push(`Added School: ${s.name}`);
+    }
+
+    // 3. Map Football Teams
+    for (const t of MIGRATION_DATA.teams) {
+        await addDocumentNonBlocking(collection(firestore, 'sx-ofa-teams'), {
+            teamName: t.name,
+            headCoachName: t.coach || 'TBD',
+            subcounty: t.sc || '',
+            district: 'Mpigi',
+            status: 'Active',
+            createdAt: serverTimestamp()
+        });
+        msgs.push(`Added Team: ${t.name}`);
+    }
+
+    // 4. Map Trees & Water
+    for (const tree of MIGRATION_DATA.trees) {
+        await addDocumentNonBlocking(collection(firestore, 'sx-trees'), {
+            schoolName: tree.school,
+            quantity: parseFloat(tree.qty) || 0,
+            date: tree.date || new Date().toISOString().split('T')[0],
+            treeType: 'Mixed',
+            createdAt: serverTimestamp()
+        });
+    }
+    msgs.push(`Added ${MIGRATION_DATA.trees.length} tree planting records`);
+
+    for (const w of MIGRATION_DATA.water) {
+        await addDocumentNonBlocking(collection(firestore, 'sx-water-sources'), {
+            schoolName: w.school,
+            sourceType: 'Purifier',
+            status: 'functional',
+            estimatedBeneficiaries: parseInt(w.ben) || 50,
+            createdAt: serverTimestamp()
+        });
+    }
+    msgs.push(`Added ${MIGRATION_DATA.water.length} purifier records`);
+
+    // 5. Map Beneficiaries
+    for (const b of MIGRATION_DATA.beneficiaries) {
+         await addDocumentNonBlocking(collection(firestore, 'sx-beneficiaries'), {
+            name: b.name,
+            schoolName: b.school,
+            programEnrolled: b.prog,
+            gender: b.gender || 'Other',
+            createdAt: serverTimestamp()
+        });
+    }
+    msgs.push(`Added ${MIGRATION_DATA.beneficiaries.length} beneficiary records`);
+
+    setMigResult(msgs);
+    setIsMigrating(false);
+  };
+
   return (
     <div className="container py-8 max-w-2xl">
       <Card className="border-lg shadow-lg">
@@ -537,7 +645,7 @@ export default function SeedDataPage() {
 
           <Button 
             onClick={seedData} 
-            disabled={isLoading} 
+            disabled={isLoading || isMigrating} 
             className="w-full btn-omuto h-12 rounded-xl font-black uppercase tracking-widest"
           >
             {isLoading ? (
@@ -558,6 +666,56 @@ export default function SeedDataPage() {
               <p className="text-xs text-green-600 mt-2">
                 Refresh the map page to see the new markers.
               </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-lg shadow-lg">
+        <CardHeader className="bg-indigo-50/50 border-b">
+          <CardTitle className="text-indigo-900 flex items-center gap-2">
+            <Plus className="h-6 w-6" />
+            Institutional Migration
+          </CardTitle>
+          <CardDescription>
+            Seed the entire system with the 2025 Institutional dataset (Schools, OFA Teams, Impacts).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6 pt-6">
+          <div className="bg-indigo-50/30 rounded-xl p-4 space-y-2">
+            <p className="font-bold text-sm text-indigo-900">This will migrate:</p>
+            <ul className="text-sm space-y-1 text-indigo-800">
+              <li className="flex items-center gap-2"><GraduationCap className="h-4 w-4" /> Comprehensive School Database (40+ entries)</li>
+              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> OFA Football Teams & Players</li>
+              <li className="flex items-center gap-2"><TreePine className="h-4 w-4" /> 2025 Tree Survival Data</li>
+              <li className="flex items-center gap-2"><Droplets className="h-4 w-4" /> Purifier Beneficiary Records</li>
+              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> SLF, Debate, and YoSkills Participants</li>
+            </ul>
+          </div>
+
+          <Button 
+            onClick={runInstitutionalMigration} 
+            disabled={isLoading || isMigrating} 
+            variant="outline"
+            className="w-full border-2 border-indigo-200 text-indigo-700 h-12 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-50"
+          >
+            {isMigrating ? (
+              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Migrating records...</>
+            ) : (
+              <><Plus className="mr-2 h-5 w-5" /> Run Master Migration</>
+            )}
+          </Button>
+
+          {migResult.length > 0 && (
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-1">
+              <p className="font-bold text-indigo-700 flex items-center gap-2">
+                <Check className="h-4 w-4" /> Migration Complete!
+              </p>
+              <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                {migResult.map((msg, i) => (
+                  <p key={i} className="text-xs text-indigo-600">{msg}</p>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>
