@@ -14,8 +14,10 @@ export function OfflineProvider() {
 
   return (
     <>
-      <div className="sticky top-[3.5rem] z-20 px-2 sm:px-0 -mx-2 sm:mx-0">
-        <OfflineStatus className="sm:hidden" showSyncTime={false} />
+      <div className="sticky top-[3.5rem] z-20">
+        <div className="px-2 sm:px-4">
+          <OfflineStatus className="sm:hidden" showSyncTime={false} />
+        </div>
       </div>
       <SyncStatusBadge />
     </>
