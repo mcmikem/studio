@@ -463,7 +463,7 @@ function StatCard({ icon: Icon, label, value, trend, color, alertLevel }: {
   color: string;
   alertLevel?: 'green' | 'yellow' | 'red';
 }) {
-  const alertColors = {
+  const alertColors: Record<string, string> = {
     green: "bg-emerald-500",
     yellow: "bg-amber-500",
     red: "bg-rose-500"
@@ -478,7 +478,7 @@ function StatCard({ icon: Icon, label, value, trend, color, alertLevel }: {
           </div>
           {alertLevel && (
             <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded-full border border-omuto-navy/5">
-                <div className={`h-1.5 w-1.5 rounded-full ${alertColors[alertLevel]} animate-pulse`} />
+                <div className={`h-1.5 w-1.5 rounded-full ${alertColors[alertLevel] || 'bg-gray-400'} animate-pulse`} />
                 <span className="text-[9px] font-black uppercase tracking-wider text-omuto-navy/40">{alertLevel}</span>
             </div>
           )}

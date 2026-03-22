@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   MapPin, Loader2, GraduationCap, Droplets, TreePine, Users, 
-  Building2, Navigation, Home, Crosshair, Plus, X, Layers, Sparkles, MessageSquare
+  Building2, Navigation, Home, Crosshair, Plus, X, Layers, Sparkles, MessageSquare, Search
 } from 'lucide-react';
 
 export interface MapLocation {
@@ -340,6 +340,7 @@ export function InteractiveMap({
 
       markersRef.current.push(marker);
     });
+  });
 
     // Fit bounds if we have markers
     if (filteredLocations.length > 0 && filteredLocations.some(l => l.coordinates)) {
@@ -399,7 +400,7 @@ export function InteractiveMap({
                             }}
                             className="flex items-center gap-3 w-full p-4 hover:bg-primary/5 text-left border-b border-omuto-navy/5 last:border-0 transition-colors"
                         >
-                            <div className={`p-2 rounded-xl bg-muted/50 ${LAYER_COLORS[loc.type].marker.replace('#', 'text-[#]')}`}>
+                            <div className={`p-2 rounded-xl bg-muted/50 text-[${LAYER_COLORS[loc.type].marker}]`}>
                                 {loc.type === 'school' ? <GraduationCap className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
                             </div>
                             <div className="space-y-0.5">
@@ -418,7 +419,7 @@ export function InteractiveMap({
         <div className="absolute top-4 bottom-4 left-4 z-[1001] w-[320px] md:w-[380px] animate-in slide-in-from-left duration-500">
             <Card className="h-full border-4 border-omuto-navy/10 shadow-2xl rounded-[2.5rem] overflow-hidden flex flex-col bg-white/95 backdrop-blur-md">
                 <div className="p-6 pb-0 flex justify-between items-start">
-                    <div className={`p-3 rounded-2xl ${LAYER_COLORS[activeLocation.type].marker.replace('#', 'bg-[#]')}/10 ${LAYER_COLORS[activeLocation.type].marker.replace('#', 'text-[#]')}`}>
+                    <div className={`p-3 rounded-2xl bg-[${LAYER_COLORS[activeLocation.type].marker}]/10 text-[${LAYER_COLORS[activeLocation.type].marker}]`}>
                         {activeLocation.type === 'school' ? <Building2 className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}
                     </div>
                     <button 
