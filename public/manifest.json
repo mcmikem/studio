@@ -1,52 +1,66 @@
 {
   "name": "Omuto Central",
   "short_name": "Omuto",
-  "description": "The master tool for Omuto Foundation staff to manage programs, track activities, and coordinate operations.",
+  "description": "Manage School Xperience programmes, log visits, track impact, and coordinate field operations for Omuto Foundation.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
   "background_color": "#F9F7F0",
-  "theme_color": "#111827",
+  "theme_color": "#991B1B",
   "categories": ["business", "productivity", "education"],
-  "screenshots": [],
   "icons": [
-    {
-      "src": "/logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
-      "name": "Daily Check-in",
-      "short_name": "Check-in",
-      "url": "/forms/check-in",
-      "description": "Start your day with a check-in"
+      "name": "Log Visit",
+      "short_name": "Log Visit",
+      "url": "/school-xperience/log-visit",
+      "description": "Log a school monitoring visit",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Log Expense",
-      "short_name": "Expense",
-      "url": "/forms/expense",
-      "description": "Log a new expense"
+      "name": "Register Beneficiary",
+      "short_name": "Register",
+      "url": "/meal/beneficiary-registration",
+      "description": "Register a new programme beneficiary",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Chat with AI",
-      "short_name": "AI Chat",
-      "url": "/chat",
-      "description": "Ask Omuto AI for help"
+      "name": "Log Impact",
+      "short_name": "Impact",
+      "url": "/school-xperience/log-impact",
+      "description": "Log trees, water sources, and beneficiaries",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Impact Map",
+      "short_name": "Map",
+      "url": "/school-xperience/impact-data/map",
+      "description": "View the impact map",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false
 }

@@ -23,8 +23,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${inter.variable} ${spaceGrotesk.variable} ${GeistSans.variable}`}
     >
       <head>
+        <meta name="theme-color" content="#991B1B" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Omuto" />
+        <meta name="application-name" content="Omuto Central" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#111827" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <title>Omuto Central</title>

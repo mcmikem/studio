@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.OmutoCentral" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimary">#991B1B</item>
+        <item name="android:colorPrimaryDark">#7F1D1D</item>
+        <item name="android:colorAccent">#991B1B</item>
+        <item name="android:windowBackground">#F9F7F0</item>
+        <item name="android:navigationBarColor">#991B1B</item>
+        <item name="android:statusBarColor">#991B1B</item>
+    </style>
+</resources>
