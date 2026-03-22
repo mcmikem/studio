@@ -242,6 +242,49 @@ async function fetchProgramData(program: { id: string; name: string; icon: any; 
   return { recentActivity, previousActivity, beneficiaries, activeCollections };
 }
 
+function ProgramCard({ program, Icon }: { program: ProgramScore; Icon: React.ElementType }) {
+  return (
+    <div className={cn('rounded-xl border p-3 flex flex-col gap-3 hover:shadow-md transition-shadow min-w-[220px] snap-start', program.bgColor)}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Icon className={cn('h-4 w-4', program.color)} />
+          <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground line-clamp-1">
+            {program.name}
+          </span>
+        </div>
+        <ScoreRing score={program.overallScore} size={40} strokeWidth={4} />
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1">
+            <Activity className="h-3 w-3 text-muted-foreground" />
+            <TrendIcon trend={program.trend} recent={program.recentActivity} previous={program.previousActivity} />
+          </div>
+          <p className="text-[13px] font-black text-omuto-navy">{program.recentActivity}</p>
+          <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Activities</p>
+        </div>
+        <div className="text-center">
+          <Users className="h-3 w-3 text-muted-foreground mx-auto" />
+          <p className="text-[13px] font-black text-omuto-navy">{program.beneficiaries}</p>
+          <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Beneficiaries</p>
+        </div>
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-1">
+            <HealthDot health={program.health} />
+          </div>
+          <p className="text-[13px] font-black text-omuto-navy">
+            {program.collectionsActive}/{program.collectionsTotal}
+          </p>
+          <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Forms</p>
+        </div>
+      </div>
+      <div className="w-full bg-black/5 rounded-full h-1.5 overflow-hidden">
+        <div className={cn('h-full rounded-full transition-all', program.health === 'green' && 'bg-green-500', program.health === 'amber' && 'bg-amber-500', program.health === 'red' && 'bg-red-500')} style={{ width: `${program.overallScore}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export function ProgramHealthScore() {
   const firestore = useFirestore();
   const [scores, setScores] = useState<ProgramScore[]>([]);
@@ -313,64 +356,19 @@ export function ProgramHealthScore() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3">
           {scores.map(program => {
             const Icon = program.icon;
             return (
-              <div
-                key={program.id}
-                className={cn(
-                  'rounded-xl border p-3 flex flex-col gap-3 hover:shadow-md transition-shadow min-w-[200px] snap-start',
-                  program.bgColor
-                )}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Icon className={cn('h-4 w-4', program.color)} />
-                    <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground line-clamp-1'>
-                      {program.name}
-                    </span>
-                  </div>
-                  <ScoreRing score={program.overallScore} size={40} strokeWidth={4} />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <Activity className="h-3 w-3 text-muted-foreground" />
-                      <TrendIcon trend={program.trend} recent={program.recentActivity} previous={program.previousActivity} />
-                    </div>
-                    <p className="text-[13px] font-black text-omuto-navy">{program.recentActivity}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Activities</p>
-                  </div>
-                  <div className="text-center">
-                    <Users className="h-3 w-3 text-muted-foreground mx-auto" />
-                    <p className="text-[13px] font-black text-omuto-navy">{program.beneficiaries}</p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Beneficiaries</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <HealthDot health={program.health} />
-                    </div>
-                    <p className="text-[13px] font-black text-omuto-navy">
-                      {program.collectionsActive}/{program.collectionsTotal}
-                    </p>
-                    <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Forms</p>
-                  </div>
-                </div>
-
-                <div className="w-full bg-black/5 rounded-full h-1.5 overflow-hidden">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all',
-                      program.health === 'green' && 'bg-green-500',
-                      program.health === 'amber' && 'bg-amber-500',
-                      program.health === 'red' && 'bg-red-500',
-                    )}
-                    style={{ width: `${program.overallScore}%` }}
-                  />
-                </div>
-              </div>
+              <ProgramCard key={program.id} program={program} Icon={Icon} />
+            );
+          })}
+        </div>
+        <div className="flex md:hidden gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+          {scores.map(program => {
+            const Icon = program.icon;
+            return (
+              <ProgramCard key={program.id} program={program} Icon={Icon} />
             );
           })}
         </div>
