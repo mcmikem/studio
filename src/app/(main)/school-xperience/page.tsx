@@ -463,7 +463,37 @@ function StatCard({ icon: Icon, label, value, trend, color, alertLevel }: {
   color: string;
   alertLevel?: 'green' | 'yellow' | 'red';
 }) {
+  const alertColors = {
+    green: "bg-emerald-500",
+    yellow: "bg-amber-500",
+    red: "bg-rose-500"
+  };
+
   return (
+    <Card className="relative overflow-hidden border-2 border-omuto-navy/5 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-sm rounded-[2rem]">
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start mb-4">
+          <div className={`p-2.5 bg-muted/50 rounded-2xl ${color} shadow-sm ring-4 ring-muted/20`}>
+            <Icon className="h-5 w-5" />
+          </div>
+          {alertLevel && (
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded-full border border-omuto-navy/5">
+                <div className={`h-1.5 w-1.5 rounded-full ${alertColors[alertLevel]} animate-pulse`} />
+                <span className="text-[9px] font-black uppercase tracking-wider text-omuto-navy/40">{alertLevel}</span>
+            </div>
+          )}
+        </div>
+        
+        <div className="space-y-1">
+          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-omuto-navy/30">{label}</h4>
+          <p className="font-heading text-3xl font-black text-omuto-navy leading-none tracking-tight">{value}</p>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-omuto-navy/5 flex items-center gap-1.5">
+            <TrendingUp className="h-3 w-3 text-emerald-600" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600/80">{trend}</span>
+        </div>
+      </CardContent>
     </Card>
   );
 }
