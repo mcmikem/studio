@@ -76,13 +76,29 @@ export function GPSLocationPicker({
       const lat = parseFloat(parts[0]);
       const lng = parseFloat(parts[1]);
       
+      if (isNaN(lat) || isNaN(lng)) {
+        setError('Invalid coordinates — enter numbers only');
+        onCoordinatesChange(null);
+        return;
+      }
+      
       const isValidUganda = lat >= -1 && lat <= 4 && lng >= 29 && lng <= 35;
       const isValidGlobal = lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
       
-      if (!isNaN(lat) && !isNaN(lng) && (isValidUganda || isValidGlobal)) {
-        onCoordinatesChange({ lat, lng });
+      if (!isValidGlobal) {
+        setError('Coordinates are out of range');
+        onCoordinatesChange(null);
         return;
       }
+      
+      if (!isValidUganda) {
+        setError('Coordinates must be within Uganda (lat: -1 to 4, lng: 29 to 35)');
+        onCoordinatesChange(null);
+        return;
+      }
+      
+      onCoordinatesChange({ lat, lng });
+      return;
     }
     
     onCoordinatesChange(null);

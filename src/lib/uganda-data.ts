@@ -512,7 +512,7 @@ export const SUBCOUNTY_ALIASES: Record<string, string> = {
   "kammengo": "Kammengo",
   "kamengo": "Kammengo",
   "nabbuzi": "Nabbuzi",
-  "nabuzI": "Nabbuzi",
+  "nabuzi": "Nabbuzi",
   "mpigi": "Mpigi Town Council",
   "kiringente": "Kiringente",
   "muduuma": "Muduuma",
@@ -584,8 +584,6 @@ export const OMUTO_TARGETS = {
   },
 } as const;
 
-// Alias for backward compatibility
-export const OMMUTO_TARGETS = OMUTO_TARGETS;
 
 // UBOS 2024 Statistics
 export const UGANDA_STATS = {

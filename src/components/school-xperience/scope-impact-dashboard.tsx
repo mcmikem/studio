@@ -7,7 +7,7 @@ import {
   Users, GraduationCap, Heart, Droplets, TreePine,
   Target, TrendingUp, Award, AlertCircle
 } from 'lucide-react';
-import { OMMUTO_TARGETS, UGANDA_STATS, type DistrictKey } from '@/lib/uganda-data';
+import { OMUTO_TARGETS, UGANDA_STATS, type DistrictKey } from '@/lib/uganda-data';
 
 const DISTRICT_LABELS: Record<DistrictKey, string> = {
   mpigi: 'Mpigi',
@@ -20,10 +20,20 @@ const DISTRICT_LABELS: Record<DistrictKey, string> = {
 
 interface ScopeImpactProps {
   district?: DistrictKey;
+  studentLeadersReached?: number;
+  girlsReached?: number;
+  treesPlanted?: number;
+  waterReached?: number;
 }
 
-export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
-  const targets = OMMUTO_TARGETS[district];
+export function ScopeImpactDashboard({
+  district = 'mpigi',
+  studentLeadersReached = 0,
+  girlsReached = 0,
+  treesPlanted = 0,
+  waterReached = 0,
+}: ScopeImpactProps) {
+  const targets = OMUTO_TARGETS[district];
   const stats = UGANDA_STATS[district];
   const waterAccess = (stats as any).waterAccessRural ?? (stats as any).waterAccessUrban ?? 50;
   const teenPregnancy = (stats as any).teenagePregnancy ?? 0;
@@ -35,7 +45,7 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
         <ScopeCard
           icon={GraduationCap}
           title="Student Leaders (SLF)"
-          reached={0}
+          reached={studentLeadersReached}
           target={Math.round(targets.students.total * targets.students.targetReach)}
           total={targets.students.total}
           color="text-blue-600"
@@ -45,7 +55,7 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
         <ScopeCard
           icon={Heart}
           title="Girls Supported (RED)"
-          reached={0}
+          reached={girlsReached}
           target={Math.round(targets.menstrualHealth.schoolGirls * 0.2)}
           total={targets.menstrualHealth.schoolGirls}
           color="text-pink-600"
@@ -55,7 +65,7 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
         <ScopeCard
           icon={TreePine}
           title="Trees Planted (GS)"
-          reached={0}
+          reached={treesPlanted}
           target={700}
           total={undefined}
           color="text-green-600"
@@ -65,7 +75,7 @@ export function ScopeImpactDashboard({ district = 'mpigi' }: ScopeImpactProps) {
         <ScopeCard
           icon={Droplets}
           title="Clean Water Reached"
-          reached={0}
+          reached={waterReached}
           target={targets.water.targetInterventions}
           total={targets.water.populationWithoutAccess}
           color="text-cyan-600"

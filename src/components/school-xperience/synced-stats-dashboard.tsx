@@ -10,7 +10,7 @@ import {
   Target, TrendingUp, Award, AlertCircle, MapPin,
   Building2, Clock, Calendar
 } from 'lucide-react';
-import { OMMUTO_TARGETS, UGANDA_STATS, UGANDA_LOCATIONS, type DistrictKey } from '@/lib/uganda-data';
+import { OMUTO_TARGETS, UGANDA_STATS, UGANDA_LOCATIONS, type DistrictKey } from '@/lib/uganda-data';
 
 interface Location {
   district?: string;
@@ -56,7 +56,7 @@ export function SyncedStatsDashboard({
   loading = false 
 }: SyncedStatsDashboardProps) {
   const district = (filters.district || 'mpigi') as DistrictKey;
-  const targets = OMMUTO_TARGETS[district] || OMMUTO_TARGETS.mpigi;
+  const targets = OMUTO_TARGETS[district] || OMUTO_TARGETS.mpigi;
   const stats_ug = UGANDA_STATS[district] || UGANDA_STATS.mpigi;
   const waterAccess = (stats_ug as any).waterAccessRural ?? (stats_ug as any).waterAccessUrban ?? 50;
   const teenPregnancy = (stats_ug as any).teenagePregnancy ?? 0;

@@ -110,7 +110,6 @@ export default function ImpactSnapshotPage() {
 
   const districtKey = selectedDistrict;
   const districtMeta = DISTRICT_META[districtKey];
-  const districtData = UGANDA_LOCATIONS[districtKey];
   const districtLabel = districtMeta.label;
 
   const schools = (allSchools || []).filter(s => !districtKey || s.district === districtLabel);
@@ -189,7 +188,7 @@ export default function ImpactSnapshotPage() {
       id: s.id || '',
       name: s.schoolName || 'Unknown',
       type: 'school' as const,
-      coordinates: (s as any).coordinates,
+      coordinates: (s as SchoolXperience & { coordinates?: { lat: number; lng: number } }).coordinates,
       subcounty: s.subCounty,
       district: s.district,
       programme: s.activeProgrammes?.[0],
@@ -422,7 +421,13 @@ export default function ImpactSnapshotPage() {
         </TabsContent>
 
         <TabsContent value="scope">
-          <ScopeImpactDashboard district={selectedDistrict} />
+          <ScopeImpactDashboard
+            district={selectedDistrict}
+            studentLeadersReached={studentLeadersSLF}
+            girlsReached={girlsRED}
+            treesPlanted={treesPlantedGS}
+            waterReached={waterReachedPW}
+          />
           <div className="mt-6">
             <SyncedStatsDashboard
               stats={{

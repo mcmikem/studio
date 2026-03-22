@@ -69,17 +69,20 @@ export default function MapPage() {
   // Calculate area stats
   const areaStats = useMemo(() => {
     const stats: Record<string, { schools: number; beneficiaries: number; waterSources: number; trees: number }> = {};
+    const schoolIdsByArea: Record<string, Set<string>> = {};
     
     ['Kyebando', 'Kammengo', 'Nabbuzi', 'Mpigi'].forEach(area => {
       const areaLower = area.toLowerCase();
+      const areaSchools = (schools || []).filter((s: any) => 
+        s.subCounty?.toLowerCase().includes(areaLower) ||
+        s.location?.toLowerCase().includes(areaLower)
+      );
+      schoolIdsByArea[area] = new Set(areaSchools.map((s: any) => s.id));
       stats[area] = {
-        schools: (schools || []).filter((s: any) => 
-          s.subCounty?.toLowerCase().includes(areaLower) ||
-          s.location?.toLowerCase().includes(areaLower)
-        ).length,
-        beneficiaries: (beneficiaries || []).length,
-        waterSources: (waterSources || []).length,
-        trees: (trees || []).reduce((sum: number, t: any) => sum + (t.quantity || 0), 0),
+        schools: areaSchools.length,
+        beneficiaries: (beneficiaries || []).filter((b: any) => schoolIdsByArea[area].has(b.schoolId)).length,
+        waterSources: (waterSources || []).filter((w: any) => schoolIdsByArea[area].has(w.schoolId)).length,
+        trees: (trees || []).filter((t: any) => schoolIdsByArea[area].has(t.schoolId)).reduce((sum: number, t: any) => sum + (t.quantity || 0), 0),
       };
     });
     
@@ -414,16 +417,20 @@ export default function MapPage() {
 
                   {/* Subcounty breakdown if in a district */}
                   {selectedLocation.district && (() => {
-                    const districtKey = selectedLocation.district as keyof typeof UGANDA_LOCATIONS;
-                    const districtData = UGANDA_LOCATIONS[districtKey];
+                    const normalizedDistrict = (selectedLocation.district || '').replace(/\b\w/g, c => c.toUpperCase());
+                    const districtData = UGANDA_LOCATIONS[normalizedDistrict as keyof typeof UGANDA_LOCATIONS];
                     if (!districtData?.subcounties) return null;
-                    const districtSchools = (schools || []).filter((s: any) => s.district === selectedLocation.district);
+                    const districtSchools = (schools || []).filter((s: any) =>
+                      (s.district || '').toLowerCase() === normalizedDistrict.toLowerCase()
+                    );
                     return (
                       <div className="pt-2">
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Schools by Subcounty</p>
                         <div className="space-y-1 max-h-40 overflow-y-auto">
                           {districtData.subcounties.map((sc: any) => {
-                            const count = districtSchools.filter((s: any) => s.subCounty === sc.name).length;
+                            const count = districtSchools.filter((s: any) =>
+                              (s.subCounty || '').toLowerCase() === (sc.name || '').toLowerCase()
+                            ).length;
                             return (
                               <div key={sc.name} className="flex items-center justify-between p-1.5 rounded-lg bg-muted/30">
                                 <span className="text-xs font-bold truncate flex-1 mr-2">{sc.name}</span>
