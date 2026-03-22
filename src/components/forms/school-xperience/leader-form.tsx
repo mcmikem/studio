@@ -8,12 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Users, Check } from 'lucide-react';
+import { OfflineStatus } from '@/components/ui/offline-status';
+import { useFormSubmission } from '@/hooks/use-form-submission';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
+import { useAutoSave, loadDraft, clearDraft } from '@/hooks/use-auto-save';
 import type { SchoolXperience } from '@/lib/types';
 
 const leaderSchema = z.object({
@@ -23,7 +26,10 @@ const leaderSchema = z.object({
   role: z.string().min(2, 'Role is required'),
   gender: z.enum(['Male', 'Female', 'Other']).optional(),
   year: z.string().optional(),
-  contact: z.string().optional(),
+  contact: z.string().refine(
+    (val) => !val || /^(\+?256|0)7\d{8}$/.test(val.replace(/[\s\-\.]/g, '')),
+    'Enter a valid Uganda phone (e.g., 0771234567)'
+  ).optional(),
 });
 
 type LeaderFormData = z.infer<typeof leaderSchema>;
@@ -35,6 +41,7 @@ function LeaderFormInner() {
   const searchParams = useSearchParams();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { submit } = useFormSubmission();
 
   const preselectedSchoolId = searchParams.get('schoolId') || '';
   const preselectedSchoolName = searchParams.get('schoolName') || '';
@@ -46,14 +53,7 @@ function LeaderFormInner() {
 
   const { data: schools } = useCollection<SchoolXperience>(schoolsQuery);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<LeaderFormData>({
+  const leaderForm = useForm<LeaderFormData>({
     resolver: zodResolver(leaderSchema),
     defaultValues: {
       schoolId: preselectedSchoolId,
@@ -61,24 +61,39 @@ function LeaderFormInner() {
     },
   });
 
+  const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting } } = leaderForm;
   const selectedSchoolId = watch('schoolId');
   const selectedSchool = schools?.find((s) => s.id === selectedSchoolId);
 
-  const onSubmit = (data: LeaderFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
-      return;
+  useEffect(() => {
+    if (!preselectedSchoolId) {
+      const savedDraft = loadDraft<LeaderFormData>('leader');
+      if (savedDraft) {
+        Object.entries(savedDraft).forEach(([key, value]) => {
+          setValue(key as keyof LeaderFormData, value as any)
+        })
+      }
     }
+  }, []);
 
-    addDocumentNonBlocking(collection(firestore, 'sx-leaders'), {
-      ...data,
-      createdAt: serverTimestamp(),
+  useAutoSave({ form: leaderForm, draftKey: 'leader', delay: 2000 });
+
+  const onSubmit = async (data: LeaderFormData) => {
+    const result = await submit({
+      collectionName: 'sx-leaders',
+      data,
+      idempotencyKey: `leader_${data.schoolId}_${data.name}`.toLowerCase().replace(/\s+/g, '_'),
     });
 
-    toast({
-      title: 'Leader Registered',
-      description: `${data.name} added to ${data.schoolName}`,
-    });
+    if (result.isOffline) {
+      toast({ title: 'Saved Offline', description: 'Leader queued — will sync when you reconnect.' });
+    } else if (result.isQueued) {
+      toast({ title: 'Saved', description: 'Queued for sync when connected.' });
+      clearDraft('leader');
+    } else {
+      toast({ title: 'Leader Registered', description: `${data.name} added to ${data.schoolName}` });
+      clearDraft('leader');
+    }
     router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
   };
 
@@ -96,6 +111,9 @@ function LeaderFormInner() {
           <CardDescription className="font-bold text-xs uppercase tracking-widest">
             Register a commissioned student leader or patron teacher at a partner school.
           </CardDescription>
+          <div className="mt-2">
+            <OfflineStatus />
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8 pt-8">

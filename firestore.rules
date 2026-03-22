@@ -38,10 +38,9 @@ service cloud.firestore {
     return getUserRole() == 'Volunteer';
   }
 
-  // Default rule - authenticated users can read/write
+  // Default rule - require authentication only (per-collection rules below override this)
   match /{document=**} {
-    allow read: if request.auth != null;
-    allow write: if request.auth != null;
+    allow read, write: if request.auth != null;
   }
 }
 
@@ -459,6 +458,59 @@ service cloud.firestore {
   match /programs/{programId}/data/{dataId} {
     allow read: if request.auth != null;
     allow write: if request.auth != null && isStaff();
+  }
+
+  // =============================================
+  // SCHOOL XPERIENCE (SX) - explicit rules
+  // =============================================
+
+  // SX Schools — readable by all authenticated, writable by staff
+  match /sx-schools/{schoolId} {
+    allow read: if request.auth != null;
+    allow create, update: if request.auth != null && isStaff();
+    allow delete: if request.auth != null && isAdminOrExecutive();
+  }
+
+  // SX Visits — readable by all authenticated, writable by authenticated (staff submitted via app)
+  match /sx-visits/{visitId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null && isStaff();
+  }
+
+  // SX Scorecards — readable by all authenticated, writable by authenticated
+  match /sx-scorecards/{scorecardId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null && isStaff();
+  }
+
+  // SX Leaders — readable by all authenticated, writable by authenticated
+  match /sx-leaders/{leaderId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null && isStaff();
+  }
+
+  // SX Beneficiaries — readable by all authenticated, writable by authenticated
+  match /sx-beneficiaries/{beneficiaryId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null && isStaff();
+  }
+
+  // SX Water Sources — readable by all authenticated, writable by authenticated
+  match /sx-water-sources/{sourceId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null && isStaff();
+  }
+
+  // SX Trees — readable by all authenticated, writable by authenticated
+  match /sx-trees/{treeId} {
+    allow read: if request.auth != null;
+    allow create: if request.auth != null;
+    allow update, delete: if request.auth != null && isStaff();
   }
 
   // Default rule - require authentication

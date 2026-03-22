@@ -144,6 +144,12 @@ export default function RegistrationPipelinePage() {
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="h-4 w-4 text-omuto-red" />
           <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Pipeline Funnel</span>
+          <Button asChild size="sm" className="ml-auto h-8 rounded-xl text-[10px] font-black btn-omuto">
+            <Link href="/school-xperience/register-school">
+              <Plus className="mr-1 h-3 w-3" />
+              Register School
+            </Link>
+          </Button>
         </div>
         <div className="flex gap-3 overflow-x-auto">
           {PIPELINE_STAGES.map((stage, i) => {
@@ -155,7 +161,9 @@ export default function RegistrationPipelinePage() {
               <div key={stage.id} className="flex items-center gap-0">
                 <div className={`flex flex-col items-center p-3 rounded-xl border-2 min-w-[80px] ${stage.border} ${stage.bg}`}>
                   <p className={`font-black text-xl ${stage.color}`}>{count}</p>
-                  <p className={`text-[9px] font-bold uppercase tracking-wider ${stage.color}`}>{pct}%</p>
+                  <div className={`w-full h-1.5 rounded-full mt-1 ${stage.bg}`}>
+                    <div className={`h-full rounded-full ${stage.color.replace('text-', 'bg-')}`} style={{ width: `${Math.max(pct, 5)}%` }} />
+                  </div>
                   <p className={`text-[9px] font-black uppercase mt-1 ${stage.color}`}>{stage.label}</p>
                 </div>
                 {!isLast && (

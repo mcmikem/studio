@@ -35,10 +35,15 @@ import {
   TreePine,
   Clock,
   CheckCircle2,
+  LayoutGrid,
+  List,
+  RefreshCw,
+  Wifi,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { SchoolXperience, SchoolVisitXperience } from '@/lib/types';
 import { format } from 'date-fns';
+import { useLastSync } from '@/hooks/use-form-submission';
 
 const PROGRAMME_ICONS: Record<string, React.ElementType> = {
   SLF: GraduationCap,
@@ -75,6 +80,8 @@ export default function SchoolXperienceHubPage() {
   const [filterTier, setFilterTier] = useState<string>('All');
   const [filterProgramme, setFilterProgramme] = useState<string>('All');
   const [filterStatus, setFilterStatus] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'compact' | 'expanded'>('expanded');
+  const lastSync = useLastSync();
 
   const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -175,7 +182,15 @@ export default function SchoolXperienceHubPage() {
         breadcrumbs={[{ name: 'Dashboard', href: '/' }, { name: 'School Xperience', href: '/school-xperience' }]}
       />
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {lastSync && (
+        <div className="flex items-center gap-2 text-xs font-bold text-green-600 bg-green-50 border border-green-200 rounded-xl px-4 py-2">
+          <Wifi className="h-3.5 w-3.5" />
+          <span>Synced {format(lastSync, 'MMM d, h:mm a')}</span>
+          <span className="text-muted-foreground font-normal">— all submissions up to date</span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
           icon={Building2}
           label="Partner Schools"
@@ -210,67 +225,71 @@ export default function SchoolXperienceHubPage() {
         />
       </div>
 
-      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-4 shadow-comic-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="h-4 w-4 text-omuto-red" />
-          <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Quick Actions</span>
+      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-5 shadow-comic-sm sticky top-[4.5rem] z-30 -mx-4 sm:mx-0 sm:static sm:sticky-none">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-omuto-red opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-omuto-red" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">What would you like to do?</span>
         </div>
-        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2">
-          <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm relative overflow-hidden group">
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-9 gap-3">
+          <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic-md relative overflow-hidden group border-2 border-transparent hover:border-white/50 transition-all">
             <Link href="/school-xperience/log-visit">
-              <span className="absolute top-0 right-0 w-2 h-2 rounded-bl-full bg-white/30" />
-              <ClipboardCheck className="h-5 w-5" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight">Log Visit</span>
+              <span className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
+              <ClipboardCheck className="h-6 w-6" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight">Log Visit</span>
+              <span className="text-[9px] opacity-70 font-medium leading-tight">Most used</span>
             </Link>
           </Button>
-          <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm relative overflow-hidden">
+          <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic relative overflow-hidden">
             <Link href="/school-xperience/submit-scorecard">
-              <span className="absolute top-0 right-0 w-2 h-2 rounded-bl-full bg-white/30" />
-              <StarHalf className="h-5 w-5" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight">Scorecard</span>
+              <span className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
+              <StarHalf className="h-6 w-6" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight">Scorecard</span>
             </Link>
           </Button>
-          <Button asChild className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1.5 shadow-comic-sm relative overflow-hidden">
+          <Button asChild className="btn-omuto h-auto py-4 rounded-2xl flex-col gap-2 shadow-comic relative overflow-hidden">
             <Link href="/school-xperience/add-leader">
-              <span className="absolute top-0 right-0 w-2 h-2 rounded-bl-full bg-white/30" />
-              <Users className="h-5 w-5" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight">Add Leader</span>
+              <span className="absolute top-0 left-0 right-0 h-1 bg-white/40" />
+              <Users className="h-6 w-6" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight">Add Leader</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-green-200 bg-green-50 hover:bg-green-100 hover:border-green-300 hover:-translate-y-0.5 transition-all">
+          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-green-200 bg-green-50 hover:bg-green-100 hover:border-green-300 hover:-translate-y-0.5 transition-all">
             <Link href="/school-xperience/log-impact">
-              <MapIcon className="h-5 w-5 text-green-600" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-green-700">Log Impact</span>
+              <MapIcon className="h-6 w-6 text-green-600" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-green-700">Log Impact</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 hover:-translate-y-0.5 transition-all">
+          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-blue-200 bg-blue-50 hover:bg-blue-100 hover:border-blue-300 hover:-translate-y-0.5 transition-all">
             <Link href="/school-xperience/pipeline">
-              <GitBranch className="h-5 w-5 text-blue-600" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-blue-700">Pipeline</span>
+              <GitBranch className="h-6 w-6 text-blue-600" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-blue-700">Pipeline</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-purple-200 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 hover:-translate-y-0.5 transition-all">
+          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-purple-200 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 hover:-translate-y-0.5 transition-all">
             <Link href="/school-xperience/planner">
-              <Calendar className="h-5 w-5 text-purple-600" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-purple-700">Planner</span>
+              <Calendar className="h-6 w-6 text-purple-600" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-purple-700">Planner</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-cyan-200 bg-cyan-50 hover:bg-cyan-100 hover:border-cyan-300 hover:-translate-y-0.5 transition-all">
+          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-cyan-200 bg-cyan-50 hover:bg-cyan-100 hover:border-cyan-300 hover:-translate-y-0.5 transition-all">
             <Link href="/school-xperience/impact-data">
-              <MapIcon className="h-5 w-5 text-cyan-600" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-cyan-700">Impact Data</span>
+              <MapIcon className="h-6 w-6 text-cyan-600" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-cyan-700">Impact Data</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-300 hover:-translate-y-0.5 transition-all">
+          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-amber-200 bg-amber-50 hover:bg-amber-100 hover:border-amber-300 hover:-translate-y-0.5 transition-all">
             <Link href="/school-xperience/stories">
-              <Video className="h-5 w-5 text-amber-600" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-amber-700">Stories</span>
+              <Video className="h-6 w-6 text-amber-600" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-amber-700">Stories</span>
             </Link>
           </Button>
-          <Button asChild variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1.5 shadow-sm border-2 border-teal-200 bg-teal-50 hover:bg-teal-100 hover:border-teal-300 hover:-translate-y-0.5 transition-all">
+          <Button asChild variant="outline" className="h-auto py-4 rounded-2xl flex-col gap-2 shadow-sm border-2 border-teal-200 bg-teal-50 hover:bg-teal-100 hover:border-teal-300 hover:-translate-y-0.5 transition-all">
             <Link href="/school-xperience/impact">
-              <Sparkles className="h-5 w-5 text-teal-600" />
-              <span className="font-black text-[10px] uppercase tracking-widest leading-tight text-teal-700">Impact</span>
+              <Sparkles className="h-6 w-6 text-teal-600" />
+              <span className="font-black text-[11px] uppercase tracking-widest leading-tight text-teal-700">Impact</span>
             </Link>
           </Button>
         </div>
@@ -329,6 +348,32 @@ export default function SchoolXperienceHubPage() {
               <option value="GreenSchools">GreenSchools</option>
               <option value="PureWater">PureWater</option>
             </select>
+            <div className="flex h-11 rounded-xl border-lg overflow-hidden flex-shrink-0">
+              <button
+                onClick={() => setViewMode('compact')}
+                className={`px-3 flex items-center gap-1.5 transition-colors ${
+                  viewMode === 'compact'
+                    ? 'bg-omuto-navy text-white'
+                    : 'bg-background text-muted-foreground hover:bg-muted'
+                }`}
+                title="Compact view"
+              >
+                <List className="h-4 w-4" />
+                <span className="text-xs font-bold hidden sm:inline">Compact</span>
+              </button>
+              <button
+                onClick={() => setViewMode('expanded')}
+                className={`px-3 flex items-center gap-1.5 transition-colors border-l ${
+                  viewMode === 'expanded'
+                    ? 'bg-omuto-navy text-white'
+                    : 'bg-background text-muted-foreground hover:bg-muted'
+                }`}
+                title="Expanded view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span className="text-xs font-bold hidden sm:inline">Expanded</span>
+              </button>
+            </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -356,92 +401,159 @@ export default function SchoolXperienceHubPage() {
               <p className="text-sm">Try adjusting your filters or register a new school.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            viewMode === 'compact' ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {filteredSchools.map((school) => {
-                const visitStatus = getVisitStatus(school.id);
-                return (
-                  <div
-                    key={school.id}
-                    className={`border-lg rounded-2xl p-4 hover:bg-muted/30 transition-colors border-l-4 ${
-                      visitStatus.urgency === 'red' ? 'border-l-red-500' :
-                      visitStatus.urgency === 'yellow' ? 'border-l-yellow-500' :
-                      'border-l-green-500'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <h3 className="font-bold text-base truncate">{school.schoolName}</h3>
-                          <Badge className={`text-xs font-bold border ${TIER_COLORS[school.tier || 'Partner']}`}>
-                            {school.tier || 'Partner'}
-                          </Badge>
-                          <Badge className={`text-xs font-bold border ${PIPELINE_COLORS[school.pipelineStage || 'Inquiry']}`}>
-                            {school.pipelineStage || 'Inquiry'}
-                          </Badge>
-                          <Badge className={`text-xs font-bold border ${STATUS_COLORS[school.status || 'Registered']}`}>
-                            {school.status || 'Registered'}
-                          </Badge>
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${visitStatus.bgColor} ${visitStatus.color}`}>
-                            {visitStatus.urgency === 'red' ? <AlertCircle className="h-3 w-3 inline mr-1" /> :
-                             visitStatus.urgency === 'yellow' ? <Clock className="h-3 w-3 inline mr-1" /> :
-                             <CheckCircle2 className="h-3 w-3 inline mr-1" />}
+                    const visitStatus = getVisitStatus(school.id);
+                    return (
+                      <Link
+                        key={school.id}
+                        href={`/school-xperience/${school.id}`}
+                        className={`block border-lg rounded-xl p-3 hover:bg-muted/30 transition-all border-l-4 ${
+                          visitStatus.urgency === 'red' ? 'border-l-red-500' :
+                          visitStatus.urgency === 'yellow' ? 'border-l-yellow-500' :
+                          'border-l-green-500'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-bold text-sm truncate flex-1">{school.schoolName}</h3>
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-black px-1.5 py-0.5 rounded-full flex-shrink-0 ${visitStatus.bgColor} ${visitStatus.color}`}>
+                            {visitStatus.urgency === 'red' ? <AlertCircle className="h-2.5 w-2.5" /> :
+                             visitStatus.urgency === 'yellow' ? <Clock className="h-2.5 w-2.5" /> :
+                             <CheckCircle2 className="h-2.5 w-2.5" />}
                             {visitStatus.label}
                           </span>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                            {school.location}
-                            {school.subCounty && `, ${school.subCounty}`}
-                          </span>
-                          {school.patronTeacher && (
-                            <span className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              {school.patronTeacher}
+                        <div className="flex flex-wrap gap-1 mb-1">
+                          <Badge className={`text-[10px] font-bold border ${TIER_COLORS[school.tier || 'Partner']}`}>
+                            {school.tier || 'Partner'}
+                          </Badge>
+                          <Badge className={`text-[10px] font-bold border ${STATUS_COLORS[school.status || 'Registered']}`}>
+                            {school.status || 'Registered'}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
+                          {school.location && (
+                            <span className="flex items-center gap-0.5 truncate">
+                              <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
+                              {school.location}
                             </span>
                           )}
-                          {school.enrollmentSize && (
-                            <span className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              {school.enrollmentSize} students
+                          {school.activeProgrammes && school.activeProgrammes.length > 0 && (
+                            <span className="flex items-center gap-0.5">
+                              {school.activeProgrammes.map((p) => {
+                                const Icon = PROGRAMME_ICONS[p] || Star;
+                                return <Icon key={p} className="h-2.5 w-2.5" />;
+                              })}
                             </span>
                           )}
                         </div>
-                        {school.activeProgrammes && school.activeProgrammes.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-2">
-                            {school.activeProgrammes.map((p) => {
-                              const Icon = PROGRAMME_ICONS[p] || Star;
-                              return (
-                                <Badge key={p} variant="outline" className="text-xs font-bold gap-1">
-                                  <Icon className="h-3 w-3" />
-                                  {p}
-                                </Badge>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
+                        <div className="flex gap-1.5 mt-2">
+                          <Button
+                            size="sm"
+                            asChild
+                            className="h-6 rounded-lg text-[10px] font-black flex-1"
+                          >
                             <Link href={`/school-xperience/log-visit?schoolId=${school.id}&schoolName=${encodeURIComponent(school.schoolName || '')}`}>
-                              <ClipboardCheck className="mr-1 h-3 w-3" />
-                              Log Visit
+                              <ClipboardCheck className="h-2.5 w-2.5 mr-0.5" />
+                              Visit
                             </Link>
                           </Button>
-                          <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
-                            <Link href={`/school-xperience/${school.id}`}>
-                              <Eye className="mr-1 h-3 w-3" />
-                              Profile
-                            </Link>
-                          </Button>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredSchools.map((school) => {
+                  const visitStatus = getVisitStatus(school.id);
+                  return (
+                    <div
+                      key={school.id}
+                      className={`border-lg rounded-2xl p-4 hover:bg-muted/30 transition-colors border-l-4 ${
+                        visitStatus.urgency === 'red' ? 'border-l-red-500' :
+                        visitStatus.urgency === 'yellow' ? 'border-l-yellow-500' :
+                        'border-l-green-500'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <h3 className="font-bold text-base truncate">{school.schoolName}</h3>
+                            <Badge className={`text-xs font-bold border ${TIER_COLORS[school.tier || 'Partner']}`}>
+                              {school.tier || 'Partner'}
+                            </Badge>
+                            <Badge className={`text-xs font-bold border ${PIPELINE_COLORS[school.pipelineStage || 'Inquiry']}`}>
+                              {school.pipelineStage || 'Inquiry'}
+                            </Badge>
+                            <Badge className={`text-xs font-bold border ${STATUS_COLORS[school.status || 'Registered']}`}>
+                              {school.status || 'Registered'}
+                            </Badge>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${visitStatus.bgColor} ${visitStatus.color}`}>
+                               {visitStatus.urgency === 'red' ? <AlertCircle className="h-3 w-3 inline mr-1" /> :
+                               visitStatus.urgency === 'yellow' ? <Clock className="h-3 w-3 inline mr-1" /> :
+                               <CheckCircle2 className="h-3 w-3 inline mr-1" />}
+                              {visitStatus.label}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {school.location}
+                              {school.subCounty && `, ${school.subCounty}`}
+                            </span>
+                            {school.patronTeacher && (
+                              <span className="flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                {school.patronTeacher}
+                              </span>
+                            )}
+                            {school.enrollmentSize && (
+                              <span className="flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                {school.enrollmentSize} students
+                              </span>
+                            )}
+                          </div>
+                          {school.activeProgrammes && school.activeProgrammes.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mt-2">
+                              {school.activeProgrammes.map((p) => {
+                                const Icon = PROGRAMME_ICONS[p] || Star;
+                                return (
+                                  <Badge key={p} variant="outline" className="text-xs font-bold gap-1">
+                                    <Icon className="h-3 w-3" />
+                                    {p}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
+                              <Link href={`/school-xperience/log-visit?schoolId=${school.id}&schoolName=${encodeURIComponent(school.schoolName || '')}`}>
+                                <ClipboardCheck className="mr-1 h-3 w-3" />
+                                Log Visit
+                              </Link>
+                            </Button>
+                            <Button variant="outline" size="sm" asChild className="h-8 rounded-lg text-xs font-bold">
+                              <Link href={`/school-xperience/${school.id}`}>
+                                <Eye className="mr-1 h-3 w-3" />
+                                Profile
+                              </Link>
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )
           )}
         </CardContent>
       </Card>

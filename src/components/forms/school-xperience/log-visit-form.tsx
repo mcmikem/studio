@@ -10,12 +10,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { Loader2, ArrowLeft, ClipboardCheck, Check, Star } from 'lucide-react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
+import { Loader2, ArrowLeft, ClipboardCheck, Check, Star, WifiOff } from 'lucide-react';
+import { OfflineStatus } from '@/components/ui/offline-status';
+import { useFormSubmission } from '@/hooks/use-form-submission';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
+import { useAutoSave, loadDraft, clearDraft } from '@/hooks/use-auto-save';
 import type { SchoolXperience } from '@/lib/types';
 import { PhotoUpload } from './photo-upload';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
@@ -48,6 +51,7 @@ function LogVisitFormInner() {
   const searchParams = useSearchParams();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { submit } = useFormSubmission();
   const [programmes, setProgrammes] = useState<string[]>([]);
   const [photos, setPhotos] = useState<string[]>([]);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
@@ -62,14 +66,7 @@ function LogVisitFormInner() {
   const preselectedSchoolId = searchParams.get('schoolId') || '';
   const preselectedSchoolName = searchParams.get('schoolName') || '';
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<VisitFormData>({
+  const visitForm = useForm<VisitFormData>({
     resolver: zodResolver(visitSchema),
     defaultValues: {
       schoolId: preselectedSchoolId,
@@ -81,30 +78,57 @@ function LogVisitFormInner() {
     },
   });
 
+  const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting }, getValues } = visitForm;
   const selectedSchoolId = watch('schoolId');
   const selectedSchool = schools?.find((s) => s.id === selectedSchoolId);
 
-  const onSubmit = (data: VisitFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
-      return;
+  useEffect(() => {
+    if (!preselectedSchoolId) {
+      const savedDraft = loadDraft<VisitFormData>('log-visit');
+      if (savedDraft) {
+        Object.entries(savedDraft).forEach(([key, value]) => {
+          setValue(key as keyof VisitFormData, value as any)
+        })
+      }
     }
+  }, []);
 
-    addDocumentNonBlocking(collection(firestore, 'sx-visits'), {
-      ...data,
-      photos: photos,
-      coordinates: coordinates || undefined,
-      createdAt: serverTimestamp(),
-      createdBy: 'system',
+  useAutoSave({ form: visitForm, draftKey: 'log-visit', delay: 2000 });
+
+  const onSubmit = async (data: VisitFormData) => {
+    const result = await submit({
+      collectionName: 'sx-visits',
+      data: {
+        ...data,
+        photos: photos,
+        coordinates: coordinates || undefined,
+      },
+      idempotencyKey: `${data.schoolId}_${data.date}_${data.visitor}`.replace(/\s+/g, '_'),
     });
 
-    toast({
-      title: 'Visit Logged',
-      description: data.flagForStory
-        ? 'Visit recorded with photos. This has been flagged for a story!'
-        : 'Visit successfully recorded.',
-    });
-    router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
+    if (result.isOffline) {
+      toast({
+        title: 'Saved Offline',
+        description: 'Visit queued — will sync when you reconnect.',
+      });
+      router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
+    } else if (result.isQueued) {
+      toast({
+        title: 'Saved',
+        description: 'Queued for sync when connected.',
+      });
+      clearDraft('log-visit');
+      router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
+    } else {
+      toast({
+        title: 'Visit Logged',
+        description: data.flagForStory
+          ? 'Visit recorded with photos. Flagged for a story!'
+          : 'Visit successfully recorded.',
+      });
+      clearDraft('log-visit');
+      router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
+    }
   };
 
   return (
@@ -121,6 +145,9 @@ function LogVisitFormInner() {
           <CardDescription className="font-bold text-xs uppercase tracking-widest">
             Record details from a field visit to a partner school.
           </CardDescription>
+          <div className="mt-2">
+            <OfflineStatus />
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8 pt-8">

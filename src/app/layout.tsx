@@ -12,6 +12,7 @@ import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { GlobalBackButton } from '@/components/global-back-button';
 import { CheckinReminderToast } from '@/components/reminders/checkin-reminder-toast';
 import { RoleTour } from '@/components/role-tour';
+import { OfflineProvider } from '@/components/offline-provider';
 
 const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -53,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ViewAsBanner />
                 <main className="flex-1 w-full max-w-full overflow-x-hidden px-2 sm:px-4 py-3 sm:py-4 lg:py-6 pb-32 md:pb-6">
                   <GlobalBackButton />
+                  <OfflineProvider />
                   {children}
                 </main>
                 <MobileBottomNav />

@@ -9,12 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy, where, getDocs } from 'firebase/firestore';
 import { Loader2, ArrowLeft, StarHalf, Check } from 'lucide-react';
+import { OfflineStatus } from '@/components/ui/offline-status';
+import { useFormSubmission } from '@/hooks/use-form-submission';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
+import { useAutoSave, loadDraft, clearDraft } from '@/hooks/use-auto-save';
 import type { SchoolXperience } from '@/lib/types';
 
 const scorecardSchema = z.object({
@@ -72,6 +75,7 @@ function ScorecardFormInner() {
   const searchParams = useSearchParams();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { submit } = useFormSubmission();
 
   const preselectedSchoolId = searchParams.get('schoolId') || '';
   const preselectedSchoolName = searchParams.get('schoolName') || '';
@@ -83,14 +87,7 @@ function ScorecardFormInner() {
 
   const { data: schools } = useCollection<SchoolXperience>(schoolsQuery);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    setValue,
-    watch,
-    formState: { errors, isSubmitting },
-  } = useForm<ScorecardFormData>({
+  const scorecardForm = useForm<ScorecardFormData>({
     resolver: zodResolver(scorecardSchema),
     defaultValues: {
       schoolId: preselectedSchoolId,
@@ -105,6 +102,8 @@ function ScorecardFormInner() {
     },
   });
 
+  const { register, handleSubmit, control, setValue, watch, formState: { errors, isSubmitting }, getValues } = scorecardForm;
+
   const selectedSchoolId = watch('schoolId');
   const selectedSchool = schools?.find((s) => s.id === selectedSchoolId);
   const selectedTerm = watch('term');
@@ -112,6 +111,19 @@ function ScorecardFormInner() {
   const activities = watch('activitiesCompleted');
   const engagement = watch('studentEngagement');
   const support = watch('teacherSupport');
+
+  useEffect(() => {
+    if (!preselectedSchoolId) {
+      const savedDraft = loadDraft<ScorecardFormData>('scorecard');
+      if (savedDraft) {
+        Object.entries(savedDraft).forEach(([key, value]) => {
+          setValue(key as keyof ScorecardFormData, value as any)
+        })
+      }
+    }
+  }, []);
+
+  useAutoSave({ form: scorecardForm, draftKey: 'scorecard', delay: 2000 });
 
   const overallScore = ((attendance + activities + engagement + support) / 4).toFixed(1);
   const rating = parseFloat(overallScore) >= 4 ? 'Green' : parseFloat(overallScore) >= 2.5 ? 'Amber' : 'Red';
@@ -121,24 +133,40 @@ function ScorecardFormInner() {
     Green: 'bg-green-100 text-green-700 border-green-200',
   };
 
-  const onSubmit = (data: ScorecardFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
-      return;
+  const onSubmit = async (data: ScorecardFormData) => {
+    if (firestore) {
+      const dupCheck = await getDocs(query(
+        collection(firestore, 'sx-scorecards'),
+        where('schoolId', '==', data.schoolId),
+        where('term', '==', data.term),
+        where('month', '==', data.month),
+        where('academicYear', '==', data.academicYear)
+      ));
+      if (!dupCheck.empty) {
+        toast({ variant: 'destructive', title: 'Already Submitted', description: `A scorecard exists for ${data.schoolName} — ${data.term}, ${data.month} ${data.academicYear}.` });
+        return;
+      }
     }
 
-    addDocumentNonBlocking(collection(firestore, 'sx-scorecards'), {
-      ...data,
-      overallScore: parseFloat(overallScore),
-      rating,
-      createdAt: serverTimestamp(),
-      createdBy: 'system',
+    const result = await submit({
+      collectionName: 'sx-scorecards',
+      data: {
+        ...data,
+        overallScore: parseFloat(overallScore),
+        rating,
+      },
+      idempotencyKey: `sc_${data.schoolId}_${data.term}_${data.month}_${data.academicYear}`,
     });
 
-    toast({
-      title: 'Scorecard Submitted',
-      description: `${data.schoolName} — ${rating} (${overallScore}/5)`,
-    });
+    if (result.isOffline) {
+      toast({ title: 'Saved Offline', description: 'Scorecard queued — will sync when you reconnect.' });
+    } else if (result.isQueued) {
+      toast({ title: 'Saved', description: 'Queued for sync when connected.' });
+      clearDraft('scorecard');
+    } else {
+      toast({ title: 'Scorecard Submitted', description: `${data.schoolName} — ${rating} (${overallScore}/5)` });
+      clearDraft('scorecard');
+    }
     router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
   };
 
@@ -156,6 +184,9 @@ function ScorecardFormInner() {
           <CardDescription className="font-bold text-xs uppercase tracking-widest">
             Score school performance across 4 dimensions. RAG rating auto-calculates.
           </CardDescription>
+          <div className="mt-2">
+            <OfflineStatus />
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8 pt-8">

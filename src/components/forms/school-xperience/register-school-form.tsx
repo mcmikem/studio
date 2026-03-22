@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 import { Loader2, ArrowLeft, Building2, Check } from 'lucide-react';
+import { OfflineStatus } from '@/components/ui/offline-status';
+import { useFormSubmission } from '@/hooks/use-form-submission';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAutoSave, loadDraft, clearDraft } from '@/hooks/use-auto-save';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
 
 const schoolSchema = z.object({
@@ -47,19 +49,13 @@ export function RegisterSchoolForm() {
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { submit } = useFormSubmission();
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<SchoolFormData>({
+  const schoolForm = useForm<SchoolFormData>({
     resolver: zodResolver(schoolSchema),
     defaultValues: {
-      tier: 'Partner',
+      schoolName: '',
       status: 'Registered',
       pipelineStage: 'Inquiry',
       term: 'Term 1',
@@ -67,23 +63,39 @@ export function RegisterSchoolForm() {
     },
   });
 
+  const { register, handleSubmit, control, watch, setValue, formState: { errors, isSubmitting }, reset } = schoolForm;
   const selectedProgrammes = watch('activeProgrammes') || [];
 
-  const onSubmit = (data: SchoolFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
-      return;
+  useEffect(() => {
+    const savedDraft = loadDraft<SchoolFormData>('register-school');
+    if (savedDraft) {
+      Object.entries(savedDraft).forEach(([key, value]) => {
+        setValue(key as keyof SchoolFormData, value as any)
+      })
     }
+  }, []);
 
-    addDocumentNonBlocking(collection(firestore, 'sx-schools'), {
-      ...data,
-      coordinates: coordinates || undefined,
-      academicYear: data.academicYear || new Date().getFullYear().toString(),
-      createdAt: serverTimestamp(),
-      createdBy: 'system',
+  useAutoSave({ form: schoolForm, draftKey: 'register-school', delay: 2000 });
+
+  const onSubmit = async (data: SchoolFormData) => {
+    const result = await submit({
+      collectionName: 'sx-schools',
+      data: {
+        ...data,
+        coordinates: coordinates || undefined,
+        academicYear: data.academicYear || new Date().getFullYear().toString(),
+      },
     });
 
-    toast({ title: 'School Registered', description: `${data.schoolName} has been registered for School Xperience.` });
+    if (result.isOffline) {
+      toast({ title: 'Saved Offline', description: 'School queued — will sync when you reconnect.' });
+    } else if (result.isQueued) {
+      toast({ title: 'Saved', description: 'Queued for sync when connected.' });
+      clearDraft('register-school');
+    } else {
+      toast({ title: 'School Registered', description: `${data.schoolName} has been registered for School Xperience.` });
+      clearDraft('register-school');
+    }
     router.push('/school-xperience');
   };
 
@@ -101,6 +113,9 @@ export function RegisterSchoolForm() {
           <CardDescription className="font-bold text-xs uppercase tracking-widest">
             Add a new school to the School Xperience Partnership Programme.
           </CardDescription>
+          <div className="mt-2">
+            <OfflineStatus />
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-8 pt-8">

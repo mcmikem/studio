@@ -117,16 +117,23 @@ export default function StoriesPage() {
         })}
       </div>
 
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5">
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 sticky top-[4.5rem] z-20 shadow-comic-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-amber-600">What would you like to do?</span>
+        </div>
         <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-              <Video className="h-5 w-5 text-amber-600" />
+          <div className="flex items-start gap-3">
+            <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <Video className="h-4 w-4 text-amber-600" />
             </div>
             <div>
-              <h2 className="font-black text-base">Story Candidates</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Visits flagged by field officers for strong storytelling potential.
+              <h2 className="font-black text-sm">Story Candidates</h2>
+              <p className="text-xs text-muted-foreground">
+                {flaggedVisits?.length || 0} visits flagged by field officers
               </p>
             </div>
           </div>

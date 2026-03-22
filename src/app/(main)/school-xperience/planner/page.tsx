@@ -22,6 +22,7 @@ import {
   Droplets,
   Star,
   ClipboardCheck,
+  AlertCircle,
 } from 'lucide-react';
 import {
   format,
@@ -233,6 +234,42 @@ export default function TermPlannerPage() {
         </Card>
       </div>
 
+      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-4 shadow-comic-sm sticky top-[4.5rem] z-20 -mx-4 sm:mx-0 sm:static sm:sticky-none">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-omuto-red opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-omuto-red" />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Quick Actions</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <Button asChild size="sm" className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1 shadow-comic-sm border-2 border-transparent hover:border-white/50">
+            <Link href="/school-xperience/log-visit">
+              <ClipboardCheck className="h-5 w-5" />
+              <span className="font-black text-[10px] uppercase tracking-widest">Log Visit</span>
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1 border-2">
+            <Link href="/school-xperience/submit-scorecard">
+              <Star className="h-5 w-5 text-amber-500" />
+              <span className="font-black text-[10px] uppercase tracking-widest">Scorecard</span>
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1 border-2">
+            <Link href="/school-xperience/register-school">
+              <Plus className="h-5 w-5 text-green-500" />
+              <span className="font-black text-[10px] uppercase tracking-widest">Register</span>
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="outline" className="h-auto py-3 rounded-xl flex-col gap-1 border-2">
+            <Link href="/school-xperience">
+              <Building2 className="h-5 w-5 text-blue-500" />
+              <span className="font-black text-[10px] uppercase tracking-widest">Hub</span>
+            </Link>
+          </Button>
+        </div>
+      </div>
+
       {overdueSchools.length > 0 && (
         <Card className="border-red-200 shadow-comic-sm border-l-4 border-l-red-500">
           <CardContent className="p-4">
@@ -242,17 +279,26 @@ export default function TermPlannerPage() {
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
               </div>
               <span className="text-xs font-black uppercase tracking-widest text-red-600">{overdueSchools.length} Schools Overdue for a Visit</span>
+              <Button size="sm" asChild className="ml-auto h-7 rounded-lg text-[10px] font-black btn-omuto">
+                <Link href="/school-xperience/log-visit">
+                  <ClipboardCheck className="mr-1 h-3 w-3" />
+                  Log Visit
+                </Link>
+              </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {overdueSchools.slice(0, 8).map(s => (
-                <Badge key={s.id} variant="outline" className="text-xs font-bold border-red-200 text-red-700 bg-red-50">
-                  <Building2 className="h-3 w-3 mr-1" />
-                  {s.schoolName}
-                </Badge>
+              {overdueSchools.slice(0, 6).map(s => (
+                <Button key={s.id} variant="outline" size="sm" asChild className="h-auto py-1.5 rounded-lg text-xs font-bold border-red-200 text-red-700 bg-red-50 hover:bg-red-100">
+                  <Link href={`/school-xperience/log-visit?schoolId=${s.id}&schoolName=${encodeURIComponent(s.schoolName || '')}`}>
+                    <Building2 className="h-3 w-3 mr-1" />
+                    {s.schoolName}
+                    <AlertCircle className="h-3 w-3 ml-1 text-red-400" />
+                  </Link>
+                </Button>
               ))}
-              {overdueSchools.length > 8 && (
-                <Badge variant="outline" className="text-xs font-bold border-red-200 text-red-700 bg-red-50">
-                  +{overdueSchools.length - 8} more
+              {overdueSchools.length > 6 && (
+                <Badge variant="outline" className="text-xs font-bold border-red-200 text-red-700 bg-red-50 h-auto py-1.5">
+                  +{overdueSchools.length - 6} more
                 </Badge>
               )}
             </div>

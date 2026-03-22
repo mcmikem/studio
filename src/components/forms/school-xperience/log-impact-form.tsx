@@ -9,12 +9,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, orderBy } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Users, Droplets, TreePine, Check } from 'lucide-react';
+import { OfflineStatus } from '@/components/ui/offline-status';
+import { useFormSubmission } from '@/hooks/use-form-submission';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
+import { useAutoSave, loadDraft, clearDraft } from '@/hooks/use-auto-save';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
 import type { SchoolXperience } from '@/lib/types';
 
@@ -86,6 +89,7 @@ function LogImpactFormInner() {
   const searchParams = useSearchParams();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const { submit } = useFormSubmission();
   const [activeTab, setActiveTab] = useState<'beneficiary' | 'water' | 'tree'>('beneficiary');
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -140,6 +144,33 @@ function LogImpactFormInner() {
   const selectedSchoolId = beneficiaryForm.watch('schoolId');
   const selectedSchool = schools?.find((s) => s.id === selectedSchoolId);
 
+  useEffect(() => {
+    if (!preselectedSchoolId) {
+      const savedBen = loadDraft<BeneficiaryFormData>('impact-beneficiary');
+      if (savedBen) {
+        Object.entries(savedBen).forEach(([key, value]) => {
+          beneficiaryForm.setValue(key as keyof BeneficiaryFormData, value as any)
+        })
+      }
+      const savedWater = loadDraft<WaterSourceFormData>('impact-water');
+      if (savedWater) {
+        Object.entries(savedWater).forEach(([key, value]) => {
+          waterForm.setValue(key as keyof WaterSourceFormData, value as any)
+        })
+      }
+      const savedTree = loadDraft<TreeFormData>('impact-tree');
+      if (savedTree) {
+        Object.entries(savedTree).forEach(([key, value]) => {
+          treeForm.setValue(key as keyof TreeFormData, value as any)
+        })
+      }
+    }
+  }, []);
+
+  useAutoSave({ form: beneficiaryForm, draftKey: 'impact-beneficiary', delay: 2000 });
+  useAutoSave({ form: waterForm, draftKey: 'impact-water', delay: 2000 });
+  useAutoSave({ form: treeForm, draftKey: 'impact-tree', delay: 2000 });
+
   const handleSchoolChange = (schoolId: string, schoolName: string) => {
     beneficiaryForm.setValue('schoolId', schoolId);
     beneficiaryForm.setValue('schoolName', schoolName);
@@ -149,54 +180,57 @@ function LogImpactFormInner() {
     treeForm.setValue('schoolName', schoolName);
   };
 
-  const onBeneficiarySubmit = (data: BeneficiaryFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
-      return;
-    }
-
-    addDocumentNonBlocking(collection(firestore, 'sx-beneficiaries'), {
-      ...data,
-      coordinates: coordinates || undefined,
-      createdAt: serverTimestamp(),
-      createdBy: 'system',
+  const onBeneficiarySubmit = async (data: BeneficiaryFormData) => {
+    const result = await submit({
+      collectionName: 'sx-beneficiaries',
+      data: { ...data, coordinates: coordinates || undefined },
+      idempotencyKey: `ben_${data.schoolId}_${data.date}_${data.beneficiaryType}_${Date.now()}`,
     });
-
-    toast({ title: 'Beneficiary Logged', description: `${data.beneficiaryType} recorded for ${data.schoolName}.` });
+    if (result.isOffline) {
+      toast({ title: 'Saved Offline', description: 'Beneficiary queued — will sync when you reconnect.' });
+    } else if (result.isQueued) {
+      toast({ title: 'Saved', description: 'Queued for sync when connected.' });
+      clearDraft('impact-beneficiary');
+    } else {
+      toast({ title: 'Beneficiary Logged', description: `${data.beneficiaryType} recorded for ${data.schoolName}.` });
+      clearDraft('impact-beneficiary');
+    }
     router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
   };
 
-  const onWaterSubmit = (data: WaterSourceFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
-      return;
-    }
-
-    addDocumentNonBlocking(collection(firestore, 'sx-water-sources'), {
-      ...data,
-      coordinates: coordinates || undefined,
-      createdAt: serverTimestamp(),
-      createdBy: 'system',
+  const onWaterSubmit = async (data: WaterSourceFormData) => {
+    const result = await submit({
+      collectionName: 'sx-water-sources',
+      data: { ...data, coordinates: coordinates || undefined },
+      idempotencyKey: `water_${data.schoolId}_${data.date}_${data.sourceType}_${Date.now()}`,
     });
-
-    toast({ title: 'Water Source Logged', description: `${data.sourceType} recorded for ${data.schoolName}.` });
+    if (result.isOffline) {
+      toast({ title: 'Saved Offline', description: 'Water source queued — will sync when you reconnect.' });
+    } else if (result.isQueued) {
+      toast({ title: 'Saved', description: 'Queued for sync when connected.' });
+      clearDraft('impact-water');
+    } else {
+      toast({ title: 'Water Source Logged', description: `${data.sourceType} recorded for ${data.schoolName}.` });
+      clearDraft('impact-water');
+    }
     router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
   };
 
-  const onTreeSubmit = (data: TreeFormData) => {
-    if (!firestore) {
-      toast({ variant: 'destructive', title: 'Database connection failed.' });
-      return;
-    }
-
-    addDocumentNonBlocking(collection(firestore, 'sx-trees'), {
-      ...data,
-      coordinates: coordinates || undefined,
-      createdAt: serverTimestamp(),
-      createdBy: 'system',
+  const onTreeSubmit = async (data: TreeFormData) => {
+    const result = await submit({
+      collectionName: 'sx-trees',
+      data: { ...data, coordinates: coordinates || undefined },
+      idempotencyKey: `tree_${data.schoolId}_${data.date}_${data.treeType}_${Date.now()}`,
     });
-
-    toast({ title: 'Trees Logged', description: `${data.quantity} trees recorded for ${data.schoolName}.` });
+    if (result.isOffline) {
+      toast({ title: 'Saved Offline', description: 'Trees queued — will sync when you reconnect.' });
+    } else if (result.isQueued) {
+      toast({ title: 'Saved', description: 'Queued for sync when connected.' });
+      clearDraft('impact-tree');
+    } else {
+      toast({ title: 'Trees Logged', description: `${data.quantity} trees recorded for ${data.schoolName}.` });
+      clearDraft('impact-tree');
+    }
     router.push(data.schoolId ? `/school-xperience/${data.schoolId}` : '/school-xperience');
   };
 
@@ -216,6 +250,9 @@ function LogImpactFormInner() {
           <CardDescription className="font-bold text-xs uppercase tracking-widest">
             Record {activeTab === 'beneficiary' ? 'beneficiaries served' : activeTab === 'water' ? 'water sources' : 'trees planted'} with GPS coordinates.
           </CardDescription>
+          <div className="mt-2">
+            <OfflineStatus />
+          </div>
         </CardHeader>
 
         <div className="border-b">
