@@ -60,6 +60,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         description="Health scores, ecosystem pulse, and KPIs"
         icon={BarChart3}
         defaultOpen={true}
+        lazy={true}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <ProgramHealthScore />
@@ -71,6 +72,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         description="Expense queue and budget tracking"
         icon={Wallet}
         defaultOpen={false}
+        lazy={true}
       >
         <ApprovalQueue />
       </DashboardSection>
@@ -79,6 +81,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
         description="AI advisor and key results tracking"
         icon={Sparkles}
         defaultOpen={false}
+        lazy={true}
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <AiStrategicAdvisor />

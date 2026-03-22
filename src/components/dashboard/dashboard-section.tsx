@@ -1,10 +1,9 @@
 
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { ChevronDown, ChevronUp, Activity } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface DashboardSectionProps {
@@ -12,11 +11,12 @@ interface DashboardSectionProps {
   description?: string
   icon?: React.ElementType
   defaultOpen?: boolean
-  action?: React.ReactNode
+  action?: ReactNode
   className?: string
-  children: React.ReactNode
+  children: ReactNode
   badge?: string
   badgeColor?: 'green' | 'yellow' | 'red'
+  lazy?: boolean
 }
 
 export function DashboardSection({
@@ -29,14 +29,18 @@ export function DashboardSection({
   children,
   badge,
   badgeColor,
+  lazy = false,
 }: DashboardSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
+  const [hasLoaded, setHasLoaded] = useState(defaultOpen)
 
-  const dotColors = {
-    green: 'bg-green-500',
-    yellow: 'bg-yellow-500',
-    red: 'bg-red-500 animate-pulse',
-  }
+  useEffect(() => {
+    if (isOpen && lazy && !hasLoaded) {
+      setHasLoaded(true)
+    }
+  }, [isOpen, lazy, hasLoaded])
+
+  const shouldRenderContent = lazy ? hasLoaded : true
 
   return (
     <Card className={cn('border-omuto-navy/10', className)}>
@@ -76,21 +80,23 @@ export function DashboardSection({
             </div>
             <div className="flex items-center gap-2">
               {action}
-              <div className={cn('transition-transform', isOpen ? 'rotate-0' : '-rotate-90')}>
+              <div className={cn('transition-transform duration-200', isOpen ? 'rotate-0' : '-rotate-90')}>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </div>
             </div>
           </div>
         </CardHeader>
       </button>
-      <div className={cn('overflow-hidden transition-all', isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0')}>
-        <div className="p-5">
-          {children}
-        </div>
+      <div className={cn('overflow-hidden transition-all duration-300', isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0')}>
+        {shouldRenderContent && (
+          <div className="p-5">
+            {children}
+          </div>
+        )}
       </div>
       {!isOpen && (
         <div className="px-5 pb-3 text-[10px] text-muted-foreground font-medium">
-          Click to expand
+          Click to expand · data loads on open
         </div>
       )}
     </Card>

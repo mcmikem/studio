@@ -189,57 +189,79 @@ function calculateScore(program: { id: string; name: string; icon: any; color: s
   };
 }
 
-async function fetchProgramData(program: { id: string; name: string; icon: any; color: string; bgColor: string; collections: string[] }, firestore: any): Promise<{ recentActivity: number; previousActivity: number; beneficiaries: number; activeCollections: number }> {
+async function fetchProgramData(program: { collections: string[] }, firestore: any): Promise<{ recentActivity: number; previousActivity: number; beneficiaries: number; activeCollections: number }> {
   const now = new Date();
   const thirtyDaysAgo = subDays(now, 30);
   const sixtyDaysAgo = subDays(now, 60);
 
-  let recentActivity = 0;
-  let previousActivity = 0;
-  let activeCollections = 0;
-  let beneficiaries = 0;
+  const beneficiaryCollections = new Set(['school-visits', 'pads-distributions', 'mhm-trainings', 'slf-schools', 'slf-performance', 'training-attendance', 'session-attendance']);
 
-  const beneficiaryCollections = ['school-visits', 'pads-distributions', 'mhm-trainings', 'slf-schools', 'slf-performance', 'training-attendance', 'session-attendance'];
+  const results = await Promise.allSettled(
+    program.collections.map(async (colName: string) => {
+      try {
+        const snap = await getDocs(query(collection(firestore, colName)));
+        let recentActivity = 0;
+        let previousActivity = 0;
+        let beneficiaries = 0;
 
-  for (const colName of program.collections) {
-    try {
-      const col = collection(firestore, colName);
-      const q = query(col);
+        snap.docs.forEach((doc: any) => {
+          const data = doc.data();
+          if (!data.createdAt) {
+            recentActivity++;
+            return;
+          }
+          const createdAt = data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt);
+          if (createdAt >= thirtyDaysAgo) {
+            recentActivity++;
+            if (beneficiaryCollections.has(colName)) beneficiaries++;
+          } else if (createdAt >= sixtyDaysAgo) {
+            previousActivity++;
+          }
+        });
 
-      if (beneficiaryCollections.includes(colName)) {
-        const snap = await getDocs(q);
-        beneficiaries += snap.size;
+        return { recentActivity, previousActivity, beneficiaries, active: recentActivity > 0 ? 1 : 0 };
+      } catch {
+        return { recentActivity: 0, previousActivity: 0, beneficiaries: 0, active: 0 };
       }
+    })
+  );
 
-      const recentSnap = await getDocs(q);
-      const recentDocs = recentSnap.docs.filter((doc: any) => {
-        const data = doc.data();
-        if (!data.createdAt) return true;
-        const createdAt = data.createdAt instanceof Timestamp
-          ? data.createdAt.toDate()
-          : new Date(data.createdAt);
-        return createdAt >= thirtyDaysAgo;
-      });
+  const totals = results.reduce(
+    (acc, r) => {
+      if (r.status === 'fulfilled') {
+        acc.recentActivity += r.value.recentActivity;
+        acc.previousActivity += r.value.previousActivity;
+        acc.beneficiaries += r.value.beneficiaries;
+        acc.activeCollections += r.value.active;
+      }
+      return acc;
+    },
+    { recentActivity: 0, previousActivity: 0, beneficiaries: 0, activeCollections: 0 }
+  );
 
-      const prevDocs = recentSnap.docs.filter((doc: any) => {
-        const data = doc.data();
-        if (!data.createdAt) return false;
-        const createdAt = data.createdAt instanceof Timestamp
-          ? data.createdAt.toDate()
-          : new Date(data.createdAt);
-        return createdAt >= sixtyDaysAgo && createdAt < thirtyDaysAgo;
-      });
+  return totals;
+}
 
-      recentActivity += recentDocs.length;
-      previousActivity += prevDocs.length;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
-      if (recentDocs.length > 0) activeCollections++;
-    } catch (e) {
-      // Collection might not exist yet
-    }
+function getCache(key: string): ProgramScore[] | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL_MS) return null;
+    return data;
+  } catch {
+    return null;
   }
+}
 
-  return { recentActivity, previousActivity, beneficiaries, activeCollections };
+function setCache(key: string, data: ProgramScore[]) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+  } catch {
+    // localStorage might be full
+  }
 }
 
 function ProgramCard({ program, Icon }: { program: ProgramScore; Icon: React.ElementType }) {
@@ -289,20 +311,34 @@ export function ProgramHealthScore() {
   const firestore = useFirestore();
   const [scores, setScores] = useState<ProgramScore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     if (!firestore) return;
 
-    const load = async () => {
-      const results: ProgramScore[] = [];
-
-      for (const program of PROGRAMS) {
-        const data = await fetchProgramData(program, firestore);
-        results.push(calculateScore(program, data.recentActivity, data.previousActivity, data.beneficiaries, data.activeCollections));
-      }
-
-      setScores(results.sort((a, b) => a.overallScore - b.overallScore));
+    const CACHE_KEY = 'sx_program_health_v1';
+    const cached = getCache(CACHE_KEY);
+    if (cached) {
+      setScores(cached);
       setIsLoading(false);
+    }
+
+    const load = async () => {
+      setIsRefreshing(true);
+      try {
+        const results = await Promise.all(
+          PROGRAMS.map(async (program) => {
+            const data = await fetchProgramData(program, firestore);
+            return calculateScore(program, data.recentActivity, data.previousActivity, data.beneficiaries, data.activeCollections);
+          })
+        );
+        const sorted = results.sort((a, b) => a.overallScore - b.overallScore);
+        setScores(sorted);
+        setCache(CACHE_KEY, sorted);
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     };
 
     load();
@@ -312,34 +348,26 @@ export function ProgramHealthScore() {
   const amberCount = scores.filter(s => s.health === 'amber').length;
   const redCount = scores.filter(s => s.health === 'red').length;
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-6 w-1/2" />
-          <Skeleton className="h-4 w-3/4" />
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-32" />)}
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-primary" />
               Program Health Score
             </CardTitle>
             <CardDescription>
-              Auto-calculated from activity frequency, beneficiary reach, and form submission rates — last 30 days.
+              {isRefreshing ? (
+                <span className="text-amber-600">Refreshing...</span>
+              ) : scores.length > 0 ? (
+                <span>Last 30 days · {scores.reduce((s, p) => s + p.recentActivity, 0)} activities logged</span>
+              ) : (
+                <span>Loading programme data...</span>
+              )}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-4 text-[11px] font-bold">
+          <div className="flex items-center gap-4 text-[11px] font-bold flex-shrink-0">
             <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-green-500" />
               <span>{greenCount} Healthy</span>
@@ -356,32 +384,34 @@ export function ProgramHealthScore() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {scores.map(program => {
-            const Icon = program.icon;
-            return (
-              <ProgramCard key={program.id} program={program} Icon={Icon} />
-            );
-          })}
-        </div>
-        <div className="flex md:hidden gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
-          {scores.map(program => {
-            const Icon = program.icon;
-            return (
-              <ProgramCard key={program.id} program={program} Icon={Icon} />
-            );
-          })}
-        </div>
-
-        <div className="mt-4 flex justify-end">
-          <Link
-            href="/meal/data"
-            className="flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
-          >
-            View detailed MEAL data
-            <ChevronRight className="h-3 w-3" />
-          </Link>
-        </div>
+        {scores.length === 0 && isLoading ? (
+          <div className="flex items-center justify-center py-12 text-muted-foreground">
+            <div className="text-center">
+              <Activity className="h-8 w-8 mx-auto mb-2 opacity-30 animate-pulse" />
+              <p className="text-sm font-bold">Loading programme data...</p>
+              <p className="text-xs mt-1">This may take a moment on slow connections</p>
+            </div>
+          </div>
+        ) : scores.length === 0 ? (
+          <div className="flex items-center justify-center py-12 text-muted-foreground">
+            <p className="text-sm font-bold">No programme data yet</p>
+          </div>
+        ) : (
+          <>
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+              {scores.map(program => {
+                const Icon = program.icon;
+                return <ProgramCard key={program.id} program={program} Icon={Icon} />;
+              })}
+            </div>
+            <div className="flex md:hidden gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+              {scores.map(program => {
+                const Icon = program.icon;
+                return <ProgramCard key={program.id} program={program} Icon={Icon} />;
+              })}
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
