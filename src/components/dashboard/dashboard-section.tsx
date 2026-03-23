@@ -43,22 +43,22 @@ export function DashboardSection({
   const shouldRenderContent = lazy ? hasLoaded : true
 
   return (
-    <Card className={cn('border-omuto-navy/10', className)}>
+    <Card className={cn('border-omuto-navy/6 bg-white', className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full text-left"
       >
-        <CardHeader className="bg-omuto-cream/30 border-b border-omuto-navy/10 py-3 px-5 hover:bg-omuto-cream/50 transition-colors">
+        <CardHeader className="py-3.5 px-5 hover:bg-omuto-navy/[0.02] transition-colors border-b border-omuto-navy/6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               {Icon && (
-                <div className="p-1.5 bg-primary/10 rounded-lg">
-                  <Icon className="h-4 w-4 text-primary" />
+                <div className="p-1.5 bg-omuto-navy/5 rounded-lg">
+                  <Icon className="h-4 w-4 text-omuto-navy/60" />
                 </div>
               )}
               <div>
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-sm font-black uppercase tracking-widest">
+                  <CardTitle className="text-sm font-semibold tracking-tight text-omuto-navy/90">
                     {title}
                   </CardTitle>
                   {badge && (

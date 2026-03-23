@@ -190,20 +190,18 @@ export function AppHeader() {
 
   return (
     <header className={cn(
-        "flex h-14 items-center justify-between gap-4 px-3 sm:px-6 w-full border-b bg-background/95 backdrop-blur-sm sticky top-0 z-30",
+        "flex h-14 items-center justify-between gap-4 px-3 sm:px-6 w-full border-b border-omuto-navy/6 bg-background/95 backdrop-blur-sm sticky top-0 z-30",
     )}>
-       <div className="flex items-center gap-3">
+       <div className="flex items-center gap-2">
         <SidebarTrigger className={cn(
             "text-foreground hover:bg-muted/50 rounded-lg",
         )} />
         {pageTitle && (
-          <span className="hidden sm:inline text-sm font-bold text-foreground/70 tracking-tight">{pageTitle}</span>
+          <span className="text-sm font-semibold text-foreground/65 tracking-tight">{pageTitle}</span>
         )}
       </div>
-      <div className={cn(
-        "flex items-center gap-1"
-      )}>
-        <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50 rounded-lg" onClick={() => setOpen(true)}><Search className="h-5 w-5" /></Button>
+      <div className="flex items-center gap-0.5">
+        <Button variant="ghost" size="icon" className="text-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-lg" onClick={() => setOpen(true)}><Search className="h-4.5 w-4.5" /></Button>
         {canViewAs && <div className="hidden sm:block"><ViewAsMenu /></div>}
         <div className="hidden sm:block"><QuickAddMenu /></div>
         <NotificationsMenu />

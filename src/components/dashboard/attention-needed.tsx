@@ -58,10 +58,10 @@ function ExpenseApprovals() {
   if (urgent.length === 0) return null
 
   return (
-    <Card className="border-l-4 border-l-amber-500">
+    <Card className="border-l-2 border-l-amber-500">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-amber-100 rounded-xl">
+          <div className="p-2 bg-amber-50 rounded-xl">
             <Wallet className="h-5 w-5 text-amber-600" />
           </div>
           <div className="flex-1 min-w-0">
@@ -121,11 +121,11 @@ function UpcomingDeadlines() {
   const mostUrgent = deadlines[0]
 
   return (
-    <Card className={`border-l-4 ${mostUrgent.urgency === 'critical' ? 'border-l-red-500' : 'border-l-yellow-500'}`}>
+    <Card className={`border-l-2 ${mostUrgent.urgency === 'critical' ? 'border-l-rose-500' : 'border-l-amber-500'}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <div className={`p-2 rounded-xl ${mostUrgent.urgency === 'critical' ? 'bg-red-100' : 'bg-yellow-100'}`}>
-            <Flag className={`h-5 w-5 ${mostUrgent.urgency === 'critical' ? 'text-red-600' : 'text-yellow-600'}`} />
+          <div className={`p-2 rounded-xl ${mostUrgent.urgency === 'critical' ? 'bg-rose-50' : 'bg-amber-50'}`}>
+            <Flag className={`h-5 w-5 ${mostUrgent.urgency === 'critical' ? 'text-rose-500' : 'text-amber-500'}`} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
@@ -134,7 +134,7 @@ function UpcomingDeadlines() {
                 View <ChevronRight className="h-3 w-3" />
               </Link>
             </div>
-            <p className={`text-xs font-bold ${mostUrgent.urgency === 'critical' ? 'text-red-600' : 'text-yellow-600'}`}>
+            <p className={`text-xs font-semibold ${mostUrgent.urgency === 'critical' ? 'text-rose-500' : 'text-amber-500'}`}>
               {mostUrgent.sub}
             </p>
             {deadlines.length > 1 && (
@@ -171,12 +171,12 @@ function OverdueVisits() {
   if (overdue.length === 0) return null
 
   return (
-    <Card className="border-l-4 border-l-red-500">
+    <Card className="border-l-2 border-l-rose-500">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-red-100 rounded-xl relative">
-            <Users className="h-5 w-5 text-red-600" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+          <div className="p-2 bg-rose-50 rounded-xl relative">
+            <Users className="h-5 w-5 text-rose-500" />
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
               {overdue.length}
             </span>
           </div>
@@ -201,11 +201,11 @@ export function AttentionNeeded() {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <div className="relative flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-omuto-red opacity-75" />
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-omuto-red" />
+        <div className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-60" />
+          <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
         </div>
-        <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Needs Attention</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-omuto-navy/40">Needs Attention</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <ExpenseApprovals />

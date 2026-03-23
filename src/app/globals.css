@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* STRICT BRAND PALETTE FROM BLUEPRINT */
+    /* BRAND PALETTE */
     --background: 48 40% 96%; /* #F9F8F3 - Omuto Cream */
     --foreground: 224 71.4% 4.1%;
 
@@ -21,7 +21,7 @@
     --secondary-foreground: 0 0% 100%;
  
     --muted: 0 0% 90%;
-    --muted-foreground: 224 71.4% 4.1% / 0.6;
+    --muted-foreground: 224 71.4% 4.1% / 0.5;
  
     --accent: 42 100% 68%; /* #FFCF5D - Omuto Yellow */
     --accent-foreground: 224 71.4% 4.1%;
@@ -33,28 +33,25 @@
     --input: 220 13% 91%;
     --ring: 358 86% 52%;
  
-    --radius: 0.75rem; /* Standard border radius */
+    --radius: 0.625rem; /* 10px - slightly tighter */
 
     /* Mobile nav height for safe-area spacing */
-    --mobile-nav-height: 5.5rem; /* h-20 (5rem) + mb-4 (1rem) + padding */
+    --mobile-nav-height: 5rem;
   }
 }
 
 @layer base {
   * {
-    @apply border-omuto-navy/10;
+    @apply border-omuto-navy/6;
   }
   
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', sans-serif;
-    /* Subtle halftone texture for brand feel */
-    background-image: radial-gradient(circle at 1.5px 1.5px, rgba(29, 38, 49, 0.05) 1px, transparent 0);
-    background-size: 20px 20px;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading font-bold tracking-tight;
+    @apply font-heading font-semibold tracking-tight text-omuto-navy;
   }
 
   html,
@@ -66,21 +63,18 @@
     position: relative;
   }
 
-  /* Prevent overflow on all elements */
   *,
   *::before,
   *::after {
     box-sizing: border-box;
   }
 
-  /* Ensure tables scroll horizontally instead of overflowing */
   table {
     display: block;
     overflow-x: auto;
     max-width: 100%;
   }
 
-  /* Support for modern mobile viewport height */
   :root {
     --vh: 1vh;
   }
@@ -95,58 +89,50 @@
 }
 
 @layer components {
-  /* BUTTONS - Clear & Action-Oriented */
+  /* BUTTONS - Clean & Confident */
   .btn-omuto {
-    @apply h-11 px-6 bg-omuto-navy text-white border-md border-omuto-navy font-bold uppercase tracking-wider text-xs rounded-lg shadow-comic-sm transition-all hover:bg-primary hover:-translate-y-0.5 active:translate-y-0 active:shadow-none;
+    @apply h-10 px-5 bg-omuto-navy text-white font-medium text-sm rounded-lg transition-all duration-200 hover:bg-omuto-navy/90 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omuto-red/50;
   }
 
   .btn-omuto-secondary {
-    @apply h-11 px-6 bg-white text-omuto-navy border-md border-omuto-navy font-bold uppercase tracking-wider text-xs rounded-lg shadow-comic-sm transition-all hover:bg-muted hover:-translate-y-0.5;
+    @apply h-10 px-5 bg-white text-omuto-navy border border-omuto-navy/15 font-medium text-sm rounded-lg transition-all duration-200 hover:bg-omuto-navy/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-omuto-navy/20;
   }
 
-  /* BADGES - Distinct & Readable */
+  /* BADGES - Subtle & Informative */
   .badge-omuto-solid {
-    @apply px-4 py-1.5 bg-omuto-navy text-white border-md border-omuto-navy rounded-full font-black uppercase text-[10px] tracking-widest shadow-comic-sm;
+    @apply px-2.5 py-0.5 bg-omuto-navy/10 text-omuto-navy rounded-full font-medium text-xs;
   }
   
   .badge-omuto-outline {
-    @apply px-4 py-1.5 bg-white text-omuto-navy border-md border-omuto-navy rounded-full font-black uppercase text-[10px] tracking-widest shadow-comic-sm;
+    @apply px-2.5 py-0.5 bg-white text-omuto-navy border border-omuto-navy/15 rounded-full font-medium text-xs;
   }
 
-  /* TABLES - Data-Focused Clarity */
+  /* TABLES - Clean Data */
   .data-table-omuto {
-    @apply border-md border-omuto-navy/20 bg-white rounded-xl overflow-hidden shadow-sm;
+    @apply border border-omuto-navy/8 bg-white rounded-xl overflow-hidden;
   }
   
   .data-table-omuto thead {
-    @apply bg-muted/40 text-omuto-navy border-b-md border-omuto-navy/20;
+    @apply bg-omuto-navy/5 text-omuto-navy text-xs font-medium uppercase tracking-wide;
   }
   
   .data-table-omuto tr {
-    @apply border-b border-omuto-navy/5 last:border-0 hover:bg-background/50 transition-colors;
+    @apply border-b border-omuto-navy/5 last:border-0 hover:bg-omuto-navy/[0.02] transition-colors;
   }
 }
 
 @layer utilities {
+  /* Comic shadows - use sparingly, on interaction only */
   .shadow-comic {
-    box-shadow: 3px 3px 0 rgba(29, 38, 49, 0.8);
+    box-shadow: 2px 2px 0 rgba(29, 38, 49, 0.15);
   }
   
   .shadow-comic-lg {
-    box-shadow: 4px 4px 0 rgba(29, 38, 49, 0.8);
+    box-shadow: 3px 3px 0 rgba(29, 38, 49, 0.15);
   }
 
   .shadow-comic-sm {
-    box-shadow: 2px 2px 0 rgba(29, 38, 49, 0.8);
-  }
-
-  .comic-text-shadow {
-    text-shadow: 1px 1px 0 rgba(29, 38, 49, 0.1);
-  }
-  
-  .halftone-bg {
-    background-image: radial-gradient(circle at 1.5px 1.5px, rgba(29, 38, 49, 0.05) 1px, transparent 0);
-    background-size: 20px 20px;
+    box-shadow: 1px 1px 0 rgba(29, 38, 49, 0.15);
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -154,11 +140,10 @@
   }
 
   .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;     /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
-  /* Hide scrollbar for horizontal scroll containers like tabs */
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -173,59 +158,45 @@
   }
 
   .enterprise-form-footer {
-    @apply bg-muted/30 border-t-lg border-omuto-navy/10 p-4 sm:p-6;
+    @apply bg-muted/30 border-t border-omuto-navy/8 p-4 sm:p-6;
   }
 
-  /* Safe area padding bottom - for mobile nav clearance */
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
-  /* =============================================================================
-     MOBILE-FIRST SPACING UTILITIES
-     =============================================================================
-     Use these classes for consistent spacing across all pages and components
-  */
+  /* SPACING UTILITIES */
 
-  /* Page spacing - responsive vertical gaps */
   .page-spacing {
-    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+    @apply space-y-4 sm:space-y-5 lg:space-y-6;
   }
 
-  /* Card padding - responsive */
   .card-padding {
-    @apply p-3 sm:p-4 lg:p-6;
+    @apply p-3 sm:p-4 lg:p-5;
   }
 
-  /* Section spacing within cards */
   .section-spacing {
     @apply space-y-3 sm:space-y-4;
   }
 
-  /* Grid gaps */
   .grid-gap {
-    @apply gap-3 sm:gap-4 lg:gap-6;
+    @apply gap-3 sm:gap-4 lg:gap-5;
   }
 
-  /* =============================================================================
-     TYPOGRAPHY UTILITIES
-     =============================================================================
-  */
+  /* TYPOGRAPHY UTILITIES */
 
-  /* Headings - mobile-first scaling */
   .heading-xl {
-    @apply text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight;
+    @apply text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight;
   }
 
   .heading-lg {
-    @apply text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight;
+    @apply text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight;
   }
 
   .heading-md {
-    @apply text-lg sm:text-xl font-bold tracking-tight;
+    @apply text-base sm:text-lg font-semibold tracking-tight;
   }
 
-  /* Meta text - labels, descriptions */
   .text-meta {
     @apply text-xs sm:text-sm text-muted-foreground;
   }
@@ -235,25 +206,19 @@
   }
 
   .text-caption {
-    @apply text-[10px] sm:text-xs uppercase tracking-widest font-black;
+    @apply text-[10px] sm:text-xs text-muted-foreground font-medium;
   }
 
-  /* =============================================================================
-     FORM UTILITIES
-     =============================================================================
-  */
+  /* FORM UTILITIES */
 
-  /* Standard form field */
   .form-field {
-    @apply space-y-2;
+    @apply space-y-1.5;
   }
 
-  /* Input within form - ensures 16px font on mobile */
   .form-input {
-    @apply h-10 sm:h-11 px-3 sm:px-4 text-sm sm:text-base;
+    @apply h-10 px-3 text-sm;
   }
 
-  /* Form grid */
   .form-grid {
     @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
   }
@@ -262,45 +227,34 @@
     @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
   }
 
-  /* =============================================================================
-     RESPONSIVE UTILITIES
-     =============================================================================
-  */
+  /* RESPONSIVE UTILITIES */
 
-  /* Truncate with ellipsis */
   .truncate {
     @apply overflow-hidden text-ellipsis whitespace-nowrap;
   }
 
-  /* Hide on mobile, show on desktop */
   .hide-mobile {
     @apply hidden md:block;
   }
 
-  /* Show on mobile, hide on desktop */
   .show-mobile {
     @apply md:hidden;
   }
 
-  /* =============================================================================
-     TOUCH & INTERACTION
-     =============================================================================
-  */
+  /* TOUCH & INTERACTION */
 
-  /* Minimum touch target (44x44px) */
   .touch-target {
     @apply min-h-11 min-w-11;
   }
 
-  /* Safe area padding for bottom actions */
   .safe-bottom {
     @apply pb-[calc(1rem+env(safe-area-inset-bottom))];
   }
 
-  /* PREMIUM MAP INTERACTIVITY */
+  /* MAP */
   @keyframes pulse-urgent {
-    0% { box-shadow: 0 0 0 0 rgba(236, 28, 36, 0.7); transform: scale(1); }
-    70% { box-shadow: 0 0 0 15px rgba(236, 28, 36, 0); transform: scale(1.1); }
+    0% { box-shadow: 0 0 0 0 rgba(236, 28, 36, 0.6); transform: scale(1); }
+    70% { box-shadow: 0 0 0 10px rgba(236, 28, 36, 0); transform: scale(1.05); }
     100% { box-shadow: 0 0 0 0 rgba(236, 28, 36, 0); transform: scale(1); }
   }
 
@@ -309,40 +263,28 @@
   }
 
   .omuto-premium-popup .leaflet-popup-content-wrapper {
-    @apply rounded-2xl border-2 border-omuto-navy/10 shadow-2xl p-0 overflow-hidden bg-white/95 backdrop-blur-md;
+    @apply rounded-xl border border-omuto-navy/8 shadow-lg p-0 overflow-hidden bg-white;
   }
 
   .omuto-premium-popup .leaflet-popup-tip {
-    @apply bg-white/95 backdrop-blur-md border-r-2 border-b-2 border-omuto-navy/10;
+    @apply bg-white border-r border-b border-omuto-navy/8;
   }
 
   .omuto-premium-popup .leaflet-popup-content {
     @apply m-0 p-0;
   }
 
-  /* Marker Hover States */
   .marker-container {
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .marker-container:hover {
-    transform: scale(1.4);
+    transform: scale(1.3);
     z-index: 1000 !important;
   }
 
   .is-selected .marker-container {
-    transform: scale(1.2);
+    transform: scale(1.15);
     z-index: 1001 !important;
-  }
-}
-
-
-@layer base {
-  @media (max-width: 640px) {
-    input,
-    textarea,
-    select {
-      font-size: 16px !important;
-    }
   }
 }

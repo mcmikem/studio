@@ -76,7 +76,7 @@ export function QuickStatsSummary() {
         
         return (
         <Link href="/management/metrics" key={metric.id} className="group">
-            <Card className="relative overflow-hidden border-2 border-omuto-navy/5 bg-white/50 backdrop-blur-sm shadow-sm hover:shadow-comic-sm hover:border-omuto-navy/20 transition-all duration-300 h-40 group-hover:-translate-y-1">
+            <Card className="relative overflow-hidden border border-omuto-navy/6 bg-white shadow-sm hover:shadow-md hover:border-omuto-navy/15 transition-all duration-300 h-40 group-hover:-translate-y-1">
                 {/* Decorative background element */}
                 <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
                 
@@ -96,10 +96,10 @@ export function QuickStatsSummary() {
                     
                     <div className="mt-auto space-y-3">
                         <div>
-                            <p className="font-heading font-black uppercase text-[10px] tracking-[0.15em] text-omuto-navy/50 leading-none mb-1.5 group-hover:text-omuto-navy transition-colors">{metric.metric.split('(')[0]}</p>
-                            <h3 className="font-heading text-3xl font-black tracking-tighter text-omuto-navy leading-none">
+                            <p className="font-heading font-semibold uppercase text-[10px] tracking-[0.1em] text-omuto-navy/40 leading-none mb-1.5 group-hover:text-omuto-navy/60 transition-colors">{metric.metric.split('(')[0]}</p>
+                            <h3 className="font-heading text-3xl font-bold tracking-tight text-omuto-navy leading-none">
                                 {metric.unit === "UGX" ? formatCurrency(metric.current, true) : metric.current.toLocaleString()}
-                                <span className="text-xs font-bold text-omuto-navy/30 ml-1.5 tracking-normal lowercase">/{metric.target?.toLocaleString()}</span>
+                                <span className="text-xs font-semibold text-omuto-navy/40 ml-1.5 tracking-normal lowercase">/{metric.target?.toLocaleString()}</span>
                             </h3>
                         </div>
                         

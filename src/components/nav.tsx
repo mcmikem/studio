@@ -67,13 +67,13 @@ import Image from 'next/image';
 
 
 const OmutoLogo = () => (
-    <div className="flex items-center gap-3 px-2 py-6" data-ai-hint="logo">
-        <div className="p-0.5 rounded-xl overflow-hidden shadow-md">
-            <Image src="/logo.svg" alt="Omuto Foundation Logo" width={40} height={40} className="rounded-xl" />
+    <div className="flex items-center gap-3 px-2 py-4" data-ai-hint="logo">
+        <div className="p-0.5 rounded-xl overflow-hidden">
+            <Image src="/logo.svg" alt="Omuto Foundation Logo" width={36} height={36} className="rounded-xl" />
         </div>
         <div className="flex flex-col">
             <span className="font-heading font-black text-xl tracking-tight leading-none text-omuto-navy">OMUTO</span>
-            <span className="text-[11px] font-black text-omuto-red tracking-[0.25em] uppercase leading-none mt-1">Central</span>
+            <span className="text-[10px] font-bold text-omuto-red tracking-[0.2em] uppercase leading-none mt-1">Central</span>
         </div>
     </div>
 );
@@ -210,9 +210,9 @@ export function AppSidebar() {
     const navItems = navConfig[sectionName];
 
     return (
-      <SidebarGroup className="px-4">
-        <SidebarGroupLabel className="px-3 font-heading font-black text-[10px] uppercase tracking-[0.2em] text-omuto-navy/40 mb-2">{title}</SidebarGroupLabel>
-        <SidebarMenu className="gap-1">
+      <SidebarGroup className="px-3">
+        <SidebarGroupLabel className="px-3 text-[10px] uppercase tracking-[0.15em] text-omuto-navy/30 font-medium mb-1">{title}</SidebarGroupLabel>
+        <SidebarMenu className="gap-0.5">
           {navItems.map(item => (
              <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
@@ -220,15 +220,15 @@ export function AppSidebar() {
                 isActive={isActive(item.href)}
                 onClick={handleLinkClick}
                 className={`
-                    rounded-lg border-md transition-all h-11 px-4 duration-200
+                    rounded-lg transition-all h-9 px-3 duration-150 relative
                     ${isActive(item.href) 
-                        ? 'bg-omuto-red text-white border-omuto-navy shadow-comic-sm hover:translate-x-1' 
-                        : 'bg-transparent text-omuto-navy/70 border-transparent hover:bg-white hover:border-omuto-navy hover:shadow-comic-sm hover:-translate-y-0.5 hover:text-omuto-navy'
+                        ? 'bg-omuto-red/10 text-omuto-red before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:rounded-r before:bg-omuto-red' 
+                        : 'bg-transparent text-omuto-navy/60 hover:bg-omuto-navy/5 hover:text-omuto-navy'
                     }
                 `}
               >
-                <item.icon className={`h-4 w-4 ${isActive(item.href) ? 'text-white' : 'text-omuto-navy'}`} />
-                <span className="font-bold text-sm tracking-tight">{item.label}</span>
+                <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive(item.href) ? 'text-omuto-red' : 'text-omuto-navy/50'}`} />
+                <span className="font-medium text-sm">{item.label}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
@@ -238,40 +238,27 @@ export function AppSidebar() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-omuto-cream border-r-lg border-omuto-navy/20 halftone-bg">
+    <div className="flex flex-col h-full bg-omuto-cream border-r border-omuto-navy/10">
       <SidebarHeader>
         <OmutoLogo />
       </SidebarHeader>
-      <SidebarContent className="no-scrollbar pt-2">
+      <SidebarContent className="no-scrollbar pt-1">
         {renderNavSection('daily', 'Daily Ops')}
-        <div className="h-3" />
         {renderNavSection('forms', 'Impact Forms')}
-        <div className="h-3" />
         {renderNavSection('programs', 'Programs')}
-        <div className="h-3" />
         {renderNavSection('enterprise', 'Enterprise')}
-        <div className="h-3" />
         {renderNavSection('ops', 'Operations')}
-        <div className="h-3" />
         {renderNavSection('team', 'Team')}
-        <div className="h-3" />
         {renderNavSection('data', 'Data')}
-        <div className="h-3" />
         {renderNavSection('ai', 'AI & Strategy')}
-        <div className="h-3" />
         {renderNavSection('content', 'Content')}
-        <Separator className="mx-7 my-5 bg-omuto-navy/10 border-none h-[2px]" />
+        <Separator className="mx-5 my-3 bg-omuto-navy/8 border-none h-px" />
         {renderNavSection('system', 'System')}
       </SidebarContent>
-      <SidebarFooter className="p-6 border-t-lg border-omuto-navy/10 bg-white">
-        <div className="flex items-center gap-4">
-             <div className="p-2 bg-omuto-yellow border-md border-omuto-navy/20 shadow-comic-sm rounded-xl rotate-2">
-                <Sparkles className="h-4 w-4 text-omuto-navy" />
-            </div>
-            <div>
-                <p className="text-[10px] font-black uppercase tracking-tight leading-none text-omuto-navy/50">Core Engine</p>
-                <p className="text-sm font-black text-omuto-navy mt-1 uppercase">AI V2.0</p>
-            </div>
+      <SidebarFooter className="px-5 py-4 border-t border-omuto-navy/8 bg-omuto-cream">
+        <div className="flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-omuto-navy/40" />
+            <p className="text-xs text-omuto-navy/40 font-medium">Core Engine AI V2.0</p>
         </div>
       </SidebarFooter>
     </div>

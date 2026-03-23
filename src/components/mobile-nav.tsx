@@ -11,7 +11,6 @@ export function MobileBottomNav() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(true);
   const actionDialogRef = useRef<HTMLDivElement>(null);
   const firstActionRef = useRef<HTMLAnchorElement>(null);
 
@@ -19,9 +18,7 @@ export function MobileBottomNav() {
     if (!isActionMenuOpen) return;
 
     const onEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsActionMenuOpen(false);
-      }
+      if (event.key === 'Escape') setIsActionMenuOpen(false);
     };
 
     const onFocusTrap = (event: KeyboardEvent) => {
@@ -45,7 +42,6 @@ export function MobileBottomNav() {
     document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', onEscape);
     document.addEventListener('keydown', onFocusTrap);
-
     firstActionRef.current?.focus();
 
     return () => {
@@ -63,11 +59,8 @@ export function MobileBottomNav() {
 
   const actions = [
     { href: '/daily-plan', label: 'Daily Planner', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
-    { href: '/forms/check-out', label: 'Check-out', icon: LogOut, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
-    { href: '/enterprise/essentials/sales', label: 'Point of Sale', icon: Receipt, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
     { href: '/meal/activity', label: 'Log Impact', icon: BarChart3, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
-    { href: '/meal/data', label: 'Dashboards', icon: LayoutDashboard, color: 'text-omuto-navy', bg: 'bg-omuto-navy/10' },
-    { href: '/management/expenses', label: 'Expenses', icon: Receipt, color: 'text-omuto-gold', bg: 'bg-omuto-gold/10' },
+    { href: '/enterprise/essentials/sales', label: 'Point of Sale', icon: Receipt, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
     { href: '/chat', label: 'AI Coach', icon: MessageCircle, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
   ];
 
@@ -77,7 +70,7 @@ export function MobileBottomNav() {
       {/* Action drawer overlay */}
       {isActionMenuOpen && (
         <div
-          className="fixed inset-0 bg-omuto-navy/80 backdrop-blur-sm z-[700] animate-in fade-in duration-300"
+          className="fixed inset-0 bg-omuto-navy/60 backdrop-blur-sm z-[700] animate-in fade-in duration-200"
           onClick={() => setIsActionMenuOpen(false)}
           role="dialog"
           aria-modal="true"
@@ -85,10 +78,10 @@ export function MobileBottomNav() {
         >
           <div
             ref={actionDialogRef}
-            className="absolute bottom-32 left-4 right-4 space-y-3 animate-in slide-in-from-bottom-10 duration-300"
+            className="absolute bottom-24 left-4 right-4 animate-in slide-in-from-bottom-6 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {actions.map((action, i) => (
                 <Link
                   key={action.href}
@@ -96,12 +89,12 @@ export function MobileBottomNav() {
                   ref={i === 0 ? firstActionRef : undefined}
                   onClick={() => setIsActionMenuOpen(false)}
                   aria-label={action.label}
-                  className="flex items-center gap-4 p-5 bg-white card-comic-clean active:scale-95 transition-all group focus:outline-none focus:ring-2 focus:ring-omuto-navy focus:ring-offset-2 rounded-xl"
+                  className="flex items-center gap-3 p-3.5 bg-white border border-omuto-navy/8 rounded-xl active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-primary"
                 >
-                  <div className={`p-3 rounded-xl ${action.bg} ${action.color} group-hover:scale-110 transition-transform`}>
-                    <action.icon className="w-6 h-6" aria-hidden="true" />
+                  <div className={`p-2 rounded-lg ${action.bg} ${action.color}`}>
+                    <action.icon className="w-4 h-4" aria-hidden="true" />
                   </div>
-                  <span className="font-black uppercase text-sm tracking-tight text-omuto-navy">{action.label}</span>
+                  <span className="font-medium text-xs text-omuto-navy leading-tight">{action.label}</span>
                 </Link>
               ))}
             </div>
@@ -113,29 +106,26 @@ export function MobileBottomNav() {
       <nav 
         role="navigation"
         aria-label="Main mobile navigation"
-        className={cn(
-          "mx-4 mb-4 bg-white border-xl border-omuto-navy shadow-comic rounded-3xl relative z-[800] transition-all duration-300 ease-in-out overflow-hidden",
-          isExpanded ? "h-20 py-4 flex items-center justify-between px-4 opacity-100" : "h-2 py-0 opacity-60 pointer-events-none"
-        )}
+        className="mx-3 mb-3 bg-white/95 backdrop-blur-md border border-omuto-navy/8 rounded-2xl z-[800] h-16 py-2.5 flex items-center justify-between px-3"
       >
         <Link
           href="/"
           aria-label="Go to HQ"
           aria-current={isActive('/') ? 'page' : undefined}
-          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}
+          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/') ? 'text-omuto-red' : 'text-omuto-navy/35')}
         >
-          <Home className="w-6 h-6" aria-hidden="true" />
-          <span className="text-[11px] font-black uppercase mt-1">HQ</span>
+          <Home className="w-5 h-5" aria-hidden="true" />
+          <span className="text-xs font-medium mt-0.5">HQ</span>
         </Link>
 
         <Link
           href="/meal"
           aria-label="Go to Impact"
           aria-current={isActive('/meal') ? 'page' : undefined}
-          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/meal') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}
+          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/meal') ? 'text-omuto-red' : 'text-omuto-navy/35')}
         >
-          <BarChart3 className="w-6 h-6" aria-hidden="true" />
-          <span className="text-[11px] font-black uppercase mt-1">Impact</span>
+          <BarChart3 className="w-5 h-5" aria-hidden="true" />
+          <span className="text-xs font-medium mt-0.5">Impact</span>
         </Link>
 
         <button
@@ -143,15 +133,15 @@ export function MobileBottomNav() {
           aria-label={isActionMenuOpen ? 'Close quick actions menu' : 'Open quick actions menu'}
           aria-expanded={isActionMenuOpen}
           aria-haspopup="dialog"
-          className="flex items-center justify-center -mt-12 group"
+          className="flex items-center justify-center -mt-6"
         >
           <div
             className={cn(
-              'w-16 h-16 border-xl border-omuto-navy rounded-full flex items-center justify-center text-white transition-all transform active:scale-90 shadow-comic-sm',
-              isActionMenuOpen ? 'bg-omuto-navy rotate-45' : 'bg-omuto-red rotate-0'
+              'w-11 h-11 rounded-full flex items-center justify-center text-white transition-all active:scale-90 shadow-md',
+              isActionMenuOpen ? 'bg-omuto-navy/80 rotate-45' : 'bg-omuto-red rotate-0'
             )}
           >
-            {isActionMenuOpen ? <X className="w-8 h-8 stroke-[3px]" /> : <Plus className="w-8 h-8 stroke-[3px]" />}
+            {isActionMenuOpen ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
           </div>
           <span className="sr-only">Quick Actions</span>
         </button>
@@ -160,49 +150,17 @@ export function MobileBottomNav() {
           href="/profile?tab=tasks"
           aria-label="Go to Tasks"
           aria-current={isActive('/profile?tab=tasks') ? 'page' : undefined}
-          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/profile?tab=tasks') ? 'text-omuto-red scale-110' : 'text-omuto-navy/40')}
+          className={cn('flex flex-col items-center justify-center flex-1 h-full transition-all', isActive('/profile?tab=tasks') ? 'text-omuto-red' : 'text-omuto-navy/35')}
         >
-          <CheckCircle className="w-6 h-6" aria-hidden="true" />
-          <span className="text-[11px] font-black uppercase mt-1">Tasks</span>
+          <CheckCircle className="w-5 h-5" aria-hidden="true" />
+          <span className="text-xs font-medium mt-0.5">Tasks</span>
         </Link>
 
-        <button onClick={() => setOpenMobile(true)} aria-label="Open more navigation options" className="flex flex-col items-center justify-center flex-1 h-full text-omuto-navy/40">
-          <Menu className="w-6 h-6" aria-hidden="true" />
-          <span className="text-[11px] font-black uppercase mt-1">More</span>
+        <button onClick={() => setOpenMobile(true)} aria-label="Open more navigation options" className="flex flex-col items-center justify-center flex-1 h-full text-omuto-navy/35">
+          <Menu className="w-5 h-5" aria-hidden="true" />
+          <span className="text-xs font-medium mt-0.5">More</span>
         </button>
       </nav>
-
-      {/* Hide/Show toggle — pill button anchored to bottom center */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className={cn(
-          "absolute left-1/2 -translate-x-1/2 z-[900] transition-all duration-300 ease-in-out",
-          isExpanded ? "-top-3" : "bottom-2"
-        )}
-        aria-label={isExpanded ? 'Collapse mobile menu' : 'Expand mobile menu'}
-      >
-        <div className={cn(
-          "flex items-center gap-1.5 px-4 py-1.5 rounded-full border-2 border-omuto-navy/20 shadow-md transition-all",
-          isExpanded 
-            ? "bg-white/90 backdrop-blur-sm hover:bg-white" 
-            : "bg-omuto-red text-white border-omuto-navy hover:scale-105 shadow-comic-sm"
-        )}>
-          <div className={cn(
-            "w-1.5 h-1.5 rounded-full transition-colors",
-            isExpanded ? "bg-omuto-navy/30" : "bg-white"
-          )} />
-          <span className={cn(
-            "text-[10px] font-black uppercase tracking-[0.15em]",
-            isExpanded ? "text-omuto-navy/50" : "text-white"
-          )}>
-            {isExpanded ? 'Hide' : 'Menu'}
-          </span>
-          <div className={cn(
-            "w-1.5 h-1.5 rounded-full transition-colors",
-            isExpanded ? "bg-omuto-navy/30" : "bg-white"
-          )} />
-        </div>
-      </button>
     </div>
   );
 }
