@@ -17,6 +17,7 @@ import { startOfMonth, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getEnterpriseInsightsAction } from '@/actions/mutations';
+import { callAIOfflineFirst, offlineEnterpriseAdvisor } from '@/lib/offline-ai';
 
 function StatCard({ title, value, icon: Icon, description, trend, variant = 'default' }: { title: string; value: string; icon: React.ElementType, description?: string, trend?: string, variant?: 'default' | 'urgent' }) {
     return (
@@ -94,11 +95,15 @@ function EssentialsHubPage() {
         const fetchInsights = async () => {
             setIsInsightsLoading(true);
             try {
-                const result = await getEnterpriseInsightsAction({
+                const aiInput = {
                     sales: monthlySales,
                     inventory: products || [],
                     production: monthlyProduction || []
-                });
+                };
+                const result = await callAIOfflineFirst(
+                    () => getEnterpriseInsightsAction(aiInput),
+                    () => offlineEnterpriseAdvisor(aiInput)
+                );
                 setInsights(result.insights || []);
             } catch (error) {
                 console.error("Failed to fetch AI insights:", error);

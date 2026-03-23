@@ -29,6 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { runParseWorkplan } from '@/ai/actions';
+import { callAIOfflineFirst, offlineParseWorkplan } from '@/lib/offline-ai';
 import { createAlertAction as createAlert } from '@/actions/mutations';
 import { formatDateForInput } from '@/lib/utils';
 
@@ -136,7 +137,11 @@ function TeamWorkplanForm({
         }
         setIsParsing(true);
         try {
-            const parsedData = await runParseWorkplan({ textPlan: pastedText });
+            const parseInput = { textPlan: pastedText };
+            const parsedData = await callAIOfflineFirst(
+                () => runParseWorkplan(parseInput),
+                () => offlineParseWorkplan(parseInput)
+            );
             
             type WorkplanPriority = {
                 activity: string;

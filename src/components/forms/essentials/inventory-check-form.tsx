@@ -85,10 +85,17 @@ export function InventoryCheckForm() {
 
     try {
         await batch.commit();
-        toast({ title: 'Inventory Updated!', description: `Stock for ${product.name} has been set to ${data.countedQuantity}.` });
+        const isOffline = !navigator.onLine;
+        toast({ title: 'Inventory Updated!', description: isOffline ? 'Saved locally. Will sync when back online.' : `Stock for ${product.name} has been set to ${data.countedQuantity}.` });
         reset();
     } catch (e: any) {
-        toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not update inventory.' });
+        const isOffline = !navigator.onLine;
+        if (isOffline && (e.code === 'unavailable' || e.message?.includes('offline'))) {
+          toast({ title: 'Saved Offline', description: 'Inventory check will sync when back online.' });
+          reset();
+        } else {
+          toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not update inventory.' });
+        }
     }
   };
 

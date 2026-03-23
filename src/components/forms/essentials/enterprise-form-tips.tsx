@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lightbulb, Sparkles, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getEnterpriseInsightsAction } from '@/actions/mutations';
+import { callAIOfflineFirst, offlineEnterpriseAdvisor } from '@/lib/offline-ai';
 import { Button } from '@/components/ui/button';
 
 type TipKey = 'sales' | 'production' | 'inventory' | 'procurement' | 'feedback' | 'products';
@@ -47,12 +48,11 @@ export function EnterpriseFormTips({ type }: { type: TipKey }) {
   const fetchAiTip = async () => {
     setIsLoading(true);
     try {
-      // For now, we reuse the insights flow but ask for a specific form tip
-      const result = await getEnterpriseInsightsAction({
-        sales: [],
-        inventory: [],
-        production: []
-      });
+      const aiInput = { sales: [], inventory: [], production: [] };
+      const result = await callAIOfflineFirst(
+        () => getEnterpriseInsightsAction(aiInput),
+        () => offlineEnterpriseAdvisor(aiInput)
+      );
       if (result.insights && result.insights.length > 0) {
         setAiTip(result.insights[0].insight);
       }

@@ -9,6 +9,7 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { uploadFile } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
 import { createTestimonyAction, updateTestimonyAction } from '@/actions/mutations';
+import { useOfflineAction } from '@/hooks/use-offline-action';
 import { useToast } from '@/hooks/use-toast';
 import { Program, Testimony } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -55,6 +56,7 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { queueAction } = useOfflineAction();
   const testimonyId = searchParams.get('id');
 
   const { data: fetchedTestimony, isLoading: isLoadingTestimony } = useDoc<Testimony>(
@@ -123,6 +125,31 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
     setIsSaving(true);
 
     try {
+      const isOffline = !navigator.onLine;
+      
+      if (isOffline) {
+        // Queue for offline processing (media uploads will happen when online)
+        const testimonyData = {
+          ...data,
+          mediaUrls: existingMediaUrls,
+          userId: fetchedTestimony?.userId || user.uid,
+          userName: fetchedTestimony?.userName || profile?.name || 'Omuto Member',
+          _pendingMediaFiles: mediaFiles.map(f => f.name), // Track file names for later upload
+          _isOffline: true,
+        };
+        queueAction(testimonyId ? 'update-testimony' : 'create-testimony', testimonyId ? { id: testimonyId, ...testimonyData } : testimonyData);
+        toast({ title: 'Saved Offline', description: 'Impact story will be saved when back online. Media uploads will happen then.' });
+        if (!testimonyId) {
+          reset();
+          setMediaFiles([]);
+          setExistingMediaUrls([]);
+        } else {
+          router.push(backHref);
+        }
+        setIsSaving(false);
+        return;
+      }
+
       const uploadPromises = mediaFiles.map((file) => {
         const path = buildUploadPath.testimonyMedia(user.uid, file.name);
         return uploadFile(firebaseApp, file, path);
@@ -155,7 +182,27 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
       }
     } catch (e) {
       console.error('Failed to save impact story', e);
-      toast({ variant: 'destructive', title: 'Save Failed', description: 'There was an error saving your story.' });
+      const isOffline = !navigator.onLine;
+      if (isOffline) {
+        const testimonyData = {
+          ...data,
+          mediaUrls: existingMediaUrls,
+          userId: fetchedTestimony?.userId || user.uid,
+          userName: fetchedTestimony?.userName || profile?.name || 'Omuto Member',
+          _isOffline: true,
+        };
+        queueAction(testimonyId ? 'update-testimony' : 'create-testimony', testimonyId ? { id: testimonyId, ...testimonyData } : testimonyData);
+        toast({ title: 'Saved Offline', description: 'Impact story will be saved when back online.' });
+        if (!testimonyId) {
+          reset();
+          setMediaFiles([]);
+          setExistingMediaUrls([]);
+        } else {
+          router.push(backHref);
+        }
+      } else {
+        toast({ variant: 'destructive', title: 'Save Failed', description: 'There was an error saving your story.' });
+      }
     } finally {
       setIsSaving(false);
     }

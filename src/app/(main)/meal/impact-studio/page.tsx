@@ -11,6 +11,7 @@ import { addDocumentNonBlocking, useCollection, useFirestore, useMemoFirebase, u
 import { collection, orderBy, query, serverTimestamp } from 'firebase/firestore';
 import { Loader2, Sparkles, FileUp, ClipboardList, ArrowRight } from 'lucide-react';
 import { omutoAI } from '@/ai/actions';
+import { callAIOfflineFirst, offlineOmutoAI } from '@/lib/offline-ai';
 import Link from 'next/link';
 import { uploadFile } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
@@ -45,10 +46,14 @@ export default function ImpactStudioPage() {
     if (!user || !firestore || !prompt.trim() || !formTitle.trim()) return;
     setIsGenerating(true);
     try {
-      const ai = await omutoAI({
+      const aiInput = {
         userId: user.uid,
         question: `Create a JSON object with keys: title, description, targetCollection, fields. fields should be array of {key,label,type,required,hint,options?}. Allowed field types: text,textarea,number,date,select. Prompt: ${prompt}`,
-      });
+      };
+      const ai = await callAIOfflineFirst(
+        () => omutoAI(aiInput),
+        () => offlineOmutoAI(aiInput)
+      );
       const parsed = extractJson(ai.answer);
       await addDocumentNonBlocking(collection(firestore, 'dynamic-forms'), {
         title: formTitle,
@@ -77,8 +82,12 @@ export default function ImpactStudioPage() {
         fileUrl = await uploadFile(firebaseApp, knowledgeFile, buildUploadPath.activityMedia(user.uid, knowledgeFile.name));
       }
 
+      const analysisInput = { userId: user.uid, question: `Summarize key insights from this knowledge source for later form prefill and analysis use: ${knowledgeText}` };
       const analysis = knowledgeText.trim()
-        ? await omutoAI({ userId: user.uid, question: `Summarize key insights from this knowledge source for later form prefill and analysis use: ${knowledgeText}` })
+        ? await callAIOfflineFirst(
+            () => omutoAI(analysisInput),
+            () => offlineOmutoAI(analysisInput)
+          )
         : null;
 
       await addDocumentNonBlocking(collection(firestore, 'ai-knowledge-sources'), {

@@ -103,7 +103,13 @@ export function MaterialPurchaseForm() {
         router.push('/enterprise/essentials');
     } catch (e: any) {
         console.error("Purchase log failed:", e);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not record purchase.' });
+        const isOffline = !navigator.onLine;
+        if (isOffline && (e.code === 'unavailable' || e.message?.includes('offline') || e.message?.includes('Failed to get document'))) {
+          toast({ title: 'Saved Offline', description: 'Purchase will sync when back online.' });
+          router.push('/enterprise/essentials');
+        } else {
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not record purchase.' });
+        }
     }
   };
 

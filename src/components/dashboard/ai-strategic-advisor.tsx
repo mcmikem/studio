@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Lightbulb, TrendingDown, AlertTriangle, Sparkles, BarChart3, Info, TrendingUp, RefreshCw } from 'lucide-react';
 import { runStrategicAdvisor } from '@/ai/actions';
+import { callAIOfflineFirst, offlineStrategicAdvisor } from '@/lib/offline-ai';
 import { subDays, startOfDay } from 'date-fns';
 import { Button } from '@/components/ui/button';
 
@@ -86,7 +87,10 @@ export function AiStrategicAdvisor() {
         keyResults: JSON.parse(JSON.stringify(keyResults)),
       };
       
-      const result = await runStrategicAdvisor(plainInput);
+      const result = await callAIOfflineFirst(
+        () => runStrategicAdvisor(plainInput),
+        () => offlineStrategicAdvisor(plainInput)
+      );
       
       if (result && result.insights) {
         setInsights(result.insights);

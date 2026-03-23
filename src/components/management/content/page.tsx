@@ -10,11 +10,11 @@ import { Camera, FileText, CheckSquare, Sparkles, Wand, Loader2 } from 'lucide-r
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { runImpactStoryGenerator, runTestimonyProcessor } from '@/ai/actions';
+import { callAIOfflineFirst, offlineGenerateImpactStory, offlineProcessTestimony } from '@/lib/offline-ai';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { formatDateSafe } from '@/lib/utils';
-import { runQualitativeAnalysis } from '@/ai/actions';
 
 interface ContentItem {
     id: string;
@@ -34,7 +34,7 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
             let draft;
             if (item.type === 'activity') {
                 const activity = item.source as Activity;
-                draft = await runImpactStoryGenerator({
+                const storyInput = {
                     activityName: activity.title,
                     activityDescription: `An activity on ${formatDateSafe(activity.loggedAt)}`,
                     activityImpact: `Value: ${activity.totalValue}, ROI: ${activity.finalRoi}%`,
@@ -42,13 +42,19 @@ function ContentCard({ item, onDraftReady }: { item: ContentItem, onDraftReady: 
                     userQuote: activity.beneficiaryQuote,
                     memorableMoment: activity.memorableMoment,
                     challengesLearned: activity.challengesLearned,
-                });
+                };
+                draft = await callAIOfflineFirst(
+                    () => runImpactStoryGenerator(storyInput),
+                    () => offlineGenerateImpactStory(storyInput)
+                );
             } else {
                 const testimony = item.source as Testimony;
-                // Note: This assumes testimony.mediaUrls[0] is a valid media URI.
-                // In a real app, you would handle this more robustly.
                 if (testimony.mediaUrls && testimony.mediaUrls[0]) {
-                     draft = await runTestimonyProcessor({ mediaUri: testimony.mediaUrls[0] });
+                    const testimonyInput = { mediaUri: testimony.mediaUrls[0] };
+                    draft = await callAIOfflineFirst(
+                        () => runTestimonyProcessor(testimonyInput),
+                        () => offlineProcessTestimony({ transcription: testimony.quote || testimony.beforeSituation || '' })
+                    );
                 } else {
                     throw new Error("Testimony has no media to process.");
                 }

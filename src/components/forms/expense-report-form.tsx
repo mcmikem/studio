@@ -37,6 +37,7 @@ import { format } from 'date-fns';
 import { Separator } from '../ui/separator';
 import { createAlertAction as createAlert } from '@/actions/mutations';
 import { processReceiptAction } from '@/ai/actions';
+import { callAIOfflineFirst, offlineProcessReceipt } from '@/lib/offline-ai';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import type { Expense, User, Project, ExpenseItem } from '@/lib/types';
 import { expenseItemCategories } from '@/lib/types';
@@ -226,10 +227,14 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
         reader.readAsDataURL(receiptFile);
         const base64 = await base64Promise;
 
-        const result = await processReceiptAction({ imageBase64: base64 });
+        const ocrInput = { imageBase64: base64 };
+        const result = await callAIOfflineFirst(
+            () => processReceiptAction(ocrInput),
+            () => offlineProcessReceipt(ocrInput)
+        );
         
-        if (result.title === 'Extraction Failed' || result.items.length === 0) {
-            toast({ variant: 'destructive', title: 'Scan Failed', description: 'We couldn\'t read the receipt. Please try a clearer photo.' });
+        if (result.title === 'Extraction Failed' || result.title.includes('Offline') || result.items.length === 0) {
+            toast({ variant: 'destructive', title: navigator.onLine ? 'Scan Failed' : 'Offline', description: navigator.onLine ? 'We couldn\'t read the receipt. Please try a clearer photo.' : 'Receipt scanning requires an internet connection. Please enter items manually.' });
         } else {
             // Apply results to form
             setValue('title', result.title);

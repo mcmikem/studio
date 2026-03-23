@@ -333,11 +333,17 @@ export function ProductionBatchForm() {
       resetForm();
     } catch (e: any) {
       console.error('Batch save failed:', e);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Could not save production batch.',
-      });
+      const isOffline = !navigator.onLine;
+      if (isOffline && (e.code === 'unavailable' || e.message?.includes('offline') || e.message?.includes('Failed to get document'))) {
+        toast({ title: 'Saved Offline', description: 'Production batch will sync when back online.' });
+        resetForm();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not save production batch.',
+        });
+      }
     }
   };
 

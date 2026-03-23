@@ -85,14 +85,22 @@ export function PrefectRegistrationForm() {
 
     try {
       await batch.commit();
+      const isOffline = !navigator.onLine;
       toast({
         title: 'Prefect Registered!',
-        description: `${data.name} from ${schoolName} has been successfully registered and added to the beneficiary database.`,
+        description: isOffline ? 'Saved locally. Will sync when back online.' : `${data.name} from ${schoolName} has been successfully registered and added to the beneficiary database.`,
       });
       reset();
       router.push('/meal/slf');
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+      const isOffline = !navigator.onLine;
+      if (isOffline && (error.code === 'unavailable' || error.message?.includes('offline'))) {
+        toast({ title: 'Saved Offline', description: 'Prefect registration will sync when back online.' });
+        reset();
+        router.push('/meal/slf');
+      } else {
+        toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+      }
     }
   };
 

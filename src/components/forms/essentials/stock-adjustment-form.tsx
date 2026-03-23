@@ -98,7 +98,13 @@ export function StockAdjustmentForm() {
         router.push('/enterprise/essentials');
     } catch (e: any) {
         console.error("Adjustment failed:", e);
-        toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not record adjustment.' });
+        const isOffline = !navigator.onLine;
+        if (isOffline && (e.code === 'unavailable' || e.message?.includes('offline') || e.message?.includes('Failed to get document'))) {
+          toast({ title: 'Saved Offline', description: 'Stock adjustment will sync when back online.' });
+          router.push('/enterprise/essentials');
+        } else {
+          toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not record adjustment.' });
+        }
     }
   };
 

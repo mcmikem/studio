@@ -31,6 +31,7 @@ import { collection, writeBatch, getDocs, doc, Timestamp, query, orderBy, where,
 import type { KeyResult } from '@/lib/types';
 import { Loader2, Wand, FileSignature, CheckCircle, Goal, MessageSquare, Target, Sparkles, TrendingUp, Calendar, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import { parseOperationalPlan } from '@/ai/actions';
+import { callAIOfflineFirst, offlineParseOperationalPlan } from '@/lib/offline-ai';
 import {
   Table,
   TableBody,
@@ -298,7 +299,11 @@ function OperationalPlanUpdater() {
     }
     setIsParsing(true);
     try {
-      const result = await parseOperationalPlan({ planText: pastedText });
+      const parseInput = { planText: pastedText };
+      const result = await callAIOfflineFirst(
+        () => parseOperationalPlan(parseInput),
+        () => offlineParseOperationalPlan(parseInput)
+      );
       if (!result.keyResults || result.keyResults.length === 0) {
         throw new Error('AI returned no results. Try reformatting your plan text.');
       }

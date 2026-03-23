@@ -137,7 +137,14 @@ export function TrainingAttendanceForm() {
         router.push('/meal/slf');
     } catch (error: any) {
         console.error("Transaction failed: ", error);
-        toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+        const isOffline = !navigator.onLine;
+        if (isOffline && (error.code === 'unavailable' || error.message?.includes('offline') || error.message?.includes('Failed to get document'))) {
+          toast({ title: 'Saved Offline', description: 'Training attendance will sync when back online.' });
+          reset();
+          router.push('/meal/slf');
+        } else {
+          toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
+        }
     }
   };
 

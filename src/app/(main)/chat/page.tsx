@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
 import { omutoAI } from '@/ai/actions';
+import { callAIOfflineFirst, offlineOmutoAI } from '@/lib/offline-ai';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
 import {
   AlertDialog,
@@ -126,7 +127,11 @@ export default function ChatPage() {
           content: [{ text: m.text || '' }]
         }));
 
-      const aiResponse = await omutoAI({ question: text, history: aiHistory, userId: user.uid });
+      const aiInput = { question: text, history: aiHistory, userId: user.uid };
+      const aiResponse = await callAIOfflineFirst(
+        () => omutoAI(aiInput),
+        () => offlineOmutoAI(aiInput)
+      );
       
       if(aiResponse && aiResponse.answer) {
           const aiMessageData = {

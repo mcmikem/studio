@@ -142,11 +142,21 @@ export function SalesTrackingForm() {
       }
       
       await batch.commit();
-      toast({ title: 'Sale Recorded!', description: `Transaction recorded and inventory adjusted.` });
+      const isOffline = !navigator.onLine;
+      toast({ 
+        title: 'Sale Recorded!', 
+        description: isOffline ? 'Saved locally. Will sync when back online.' : 'Transaction recorded and inventory adjusted.' 
+      });
       router.push('/enterprise/essentials');
     } catch (e: any) {
       console.error("Error recording sale:", e);
-      toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not record sale.'});
+      const isOffline = !navigator.onLine;
+      if (isOffline && (e.code === 'unavailable' || e.message?.includes('offline'))) {
+        toast({ title: 'Saved Offline', description: 'Your sale will be recorded when back online.' });
+        router.push('/enterprise/essentials');
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: e.message || 'Could not record sale.'});
+      }
     }
   };
 

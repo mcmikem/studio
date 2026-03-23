@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { format, subDays } from 'date-fns';
 import type { Program, QualitativeAnalysisOutput, Activity, Beneficiary, Testimony } from '@/lib/types';
 import { runQualitativeAnalysis } from '@/ai/actions';
+import { callAIOfflineFirst, offlineQualitativeAnalysis } from '@/lib/offline-ai';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -103,12 +104,16 @@ export default function ProgramDeepDivePage() {
         totalCost,
       });
 
-      const result = await runQualitativeAnalysis({
+      const analysisInput = {
         programId: data.programId,
         programName: selectedProgram.title,
         startDate: data.startDate,
         endDate: data.endDate,
-      });
+      };
+      const result = await callAIOfflineFirst(
+        () => runQualitativeAnalysis(analysisInput),
+        () => offlineQualitativeAnalysis({ programName: selectedProgram.title, data: [] })
+      );
       setAnalysisResult(result);
     } catch (e: any) {
       console.error(e);

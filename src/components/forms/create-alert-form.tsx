@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase';
 import { createAlertAction as createAlert } from '@/actions/mutations';
+import { useOfflineAction } from '@/hooks/use-offline-action';
 import type { AlertInput } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -33,6 +34,7 @@ type AlertFormData = z.infer<typeof alertSchema>;
 export function CreateAlertForm() {
   const { toast } = useToast();
   const { user } = useUser();
+  const { queueAction } = useOfflineAction();
 
   const {
     register,
@@ -66,6 +68,15 @@ export function CreateAlertForm() {
     };
 
     try {
+      if (!navigator.onLine) {
+        queueAction('create-alert', alertInput);
+        toast({
+          title: 'Alert Queued',
+          description: 'Your announcement will be sent when back online.',
+        });
+        reset();
+        return;
+      }
       await createAlert(alertInput);
       toast({
         title: 'Alert Sent!',
@@ -74,11 +85,21 @@ export function CreateAlertForm() {
       reset();
     } catch (e: any) {
       console.error(e);
-      toast({
-        variant: 'destructive',
-        title: 'Failed to Send Alert',
-        description: e.message || 'There was an error sending the alert. Please try again.',
-      });
+      const isOffline = !navigator.onLine;
+      if (isOffline) {
+        queueAction('create-alert', alertInput);
+        toast({
+          title: 'Alert Queued',
+          description: 'Your announcement will be sent when back online.',
+        });
+        reset();
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Failed to Send Alert',
+          description: e.message || 'There was an error sending the alert. Please try again.',
+        });
+      }
     }
   };
 
