@@ -42,7 +42,7 @@
 
 @layer base {
   * {
-    @apply border-omuto-navy/6;
+    border-color: rgb(35 31 32 / 0.06);
   }
   
   body {
@@ -109,7 +109,8 @@
 
   /* TABLES - Clean Data */
   .data-table-omuto {
-    @apply border border-omuto-navy/8 bg-white rounded-xl overflow-hidden;
+    @apply bg-white rounded-xl overflow-hidden;
+    border: 1px solid rgb(35 31 32 / 0.08);
   }
   
   .data-table-omuto thead {
