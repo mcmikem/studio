@@ -14,15 +14,15 @@ import { formatDateSafe } from '@/lib/utils';
 import { subDays } from 'date-fns';
 
 const alertIcons: { [key: string]: React.ReactNode } = {
-    Urgent: <AlertTriangle className="h-5 w-5 text-red-500" />,
-    Reminder: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
-    Info: <Info className="h-5 w-5 text-blue-500" />,
+    Urgent: <AlertTriangle className="h-5 w-5 text-rose-500/70" />,
+    Reminder: <AlertTriangle className="h-5 w-5 text-amber-500/70" />,
+    Info: <Info className="h-5 w-5 text-sky-500/70" />,
 };
 
 const alertColors: { [key: string]: string } = {
-    High: "border-red-500 bg-red-500/10 text-red-500",
-    Medium: "border-yellow-500 bg-yellow-500/10 text-yellow-500",
-    Low: "border-blue-500 bg-blue-500/10 text-blue-500",
+    High: "border-rose-200 bg-rose-50 text-rose-700",
+    Medium: "border-amber-200 bg-amber-50 text-amber-700",
+    Low: "border-sky-200 bg-sky-50 text-sky-700",
 };
 
 

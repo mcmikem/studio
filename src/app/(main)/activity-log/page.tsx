@@ -151,20 +151,20 @@ export default function ActivityLogPage() {
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
                           <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="bg-muted/50 p-2 rounded-lg">
-                              <p className="font-bold text-sm lg:text-base">{formatCurrency(activity.actualCost)}</p>
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Actual</p>
+                            <div className="border border-omuto-navy/6 rounded-lg p-2 bg-transparent">
+                              <p className="font-semibold text-sm lg:text-base text-omuto-navy">{formatCurrency(activity.actualCost)}</p>
+                              <p className="text-[10px] uppercase tracking-wide text-omuto-navy/40 mt-0.5">Actual</p>
                             </div>
-                             <div className="bg-muted/50 p-2 rounded-lg">
-                              <p className="font-bold text-sm lg:text-base">{formatCurrency(activity.totalValue)}</p>
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Value</p>
+                             <div className="border border-omuto-navy/6 rounded-lg p-2 bg-transparent">
+                              <p className="font-semibold text-sm lg:text-base text-omuto-navy">{formatCurrency(activity.totalValue)}</p>
+                              <p className="text-[10px] uppercase tracking-wide text-omuto-navy/40 mt-0.5">Value</p>
                             </div>
                             <div className="flex flex-col justify-center">
                               <Badge
-                                className={`text-sm lg:text-base font-bold w-full justify-center h-full ${
+                                className={`text-sm lg:text-base font-semibold w-full justify-center h-full transition-colors ${
                                   activity.finalRoi >= 0
-                                    ? 'border-green-500 bg-green-500/10 text-green-500'
-                                    : 'border-red-500 bg-red-500/10 text-red-500'
+                                    ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                    : 'border-rose-200 bg-rose-50 text-rose-700'
                                 }`}
                                 variant="outline"
                               >
