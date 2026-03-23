@@ -451,15 +451,19 @@ export const OMUTO_LOCATIONS = {
 } as const;
 
 // GeoJSON boundaries for map visualisation
-// These are simplified approximate polygons for the Omuto operational areas
+// These are refined approximate polygons for the Omuto operational areas
 export const AREA_BOUNDARIES: Record<string, { type: string; coordinates: number[][][] }> = {
   "Kyebando": {
     type: "Polygon",
     coordinates: [[
       [32.4850, 0.3450],
+      [32.4950, 0.3420],
       [32.5100, 0.3450],
+      [32.5140, 0.3520],
       [32.5100, 0.3580],
+      [32.4980, 0.3610],
       [32.4850, 0.3580],
+      [32.4810, 0.3520],
       [32.4850, 0.3450],
     ]],
   },
@@ -467,9 +471,13 @@ export const AREA_BOUNDARIES: Record<string, { type: string; coordinates: number
     type: "Polygon",
     coordinates: [[
       [32.2200, 0.0700],
+      [32.2450, 0.0650],
       [32.2750, 0.0700],
+      [32.2850, 0.0900],
       [32.2750, 0.1150],
+      [32.2450, 0.1200],
       [32.2200, 0.1150],
+      [32.2100, 0.0900],
       [32.2200, 0.0700],
     ]],
   },
@@ -477,9 +485,13 @@ export const AREA_BOUNDARIES: Record<string, { type: string; coordinates: number
     type: "Polygon",
     coordinates: [[
       [32.2320, 0.0820],
+      [32.2450, 0.0800],
       [32.2580, 0.0820],
+      [32.2610, 0.0900],
       [32.2580, 0.0980],
+      [32.2450, 0.1000],
       [32.2320, 0.0980],
+      [32.2290, 0.0900],
       [32.2320, 0.0820],
     ]],
   },
@@ -487,9 +499,13 @@ export const AREA_BOUNDARIES: Record<string, { type: string; coordinates: number
     type: "Polygon",
     coordinates: [[
       [32.3200, 0.2150],
+      [32.3400, 0.2100],
       [32.3600, 0.2150],
+      [32.3650, 0.2350],
       [32.3600, 0.2600],
+      [32.3400, 0.2650],
       [32.3200, 0.2600],
+      [32.3150, 0.2350],
       [32.3200, 0.2150],
     ]],
   },
@@ -497,9 +513,13 @@ export const AREA_BOUNDARIES: Record<string, { type: string; coordinates: number
     type: "Polygon",
     coordinates: [[
       [32.1500, 0.1000],
+      [32.1850, 0.0950],
       [32.2200, 0.1000],
+      [32.2250, 0.1300],
       [32.2200, 0.1650],
+      [32.1850, 0.1700],
       [32.1500, 0.1650],
+      [32.1450, 0.1300],
       [32.1500, 0.1000],
     ]],
   },

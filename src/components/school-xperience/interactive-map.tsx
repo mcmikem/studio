@@ -285,20 +285,30 @@ export function InteractiveMap({
 
         const colors = LAYER_COLORS[loc.type] || { marker: '#888' };
         const isSelected = selectedLocation?.id === loc.id || activeLocation?.id === loc.id;
-        const size = isSelected ? 24 : 16;
-        const isOmuto = loc.type === 'office';
+        const size = isSelected ? 32 : 24;
         
-        // Logic for overdue pulse
-        const isOverdue = loc.type === 'school' && loc.description?.includes('overdue');
+        // Premium SVG Icons
+        const getIconHtml = (type: string) => {
+            switch(type) {
+                case 'school': return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`;
+                case 'water': return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>`;
+                case 'tree': return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 20h5L12 4 2 20h5z"/><path d="M12 20v-3"/></svg>`;
+                case 'beneficiary': return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
+                case 'training': return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`;
+                case 'office': return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
+                default: return `<circle cx="12" cy="12" r="10" />`;
+            }
+        };
 
         const icon = L.divIcon({
-          className: `omuto-marker-${loc.type} ${isSelected ? 'is-selected' : ''}`,
+          className: `omuto-marker-premium marker-${loc.type} ${isSelected ? 'is-selected' : ''}`,
           html: `
-            <div class="marker-container ${isOverdue ? 'pulse-urgent' : ''}" style="position:relative;">
-              ${isSelected ? `<div class="selection-ring" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size+16}px;height:${size+16}px;border:2px solid ${colors.marker};border-radius:50%;opacity:0.4;animation:ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>` : ''}
-              <div style="background:${colors.marker};width:${size}px;height:${size}px;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-                ${isOmuto ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>` : ''}
-                ${loc.type === 'school' && !isOmuto ? `<svg width="8" height="8" viewBox="0 0 24 24" fill="white"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>` : ''}
+            <div class="marker-wrapper" style="position:relative; width:${size}px; height:${size}px;">
+              ${isSelected ? `<div class="selection-ring" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size+20}px;height:${size+20}px;border:3px solid ${colors.marker};border-radius:50%;opacity:0.3;animation:ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>` : ''}
+              <div class="marker-body" style="background:${colors.marker};width:${size}px;height:${size}px;border-radius:12px;border:3px solid white;box-shadow:0 8px 16px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:white;transition:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);transform:rotate(45deg);">
+                <div style="transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;width:60%;height:60%;">
+                    ${getIconHtml(loc.type)}
+                </div>
               </div>
             </div>
           `,
@@ -308,39 +318,36 @@ export function InteractiveMap({
 
         const marker = L.marker([lat, lng], { icon }).addTo(map);
 
-      // Popup content
-      const typeLabel = loc.type === 'office' ? 'Omuto HQ' : loc.type.charAt(0).toUpperCase() + loc.type.slice(1);
-      const popupContent = `
-        <div style="min-width:180px;font-family:system-ui,sans-serif;">
-          <strong style="font-size:14px;">${loc.name}</strong>
-          <div style="margin-top:4px;">
-            <span style="background:${colors.marker};color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:bold;">${typeLabel}</span>
-          </div>
-          ${loc.subcounty || loc.district ? `<div style="margin-top:6px;font-size:12px;color:#666;">${loc.subcounty || ''}${loc.subcounty && loc.district ? ' • ' : ''}${loc.district || ''}</div>` : ''}
-          ${loc.programme ? `<div style="margin-top:4px;font-size:11px;color:#888;">${loc.programme}</div>` : ''}
-        </div>
-      `;
+        // Hover Peek Tooltip
+        const peekContent = `
+            <div class="peek-tooltip" style="padding:4px 8px;font-family:system-ui;font-weight:900;text-transform:uppercase;font-size:10px;letter-spacing:0.05em;color:white;background:${colors.marker};border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.2);white-space:nowrap;">
+                ${loc.name}
+            </div>
+        `;
 
-      marker.bindPopup(popupContent, { 
-        closeButton: false, 
-        className: 'omuto-premium-popup',
-        offset: [0, -size/2]
+        marker.bindTooltip(peekContent, {
+            permanent: false,
+            direction: 'top',
+            className: 'omuto-peek-tooltip',
+            offset: [0, -size/2],
+            opacity: 0.9,
+            sticky: true
+        });
+
+        marker.on('click', () => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.map.flyTo([lat, lng], 15, { duration: 1.5 });
+            }
+            setActiveLocation(loc);
+            setSidePanelOpen(true);
+            if (onLocationClickRef.current) {
+                onLocationClickRef.current(loc);
+            }
+        });
+
+        markersRef.current.push(marker);
       });
-
-      marker.on('click', () => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.map.flyTo([lat, lng], 15, { duration: 1.5 });
-        }
-        setActiveLocation(loc);
-        setSidePanelOpen(true);
-        if (onLocationClickRef.current) {
-          onLocationClickRef.current(loc);
-        }
-      });
-
-      markersRef.current.push(marker);
     });
-  });
 
     // Fit bounds if we have markers
     if (filteredLocations.length > 0 && filteredLocations.some(l => l.coordinates)) {
@@ -641,21 +648,39 @@ export function InteractiveMap({
 
 function LayerRow({ icon: Icon, label, count, color }: { icon: any; label: string; count: number; color: string }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-1.5">
-        <Icon className="h-3.5 w-3.5" style={{ color }} />
-        <span className="text-xs">{label}</span>
+    <div className="flex items-center justify-between group/row">
+      <div className="flex items-center gap-2">
+        <div className="p-1 px-1.5 rounded-md bg-muted group-hover/row:bg-primary/10 transition-colors">
+            <Icon className="h-3.5 w-3.5" style={{ color }} />
+        </div>
+        <span className="text-[10px] font-bold text-omuto-navy/70 group-hover/row:text-omuto-navy transition-colors">{label}</span>
       </div>
-      <span className="text-xs font-bold" style={{ color }}>{count}</span>
+      <span className="text-[10px] font-black" style={{ color }}>{count}</span>
     </div>
   );
 }
 
-function LegendItem({ color, label }: { color: string; label: string }) {
+function LegendItem({ color, label, icon: Icon }: { color: string; label: string; icon: any }) {
   return (
-    <div className="flex items-center gap-2">
-      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-      <span className="text-xs">{label}</span>
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-black/5" style={{ backgroundColor: color }}>
+        <Icon className="h-4 w-4 text-white" />
+      </div>
+      <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/60">{label}</span>
     </div>
   );
+}
+
+function MetricRow({ icon: Icon, label, value, color }: { icon: any, label: string, value: string | number, color: string }) {
+    return (
+        <div className="flex items-center justify-between p-4 bg-muted/20 rounded-2xl border border-black/5">
+            <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-xl bg-white shadow-sm ${color}`}>
+                    <Icon className="h-4 w-4" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">{label}</span>
+            </div>
+            <span className="text-sm font-black text-omuto-navy italic">{value}</span>
+        </div>
+    )
 }
