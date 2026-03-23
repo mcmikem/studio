@@ -26,8 +26,10 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createAlertAction as createAlert } from '@/actions/mutations';
+import { PageHeader } from '@/components/page-header';
 
 const individualTaskSchema = z.object({
   value: z.string().min(1, 'Task description cannot be empty.'),
@@ -114,12 +116,12 @@ function FinalizeWorkplanForm({
   const formTitle = teamPlan ? "Step 2: Add Your Role-Specific Tasks" : "Create Your Weekly Plan";
   const formDescription = teamPlan ? "Add your personal tasks that contribute to the team priorities for this week." : "Since there's no team-wide plan published yet, define your own key priorities for the week.";
 
-
   return (
-    <div className="mt-6 space-y-4">
-      <Separator />
-      <h3 className="text-lg font-semibold">{formTitle}</h3>
-      <p className="text-sm text-muted-foreground">{formDescription}</p>
+    <div className="mt-6 space-y-6">
+      <div className="flex flex-col gap-2">
+        <h3 className="text-xl font-black tracking-tighter text-omuto-navy uppercase">{formTitle}</h3>
+        <p className="text-sm font-bold text-omuto-navy/40">{formDescription}</p>
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {fields.map((field, index) => (
           <div key={field.id} className="flex items-center gap-2">
@@ -136,12 +138,12 @@ function FinalizeWorkplanForm({
           <p className="text-sm text-destructive">{errors.individualTasks.root.message}</p>
         )}
 
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })}>
+        <div className="flex flex-wrap gap-3 pt-2">
+          <Button type="button" variant="outline" size="sm" onClick={() => append({ value: '' })} className="h-10 border-lg rounded-xl font-bold">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Task
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button type="submit" disabled={isSubmitting} className="btn-omuto h-10 px-6 rounded-xl shadow-comic-sm">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Finalize My Weekly Plan
           </Button>
@@ -168,9 +170,9 @@ export default function WorkplanPage() {
   const weekEndDate = currentDate ? endOfWeek(currentDate, { weekStartsOn: 1 }) : new Date();
 
   const priorityColors: { [key: string]: string } = {
-    High: "border-red-500 bg-red-500/10 text-red-500",
-    Medium: "border-yellow-500 bg-yellow-500/10 text-yellow-500",
-    Low: "border-blue-500 bg-blue-500/10 text-blue-500",
+    High: "border-rose-500 bg-rose-50 text-rose-700",
+    Medium: "border-amber-500 bg-amber-50 text-amber-700",
+    Low: "border-emerald-500 bg-emerald-50 text-emerald-700",
   };
 
   const fetchPlans = useCallback(async () => {
@@ -253,33 +255,33 @@ export default function WorkplanPage() {
 
     if (userPlan) {
       return (
-        <div className="space-y-6">
-            <Alert variant="default" className="bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
-                <AlertTitle className="font-bold text-green-800 dark:text-green-300">Your Workplan is Submitted!</AlertTitle>
-                <AlertDescription>
-                   Your daily check-in form will now be populated based on this finalized plan. Go to the <Link href="/daily-plan" className="font-bold underline">AI Daily Planner</Link> to start your day.
+        <div className="space-y-8">
+            <Alert variant="default" className="bg-emerald-50 border-emerald-200 rounded-[1.5rem] p-5 shadow-sm">
+                <AlertTitle className="font-black text-emerald-900 uppercase tracking-tight text-lg mb-1">Your Workplan is Submitted!</AlertTitle>
+                <AlertDescription className="font-bold text-emerald-700 text-sm">
+                   Your daily check-in form will now be populated based on this finalized plan. Go to the <Link href="/daily-plan" className="font-black underline decoration-2 underline-offset-4">AI Daily Planner</Link> to start your day.
                 </AlertDescription>
             </Alert>
             {userPlan.teamPriorities && userPlan.teamPriorities.length > 0 && (
                 <div className="space-y-4">
-                    <h3 className="font-semibold text-lg">Team Priorities</h3>
-                    <div className="rounded-md border">
+                    <h3 className="font-black text-lg text-omuto-navy uppercase tracking-tighter">Team Priorities</h3>
+                    <div className="rounded-[1.5rem] border-lg border-omuto-navy/5 overflow-hidden bg-white shadow-sm">
                     <Table>
-                        <TableHeader>
-                        <TableRow>
-                            <TableHead>Activity</TableHead>
-                            <TableHead>Priority</TableHead>
-                            <TableHead>Responsible</TableHead>
-                            <TableHead>Deadline</TableHead>
+                        <TableHeader className="bg-omuto-cream/30">
+                        <TableRow className="border-b-lg border-omuto-navy/5">
+                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-omuto-navy/40">Activity</TableHead>
+                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-omuto-navy/40">Priority</TableHead>
+                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-omuto-navy/40">Responsible</TableHead>
+                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-omuto-navy/40">Deadline</TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
                             {userPlan.teamPriorities.map((priority, index) => (
-                            <TableRow key={index}>
-                                <TableCell className="font-medium">{priority.activity}</TableCell>
-                                <TableCell><Badge variant="outline" className={priorityColors[priority.priority]}>{priority.priority}</Badge></TableCell>
-                                <TableCell>{(Array.isArray(priority.responsible) ? priority.responsible.join(', ') : priority.responsible)}</TableCell>
-                                <TableCell>{formatDeadline(priority.deadline)}</TableCell>
+                            <TableRow key={index} className="border-b-lg border-omuto-navy/5 hover:bg-omuto-cream/5 transition-colors">
+                                <TableCell className="font-bold text-omuto-navy text-sm py-4">{priority.activity}</TableCell>
+                                <TableCell><Badge variant="outline" className={cn("font-black text-[9px] uppercase tracking-wider rounded-md", priorityColors[priority.priority])}>{priority.priority}</Badge></TableCell>
+                                <TableCell className="font-bold text-omuto-navy/60 text-xs">{(Array.isArray(priority.responsible) ? priority.responsible.join(', ') : priority.responsible)}</TableCell>
+                                <TableCell className="font-bold text-omuto-navy/60 text-xs">{formatDeadline(priority.deadline)}</TableCell>
                             </TableRow>
                             ))}
                         </TableBody>
@@ -287,14 +289,18 @@ export default function WorkplanPage() {
                     </div>
                 </div>
             )}
-            <Separator />
             <div className="space-y-4">
-                <h3 className="font-semibold text-lg">My Individual Tasks</h3>
-                 <ul className="list-disc list-inside space-y-2 pl-4">
+                <h3 className="font-black text-lg text-omuto-navy uppercase tracking-tighter">My Individual Tasks</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {userPlan.individualTasks.map((task, index) => (
-                    <li key={index} className="font-medium">{task}</li>
+                        <div key={index} className="p-4 bg-white border-2 border-omuto-navy/5 rounded-2xl flex items-center gap-3 shadow-sm group hover:border-omuto-navy/15 transition-all">
+                            <div className="w-8 h-8 rounded-full bg-omuto-navy/5 flex items-center justify-center text-omuto-navy/30 group-hover:bg-omuto-navy group-hover:text-white transition-all">
+                                <span className="font-black text-[10px]">{index + 1}</span>
+                            </div>
+                            <span className="font-bold text-omuto-navy text-sm">{task}</span>
+                        </div>
                     ))}
-                </ul>
+                </div>
             </div>
         </div>
       );
@@ -337,40 +343,45 @@ export default function WorkplanPage() {
         )
     }
 
-    // No user plan, and NO team plan exists. Allow standalone creation.
+    // Standalone creation view
     return (
-        <div>
-            <Alert>
-                <AlertTitle>No Team Plan Published</AlertTitle>
-                <AlertDescription>A team-wide plan hasn't been published by management for this week yet. You can create your own standalone plan in the meantime.</AlertDescription>
+        <div className="space-y-6">
+            <Alert className="bg-amber-50 border-amber-200 rounded-[1.5rem] p-5">
+                <AlertTitle className="font-black text-amber-900 uppercase tracking-tight mb-1">No Team Plan Published</AlertTitle>
+                <AlertDescription className="font-bold text-amber-800/70 text-sm">A team-wide plan hasn't been published by management for this week yet. You can create your own standalone plan in the meantime.</AlertDescription>
             </Alert>
-            <FinalizeWorkplanForm teamPlan={null} onPlanCreated={fetchPlans} />
+            <div className="bg-white border-lg border-omuto-navy/5 rounded-[2rem] p-8 shadow-sm">
+                <FinalizeWorkplanForm teamPlan={null} onPlanCreated={fetchPlans} />
+            </div>
         </div>
     );
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-          <CalendarCheck className="h-8 w-8" />
-          My Weekly Workplan
-        </h1>
-        <p className="text-muted-foreground">
-          Align your tasks with the team's weekly priorities set by management.
-        </p>
-      </header>
+    <div className="flex flex-col gap-8">
+      <PageHeader 
+        title="My Weekly Workplan" 
+        description="Align your tasks with the team's weekly priorities set by management."
+        icon={CalendarCheck}
+        breadcrumbs={[
+            { name: 'Ops Desk', href: '/management' },
+            { name: 'Workplan', href: '/workplan' }
+        ]}
+      />
       
       {currentDate && (
-        <Card>
-            <CardHeader>
-            <div className="flex justify-between items-center">
-                <CardTitle>
-                Week {getWeek(currentDate, { weekStartsOn: 1})}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
-                </CardTitle>
-            </div>
+        <Card className="rounded-[2.5rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden transition-all hover:shadow-comic">
+            <CardHeader className="bg-omuto-cream/30 border-b-lg border-omuto-navy/5 pb-4 pt-7 px-8">
+                <div className="flex justify-between items-center">
+                    <CardTitle className="font-heading text-xl font-black tracking-tighter text-omuto-navy uppercase">
+                        Week {getWeek(currentDate, { weekStartsOn: 1})}: {format(weekStartDate, 'MMMM d')} - {format(weekEndDate, 'd, yyyy')}
+                    </CardTitle>
+                    <div className="px-3 py-1 bg-omuto-red text-white text-[8px] font-black uppercase tracking-widest rounded-full">
+                        Interactive
+                    </div>
+                </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-8">
                 {renderContent()}
             </CardContent>
         </Card>
