@@ -185,11 +185,11 @@ export function TeamDeployment() {
       const userCheckouts = byUserCheckouts.get(user.id) || [];
       
       const latestCheckin = userCheckins.sort((a, b) => 
-        (b.timestamp?.toDate?.()?.getTime() || 0) - (a.timestamp?.toDate?.()?.getTime() || 0)
+        (b.timestamp?.toDate?.()?.getTime?.() || 0) - (a.timestamp?.toDate?.()?.getTime?.() || 0)
       )[0];
       
       const latestCheckout = userCheckouts.sort((a, b) => 
-        (b.timestamp?.toDate?.()?.getTime() || 0) - (a.timestamp?.toDate?.()?.getTime() || 0)
+        (b.timestamp?.toDate?.()?.getTime?.() || 0) - (a.timestamp?.toDate?.()?.getTime?.() || 0)
       )[0];
 
       const status = getUserStatus(latestCheckin, latestCheckout, currentTime);
@@ -292,11 +292,11 @@ export function TeamDeployment() {
                   <p className={`text-xs font-bold truncate w-full ${
                     member.status.status === 'active' ? 'text-green-700' : 'text-gray-500'
                   }`}>
-                    {member.user.name.split(' ')[0]}
+                    {member.user.name?.split(' ')[0] || "Team Member"}
                   </p>
                   {member.status.status === 'active' && member.focus && (
                     <p className="text-[9px] text-gray-500 truncate w-full max-w-[80px]">
-                      {member.focus.status === 'working' ? '💼' : member.focus.status === 'break' ? '☕' : '🎯'} {member.focus.task.split(' ').slice(0, 2).join(' ')}
+                      {member.focus.status === 'working' ? '💼' : member.focus.status === 'break' ? '☕' : '🎯'} {member.focus.task?.split(' ').slice(0, 2).join(' ') || "Working"}
                     </p>
                   )}
                 </div>

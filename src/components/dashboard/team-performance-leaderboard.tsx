@@ -116,7 +116,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
               <div className="relative">
                 <Avatar className="h-12 w-12 border-2 border-omuto-navy">
                   <AvatarImage src={user.photoURL} />
-                  <AvatarFallback className="bg-omuto-navy text-white font-bold">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="bg-omuto-navy text-white font-bold">{(user.name || '??').substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 {index === 0 && <div className="absolute -top-1 -right-1 bg-omuto-red border-2 border-omuto-navy rounded-full p-1"><Zap className="h-2 w-2 text-white fill-white" /></div>}
               </div>

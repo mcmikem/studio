@@ -59,6 +59,7 @@ import { expenseItemCategories } from '@/lib/types';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
 import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { formatDateSafe, formatCurrency } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
@@ -68,6 +69,9 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { useUserProfile } from '@/hooks/use-user-profile';
+import { PageHeader } from '@/components/page-header';
+import { StatCard } from '@/components/dashboard/stat-card';
+import { Wallet, CreditCard, ArrowUpRight, ArrowDownRight, TrendingUp, History } from 'lucide-react';
 
 const incomeSchema = z.object({
   source: z.string().min(3, 'Source is required.'),
@@ -477,229 +481,282 @@ export default function FinancePage() {
   }
 
   return (
-    <div className="space-y-6 w-full overflow-hidden">
-      <Card>
-        <CardHeader>
-             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="min-w-0">
-                  <CardTitle className="text-lg sm:text-xl truncate">Financial Ledger (Cashbook)</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">A complete log of all income and expense transactions.</CardDescription>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                    <Button variant="outline" size="icon" onClick={handlePrevMonth}><ChevronLeft className="h-4 w-4" /></Button>
-                    <Input type="month" className="w-32 sm:w-auto" value={selectedMonth ? format(selectedMonth, 'yyyy-MM') : ''} onChange={e => setSelectedMonth(new Date(e.target.value))} />
-                    <Button variant="outline" size="icon" onClick={handleNextMonth}><ChevronRight className="h-4 w-4" /></Button>
-                </div>
+    <div className="space-y-8 pb-10">
+      <PageHeader
+        icon={DollarSign}
+        title="Financial Ledger"
+        description="Real-time tracking of organizational income, operational expenses, and cashflow health."
+        breadcrumbs={[{ name: 'Dashboard', href: '/' }, { name: 'Management', href: '/management' }, { name: 'Finance', href: '/management/finance' }]}
+      />
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Main Ledger Area */}
+        <div className="flex-1 space-y-6">
+            {/* Financial Bento Stats */}
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+                <StatCard
+                    icon={Wallet}
+                    label="Opening Balance"
+                    value={isLoading ? '—' : formatCurrency(monthlyData.balanceBroughtForward)}
+                    trend="Initial position"
+                    color="text-slate-600"
+                />
+                <StatCard
+                    icon={ArrowUpRight}
+                    label="Monthly Income"
+                    value={isLoading ? '—' : formatCurrency(monthlyData.totalMonthlyIncome)}
+                    trend="Inflow this month"
+                    color="text-emerald-600"
+                    alertLevel="green"
+                />
+                <StatCard
+                    icon={ArrowDownRight}
+                    label="Monthly Expenses"
+                    value={isLoading ? '—' : formatCurrency(monthlyData.totalMonthlyExpenses)}
+                    trend="Operational burn"
+                    color="text-rose-600"
+                    alertLevel="yellow"
+                />
+                <StatCard
+                    icon={CreditCard}
+                    label="Closing Balance"
+                    value={isLoading ? '—' : formatCurrency(monthlyData.closingBalance)}
+                    trend="Current liquidity"
+                    color="text-primary"
+                />
             </div>
-        </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
-                <Card className="p-3 sm:p-4">
-                    <p className="text-xs font-medium text-muted-foreground">Opening Balance</p>
-                    <p className="text-lg sm:text-xl font-bold truncate">{isLoading ? <Skeleton className="h-6 w-24"/> : formatCurrency(monthlyData.balanceBroughtForward)}</p>
-                </Card>
-                 <Card className="p-3 sm:p-4">
-                    <p className="text-xs font-medium text-muted-foreground">Income</p>
-                    <p className="text-lg sm:text-xl font-bold text-green-600 truncate">{isLoading ? <Skeleton className="h-6 w-24"/> : formatCurrency(monthlyData.totalMonthlyIncome)}</p>
-                </Card>
-                <Card className="p-3 sm:p-4">
-                    <p className="text-xs font-medium text-muted-foreground">Expenses</p>
-                    <p className="text-lg sm:text-xl font-bold text-red-600 truncate">{isLoading ? <Skeleton className="h-6 w-24"/> : formatCurrency(monthlyData.totalMonthlyExpenses)}</p>
-                </Card>
-                <Card className="p-3 sm:p-4 bg-muted">
-                    <p className="text-xs font-medium text-muted-foreground">Closing Balance</p>
-                    <p className="text-lg sm:text-xl font-bold truncate">{isLoading ? <Skeleton className="h-6 w-24"/> : formatCurrency(monthlyData.closingBalance)}</p>
-                </Card>
-            </div>
-             <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                <Dialog open={isNewExpenseDialogOpen} onOpenChange={setIsNewExpenseDialogOpen}>
-                <DialogTrigger asChild>
-                    <Button variant="destructive" className="w-full sm:w-auto">
-                        <ArrowDownCircle className="mr-2 h-4 w-4" />
-                        Log Expense
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
-                    <DialogTitle>Log Direct Expense</DialogTitle>
-                    <DialogDescription>
-                        Record an expense that doesn't require a report (e.g., rent, utilities).
-                    </DialogDescription>
-                    </DialogHeader>
-                    <ExpenseForm onFormSubmit={() => setIsNewExpenseDialogOpen(false)} />
-                </DialogContent>
-                </Dialog>
-                <Dialog open={isNewIncomeDialogOpen} onOpenChange={setIsNewIncomeDialogOpen}>
-                <DialogTrigger asChild>
-                    <Button className="w-full sm:w-auto">
-                    <ArrowUpCircle className="mr-2 h-4 w-4" />
-                    Log Income
-                    </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-lg">
-                    <DialogHeader>
-                    <DialogTitle>Log New Income</DialogTitle>
-                    <DialogDescription>
-                        Record a new grant, donation, or other revenue.
-                    </DialogDescription>
-                    </DialogHeader>
-                    <IncomeForm onFormSubmit={() => setIsNewIncomeDialogOpen(false)} />
-                </DialogContent>
-                </Dialog>
-            </div>
-            <div className="hidden sm:block">
-                <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    {canManageFinances && <TableHead className="text-right">Actions</TableHead>}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {isLoading && Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                        <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
-                        {canManageFinances && <TableCell className="text-right"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>}
-                    </TableRow>
-                    ))}
-                    {!isLoading && monthlyData.transactions.map((t, index) => (
-                    <TableRow key={`${t.id}-${index}`}>
-                        <TableCell>{formatDateSafe(t.date, 'dateOnly')}</TableCell>
-                        <TableCell className="font-medium">{t.description}</TableCell>
-                        <TableCell>
-                        {t.transactionType === 'income' ? (
-                            <span className="flex items-center text-green-600"><ArrowUpCircle className="mr-2 h-4 w-4" /> Income</span>
-                        ) : (
-                            <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
-                        )}
-                        </TableCell>
-                        <TableCell className={`text-right font-bold ${t.transactionType === 'income' ? 'text-green-600' : ((t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged') ? 'text-red-600' : 'text-muted-foreground'}`}>
-                          {t.transactionType === 'expense' && ((t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged') ? `(${formatCurrency(t.amount)}) (Pending)` : formatCurrency(t.amount)}
-                        </TableCell>
-                        {canManageFinances && (
-                            <TableCell className="text-right">
-                               <div className="flex justify-end gap-1">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(t, t.transactionType)}>
-                                        <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                <AlertDialogDescription>This will permanently delete this transaction. This action cannot be undone.</AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(t, t.transactionType)}>Delete</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                               </div>
-                            </TableCell>
-                        )}
-                    </TableRow>
-                    ))}
-                    {!isLoading && monthlyData.transactions.length === 0 && (
-                        <TableRow>
-                            <TableCell colSpan={canManageFinances ? 5 : 4} className="h-48 text-center">No transactions recorded for {selectedMonth ? format(selectedMonth, 'MMMM yyyy') : ''}.</TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-                </Table>
-            </div>
-            <div className="sm:hidden space-y-4">
-                {monthlyData && monthlyData.transactions.map((t, index) => (
-                    <Card key={`mobile-${t.id}-${index}`}>
-                        <CardHeader>
-                            <CardTitle>{t.description}</CardTitle>
-                            <CardDescription>{formatDateSafe(t.date, 'dateOnly')}</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                             <div className="flex justify-between items-center">
-                                {t.transactionType === 'income' ? (
-                                    <span className="flex items-center text-green-600"><ArrowUpCircle className="mr-2 h-4 w-4" /> Income</span>
-                                ) : (
-                                    <span className="flex items-center text-red-600"><ArrowDownCircle className="mr-2 h-4 w-4" /> Expense</span>
-                                )}
-                                <span className={`text-right font-bold text-lg ${t.transactionType === 'income' ? 'text-green-600' : ((t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged') ? 'text-red-600' : 'text-muted-foreground'}`}>
+
+            <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-white/50 backdrop-blur-sm rounded-[2rem]">
+                <CardHeader className="bg-omuto-cream/20 border-b-lg border-omuto-navy/5 p-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-omuto-navy text-white rounded-2xl shadow-sm">
+                                <History className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-2xl font-black tracking-tighter uppercase text-omuto-navy">Cashbook Log</CardTitle>
+                                <CardDescription className="font-bold text-omuto-navy/40 uppercase text-[10px] tracking-widest mt-1">
+                                    {isLoading ? 'Syncing...' : `Showing ${monthlyData.transactions.length} entries for ${format(selectedMonth!, 'MMMM yyyy')}`}
+                                </CardDescription>
+                            </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 bg-white/80 p-2 rounded-[1.5rem] border-2 border-omuto-navy/5 shadow-sm">
+                            <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="h-10 w-10 hover:bg-omuto-navy/5 rounded-xl"><ChevronLeft className="h-4 w-4" /></Button>
+                            <Input 
+                                type="month" 
+                                className="border-none bg-transparent font-black uppercase text-xs w-[140px] focus-visible:ring-0" 
+                                value={selectedMonth ? format(selectedMonth, 'yyyy-MM') : ''} 
+                                onChange={e => setSelectedMonth(new Date(e.target.value))} 
+                            />
+                            <Button variant="ghost" size="icon" onClick={handleNextMonth} className="h-10 w-10 hover:bg-omuto-navy/5 rounded-xl"><ChevronRight className="h-4 w-4" /></Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <div className="hidden sm:block">
+                        <div className="mx-6 my-6 rounded-2xl border border-omuto-navy/5 overflow-hidden shadow-sm">
+                            <Table>
+                            <TableHeader className="bg-muted/30">
+                                <TableRow className="hover:bg-transparent border-b border-omuto-navy/5">
+                                <TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/30 px-6 py-4">Date</TableHead>
+                                <TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/30 px-6 py-4">Description</TableHead>
+                                <TableHead className="font-black uppercase text-[10px] tracking-widest text-omuto-navy/30 px-6 py-4">Transaction Type</TableHead>
+                                <TableHead className="text-right font-black uppercase text-[10px] tracking-widest text-omuto-navy/30 px-6 py-4">Amount</TableHead>
+                                {canManageFinances && <TableHead className="text-right font-black uppercase text-[10px] tracking-widest text-omuto-navy/30 px-6 py-4">Manage</TableHead>}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                                <TableRow key={i} className="border-b border-omuto-navy/5 last:border-0">
+                                    <TableCell className="px-6 py-5"><Skeleton className="h-5 w-24" /></TableCell>
+                                    <TableCell className="px-6 py-5"><Skeleton className="h-5 w-48" /></TableCell>
+                                    <TableCell className="px-6 py-5"><Skeleton className="h-5 w-20" /></TableCell>
+                                    <TableCell className="text-right px-6 py-5"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
+                                    {canManageFinances && <TableCell className="text-right px-6 py-5"><Skeleton className="h-8 w-20 ml-auto" /></TableCell>}
+                                </TableRow>
+                                ))}
+                                {!isLoading && monthlyData.transactions.map((t, index) => (
+                                <TableRow key={`${t.id}-${index}`} className="border-b border-omuto-navy/5 last:border-0 group hover:bg-white transition-colors">
+                                    <TableCell className="px-6 py-5 text-xs font-bold text-omuto-navy/60">{formatDateSafe(t.date, 'dateOnly')}</TableCell>
+                                    <TableCell className="px-6 py-5">
+                                        <span className="font-heading text-base font-black text-omuto-navy group-hover:text-primary transition-colors">{t.description}</span>
+                                    </TableCell>
+                                    <TableCell className="px-6 py-5">
+                                    {t.transactionType === 'income' ? (
+                                        <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 border-none font-black text-[9px] uppercase tracking-wider px-2 py-1">
+                                            <ArrowUpCircle className="mr-1.5 h-3 w-3" /> Income
+                                        </Badge>
+                                    ) : (
+                                        <Badge variant="secondary" className="bg-rose-50 text-rose-600 border-none font-black text-[9px] uppercase tracking-wider px-2 py-1">
+                                            <ArrowDownCircle className="mr-1.5 h-3 w-3" /> Expense
+                                        </Badge>
+                                    )}
+                                    </TableCell>
+                                    <TableCell className={`px-6 py-5 text-right font-black text-base ${t.transactionType === 'income' ? 'text-emerald-600' : ((t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged') ? 'text-rose-600' : 'text-muted-foreground'}`}>
                                     {t.transactionType === 'expense' && ((t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged') ? `(${formatCurrency(t.amount)}) (Pending)` : formatCurrency(t.amount)}
-                                </span>
-                             </div>
-                        </CardContent>
-                        {canManageFinances && (
-                            <CardFooter className="justify-end">
-                                <div className="flex justify-end gap-1">
-                                    <Button variant="outline" size="sm" onClick={() => handleEdit(t, t.transactionType)}>
-                                        <Edit className="mr-2 h-4 w-4" /> Edit
-                                    </Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                             <Button variant="destructive" size="sm">
-                                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                <AlertDialogDescription>This will permanently delete this transaction. This action cannot be undone.</AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(t, t.transactionType)}>Delete</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                               </div>
-                            </CardFooter>
-                        )}
-                    </Card>
-                ))}
-            </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-            <CardTitle className="text-base sm:text-lg">Spending by Category (All Time)</CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Based on all 'Disbursed' and 'Acknowledged' expenses.</CardDescription>
-        </CardHeader>
-        <CardContent>
-             {(isLoadingIncome || isLoadingExpenses) && <Skeleton className="w-full h-48 sm:h-64" />}
-             {!(isLoadingIncome || isLoadingExpenses) && chartData.length > 0 && (
-                <ChartContainer config={chartConfig} className="w-full h-48 sm:h-64">
-                    <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ left: 60, right: 10 }}>
-                        <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} tick={{ fill: 'hsl(var(--foreground))', fontSize: 10 }} width={60} />
-                        <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent formatter={(value) => formatCurrency(Number(value || 0))}/>}
-                        />
-                        <Bar dataKey="total" fill="var(--color-total)" radius={4} />
-                    </BarChart>
-                </ChartContainer>
-            )}
-            {!(isLoadingIncome || isLoadingExpenses) && chartData.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-64 text-center text-muted-foreground">
-                    <DollarSign className="h-12 w-12" />
-                    <p className="mt-4 font-semibold">No spending data to show.</p>
-                </div>
-            )}
-        </CardContent>
-    </Card>
+                                    </TableCell>
+                                    {canManageFinances && (
+                                        <TableCell className="px-6 py-5 text-right">
+                                        <div className="flex justify-end gap-1">
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-omuto-navy/5 rounded-xl transition-all" onClick={() => handleEdit(t, t.transactionType)}>
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent className="rounded-[2rem] border-lg border-omuto-navy/10 p-8 shadow-2xl">
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle className="font-heading text-2xl font-black uppercase text-omuto-navy">Confirm Deletion</AlertDialogTitle>
+                                                            <AlertDialogDescription className="font-bold text-sm text-omuto-navy/60">
+                                                                This will permanently remove this entry from the ledger. This action cannot be reversed.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter className="mt-6">
+                                                            <AlertDialogCancel className="rounded-xl font-black text-[10px] uppercase tracking-widest border-2">Cancel Tracking</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDelete(t, t.transactionType)} className="rounded-xl bg-destructive font-black text-[10px] uppercase tracking-widest hover:bg-destructive/90">Yes, Remove</AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                        </div>
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                                ))}
+                                {!isLoading && monthlyData.transactions.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={canManageFinances ? 5 : 4} className="h-64 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-3">
+                                                <div className="p-4 bg-muted/30 rounded-full">
+                                                    <PlusCircle className="h-8 w-8 text-omuto-navy/20" />
+                                                </div>
+                                                <p className="font-black text-omuto-navy/20 uppercase text-xs tracking-widest">No entries for this period</p>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                    <div className="sm:hidden space-y-4 p-6">
+                        {monthlyData && monthlyData.transactions.map((t, index) => (
+                            <Card key={`mobile-${t.id}-${index}`} className="rounded-2xl border-2 border-omuto-navy/5 shadow-sm overflow-hidden">
+                                <CardHeader className="p-4 pb-2">
+                                    <CardTitle className="text-base font-black text-omuto-navy">{t.description}</CardTitle>
+                                    <CardDescription className="text-[10px] font-bold uppercase tracking-widest">{formatDateSafe(t.date, 'dateOnly')}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-4 pt-0">
+                                    <div className="flex justify-between items-center">
+                                        {t.transactionType === 'income' ? (
+                                            <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 border-none font-black text-[9px] uppercase tracking-wider">Income</Badge>
+                                        ) : (
+                                            <Badge variant="secondary" className="bg-rose-50 text-rose-600 border-none font-black text-[9px] uppercase tracking-wider">Expense</Badge>
+                                        )}
+                                        <span className={`font-black text-lg ${t.transactionType === 'income' ? 'text-emerald-600' : ((t as Expense).status === 'Disbursed' || (t as Expense).status === 'Acknowledged') ? 'text-rose-600' : 'text-muted-foreground'}`}>
+                                            {t.transactionType === 'expense' && ((t as Expense).status !== 'Disbursed' && (t as Expense).status !== 'Acknowledged') ? `(${formatCurrency(t.amount)}) (Pending)` : formatCurrency(t.amount)}
+                                        </span>
+                                    </div>
+                                </CardContent>
+                                {canManageFinances && (
+                                    <CardFooter className="p-2 bg-muted/20 flex justify-end gap-1">
+                                        <Button variant="ghost" size="sm" className="h-8 text-xs font-black uppercase tracking-wider rounded-lg" onClick={() => handleEdit(t, t.transactionType)}>
+                                            Edit
+                                        </Button>
+                                        <Button variant="ghost" size="sm" className="h-8 text-xs font-black uppercase tracking-wider text-rose-500 rounded-lg" onClick={() => handleDelete(t, t.transactionType)}>
+                                            Delete
+                                        </Button>
+                                    </CardFooter>
+                                )}
+                            </Card>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+
+        {/* Action Sidebar */}
+        <div className="lg:w-80 space-y-6">
+            <Card className="border-lg border-primary/20 bg-primary shadow-2xl shadow-primary/20 rounded-[2.5rem] overflow-hidden">
+                <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-white font-heading text-2xl font-black uppercase tracking-tighter">Quick Actions</CardTitle>
+                    <CardDescription className="text-white/60 font-bold uppercase text-[10px] tracking-widest mt-1">Transaction Center</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-0 space-y-4">
+                    <Dialog open={isNewIncomeDialogOpen} onOpenChange={setIsNewIncomeDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="w-full h-16 bg-white text-primary hover:bg-white/90 rounded-[1.5rem] font-black uppercase text-xs tracking-widest shadow-xl group">
+                                <ArrowUpCircle className="mr-3 h-5 w-5 group-hover:-translate-y-1 transition-transform" />
+                                Log Income
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg rounded-[2rem] p-8 border-lg shadow-2xl">
+                            <DialogHeader>
+                                <DialogTitle className="font-heading text-2xl font-black uppercase tracking-tighter text-omuto-navy">Log New Income</DialogTitle>
+                                <DialogDescription className="font-bold text-omuto-navy/40 uppercase text-[10px] tracking-widest">Financial Inflow</DialogDescription>
+                            </DialogHeader>
+                            <IncomeForm onFormSubmit={() => setIsNewIncomeDialogOpen(false)} />
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isNewExpenseDialogOpen} onOpenChange={setIsNewExpenseDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="w-full h-16 bg-omuto-navy text-white hover:bg-omuto-navy/90 rounded-[1.5rem] font-black uppercase text-xs tracking-widest shadow-xl group border-2 border-white/5">
+                                <ArrowDownCircle className="mr-3 h-5 w-5 group-hover:translate-y-1 transition-transform" />
+                                Log Expense
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-lg rounded-[2rem] p-8 border-lg shadow-2xl">
+                            <DialogHeader>
+                                <DialogTitle className="font-heading text-2xl font-black uppercase tracking-tighter text-omuto-navy">Log Operational Expense</DialogTitle>
+                                <DialogDescription className="font-bold text-omuto-navy/40 uppercase text-[10px] tracking-widest">Financial Outflow</DialogDescription>
+                            </DialogHeader>
+                            <ExpenseForm onFormSubmit={() => setIsNewExpenseDialogOpen(false)} />
+                        </DialogContent>
+                    </Dialog>
+                </CardContent>
+                <CardFooter className="bg-white/5 p-6 border-t border-white/5">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-white/40 text-center w-full">Double-entry verified</p>
+                </CardFooter>
+            </Card>
+
+            <Card className="border-lg border-omuto-navy/5 bg-white shadow-sm rounded-[2rem] overflow-hidden">
+                <CardHeader className="p-6">
+                    <CardTitle className="font-heading text-xl font-black uppercase text-omuto-navy">Spend Matrix</CardTitle>
+                    <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-omuto-navy/30">Category Allocation</CardDescription>
+                </CardHeader>
+                <CardContent className="p-6 pt-0">
+                    {isLoading ? <Skeleton className="h-48 w-full rounded-2xl" /> : (
+                        <div className="space-y-4">
+                             {chartData.slice(0, 5).map((item, i) => (
+                                <div key={i} className="space-y-1.5">
+                                    <div className="flex justify-between items-end">
+                                        <span className="text-[10px] font-black uppercase tracking-wider text-omuto-navy">{item.name}</span>
+                                        <span className="text-[10px] font-bold text-omuto-navy/40">{formatCurrency(item.total)}</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-primary" 
+                                            style={{ width: `${(item.total / (monthlyData?.totalMonthlyExpenses || 1)) * 100}%` }} 
+                                        />
+                                    </div>
+                                </div>
+                             ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+      </div>
+
      <Dialog open={!!editingTransaction} onOpenChange={(open) => !open && closeEditDialog()}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg rounded-[2rem] p-8 border-lg shadow-2xl">
             <DialogHeader>
-                <DialogTitle>Edit Transaction</DialogTitle>
+                <DialogTitle className="font-heading text-2xl font-black uppercase tracking-tighter text-omuto-navy">Edit Transaction</DialogTitle>
+                <DialogDescription className="font-bold text-omuto-navy/40 uppercase text-[10px] tracking-widest">Modifier Mode</DialogDescription>
             </DialogHeader>
             {transactionTypeToEdit === 'income' && (
                 <IncomeForm income={editingTransaction as Income} onFormSubmit={closeEditDialog} />

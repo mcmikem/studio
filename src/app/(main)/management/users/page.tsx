@@ -33,9 +33,11 @@ import { useCollection, useFirestore, useMemoFirebase, updateDocumentNonBlocking
 import { collection, query, orderBy, doc } from 'firebase/firestore';
 import type { User } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MoreHorizontal, Users as UsersIcon } from 'lucide-react';
+import { MoreHorizontal, Users as UsersIcon, TrendingUp, ShieldCheck, UserCheck, UserMinus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PageHeader } from '@/components/page-header';
+import { StatCard } from '@/components/dashboard/stat-card';
 
 const userRoles = [
     'Executive Director',
@@ -108,11 +110,64 @@ export default function UserManagementPage() {
 
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>User Management</CardTitle>
-        <CardDescription>View, manage, and edit roles for all team members in the system.</CardDescription>
-      </CardHeader>
+    <div className="space-y-8 pb-10">
+      <PageHeader
+        icon={UsersIcon}
+        title="Team Directory"
+        description="Manage organizational roles, access permissions, and staff onboarding for the Omuto ecosystem."
+        breadcrumbs={[{ name: 'Dashboard', href: '/' }, { name: 'Management', href: '/management' }, { name: 'Users', href: '/management/users' }]}
+      />
+
+      {/* Staff Pulse Bento Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          icon={UsersIcon}
+          label="Total Staff"
+          value={isLoading ? '—' : (users?.length || 0)}
+          trend="All active"
+          color="text-blue-600"
+          alertLevel="green"
+        />
+        <StatCard
+          icon={ShieldCheck}
+          label="Admins"
+          value={isLoading ? '—' : (users?.filter(u => u.role === 'Administrator').length || 0)}
+          trend="Privileged access"
+          color="text-primary"
+          alertLevel="yellow"
+        />
+        <StatCard
+          icon={UserCheck}
+          label="Field Team"
+          value={isLoading ? '—' : (users?.filter(u => u.role.includes('Manager') || u.role.includes('Coordinator')).length || 0)}
+          trend="Mission critical"
+          color="text-emerald-600"
+          alertLevel="green"
+        />
+        <StatCard
+          icon={UserMinus}
+          label="Recent Joins"
+          value="2"
+          trend="Onboarding..."
+          color="text-amber-600"
+          alertLevel="green"
+        />
+      </div>
+
+      <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-white/50 backdrop-blur-sm rounded-[2rem]">
+        <CardHeader className="bg-omuto-cream/20 border-b-lg border-omuto-navy/5 p-8">
+            <div className="flex items-center justify-between">
+                <div>
+                   <CardTitle className="text-2xl font-black tracking-tighter uppercase text-omuto-navy">Staff Registry</CardTitle>
+                   <CardDescription className="font-bold text-omuto-navy/40 uppercase text-[10px] tracking-widest mt-1">
+                      {isLoading ? 'Syncing...' : `${users?.length || 0} Team Members Active`}
+                   </CardDescription>
+                </div>
+                <Button className="btn-omuto h-11 rounded-xl px-6 text-[10px] font-black uppercase tracking-widest shadow-sm">
+                    Invite Member
+                </Button>
+            </div>
+        </CardHeader>
       <CardContent className="p-0 sm:p-6">
          {/* Mobile View */}
         <div className="sm:hidden h-[600px] overflow-auto px-4" ref={parentRefMobile}>
@@ -190,24 +245,24 @@ export default function UserManagementPage() {
 
         {/* Desktop View */}
         <div className="hidden sm:block">
-            <div className="border border-omuto-navy/10 rounded-xl overflow-hidden bg-white shadow-sm">
-                <div className="grid grid-cols-[1fr,200px,100px] gap-4 px-6 py-4 bg-muted/40 border-b border-omuto-navy/10 font-bold uppercase text-[10px] tracking-widest text-omuto-navy/60">
-                    <div>User</div>
-                    <div>Role</div>
-                    <div className="text-right">Actions</div>
+            <div className="border border-omuto-navy/5 rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm m-6 mt-0">
+                <div className="grid grid-cols-[1fr,250px,100px] gap-4 px-8 py-5 bg-muted/20 border-b border-omuto-navy/5 font-black uppercase text-[10px] tracking-[0.2em] text-omuto-navy/30">
+                    <div>Team Member</div>
+                    <div>Organizational Role</div>
+                    <div className="text-right">Manage</div>
                 </div>
                 <div className="h-[600px] overflow-auto no-scrollbar" ref={parentRefDesktop}>
                     {isLoading && Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="grid grid-cols-[1fr,200px,100px] gap-4 px-6 py-4 border-b border-omuto-navy/5 last:border-0 items-center">
-                            <div className="flex items-center gap-3">
-                                <Skeleton className="h-10 w-10 rounded-full" />
-                                <div className="space-y-1">
-                                    <Skeleton className="h-4 w-24" />
-                                    <Skeleton className="h-3 w-32" />
+                        <div key={i} className="grid grid-cols-[1fr,250px,100px] gap-4 px-8 py-5 border-b border-omuto-navy/5 last:border-0 items-center">
+                            <div className="flex items-center gap-4">
+                                <Skeleton className="h-12 w-12 rounded-full" />
+                                <div className="space-y-2">
+                                    <Skeleton className="h-5 w-32" />
+                                    <Skeleton className="h-4 w-48" />
                                 </div>
                             </div>
-                            <Skeleton className="h-6 w-32" />
-                            <Skeleton className="h-8 w-8 ml-auto" />
+                            <Skeleton className="h-8 w-40 rounded-lg" />
+                            <Skeleton className="h-10 w-10 ml-auto rounded-xl" />
                         </div>
                     ))}
                     {users && users.length > 0 ? (
@@ -223,7 +278,7 @@ export default function UserManagementPage() {
                                 return (
                                     <div
                                         key={virtualItem.key}
-                                        className="grid grid-cols-[1fr,200px,100px] gap-4 px-6 py-4 border-b border-omuto-navy/5 last:border-0 items-center hover:bg-muted/10 transition-colors"
+                                        className="grid grid-cols-[1fr,250px,100px] gap-4 px-8 py-5 border-b border-omuto-navy/5 last:border-0 items-center hover:bg-white transition-all group"
                                         style={{
                                             position: 'absolute',
                                             top: 0,
@@ -233,32 +288,37 @@ export default function UserManagementPage() {
                                             transform: `translateY(${virtualItem.start}px)`,
                                         }}
                                     >
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <Avatar className="h-10 w-10 border-md border-omuto-navy/10 shadow-sm" data-ai-hint="person avatar">
+                                        <div className="flex items-center gap-4 min-w-0">
+                                            <Avatar className="h-12 w-12 border-2 border-white shadow-xl shadow-omuto-navy/10 group-hover:scale-105 transition-transform" data-ai-hint="person avatar">
                                                 <AvatarImage src={user.photoURL} alt={user.name} />
-                                                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                                <AvatarFallback className="font-black text-xs">{getInitials(user.name)}</AvatarFallback>
                                             </Avatar>
                                             <div className="min-w-0">
-                                                <p className="font-bold text-sm text-omuto-navy truncate">{user.name}</p>
-                                                <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+                                                <p className="font-heading text-base font-black text-omuto-navy truncate group-hover:text-primary transition-colors">{user.name}</p>
+                                                <p className="text-[11px] font-bold text-omuto-navy/40 truncate">{user.email}</p>
                                             </div>
                                         </div>
                                         <div>
-                                            <Badge variant="secondary" className="bg-omuto-navy/5 text-omuto-navy border-none font-bold text-[10px] uppercase">{user.role}</Badge>
+                                            <Badge variant="secondary" className="bg-omuto-navy/5 text-omuto-navy border-2 border-white shadow-sm font-black text-[9px] uppercase tracking-wider px-3 py-1 rounded-lg">{user.role}</Badge>
                                         </div>
                                         <div className="text-right">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-omuto-navy/5 rounded-xl">
-                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    <Button variant="ghost" size="icon" className="h-10 w-10 hover:bg-omuto-navy/5 rounded-[1rem] transition-all">
+                                                        <MoreHorizontal className="h-5 w-5" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                                                    <DropdownMenuSeparator />
+                                                <DropdownMenuContent align="end" className="rounded-2xl border-2 border-omuto-navy/5 shadow-2xl p-2 min-w-[200px]">
+                                                    <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Change Mission Role</DropdownMenuLabel>
+                                                    <DropdownMenuSeparator className="bg-omuto-navy/5" />
                                                     {userRoles.map(role => (
-                                                        <DropdownMenuItem key={role} onSelect={() => handleRoleChange(user.id, role)} disabled={user.role === role}>
-                                                            {role} {user.role === role && '(Current)'}
+                                                        <DropdownMenuItem 
+                                                            key={role} 
+                                                            onSelect={() => handleRoleChange(user.id, role)} 
+                                                            disabled={user.role === role}
+                                                            className="rounded-xl px-3 py-2 text-xs font-bold focus:bg-primary focus:text-white transition-colors cursor-pointer"
+                                                        >
+                                                            {role}
                                                         </DropdownMenuItem>
                                                     ))}
                                                 </DropdownMenuContent>
@@ -281,5 +341,6 @@ export default function UserManagementPage() {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 }

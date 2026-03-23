@@ -32,7 +32,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
                 {currentDate || title}
               </p>
               <h1 className="font-heading text-xl sm:text-2xl font-semibold tracking-tight text-omuto-navy">
-                {greeting}, <span className="text-primary">{profile?.name.split(' ')[0] || "User"}</span>
+                {greeting}, <span className="text-primary">{profile?.name?.split(' ')[0] || "User"}</span>
               </h1>
             </div>
             <div className="flex items-center gap-1.5 bg-omuto-navy/5 px-2.5 py-1 rounded-full text-xs font-medium text-omuto-navy/70">
