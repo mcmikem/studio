@@ -13,7 +13,7 @@ import {
 export interface MapLocation {
   id: string;
   name: string;
-  type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office';
+  type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office' | 'district' | 'subcounty';
   coordinates?: { lat: number; lng: number };
   subcounty?: string;
   district?: string;
@@ -557,12 +557,12 @@ export function InteractiveMap({
       <div className="hidden md:block absolute bottom-4 left-4 z-[1000] bg-white/95 rounded-xl p-3 shadow-lg border">
         <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Legend</p>
         <div className="space-y-1.5">
-          <LegendItem color="#dc2626" label="Omuto HQ" />
-          <LegendItem color="#3b82f6" label="Partner Schools" />
-          <LegendItem color="#ec4899" label="Beneficiaries" />
-          <LegendItem color="#06b6d4" label="Water Sources" />
-          <LegendItem color="#22c55e" label="Trees Planted" />
-          <LegendItem color="#f59e0b" label="Training Sessions" />
+          <LegendItem color="#dc2626" icon={Home} label="Omuto HQ" />
+          <LegendItem color="#3b82f6" icon={GraduationCap} label="Partner Schools" />
+          <LegendItem color="#ec4899" icon={Users} label="Beneficiaries" />
+          <LegendItem color="#06b6d4" icon={Droplets} label="Water Sources" />
+          <LegendItem color="#22c55e" icon={TreePine} label="Trees Planted" />
+          <LegendItem color="#f59e0b" icon={Building2} label="Training Sessions" />
         </div>
       </div>
 
@@ -660,7 +660,7 @@ function LayerRow({ icon: Icon, label, count, color }: { icon: any; label: strin
   );
 }
 
-function LegendItem({ color, label, icon: Icon }: { color: string; label: string; icon: any }) {
+export function LegendItem({ color, label, icon: Icon }: { color: string; label: string; icon: any }) {
   return (
     <div className="flex items-center gap-3">
       <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-black/5" style={{ backgroundColor: color }}>
@@ -671,7 +671,7 @@ function LegendItem({ color, label, icon: Icon }: { color: string; label: string
   );
 }
 
-function MetricRow({ icon: Icon, label, value, color }: { icon: any, label: string, value: string | number, color: string }) {
+export function MetricRow({ icon: Icon, label, value, color }: { icon: any, label: string, value: string | number, color: string }) {
     return (
         <div className="flex items-center justify-between p-4 bg-muted/20 rounded-2xl border border-black/5">
             <div className="flex items-center gap-3">

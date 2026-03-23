@@ -10,9 +10,9 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import { useFormSubmission } from '@/hooks/use-form-submission';
 import {
   MapPin, Search, X, Plus, GraduationCap, Droplets, TreePine, Users,
-  Building2, Check, Home, UsersRound, ChevronRight
+  Building2, Check, Home, UsersRound, ChevronRight, Sparkles
 } from 'lucide-react';
-import { InteractiveMap, type MapLocation } from '@/components/school-xperience/interactive-map';
+import { InteractiveMap, type MapLocation, MetricRow, LegendItem } from '@/components/school-xperience/interactive-map';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
 import { UGANDA_LOCATIONS, OMUTO_LOCATIONS, AREA_BOUNDARIES } from '@/lib/uganda-data';
 
