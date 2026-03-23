@@ -10,8 +10,11 @@ import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFormSubmission } from '@/hooks/use-form-submission';
 import {
   MapPin, Search, X, Plus, GraduationCap, Droplets, TreePine, Users,
-  Building2, Check, Home, UsersRound, ChevronRight, Sparkles
+  Building2, Check, Home, UsersRound, ChevronRight, Sparkles, Filter, Menu
 } from 'lucide-react';
+import { 
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger 
+} from '@/components/ui/sheet';
 import { InteractiveMap, type MapLocation, MetricRow, LegendItem } from '@/components/school-xperience/interactive-map';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
 import { UGANDA_LOCATIONS, OMUTO_LOCATIONS, AREA_BOUNDARIES } from '@/lib/uganda-data';
@@ -27,6 +30,7 @@ export default function MapPage() {
   const [addType, setAddType] = useState<'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office'>('school');
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(['office', 'school', 'beneficiary', 'water', 'tree', 'training']));
 
   const handleMapPlace = (coords: { lat: number; lng: number }, type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office') => {
     setMapCoords(coords);
@@ -164,6 +168,20 @@ export default function MapPage() {
       programme: t.programme,
     })),
   ], [schools, beneficiaries, waterSources, trees, trainings]);
+
+  // Filter locations by active layers
+  const filteredLocations = useMemo(() => {
+    return allLocations.filter(loc => activeLayers.has(loc.type));
+  }, [allLocations, activeLayers]);
+
+  const toggleLayer = (layer: string) => {
+    setActiveLayers(prev => {
+      const next = new Set(prev);
+      if (next.has(layer)) next.delete(layer);
+      else next.add(layer);
+      return next;
+    });
+  };
 
   // Debounce search to avoid jank on slow devices
   const deferredQuery = useDeferredValue(searchQuery);
@@ -351,21 +369,117 @@ export default function MapPage() {
               >
                 <Plus className="h-6 w-6" />
             </Button>
+            
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button 
+                        className="h-14 w-14 lg:hidden rounded-full bg-white text-omuto-navy shadow-2xl border-2 border-white/20 hover:scale-110 transition-all p-0 flex items-center justify-center shrink-0"
+                    >
+                        <Filter className="h-6 w-6" />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-white border-t-4 border-primary/10 p-0 overflow-hidden h-[80vh]">
+                    <div className="p-8 pb-32 overflow-y-auto h-full">
+                        <SheetHeader className="mb-8">
+                            <SheetTitle className="text-2xl font-black text-omuto-navy uppercase tracking-tighter italic">Map Filters</SheetTitle>
+                            <SheetDescription className="font-bold text-omuto-navy/40 uppercase tracking-widest text-[10px]">Customize your view</SheetDescription>
+                        </SheetHeader>
+                        <div className="grid grid-cols-1 gap-4">
+                             {(['school', 'water', 'tree', 'beneficiary', 'training', 'office'] as const).map(type => {
+                                const isActive = activeLayers.has(type);
+                                const config = {
+                                    school: { icon: GraduationCap, label: 'Schools', color: 'bg-blue-500', count: (schools || []).length },
+                                    water: { icon: Droplets, label: 'PureWater', color: 'bg-cyan-500', count: (waterSources || []).length },
+                                    tree: { icon: TreePine, label: 'GreenSchools', color: 'bg-emerald-500', count: (trees || []).length },
+                                    beneficiary: { icon: Users, label: 'Impact', color: 'bg-pink-500', count: (beneficiaries || []).length },
+                                    training: { icon: Building2, label: 'Trainings', color: 'bg-amber-500', count: (trainings || []).length },
+                                    office: { icon: Home, label: 'Omuto HQ', color: 'bg-red-500', count: 2 },
+                                }[type];
+                                const Icon = config.icon;
+
+                                return (
+                                    <button 
+                                        key={type}
+                                        onClick={() => toggleLayer(type)}
+                                        className={`flex items-center gap-4 p-5 rounded-[1.5rem] border-2 transition-all ${isActive ? 'bg-primary/5 border-primary/20' : 'bg-muted/30 border-transparent grayscale opacity-50'}`}
+                                    >
+                                        <div className={`p-4 rounded-2xl ${config.color} text-white shadow-lg shadow-black/10`}>
+                                            <Icon className="h-6 w-6" />
+                                        </div>
+                                        <div className="text-left flex-1">
+                                            <p className="text-xs font-black text-omuto-navy uppercase tracking-wider leading-none mb-1">{config.label}</p>
+                                            <p className="text-sm font-black text-omuto-navy/40 tabular-nums">{config.count} active points</p>
+                                        </div>
+                                        <div className={`h-6 w-6 rounded-full border-4 flex items-center justify-center ${isActive ? 'bg-primary border-primary/20' : 'border-black/5'}`}>
+                                            {isActive && <Check className="h-3 w-3 text-white" />}
+                                        </div>
+                                    </button>
+                                );
+                             })}
+                        </div>
+                    </div>
+                </SheetContent>
+            </Sheet>
+
             <Button 
                 asChild
                 className="h-14 px-8 rounded-full bg-primary text-white shadow-2xl shadow-primary/20 border-2 border-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 shrink-0"
               >
                 <a href="/school-xperience/log-impact">
                     <Sparkles className="h-5 w-5" />
-                    <span className="text-xs font-black uppercase tracking-widest hidden sm:inline">Log Impact Data</span>
+                    <span className="text-xs font-black uppercase tracking-widest hidden sm:inline">Log Impact</span>
                 </a>
             </Button>
         </div>
       </div>
 
-      {/* Floating Insights Sidebar (when selected) */}
-      {selectedLocation && (
-        <div className="absolute top-24 bottom-6 left-6 z-[1000] w-full max-w-sm pointer-events-none animate-in slide-in-from-left-8 duration-700">
+      {/* Mobile Insights Sheet */}
+      <Sheet open={!!selectedLocation && typeof window !== 'undefined' && window.innerWidth < 1024} onOpenChange={(open) => !open && setSelectedLocation(null)}>
+        <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-white/95 backdrop-blur-2xl border-t-4 border-primary/10 p-0 h-[85vh]">
+            {selectedLocation && (
+                <div className="p-8 flex flex-col h-full bg-white">
+                     <div className="flex items-start justify-between mb-8">
+                        <div className="flex items-center gap-5">
+                             <div className={`p-5 rounded-2xl ${selectedLocation.type === 'office' ? 'bg-primary text-white' : 'bg-muted text-primary'} shadow-2xl`}>
+                                {selectedLocation.type === 'school' ? <GraduationCap className="h-10 w-10" /> : 
+                                 selectedLocation.type === 'office' ? <Home className="h-10 w-10" /> : <MapPin className="h-10 w-10" />}
+                             </div>
+                             <div>
+                                <Badge className="mb-2 bg-primary/10 text-primary border-primary/20 rounded-full font-black text-[10px] uppercase tracking-[0.2em] px-3 py-1">
+                                    {selectedLocation.type}
+                                </Badge>
+                                <h2 className="font-heading text-3xl font-black text-omuto-navy leading-none tracking-tighter uppercase italic">{selectedLocation.name}</h2>
+                             </div>
+                        </div>
+                     </div>
+                     <div className="flex-1 overflow-y-auto space-y-8">
+                         <div className="grid grid-cols-2 gap-4">
+                             <div className="p-6 bg-muted/30 rounded-2xl border-2 border-black/5">
+                                 <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40 mb-2">Region</p>
+                                 <p className="font-black text-sm text-omuto-navy uppercase truncate">{selectedLocation.subcounty || '—'}</p>
+                             </div>
+                             <div className="p-6 bg-muted/30 rounded-2xl border-2 border-black/5">
+                                 <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40 mb-2">District</p>
+                                 <p className="font-black text-sm text-omuto-navy uppercase truncate">{selectedLocation.district || '—'}</p>
+                             </div>
+                         </div>
+                         <MetricRow icon={Users} label="Local Beneficiaries" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.beneficiaries || 0 : '—'} color="text-pink-600" />
+                         <MetricRow icon={TreePine} label="Trees Planted" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.trees || 0 : '—'} color="text-emerald-600" />
+                         <MetricRow icon={Droplets} label="Water Sources" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.waterSources || 0 : '—'} color="text-cyan-600" />
+                     </div>
+                     <div className="pt-8 pb-12 mt-auto">
+                        <Button className="w-full btn-omuto h-16 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl" asChild>
+                            <a href={`/school-xperience/${selectedLocation.id}`}>Explore Full Mission Profile</a>
+                        </Button>
+                     </div>
+                </div>
+            )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Insights Panel */}
+      {selectedLocation && typeof window !== 'undefined' && window.innerWidth >= 1024 && (
+        <div className="absolute top-24 bottom-6 left-6 z-[1000] w-full max-w-[420px] pointer-events-none animate-in slide-in-from-left-8 duration-700">
             <Card className="h-full bg-white/90 backdrop-blur-2xl border-white/20 shadow-2xl rounded-[2.5rem] overflow-hidden flex flex-col pointer-events-auto border-4 border-white/40">
                 <div className="p-8 pb-4 flex justify-between items-start">
                     <div className="flex items-center gap-4">
@@ -460,32 +574,77 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* Floating Legend / Export - Bottom Left */}
-      <div className="absolute bottom-10 left-10 z-[1000] flex items-end gap-6 pointer-events-none">
-        <Card className="bg-white/80 backdrop-blur-xl border-white/20 shadow-2xl rounded-[2rem] p-6 pointer-events-auto border-4 border-white/40 hidden md:block">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">Interactive Legend</p>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-                <LegendItem color="#3b82f6" icon={GraduationCap} label="Schools" />
-                <LegendItem color="#06b6d4" icon={Droplets} label="PureWater" />
-                <LegendItem color="#22c55e" icon={TreePine} label="GreenSchools" />
-                <LegendItem color="#ec4899" icon={Users} label="Beneficiaries" />
-                <LegendItem color="#f59e0b" icon={Building2} label="Trainings" />
-                <LegendItem color="#dc2626" icon={Home} label="Omuto HQ" />
+      {/* Floating Legend & Layer Controller - Bottom Left */}
+      <div className="absolute bottom-10 left-10 z-[1000] flex flex-col md:flex-row items-end gap-6 pointer-events-none">
+        <Card className="bg-white/90 backdrop-blur-2xl border-white/20 shadow-2xl rounded-[2.5rem] p-8 pointer-events-auto border-4 border-white hidden lg:block w-[400px]">
+            <div className="flex items-center justify-between mb-6">
+                <p className="text-[11px] font-black text-omuto-navy/40 uppercase tracking-[0.2em]">Map Explorer</p>
+                <div className="flex gap-1">
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+                </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+                {(['school', 'water', 'tree', 'beneficiary', 'training', 'office'] as const).map(type => {
+                    const isActive = activeLayers.has(type);
+                    const config = {
+                        school: { icon: GraduationCap, label: 'Schools', color: 'bg-blue-500', count: (schools || []).length },
+                        water: { icon: Droplets, label: 'PureWater', color: 'bg-cyan-500', count: (waterSources || []).length },
+                        tree: { icon: TreePine, label: 'GreenSchools', color: 'bg-emerald-500', count: (trees || []).length },
+                        beneficiary: { icon: Users, label: 'Impact', color: 'bg-pink-500', count: (beneficiaries || []).length },
+                        training: { icon: Building2, label: 'Trainings', color: 'bg-amber-500', count: (trainings || []).length },
+                        office: { icon: Home, label: 'Omuto HQ', color: 'bg-red-500', count: 2 },
+                    }[type];
+                    const Icon = config.icon;
+
+                    return (
+                        <button 
+                            key={type}
+                            onClick={() => toggleLayer(type)}
+                            className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${isActive ? 'bg-white border-primary/20 shadow-sm scale-105' : 'bg-muted/30 border-transparent opacity-40 grayscale hover:grayscale-0 hover:opacity-100'}`}
+                        >
+                            <div className={`p-2 rounded-xl ${config.color} text-white`}>
+                                <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="text-left">
+                                <p className="text-[10px] font-black text-omuto-navy uppercase leading-none mb-1">{config.label}</p>
+                                <p className="text-[13px] font-black text-omuto-navy/40 tabular-nums">{config.count}</p>
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-black/5 flex items-center justify-between">
+                <div className="flex -space-x-2">
+                    {[1,2,3,4].map(i => (
+                        <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-muted flex items-center justify-center overflow-hidden">
+                             <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} alt="user" />
+                        </div>
+                    ))}
+                    <div className="h-8 w-8 rounded-full border-2 border-white bg-primary text-[10px] font-black text-white flex items-center justify-center">
+                        +12
+                    </div>
+                </div>
+                <p className="text-[10px] font-bold text-omuto-navy/40">Staff editing currently</p>
             </div>
         </Card>
 
         <Button 
-            className="h-16 px-8 rounded-full bg-slate-900/90 text-white backdrop-blur-xl shadow-2xl border-2 border-white/10 hover:bg-slate-900 transition-all gap-4 pointer-events-auto shadow-black/20"
+            className="h-16 px-10 rounded-full bg-slate-900 text-white shadow-2xl border-2 border-white/10 hover:bg-black hover:scale-105 active:scale-95 transition-all gap-4 pointer-events-auto"
             onClick={() => {/* Implement Image Export */}}
         >
-            <Plus className="h-5 w-5 text-primary" />
-            <span className="text-[11px] font-black uppercase tracking-widest">Generate Map Report</span>
+            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <Plus className="h-4 w-4 text-primary" />
+            </div>
+            <span className="text-xs font-black uppercase tracking-widest">Generate Impact Report</span>
         </Button>
       </div>
 
       <div className="w-full h-full">
         <InteractiveMap
-          locations={allLocations}
+          locations={filteredLocations}
           center={mapCenter}
           zoom={mapZoom}
           highlightBoundary={showBoundary}
