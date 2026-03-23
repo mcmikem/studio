@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useFormSubmission } from '@/hooks/use-form-submission';
 import {
   MapPin, Search, X, Plus, GraduationCap, Droplets, TreePine, Users,
@@ -40,24 +40,24 @@ export default function MapPage() {
     return query(collection(firestore, 'sx-schools'), orderBy('schoolName'));
   }, [firestore]);
 
-  const beneficiariesQuery = useMemoFirebase(() => {
+   const beneficiariesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'sx-beneficiaries'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'sx-beneficiaries'), orderBy('createdAt', 'desc'), limit(300));
   }, [firestore]);
-
+ 
   const waterSourcesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'sx-water-sources'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'sx-water-sources'), orderBy('createdAt', 'desc'), limit(300));
   }, [firestore]);
-
+ 
   const treesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'sx-trees'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'sx-trees'), orderBy('createdAt', 'desc'), limit(300));
   }, [firestore]);
-
+ 
   const trainingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'sx-trainings'), orderBy('createdAt', 'desc'));
+    return query(collection(firestore, 'sx-trainings'), orderBy('createdAt', 'desc'), limit(300));
   }, [firestore]);
 
   const { data: schools } = useCollection<any>(schoolsQuery);
@@ -89,8 +89,8 @@ export default function MapPage() {
     return stats;
   }, [schools, beneficiaries, waterSources, trees]);
 
-  // Build locations array
-  const allLocations: MapLocation[] = [
+  // Build locations array — Memoized to prevent infinite marker re-renders
+  const allLocations = useMemo((): MapLocation[] => [
     // Omuto HQ
     {
       id: 'omuto-office',
@@ -163,7 +163,7 @@ export default function MapPage() {
       district: '',
       programme: t.programme,
     })),
-  ];
+  ], [schools, beneficiaries, waterSources, trees, trainings]);
 
   // Debounce search to avoid jank on slow devices
   const deferredQuery = useDeferredValue(searchQuery);

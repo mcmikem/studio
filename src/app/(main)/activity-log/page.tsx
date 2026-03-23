@@ -60,7 +60,7 @@ export default function ActivityLogPage() {
   }, [limitCount]);
 
   const { data: activitiesData, isLoading } = useCollection<Activity>(activitiesQuery);
-  const activities = activitiesData || [];
+  const activities = useMemo(() => activitiesData || [], [activitiesData]);
 
   // Determine grid columns based on screen size (simplified for virtualization)
   // In a real app, you might use a useWindowSize hook. 
