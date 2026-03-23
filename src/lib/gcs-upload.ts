@@ -4,6 +4,8 @@
  * This requires a service account with Storage permissions to be configured
  */
 
+import { classifyUploadError, isGcsResponseError, type UploadTelemetry } from './upload-errors';
+
 const API_UPLOAD_URL = '/api/upload/gcs-signed-url';
 
 export interface UploadResult {
@@ -11,6 +13,7 @@ export interface UploadResult {
   url?: string;
   filePath?: string;
   error?: string;
+  telemetry?: UploadTelemetry;
 }
 
 /**
@@ -62,8 +65,9 @@ export async function uploadToGCS(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Failed to get upload URL' }));
-      console.error('[GCS Upload] Failed to get signed URL:', errorData);
-      return { success: false, error: errorData.error || 'GCS not configured. Please enable Firebase Storage.' };
+      const telemetry = isGcsResponseError(response, errorData) || classifyUploadError(new Error(errorData.error));
+      console.error('[GCS Upload] Failed to get signed URL:', telemetry.kind, telemetry.message);
+      return { success: false, error: telemetry.userMessage, telemetry };
     }
 
     const data = await response.json().catch(() => ({}));
@@ -86,8 +90,9 @@ export async function uploadToGCS(
     });
 
     if (!uploadResponse.ok) {
-      console.error('[GCS Upload] Upload failed:', uploadResponse.statusText);
-      return { success: false, error: 'Upload to storage failed. Please try Firebase Storage instead.' };
+      const telemetry = isGcsResponseError(uploadResponse) || classifyUploadError(new Error(uploadResponse.statusText));
+      console.error('[GCS Upload] Upload failed:', telemetry.kind);
+      return { success: false, error: telemetry.userMessage, telemetry };
     }
 
     console.log('[GCS Upload] Success!');
@@ -97,8 +102,9 @@ export async function uploadToGCS(
       filePath,
     };
   } catch (error: any) {
-    console.error('[GCS Upload] Error:', error);
-    return { success: false, error: error?.message || 'Upload failed. Please try again.' };
+    const telemetry = classifyUploadError(error);
+    console.error('[GCS Upload] Error:', telemetry.kind, telemetry.message);
+    return { success: false, error: telemetry.userMessage, telemetry };
   }
 }
 

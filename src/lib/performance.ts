@@ -12,6 +12,24 @@ export interface PerformanceUserSummary {
   recentActivity: { type: string; title: string; date: any }[];
 }
 
+export interface PerformanceDataFreshness {
+  computedAt: string;
+  windowDays: number;
+  sources: {
+    activities: number;
+    checkins: number;
+    checkouts: number;
+    expenses: number;
+    testimonies: number;
+    users: number;
+  };
+}
+
+export interface PerformanceResult {
+  leaderboard: PerformanceUserSummary[];
+  freshness: PerformanceDataFreshness;
+}
+
 export function scoreCheckoutQuality(checkout: Checkout): number {
   const tasks = Array.isArray(checkout.tasks) ? checkout.tasks : [];
   if (tasks.length === 0) return 20;
@@ -130,4 +148,28 @@ export function buildPerformanceSummary(params: {
     .filter((u) => u.totalScore > 0)
     .sort((a, b) => b.totalScore - a.totalScore)
     .map(({ qualitySamples, ...rest }) => rest);
+}
+
+export function buildPerformanceResult(params: {
+  users: User[] | null;
+  activities: Activity[] | null;
+  checkins: Checkin[] | null;
+  checkouts: Checkout[] | null;
+  expenses?: Expense[] | null;
+  testimonies?: Testimony[] | null;
+}): PerformanceResult {
+  const leaderboard = buildPerformanceSummary(params);
+  const freshness: PerformanceDataFreshness = {
+    computedAt: new Date().toISOString(),
+    windowDays: 30,
+    sources: {
+      activities: params.activities?.length ?? 0,
+      checkins: params.checkins?.length ?? 0,
+      checkouts: params.checkouts?.length ?? 0,
+      expenses: params.expenses?.length ?? 0,
+      testimonies: params.testimonies?.length ?? 0,
+      users: params.users?.length ?? 0,
+    },
+  };
+  return { leaderboard, freshness };
 }

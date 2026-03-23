@@ -1,7 +1,5 @@
-'use client';
-
-import { CaptureImpactStoryForm } from '@/components/forms/impact/capture-impact-story-form';
+import { redirect } from 'next/navigation';
 
 export default function MealRecordTestimonyPage() {
-  return <CaptureImpactStoryForm backHref="/meal" />;
+  redirect('/record-testimony?from=meal');
 }

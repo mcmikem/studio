@@ -6,6 +6,7 @@ import { doc, setDoc, getDoc, collection, addDoc, Firestore } from "firebase/fir
 import type { FirebaseApp } from "firebase/app";
 import { buildUploadPath } from "@/lib/upload-paths";
 import { compressImage, fileToBase64 } from "@/lib/image-utils";
+import { classifyUploadError, throwUploadError, isGcsResponseError } from "@/lib/upload-errors";
 
 const MAX_IMAGE_BYTES = 500 * 1024;       // 500KB — threshold for base64 path
 const MAX_FIRESTORE_BYTES = 1024 * 1024;   // 1MB — max for Firestore doc
@@ -133,24 +134,12 @@ export async function uploadFile(
     console.log("[Upload] Used Firebase Storage");
     return downloadURL;
   } catch (error: any) {
-    console.error("[Upload] Storage error:", error?.message);
-    
     // Bubble up explicitly thrown validation errors (like HEIC format errors)
     if (error?.message && (error.message.includes('HEIC') || error.message.includes('supported') || error.message.includes('too large'))) {
       throw error;
     }
-    
-    // User-friendly error messages
-    if (error?.code === 'storage/unauthorized') {
-      throw new Error("You don't have permission to upload files. Please check your login status.");
-    }
-    if (error?.code === 'storage/canceled') {
-      throw new Error("Upload was cancelled. Please try again.");
-    }
-    if (error?.code === 'storage/unknown' || error?.message?.includes('billing')) {
-      throw new Error("File storage is temporarily unavailable. Your image was too large for the free method. Please try a smaller image or contact support.");
-    }
-    throw new Error("Upload failed. Please check your internet connection and try again.");
+
+    throwUploadError(error, { fileName: fileBlob instanceof File ? fileBlob.name : undefined, fileSize: fileBlob.size, path, userId });
   }
 }
 

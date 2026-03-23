@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table"
 import { Skeleton } from "./skeleton"
 import React from "react"
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, Eye, Search } from "lucide-react"
 import { Button } from "./button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./dropdown-menu"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./alert-dialog"
@@ -36,16 +36,21 @@ interface DataTableProps<TData, TValue> {
   data: TData[],
   isLoading?: boolean;
   renderMobileCard?: (item: TData) => React.ReactNode;
-  
+
   // Permission Props
   currentUser?: AuthUser | null;
   userProfile?: UserProfile | null;
-  
+
   // Action Actions
   editHref?: (item: TData) => string;
   viewHref?: (item: TData) => string;
   deleteCollection?: string;
   onDeleteSuccess?: (item: TData) => void;
+
+  // Empty state
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyAction?: { label: string; href?: string; onClick?: () => void };
 }
 
 export function DataTable<TData, TValue>({
@@ -59,6 +64,9 @@ export function DataTable<TData, TValue>({
   viewHref,
   deleteCollection,
   onDeleteSuccess,
+  emptyTitle = "No records found",
+  emptyDescription = "There are no items to display right now.",
+  emptyAction,
 }: DataTableProps<TData, TValue>) {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -183,8 +191,23 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                <TableCell colSpan={columns.length} className="h-32 text-center">
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <Search className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                    <p className="text-sm font-medium text-muted-foreground">{emptyTitle}</p>
+                    <p className="text-xs text-muted-foreground/60 mt-1">{emptyDescription}</p>
+                    {emptyAction && (
+                      emptyAction.href ? (
+                        <Button variant="outline" size="sm" className="mt-3" asChild>
+                          <Link href={emptyAction.href}>{emptyAction.label}</Link>
+                        </Button>
+                      ) : emptyAction.onClick ? (
+                        <Button variant="outline" size="sm" className="mt-3" onClick={emptyAction.onClick}>
+                          {emptyAction.label}
+                        </Button>
+                      ) : null
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
@@ -206,8 +229,21 @@ export function DataTable<TData, TValue>({
                       </React.Fragment>
                   ))
               ) : (
-                  <div className="text-center py-8 text-muted-foreground border rounded-xl border-dashed">
-                      No results.
+                  <div className="text-center py-12 border-2 border-dashed rounded-2xl">
+                      <Search className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                      <p className="text-sm font-medium text-muted-foreground">{emptyTitle}</p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">{emptyDescription}</p>
+                      {emptyAction && (
+                        emptyAction.href ? (
+                          <Button variant="outline" size="sm" className="mt-3" asChild>
+                            <Link href={emptyAction.href}>{emptyAction.label}</Link>
+                          </Button>
+                        ) : emptyAction.onClick ? (
+                          <Button variant="outline" size="sm" className="mt-3" onClick={emptyAction.onClick}>
+                            {emptyAction.label}
+                          </Button>
+                        ) : null
+                      )}
                   </div>
               )}
           </div>

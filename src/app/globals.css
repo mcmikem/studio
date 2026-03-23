@@ -34,6 +34,9 @@
     --ring: 358 86% 52%;
  
     --radius: 0.75rem; /* Standard border radius */
+
+    /* Mobile nav height for safe-area spacing */
+    --mobile-nav-height: 5.5rem; /* h-20 (5rem) + mb-4 (1rem) + padding */
   }
 }
 
@@ -171,6 +174,11 @@
 
   .enterprise-form-footer {
     @apply bg-muted/30 border-t-lg border-omuto-navy/10 p-4 sm:p-6;
+  }
+
+  /* Safe area padding bottom - for mobile nav clearance */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   /* =============================================================================

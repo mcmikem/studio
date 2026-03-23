@@ -126,6 +126,9 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'marquee': 'marquee 20s linear infinite',
       },
+      spacing: {
+        'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],
