@@ -1,7 +1,8 @@
 
 'use client';
 
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import type { User as UserProfileType } from '@/lib/types';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -13,26 +14,39 @@ export interface DashboardProps {
   profile: UserProfileType;
 }
 
-// Lazy load dashboards using React.lazy instead of next/dynamic
-const AdminDashboard = lazy(() => import('./admin-dashboard').then(mod => ({ default: mod.AdminDashboard })));
-const ExecutiveDashboard = lazy(() => import('./executive-dashboard').then(mod => ({ default: mod.ExecutiveDashboard })));
-const ProgramManagerDashboard = lazy(() => import('./program-manager-dashboard').then(mod => ({ default: mod.ProgramManagerDashboard })));
-const FieldStaffDashboard = lazy(() => import('./field-staff-dashboard').then(mod => ({ default: mod.FieldStaffDashboard })));
-const MediaFinanceDashboard = lazy(() => import('./media-finance-dashboard').then(mod => ({ default: mod.MediaFinanceDashboard })));
-const InternDashboard = lazy(() => import('./intern-dashboard').then(mod => ({ default: mod.InternDashboard })));
-const VolunteerDashboard = lazy(() => import('./intern-volunteer-dashboard').then(mod => ({ default: mod.InternVolunteerDashboard })));
+// Use dynamic imports with proper loading fallbacks
+const DynamicAdminDashboard = dynamic(() => import('./admin-dashboard').then(mod => ({ default: mod.AdminDashboard })), { loading: () => <DashboardSkeleton />, ssr: false });
+const DynamicExecutiveDashboard = dynamic(() => import('./executive-dashboard').then(mod => ({ default: mod.ExecutiveDashboard })), { loading: () => <DashboardSkeleton />, ssr: false });
+const DynamicProgramManagerDashboard = dynamic(() => import('./program-manager-dashboard').then(mod => ({ default: mod.ProgramManagerDashboard })), { loading: () => <DashboardSkeleton />, ssr: false });
+const DynamicFieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then(mod => ({ default: mod.FieldStaffDashboard })), { loading: () => <DashboardSkeleton />, ssr: false });
+const DynamicMediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => ({ default: mod.MediaFinanceDashboard })), { loading: () => <DashboardSkeleton />, ssr: false });
+const DynamicInternDashboard = dynamic(() => import('./intern-dashboard').then(mod => ({ default: mod.InternDashboard })), { loading: () => <DashboardSkeleton />, ssr: false });
+const DynamicVolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => ({ default: mod.InternVolunteerDashboard })), { loading: () => <DashboardSkeleton />, ssr: false });
 
-const dashboardMap: Record<string, React.LazyExoticComponent<React.ComponentType<{ profile: UserProfileType }>>> = {
-  'Administrator': AdminDashboard,
-  'Executive Director': ExecutiveDashboard,
-  'Programs & Partnerships Manager': ProgramManagerDashboard,
-  'Operations & Field Manager': FieldStaffDashboard,
-  'Media & Finance Lead': MediaFinanceDashboard,
-  'Media & Communications Lead': MediaFinanceDashboard,
-  'Field Coordinator': FieldStaffDashboard,
-  'Intern': InternDashboard,
-  'Volunteer': VolunteerDashboard,
-};
+function getDashboardForRole(role: string | undefined): React.ComponentType<{ profile: UserProfileType }> | null {
+  if (!role) return null;
+  
+  switch (role) {
+    case 'Administrator':
+      return DynamicAdminDashboard;
+    case 'Executive Director':
+      return DynamicExecutiveDashboard;
+    case 'Programs & Partnerships Manager':
+      return DynamicProgramManagerDashboard;
+    case 'Operations & Field Manager':
+    case 'Field Coordinator':
+      return DynamicFieldStaffDashboard;
+    case 'Media & Finance Lead':
+    case 'Media & Communications Lead':
+      return DynamicMediaFinanceDashboard;
+    case 'Intern':
+      return DynamicInternDashboard;
+    case 'Volunteer':
+      return DynamicVolunteerDashboard;
+    default:
+      return null;
+  }
+}
 
 export function DashboardLoader() {
   const { user, isUserLoading: isAuthLoading } = useUser();
@@ -40,10 +54,17 @@ export function DashboardLoader() {
 
   const isLoading = isAuthLoading || isProfileLoading;
 
-  if (isLoading || !user) {
+  // Show skeleton while loading
+  if (isLoading) {
     return <DashboardSkeleton />;
   }
 
+  // Show default dashboard if no user
+  if (!user) {
+    return <DefaultDashboard />;
+  }
+
+  // Show default dashboard if no profile
   if (!profile) {
     return <DefaultDashboard />;
   }
@@ -53,8 +74,9 @@ export function DashboardLoader() {
     return <DefaultDashboard />;
   }
   
-  const DashboardComponent = dashboardMap[profile.role];
+  const DashboardComponent = getDashboardForRole(profile.role);
   
+  // Fallback to default if no matching dashboard
   if (!DashboardComponent) {
     return <DefaultDashboard />;
   }
@@ -62,9 +84,7 @@ export function DashboardLoader() {
   return (
     <div className="w-full space-y-4">
       <NotificationPrompt />
-      <Suspense fallback={<DashboardSkeleton />}>
-        <DashboardComponent profile={profile} />
-      </Suspense>
+      <DashboardComponent profile={profile} />
     </div>
   );
 }
