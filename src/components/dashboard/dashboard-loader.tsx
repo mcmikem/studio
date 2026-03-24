@@ -1,83 +1,98 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import type { User as UserProfileType } from '@/lib/types';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { DefaultDashboard } from './default-dashboard';
 import { DashboardSkeleton } from './dashboard-skeleton';
 import { NotificationPrompt } from '@/components/notifications/notification-prompt';
+import { DashboardHeader } from './dashboard-header';
+import { RoleMissionCard } from './role-mission-card';
 
 export interface DashboardProps {
   profile: UserProfileType;
 }
 
+// ============= EXECUTIVE DASHBOARD =============
 function ExecutiveDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
-      <div className="p-4 bg-muted rounded-lg">
-        <p>Executive Dashboard Loading...</p>
+      <DashboardHeader profile={profile} />
+      <div className="text-center p-8 text-muted-foreground">
+        <p>Executive Dashboard - Full features coming soon</p>
       </div>
+      <RoleMissionCard profile={profile} />
     </div>
   );
 }
 
+// ============= ADMIN DASHBOARD =============
 function AdminDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
-      <div className="p-4 bg-muted rounded-lg">
-        <p>Admin Dashboard</p>
+      <DashboardHeader profile={profile} />
+      <div className="text-center p-8 text-muted-foreground">
+        <p>Admin Dashboard - Full features coming soon</p>
       </div>
+      <RoleMissionCard profile={profile} />
     </div>
   );
 }
 
+// ============= FIELD STAFF DASHBOARD =============
 function FieldStaffDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
-      <div className="p-4 bg-muted rounded-lg">
-        <p>Field Staff Dashboard</p>
+      <DashboardHeader profile={profile} />
+      <div className="text-center p-8 text-muted-foreground">
+        <p>Field Staff Dashboard - Full features coming soon</p>
       </div>
+      <RoleMissionCard profile={profile} />
     </div>
   );
 }
 
+// ============= PROGRAM MANAGER DASHBOARD =============
 function ProgramManagerDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
-      <div className="p-4 bg-muted rounded-lg">
-        <p>Program Manager Dashboard</p>
+      <DashboardHeader profile={profile} />
+      <div className="text-center p-8 text-muted-foreground">
+        <p>Program Manager Dashboard - Full features coming soon</p>
       </div>
+      <RoleMissionCard profile={profile} />
     </div>
   );
 }
 
+// ============= MEDIA & FINANCE DASHBOARD =============
 function MediaFinanceDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
-      <div className="p-4 bg-muted rounded-lg">
-        <p>Media & Finance Dashboard</p>
+      <DashboardHeader profile={profile} />
+      <div className="text-center p-8 text-muted-foreground">
+        <p>Media & Finance Dashboard - Full features coming soon</p>
       </div>
+      <RoleMissionCard profile={profile} />
     </div>
   );
 }
 
+// ============= INTERN DASHBOARD =============
 function InternDashboard({ profile }: DashboardProps) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
-      <div className="p-4 bg-muted rounded-lg">
-        <p>Intern Dashboard</p>
+      <DashboardHeader profile={profile} />
+      <div className="text-center p-8 text-muted-foreground">
+        <p>Intern Dashboard - Full features coming soon</p>
       </div>
+      <RoleMissionCard profile={profile} />
     </div>
   );
 }
 
+// ============= MAIN LOADER =============
 export function DashboardLoader() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { profile, isLoading: isProfileLoading } = useUserProfile(user);
