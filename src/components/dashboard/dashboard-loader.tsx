@@ -1,8 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import type { User as UserProfileType } from '@/lib/types';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -14,15 +13,16 @@ export interface DashboardProps {
   profile: UserProfileType;
 }
 
-const AdminDashboard = dynamic(() => import('./admin-dashboard').then(mod => mod.AdminDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
-const ExecutiveDashboard = dynamic(() => import('./executive-dashboard').then(mod => mod.ExecutiveDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
-const ProgramManagerDashboard = dynamic(() => import('./program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
-const FieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
-const MediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { loading: () => <DashboardSkeleton />, ssr: false });
-const InternDashboard = dynamic(() => import('./intern-dashboard').then(mod => mod.InternDashboard), { loading: () => <DashboardSkeleton />, ssr: false }) as React.ComponentType<{ profile: UserProfileType }>;
-const VolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { loading: () => <DashboardSkeleton />, ssr: false }) as React.ComponentType<{ profile: UserProfileType }>;
+// Lazy load dashboards using React.lazy instead of next/dynamic
+const AdminDashboard = lazy(() => import('./admin-dashboard').then(mod => ({ default: mod.AdminDashboard })));
+const ExecutiveDashboard = lazy(() => import('./executive-dashboard').then(mod => ({ default: mod.ExecutiveDashboard })));
+const ProgramManagerDashboard = lazy(() => import('./program-manager-dashboard').then(mod => ({ default: mod.ProgramManagerDashboard })));
+const FieldStaffDashboard = lazy(() => import('./field-staff-dashboard').then(mod => ({ default: mod.FieldStaffDashboard })));
+const MediaFinanceDashboard = lazy(() => import('./media-finance-dashboard').then(mod => ({ default: mod.MediaFinanceDashboard })));
+const InternDashboard = lazy(() => import('./intern-dashboard').then(mod => ({ default: mod.InternDashboard })));
+const VolunteerDashboard = lazy(() => import('./intern-volunteer-dashboard').then(mod => ({ default: mod.InternVolunteerDashboard })));
 
-const dashboardMap: Record<string, React.ComponentType<{ profile: UserProfileType }>> = {
+const dashboardMap: Record<string, React.LazyExoticComponent<React.ComponentType<{ profile: UserProfileType }>>> = {
   'Administrator': AdminDashboard,
   'Executive Director': ExecutiveDashboard,
   'Programs & Partnerships Manager': ProgramManagerDashboard,
@@ -37,18 +37,6 @@ const dashboardMap: Record<string, React.ComponentType<{ profile: UserProfileTyp
 export function DashboardLoader() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { profile, isLoading: isProfileLoading } = useUserProfile(user);
-  const [renderKey, setRenderKey] = useState(0);
-
-  // Force re-render on navigation to avoid cached component issues
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        setRenderKey(k => k + 1);
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
 
   const isLoading = isAuthLoading || isProfileLoading;
 
@@ -72,9 +60,11 @@ export function DashboardLoader() {
   }
 
   return (
-    <div className="w-full space-y-4" key={renderKey}>
+    <div className="w-full space-y-4">
       <NotificationPrompt />
-      <DashboardComponent profile={profile} />
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardComponent profile={profile} />
+      </Suspense>
     </div>
   );
 }
