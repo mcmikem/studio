@@ -215,7 +215,6 @@ export function AppHeader() {
     if (pathname.startsWith('/meal/data')) return 'Dashboards';
     if (pathname.startsWith('/meal')) return 'MEAL';
     if (pathname.startsWith('/enterprise')) return 'Enterprise';
-    if (pathname.startsWith('/management/expenses')) return 'Expenses';
     if (pathname.startsWith('/finance')) return 'Finance';
     if (pathname.startsWith('/management')) return 'Ops Desk';
     if (pathname.startsWith('/forms')) return 'Forms';

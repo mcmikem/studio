@@ -333,7 +333,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                     type: 'Urgent',
                     message: `${expenseUserName} submitted a request for ${formatCurrency(finalTotal)}.`,
                     priority: 'High',
-                    action: `/management/expenses?highlight=${docRef.id}`,
+                    action: `/finance/requisitions?highlight=${docRef.id}`,
                     creatorId: user.uid,
                     targetUserIds: managerIds,
                 });
@@ -347,7 +347,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             setReceiptFile(null);
         } else if (!expense) {
             // If we're on a dedicated edit page, maybe redirect back
-            router.push('/management/expenses');
+            router.push('/finance/requisitions');
         }
     } catch(e) {
         console.error(e);

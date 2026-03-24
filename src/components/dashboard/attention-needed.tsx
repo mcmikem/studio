@@ -49,7 +49,7 @@ function ExpenseApprovals() {
           title: e.title || 'Expense',
           sub: `${e.userName} · UGX ${(e.totalAmount || 0).toLocaleString()}`,
           action: 'Review',
-          href: '/management/expenses',
+          href: '/finance/requisitions',
           days,
         }
       })
@@ -67,7 +67,7 @@ function ExpenseApprovals() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <p className="font-black text-sm truncate">{urgent.length} Expense{urgent.length !== 1 ? 's' : ''} Pending Approval</p>
-              <Link href="/management/expenses" className="flex items-center gap-1 text-[10px] font-bold text-primary hover:underline flex-shrink-0">
+              <Link href="/finance/requisitions" className="flex items-center gap-1 text-[10px] font-bold text-primary hover:underline flex-shrink-0">
                 Review <ChevronRight className="h-3 w-3" />
               </Link>
             </div>

@@ -84,10 +84,10 @@ export default function ManagementPage() {
             variant: "amber"
         },
         { 
-            name: 'Finance & Expenses', 
-            href: '/management/finance', 
+            name: 'Finance', 
+            href: '/finance/dashboard', 
             icon: Receipt, 
-            description: 'Reconciliations & Approvals',
+            description: 'Full financial overview',
             metric: expensesLoading ? '—' : `${expenses?.filter(e => e.status === 'Pending').length || 0} Pending`,
             trend: "Budget control",
             variant: "emerald"
