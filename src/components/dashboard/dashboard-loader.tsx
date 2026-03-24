@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import type { User as UserProfileType } from '@/lib/types';
 import { useUser } from '@/firebase';
@@ -37,6 +37,18 @@ const dashboardMap: Record<string, React.ComponentType<{ profile: UserProfileTyp
 export function DashboardLoader() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { profile, isLoading: isProfileLoading } = useUserProfile(user);
+  const [renderKey, setRenderKey] = useState(0);
+
+  // Force re-render on navigation to avoid cached component issues
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setRenderKey(k => k + 1);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   const isLoading = isAuthLoading || isProfileLoading;
 
@@ -60,7 +72,7 @@ export function DashboardLoader() {
   }
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4" key={renderKey}>
       <NotificationPrompt />
       <DashboardComponent profile={profile} />
     </div>
