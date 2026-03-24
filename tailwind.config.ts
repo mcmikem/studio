@@ -16,15 +16,15 @@ export default {
         body: ['var(--font-inter)'],
       },
       colors: {
-        // Omuto Brand Colors (Strict from blueprint)
-        'omuto-red': '#EC1C24',
-        'omuto-navy': '#231F20',
-        'omuto-cream': '#F9F8F3',
-        'omuto-yellow': '#FFCF5D',
-        'omuto-brown': '#5D261B',
-        'omuto-gold': '#D69100',
-        'omuto-teal': '#40D2AF',
-        'omuto-blue': '#96D9F2',
+        // Omuto Brand Colors - using CSS variables for dark mode support
+        'omuto-red': 'hsl(var(--omuto-red))',
+        'omuto-navy': 'hsl(var(--omuto-navy))',
+        'omuto-cream': 'hsl(var(--omuto-cream))',
+        'omuto-yellow': 'hsl(var(--omuto-yellow))',
+        'omuto-brown': 'hsl(var(--omuto-brown))',
+        'omuto-gold': 'hsl(var(--omuto-gold))',
+        'omuto-teal': 'hsl(var(--omuto-teal))',
+        'omuto-blue': 'hsl(var(--omuto-blue))',
       },
 
       // Dark mode variants
@@ -67,16 +67,16 @@ export default {
           '5': '#231F20',
         },
 
-        // Sidebar - high contrast light theme
+        // Sidebar - using CSS variables for dark mode support
         sidebar: {
-          DEFAULT: '#FFFFFF',
-          foreground: '#231F20',
-          primary: '#EC1C24',
-          'primary-foreground': '#FFFFFF',
-          accent: '#F9F8F3',
-          'accent-foreground': '#EC1C24',
-          border: '#231F20',
-          ring: '#EC1C24',
+          DEFAULT: 'hsl(var(--omuto-cream))',
+          foreground: 'hsl(var(--omuto-navy))',
+          primary: 'hsl(var(--omuto-red))',
+          'primary-foreground': 'hsl(var(--primary-foreground))',
+          accent: 'hsl(var(--accent))',
+          'accent-foreground': 'hsl(var(--accent-foreground))',
+          border: 'hsl(var(--omuto-navy) / 0.1)',
+          ring: 'hsl(var(--omuto-red))',
         },
       },
       boxShadow: {

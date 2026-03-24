@@ -29,11 +29,21 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
 
+    /* Brand Colors as CSS Variables */
+    --omuto-navy: 224 8.5% 13.1%;  /* #231F20 */
+    --omuto-cream: 48 40% 96%;     /* #F9F8F3 */
+    --omuto-red: 358 86% 52%;      /* #EC1C24 */
+    --omuto-yellow: 42 100% 68%;    /* #FFCF5D */
+    --omuto-brown: 18 43% 26%;      /* #5D261B */
+    --omuto-gold: 42 100% 42%;     /* #D69100 */
+    --omuto-teal: 167 57% 53%;     /* #40D2AF */
+    --omuto-blue: 199 85% 78%;      /* #96D9F2 */
+
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 358 86% 52%;
- 
-    --radius: 0.625rem; /* 10px - slightly tighter */
+  
+    --radius: 0.625rem;
 
     /* Mobile nav height for safe-area spacing */
     --mobile-nav-height: 5rem;
@@ -63,6 +73,16 @@
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
+
+    /* Dark mode brand colors - inverted for dark mode */
+    --omuto-navy: 0 0% 95%;       /* Light text on dark */
+    --omuto-cream: 224 20% 12%;   /* Dark cream */
+    --omuto-red: 358 86% 60%;      /* Brighter red for dark mode */
+    --omuto-yellow: 42 100% 55%;  /* Brighter yellow */
+    --omuto-brown: 18 43% 35%;    /* Lighter brown */
+    --omuto-gold: 42 100% 50%;    /* Brighter gold */
+    --omuto-teal: 167 57% 60%;    /* Brighter teal */
+    --omuto-blue: 199 85% 70%;    /* Brighter blue */
 
     --border: 224 15% 20%;
     --input: 224 15% 20%;
