@@ -29,12 +29,23 @@ import { useResolvedPhotoURL } from '@/hooks/use-resolved-photo';
 
 
 function ThemeToggle() {
-    const [isDark, setIsDark] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return document.documentElement.classList.contains('dark');
+    const [isDark, setIsDark] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark') {
+            document.documentElement.classList.add('dark');
+            setIsDark(true);
+        } else if (saved === 'light') {
+            document.documentElement.classList.remove('dark');
+            setIsDark(false);
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+            setIsDark(true);
         }
-        return false;
-    });
+    }, []);
 
     const toggleTheme = () => {
         const next = !isDark;
@@ -48,16 +59,14 @@ function ThemeToggle() {
         }
     };
 
-    useEffect(() => {
-        const saved = localStorage.getItem('theme');
-        if (saved === 'dark') {
-            document.documentElement.classList.add('dark');
-            setIsDark(true);
-        } else if (saved === 'light') {
-            document.documentElement.classList.remove('dark');
-            setIsDark(false);
-        }
-    }, []);
+    if (!mounted) {
+        return (
+            <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50">
+                <Moon className="h-5 w-5" />
+                <span className="sr-only">Toggle theme</span>
+            </Button>
+        );
+    }
 
     return (
         <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50" onClick={toggleTheme}>
