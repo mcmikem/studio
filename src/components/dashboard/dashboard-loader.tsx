@@ -48,10 +48,19 @@ export function DashboardLoader() {
     return <DefaultDashboard />;
   }
 
-  const DashboardComponent = dashboardMap[profile.role] || DefaultDashboard;
+  // Ensure we have a valid profile with required fields
+  if (!profile.id || !profile.role) {
+    return <DefaultDashboard />;
+  }
+  
+  const DashboardComponent = dashboardMap[profile.role];
+  
+  if (!DashboardComponent) {
+    return <DefaultDashboard />;
+  }
 
   return (
-    <div className="w-full space-y-4" key={profile?.id || 'default'}>
+    <div className="w-full space-y-4">
       <NotificationPrompt />
       <DashboardComponent profile={profile} />
     </div>
