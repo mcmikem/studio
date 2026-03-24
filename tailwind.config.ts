@@ -16,21 +16,24 @@ export default {
         body: ['var(--font-inter)'],
       },
       colors: {
-        // Omuto Brand Colors - using CSS variables for dark mode support
-        'omuto-red': 'hsl(var(--omuto-red))',
-        'omuto-navy': 'hsl(var(--omuto-navy))',
-        'omuto-cream': 'hsl(var(--omuto-cream))',
-        'omuto-yellow': 'hsl(var(--omuto-yellow))',
-        'omuto-brown': 'hsl(var(--omuto-brown))',
-        'omuto-gold': 'hsl(var(--omuto-gold))',
-        'omuto-teal': 'hsl(var(--omuto-teal))',
-        'omuto-blue': 'hsl(var(--omuto-blue))',
-      },
-
-      // Dark mode variants
-      // Note: These are automatically used via CSS when .dark class is applied
-
-      popover: {
+        // Omuto Brand Colors (Strict from blueprint)
+        'omuto-red': '#EC1C24',
+        'omuto-navy': '#231F20',
+        'omuto-cream': '#F9F8F3',
+        'omuto-yellow': '#FFCF5D',
+        'omuto-brown': '#5D261B',
+        'omuto-gold': '#D69100',
+        'omuto-teal': '#40D2AF',
+        'omuto-blue': '#96D9F2',
+        
+        // Semantic Colors based on Omuto Brand
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        card: {
+          DEFAULT: 'hsl(var(--card))',
+          foreground: 'hsl(var(--card-foreground))',
+        },
+        popover: {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
         },
@@ -67,16 +70,16 @@ export default {
           '5': '#231F20',
         },
 
-        // Sidebar - using CSS variables for dark mode support
+        // Sidebar - high contrast light theme
         sidebar: {
-          DEFAULT: 'hsl(var(--omuto-cream))',
-          foreground: 'hsl(var(--omuto-navy))',
-          primary: 'hsl(var(--omuto-red))',
-          'primary-foreground': 'hsl(var(--primary-foreground))',
-          accent: 'hsl(var(--accent))',
-          'accent-foreground': 'hsl(var(--accent-foreground))',
-          border: 'hsl(var(--omuto-navy) / 0.1)',
-          ring: 'hsl(var(--omuto-red))',
+          DEFAULT: '#FFFFFF',
+          foreground: '#231F20',
+          primary: '#EC1C24',
+          'primary-foreground': '#FFFFFF',
+          accent: '#F9F8F3',
+          'accent-foreground': '#EC1C24',
+          border: '#231F20',
+          ring: '#EC1C24',
         },
       },
       boxShadow: {
@@ -124,8 +127,9 @@ export default {
         'marquee': 'marquee 20s linear infinite',
       },
       spacing: {
-        "safe-bottom": "env(safe-area-inset-bottom, 0px)",
+        'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-};
+  plugins: [require('tailwindcss-animate')],
+} satisfies Config;
