@@ -2,7 +2,7 @@
 "use client"
 
 import { useFirestore, useCollection } from '@/firebase'
-import { collection, query, orderBy, Timestamp } from 'firebase/firestore'
+import { collection, query, orderBy } from 'firebase/firestore'
 import { useMemo } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -40,14 +40,14 @@ function ExpenseApprovals() {
       .filter((e) => e.status !== 'Approved' && e.status !== 'Rejected')
       .slice(0, 3)
       .map((e) => {
-        const createdAt = e.createdAt instanceof Timestamp ? e.createdAt.toDate() : new Date(e.createdAt || Date.now())
+        const createdAt = e.createdAt?.toDate?.() || new Date(e.createdAt || Date.now())
         const days = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
         return {
           id: e.id,
           type: 'expense' as const,
           urgency: days >= 7 ? 'critical' as const : days >= 3 ? 'warning' as const : 'info' as const,
           title: e.title || 'Expense',
-          sub: `${e.userName} · UGX ${(e.totalAmount || 0).toLocaleString()}`,
+          sub: `${e.userName || 'Unknown'} · UGX ${(e.totalAmount || 0).toLocaleString()}`,
           action: 'Review',
           href: '/finance/requisitions',
           days,
@@ -74,7 +74,7 @@ function ExpenseApprovals() {
             {urgent.map((e) => (
               <p key={e.id} className="text-xs text-muted-foreground truncate">{e.sub}</p>
             ))}
-            {urgent[0].days >= 3 && (
+            {urgent[0]?.days >= 3 && (
               <p className="text-[10px] font-black text-amber-600 mt-1 flex items-center gap-1">
                 <Clock className="h-3 w-3" /> Oldest: {urgent[0].days}d ago
               </p>
@@ -95,7 +95,7 @@ function UpcomingDeadlines() {
     if (!proposals) return []
     const now = new Date()
     const items: AttentionItem[] = []
-    proposals.forEach((p) => {
+    proposals.forEach((p: any) => {
       if (p.submissionDate) {
         const d = new Date(p.submissionDate)
         const days = Math.floor((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
@@ -119,13 +119,14 @@ function UpcomingDeadlines() {
   if (deadlines.length === 0) return null
 
   const mostUrgent = deadlines[0]
+  const urgencyClass = mostUrgent.urgency === 'critical' ? 'rose' : 'amber'
 
   return (
-    <Card className={`border-l-2 ${mostUrgent.urgency === 'critical' ? 'border-l-rose-500' : 'border-l-amber-500'}`}>
+    <Card className={`border-l-2 border-l-${urgencyClass}-500`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
-          <div className={`p-2 rounded-xl ${mostUrgent.urgency === 'critical' ? 'bg-rose-50' : 'bg-amber-50'}`}>
-            <Flag className={`h-5 w-5 ${mostUrgent.urgency === 'critical' ? 'text-rose-500' : 'text-amber-500'}`} />
+          <div className={`p-2 rounded-xl bg-${urgencyClass}-50`}>
+            <Flag className={`h-5 w-5 text-${urgencyClass}-500`} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
@@ -134,7 +135,7 @@ function UpcomingDeadlines() {
                 View <ChevronRight className="h-3 w-3" />
               </Link>
             </div>
-            <p className={`text-xs font-semibold ${mostUrgent.urgency === 'critical' ? 'text-rose-500' : 'text-amber-500'}`}>
+            <p className={`text-xs font-semibold text-${urgencyClass}-500`}>
               {mostUrgent.sub}
             </p>
             {deadlines.length > 1 && (
@@ -157,28 +158,26 @@ function OverdueVisits() {
   const overdue = useMemo(() => {
     if (!schools || !visits) return []
     const now = new Date()
-    const overdue30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-    return schools.filter((s) => {
-      const schoolVisits = visits.filter((v) => v.schoolId === s.id)
-      if (schoolVisits.length === 0) return true
-      const last = schoolVisits[0]
-      const dateVal = last.date as any
-      const d = dateVal?.toDate ? dateVal.toDate() : new Date(dateVal)
-      return d < overdue30
-    }).slice(0, 3)
+    const overdue30 = schools.filter((s: any) => {
+      if (!s.lastVisitDate) return true
+      const last = new Date(s.lastVisitDate)
+      const diff = Math.floor((now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24))
+      return diff > 30
+    })
+    return overdue30.slice(0, 2).map((s: any) => ({
+      id: s.id,
+      schoolName: s.schoolName || 'Unknown School',
+    }))
   }, [schools, visits])
 
   if (overdue.length === 0) return null
 
   return (
-    <Card className="border-l-2 border-l-rose-500">
+    <Card className="border-l-2 border-l-red-500">
       <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <div className="p-2 bg-rose-50 rounded-xl relative">
-            <Users className="h-5 w-5 text-rose-500" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-              {overdue.length}
-            </span>
+        <div className="flex items-center gap-2">
+          <div className="p-2 bg-red-50 rounded-xl">
+            <AlertTriangle className="h-5 w-5 text-red-600" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
