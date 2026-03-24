@@ -40,18 +40,18 @@ export function DashboardLoader() {
 
   const isLoading = isAuthLoading || isProfileLoading;
 
-  if (isLoading) {
+  if (isLoading || !user) {
     return <DashboardSkeleton />;
   }
 
   if (!profile) {
     return <DefaultDashboard />;
   }
-  
+
   const DashboardComponent = dashboardMap[profile.role] || DefaultDashboard;
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4" key={profile?.id || 'default'}>
       <NotificationPrompt />
       <DashboardComponent profile={profile} />
     </div>
