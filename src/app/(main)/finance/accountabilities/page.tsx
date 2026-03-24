@@ -24,7 +24,7 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { useToast } from '@/hooks/use-toast';
 import {
   ShieldCheck, AlertTriangle, CheckCircle2, Clock, User as UserIcon,
-  ArrowRight, PlusCircle, Loader2, Eye
+  PlusCircle, Loader2
 } from 'lucide-react';
 
 interface StaffAccountability {

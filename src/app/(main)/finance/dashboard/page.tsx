@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, where, limit } from 'firebase/firestore';
-import type { Income, Expense, User } from '@/lib/types';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { Income, Expense } from '@/lib/types';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import Link from 'next/link';
 import {
@@ -20,11 +20,9 @@ export default function FinanceDashboardPage() {
 
   const incomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc')) : null, [firestore]);
   const expensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
 
   const { data: allIncome, isLoading: isLoadingIncome } = useCollection<Income>(incomeQuery);
   const { data: allExpenses, isLoading: isLoadingExpenses } = useCollection<Expense>(expensesQuery);
-  const { data: users } = useCollection<User>(usersQuery);
 
   const isLoading = isLoadingIncome || isLoadingExpenses;
 

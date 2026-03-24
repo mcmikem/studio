@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createAlertAction as createAlert } from '@/actions/mutations';
 import Link from 'next/link';
 import {
-  FileText, Check, X, Undo2, CheckCheck, Eye, PlusCircle, Loader2
+  FileText, Check, X, CheckCheck, PlusCircle
 } from 'lucide-react';
 
 const statusColors: Record<string, string> = {

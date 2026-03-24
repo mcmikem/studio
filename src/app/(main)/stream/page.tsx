@@ -10,15 +10,14 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import { Rss, LogOut, BookOpen, Lightbulb, Check, X, Wind } from 'lucide-react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { Rss, Check, X, Wind, Lightbulb } from 'lucide-react';
+import { useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import type { Checkout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import { formatDateSafe, getInitials } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';

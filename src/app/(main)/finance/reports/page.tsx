@@ -85,6 +85,7 @@ export default function ReportsPage() {
     a.href = url;
     a.download = `finance-report-${month}.txt`;
     a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
