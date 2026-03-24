@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FileSignature, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake, ArrowRight, Sun, Moon } from 'lucide-react';
+import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FileSignature, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake, ArrowRight, Sun, Moon, Wifi, WifiOff, CloudOff, RefreshCw } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { useViewAs } from '@/hooks/use-view-as';
 import { useCommandState } from '@/hooks/use-command-state';
 import { useResolvedPhotoURL } from '@/hooks/use-resolved-photo';
+import { SyncBadge } from './offline/offline-indicator';
 
 
 function ThemeToggle() {
@@ -249,6 +250,7 @@ export function AppHeader() {
         )}
       </div>
       <div className="flex items-center gap-0.5">
+        <SyncBadge />
         <ThemeToggle />
         <Button variant="ghost" size="icon" className="text-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-lg" onClick={() => setOpen(true)}><Search className="h-4.5 w-4.5" /></Button>
         {canViewAs && <div className="hidden sm:block"><ViewAsMenu /></div>}

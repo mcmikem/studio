@@ -25,15 +25,12 @@ export default {
         'omuto-gold': '#D69100',
         'omuto-teal': '#40D2AF',
         'omuto-blue': '#96D9F2',
-        
-        // Semantic Colors based on Omuto Brand
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
-        },
-        popover: {
+      },
+
+      // Dark mode variants
+      // Note: These are automatically used via CSS when .dark class is applied
+
+      popover: {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
         },
@@ -127,9 +124,8 @@ export default {
         'marquee': 'marquee 20s linear infinite',
       },
       spacing: {
-        'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
-      },
+        "safe-bottom": "env(safe-area-inset-bottom, 0px)",
     },
   },
-  plugins: [require('tailwindcss-animate')],
-} satisfies Config;
+  plugins: [require("tailwindcss-animate")],
+};

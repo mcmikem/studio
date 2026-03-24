@@ -18,57 +18,51 @@ export function OfflineIndicator() {
   if (isOnline && pendingCount === 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[200] animate-in slide-in-from-top duration-300">
+    <div className="fixed bottom-4 right-4 z-[200] animate-in slide-in-from-bottom-4 duration-300">
       {!isOnline ? (
-        <div className="bg-destructive/95 text-white px-4 py-2 text-center">
-          <div className="flex items-center justify-center gap-2 text-sm font-bold">
-            <WifiOff className="h-4 w-4" />
-            <span>No connection — working offline. Your data is saved locally.</span>
-            {pendingCount > 0 && (
-              <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">
-                {pendingCount} pending
-              </span>
-            )}
-          </div>
+        <div className="bg-destructive text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
+          <WifiOff className="h-4 w-4" />
+          <span className="text-sm font-medium">Offline</span>
+          {pendingCount > 0 && (
+            <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs">
+              {pendingCount} pending
+            </span>
+          )}
         </div>
       ) : pendingCount > 0 && !dismissed ? (
-        <div className="bg-omuto-yellow/90 text-omuto-navy px-4 py-2 text-center shadow-sm">
-          <div className="flex items-center justify-center gap-2 text-sm font-bold">
-            <CloudOff className="h-4 w-4" />
-            <span>
-              {pendingCount} item{pendingCount > 1 ? 's' : ''} waiting to upload
-              {lastSyncTime && (
-                <span className="font-normal opacity-70 ml-1">
-                  · Last sync: {format(lastSyncTime, 'h:mm a')}
-                </span>
-              )}
+        <div className="bg-omuto-yellow text-omuto-navy px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
+          <CloudOff className="h-4 w-4" />
+          <span className="text-sm font-medium">
+            {pendingCount} pending
+          </span>
+          {lastSyncTime && (
+            <span className="text-xs opacity-70">
+              Last sync: {format(lastSyncTime, 'h:mm a')}
             </span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={syncNow}
-              disabled={isSyncing}
-              className="h-6 px-2 text-[11px] font-black bg-white/20 hover:bg-white/30 text-omuto-navy ml-2"
-            >
-              <RefreshCw className={cn('h-3 w-3 mr-1', isSyncing && 'animate-spin')} />
-              {isSyncing ? 'Syncing...' : 'Sync now'}
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => setDismissed(true)}
-              className="h-6 w-6 p-0 text-omuto-navy/50 hover:text-omuto-navy ml-1"
-            >
-              ✕
-            </Button>
-          </div>
+          )}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={syncNow}
+            disabled={isSyncing}
+            className="h-7 px-2 text-xs font-bold bg-white/20 hover:bg-white/30 ml-1"
+          >
+            <RefreshCw className={cn('h-3 w-3 mr-1', isSyncing && 'animate-spin')} />
+            {isSyncing ? 'Syncing' : 'Sync'}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setDismissed(true)}
+            className="h-7 w-7 p-0 text-xs text-omuto-navy/50 hover:text-omuto-navy ml-1"
+          >
+            ✕
+          </Button>
         </div>
       ) : isSyncing ? (
-        <div className="bg-primary/95 text-white px-4 py-2 text-center">
-          <div className="flex items-center justify-center gap-2 text-sm font-bold">
-            <RefreshCw className="h-4 w-4 animate-spin" />
-            <span>Syncing your changes...</span>
-          </div>
+        <div className="bg-primary text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2">
+          <RefreshCw className="h-4 w-4 animate-spin" />
+          <span className="text-sm font-medium">Syncing...</span>
         </div>
       ) : null}
     </div>
@@ -76,9 +70,18 @@ export function OfflineIndicator() {
 }
 
 export function SyncBadge() {
-  const { pendingCount, isSyncing } = useOffline();
+  const { pendingCount, isSyncing, isOnline } = useOffline();
 
   if (pendingCount === 0 && !isSyncing) return null;
+
+  if (!isOnline) {
+    return (
+      <div className="flex items-center gap-1.5 text-sm text-destructive">
+        <WifiOff className="h-3.5 w-3.5" />
+        <span className="text-[11px] font-semibold">Offline</span>
+      </div>
+    );
+  }
 
   if (isSyncing) {
     return (
