@@ -149,54 +149,93 @@
 @layer components {
   /* BUTTONS - Clean & Confident */
   .btn-omuto {
-    @apply h-10 px-5 bg-omuto-navy text-white font-medium text-sm rounded-lg transition-all duration-200 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2;
-    transition-property: all;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 200ms;
+    height: 2.5rem;
+    padding: 0 1.25rem;
+    background-color: hsl(var(--omuto-navy));
+    color: white;
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    transition: all 200ms;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   .btn-omuto:hover {
     background-color: rgb(35 31 32 / 0.9);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  .btn-omuto:active {
+    transform: scale(0.98);
   }
   .btn-omuto:focus-visible {
-    --tw-ring-color: rgb(236 28 36 / 0.5);
+    outline: 2px solid hsl(var(--omuto-red) / 0.5);
+    outline-offset: 2px;
   }
 
   .btn-omuto-secondary {
-    @apply h-10 px-5 bg-white text-omuto-navy font-medium text-sm rounded-lg transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2;
+    height: 2.5rem;
+    padding: 0 1.25rem;
+    background-color: hsl(var(--background));
+    color: hsl(var(--omuto-navy));
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
     border: 1px solid rgb(35 31 32 / 0.15);
+    transition: all 200ms;
   }
   .btn-omuto-secondary:hover {
     background-color: rgb(35 31 32 / 0.05);
   }
+  .btn-omuto-secondary:active {
+    transform: scale(0.98);
+  }
   .btn-omuto-secondary:focus-visible {
-    --tw-ring-color: rgb(35 31 32 / 0.2);
+    outline: 2px solid rgb(35 31 32 / 0.2);
+    outline-offset: 2px;
   }
 
   /* BADGES - Subtle & Informative */
   .badge-omuto-solid {
-    @apply px-2.5 py-0.5 text-omuto-navy rounded-full font-medium text-xs;
+    padding: 0.125rem 0.625rem;
+    color: hsl(var(--omuto-navy));
+    border-radius: 9999px;
+    font-weight: 500;
+    font-size: 0.75rem;
     background-color: rgb(35 31 32 / 0.1);
   }
   
   .badge-omuto-outline {
-    @apply px-2.5 py-0.5 bg-white text-omuto-navy rounded-full font-medium text-xs;
+    padding: 0.125rem 0.625rem;
+    background-color: hsl(var(--background));
+    color: hsl(var(--omuto-navy));
+    border-radius: 9999px;
+    font-weight: 500;
+    font-size: 0.75rem;
     border: 1px solid rgb(35 31 32 / 0.15);
   }
 
   /* TABLES - Clean Data */
   .data-table-omuto {
-    @apply bg-white rounded-xl overflow-hidden;
+    background-color: hsl(var(--background));
+    border-radius: 0.75rem;
+    overflow: hidden;
     border: 1px solid rgb(35 31 32 / 0.08);
   }
   
   .data-table-omuto thead {
-    @apply text-omuto-navy text-xs font-medium uppercase tracking-wide;
+    color: hsl(var(--omuto-navy));
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     background-color: rgb(35 31 32 / 0.05);
   }
   
   .data-table-omuto tr {
-    @apply last:border-0 transition-colors;
     border-bottom: 1px solid rgb(35 31 32 / 0.05);
+    transition: background-color 150ms;
+  }
+  .data-table-omuto tr:last-child {
+    border-bottom: none;
   }
   .data-table-omuto tr:hover {
     background-color: rgb(35 31 32 / 0.02);
@@ -346,17 +385,23 @@
   }
 
   .omuto-premium-popup .leaflet-popup-content-wrapper {
-    @apply rounded-xl shadow-lg p-0 overflow-hidden bg-white;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    overflow: hidden;
+    background-color: hsl(var(--background));
     border: 1px solid rgb(35 31 32 / 0.08);
   }
 
   .omuto-premium-popup .leaflet-popup-tip {
-    @apply bg-white border-r border-b;
-    border-color: rgb(35 31 32 / 0.08);
+    background-color: hsl(var(--background));
+    border-right: 1px solid rgb(35 31 32 / 0.08);
+    border-bottom: 1px solid rgb(35 31 32 / 0.08);
   }
 
   .omuto-premium-popup .leaflet-popup-content {
-    @apply m-0 p-0;
+    margin: 0;
+    padding: 0;
   }
 
   .marker-container {
