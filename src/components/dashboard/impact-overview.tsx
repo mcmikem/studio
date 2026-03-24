@@ -71,7 +71,7 @@ export function ImpactOverview() {
                 <div className="flex justify-between items-center mb-1">
                   <span className="font-semibold text-sm">{metric.metric}</span>
                   <span className="text-xs text-muted-foreground">
-                    {((progress * 100) / 100).toFixed(0)}%
+                    {progress.toFixed(0)}%
                   </span>
                 </div>
                 <p className="text-2xl font-bold">{formatValue(metric.current)}</p>

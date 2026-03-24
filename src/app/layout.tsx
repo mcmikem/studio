@@ -38,6 +38,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           name="description"
           content="The master tool for Omuto Foundation staff."
         />
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            var theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+              document.documentElement.classList.add('dark');
+            } else if (theme === 'light') {
+              document.documentElement.classList.remove('dark');
+            }
+          })();
+        `}} />
       </head>
       <body>
         <Providers>

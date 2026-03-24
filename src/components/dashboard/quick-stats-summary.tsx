@@ -61,18 +61,10 @@ export function QuickStatsSummary() {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    {displayMetrics?.map((metric, index) => {
+    {displayMetrics?.map((metric) => {
         const Icon = metricIcons[metric.metric] || metricIcons.default
         const progress = Math.min(100, Math.round((metric.current / (metric.target || 1)) * 100));
-        
-        // Mock trends for visual impact
-        const mockTrends = [
-            { val: "+12%", up: true },
-            { val: "+3.4w", up: true },
-            { val: "On Track", up: true },
-            { val: "+8%", up: true }
-        ];
-        const trend = mockTrends[index % mockTrends.length];
+        const isOnTrack = progress >= 50;
         
         return (
         <Link href="/management/metrics" key={metric.id} className="group">
@@ -86,9 +78,9 @@ export function QuickStatsSummary() {
                             <div className="p-2.5 bg-primary/10 text-primary rounded-xl ring-4 ring-primary/5 group-hover:bg-primary group-hover:text-white transition-all duration-500">
                                 <Icon className="h-4 w-4" />
                             </div>
-                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${trend.up ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                                {trend.up ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
-                                {trend.val}
+                            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${isOnTrack ? 'bg-emerald-100 text-emerald-700' : progress >= 30 ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'}`}>
+                                {isOnTrack ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
+                                {progress}%
                             </div>
                         </div>
                         <ArrowUpRight className="h-4 w-4 text-omuto-navy/20 group-hover:text-primary transition-colors" />

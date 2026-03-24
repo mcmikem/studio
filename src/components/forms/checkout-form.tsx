@@ -262,7 +262,7 @@ export function CheckoutForm() {
               {...register('accomplishment', {
                 required: 'This field is required.',
               })}
-              placeholder="e.g., I finalized the partnership MoU with Spouts of Water."
+              placeholder="Describe what you accomplished today..."
               className="min-h-[100px]"
             />
             {errors.accomplishment && (
@@ -280,7 +280,7 @@ export function CheckoutForm() {
             </Label>
             <Textarea
               id="learning"
-              placeholder="Optional: What should we do differently next time? What surprised you?"
+              placeholder="What did you learn or adapt today?"
               className="min-h-[100px]"
               {...register('learning')}
             />
@@ -294,7 +294,7 @@ export function CheckoutForm() {
             </Label>
             <Textarea
               id="tomorrowPlan"
-              placeholder="e.g., Begin outreach to 5 new potential partners."
+              placeholder="What will you focus on tomorrow?"
               className="min-h-[100px]"
               {...register('tomorrowPlan', {
                 required: 'Please set a priority for tomorrow.',
@@ -411,7 +411,7 @@ export function CheckoutForm() {
                         </Label>
                         <Textarea
                           id={`tasks.${index}.reason`}
-                          placeholder="e.g., Ran out of time, waiting for partner feedback..."
+                          placeholder="Why wasn't this task completed?"
                           className="min-h-[60px]"
                           {...register(`tasks.${index}.reason`)}
                         />
@@ -452,7 +452,7 @@ export function CheckoutForm() {
                 </Label>
                 <Textarea
                   id="learning"
-                  placeholder="Optional: What should we do differently next time? What surprised you?"
+                  placeholder="What did you learn or adapt today?"
                   className="min-h-[100px]"
                   {...register('learning')}
                 />
@@ -468,7 +468,7 @@ export function CheckoutForm() {
               </Label>
               <Textarea
                 id="tomorrowPlan"
-                placeholder="e.g., Complete the draft proposal for UNICEF."
+                placeholder="What will you focus on tomorrow?"
                 className="min-h-[100px]"
                 {...register('tomorrowPlan')}
               />

@@ -47,7 +47,7 @@ export default function MyFinancesPage() {
       .reduce((sum, e) => sum + e.totalAmount, 0);
 
     const pendingReimbursement = expenses
-      .filter(e => e.type === 'Reimbursement' && (e.status === 'Approved' || e.status === 'Pending'))
+      .filter(e => e.type === 'Reimbursement' && e.status === 'Approved')
       .reduce((sum, e) => sum + e.totalAmount, 0);
 
     return { fundsHeld, pendingReimbursement };
@@ -107,7 +107,7 @@ export default function MyFinancesPage() {
         <Card>
           <CardHeader>
             <CardTitle>My Pending Reimbursements</CardTitle>
-            <CardDescription>Submitted reimbursements waiting for approval and disbursement.</CardDescription>
+            <CardDescription>Approved reimbursements awaiting disbursement.</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? <Skeleton className="h-10 w-32" /> : (

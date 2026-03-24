@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FileSignature, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake, ArrowRight } from 'lucide-react';
+import { LogOut, User, Settings, Bell, PlusCircle, Receipt, FileSignature, AlertTriangle, Info, CheckCircle, Eye, Search, BarChart3, Sparkles, Handshake, ArrowRight, Sun, Moon } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
@@ -27,6 +27,45 @@ import { useViewAs } from '@/hooks/use-view-as';
 import { useCommandState } from '@/hooks/use-command-state';
 import { useResolvedPhotoURL } from '@/hooks/use-resolved-photo';
 
+
+function ThemeToggle() {
+    const [isDark, setIsDark] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return document.documentElement.classList.contains('dark');
+        }
+        return false;
+    });
+
+    const toggleTheme = () => {
+        const next = !isDark;
+        setIsDark(next);
+        if (next) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    };
+
+    useEffect(() => {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'dark') {
+            document.documentElement.classList.add('dark');
+            setIsDark(true);
+        } else if (saved === 'light') {
+            document.documentElement.classList.remove('dark');
+            setIsDark(false);
+        }
+    }, []);
+
+    return (
+        <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50" onClick={toggleTheme}>
+            {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            <span className="sr-only">Toggle theme</span>
+        </Button>
+    );
+}
 
 function QuickAddMenu() {
     return (
@@ -177,6 +216,7 @@ export function AppHeader() {
     if (pathname.startsWith('/meal')) return 'MEAL';
     if (pathname.startsWith('/enterprise')) return 'Enterprise';
     if (pathname.startsWith('/management/expenses')) return 'Expenses';
+    if (pathname.startsWith('/finance')) return 'Finance';
     if (pathname.startsWith('/management')) return 'Ops Desk';
     if (pathname.startsWith('/forms')) return 'Forms';
     if (pathname.startsWith('/reports')) return 'Reports';
@@ -201,6 +241,7 @@ export function AppHeader() {
         )}
       </div>
       <div className="flex items-center gap-0.5">
+        <ThemeToggle />
         <Button variant="ghost" size="icon" className="text-foreground/60 hover:text-foreground hover:bg-muted/50 rounded-lg" onClick={() => setOpen(true)}><Search className="h-4.5 w-4.5" /></Button>
         {canViewAs && <div className="hidden sm:block"><ViewAsMenu /></div>}
         <div className="hidden sm:block"><QuickAddMenu /></div>

@@ -5,12 +5,12 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useFirestore, useCollection, useMemoFirebase, updateDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, limit, doc } from 'firebase/firestore';
 import { useFormSubmission } from '@/hooks/use-form-submission';
 import {
   MapPin, Search, X, Plus, GraduationCap, Droplets, TreePine, Users,
-  Building2, Check, Home, UsersRound, ChevronRight, Sparkles, Filter, Menu
+  Building2, Check, Home, UsersRound, ChevronRight, Sparkles, Filter, Menu, Pencil
 } from 'lucide-react';
 import { 
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger 
@@ -31,6 +31,8 @@ export default function MapPage() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(['office', 'school', 'beneficiary', 'water', 'tree', 'training']));
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingLocation, setEditingLocation] = useState<MapLocation | null>(null);
 
   const handleMapPlace = (coords: { lat: number; lng: number }, type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office') => {
     setMapCoords(coords);
@@ -288,7 +290,7 @@ export default function MapPage() {
   ];
 
   return (
-    <div className="relative h-[calc(100dvh-4rem)] overflow-hidden bg-slate-950">
+    <div className="relative h-[calc(100dvh-4rem)] overflow-hidden bg-slate-950 -mx-2 sm:-mx-4 -my-3 sm:-my-4 lg:-my-6 -mb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom,0px))] md:-mb-6">
       {/* Floating Header / Search Deck */}
       <div className="absolute top-6 left-6 right-6 z-[1000] flex flex-col md:flex-row gap-4 pointer-events-none">
         <div className="flex-1 max-w-xl pointer-events-auto">
@@ -548,27 +550,39 @@ export default function MapPage() {
                     </div>
 
                     {/* Regional Insights if searching subcounty */}
-                    {selectedLocation.type === 'subcounty' && (
+                    {selectedLocation.type === 'subcounty' && selectedLocation.subcounty && (
                         <div className="space-y-4 pt-4 border-t border-black/5">
-                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-omuto-navy/30">Regional Benchmarks</p>
+                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-omuto-navy/30">Area Statistics</p>
                              <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 rounded-2xl border-2 border-primary/10 bg-primary/5 space-y-1">
-                                    <p className="text-[9px] font-black text-primary uppercase">Program Coverage</p>
-                                    <p className="text-xl font-black text-omuto-navy italic">84%</p>
+                                    <p className="text-[9px] font-black text-primary uppercase">Schools</p>
+                                    <p className="text-xl font-black text-omuto-navy italic">{areaStats[selectedLocation.subcounty]?.schools || 0}</p>
                                 </div>
                                 <div className="p-4 rounded-2xl border-2 border-emerald-500/10 bg-emerald-500/5 space-y-1">
-                                    <p className="text-[9px] font-black text-emerald-600 uppercase">Impact Score</p>
-                                    <p className="text-xl font-black text-omuto-navy italic">9.2</p>
+                                    <p className="text-[9px] font-black text-emerald-600 uppercase">Beneficiaries</p>
+                                    <p className="text-xl font-black text-omuto-navy italic">{areaStats[selectedLocation.subcounty]?.beneficiaries || 0}</p>
                                 </div>
                              </div>
                         </div>
                     )}
                 </div>
 
-                <div className="p-8 border-t border-black/5 bg-muted/10">
+                <div className="p-8 border-t border-black/5 bg-muted/10 space-y-3">
                     <Button className="w-full btn-omuto h-14 rounded-2xl text-[11px] font-black uppercase tracking-widest" asChild>
                         <a href={`/school-xperience/${selectedLocation.id}`}>View Mission Control Profile</a>
                     </Button>
+                    {selectedLocation.type !== 'district' && selectedLocation.type !== 'subcounty' && (
+                      <Button 
+                        variant="outline"
+                        className="w-full h-12 rounded-2xl text-[11px] font-black uppercase tracking-widest"
+                        onClick={() => {
+                          setEditingLocation(selectedLocation);
+                          setShowEditModal(true);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" /> Edit Location Coordinates
+                      </Button>
+                    )}
                 </div>
             </Card>
         </div>
@@ -617,17 +631,14 @@ export default function MapPage() {
             </div>
 
             <div className="mt-8 pt-6 border-t border-black/5 flex items-center justify-between">
-                <div className="flex -space-x-2">
-                    {[1,2,3,4].map(i => (
-                        <div key={i} className="h-8 w-8 rounded-full border-2 border-white bg-muted flex items-center justify-center overflow-hidden">
-                             <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`} alt="user" />
-                        </div>
-                    ))}
-                    <div className="h-8 w-8 rounded-full border-2 border-white bg-primary text-[10px] font-black text-white flex items-center justify-center">
-                        +12
-                    </div>
+                <div>
+                    <p className="text-[10px] font-black text-omuto-navy/40 uppercase tracking-widest">Data Points</p>
+                    <p className="text-sm font-black text-omuto-navy">{filteredLocations.length} locations on map</p>
                 </div>
-                <p className="text-[10px] font-bold text-omuto-navy/40">Staff editing currently</p>
+                <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-[10px] font-bold text-omuto-navy/40">Live sync active</p>
+                </div>
             </div>
         </Card>
 
@@ -660,6 +671,20 @@ export default function MapPage() {
             onClose={() => { setShowAddModal(false); setMapCoords(null); }}
             schools={schools || []}
             initialCoordinates={mapCoords}
+          />
+        )}
+
+        {/* Edit Place Modal */}
+        {showEditModal && editingLocation && (
+          <EditPlaceModal
+            location={editingLocation}
+            onClose={() => { setShowEditModal(false); setEditingLocation(null); }}
+            onSave={(coords: { lat: number; lng: number }) => {
+              setMapCenter(coords);
+              setMapZoom(16);
+              setShowEditModal(false);
+              setEditingLocation(null);
+            }}
           />
         )}
       </div>
@@ -772,6 +797,102 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
           <Button variant="outline" onClick={onClose} className="flex-1 h-10 rounded-xl font-bold">Cancel</Button>
           <Button onClick={handleSubmit} disabled={canSubmit} className="btn-omuto flex-1 h-10 rounded-xl font-black">
             <Check className="h-4 w-4 mr-1" /> {isSubmitting ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function EditPlaceModal({ location, onClose, onSave }: { location: MapLocation; onClose: () => void; onSave: (coords: { lat: number; lng: number }) => void }) {
+  const firestore = useFirestore();
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number }>(
+    location.coordinates || { lat: 0, lng: 0 }
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = async () => {
+    if (saved || isSaving || !firestore) return;
+    setError(null);
+    setIsSaving(true);
+
+    try {
+      const collectionMap: Record<string, string> = {
+        school: 'sx-schools',
+        water: 'sx-water-sources',
+        tree: 'sx-trees',
+        beneficiary: 'sx-beneficiaries',
+        training: 'sx-trainings',
+        office: 'sx-locations',
+      };
+
+      const colName = collectionMap[location.type] || 'sx-schools';
+      const docRef = doc(firestore, colName, location.id);
+
+      updateDocumentNonBlocking(docRef, { coordinates });
+      setSaved(true);
+      onSave(coordinates);
+    } catch {
+      setError('An unexpected error occurred.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+      <Card className="w-full max-w-md border-2 shadow-2xl">
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-black text-lg flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-primary" />
+              Edit Coordinates
+            </h2>
+            <button onClick={onClose} className="p-1 hover:bg-muted rounded-lg"><X className="h-5 w-5" /></button>
+          </div>
+
+          <div className="p-4 bg-muted/30 rounded-xl">
+            <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40 mb-1">Location</p>
+            <p className="font-bold text-sm text-omuto-navy">{location.name}</p>
+            <p className="text-xs text-muted-foreground mt-1">{location.type} {location.district ? `· ${location.district}` : ''}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold uppercase tracking-widest block mb-1">Latitude</label>
+              <Input
+                type="number"
+                step="0.0001"
+                value={coordinates.lat}
+                onChange={e => setCoordinates(prev => ({ ...prev, lat: parseFloat(e.target.value) || 0 }))}
+                className="rounded-xl h-10 font-bold"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold uppercase tracking-widest block mb-1">Longitude</label>
+              <Input
+                type="number"
+                step="0.0001"
+                value={coordinates.lng}
+                onChange={e => setCoordinates(prev => ({ ...prev, lng: parseFloat(e.target.value) || 0 }))}
+                className="rounded-xl h-10 font-bold"
+              />
+            </div>
+          </div>
+
+          <GPSLocationPicker coordinates={coordinates} onCoordinatesChange={(coords) => { if (coords) setCoordinates(coords); }} label="Pin on Map" description="Tap the map or drag the marker to set exact coordinates" />
+
+          {error && (
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-bold">{error}</div>
+          )}
+        </div>
+
+        <div className="p-4 border-t flex gap-2">
+          <Button variant="outline" onClick={onClose} className="flex-1 h-10 rounded-xl font-bold">Cancel</Button>
+          <Button onClick={handleSave} disabled={saved || isSaving} className="btn-omuto flex-1 h-10 rounded-xl font-black">
+            <Check className="h-4 w-4 mr-1" /> {isSaving ? 'Saving...' : saved ? 'Updated' : 'Update'}
           </Button>
         </div>
       </Card>

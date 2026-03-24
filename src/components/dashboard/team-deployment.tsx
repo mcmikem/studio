@@ -262,17 +262,17 @@ export function TeamDeployment() {
       </CardHeader>
       <CardContent className="p-6">
         {(isLoading || !teamStatus) ? (
-          <div className="grid grid-cols-4 gap-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-20 w-20 rounded-2xl" />)}</div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-20 w-20 rounded-2xl" />)}</div>
         ) : teamStatus.length > 0 ? (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {teamStatus.map((member) => (
               <button 
                 key={member.user.id} 
                 onClick={() => setSelectedUserStatus(member)} 
-                className="flex flex-col items-center gap-2 group"
+                className="flex flex-col items-center gap-2 group p-3 rounded-2xl hover:bg-muted/30 transition-colors"
               >
                 <div className="relative">
-                  <Avatar className={`h-16 w-16 border-2 transition-all duration-300 group-hover:scale-105 ${
+                  <Avatar className={`h-14 w-14 border-2 transition-all duration-300 group-hover:scale-105 ${
                     member.status.status === 'active' 
                       ? 'border-green-500 shadow-lg shadow-green-100' 
                       : member.status.status === 'checked-out'
@@ -288,15 +288,15 @@ export function TeamDeployment() {
                     </div>
                   )}
                 </div>
-                <div className="text-center">
+                <div className="text-center w-full">
                   <p className={`text-xs font-bold truncate w-full ${
                     member.status.status === 'active' ? 'text-green-700' : 'text-gray-500'
                   }`}>
                     {member.user.name?.split(' ')[0] || "Team Member"}
                   </p>
                   {member.status.status === 'active' && member.focus && (
-                    <p className="text-[9px] text-gray-500 truncate w-full max-w-[80px]">
-                      {member.focus.status === 'working' ? '💼' : member.focus.status === 'break' ? '☕' : '🎯'} {member.focus.task?.split(' ').slice(0, 2).join(' ') || "Working"}
+                    <p className="text-[10px] text-gray-500 truncate w-full mt-0.5">
+                      {member.focus.status === 'working' ? '💼' : member.focus.status === 'break' ? '☕' : '🎯'} {member.focus.task?.split(' ').slice(0, 4).join(' ') || "Working"}
                     </p>
                   )}
                 </div>
@@ -324,7 +324,7 @@ export function TeamDeployment() {
                   <SheetDescription className="text-white/70">{selectedUserStatus.user.role}</SheetDescription>
                 </div>
               </SheetHeader>
-              <div className="p-6 space-y-4 flex-grow bg-omuto-cream">
+              <div className="p-6 space-y-4 flex-1 overflow-y-auto bg-omuto-cream">
                 {/* Status Badge */}
                 <div className={`flex items-center justify-center p-3 rounded-xl border-2 ${
                   selectedUserStatus.status.status === 'active' 

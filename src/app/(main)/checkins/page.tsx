@@ -133,19 +133,20 @@ function CheckinStream() {
     const virtualizer = useVirtualizer({
         count: checkins.length,
         getScrollElement: () => parentRef.current,
-        estimateSize: () => 400, // Checkin cards are taller than activity cards
-        overscan: 3,
+        estimateSize: () => 350,
+        overscan: 5,
     });
 
     return (
-        <div className="flex flex-col h-[calc(100vh-200px)]">
+        <div className="flex flex-col">
             <div 
                 ref={parentRef}
-                className="flex-1 overflow-auto px-1 pb-6"
+                className="flex-1 overflow-auto pb-6"
+                style={{ maxHeight: 'calc(100vh - 220px)' }}
             >
                 {isLoading && checkins.length === 0 ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[400px] w-full rounded-xl" />)}
+                    <div className="space-y-6">
+                        {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[300px] w-full rounded-xl" />)}
                     </div>
                 ) : checkins.length > 0 ? (
                     <div
@@ -165,8 +166,10 @@ function CheckinStream() {
                                         top: 0,
                                         left: 0,
                                         width: '100%',
+                                        height: `${virtualItem.size}px`,
                                         transform: `translateY(${virtualItem.start}px)`,
-                                        paddingBottom: '24px' // Gap replacement
+                                        padding: '0 4px 20px 4px',
+                                        boxSizing: 'border-box',
                                     }}
                                 >
                                     <CheckinCard checkin={checkin} />

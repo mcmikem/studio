@@ -22,14 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+
 
 function CheckoutCard({ checkout }: { checkout: Checkout }) {
     
@@ -38,39 +31,52 @@ function CheckoutCard({ checkout }: { checkout: Checkout }) {
     const notCompletedTasks = tasksArray.filter(t => t.status === 'Not Done');
     
     return (
-        <Card>
-             <CardHeader className="flex flex-row items-start gap-4 pb-4">
+        <Card className="shadow-sm hover:shadow-md transition-shadow">
+             <CardHeader className="flex flex-row items-start gap-4 pb-3">
                 <Avatar className="h-10 w-10 border" data-ai-hint="person avatar">
                      <AvatarImage src={checkout.avatar} />
                      <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
                 </Avatar>
-                <div>
+                <div className="flex-1 min-w-0">
                     <Link href={`/profile?userId=${checkout.userId}`} className="hover:underline">
-                        <CardTitle className="text-base">{checkout.name}'s Report</CardTitle>
+                        <CardTitle className="text-base truncate">{checkout.name}'s Report</CardTitle>
                     </Link>
                     <CardDescription className="text-xs">{formatDateSafe(checkout.timestamp)}</CardDescription>
                 </div>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
+             </CardHeader>
+             <CardContent className="space-y-3 text-sm">
                 {completedTasks.length > 0 && (
-                    <div className="flex items-start gap-2">
-                        <Check className="h-4 w-4 mt-0.5 text-green-500 flex-shrink-0" />
-                        <p className="text-muted-foreground">{completedTasks.map(t => t.description).join(', ')}</p>
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Completed ({completedTasks.length})</p>
+                        {completedTasks.map((t, i) => (
+                            <div key={i} className="flex items-start gap-2 p-2 bg-emerald-50 rounded-lg">
+                                <Check className="h-4 w-4 mt-0.5 text-emerald-500 flex-shrink-0" />
+                                <p className="text-muted-foreground">{t.description}</p>
+                            </div>
+                        ))}
                     </div>
                 )}
                  {notCompletedTasks.length > 0 && (
-                    <div className="flex items-start gap-2">
-                        <X className="h-4 w-4 mt-0.5 text-red-500 flex-shrink-0" />
-                        <p className="text-muted-foreground line-through">{notCompletedTasks.map(t => t.description).join(', ')}</p>
+                    <div className="space-y-1">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-rose-600">Not Done ({notCompletedTasks.length})</p>
+                        {notCompletedTasks.map((t, i) => (
+                            <div key={i} className="flex items-start gap-2 p-2 bg-rose-50 rounded-lg">
+                                <X className="h-4 w-4 mt-0.5 text-rose-500 flex-shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground line-through">{t.description}</p>
+                                    {t.reason && <p className="text-xs text-rose-400 mt-0.5 italic">{t.reason}</p>}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
                  {checkout.learning && (
-                    <div className="flex items-start gap-2 pt-2 border-t">
-                        <Lightbulb className="h-4 w-4 mt-0.5 text-yellow-500 flex-shrink-0"/>
+                    <div className="flex items-start gap-2 p-2 bg-amber-50 rounded-lg border border-amber-100">
+                        <Lightbulb className="h-4 w-4 mt-0.5 text-amber-500 flex-shrink-0"/>
                         <p className="text-muted-foreground italic">"{checkout.learning}"</p>
                     </div>
                 )}
-            </CardContent>
+             </CardContent>
         </Card>
     )
 }
@@ -102,7 +108,7 @@ function CheckoutStream() {
     return (
         <>
             {/* Mobile View */}
-            <div className="sm:hidden h-[600px] overflow-auto px-1 no-scrollbar" ref={parentRefMobile}>
+            <div className="sm:hidden overflow-auto px-1 no-scrollbar" ref={parentRefMobile} style={{ maxHeight: 'calc(100vh - 220px)' }}>
                 {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-44 w-full mb-4" />)}
                 {checkouts && checkouts.length > 0 ? (
                     <div
@@ -123,7 +129,8 @@ function CheckoutStream() {
                                         left: 0,
                                         width: '100%',
                                         transform: `translateY(${virtualItem.start}px)`,
-                                        paddingBottom: '16px'
+                                        padding: '0 4px 16px 4px',
+                                        boxSizing: 'border-box',
                                     }}
                                 >
                                     <CheckoutCard checkout={checkout} />
@@ -145,82 +152,28 @@ function CheckoutStream() {
                 )}
             </div>
 
-            {/* Desktop View */}
+            {/* Desktop View - Card grid instead of compressed table */}
             <div className="hidden sm:block">
-                <div className="border border-omuto-navy/10 rounded-xl overflow-hidden bg-white shadow-sm">
-                    <div className="grid grid-cols-[200px,1fr,150px] gap-4 px-6 py-4 bg-muted/40 border-b border-omuto-navy/10 font-bold uppercase text-[10px] tracking-widest text-omuto-navy/60">
-                        <div>User</div>
-                        <div>Summary</div>
-                        <div className="text-right">Date</div>
-                    </div>
-                    <div className="h-[600px] overflow-auto no-scrollbar" ref={parentRefDesktop}>
-                        {isLoading && Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className="grid grid-cols-[200px,1fr,150px] gap-4 px-6 py-4 border-b border-omuto-navy/5 last:border-0 items-center">
-                                <Skeleton className="h-10 w-32" />
-                                <Skeleton className="h-4 w-full" />
-                                <Skeleton className="h-4 w-24 ml-auto" />
-                            </div>
+                {isLoading && Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="mb-4"><Skeleton className="h-48 w-full rounded-xl" /></div>
+                ))}
+                {checkouts && checkouts.length > 0 ? (
+                    <div className="space-y-4" ref={parentRefDesktop} style={{ maxHeight: 'calc(100vh - 250px)', overflow: 'auto' }}>
+                        {checkouts.map((checkout) => (
+                            <CheckoutCard key={checkout.id} checkout={checkout} />
                         ))}
-                        {checkouts && checkouts.length > 0 ? (
-                            <div
-                                style={{
-                                    height: `${virtualizerDesktop.getTotalSize()}px`,
-                                    width: '100%',
-                                    position: 'relative',
-                                }}
-                            >
-                                {virtualizerDesktop.getVirtualItems().map((virtualItem) => {
-                                    const checkout = checkouts[virtualItem.index];
-                                    const tasksArray = Array.isArray(checkout.tasks) ? checkout.tasks : [];
-                                    const completed = tasksArray.filter(t => t.status === 'Done').length;
-                                    const notCompleted = tasksArray.filter(t => t.status === 'Not Done').length;
-                                    
-                                    return (
-                                        <div
-                                            key={virtualItem.key}
-                                            className="grid grid-cols-[200px,1fr,150px] gap-4 px-6 py-4 border-b border-omuto-navy/5 last:border-0 items-center hover:bg-muted/5 transition-colors"
-                                            style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                width: '100%',
-                                                height: `${virtualItem.size}px`,
-                                                transform: `translateY(${virtualItem.start}px)`,
-                                            }}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-9 w-9 border" data-ai-hint="person avatar">
-                                                    <AvatarImage src={checkout.avatar} />
-                                                    <AvatarFallback>{getInitials(checkout.name)}</AvatarFallback>
-                                                </Avatar>
-                                                <span className="font-bold text-sm text-omuto-navy">{checkout.name}</span>
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className="font-medium text-sm truncate">{tasksArray[0]?.description || 'End of day report'}</p>
-                                                <div className="text-[10px] text-muted-foreground flex gap-2 font-bold uppercase tracking-tighter">
-                                                    {completed > 0 && <span className="text-green-600">{completed} COMPLETED</span>}
-                                                    {notCompleted > 0 && <span className="text-red-500">{notCompleted} REMAINING</span>}
-                                                    {checkout.learning && <span className="text-yellow-600">| LEARNING LOGGED</span>}
-                                                </div>
-                                            </div>
-                                            <div className="text-right text-[11px] text-muted-foreground">{formatDateSafe(checkout.timestamp)}</div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            !isLoading && (
-                                <div className="flex flex-col items-center justify-center py-20">
-                                    <Wind className="h-10 w-10 text-muted-foreground/30 mb-2" />
-                                    <p className="text-muted-foreground font-bold">Quiet day so far...</p>
-                                    <Button asChild className="mt-4" variant="outline" size="sm">
-                                        <Link href="/forms/check-out">Check Out Now</Link>
-                                    </Button>
-                                </div>
-                            )
-                        )}
                     </div>
-                </div>
+                ) : (
+                    !isLoading && (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <Wind className="h-10 w-10 text-muted-foreground/30 mb-2" />
+                            <p className="text-muted-foreground font-bold">Quiet day so far...</p>
+                            <Button asChild className="mt-4" variant="outline" size="sm">
+                                <Link href="/forms/check-out">Check Out Now</Link>
+                            </Button>
+                        </div>
+                    )
+                )}
             </div>
         </>
     );

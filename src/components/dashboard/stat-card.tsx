@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StatCardProps {
@@ -9,6 +9,7 @@ interface StatCardProps {
   label: string;
   value: string | number;
   trend: string;
+  trendDirection?: 'up' | 'down' | 'neutral';
   color: string;
   alertLevel?: 'green' | 'yellow' | 'red';
   className?: string;
@@ -18,11 +19,14 @@ export function StatCard({
   icon: Icon, 
   label, 
   value, 
-  trend, 
+  trend,
+  trendDirection = 'up',
   color, 
   alertLevel,
   className
 }: StatCardProps) {
+  const TrendIcon = trendDirection === 'up' ? TrendingUp : trendDirection === 'down' ? TrendingDown : Minus;
+  const trendColor = trendDirection === 'up' ? 'text-emerald-600' : trendDirection === 'down' ? 'text-rose-600' : 'text-omuto-navy/40';
   const alertColors: Record<string, string> = {
     green: "bg-emerald-500",
     yellow: "bg-amber-500",
@@ -53,8 +57,8 @@ export function StatCard({
         </div>
 
         <div className="mt-4 pt-4 border-t border-omuto-navy/5 flex items-center gap-1.5">
-            <TrendingUp className="h-3 w-3 text-emerald-600" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600/80">{trend}</span>
+            <TrendIcon className={`h-3 w-3 ${trendColor}`} />
+            <span className={`text-[10px] font-black uppercase tracking-wider ${trendColor}/80`}>{trend}</span>
         </div>
       </CardContent>
     </Card>

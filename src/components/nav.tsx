@@ -136,7 +136,7 @@ const navConfig = {
   ],
   ops: [
     { href: '/management', icon: Briefcase, label: 'Ops Desk' },
-    { href: '/management/expenses', icon: Wallet, label: 'Expenses' },
+    { href: '/finance/dashboard', icon: Wallet, label: 'Finance' },
     { href: '/resources', icon: Handshake, label: 'Grant Finder' },
     { href: '/my-finances', icon: Wallet, label: 'My Finances' },
   ],
