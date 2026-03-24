@@ -37,11 +37,31 @@
 
     /* Mobile nav height for safe-area spacing */
     --mobile-nav-height: 5rem;
+
+    /* Brand Colors - Omuto */
+    --omuto-navy: 224 8.5% 13.1%;
+    --omuto-cream: 48 40% 96%;
+    --omuto-red: 358 86% 52%;
+    --omuto-yellow: 42 100% 68%;
+    --omuto-brown: 18 43% 26%;
+    --omuto-gold: 42 100% 42%;
+    --omuto-teal: 167 57% 53%;
+    --omuto-blue: 199 85% 78%;
   }
 
   .dark {
     --background: 224 30% 8%;
     --foreground: 0 0% 95%;
+
+    /* Dark mode brand colors */
+    --omuto-navy: 0 0% 95%;
+    --omuto-cream: 224 20% 12%;
+    --omuto-red: 358 86% 60%;
+    --omuto-yellow: 42 100% 55%;
+    --omuto-brown: 18 43% 35%;
+    --omuto-gold: 42 100% 50%;
+    --omuto-teal: 167 57% 60%;
+    --omuto-blue: 199 85% 70%;
 
     --card: 224 20% 12%;
     --card-foreground: 0 0% 95%;
