@@ -1,8 +1,6 @@
-
 'use client';
 
-import React from 'react';
-import dynamic from 'next/dynamic';
+import React, { Suspense } from 'react';
 import type { User as UserProfileType } from '@/lib/types';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -14,44 +12,70 @@ export interface DashboardProps {
   profile: UserProfileType;
 }
 
-// Use dynamic imports - simplified without custom loading states
-const DynamicAdminDashboard = dynamic(() => import('./admin-dashboard').then(mod => mod.AdminDashboard), { ssr: false });
-const DynamicExecutiveDashboard = dynamic(() => import('./executive-dashboard').then(mod => mod.ExecutiveDashboard), { ssr: false });
-const DynamicProgramManagerDashboard = dynamic(() => import('./program-manager-dashboard').then(mod => mod.ProgramManagerDashboard), { ssr: false });
-const DynamicFieldStaffDashboard = dynamic(() => import('./field-staff-dashboard').then(mod => mod.FieldStaffDashboard), { ssr: false });
-const DynamicMediaFinanceDashboard = dynamic(() => import('./media-finance-dashboard').then(mod => mod.MediaFinanceDashboard), { ssr: false });
-const DynamicInternDashboard = dynamic(() => import('./intern-dashboard').then(mod => mod.InternDashboard), { ssr: false });
-const DynamicVolunteerDashboard = dynamic(() => import('./intern-volunteer-dashboard').then(mod => mod.InternVolunteerDashboard), { ssr: false });
+function ExecutiveDashboard({ profile }: DashboardProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
+      <div className="p-4 bg-muted rounded-lg">
+        <p>Executive Dashboard Loading...</p>
+      </div>
+    </div>
+  );
+}
 
-function DashboardRenderer({ profile }: { profile: UserProfileType }) {
-  const Component = React.useMemo(() => {
-    switch (profile.role) {
-      case 'Administrator':
-        return DynamicAdminDashboard;
-      case 'Executive Director':
-        return DynamicExecutiveDashboard;
-      case 'Programs & Partnerships Manager':
-        return DynamicProgramManagerDashboard;
-      case 'Operations & Field Manager':
-      case 'Field Coordinator':
-        return DynamicFieldStaffDashboard;
-      case 'Media & Finance Lead':
-      case 'Media & Communications Lead':
-        return DynamicMediaFinanceDashboard;
-      case 'Intern':
-        return DynamicInternDashboard;
-      case 'Volunteer':
-        return DynamicVolunteerDashboard;
-      default:
-        return null;
-    }
-  }, [profile?.role]);
+function AdminDashboard({ profile }: DashboardProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
+      <div className="p-4 bg-muted rounded-lg">
+        <p>Admin Dashboard</p>
+      </div>
+    </div>
+  );
+}
 
-  if (!Component) {
-    return <DefaultDashboard />;
-  }
+function FieldStaffDashboard({ profile }: DashboardProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
+      <div className="p-4 bg-muted rounded-lg">
+        <p>Field Staff Dashboard</p>
+      </div>
+    </div>
+  );
+}
 
-  return <Component profile={profile} />;
+function ProgramManagerDashboard({ profile }: DashboardProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
+      <div className="p-4 bg-muted rounded-lg">
+        <p>Program Manager Dashboard</p>
+      </div>
+    </div>
+  );
+}
+
+function MediaFinanceDashboard({ profile }: DashboardProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
+      <div className="p-4 bg-muted rounded-lg">
+        <p>Media & Finance Dashboard</p>
+      </div>
+    </div>
+  );
+}
+
+function InternDashboard({ profile }: DashboardProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="text-xl font-bold">Welcome, {profile?.name || 'User'}</div>
+      <div className="p-4 bg-muted rounded-lg">
+        <p>Intern Dashboard</p>
+      </div>
+    </div>
+  );
 }
 
 export function DashboardLoader() {
@@ -64,20 +88,36 @@ export function DashboardLoader() {
     return <DashboardSkeleton />;
   }
 
-  if (!user) {
+  if (!user || !profile) {
     return <DefaultDashboard />;
   }
 
-  if (!profile) {
+  const role = profile.role;
+
+  let DashboardComponent: React.ComponentType<{ profile: UserProfileType }> | null = null;
+
+  if (role === 'Administrator') {
+    DashboardComponent = AdminDashboard;
+  } else if (role === 'Executive Director') {
+    DashboardComponent = ExecutiveDashboard;
+  } else if (role === 'Programs & Partnerships Manager') {
+    DashboardComponent = ProgramManagerDashboard;
+  } else if (role === 'Operations & Field Manager' || role === 'Field Coordinator') {
+    DashboardComponent = FieldStaffDashboard;
+  } else if (role === 'Media & Finance Lead' || role === 'Media & Communications Lead') {
+    DashboardComponent = MediaFinanceDashboard;
+  } else if (role === 'Intern') {
+    DashboardComponent = InternDashboard;
+  }
+
+  if (!DashboardComponent) {
     return <DefaultDashboard />;
   }
 
   return (
     <div className="w-full space-y-4">
       <NotificationPrompt />
-      <DashboardRenderer profile={profile} />
+      <DashboardComponent profile={profile} />
     </div>
   );
 }
-
-    
