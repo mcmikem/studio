@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}} />
       </head>
       <body>
-        <ServiceWorkerRegistration />
+        {/* <ServiceWorkerRegistration /> */}
         <Providers>
           <FirebaseErrorListener />
           <CheckinReminderToast />
