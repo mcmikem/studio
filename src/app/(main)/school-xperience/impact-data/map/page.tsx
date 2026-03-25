@@ -15,7 +15,22 @@ import {
 import { 
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription
 } from '@/components/ui/sheet';
-import { InteractiveMap, type MapLocation, MetricRow } from '@/components/school-xperience/interactive-map';
+import { InteractiveMap } from '@/components/school-xperience/interactive-map';
+import type { MapLocation } from '@/components/school-xperience/interactive-map';
+import { MetricRow } from '@/components/school-xperience/interactive-map';
+
+import dynamic from 'next/dynamic';
+const InteractiveMapLazy = dynamic(() => import('@/components/school-xperience/interactive-map').then(mod => ({ default: mod.InteractiveMap })), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-slate-900">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-white/60 text-sm font-medium">Loading Map...</p>
+      </div>
+    </div>
+  ),
+});
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
 import { FormShell, FormField, FormGrid, FormSection } from '@/components/ui/form-shell';
 import { UGANDA_LOCATIONS, OMUTO_LOCATIONS, AREA_BOUNDARIES } from '@/lib/uganda-data';
@@ -274,10 +289,10 @@ export default function MapPage() {
   const totalPoints = filteredLocations.filter(l => l.coordinates).length;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950">
+    <div className="relative h-[calc(100dvh-[env(safe-area-inset-top,4rem)])] lg:h-[calc(100vh-5rem)] overflow-hidden bg-slate-950 -mx-4 -my-4 lg:-mx-8 lg:-my-8 rounded-none lg:rounded-2xl z-0">
       
       {/* ━━━ Top Search Bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div className="absolute top-4 left-4 right-4 z-[110] flex gap-3 pointer-events-none pt-safe-or-4">
+      <div className="absolute top-4 left-4 right-4 z-[40] flex gap-3 pointer-events-none pt-[env(safe-area-inset-top,0.5rem)] lg:pt-0">
         <div className="flex-1 max-w-md pointer-events-auto">
           <div className="bg-white rounded-2xl shadow-xl border border-black/5 flex items-center gap-2 px-3 h-12">
             <Search className="h-4 w-4 text-muted-foreground/40 shrink-0" />
@@ -371,7 +386,7 @@ export default function MapPage() {
       {/* ━━━ Mobile Detail Sheet ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="lg:hidden">
         <Sheet open={!!selectedLocation} onOpenChange={(open) => !open && setSelectedLocation(null)}>
-          <SheetContent side="bottom" className="rounded-t-3xl bg-white border-t-2 border-primary/10 p-0 h-[75vh] z-[800]">
+          <SheetContent side="bottom" className="rounded-t-3xl bg-white border-t-2 border-primary/10 p-0 h-[75vh] z-[150]">
             {selectedLocation && (
               <div className="p-6 flex flex-col h-full">
                 <div className="flex items-start justify-between mb-6">
@@ -425,7 +440,7 @@ export default function MapPage() {
 
       {/* ━━━ Desktop Detail Panel (right side) ━━━━━━━━━━━ */}
       {selectedLocation && (
-        <div className="hidden lg:block absolute top-4 bottom-4 right-4 z-[700] w-[380px] animate-in slide-in-from-right-8 duration-500">
+        <div className="hidden lg:block absolute top-4 bottom-4 right-4 z-[40] w-[380px] animate-in slide-in-from-right-8 duration-500">
           <Card className="h-full bg-white/95 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden flex flex-col border border-black/5">
             <div className="p-5 flex justify-between items-start border-b border-black/5">
               <div className="flex items-center gap-3">
@@ -513,7 +528,7 @@ export default function MapPage() {
       )}
 
       {/* ━━━ Bottom Layer Pill Bar ━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[110] pointer-events-auto pb-safe-or-4">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[40] pointer-events-auto pb-[env(safe-area-inset-bottom,4rem)] lg:pb-0">
         <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-black/5 flex items-center gap-1 p-1.5 transition-all max-w-[95vw] overflow-x-auto">
           {/* Toggle collapse button */}
           <button
@@ -562,8 +577,9 @@ export default function MapPage() {
       </div>
 
       {/* ━━━ Map ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div className="w-full h-full">
-        <InteractiveMap
+      <div className="absolute inset-0 w-full h-full z-0">
+        <InteractiveMapLazy
+          className="w-full h-full rounded-none"
           locations={filteredLocations}
           center={mapCenter}
           zoom={mapZoom}
@@ -656,7 +672,7 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
   const canSubmit = !isSubmitting && !submitted && (type === 'school' ? (name && coordinates) : (selectedSchoolId && coordinates));
 
   return (
-    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[2000] p-0 sm:p-4">
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[150] p-0 sm:p-4">
       <Card className="w-full max-w-lg border shadow-2xl rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="p-6 border-b bg-muted/30">
           <div className="flex items-center justify-between">
@@ -768,7 +784,7 @@ function EditPlaceModal({ location, onClose, onSave }: { location: MapLocation; 
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[2000] p-0 sm:p-4">
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[150] p-0 sm:p-4">
       <Card className="w-full max-w-lg border shadow-2xl rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="p-6 border-b bg-muted/30">
           <div className="flex items-center justify-between">
