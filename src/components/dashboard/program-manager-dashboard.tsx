@@ -1,116 +1,261 @@
 
 'use client';
 
-import dynamic from 'next/dynamic'
 import type { DashboardProps } from "./dashboard-loader"
-import { Skeleton } from '../ui/skeleton';
 import { DashboardHeader } from "./dashboard-header"
 import { RoleMissionCard } from "./role-mission-card"
-import { DashboardSection } from "./dashboard-section"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipboardCheck, BarChart3, Plus, GraduationCap, Heart, Flower2, Users, Building2, Calendar } from 'lucide-react';
-import Link from 'next/link';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { useMemo } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-
-const PartnershipPipeline = dynamic(() => import('@/components/dashboard/program-manager/partnership-pipeline').then(mod => mod.PartnershipPipeline), {
-  loading: () => <Skeleton className="h-48" />,
-  ssr: false,
-});
-const QuickInsights = dynamic(() => import('@/components/dashboard/program-manager/quick-insights').then(mod => mod.QuickInsights), {
-  loading: () => <Skeleton className="h-48" />,
-  ssr: false,
-});
-const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan').then(mod => mod.MyWeeklyPlan), {
-  loading: () => <Skeleton className="h-48" />,
-  ssr: false,
-});
-const TeamDeployment = dynamic(() => import('@/components/dashboard/team-deployment').then(mod => mod.TeamDeployment), {
-  loading: () => <Skeleton className="h-48" />,
-  ssr: false,
-});
-const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/team-performance-leaderboard').then(mod => mod.TeamPerformanceLeaderboard), {
-  loading: () => <Skeleton className="h-48" />,
-  ssr: false,
-});
-const ProgramHealthScore = dynamic(() => import('@/components/dashboard/program-health-score').then(mod => mod.ProgramHealthScore), {
-  loading: () => <Skeleton className="h-48" />,
-  ssr: false,
-});
-
-const QUICK_ACTIONS = [
-  { href: '/school-xperience/log-visit', icon: ClipboardCheck, label: 'Log Visit', color: 'btn-omuto', sub: 'Monitor school visit' },
-  { href: '/school-xperience/submit-scorecard', icon: GraduationCap, label: 'Scorecard', color: 'bg-blue-500 text-white hover:bg-blue-600', sub: 'Rate school performance' },
-  { href: '/school-xperience/add-leader', icon: Users, label: 'Add Leader', color: 'bg-purple-500 text-white hover:bg-purple-600', sub: 'Register student leader' },
-  { href: '/school-xperience/log-impact', icon: Flower2, label: 'Log Impact', color: 'bg-green-500 text-white hover:bg-green-600', sub: 'Trees, water, beneficiaries' },
-  { href: '/school-xperience/planner', icon: Calendar, label: 'Planner', color: 'bg-orange-500 text-white hover:bg-orange-600', sub: 'Schedule school visits' },
-  { href: '/school-xperience/pipeline', icon: Building2, label: 'Pipeline', color: 'bg-teal-500 text-white hover:bg-teal-600', sub: 'Registration pipeline' },
-];
+import { formatCurrency } from '@/lib/utils';
+import { 
+  TrendingUp, DollarSign, Wallet, Clock, Activity, CheckCircle,
+  Users, AlertTriangle, BarChart3, ClipboardCheck, Target,
+  Heart, GraduationCap, Building2, Handshake
+} from 'lucide-react';
+import Link from 'next/link';
 
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
+  const firestore = useFirestore();
+  
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  
+  // Expenses
+  const expensesQuery = useMemo(() => 
+    firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(50)) : null
+  , [firestore]);
+  const { data: expenses } = useCollection(expensesQuery);
+
+  // Income
+  const incomeQuery = useMemo(() => 
+    firestore ? query(collection(firestore, 'income'), orderBy('createdAt', 'desc'), limit(50)) : null
+  , [firestore]);
+  const { data: income } = useCollection(incomeQuery);
+
+  // Schools
+  const schoolsQuery = useMemo(() => 
+    firestore ? query(collection(firestore, 'schools'), orderBy('createdAt', 'desc'), limit(100)) : null
+  , [firestore]);
+  const { data: schools } = useCollection(schoolsQuery);
+
+  // This month
+  const thisMonthExpenses = useMemo(() => {
+    if (!expenses) return 0;
+    return expenses
+      .filter(e => {
+        const created = e.createdAt?.toDate?.() || new Date(e.createdAt?.seconds ? e.createdAt.seconds * 1000 : Date.now());
+        return created >= monthStart;
+      })
+      .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
+  }, [expenses, monthStart]);
+
+  const thisMonthIncome = useMemo(() => {
+    if (!income) return 0;
+    return income
+      .filter(i => {
+        const created = i.createdAt?.toDate?.() || new Date(i.createdAt?.seconds ? i.createdAt.seconds * 1000 : Date.now());
+        return created >= monthStart;
+      })
+      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+  }, [income, monthStart]);
+
+  // Pending for PM to review
+  const pendingForPM = useMemo(() => {
+    if (!expenses) return [];
+    return expenses.filter(e => e.status === 'Pending').slice(0, 5);
+  }, [expenses]);
+
+  // Approved - waiting for disbursement
+  const readyForDisbursement = useMemo(() => {
+    if (!expenses) return [];
+    return expenses.filter(e => e.status === 'Approved').slice(0, 5);
+  }, [expenses]);
+
+  const totalSchools = schools?.length || 0;
+
   return (
     <div className="flex flex-col gap-6">
       <DashboardHeader profile={profile} />
-      <Tabs defaultValue="quick" className="w-full">
-        <TabsList className="h-11 rounded-xl bg-omuto-cream/50 border border-omuto-navy/10 p-1 mb-2">
-          <TabsTrigger
-            value="quick"
-            className="h-9 rounded-lg font-black text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm"
-          >
-            <Plus className="mr-1.5 h-3.5 w-3.5" />
+      
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+        <StatCard title="Income (MTD)" value={formatCurrency(thisMonthIncome, true)} icon={DollarSign} iconBg="bg-green-100 dark:bg-green-900/30" iconColor="text-green-600" href="/finance/income" />
+        <StatCard title="Expenses (MTD)" value={formatCurrency(thisMonthExpenses, true)} icon={Wallet} iconBg="bg-red-100 dark:bg-red-900/30" iconColor="text-red-600" href="/finance/requisitions" />
+        <StatCard title="Net (MTD)" value={formatCurrency(thisMonthIncome - thisMonthExpenses, true)} icon={TrendingUp} iconBg="bg-blue-100 dark:bg-blue-900/30" iconColor="text-blue-600" />
+        <StatCard title="Pending" value={pendingForPM.length.toString()} change={pendingForPM.length > 0 ? 'Needs review' : 'All clear'} changeType={pendingForPM.length > 0 ? 'warning' : 'positive'} icon={Clock} iconBg="bg-amber-100 dark:bg-amber-900/30" iconColor="text-amber-600" />
+      </div>
+
+      {/* My Pending Approvals */}
+      {pendingForPM.length > 0 && (
+        <Card className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                Pending Your Approval ({pendingForPM.length})
+              </h3>
+              <Button variant="outline" size="sm" asChild><Link href="/finance/requisitions?status=Pending">View All</Link></Button>
+            </div>
+            <div className="space-y-2">
+              {pendingForPM.slice(0, 4).map(expense => (
+                <div key={expense.id} className="flex items-center justify-between p-2 rounded-lg bg-card border border-amber-200 dark:border-amber-800">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold truncate">{expense.title}</p>
+                    <p className="text-xs text-muted-foreground">{expense.userName || 'Unknown'}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
+                    <Button asChild size="sm" variant="ghost" className="h-6 text-[10px] font-bold text-primary"><Link href={`/finance/requisitions?id=${expense.id}`}>Review</Link></Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Ready for Disbursement */}
+      {readyForDisbursement.length > 0 && (
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-blue-600" />
+                Approved - Ready for Disbursement ({readyForDisbursement.length})
+              </h3>
+            </div>
+            <div className="space-y-2">
+              {readyForDisbursement.slice(0, 3).map(expense => (
+                <div key={expense.id} className="flex items-center justify-between p-2 rounded-lg bg-card border border-blue-200 dark:border-blue-800">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-bold truncate">{expense.title}</p>
+                    <p className="text-xs text-muted-foreground">{expense.userName || 'Unknown'}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0 ml-2">
+                    <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Program Overview */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30"><GraduationCap className="h-5 w-5 text-blue-600" /></div>
+              <div>
+                <p className="text-2xl font-black">{totalSchools}</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase">Schools</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-pink-100 dark:bg-pink-900/30"><Heart className="h-5 w-5 text-pink-600" /></div>
+              <div>
+                <p className="text-2xl font-black">-</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase">RED Campaign</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30"><Handshake className="h-5 w-5 text-purple-600" /></div>
+              <div>
+                <p className="text-2xl font-black">-</p>
+                <p className="text-xs font-bold text-muted-foreground uppercase">Partners</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardContent className="p-4 sm:p-6">
+          <h3 className="text-sm sm:text-base font-bold flex items-center gap-2 mb-4">
+            <Activity className="h-4 w-4 text-blue-500" />
             Quick Actions
-          </TabsTrigger>
-          <TabsTrigger
-            value="dashboard"
-            className="h-9 rounded-lg font-black text-xs uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm"
-          >
-            <BarChart3 className="mr-1.5 h-3.5 w-3.5" />
-            Dashboard
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="quick" className="mt-0 space-y-4">
-          <div className="bg-omuto-cream/20 rounded-2xl border border-omuto-navy/10 p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Plus className="h-4 w-4 text-omuto-red" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">What would you like to do?</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {QUICK_ACTIONS.map(action => {
-                const Icon = action.icon;
-                return (
-                  <Button
-                    key={action.href}
-                    asChild
-                    className={`h-auto py-3 rounded-xl flex-col gap-1.5 shadow-md hover:-translate-y-0.5 transition-all ${action.color}`}
-                  >
-                    <Link href={action.href}>
-                      <Icon className="h-5 w-5" />
-                      <span className="font-black text-[10px] uppercase tracking-wider leading-tight">{action.label}</span>
-                      <span className="text-[9px] opacity-75 font-medium leading-tight">{action.sub}</span>
-                    </Link>
-                  </Button>
-                );
-              })}
-            </div>
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <Button asChild className="w-full justify-start h-auto py-3 px-3 bg-omuto-navy">
+              <Link href="/forms/expense" className="flex flex-col items-center gap-1">
+                <DollarSign className="h-5 w-5" />
+                <span className="text-xs font-bold">Requisition</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full justify-start h-auto py-3 px-3">
+              <Link href="/school-xperience/log-visit" className="flex flex-col items-center gap-1">
+                <ClipboardCheck className="h-5 w-5" />
+                <span className="text-xs font-bold">Log Visit</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full justify-start h-auto py-3 px-3">
+              <Link href="/school-xperience/register-school" className="flex flex-col items-center gap-1">
+                <GraduationCap className="h-5 w-5" />
+                <span className="text-xs font-bold">Add School</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full justify-start h-auto py-3 px-3">
+              <Link href="/finance/reports" className="flex flex-col items-center gap-1">
+                <BarChart3 className="h-5 w-5" />
+                <span className="text-xs font-bold">Reports</span>
+              </Link>
+            </Button>
           </div>
-        </TabsContent>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="dashboard" className="mt-0 space-y-4">
-          <DashboardSection title="Partnerships & Pipeline" description="School registration pipeline and partnership status" icon={Building2} defaultOpen={true}>
-            <PartnershipPipeline />
-          </DashboardSection>
-          <DashboardSection title="Team" description="Deployment and performance" icon={Users} defaultOpen={true}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <TeamDeployment />
-              <TeamPerformanceLeaderboard />
-            </div>
-          </DashboardSection>
-          <DashboardSection title="Programme Health" description="Auto-calculated from activity frequency and form submissions" icon={BarChart3} defaultOpen={false}>
-            <ProgramHealthScore />
-          </DashboardSection>
-        </TabsContent>
-      </Tabs>
       <RoleMissionCard profile={profile} />
     </div>
   );
+}
+
+function StatCard({ title, value, change, changeType, icon: Icon, iconBg, iconColor, href }: {
+  title: string;
+  value: string;
+  change?: string;
+  changeType?: 'positive' | 'negative' | 'warning';
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+  href?: string;
+}) {
+  const content = (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-start justify-between">
+          <div className="space-y-0.5">
+            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{title}</p>
+            <p className="text-lg sm:text-xl font-black">{value}</p>
+            {change && (
+              <p className={`text-[9px] sm:text-[10px] font-semibold ${
+                changeType === 'positive' ? 'text-green-600' : 
+                changeType === 'negative' ? 'text-red-600' : 
+                changeType === 'warning' ? 'text-amber-600' : 'text-muted-foreground'
+              }`}>
+                {change}
+              </p>
+            )}
+          </div>
+          <div className={`p-1.5 sm:p-2 rounded-lg ${iconBg}`}>
+            <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${iconColor}`} />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+  if (href) return <Link href={href}>{content}</Link>;
+  return content;
 }
