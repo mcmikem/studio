@@ -23,3 +23,6 @@ export {
     updateDocumentNonBlocking, 
     deleteDocumentNonBlocking 
 } from './non-blocking-updates';
+
+// 4. Export Paginated Collection Hook
+export { usePaginatedCollection } from './firestore/use-paginated-collection';

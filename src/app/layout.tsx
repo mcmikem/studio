@@ -12,6 +12,8 @@ import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 import { GlobalBackButton } from '@/components/global-back-button';
 import { CheckinReminderToast } from '@/components/reminders/checkin-reminder-toast';
 import { RoleTour } from '@/components/role-tour';
+import { CommandPalette } from '@/components/command-palette';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 
 const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -64,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ViewAsBanner />
                 <main className="flex-1 w-full max-w-full overflow-x-hidden px-2 sm:px-4 py-3 sm:py-4 lg:py-6 pb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom,0px))] md:pb-6">
                   <GlobalBackButton />
+                  <Breadcrumbs />
                   {children}
                 </main>
                 <MobileBottomNav />
@@ -72,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </SidebarProvider>
         </Providers>
         <Toaster />
+        <CommandPalette />
       </body>
     </html>
   );
