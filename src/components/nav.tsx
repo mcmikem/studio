@@ -43,6 +43,7 @@ import {
   Mic,
   Trees,
   ShieldCheck,
+  ShieldAlert,
   School,
   Building2,
   Map as MapIcon,
@@ -58,7 +59,8 @@ import {
   Dices,
   MessageSquareWarning,
   Library,
-  Bot
+  Bot,
+  ChevronDown
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -70,9 +72,15 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarGroupContent,
   useSidebar,
   SidebarMenuSkeleton,
 } from '@/components/ui/sidebar';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Separator } from './ui/separator';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
@@ -249,32 +257,49 @@ export function AppSidebar() {
   const renderNavSection = (sectionName: keyof typeof navConfig, title: string) => {
     if (!allowedSections.includes(sectionName)) return null;
     const navItems = navConfig[sectionName];
+    const isSectionActive = navItems.some(item => isActive(item.href));
 
     return (
-      <SidebarGroup className="px-3">
-        <SidebarGroupLabel className="px-3 text-[10px] uppercase tracking-[0.15em] text-omuto-navy/30 font-medium mb-1">{title}</SidebarGroupLabel>
-        <SidebarMenu className="gap-0.5">
-          {navItems.map(item => (
-             <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                href={item.href}
-                isActive={isActive(item.href)}
-                onClick={handleLinkClick}
-                className={`
-                    rounded-lg transition-all h-9 px-3 duration-150 relative
-                    ${isActive(item.href) 
-                        ? 'bg-omuto-red/10 text-omuto-red before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:rounded-r before:bg-omuto-red' 
-                        : 'bg-transparent text-omuto-navy/60 hover:bg-omuto-navy/5 hover:text-omuto-navy'
-                    }
-                `}
-              >
-                <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive(item.href) ? 'text-omuto-red' : 'text-omuto-navy/50'}`} />
-                <span className="font-medium text-sm">{item.label}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroup>
+      <Collapsible
+        key={sectionName}
+        asChild
+        defaultOpen={isSectionActive || sectionName === 'daily'}
+        className="group/collapsible"
+      >
+        <SidebarGroup className="px-3">
+          <SidebarGroupLabel asChild className="px-3 text-[10px] uppercase tracking-[0.15em] text-omuto-navy/30 font-medium mb-1 hover:bg-omuto-navy/5 rounded-md transition-colors cursor-pointer group-data-[state=open]/collapsible:text-omuto-navy/50">
+            <CollapsibleTrigger className="flex w-full items-center justify-between">
+              {title}
+              <ChevronDown className="ml-auto h-3 w-3 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+            </CollapsibleTrigger>
+          </SidebarGroupLabel>
+          <CollapsibleContent>
+            <SidebarGroupContent>
+                <SidebarMenu className="gap-0.5 mt-1">
+                {navItems.map(item => (
+                    <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                        href={item.href}
+                        isActive={isActive(item.href)}
+                        onClick={handleLinkClick}
+                        className={`
+                            rounded-lg transition-all h-9 px-3 duration-150 relative
+                            ${isActive(item.href) 
+                                ? 'bg-omuto-red/10 text-omuto-red before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-5 before:w-0.5 before:rounded-r before:bg-omuto-red' 
+                                : 'bg-transparent text-omuto-navy/60 hover:bg-omuto-navy/5 hover:text-omuto-navy'
+                            }
+                        `}
+                    >
+                        <item.icon className={`h-4 w-4 flex-shrink-0 ${isActive(item.href) ? 'text-omuto-red' : 'text-omuto-navy/50'}`} />
+                        <span className="font-medium text-sm">{item.label}</span>
+                    </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+                </SidebarMenu>
+            </SidebarGroupContent>
+          </CollapsibleContent>
+        </SidebarGroup>
+      </Collapsible>
     );
   };
 
