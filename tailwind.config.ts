@@ -17,14 +17,16 @@ export default {
       },
       colors: {
         // Omuto Brand Colors (Strict from blueprint)
+        // Brand colors - stay same in dark mode
         'omuto-red': '#EC1C24',
-        'omuto-navy': '#231F20',
-        'omuto-cream': '#F9F8F3',
         'omuto-yellow': '#FFCF5D',
         'omuto-brown': '#5D261B',
         'omuto-gold': '#D69100',
         'omuto-teal': '#40D2AF',
         'omuto-blue': '#96D9F2',
+        // Surface colors - adapt to dark mode
+        'omuto-navy': 'hsl(var(--omuto-navy))',
+        'omuto-cream': 'hsl(var(--omuto-cream))',
         
         // Semantic Colors based on Omuto Brand
         background: 'hsl(var(--background))',

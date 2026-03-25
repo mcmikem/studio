@@ -37,11 +37,19 @@
 
     /* Mobile nav height for safe-area spacing */
     --mobile-nav-height: 5rem;
+    
+    /* Omuto surface colors */
+    --omuto-navy: 340 6% 13%; /* #231F20 */
+    --omuto-cream: 48 40% 96%; /* #F9F8F3 */
   }
 
   .dark {
     --background: 224 30% 8%;
     --foreground: 0 0% 95%;
+
+    /* Omuto surface colors - dark mode */
+    --omuto-navy: 0 0% 95%;
+    --omuto-cream: 224 20% 12%;
 
     --card: 224 20% 12%;
     --card-foreground: 0 0% 95%;
