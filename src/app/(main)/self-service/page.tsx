@@ -9,7 +9,7 @@ import {
   ArrowRight, ShieldCheck, Clock, CheckCircle2,
   Calendar, Briefcase, FileText, Bot, Target
 } from 'lucide-react';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
 import Link from 'next/link';
@@ -17,10 +17,28 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 
 export default function SelfServicePage() {
   const { user } = useUser();
   const { profile, isLoading } = useUserProfile(user);
+  const firestore = useFirestore();
+
+  // Dynamic Data Fetching
+  const leaveQuery = useMemoFirebase(() => 
+    firestore && user ? query(collection(firestore, 'leave-requests'), where('userId', '==', user.uid)) : null
+  , [firestore, user]);
+  const { data: leaveRequests, isLoading: isLoadingLeave } = useCollection(leaveQuery);
+
+  const assetsQuery = useMemoFirebase(() => 
+    firestore && user ? query(collection(firestore, 'assets'), where('assignedToId', '==', user.uid)) : null
+  , [firestore, user]);
+  const { data: assets, isLoading: isLoadingAssets } = useCollection(assetsQuery);
+
+  const alertsQuery = useMemoFirebase(() => 
+    firestore && user ? query(collection(firestore, 'alerts'), where('targetUserIds', 'array-contains', user.uid), orderBy('createdAt', 'desc'), limit(5)) : null
+  , [firestore, user]);
+  const { data: alerts, isLoading: isLoadingAlerts } = useCollection(alertsQuery);
 
   const getInitials = (name?: string) => {
     if (!name) return 'U';
@@ -108,14 +126,18 @@ export default function SelfServicePage() {
         <div className="lg:col-span-8 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {/* Leave Balance Card */}
-                <Card className="border shadow-sm group hover:shadow-md transition-shadow">
+                <Card className="border shadow-sm group hover:shadow-md transition-shadow text-left">
                     <CardContent className="p-6 h-full flex flex-col justify-between">
                         <div>
                             <div className="flex items-center justify-between mb-4">
                                 <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600"><Palmtree className="h-5 w-5" /></div>
-                                <Badge className="bg-emerald-600 text-white border-none text-[10px] font-bold uppercase tracking-wider">Available</Badge>
+                                <Badge className="bg-emerald-600 text-white border-none text-[10px] font-bold uppercase tracking-wider">
+                                    {isLoadingLeave ? '...' : 'Available'}
+                                </Badge>
                             </div>
-                            <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">18 Days</p>
+                            <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">
+                                {isLoadingLeave ? <Skeleton className="h-8 w-20" /> : '0 Days'}
+                            </p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Annual Leave Balance</p>
                         </div>
                         <Button asChild variant="link" className="p-0 h-auto text-primary mt-6 font-bold uppercase tracking-wider text-[10px] w-fit hover:no-underline">
@@ -125,14 +147,14 @@ export default function SelfServicePage() {
                 </Card>
 
                 {/* Performance Snapshot */}
-                <Card className="border shadow-sm group hover:shadow-md transition-shadow">
+                <Card className="border shadow-sm group hover:shadow-md transition-shadow text-left">
                     <CardContent className="p-6 h-full flex flex-col justify-between">
                         <div>
                             <div className="flex items-center justify-between mb-4">
                                 <div className="p-2.5 bg-primary/5 rounded-xl text-primary"><Sparkles className="h-5 w-5" /></div>
                                 <Badge className="bg-primary text-white border-none text-[10px] font-bold uppercase tracking-wider">Mastery</Badge>
                             </div>
-                            <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">94%</p>
+                            <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">--%</p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Engagement Score</p>
                         </div>
                         <Button asChild variant="link" className="p-0 h-auto text-primary mt-6 font-bold uppercase tracking-wider text-[10px] w-fit hover:no-underline">
@@ -142,14 +164,18 @@ export default function SelfServicePage() {
                 </Card>
 
                 {/* My Assets Snapshot */}
-                <Card className="border shadow-sm group hover:shadow-md transition-shadow">
+                <Card className="border shadow-sm group hover:shadow-md transition-shadow text-left">
                     <CardContent className="p-6 h-full flex flex-col justify-between">
                         <div>
                             <div className="flex items-center justify-between mb-4">
                                 <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600"><Briefcase className="h-5 w-5" /></div>
-                                <Badge className="bg-blue-600 text-white border-none text-[10px] font-bold uppercase tracking-wider">Secured</Badge>
+                                <Badge className="bg-blue-600 text-white border-none text-[10px] font-bold uppercase tracking-wider">
+                                    {isLoadingAssets ? '...' : 'Secured'}
+                                </Badge>
                             </div>
-                            <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">3 Items</p>
+                            <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">
+                                {isLoadingAssets ? <Skeleton className="h-8 w-16" /> : `${assets?.length || 0} Items`}
+                            </p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Assigned Equipment</p>
                         </div>
                         <Button asChild variant="link" className="p-0 h-auto text-primary mt-6 font-bold uppercase tracking-wider text-[10px] w-fit hover:no-underline">
@@ -159,14 +185,14 @@ export default function SelfServicePage() {
                 </Card>
 
                 {/* Latest Payslip Snapshot */}
-                <Card className="border shadow-sm group hover:shadow-md transition-shadow">
+                <Card className="border shadow-sm group hover:shadow-md transition-shadow text-left">
                     <CardContent className="p-6 h-full flex flex-col justify-between">
                         <div>
                             <div className="flex items-center justify-between mb-4">
                                 <div className="p-2.5 bg-amber-50 rounded-xl text-amber-600"><Wallet className="h-5 w-5" /></div>
-                                <Badge className="bg-amber-600 text-white border-none text-[10px] font-bold uppercase tracking-wider">Verified</Badge>
+                                <Badge className="bg-amber-600 text-white border-none text-[10px] font-bold uppercase tracking-wider">Payroll</Badge>
                             </div>
-                            <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">Feb '26</p>
+                            <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">--</p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Latest Payslip Issued</p>
                         </div>
                         <Button asChild variant="link" className="p-0 h-auto text-primary mt-6 font-bold uppercase tracking-wider text-[10px] w-fit hover:no-underline">
@@ -188,46 +214,37 @@ export default function SelfServicePage() {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 overflow-hidden">
+                <CardContent className="p-0 overflow-hidden text-left">
                     <div className="divide-y border-t">
-                        <div className="p-6 flex items-start gap-4 hover:bg-muted/30 transition-colors">
-                            <div className="h-9 w-9 rounded-lg bg-omuto-red/5 border border-omuto-red/10 flex items-center justify-center flex-shrink-0">
-                                <FileText className="h-4 w-4 text-omuto-red" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-1">
-                                    <p className="text-xs font-bold text-omuto-navy uppercase tracking-tight">Finance Update</p>
-                                    <span className="text-[10px] text-muted-foreground uppercase opacity-60">2h ago</span>
+                        {isLoadingAlerts ? (
+                             <div className="p-6 space-y-4">
+                                <Skeleton className="h-12 w-full" />
+                                <Skeleton className="h-12 w-full" />
+                             </div>
+                        ) : alerts && alerts.length > 0 ? (
+                            alerts.map((alert: any) => (
+                                <div key={alert.id} className="p-6 flex items-start gap-4 hover:bg-muted/30 transition-colors">
+                                    <div className="h-9 w-9 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center flex-shrink-0">
+                                        <FileText className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <p className="text-xs font-bold text-omuto-navy uppercase tracking-tight">{alert.type || 'Notification'}</p>
+                                            <span className="text-[10px] text-muted-foreground uppercase opacity-60">
+                                                {formatDateSafe(alert.createdAt)}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">{alert.message}</p>
+                                    </div>
                                 </div>
-                                <p className="text-xs text-muted-foreground leading-relaxed">Your requisition for 'Youth Workshop Materials' has been <span className="text-emerald-600 font-bold">Approved</span> by the ED.</p>
+                            ))
+                        ) : (
+                            <div className="p-12 text-center py-20 opacity-40">
+                                <div className="flex justify-center mb-4"><CheckCircle2 className="h-12 w-12 text-muted-foreground" /></div>
+                                <p className="text-[10px] font-bold text-omuto-navy uppercase tracking-widest">Feed is clean.</p>
+                                <p className="text-[10px] text-muted-foreground mt-1">Institutional alerts will appear here.</p>
                             </div>
-                        </div>
-
-                        <div className="p-6 flex items-start gap-4 hover:bg-muted/30 transition-colors">
-                            <div className="h-9 w-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
-                                <Timer className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-1">
-                                    <p className="text-xs font-bold text-omuto-navy uppercase tracking-tight">System Reminder</p>
-                                    <span className="text-[10px] text-muted-foreground uppercase opacity-60">Yesterday</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground leading-relaxed">Don't forget to complete your weekly mission report before Friday 5:00 PM.</p>
-                            </div>
-                        </div>
-
-                        <div className="p-6 flex items-start gap-4 hover:bg-muted/30 transition-colors opacity-60">
-                            <div className="h-9 w-9 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center flex-shrink-0">
-                                <Palmtree className="h-4 w-4 text-amber-600" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-1">
-                                    <p className="text-xs font-bold text-omuto-navy uppercase tracking-tight">HR Notification</p>
-                                    <span className="text-[10px] text-muted-foreground uppercase opacity-60">2 days ago</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground leading-relaxed">Annual Leave policy for 2025 has been updated in the Knowledge Hub.</p>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </CardContent>
             </Card>

@@ -43,6 +43,7 @@ import type { Expense, User, Project, ExpenseItem } from '@/lib/types';
 import { expenseItemCategories } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { FormProgress } from '@/components/ui/form-progress';
 
 const expenseItemSchema = z.object({
   description: z.string(),
@@ -382,6 +383,9 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                 </div>
             </div>
       </CardHeader>
+      <div className="bg-muted/20 px-4 sm:px-6 pt-4">
+        <FormProgress steps={['Type & Date', 'Details', 'Receipt', 'Review']} currentStep={0} />
+      </div>
       {isExpenseLoading ? (
           <CardContent className="p-4 sm:p-6 space-y-4">
               <Skeleton className="h-12 w-full" /><Skeleton className="h-16 w-3/4" /><Skeleton className="h-32 w-full" />

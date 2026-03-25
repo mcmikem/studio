@@ -45,7 +45,7 @@ export default function HRDashboard() {
     },
     {
       title: 'Utilization',
-      value: '92%',
+      value: '--%',
       sub: 'Resource Efficiency',
       icon: TrendingUp,
       color: 'text-emerald-600',
@@ -53,7 +53,7 @@ export default function HRDashboard() {
     },
     {
       title: 'Hiring Pipeline',
-      value: 3,
+      value: 0,
       sub: 'Active Vacancies',
       icon: UserPlus,
       color: 'text-primary',
@@ -145,20 +145,10 @@ export default function HRDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                   <div className="space-y-3">
-                      <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start gap-3">
-                          <Timer className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                          <div>
-                              <p className="text-xs font-bold text-omuto-navy">Performance Reviews</p>
-                              <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">4 team members are due for evaluation.</p>
-                          </div>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 flex items-start gap-3">
-                          <FileBadge className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                          <div>
-                              <p className="text-xs font-bold text-omuto-navy">Contract Renewal</p>
-                              <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">Grace Okello's contract expires soon.</p>
-                          </div>
+                      <div className="p-3 rounded-xl bg-muted/20 border border-muted/20 flex flex-col items-center justify-center text-center py-10 opacity-60">
+                          <Timer className="h-8 w-8 text-muted-foreground mb-2" />
+                          <p className="text-[10px] font-bold text-omuto-navy uppercase tracking-widest">No Active Radar Alerts</p>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed mt-1 px-4">Performance reviews and contract signals will appear here.</p>
                       </div>
 
                       <Button asChild className="w-full justify-between h-12 rounded-xl bg-omuto-navy text-white hover:bg-omuto-navy/90 border-none group transition-all mt-4">

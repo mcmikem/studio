@@ -79,27 +79,33 @@ export function YouthRegistrationForm() {
           Back to YoSkills Hub
         </Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserPlus className="h-6 w-6" />
-            YoSkills Youth Registration
-          </CardTitle>
-          <CardDescription>
-            Add a new youth participant to an entrepreneurship circle.
-          </CardDescription>
+      <Card className="border shadow-comic-sm w-full overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b border-omuto-navy/10 p-4 sm:p-6 lg:p-8">
+            <div className="flex items-start gap-4">
+                <div className="p-3 bg-white border shadow-comic-sm rounded-2xl flex-shrink-0">
+                    <UserPlus className="h-8 w-8 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                    <CardTitle className="font-heading text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight uppercase leading-none text-omuto-navy truncate">
+                        Youth <span className="text-omuto-red">Registration</span>
+                    </CardTitle>
+                    <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-wider mt-2">
+                        YoSkills Entrepreneurship Circle Onboarding
+                    </CardDescription>
+                </div>
+            </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
-            <div className="space-y-2">
-              <Label htmlFor="circleId">Select Circle</Label>
-              {isLoadingCircles ? <Skeleton className="h-10 sm:h-11" /> : (
+            <div className="space-y-4">
+              <Label htmlFor="circleId" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Select Circle *</Label>
+              {isLoadingCircles ? <Skeleton className="h-14 rounded-2xl" /> : (
                 <Controller
                   name="circleId"
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="circleId" className="h-10 sm:h-11"><SelectValue placeholder="Select a circle..." /></SelectTrigger>
+                      <SelectTrigger id="circleId" className="h-14 border rounded-2xl font-bold text-base bg-white"><SelectValue placeholder="Select a circle..." /></SelectTrigger>
                       <SelectContent>
                         {circles?.map(c => <SelectItem key={c.id} value={c.id}>{c.circleName}</SelectItem>)}
                       </SelectContent>
@@ -107,37 +113,37 @@ export function YouthRegistrationForm() {
                   )}
                 />
               )}
-              {errors.circleId && <p className="text-xs sm:text-sm text-destructive">{errors.circleId.message}</p>}
+              {errors.circleId && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.circleId.message}</p>}
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" {...register('name')} className="h-10 sm:h-11" />
-                    {errors.name && <p className="text-xs sm:text-sm text-destructive">{errors.name.message}</p>}
+                    <Label htmlFor="name" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Full Name *</Label>
+                    <Input id="name" {...register('name')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                    {errors.name && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.name.message}</p>}
                 </div>
                  <div className="space-y-2">
-                    <Label htmlFor="age">Age</Label>
-                    <Input id="age" type="number" {...register('age')} className="h-10 sm:h-11" />
-                    {errors.age && <p className="text-xs sm:text-sm text-destructive">{errors.age.message}</p>}
+                    <Label htmlFor="age" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Age *</Label>
+                    <Input id="age" type="number" {...register('age')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                    {errors.age && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.age.message}</p>}
                 </div>
             </div>
              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number (Optional)</Label>
-                <Input id="phone" type="tel" {...register('phone')} className="h-10 sm:h-11" />
+                <Label htmlFor="phone" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Phone Number</Label>
+                <Input id="phone" type="tel" {...register('phone')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
             </div>
              <div className="space-y-2">
-                <Label htmlFor="educationLevel">Education Level (Optional)</Label>
-                <Input id="educationLevel" {...register('educationLevel')} placeholder="e.g., S.4 Leaver" className="h-10 sm:h-11" />
+                <Label htmlFor="educationLevel" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Education Level</Label>
+                <Input id="educationLevel" {...register('educationLevel')} placeholder="e.g., S.4 Leaver" className="h-14 border rounded-2xl font-bold text-base bg-white" />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="businessInterest">Business Interest</Label>
-                <Input id="businessInterest" {...register('businessInterest')} placeholder="e.g., Poultry, Tailoring" className="h-10 sm:h-11" />
-                {errors.businessInterest && <p className="text-xs sm:text-sm text-destructive">{errors.businessInterest.message}</p>}
+                <Label htmlFor="businessInterest" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Business Interest *</Label>
+                <Input id="businessInterest" {...register('businessInterest')} placeholder="e.g., Poultry, Tailoring" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                {errors.businessInterest && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.businessInterest.message}</p>}
             </div>
           </CardContent>
-          <CardFooter className="p-4 sm:p-6">
-            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <CardFooter className="p-4 sm:p-6 lg:p-8 bg-muted/30 border-t border-omuto-navy/10">
+            <Button type="submit" disabled={isSubmitting} className="btn-omuto w-full h-14 bg-omuto-navy text-white border-white shadow-comic-sm rounded-2xl uppercase tracking-widest font-black text-sm">
+              {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               Register Youth
             </Button>
           </CardFooter>

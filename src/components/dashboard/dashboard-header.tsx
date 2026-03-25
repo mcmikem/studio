@@ -6,9 +6,7 @@ import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import { Plus, ClipboardCheck, ShieldCheck, Zap, Sparkles, Heart } from 'lucide-react'
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { ShieldCheck, Zap } from 'lucide-react'
  
 export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
@@ -42,39 +40,9 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2">
-              {isField ? (
-                  <>
-                      <Button asChild size="sm" className="btn-omuto">
-                          <Link href="/school-xperience/log-visit">
-                              <ClipboardCheck className="h-3.5 w-3.5 mr-1.5" />
-                              Log Visit
-                          </Link>
-                      </Button>
-                      <Button asChild size="sm" variant="outline" className="btn-omuto-secondary">
-                          <Link href="/meal/activity">
-                              <Plus className="h-3.5 w-3.5 mr-1.5" />
-                              Activity
-                          </Link>
-                      </Button>
-                  </>
-              ) : (
-                  <>
-                      <Button asChild size="sm" className="btn-omuto">
-                          <Link href="/meal/activity">
-                              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                              Quick Report
-                          </Link>
-                      </Button>
-                      <Button asChild size="sm" variant="outline" className="btn-omuto-secondary">
-                          <Link href="/meal/beneficiary-registration">
-                              <Heart className="h-3.5 w-3.5 mr-1.5 text-omuto-red" />
-                              Register
-                          </Link>
-                      </Button>
-                  </>
-              )}
-          </div>
+          <p className="text-xs text-muted-foreground">
+            Tap <span className="font-bold text-primary">+</span> to quickly log activities, expenses, and more.
+          </p>
       </div>
   )
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard } from 'lucide-react';
+import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard, Search, DollarSign, TrendingUp, Users, Wallet, FileText, Sparkles, ClipboardCheck, Heart, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -11,11 +11,16 @@ export function MobileBottomNav() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const actionDialogRef = useRef<HTMLDivElement>(null);
   const firstActionRef = useRef<HTMLAnchorElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!isActionMenuOpen) return;
+    if (!isActionMenuOpen) {
+      setSearchQuery('');
+      return;
+    }
 
     const onEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setIsActionMenuOpen(false);
@@ -57,20 +62,38 @@ export function MobileBottomNav() {
     return false;
   };
 
-  const actions = [
+  const allActions = [
     // Quick forms - most used
-    { href: '/forms/expense', label: 'Expense Report', icon: Receipt, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
-    { href: '/forms/check-in', label: 'Morning Check-in', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
-    { href: '/forms/check-out', label: 'End of Day', icon: LogOut, color: 'text-omuto-yellow', bg: 'bg-omuto-yellow/10' },
-    { href: '/daily-plan', label: 'AI Planner', icon: LayoutDashboard, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
+    { href: '/forms/expense', label: 'Expense Report', icon: Receipt, category: 'Finance' },
+    { href: '/forms/check-in', label: 'Morning Check-in', icon: LogIn, category: 'Daily' },
+    { href: '/forms/check-out', label: 'End of Day', icon: LogOut, category: 'Daily' },
+    { href: '/daily-plan', label: 'AI Planner', icon: LayoutDashboard, category: 'Daily' },
     // Impact logging
-    { href: '/meal/activity', label: 'Log Activity', icon: BarChart3, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
-    { href: '/school-xperience/log-visit', label: 'Log Visit', icon: Home, color: 'text-green-600', bg: 'bg-green-50' },
+    { href: '/meal/activity', label: 'Log Activity', icon: BarChart3, category: 'Impact' },
+    { href: '/school-xperience/log-visit', label: 'Log School Visit', icon: Building2, category: 'Impact' },
+    { href: '/meal/beneficiary-registration', label: 'Register Beneficiary', icon: Users, category: 'Impact' },
     // Finance
-    { href: '/finance/income', label: 'Log Income', icon: Receipt, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { href: '/finance/income', label: 'Log Income', icon: DollarSign, category: 'Finance' },
+    { href: '/finance/requisitions', label: 'View Requisitions', icon: FileText, category: 'Finance' },
+    { href: '/finance/petty-cash', label: 'Petty Cash', icon: Wallet, category: 'Finance' },
     // AI
-    { href: '/chat', label: 'AI Coach', icon: MessageCircle, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { href: '/chat', label: 'AI Coach', icon: MessageCircle, category: 'AI' },
+    { href: '/impact-story', label: 'Impact Story', icon: Sparkles, category: 'Content' },
+    { href: '/pulse', label: 'Omuto Pulse', icon: Heart, category: 'Content' },
+    { href: '/testimonies', label: 'Capture Story', icon: ClipboardCheck, category: 'Content' },
   ];
+
+  const filteredActions = searchQuery 
+    ? allActions.filter(a => a.label.toLowerCase().includes(searchQuery.toLowerCase()) || a.category.toLowerCase().includes(searchQuery.toLowerCase()))
+    : allActions;
+
+  const groupedActions = filteredActions.reduce((acc, action) => {
+    if (!acc[action.category]) acc[action.category] = [];
+    acc[action.category].push(action);
+    return acc;
+  }, {} as Record<string, typeof allActions>);
+
+  const categories = ['Daily', 'Finance', 'Impact', 'Content', 'AI'];
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe" aria-label="Mobile navigation">
@@ -86,25 +109,79 @@ export function MobileBottomNav() {
         >
           <div
             ref={actionDialogRef}
-            className="absolute bottom-24 left-4 right-4 animate-in slide-in-from-bottom-6 duration-200"
+            className="absolute bottom-24 left-2 right-2 max-h-[70vh] animate-in slide-in-from-bottom-6 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="grid grid-cols-3 gap-2">
-              {actions.map((action, i) => (
-                <Link
-                  key={action.href}
-                  href={action.href}
-                  ref={i === 0 ? firstActionRef : undefined}
-                  onClick={() => setIsActionMenuOpen(false)}
-                  aria-label={action.label}
-                  className="flex items-center gap-3 p-3.5 bg-white border border-omuto-navy/8 rounded-xl active:scale-[0.98] transition-all focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  <div className={`p-2 rounded-lg ${action.bg} ${action.color}`}>
-                    <action.icon className="w-4 h-4" aria-hidden="true" />
-                  </div>
-                  <span className="font-medium text-xs text-omuto-navy leading-tight">{action.label}</span>
-                </Link>
-              ))}
+            {/* Search */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search actions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-12 pl-10 pr-4 rounded-xl border border-omuto-navy/10 bg-white shadow-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary"
+                autoComplete="off"
+              />
+            </div>
+
+            {/* Actions list */}
+            <div className="bg-white rounded-2xl shadow-lg border border-omuto-navy/10 overflow-hidden max-h-[50vh] overflow-y-auto">
+              {filteredActions.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm font-medium">No actions found</p>
+                  <p className="text-xs">Try a different search term</p>
+                </div>
+              ) : searchQuery ? (
+                // Show flat list when searching
+                <div className="grid grid-cols-2 gap-1 p-2">
+                  {filteredActions.map((action, i) => (
+                    <Link
+                      key={action.href}
+                      href={action.href}
+                      ref={i === 0 ? firstActionRef : undefined}
+                      onClick={() => setIsActionMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted active:scale-[0.98] transition-all"
+                    >
+                      <div className={`p-2 rounded-lg bg-omuto-navy/5`}>
+                        <action.icon className="h-4 w-4 text-omuto-navy" />
+                      </div>
+                      <span className="text-sm font-medium text-omuto-navy">{action.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                // Show grouped when not searching
+                categories.map(category => {
+                  const items = groupedActions[category];
+                  if (!items || items.length === 0) return null;
+                  return (
+                    <div key={category}>
+                      <div className="px-4 py-2 bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        {category}
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 p-2">
+                        {items.map((action, i) => (
+                          <Link
+                            key={action.href}
+                            href={action.href}
+                            ref={category === 'Daily' && i === 0 ? firstActionRef : undefined}
+                            onClick={() => setIsActionMenuOpen(false)}
+                            className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted active:scale-[0.98] transition-all"
+                          >
+                            <div className={`p-2 rounded-lg bg-omuto-navy/5`}>
+                              <action.icon className="h-4 w-4 text-omuto-navy" />
+                            </div>
+                            <span className="text-sm font-medium text-omuto-navy">{action.label}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

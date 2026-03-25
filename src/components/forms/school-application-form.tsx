@@ -94,17 +94,19 @@ export function SchoolApplicationForm() {
   };
 
   return (
-    <Card className="card-comic-hero overflow-hidden w-full">
+    <Card className="border shadow-comic-sm w-full overflow-hidden">
       <CardHeader className="bg-muted/30 border-b border-omuto-navy/10 p-4 sm:p-6 lg:p-8">
-            <div className="flex items-start gap-3">
-                <div className="p-2 sm:p-3 bg-white border shadow-comic-sm rounded-xl sm:rounded-2xl flex-shrink-0">
-                    <Building className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
+            <div className="flex items-start gap-4">
+                <div className="p-3 bg-white border shadow-comic-sm rounded-2xl flex-shrink-0">
+                    <Building className="h-8 w-8 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
                     <CardTitle className="font-heading text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight uppercase leading-none text-omuto-navy truncate">
                         School <span className="text-omuto-red">Application</span>
                     </CardTitle>
-                    <CardDescription className="font-bold text-omuto-navy/50 text-[9px] sm:text-[10px] uppercase tracking-wider mt-1 sm:mt-2">Official Intake Frequency</CardDescription>
+                    <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-wider mt-2">
+                        Official Omuto Partnership Intake Frequency
+                    </CardDescription>
                 </div>
             </div>
       </CardHeader>
@@ -120,13 +122,13 @@ export function SchoolApplicationForm() {
              </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
-                    <Label htmlFor="contactName" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Full Name</Label>
-                    <Input id="contactName" {...register('contactName')} className="h-11 sm:h-14 border rounded-xl sm:rounded-2xl text-omuto-navy font-bold text-sm" />
+                    <Label htmlFor="contactName" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">Full Name</Label>
+                    <Input id="contactName" {...register('contactName')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white" />
                     {errors.contactName && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.contactName.message}</p>}
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="contactPhone" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Phone Number</Label>
-                    <Input id="contactPhone" {...register('contactPhone')} className="h-11 sm:h-14 border rounded-xl sm:rounded-2xl text-omuto-navy font-bold text-sm" />
+                    <Label htmlFor="contactPhone" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">Phone Number</Label>
+                    <Input id="contactPhone" {...register('contactPhone')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white" />
                     {errors.contactPhone && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.contactPhone.message}</p>}
                 </div>
              </div>
@@ -141,8 +143,8 @@ export function SchoolApplicationForm() {
              </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                  <div className="space-y-2">
-                     <Label htmlFor="schoolName" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">School Name</Label>
-                     <Input id="schoolName" {...register('schoolName')} className="h-11 sm:h-14 border rounded-xl sm:rounded-2xl text-omuto-navy font-bold text-sm" />
+                     <Label htmlFor="schoolName" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">School Name</Label>
+                     <Input id="schoolName" {...register('schoolName')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white" />
                  </div>
              </div>
               <div className="space-y-4 pt-2 border-t">
@@ -159,16 +161,16 @@ export function SchoolApplicationForm() {
                   />
               </div>
            </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-2">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-2">
                   <div className="space-y-3">
-                     <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Institution Type</Label>
+                     <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">Institution Type</Label>
                      <Controller name="schoolType" control={control} render={({ field }) => (
-                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                             <div className="flex items-center space-x-2 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white transition-all cursor-pointer flex-1">
+                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col sm:flex-row gap-3">
+                             <div className="flex items-center space-x-2 bg-muted/30 px-6 py-4 rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white has-[:checked]:shadow-comic-sm transition-all cursor-pointer flex-1">
                                  <RadioGroupItem value="Primary" id="primary" className="border-2" />
                                  <Label htmlFor="primary" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy">Primary</Label>
                              </div>
-                             <div className="flex items-center space-x-2 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white transition-all cursor-pointer flex-1">
+                             <div className="flex items-center space-x-2 bg-muted/30 px-6 py-4 rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white has-[:checked]:shadow-comic-sm transition-all cursor-pointer flex-1">
                                  <RadioGroupItem value="Secondary" id="secondary" className="border-2" />
                                  <Label htmlFor="secondary" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy">Secondary</Label>
                              </div>
@@ -176,8 +178,8 @@ export function SchoolApplicationForm() {
                      )} />
                  </div>
                  <div className="space-y-2">
-                     <Label htmlFor="studentCount" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Population</Label>
-                     <Input id="studentCount" type="number" {...register('studentCount')} className="h-11 sm:h-14 border rounded-xl sm:rounded-2xl text-omuto-navy font-bold text-sm" />
+                     <Label htmlFor="studentCount" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">Population</Label>
+                     <Input id="studentCount" type="number" {...register('studentCount')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white" />
                  </div>
               </div>
 
@@ -193,9 +195,9 @@ export function SchoolApplicationForm() {
                 control={control}
                 render={({ field }) => (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                        {programs.map((item) => (
-                            <div key={item.id} className="relative group">
-                                <div className={`h-full p-4 sm:p-6 border rounded-xl sm:rounded-2xl transition-all cursor-pointer flex flex-col justify-between ${field.value?.includes(item.id) ? 'border-omuto-red bg-omuto-red text-white shadow-comic-sm' : 'border-omuto-navy/20 bg-white hover:border-omuto-navy/40'}`}>
+                         {programs.map((item) => (
+                            <div key={item.id} className="relative group h-full">
+                                <div className={`h-full p-6 border-lg rounded-2xl transition-all cursor-pointer flex flex-col justify-between ${field.value?.includes(item.id) ? 'border-omuto-red bg-white shadow-comic-sm' : 'border-omuto-navy/5 bg-muted/30 hover:border-omuto-navy/20'}`}>
                                     <Checkbox
                                         id={item.id}
                                         checked={field.value?.includes(item.id)}
@@ -208,10 +210,14 @@ export function SchoolApplicationForm() {
                                     />
                                     <label htmlFor={item.id} className="flex flex-col gap-1 cursor-pointer h-full">
                                         <div className="flex items-center justify-between">
-                                            <span className={`font-bold uppercase text-[10px] sm:text-sm tracking-tight leading-tight ${field.value?.includes(item.id) ? 'text-white' : 'text-omuto-navy'}`}>{item.label}</span>
-                                            {field.value?.includes(item.id) && <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-omuto-yellow" />}
+                                            <span className={`font-bold uppercase text-xs tracking-tight leading-tight ${field.value?.includes(item.id) ? 'text-omuto-red' : 'text-omuto-navy'}`}>{item.label}</span>
+                                            {field.value?.includes(item.id) ? (
+                                                <Sparkles className="h-4 w-4 text-omuto-yellow" />
+                                            ) : (
+                                                <div className="h-4 w-4 rounded-full border border-omuto-navy/10 bg-white" />
+                                            )}
                                         </div>
-                                        <p className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-wider mt-1 ${field.value?.includes(item.id) ? 'text-white/70' : 'text-muted-foreground'}`}>{item.desc}</p>
+                                        <p className={`text-[10px] font-bold uppercase tracking-wider mt-2 ${field.value?.includes(item.id) ? 'text-omuto-navy/60' : 'text-muted-foreground'}`}>{item.desc}</p>
                                     </label>
                                 </div>
                             </div>
@@ -227,9 +233,9 @@ export function SchoolApplicationForm() {
                 <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-omuto-navy/40">Strategy</span>
                 <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
              </div>
-             <div className="space-y-2">
-                <Label htmlFor="sustainabilityPlan" className="font-bold text-[10px] uppercase tracking-widest pl-1">Sustainability Strategy</Label>
-                <Textarea id="sustainabilityPlan" {...register('sustainabilityPlan')} className="min-h-[120px] border-lg rounded-2xl p-6 text-omuto-navy font-bold" placeholder="How will your school maintain impact after Omuto's support?" />
+              <div className="space-y-2">
+                <Label htmlFor="sustainabilityPlan" className="font-bold text-[10px] uppercase tracking-widest pl-1 font-heading">Sustainability Strategy</Label>
+                <Textarea id="sustainabilityPlan" {...register('sustainabilityPlan')} className="min-h-[140px] border-lg rounded-2xl p-6 text-omuto-navy font-bold bg-white" placeholder="How will your school maintain impact after Omuto's support?" />
                 {errors.sustainabilityPlan && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.sustainabilityPlan.message}</p>}
             </div>
              <div className="space-y-4">
@@ -249,7 +255,7 @@ export function SchoolApplicationForm() {
             </div>
           </div>
 
-          <Button type="submit" size="lg" className="btn-omuto w-full h-16 text-sm tracking-widest">
+           <Button type="submit" size="lg" className="btn-omuto w-full h-16 text-sm tracking-widest shadow-comic-sm bg-omuto-navy text-white hover:bg-omuto-navy/90 rounded-2xl">
              {isSubmitting && <Loader2 className="mr-3 h-5 w-5 animate-spin" />}
             SUBMIT ACTION REQUEST <ArrowRight className="ml-3 h-5 w-5" />
           </Button>

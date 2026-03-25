@@ -631,46 +631,13 @@ export default function SeedDataPage() {
     }
     msgs.push(`Added ${MIGRATION_DATA.beneficiaries.length} beneficiary records`);
 
-    // 7. Seed Impact Metrics for Quick Stats Dashboard
-    const totalTrees = MIGRATION_DATA.trees.reduce((acc, t) => acc + (parseFloat(t.qty) || 0), 0);
-    const impactMetricsData = [
-      { metric: 'Schools Supported', current: MIGRATION_DATA.schools.length, target: 100, unit: 'Schools' },
-      { metric: 'Trees Planted (GreenSchools)', current: totalTrees, target: 5000, unit: 'Trees' },
-      { metric: 'Girls Supported (RED)', current: 3105, target: 5000, unit: 'Girls' }, // Base from actual + offline data combined
-      { metric: 'Cycle of Dignity Fundraising', current: 12500000, target: 25000000, unit: 'UGX' }
-    ];
-    for (const im of impactMetricsData) {
-        await addDocumentNonBlocking(collection(firestore, 'impact-metrics'), {
-            ...im,
-            updatedAt: serverTimestamp()
-        });
-    }
-    msgs.push(`Seeded 4 Dashboard Impact Metrics`);
+    // 10. Seed Impact Metrics for Quick Stats Dashboard
+    // [REMOVED MOCK DATA]
+    
+    // Impact metrics should now be updated via real activity logs or 
+    // manual institutional entry rather than hardcoded seed values.
 
-    // 8. Waking up Program Health Score Collections
-    // The dashboard looks for recent activity in specific collections. Seed a few active documents.
-    const now = new Date();
-    const mockProgramsData = [
-      { coll: 'school-visits', title: 'Q1 School Audit' },
-      { coll: 'pads-distributions', title: 'Term 1 Supply' },
-      { coll: 'tree-surveys', title: 'Survival Audit' },
-      { coll: 'water-sources', title: 'Routine Check' },
-      { coll: 'yoskills-youth', title: 'Cohort 3 Intake' },
-      { coll: 'slf-prefects', title: 'Prefect Training' },
-      { coll: 'ofa-teams', title: 'Team Registration' },
-      { coll: 'yap-chapters', title: 'Chapter Application' },
-      { coll: 'sales', title: 'Monthly Reconciliation' }
-    ];
-
-    for (const md of mockProgramsData) {
-        await addDocumentNonBlocking(collection(firestore, md.coll), {
-            title: md.title,
-            status: 'completed',
-            createdAt: serverTimestamp(),
-            recordedAt: now.toISOString()
-        });
-    }
-    msgs.push(`Seeded Program Health Check signals`);
+    msgs.push(`Note: Mock impact metrics and health signals are no longer seeded to preserve data integrity.`);
 
     setMigResult(msgs);
     setIsMigrating(false);
