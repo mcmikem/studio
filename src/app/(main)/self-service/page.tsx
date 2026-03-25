@@ -73,7 +73,7 @@ export default function SelfServicePage() {
                             <h3 className="text-lg font-bold text-omuto-navy tracking-tight">{profile?.name || 'Omuto Member'}</h3>
                             <p className="text-[10px] font-bold uppercase tracking-wider text-primary mt-1">{profile?.role || 'Team Member'}</p>
                             <p className="text-xs text-muted-foreground mt-4 leading-relaxed px-4">
-                                Empowering the next generation with purpose and passion.
+                                {profile?.role ? `${profile.role} at Omuto Foundation` : 'Team Member at Omuto Foundation'}
                             </p>
                         </>
                     )}

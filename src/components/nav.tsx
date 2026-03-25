@@ -101,123 +101,108 @@ const OmutoLogo = () => (
 );
 
 const navConfig = {
-  daily: [
+  // Core - Always visible
+  core: [
     { href: '/', icon: LayoutDashboard, label: 'Mission Control' },
-    { href: '/daily-plan', icon: Zap, label: 'Daily Planner' },
+    { href: '/daily-plan', icon: Zap, label: 'AI Planner' },
     { href: '/workplan', icon: CheckCircle, label: 'Weekly Goals' },
-    { href: '/checklists', icon: ListChecks, label: 'SOP Checklists' },
-    { href: '/profile?tab=tasks', icon: Bell, label: 'Task List' },
+    { href: '/profile?tab=tasks', icon: Bell, label: 'Tasks' },
   ],
-  forms: [
-    { href: '/meal/beneficiary-registration', icon: Users, label: 'Register Beneficiary' },
-    { href: '/meal/activity', icon: BarChart3, label: 'Log Activity' },
-    { href: '/meal/attendance', icon: CheckCircle, label: 'Take Attendance' },
-    { href: '/meal/baseline-survey', icon: Book, label: 'Baseline Survey' },
-    { href: '/meal/endline-survey', icon: CheckSquare, label: 'Endline Survey' },
-    { href: '/meal/pulse', icon: Heart, label: 'Pulse Content' },
-    { href: '/forms/school', icon: School, label: 'Register School' },
-    { href: '/forms/check-in', icon: LogIn, label: 'Check-in' },
-    { href: '/forms/check-out', icon: LogOut, label: 'Check-out' },
+  // My Self Service
+  my: [
+    { href: '/self-service', icon: UserCircle, label: 'My Hub' },
+    { href: '/profile', icon: UserCircle, label: 'My Profile' },
+    { href: '/self-service/leave', icon: Palmtree, label: 'Leave' },
+    { href: '/self-service/attendance', icon: Timer, label: 'Attendance' },
+    { href: '/self-service/payslips', icon: CreditCard, label: 'Payslips' },
+    { href: '/my-finances', icon: Wallet, label: 'My Wallet' },
   ],
+  // Data & Impact
+  impact: [
+    { href: '/meal/data', icon: BarChart3, label: 'Dashboards' },
+    { href: '/school-xperience/impact-data/map', icon: MapIcon, label: 'Impact Map' },
+    { href: '/reports', icon: AreaChart, label: 'Reports' },
+    { href: '/stream', icon: Wind, label: 'Team Stream' },
+  ],
+  // Programs
+  programs: [
+    { href: '/school-xperience', icon: Building2, label: 'School Xperience' },
+    { href: '/meal/ofa', icon: Swords, label: 'OFA Football' },
+    { href: '/talents/omuto-cup', icon: Trophy, label: 'Omuto Cup' },
+    { href: '/meal/red-campaign', icon: ShieldCheck, label: 'RED Campaign' },
+    { href: '/meal/slf', icon: School, label: 'SLF' },
+    { href: '/meal/yap', icon: Landmark, label: 'YAP' },
+    { href: '/meal/greenschools', icon: Flower2, label: 'Green Schools' },
+    { href: '/meal/purewater', icon: Droplets, label: 'PureWater' },
+    { href: '/meal/yoskills', icon: GraduationCap, label: 'YOSkills' },
+    { href: '/enterprise/youth-center', icon: UsersRound, label: 'Youth Center' },
+  ],
+  // Enterprise
   enterprise: [
-    { href: '/enterprise/essentials', icon: Store, label: 'Enterprise Hub' },
+    { href: '/enterprise/essentials', icon: Store, label: 'Essentials Hub' },
     { href: '/enterprise/essentials/products', icon: Package, label: 'Products' },
     { href: '/enterprise/essentials/sales', icon: ShoppingCart, label: 'Point of Sale' },
     { href: '/enterprise/essentials/production', icon: TrendingUp, label: 'Production' },
   ],
-  programs: [
-    { href: '/enterprise/youth-center', icon: UsersRound, label: 'Youth Center' },
-    { href: '/meal/ofa', icon: Swords, label: 'OFA Football' },
-    { href: '/talents/omuto-cup', icon: Trophy, label: 'Omuto Cup' },
-    { href: '/meal/red-campaign', icon: ShieldCheck, label: 'RED Campaign' },
-    { href: '/meal/slf', icon: School, label: 'SLF Program' },
-    { href: '/meal/tree-survey', icon: Trees, label: 'Tree Survey' },
-    { href: '/meal/yoskills', icon: GraduationCap, label: 'YOSkills' },
-    { href: '/meal/yap', icon: Landmark, label: 'YAP' },
-    { href: '/meal/greenschools', icon: Flower2, label: 'Green Schools' },
-    { href: '/meal/purewater', icon: Droplets, label: 'PureWater' },
-    { href: '/school-xperience', icon: Building2, label: 'School Xperience' },
-  ],
-  team: [
-    { href: '/team-performance', icon: TrendingUp, label: 'Impact Stars' },
-    { href: '/checkins', icon: LogIn, label: 'Check-ins' },
-    { href: '/activity-log', icon: History, label: 'Activity Log' },
-    { href: '/stream', icon: Wind, label: 'Reports' },
-    { href: '/calendar', icon: Calendar, label: 'Calendar' },
-  ],
-  data: [
-    { href: '/meal/data', icon: BarChart3, label: 'Dashboards' },
-    { href: '/meal/impact-studio', icon: Sparkles, label: 'Impact Studio' },
-    { href: '/reports', icon: AreaChart, label: 'Reports' },
-    { href: '/school-xperience/impact-data/map', icon: MapIcon, label: 'Impact Map' },
-  ],
-  ai: [
-    { href: '/chat', icon: Sparkles, label: 'AI Coach' },
-    { href: '/know', icon: BookOpen, label: 'Knowledge Base' },
-    { href: '/management/operational-plan', icon: Goal, label: 'Strategy' },
-  ],
-  ops: [
-    { href: '/management', icon: Briefcase, label: 'Ops Desk' },
-    { href: '/resources', icon: Handshake, label: 'Grant Finder' },
-  ],
+  // Finance
   finance: [
     { href: '/finance/dashboard', icon: Wallet, label: 'Finance Hub' },
     { href: '/finance/requisitions', icon: FileText, label: 'Requisitions' },
     { href: '/finance/accountabilities', icon: ShieldCheck, label: 'Accountabilities' },
     { href: '/finance/petty-cash', icon: Landmark, label: 'Petty Cash' },
-    { href: '/my-finances', icon: Wallet, label: 'My Wallet' },
   ],
+  // HR Admin (for admins only)
+  hr: [
+    { href: '/hr/dashboard', icon: Users, label: 'HR Dashboard' },
+    { href: '/hr/leave', icon: Palmtree, label: 'Leave Mgmt' },
+    { href: '/hr/hiring', icon: UserPlus, label: 'Hiring' },
+    { href: '/hr/performance', icon: FileBadge, label: 'Performance' },
+    { href: '/hr/payroll', icon: CreditCard, label: 'Payroll' },
+    { href: '/management/users', icon: Users, label: 'Staff Directory' },
+  ],
+  // AI & Knowledge
+  ai: [
+    { href: '/chat', icon: Bot, label: 'AI Coach' },
+    { href: '/know', icon: BookOpen, label: 'Knowledge Base' },
+    { href: '/management/operational-plan', icon: Goal, label: 'Strategy' },
+  ],
+  // Content
   content: [
     { href: '/testimonies', icon: Video, label: 'Stories' },
-    { href: '/record-testimony', icon: Mic, label: 'Capture Story' },
-    { href: '/impact-story', icon: Wand2, label: 'Impact Narratives' },
-    { href: '/pulse', icon: Heart, label: 'Pulse' },
+    { href: '/impact-story', icon: Wand2, label: 'Impact Stories' },
+    { href: '/pulse', icon: Heart, label: 'Omuto Pulse' },
   ],
-  hr: [
-    { href: '/hr/dashboard', icon: LayoutDashboard, label: 'HR Dashboard' },
-    { href: '/hr/structures', icon: Building2, label: 'HR Structures' },
-    { href: '/management/users', icon: Users, label: 'Employee Data' },
-    { href: '/hr/hiring', icon: UserPlus, label: 'Hiring' },
-    { href: '/hr/leave', icon: Palmtree, label: 'Leave & Time' },
-    { href: '/hr/payroll', icon: CreditCard, label: 'Payroll' },
-    { href: '/hr/performance', icon: FileBadge, label: 'Performance' },
-    { href: '/hr/assets', icon: Package, label: 'Assets' },
-    { href: '/hr/grievances', icon: ShieldAlert, label: 'Grievances' },
+  // Forms - Quick access
+  forms: [
+    { href: '/meal/beneficiary-registration', icon: Users, label: 'Register Beneficiary' },
+    { href: '/meal/activity', icon: BarChart3, label: 'Log Activity' },
+    { href: '/forms/check-in', icon: LogIn, label: 'Check-in' },
+    { href: '/forms/check-out', icon: LogOut, label: 'Check-out' },
   ],
-  self: [
-    { href: '/self-service', icon: LayoutDashboard, label: 'My Hub' },
-    { href: '/profile', icon: UserCircle, label: 'My Profile' },
-    { href: '/self-service/leave', icon: Palmtree, label: 'My Leave' },
-    { href: '/self-service/attendance', icon: Timer, label: 'My Attendance' },
-    { href: '/self-service/payslips', icon: CreditCard, label: 'My Payslips' },
-    { href: '/self-service/performance', icon: FileBadge, label: 'My Performance' },
-    { href: '/self-service/assets', icon: Package, label: 'My Assets' },
-    { href: '/self-service/grievances', icon: ShieldAlert, label: 'My Grievances' },
-    { href: '/my-finances', icon: Wallet, label: 'My Wallet' },
-    { href: '/chat', icon: Bot, label: 'Omuto AI' },
-  ],
+  // System
   system: [
+    { href: '/calendar', icon: Calendar, label: 'Calendar' },
     { href: '/help', icon: LifeBuoy, label: 'Help' },
     { href: '/system/feedback', icon: Bug, label: 'Feedback' },
   ]
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['daily', 'self', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'ops', 'team', 'data', 'ai', 'content', 'system'],
-  'Executive Director': ['daily', 'self', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'ops', 'team', 'data', 'ai', 'content', 'system'],
-  'Programs & Partnerships Manager': ['daily', 'self', 'forms', 'programs', 'enterprise', 'finance', 'team', 'data', 'ai', 'content'],
-  'Operations & Field Manager': ['daily', 'self', 'forms', 'programs', 'enterprise', 'finance', 'team', 'data', 'ai', 'content'],
-  'Media & Finance Lead': ['daily', 'self', 'forms', 'enterprise', 'finance', 'ops', 'data', 'ai', 'content'],
-  'Media & Communications Lead': ['daily', 'self', 'forms', 'enterprise', 'finance', 'data', 'ai', 'content'],
-  'Essentials Manager': ['daily', 'self', 'forms', 'enterprise', 'ops', 'data', 'ai'],
-  'Youth Center Manager': ['daily', 'self', 'forms', 'enterprise', 'team', 'data', 'ai'],
-  'Field Coordinator': ['daily', 'self', 'forms', 'programs', 'team', 'data', 'ai', 'content'],
-  'Field Staff': ['daily', 'self', 'forms', 'team', 'data', 'ai', 'content'],
-  'Media & Communications': ['daily', 'self', 'forms', 'content', 'data', 'ai'],
-  'Accountant/Finance': ['daily', 'self', 'forms', 'finance', 'ops', 'data', 'ai'],
-  'Intern': ['daily', 'self', 'team', 'content', 'ai'],
-  'Volunteer': ['daily', 'self', 'team', 'ai'],
-  'default': ['daily', 'self', 'team', 'data'],
+  'Administrator': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
+  'Executive Director': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
+  'Programs & Partnerships Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content'],
+  'Operations & Field Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content'],
+  'Media & Finance Lead': ['core', 'my', 'forms', 'enterprise', 'finance', 'impact', 'ai', 'content'],
+  'Media & Communications Lead': ['core', 'my', 'forms', 'enterprise', 'finance', 'impact', 'ai', 'content'],
+  'Essentials Manager': ['core', 'my', 'forms', 'enterprise', 'impact', 'ai'],
+  'Youth Center Manager': ['core', 'my', 'forms', 'enterprise', 'impact', 'ai'],
+  'Field Coordinator': ['core', 'my', 'forms', 'programs', 'impact', 'ai', 'content'],
+  'Field Staff': ['core', 'my', 'forms', 'impact', 'ai', 'content'],
+  'Media & Communications': ['core', 'my', 'forms', 'content', 'impact', 'ai'],
+  'Accountant/Finance': ['core', 'my', 'forms', 'finance', 'impact', 'ai'],
+  'Intern': ['core', 'my', 'impact', 'content', 'ai'],
+  'Volunteer': ['core', 'my', 'impact', 'ai'],
+  'default': ['core', 'my', 'impact', 'ai'],
 };
 
 
@@ -310,16 +295,14 @@ export function AppSidebar() {
         <OmutoLogo />
       </SidebarHeader>
       <SidebarContent className="no-scrollbar pt-1">
-        {renderNavSection('daily', 'Daily Ops')}
-        {renderNavSection('self', 'Self Service')}
-        {renderNavSection('hr', 'Human Resources')}
-        {renderNavSection('forms', 'Impact Forms')}
+        {renderNavSection('core', 'Core')}
+        {renderNavSection('my', 'My Service')}
+        {renderNavSection('forms', 'Quick Forms')}
         {renderNavSection('programs', 'Programs')}
         {renderNavSection('enterprise', 'Enterprise')}
         {renderNavSection('finance', 'Finance')}
-        {renderNavSection('ops', 'Operations')}
-        {renderNavSection('team', 'Team')}
-        {renderNavSection('data', 'Data')}
+        {renderNavSection('impact', 'Impact')}
+        {renderNavSection('hr', 'HR Admin')}
         {renderNavSection('ai', 'AI & Strategy')}
         {renderNavSection('content', 'Content')}
         <Separator className="mx-5 my-3 bg-omuto-navy/8 border-none h-px" />
@@ -328,7 +311,7 @@ export function AppSidebar() {
       <SidebarFooter className="px-5 py-4 border-t border-omuto-navy/8 bg-omuto-cream">
         <div className="flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-omuto-navy/40" />
-            <p className="text-xs text-omuto-navy/40 font-medium">Core Engine AI V2.0</p>
+            <p className="text-xs text-omuto-navy/40 font-medium">Omuto Central</p>
         </div>
       </SidebarFooter>
     </div>

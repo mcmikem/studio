@@ -10,15 +10,28 @@ import { collection, query, orderBy, limit, doc } from 'firebase/firestore';
 import { useFormSubmission } from '@/hooks/use-form-submission';
 import {
   MapPin, Search, X, Plus, GraduationCap, Droplets, TreePine, Users,
-  Building2, Check, Home, UsersRound, ChevronRight, Sparkles, Filter, Menu, Pencil, Loader2
+  Building2, Check, Home, ChevronRight, Sparkles, Pencil, Loader2, Eye, EyeOff
 } from 'lucide-react';
 import { 
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger 
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription
 } from '@/components/ui/sheet';
-import { InteractiveMap, type MapLocation, MetricRow, LegendItem } from '@/components/school-xperience/interactive-map';
+import { InteractiveMap, type MapLocation, MetricRow } from '@/components/school-xperience/interactive-map';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
-import { FormShell, FormField, FormGrid, FormSection, FormStickyFooter } from '@/components/ui/form-shell';
+import { FormShell, FormField, FormGrid, FormSection } from '@/components/ui/form-shell';
 import { UGANDA_LOCATIONS, OMUTO_LOCATIONS, AREA_BOUNDARIES } from '@/lib/uganda-data';
+
+// ─── Layer configuration ────────────────────────────────────
+const LAYER_CONFIG = {
+  school: { icon: GraduationCap, label: 'Schools', color: '#3b82f6', bg: 'bg-blue-500' },
+  water: { icon: Droplets, label: 'Water', color: '#06b6d4', bg: 'bg-cyan-500' },
+  tree: { icon: TreePine, label: 'Trees', color: '#22c55e', bg: 'bg-emerald-500' },
+  beneficiary: { icon: Users, label: 'Impact', color: '#ec4899', bg: 'bg-pink-500' },
+  training: { icon: Building2, label: 'Training', color: '#f59e0b', bg: 'bg-amber-500' },
+  office: { icon: Home, label: 'HQ', color: '#dc2626', bg: 'bg-red-500' },
+} as const;
+
+type LayerType = keyof typeof LAYER_CONFIG;
+const ALL_LAYERS: LayerType[] = ['office', 'school', 'beneficiary', 'water', 'tree', 'training'];
 
 export default function MapPage() {
   const firestore = useFirestore();
@@ -28,40 +41,40 @@ export default function MapPage() {
   const [mapZoom, setMapZoom] = useState(12);
   const [showBoundary, setShowBoundary] = useState<{ type: string; coordinates: number[][][] } | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [addType, setAddType] = useState<'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office'>('school');
-  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [addType, setAddType] = useState<LayerType>('school');
   const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(['office', 'school', 'beneficiary', 'water', 'tree', 'training']));
+  const [activeLayers, setActiveLayers] = useState<Set<string>>(new Set(ALL_LAYERS));
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLocation, setEditingLocation] = useState<MapLocation | null>(null);
+  const [layerBarExpanded, setLayerBarExpanded] = useState(true);
 
-  const handleMapPlace = (coords: { lat: number; lng: number }, type: 'school' | 'water' | 'tree' | 'beneficiary' | 'training' | 'office') => {
+  const handleMapPlace = (coords: { lat: number; lng: number }, type: LayerType) => {
     setMapCoords(coords);
     setAddType(type);
     setShowAddModal(true);
   };
 
-  // Fetch data
+  // ─── Firestore queries ──────────────────────────────────
   const schoolsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'sx-schools'), orderBy('schoolName'));
   }, [firestore]);
 
-   const beneficiariesQuery = useMemoFirebase(() => {
+  const beneficiariesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'sx-beneficiaries'), orderBy('createdAt', 'desc'), limit(300));
   }, [firestore]);
- 
+
   const waterSourcesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'sx-water-sources'), orderBy('createdAt', 'desc'), limit(300));
   }, [firestore]);
- 
+
   const treesQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'sx-trees'), orderBy('createdAt', 'desc'), limit(300));
   }, [firestore]);
- 
+
   const trainingsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'sx-trainings'), orderBy('createdAt', 'desc'), limit(300));
@@ -73,7 +86,17 @@ export default function MapPage() {
   const { data: trees } = useCollection<any>(treesQuery);
   const { data: trainings } = useCollection<any>(trainingsQuery);
 
-  // Calculate area stats
+  // ─── Counts ─────────────────────────────────────────────
+  const layerCounts = useMemo(() => ({
+    school: (schools || []).length,
+    water: (waterSources || []).length,
+    tree: (trees || []).length,
+    beneficiary: (beneficiaries || []).length,
+    training: (trainings || []).length,
+    office: 2,
+  }), [schools, waterSources, trees, beneficiaries, trainings]);
+
+  // ─── Area stats ─────────────────────────────────────────
   const areaStats = useMemo(() => {
     const stats: Record<string, { schools: number; beneficiaries: number; waterSources: number; trees: number }> = {};
     const schoolIdsByArea: Record<string, Set<string>> = {};
@@ -96,9 +119,8 @@ export default function MapPage() {
     return stats;
   }, [schools, beneficiaries, waterSources, trees]);
 
-  // Build locations array — Memoized to prevent infinite marker re-renders
+  // ─── Build locations array ──────────────────────────────
   const allLocations = useMemo((): MapLocation[] => [
-    // Omuto HQ
     {
       id: 'omuto-office',
       name: 'Omuto Foundation HQ',
@@ -109,7 +131,6 @@ export default function MapPage() {
       programme: 'Administration',
       description: 'Headquarters - Kyebando, Kanalukya Road',
     },
-    // Youth Center
     {
       id: 'youth-center',
       name: 'Omuto Youth Center',
@@ -120,8 +141,7 @@ export default function MapPage() {
       programme: 'Youth Programmes',
       description: 'Nabbuzi, Kammengo - near Moka Petrol Station',
     },
-    // Schools
-    ...(schools || []).map(s => ({
+    ...(schools || []).map((s: any) => ({
       id: s.id,
       name: s.schoolName || 'Unknown School',
       type: 'school' as const,
@@ -130,8 +150,7 @@ export default function MapPage() {
       district: s.district,
       programme: s.activeProgrammes?.join(', ') || '',
     })),
-    // Beneficiaries
-    ...(beneficiaries || []).filter(b => b.coordinates).map((b, i) => ({
+    ...(beneficiaries || []).filter((b: any) => b.coordinates).map((b: any, i: number) => ({
       id: b.id || `ben-${i}`,
       name: `${b.beneficiaryType} (${b.gender})`,
       type: 'beneficiary' as const,
@@ -140,8 +159,7 @@ export default function MapPage() {
       district: '',
       programme: b.programme,
     })),
-    // Water Sources
-    ...(waterSources || []).filter(w => w.coordinates).map((w, i) => ({
+    ...(waterSources || []).filter((w: any) => w.coordinates).map((w: any, i: number) => ({
       id: w.id || `water-${i}`,
       name: `${w.sourceType} - ${w.status}`,
       type: 'water' as const,
@@ -150,8 +168,7 @@ export default function MapPage() {
       district: '',
       programme: 'PureWater',
     })),
-    // Trees
-    ...(trees || []).filter(t => t.coordinates).map((t, i) => ({
+    ...(trees || []).filter((t: any) => t.coordinates).map((t: any, i: number) => ({
       id: t.id || `tree-${i}`,
       name: `${t.quantity} ${t.treeType} trees`,
       type: 'tree' as const,
@@ -160,8 +177,7 @@ export default function MapPage() {
       district: '',
       programme: 'GreenSchools',
     })),
-    // Trainings
-    ...(trainings || []).filter(t => t.coordinates).map((t, i) => ({
+    ...(trainings || []).filter((t: any) => t.coordinates).map((t: any, i: number) => ({
       id: t.id || `train-${i}`,
       name: t.trainingType || 'Training',
       type: 'training' as const,
@@ -172,7 +188,7 @@ export default function MapPage() {
     })),
   ], [schools, beneficiaries, waterSources, trees, trainings]);
 
-  // Filter locations by active layers
+  // Filter by active layers
   const filteredLocations = useMemo(() => {
     return allLocations.filter(loc => activeLayers.has(loc.type));
   }, [allLocations, activeLayers]);
@@ -186,88 +202,56 @@ export default function MapPage() {
     });
   };
 
-  // Debounce search to avoid jank on slow devices
+  // ─── Search ─────────────────────────────────────────────
   const deferredQuery = useDeferredValue(searchQuery);
 
-  // Search results
   const searchResults = useMemo(() => {
     if (deferredQuery.length < 2) return [];
-    const query = deferredQuery.toLowerCase();
+    const q = deferredQuery.toLowerCase();
     const results: any[] = [];
 
     // Omuto locations
-    if ('omuto'.includes(query) || 'hq'.includes(query) || 'headquarters'.includes(query)) {
+    if ('omuto'.includes(q) || 'hq'.includes(q) || 'headquarters'.includes(q)) {
       results.push({
-        type: 'office',
-        name: 'Omuto Foundation HQ',
-        description: 'Kyebando, Kanalukya Road',
-        details: { address: 'Kyebando, Kanalukya Road, Wakiso', activities: ['Administration', 'Staff Coordination', 'Programme Management'] },
-        coordinates: OMUTO_LOCATIONS.office.coordinates,
-        boundary: AREA_BOUNDARIES['Kyebando'],
+        type: 'office', name: 'Omuto Foundation HQ', description: 'Kyebando, Kanalukya Road',
+        coordinates: OMUTO_LOCATIONS.office.coordinates, boundary: AREA_BOUNDARIES['Kyebando'],
       });
     }
-
-    if ('youth'.includes(query) || 'nabbuzi'.includes(query) || 'moka'.includes(query)) {
+    if ('youth'.includes(q) || 'nabbuzi'.includes(q) || 'moka'.includes(q)) {
       results.push({
-        type: 'office',
-        name: 'Omuto Youth Center',
-        description: 'Nabbuzi, Kammengo',
-        details: { address: 'Nabbuzi, Kammengo Subcounty, Mpigi', activities: ['Youth Skills Training', 'SLF Programme', 'RED Campaign'] },
-        coordinates: OMUTO_LOCATIONS.youthCenter.coordinates,
-        boundary: AREA_BOUNDARIES['Nabbuzi'],
+        type: 'office', name: 'Omuto Youth Center', description: 'Nabbuzi, Kammengo',
+        coordinates: OMUTO_LOCATIONS.youthCenter.coordinates, boundary: AREA_BOUNDARIES['Nabbuzi'],
       });
     }
 
     // Districts/Subcounties
     Object.entries(UGANDA_LOCATIONS).forEach(([districtKey, districtData]: [string, any]) => {
-      if (districtKey.toLowerCase().includes(query)) {
-        results.push({
-          type: 'district',
-          name: districtKey,
-          description: `${districtData.subcounties?.length || 0} subcounties`,
-          coordinates: districtData.coordinates,
-        });
+      if (districtKey.toLowerCase().includes(q)) {
+        results.push({ type: 'district', name: districtKey, description: `${districtData.subcounties?.length || 0} subcounties`, coordinates: districtData.coordinates });
       }
-
       districtData.subcounties?.forEach((sc: any) => {
-        if (sc.name.toLowerCase().includes(query)) {
-          results.push({
-            type: 'subcounty',
-            name: sc.name,
-            description: `${sc.parishes?.length || 0} parishes`,
-            coordinates: sc.coordinates || districtData.coordinates,
-            boundary: AREA_BOUNDARIES[sc.name],
-          });
+        if (sc.name.toLowerCase().includes(q)) {
+          results.push({ type: 'subcounty', name: sc.name, description: `${sc.parishes?.length || 0} parishes`, coordinates: sc.coordinates || districtData.coordinates, boundary: AREA_BOUNDARIES[sc.name] });
         }
       });
     });
 
     // Schools
     (schools || []).forEach((s: any) => {
-      if (s.schoolName?.toLowerCase().includes(query) || s.location?.toLowerCase().includes(query)) {
-        results.push({
-          type: 'school',
-          name: s.schoolName,
-          description: s.location,
-          coordinates: s.coordinates,
-        });
+      if (s.schoolName?.toLowerCase().includes(q) || s.location?.toLowerCase().includes(q)) {
+        results.push({ type: 'school', name: s.schoolName, description: s.location, coordinates: s.coordinates });
       }
     });
 
-    return results.slice(0, 10);
+    return results.slice(0, 8);
   }, [deferredQuery, schools]);
 
-  // Handle search result click
   const handleSearchClick = (result: any) => {
     if (result.coordinates) {
       setMapCenter(result.coordinates);
       setMapZoom(result.type === 'district' ? 11 : result.type === 'subcounty' ? 13 : 15);
     }
-    if (result.boundary) {
-      setShowBoundary(result.boundary);
-    }
-
-    // Set selected location for the Insights Sidebar
+    if (result.boundary) setShowBoundary(result.boundary);
     setSelectedLocation({
       id: result.id || result.name,
       name: result.name,
@@ -277,383 +261,307 @@ export default function MapPage() {
       coordinates: result.coordinates,
       description: result.description
     });
-
     setSearchQuery('');
-    setShowMobileSidebar(false);
   };
 
-  // Quick location buttons
+  // ─── Quick nav ──────────────────────────────────────────
   const quickLocations = [
-    { name: 'Office', coords: OMUTO_LOCATIONS.office.coordinates, boundary: AREA_BOUNDARIES['Kyebando'], zoom: 15 },
-    { name: 'Youth Center', coords: OMUTO_LOCATIONS.youthCenter.coordinates, boundary: AREA_BOUNDARIES['Nabbuzi'], zoom: 15 },
-    { name: 'Mpigi', coords: UGANDA_LOCATIONS['Mpigi']?.coordinates, zoom: 11 },
-    { name: 'Kammengo', coords: { lat: 0.0897, lng: 32.2456 }, zoom: 13 },
+    { name: 'HQ Office', coords: OMUTO_LOCATIONS.office.coordinates, boundary: AREA_BOUNDARIES['Kyebando'], zoom: 15, icon: Home },
+    { name: 'Youth Center', coords: OMUTO_LOCATIONS.youthCenter.coordinates, boundary: AREA_BOUNDARIES['Nabbuzi'], zoom: 15, icon: Building2 },
+    { name: 'Mpigi District', coords: UGANDA_LOCATIONS['Mpigi']?.coordinates, zoom: 11, icon: MapPin },
   ];
+
+  const totalPoints = filteredLocations.filter(l => l.coordinates).length;
 
   return (
     <div className="relative h-[calc(100dvh-4rem)] overflow-hidden bg-slate-950 -mx-2 sm:-mx-4 -my-3 sm:-my-4 lg:-my-6 -mb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom,0px))] md:-mb-6">
-      {/* Floating Header / Search Deck */}
-      <div className="absolute top-6 left-6 right-6 z-[1000] flex flex-col md:flex-row gap-4 pointer-events-none">
-        <div className="flex-1 max-w-xl pointer-events-auto">
-          <Card className="bg-white/80 backdrop-blur-xl border-white/20 shadow-2xl rounded-[2rem] p-2 flex items-center gap-3">
-             <div className="p-3 bg-primary rounded-2xl text-white shadow-lg shadow-primary/20">
-                <MapPin className="h-6 w-6" />
-             </div>
-             <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
-                <Input
-                  placeholder="Search regions, schools, or beneficiaries..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 border-none bg-transparent h-12 text-sm font-bold focus-visible:ring-0"
-                />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 hover:bg-muted rounded-full transition-colors">
-                    <X className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                )}
-             </div>
-             <div className="hidden md:flex items-center gap-2 pr-4 border-l border-black/5 pl-4 ml-2">
-                {quickLocations.slice(0, 2).map(loc => (
-                  <Button
-                    key={loc.name}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      if (loc.coords) {
-                        setMapCenter(loc.coords);
-                        setMapZoom(loc.zoom || 12);
-                      }
-                      if (loc.boundary) setShowBoundary(loc.boundary);
-                    }}
-                    className="h-9 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary/5 hover:text-primary"
-                  >
-                    {loc.name}
-                  </Button>
-                ))}
-             </div>
-          </Card>
+      
+      {/* ━━━ Top Search Bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <div className="absolute top-4 left-4 right-4 z-[1000] flex gap-3 pointer-events-none">
+        <div className="flex-1 max-w-md pointer-events-auto">
+          <div className="bg-white rounded-2xl shadow-xl border border-black/5 flex items-center gap-2 px-3 h-12">
+            <Search className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+            <Input
+              placeholder="Search schools, regions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="border-none bg-transparent h-full text-sm font-bold focus-visible:ring-0 px-0"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+                <X className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+            )}
+          </div>
 
-          {/* Search Results Dropdown */}
+          {/* Search Results */}
           {searchResults.length > 0 && (
-            <Card className="mt-3 bg-white/95 backdrop-blur-xl border-white/20 shadow-2xl rounded-[2rem] overflow-hidden max-h-[60vh] overflow-y-auto animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="p-4 border-b border-black/5 bg-muted/30">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                        Found {searchResults.length} relevant locations
-                    </p>
-                </div>
-                {searchResults.map((result, i) => (
-                    <button
-                        key={`${result.type}-${result.name}-${i}`}
-                        onClick={() => handleSearchClick(result)}
-                        className="w-full text-left p-4 hover:bg-primary/5 transition-all flex items-center gap-4 group border-b border-black/5 last:border-0"
-                    >
-                        <div className={`p-3 rounded-2xl ${result.type === 'office' ? 'bg-primary text-white' : 'bg-muted group-hover:bg-primary/10 group-hover:text-primary'} transition-colors`}>
-                            {result.type === 'school' ? <GraduationCap className="h-5 w-5" /> : 
-                             result.type === 'office' ? <Home className="h-5 w-5" /> : <MapPin className="h-5 w-5" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-black text-sm text-omuto-navy uppercase truncate">{result.name}</p>
-                            <p className="text-xs font-bold text-muted-foreground truncate">{result.description}</p>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
-                    </button>
-                ))}
+            <Card className="mt-2 bg-white/98 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden max-h-[50vh] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="px-4 py-2.5 border-b border-black/5 bg-muted/20">
+                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                  {searchResults.length} results
+                </p>
+              </div>
+              {searchResults.map((result, i) => (
+                <button
+                  key={`${result.type}-${result.name}-${i}`}
+                  onClick={() => handleSearchClick(result)}
+                  className="w-full text-left px-4 py-3 hover:bg-primary/5 transition-colors flex items-center gap-3 group border-b border-black/5 last:border-0"
+                >
+                  <div className={`p-2 rounded-xl ${result.type === 'office' ? 'bg-red-500 text-white' : 'bg-muted group-hover:bg-primary/10 group-hover:text-primary'} transition-colors`}>
+                    {result.type === 'school' ? <GraduationCap className="h-4 w-4" /> : 
+                     result.type === 'office' ? <Home className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-omuto-navy truncate">{result.name}</p>
+                    <p className="text-[10px] font-medium text-muted-foreground truncate">{result.description}</p>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ))}
             </Card>
           )}
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-3 pointer-events-auto">
-            <Button 
-                onClick={() => { setAddType('school'); setShowAddModal(true); }}
-                className="h-14 w-14 rounded-full bg-white text-omuto-navy shadow-2xl border-2 border-white/20 hover:scale-110 active:scale-95 transition-all p-0 flex items-center justify-center shrink-0"
-                title="Register New School"
+        {/* Summary Stats Ribbon */}
+        <div className="hidden md:flex items-center gap-1.5 pointer-events-auto">
+          {quickLocations.map(loc => {
+            const Icon = loc.icon;
+            return (
+              <Button
+                key={loc.name}
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  if (loc.coords) { setMapCenter(loc.coords); setMapZoom(loc.zoom || 12); }
+                  if (loc.boundary) setShowBoundary(loc.boundary);
+                }}
+                className="h-10 rounded-xl text-[9px] font-bold bg-white shadow-lg border border-black/5 hover:bg-white hover:shadow-xl transition-all gap-1.5"
               >
-                <Plus className="h-6 w-6" />
-            </Button>
-            
-            <Sheet>
-                <SheetTrigger asChild>
-                    <Button 
-                        className="h-14 w-14 lg:hidden rounded-full bg-white text-omuto-navy shadow-2xl border-2 border-white/20 hover:scale-110 transition-all p-0 flex items-center justify-center shrink-0"
-                    >
-                        <Filter className="h-6 w-6" />
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-white border-t-4 border-primary/10 p-0 overflow-hidden h-[80vh]">
-                    <div className="p-8 pb-32 overflow-y-auto h-full">
-                        <SheetHeader className="mb-8">
-                            <SheetTitle className="text-2xl font-black text-omuto-navy uppercase tracking-tighter italic">Map Filters</SheetTitle>
-                            <SheetDescription className="font-bold text-omuto-navy/40 uppercase tracking-widest text-[10px]">Customize your view</SheetDescription>
-                        </SheetHeader>
-                        <div className="grid grid-cols-1 gap-4">
-                             {(['school', 'water', 'tree', 'beneficiary', 'training', 'office'] as const).map(type => {
-                                const isActive = activeLayers.has(type);
-                                const config = {
-                                    school: { icon: GraduationCap, label: 'Schools', color: 'bg-blue-500', count: (schools || []).length },
-                                    water: { icon: Droplets, label: 'PureWater', color: 'bg-cyan-500', count: (waterSources || []).length },
-                                    tree: { icon: TreePine, label: 'GreenSchools', color: 'bg-emerald-500', count: (trees || []).length },
-                                    beneficiary: { icon: Users, label: 'Impact', color: 'bg-pink-500', count: (beneficiaries || []).length },
-                                    training: { icon: Building2, label: 'Trainings', color: 'bg-amber-500', count: (trainings || []).length },
-                                    office: { icon: Home, label: 'Omuto HQ', color: 'bg-red-500', count: 2 },
-                                }[type];
-                                const Icon = config.icon;
+                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                {loc.name}
+              </Button>
+            );
+          })}
+        </div>
 
-                                return (
-                                    <button 
-                                        key={type}
-                                        onClick={() => toggleLayer(type)}
-                                        className={`flex items-center gap-4 p-5 rounded-[1.5rem] border-2 transition-all ${isActive ? 'bg-primary/5 border-primary/20' : 'bg-muted/30 border-transparent grayscale opacity-50'}`}
-                                    >
-                                        <div className={`p-4 rounded-2xl ${config.color} text-white shadow-lg shadow-black/10`}>
-                                            <Icon className="h-6 w-6" />
-                                        </div>
-                                        <div className="text-left flex-1">
-                                            <p className="text-xs font-black text-omuto-navy uppercase tracking-wider leading-none mb-1">{config.label}</p>
-                                            <p className="text-sm font-black text-omuto-navy/40 tabular-nums">{config.count} active points</p>
-                                        </div>
-                                        <div className={`h-6 w-6 rounded-full border-4 flex items-center justify-center ${isActive ? 'bg-primary border-primary/20' : 'border-black/5'}`}>
-                                            {isActive && <Check className="h-3 w-3 text-white" />}
-                                        </div>
-                                    </button>
-                                );
-                             })}
-                        </div>
-                    </div>
-                </SheetContent>
-            </Sheet>
-
-            <Button 
-                asChild
-                className="h-14 px-8 rounded-full bg-primary text-white shadow-2xl shadow-primary/20 border-2 border-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 shrink-0"
-              >
-                <a href="/school-xperience/log-impact">
-                    <Sparkles className="h-5 w-5" />
-                    <span className="text-xs font-black uppercase tracking-widest hidden sm:inline">Log Impact</span>
-                </a>
-            </Button>
+        {/* Add + Log Impact buttons */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <Button 
+            onClick={() => { setAddType('school'); setShowAddModal(true); }}
+            size="icon"
+            className="h-10 w-10 rounded-xl bg-white text-omuto-navy shadow-lg border border-black/5 hover:bg-white hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+            title="Add Data Point"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button 
+            asChild
+            size="sm"
+            className="h-10 rounded-xl bg-omuto-navy text-white shadow-lg border border-omuto-navy/80 hover:bg-omuto-navy/90 transition-all gap-1.5 hidden sm:flex"
+          >
+            <a href="/school-xperience/log-impact">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="text-[9px] font-bold uppercase tracking-wider">Log Impact</span>
+            </a>
+          </Button>
         </div>
       </div>
 
-      {/* Mobile Insights Sheet */}
-      <Sheet open={!!selectedLocation && typeof window !== 'undefined' && window.innerWidth < 1024} onOpenChange={(open) => !open && setSelectedLocation(null)}>
-        <SheetContent side="bottom" className="rounded-t-[2.5rem] bg-white/95 backdrop-blur-2xl border-t-4 border-primary/10 p-0 h-[85vh]">
+      {/* ━━━ Mobile Detail Sheet ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <div className="lg:hidden">
+        <Sheet open={!!selectedLocation} onOpenChange={(open) => !open && setSelectedLocation(null)}>
+          <SheetContent side="bottom" className="rounded-t-3xl bg-white border-t-2 border-primary/10 p-0 h-[75vh]">
             {selectedLocation && (
-                <div className="p-8 flex flex-col h-full bg-white">
-                     <div className="flex items-start justify-between mb-8">
-                        <div className="flex items-center gap-5">
-                             <div className={`p-5 rounded-2xl ${selectedLocation.type === 'office' ? 'bg-primary text-white' : 'bg-muted text-primary'} shadow-2xl`}>
-                                {selectedLocation.type === 'school' ? <GraduationCap className="h-10 w-10" /> : 
-                                 selectedLocation.type === 'office' ? <Home className="h-10 w-10" /> : <MapPin className="h-10 w-10" />}
-                             </div>
-                             <div>
-                                <Badge className="mb-2 bg-primary/10 text-primary border-primary/20 rounded-full font-black text-[10px] uppercase tracking-[0.2em] px-3 py-1">
-                                    {selectedLocation.type}
-                                </Badge>
-                                <h2 className="font-heading text-3xl font-black text-omuto-navy leading-none tracking-tighter uppercase italic">{selectedLocation.name}</h2>
-                             </div>
-                        </div>
-                     </div>
-                     <div className="flex-1 overflow-y-auto space-y-8">
-                         <div className="grid grid-cols-2 gap-4">
-                             <div className="p-6 bg-muted/30 rounded-2xl border-2 border-black/5">
-                                 <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40 mb-2">Region</p>
-                                 <p className="font-black text-sm text-omuto-navy uppercase truncate">{selectedLocation.subcounty || '—'}</p>
-                             </div>
-                             <div className="p-6 bg-muted/30 rounded-2xl border-2 border-black/5">
-                                 <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40 mb-2">District</p>
-                                 <p className="font-black text-sm text-omuto-navy uppercase truncate">{selectedLocation.district || '—'}</p>
-                             </div>
-                         </div>
-                         <MetricRow icon={Users} label="Local Beneficiaries" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.beneficiaries || 0 : '—'} color="text-pink-600" />
-                         <MetricRow icon={TreePine} label="Trees Planted" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.trees || 0 : '—'} color="text-emerald-600" />
-                         <MetricRow icon={Droplets} label="Water Sources" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.waterSources || 0 : '—'} color="text-cyan-600" />
-                     </div>
-                     <div className="pt-8 pb-12 mt-auto">
-                        <Button className="w-full btn-omuto h-16 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl" asChild>
-                            <a href={`/school-xperience/${selectedLocation.id}`}>Explore Full Mission Profile</a>
-                        </Button>
-                     </div>
-                </div>
-            )}
-        </SheetContent>
-      </Sheet>
-
-      {/* Desktop Insights Panel */}
-      {selectedLocation && typeof window !== 'undefined' && window.innerWidth >= 1024 && (
-        <div className="absolute top-24 bottom-6 left-6 z-[1000] w-full max-w-[420px] pointer-events-none animate-in slide-in-from-left-8 duration-700">
-            <Card className="h-full bg-white/90 backdrop-blur-2xl border-white/20 shadow-2xl rounded-[2.5rem] overflow-hidden flex flex-col pointer-events-auto border-4 border-white/40">
-                <div className="p-8 pb-4 flex justify-between items-start">
-                    <div className="flex items-center gap-4">
-                        <div className={`p-4 rounded-2xl ${selectedLocation.type === 'office' ? 'bg-primary text-white' : 'bg-muted text-primary'} shadow-xl`}>
-                            {selectedLocation.type === 'school' ? <GraduationCap className="h-8 w-8" /> : 
-                             selectedLocation.type === 'office' ? <Home className="h-8 w-8" /> : <MapPin className="h-8 w-8" />}
-                        </div>
-                        <div>
-                            <Badge className="mb-2 bg-primary/10 text-primary border-primary/20 rounded-full font-black text-[9px] uppercase tracking-widest">
-                                {selectedLocation.type}
-                            </Badge>
-                            <h2 className="font-heading text-2xl font-black text-omuto-navy leading-tight tracking-tighter uppercase">{selectedLocation.name}</h2>
-                        </div>
+              <div className="p-6 flex flex-col h-full">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-3 rounded-2xl ${selectedLocation.type === 'office' ? 'bg-red-500 text-white' : 'bg-muted text-primary'} shadow-lg`}>
+                      {selectedLocation.type === 'school' ? <GraduationCap className="h-7 w-7" /> : 
+                       selectedLocation.type === 'office' ? <Home className="h-7 w-7" /> : <MapPin className="h-7 w-7" />}
                     </div>
-                    <button onClick={() => setSelectedLocation(null)} className="p-2 hover:bg-muted rounded-2xl transition-colors">
-                        <X className="h-6 w-6 text-muted-foreground/40" />
-                    </button>
-                </div>
-
-                <div className="flex-1 overflow-y-auto px-8 space-y-8 py-4">
-                    {/* Location Context */}
-                    <div className="space-y-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-omuto-navy/30">Location Context</p>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="p-4 bg-muted/30 rounded-2xl">
-                                <p className="text-[9px] font-black uppercase tracking-widest text-omuto-navy/40 mb-1">District</p>
-                                <p className="font-bold text-xs text-omuto-navy">{selectedLocation.district || '—'}</p>
-                            </div>
-                            <div className="p-4 bg-muted/30 rounded-2xl">
-                                <p className="text-[9px] font-black uppercase tracking-widest text-omuto-navy/40 mb-1">Subcounty</p>
-                                <p className="font-bold text-xs text-omuto-navy">{selectedLocation.subcounty || '—'}</p>
-                            </div>
-                        </div>
-                        {selectedLocation.description && (
-                            <div className="p-5 bg-primary/5 rounded-2xl border-2 border-primary/5">
-                                <p className="text-xs font-bold text-omuto-navy/70 leading-relaxed italic">
-                                    "{selectedLocation.description}"
-                                </p>
-                            </div>
-                        )}
+                    <div>
+                      <Badge className="mb-1 bg-primary/10 text-primary border-primary/20 rounded-lg font-bold text-[9px] uppercase tracking-widest px-2 py-0.5">
+                        {selectedLocation.type}
+                      </Badge>
+                      <h2 className="font-bold text-lg text-omuto-navy leading-tight">{selectedLocation.name}</h2>
                     </div>
-
-                    {/* Performance Metrics */}
-                    <div className="space-y-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-omuto-navy/30">Impact Metrics</p>
-                        <div className="space-y-3">
-                            <MetricRow 
-                                icon={Users} 
-                                label="Beneficiaries Captured" 
-                                value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.beneficiaries || 0 : '—'} 
-                                color="text-pink-600"
-                            />
-                            <MetricRow 
-                                icon={TreePine} 
-                                label="Trees in Region" 
-                                value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.trees || 0 : '—'} 
-                                color="text-emerald-600"
-                            />
-                            <MetricRow 
-                                icon={Droplets} 
-                                label="Water Sources" 
-                                value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.waterSources || 0 : '—'} 
-                                color="text-cyan-600"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Regional Insights if searching subcounty */}
-                    {selectedLocation.type === 'subcounty' && selectedLocation.subcounty && (
-                        <div className="space-y-4 pt-4 border-t border-black/5">
-                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-omuto-navy/30">Area Statistics</p>
-                             <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 rounded-2xl border-2 border-primary/10 bg-primary/5 space-y-1">
-                                    <p className="text-[9px] font-black text-primary uppercase">Schools</p>
-                                    <p className="text-xl font-black text-omuto-navy italic">{areaStats[selectedLocation.subcounty]?.schools || 0}</p>
-                                </div>
-                                <div className="p-4 rounded-2xl border-2 border-emerald-500/10 bg-emerald-500/5 space-y-1">
-                                    <p className="text-[9px] font-black text-emerald-600 uppercase">Beneficiaries</p>
-                                    <p className="text-xl font-black text-omuto-navy italic">{areaStats[selectedLocation.subcounty]?.beneficiaries || 0}</p>
-                                </div>
-                             </div>
-                        </div>
-                    )}
+                  </div>
                 </div>
-
-                <div className="p-8 border-t border-black/5 bg-muted/10 space-y-3">
-                    <Button className="w-full btn-omuto h-14 rounded-2xl text-[11px] font-black uppercase tracking-widest" asChild>
-                        <a href={`/school-xperience/${selectedLocation.id}`}>View Mission Control Profile</a>
+                <div className="flex-1 overflow-y-auto space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 bg-muted/30 rounded-xl">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-omuto-navy/40 mb-1">Region</p>
+                      <p className="font-bold text-xs text-omuto-navy">{selectedLocation.subcounty || '—'}</p>
+                    </div>
+                    <div className="p-4 bg-muted/30 rounded-xl">
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-omuto-navy/40 mb-1">District</p>
+                      <p className="font-bold text-xs text-omuto-navy">{selectedLocation.district || '—'}</p>
+                    </div>
+                  </div>
+                  <MetricRow icon={Users} label="Beneficiaries" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.beneficiaries || 0 : '—'} color="text-pink-600" />
+                  <MetricRow icon={TreePine} label="Trees Planted" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.trees || 0 : '—'} color="text-emerald-600" />
+                  <MetricRow icon={Droplets} label="Water Sources" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.waterSources || 0 : '—'} color="text-cyan-600" />
+                </div>
+                <div className="pt-4 mt-auto flex gap-2">
+                  <Button className="flex-1 btn-omuto h-12 rounded-xl text-[10px] font-bold uppercase tracking-wider" asChild>
+                    <a href={`/school-xperience/${selectedLocation.id}`}>View Profile</a>
+                  </Button>
+                  {selectedLocation.type !== 'district' && selectedLocation.type !== 'subcounty' && (
+                    <Button 
+                      variant="outline" size="icon"
+                      className="h-12 w-12 rounded-xl"
+                      onClick={() => { setEditingLocation(selectedLocation); setShowEditModal(true); }}
+                    >
+                      <Pencil className="h-4 w-4" />
                     </Button>
-                    {selectedLocation.type !== 'district' && selectedLocation.type !== 'subcounty' && (
-                      <Button 
-                        variant="outline"
-                        className="w-full h-12 rounded-2xl text-[11px] font-black uppercase tracking-widest"
-                        onClick={() => {
-                          setEditingLocation(selectedLocation);
-                          setShowEditModal(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4 mr-2" /> Edit Location Coordinates
-                      </Button>
-                    )}
+                  )}
                 </div>
-            </Card>
+              </div>
+            )}
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* ━━━ Desktop Detail Panel (right side) ━━━━━━━━━━━ */}
+      {selectedLocation && (
+        <div className="hidden lg:block absolute top-4 bottom-4 right-4 z-[1000] w-[380px] animate-in slide-in-from-right-8 duration-500">
+          <Card className="h-full bg-white/95 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden flex flex-col border border-black/5">
+            <div className="p-5 flex justify-between items-start border-b border-black/5">
+              <div className="flex items-center gap-3">
+                <div className={`p-3 rounded-xl ${selectedLocation.type === 'office' ? 'bg-red-500 text-white' : 'bg-muted text-primary'} shadow-md`}>
+                  {selectedLocation.type === 'school' ? <GraduationCap className="h-6 w-6" /> : 
+                   selectedLocation.type === 'office' ? <Home className="h-6 w-6" /> : <MapPin className="h-6 w-6" />}
+                </div>
+                <div>
+                  <Badge className="mb-1 bg-primary/10 text-primary border-primary/20 rounded-lg font-bold text-[9px] uppercase tracking-widest px-2 py-0.5">
+                    {selectedLocation.type}
+                  </Badge>
+                  <h2 className="font-bold text-base text-omuto-navy leading-tight">{selectedLocation.name}</h2>
+                </div>
+              </div>
+              <button onClick={() => setSelectedLocation(null)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {/* Location Context */}
+              <div className="space-y-3">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-omuto-navy/30">Location</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 bg-muted/30 rounded-xl">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-omuto-navy/40 mb-0.5">District</p>
+                    <p className="font-bold text-xs text-omuto-navy">{selectedLocation.district || '—'}</p>
+                  </div>
+                  <div className="p-3 bg-muted/30 rounded-xl">
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-omuto-navy/40 mb-0.5">Subcounty</p>
+                    <p className="font-bold text-xs text-omuto-navy">{selectedLocation.subcounty || '—'}</p>
+                  </div>
+                </div>
+                {selectedLocation.description && (
+                  <div className="p-3 bg-primary/5 rounded-xl border border-primary/5">
+                    <p className="text-xs font-medium text-omuto-navy/70 leading-relaxed">{selectedLocation.description}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Impact Metrics */}
+              <div className="space-y-3">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-omuto-navy/30">Impact Metrics</p>
+                <div className="space-y-2">
+                  <MetricRow icon={Users} label="Beneficiaries" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.beneficiaries || 0 : '—'} color="text-pink-600" />
+                  <MetricRow icon={TreePine} label="Trees" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.trees || 0 : '—'} color="text-emerald-600" />
+                  <MetricRow icon={Droplets} label="Water Sources" value={selectedLocation.subcounty ? areaStats[selectedLocation.subcounty]?.waterSources || 0 : '—'} color="text-cyan-600" />
+                </div>
+              </div>
+
+              {/* Area stats for subcounty searches */}
+              {selectedLocation.type === 'subcounty' && selectedLocation.subcounty && (
+                <div className="space-y-3 pt-3 border-t border-black/5">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-omuto-navy/30">Area Overview</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 rounded-xl border border-primary/10 bg-primary/5">
+                      <p className="text-[8px] font-bold text-primary uppercase">Schools</p>
+                      <p className="text-lg font-black text-omuto-navy">{areaStats[selectedLocation.subcounty]?.schools || 0}</p>
+                    </div>
+                    <div className="p-3 rounded-xl border border-emerald-500/10 bg-emerald-50">
+                      <p className="text-[8px] font-bold text-emerald-600 uppercase">Beneficiaries</p>
+                      <p className="text-lg font-black text-omuto-navy">{areaStats[selectedLocation.subcounty]?.beneficiaries || 0}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-black/5 bg-muted/10 space-y-2">
+              <Button className="w-full btn-omuto h-11 rounded-xl text-[10px] font-bold uppercase tracking-wider" asChild>
+                <a href={`/school-xperience/${selectedLocation.id}`}>View Full Profile</a>
+              </Button>
+              {selectedLocation.type !== 'district' && selectedLocation.type !== 'subcounty' && (
+                <Button 
+                  variant="outline"
+                  className="w-full h-10 rounded-xl text-[10px] font-bold uppercase tracking-wider"
+                  onClick={() => { setEditingLocation(selectedLocation); setShowEditModal(true); }}
+                >
+                  <Pencil className="h-3.5 w-3.5 mr-2" /> Edit Coordinates
+                </Button>
+              )}
+            </div>
+          </Card>
         </div>
       )}
 
-      {/* Floating Legend & Layer Controller - Bottom Left */}
-      <div className="absolute bottom-10 left-10 z-[1000] flex flex-col md:flex-row items-end gap-6 pointer-events-none">
-        <Card className="bg-white/90 backdrop-blur-2xl border-white/20 shadow-2xl rounded-[2.5rem] p-8 pointer-events-auto border-4 border-white hidden lg:block w-[400px]">
-            <div className="flex items-center justify-between mb-6">
-                <p className="text-[11px] font-black text-omuto-navy/40 uppercase tracking-[0.2em]">Map Explorer</p>
-                <div className="flex gap-1">
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                    <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
-                </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-                {(['school', 'water', 'tree', 'beneficiary', 'training', 'office'] as const).map(type => {
-                    const isActive = activeLayers.has(type);
-                    const config = {
-                        school: { icon: GraduationCap, label: 'Schools', color: 'bg-blue-500', count: (schools || []).length },
-                        water: { icon: Droplets, label: 'PureWater', color: 'bg-cyan-500', count: (waterSources || []).length },
-                        tree: { icon: TreePine, label: 'GreenSchools', color: 'bg-emerald-500', count: (trees || []).length },
-                        beneficiary: { icon: Users, label: 'Impact', color: 'bg-pink-500', count: (beneficiaries || []).length },
-                        training: { icon: Building2, label: 'Trainings', color: 'bg-amber-500', count: (trainings || []).length },
-                        office: { icon: Home, label: 'Omuto HQ', color: 'bg-red-500', count: 2 },
-                    }[type];
-                    const Icon = config.icon;
+      {/* ━━━ Bottom Layer Pill Bar ━━━━━━━━━━━━━━━━━━━━━━━ */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] pointer-events-auto">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-black/5 flex items-center gap-1 p-1.5 transition-all">
+          {/* Toggle collapse button */}
+          <button
+            onClick={() => setLayerBarExpanded(!layerBarExpanded)}
+            className="h-9 w-9 rounded-xl bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors shrink-0"
+            title={layerBarExpanded ? 'Collapse layers' : 'Expand layers'}
+          >
+            {layerBarExpanded ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
+          </button>
 
-                    return (
-                        <button 
-                            key={type}
-                            onClick={() => toggleLayer(type)}
-                            className={`flex items-center gap-3 p-3 rounded-2xl border-2 transition-all ${isActive ? 'bg-white border-primary/20 shadow-sm scale-105' : 'bg-muted/30 border-transparent opacity-40 grayscale hover:grayscale-0 hover:opacity-100'}`}
-                        >
-                            <div className={`p-2 rounded-xl ${config.color} text-white`}>
-                                <Icon className="h-4 w-4" />
-                            </div>
-                            <div className="text-left">
-                                <p className="text-[10px] font-black text-omuto-navy uppercase leading-none mb-1">{config.label}</p>
-                                <p className="text-[13px] font-black text-omuto-navy/40 tabular-nums">{config.count}</p>
-                            </div>
-                        </button>
-                    );
-                })}
-            </div>
+          {layerBarExpanded && (
+            <>
+              {ALL_LAYERS.map(type => {
+                const config = LAYER_CONFIG[type];
+                const Icon = config.icon;
+                const isActive = activeLayers.has(type);
+                const count = layerCounts[type];
 
-            <div className="mt-8 pt-6 border-t border-black/5 flex items-center justify-between">
-                <div>
-                    <p className="text-[10px] font-black text-omuto-navy/40 uppercase tracking-widest">Data Points</p>
-                    <p className="text-sm font-black text-omuto-navy">{filteredLocations.length} locations on map</p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <p className="text-[10px] font-bold text-omuto-navy/40">Live sync active</p>
-                </div>
-            </div>
-        </Card>
-
-        <Button 
-            className="h-16 px-10 rounded-full bg-slate-900 text-white shadow-2xl border-2 border-white/10 hover:bg-black hover:scale-105 active:scale-95 transition-all gap-4 pointer-events-auto"
-            onClick={() => {/* Implement Image Export */}}
-        >
-            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <Plus className="h-4 w-4 text-primary" />
-            </div>
-            <span className="text-xs font-black uppercase tracking-widest">Generate Impact Report</span>
-        </Button>
+                return (
+                  <button
+                    key={type}
+                    onClick={() => toggleLayer(type)}
+                    className={`flex items-center gap-1.5 h-9 px-3 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
+                      isActive 
+                        ? 'bg-white shadow-sm border border-black/5 text-omuto-navy' 
+                        : 'text-muted-foreground/50 hover:text-muted-foreground'
+                    }`}
+                  >
+                    <div className={`h-5 w-5 rounded-md flex items-center justify-center ${isActive ? config.bg : 'bg-muted/60'} text-white transition-colors`}>
+                      <Icon className="h-3 w-3" />
+                    </div>
+                    <span className="hidden sm:inline">{config.label}</span>
+                    <span className={`text-[10px] font-black tabular-nums ${isActive ? '' : 'opacity-50'}`}>{count}</span>
+                  </button>
+                );
+              })}
+              
+              {/* Total badge */}
+              <div className="h-9 px-3 rounded-xl bg-omuto-navy text-white flex items-center gap-1.5 ml-1">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[9px] font-bold tabular-nums">{totalPoints}</span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
+      {/* ━━━ Map ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="w-full h-full">
         <InteractiveMap
           locations={filteredLocations}
@@ -675,7 +583,7 @@ export default function MapPage() {
           />
         )}
 
-        {/* Edit Place Modal */}
+        {/* Edit Modal */}
         {showEditModal && editingLocation && (
           <EditPlaceModal
             location={editingLocation}
@@ -693,6 +601,7 @@ export default function MapPage() {
   );
 }
 
+// ─── Add Place Modal ────────────────────────────────────────
 function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: string; onClose: () => void; schools: any[]; initialCoordinates?: { lat: number; lng: number } | null }) {
   const { submit, isSubmitting } = useFormSubmission();
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(initialCoordinates || null);
@@ -707,9 +616,8 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
     if (submitted || isSubmitting) return;
     setError(null);
     try {
-      const school = schools.find(s => s.id === selectedSchoolId);
+      const school = schools.find((s: any) => s.id === selectedSchoolId);
       const idempotencyKey = `${type}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
       const baseData = {
         schoolId: selectedSchoolId,
         schoolName: school?.schoolName || '',
@@ -732,16 +640,13 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
         result = await submit({ collectionName: 'sx-locations', idempotencyKey, data: { name: name || 'New Office', locationType: 'office', coordinates: coordinates || undefined } });
       }
 
-      if (result?.isOffline || result?.isQueued) {
-        setSubmitted(true);
-        onClose();
-      } else if (result?.error) {
+      if (result?.error) {
         setError('Failed to save. Check your connection and try again.');
       } else {
         setSubmitted(true);
         onClose();
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     }
   };
@@ -752,86 +657,76 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
 
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[2000] p-0 sm:p-4">
-      <Card className="w-full max-w-lg border-2 shadow-2xl rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-8 border-b bg-muted/30">
+      <Card className="w-full max-w-lg border shadow-2xl rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-6 border-b bg-muted/30">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary rounded-2xl text-white">
-                <Icon className="h-6 w-6" />
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary rounded-xl text-white">
+                <Icon className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-black text-xl uppercase tracking-tighter italic text-omuto-navy">Add {type}</h2>
-                <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">New Impact Point</p>
+                <h2 className="font-bold text-base text-omuto-navy">Add {type}</h2>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-omuto-navy/40">New Impact Point</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-muted rounded-2xl transition-colors"><X className="h-6 w-6 text-omuto-navy/40" /></button>
+            <button onClick={onClose} className="p-2 hover:bg-muted rounded-xl transition-colors"><X className="h-5 w-5 text-omuto-navy/40" /></button>
           </div>
         </div>
 
-        <div className="p-8 overflow-y-auto space-y-8 flex-1">
-          <FormShell onSubmit={handleSubmit} className="space-y-8">
+        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+          <FormShell onSubmit={handleSubmit} className="space-y-6">
             {type !== 'school' && (
               <FormField>
-                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">Select School *</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5 text-omuto-navy/60">Select School *</label>
                 <select 
                   value={selectedSchoolId} 
                   onChange={e => setSelectedSchoolId(e.target.value)} 
-                  className="w-full h-14 rounded-2xl border-2 border-black/5 px-4 font-bold text-omuto-navy bg-muted/20 focus:border-primary/20 outline-none transition-all"
+                  className="w-full h-12 rounded-xl border border-black/10 px-4 font-bold text-sm text-omuto-navy bg-white focus:border-primary/30 outline-none transition-all"
                 >
                   <option value="">Select...</option>
-                  {schools.map(s => <option key={s.id} value={s.id}>{s.schoolName}</option>)}
+                  {schools.map((s: any) => <option key={s.id} value={s.id}>{s.schoolName}</option>)}
                 </select>
               </FormField>
             )}
 
             {(type === 'school' || type === 'training') && (
               <FormField>
-                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">{type === 'school' ? 'School Name' : 'Training Type'} *</label>
-                <Input 
-                  value={name} 
-                  onChange={e => setName(e.target.value)} 
-                  placeholder={type === 'school' ? "St. Mary's Primary" : "Leadership Training"} 
-                  className="rounded-2xl h-14 border-2 border-black/5 px-5 font-bold text-omuto-navy bg-muted/20" 
-                />
+                <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5 text-omuto-navy/60">{type === 'school' ? 'School Name' : 'Training Type'} *</label>
+                <Input value={name} onChange={e => setName(e.target.value)} placeholder={type === 'school' ? "St. Mary's Primary" : "Leadership Training"} className="rounded-xl h-12 border font-bold text-sm text-omuto-navy bg-white" />
               </FormField>
             )}
 
             {type === 'tree' && (
               <FormField>
-                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">Quantity</label>
-                <Input 
-                  type="number" 
-                  value={quantity} 
-                  onChange={e => setQuantity(Number(e.target.value))} 
-                  className="rounded-2xl h-14 border-2 border-black/5 px-5 font-bold text-omuto-navy bg-muted/20" 
-                />
+                <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5 text-omuto-navy/60">Quantity</label>
+                <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} className="rounded-xl h-12 border font-bold text-sm text-omuto-navy bg-white" />
               </FormField>
             )}
 
-            <FormSection title="Exact Location" className="pt-4">
+            <FormSection title="Location" className="pt-2">
               <GPSLocationPicker 
                 coordinates={coordinates} 
                 onCoordinatesChange={setCoordinates} 
                 label="Geotag Point" 
-                description="Tap map or drag pin to set real-world location" 
+                description="Tap map or use GPS to set location" 
               />
             </FormSection>
 
             {error && (
-              <div className="p-4 rounded-2xl bg-omuto-red/5 border-2 border-omuto-red/20 text-xs text-omuto-red font-black uppercase tracking-wider">
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 font-bold">
                 {error}
               </div>
             )}
           </FormShell>
         </div>
 
-        <div className="p-6 bg-muted/30 border-t flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">Cancel</Button>
-          <Button onClick={handleSubmit} disabled={!canSubmit} className="btn-omuto flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]">
+        <div className="p-4 bg-muted/30 border-t flex gap-2">
+          <Button variant="outline" onClick={onClose} className="flex-1 h-12 rounded-xl font-bold">Cancel</Button>
+          <Button onClick={handleSubmit} disabled={!canSubmit} className="btn-omuto flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-wider">
             {isSubmitting ? (
-              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving...</>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
             ) : (
-              <><Check className="h-5 w-5 mr-2" /> Register Point</>
+              <><Check className="h-4 w-4 mr-2" /> Save Point</>
             )}
           </Button>
         </div>
@@ -840,6 +735,7 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
   );
 }
 
+// ─── Edit Place Modal ───────────────────────────────────────
 function EditPlaceModal({ location, onClose, onSave }: { location: MapLocation; onClose: () => void; onSave: (coords: { lat: number; lng: number }) => void }) {
   const firestore = useFirestore();
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number }>(
@@ -854,20 +750,13 @@ function EditPlaceModal({ location, onClose, onSave }: { location: MapLocation; 
     if (saved || isSaving || !firestore) return;
     setError(null);
     setIsSaving(true);
-
     try {
       const collectionMap: Record<string, string> = {
-        school: 'sx-schools',
-        water: 'sx-water-sources',
-        tree: 'sx-trees',
-        beneficiary: 'sx-beneficiaries',
-        training: 'sx-trainings',
-        office: 'sx-locations',
+        school: 'sx-schools', water: 'sx-water-sources', tree: 'sx-trees',
+        beneficiary: 'sx-beneficiaries', training: 'sx-trainings', office: 'sx-locations',
       };
-
       const colName = collectionMap[location.type] || 'sx-schools';
       const docRef = doc(firestore, colName, location.id);
-
       updateDocumentNonBlocking(docRef, { coordinates });
       setSaved(true);
       onSave(coordinates);
@@ -880,79 +769,73 @@ function EditPlaceModal({ location, onClose, onSave }: { location: MapLocation; 
 
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[2000] p-0 sm:p-4">
-      <Card className="w-full max-w-lg border-2 shadow-2xl rounded-t-[2.5rem] sm:rounded-[3rem] overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="p-8 border-b bg-muted/40 backdrop-blur-md">
+      <Card className="w-full max-w-lg border shadow-2xl rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-6 border-b bg-muted/30">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary rounded-2xl text-white shadow-lg shadow-primary/20">
-                <Pencil className="h-6 w-6" />
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-primary rounded-xl text-white">
+                <Pencil className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-black text-xl uppercase tracking-tighter italic text-omuto-navy">Adjust Location</h2>
-                <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Correcting GPS Data</p>
+                <h2 className="font-bold text-base text-omuto-navy">Adjust Location</h2>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-omuto-navy/40">Correcting GPS Data</p>
               </div>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-muted rounded-2xl transition-colors"><X className="h-6 w-6 text-omuto-navy/40" /></button>
+            <button onClick={onClose} className="p-2 hover:bg-muted rounded-xl transition-colors"><X className="h-5 w-5 text-omuto-navy/40" /></button>
           </div>
         </div>
 
-        <div className="p-8 overflow-y-auto space-y-8 flex-1">
-          <div className="p-6 bg-primary/5 border-2 border-primary/10 rounded-3xl">
-            <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">Editing Point</p>
-            <p className="font-black text-lg text-omuto-navy uppercase italic tracking-tighter">{location.name}</p>
-            <p className="text-xs font-bold text-muted-foreground mt-1">{location.type} {location.district ? `· ${location.district}` : ''}</p>
+        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+          <div className="p-4 bg-primary/5 border border-primary/10 rounded-xl">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-primary/60 mb-0.5">Editing</p>
+            <p className="font-bold text-sm text-omuto-navy">{location.name}</p>
+            <p className="text-[10px] font-medium text-muted-foreground mt-0.5">{location.type} {location.district ? `· ${location.district}` : ''}</p>
           </div>
 
-          <FormShell onSubmit={handleSave} className="space-y-8">
+          <FormShell onSubmit={handleSave} className="space-y-6">
             <FormGrid columns={2}>
               <FormField>
-                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">Latitude</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5 text-omuto-navy/60">Latitude</label>
                 <Input
-                  type="number"
-                  step="0.000001"
-                  value={coordinates.lat}
+                  type="number" step="0.000001" value={coordinates.lat}
                   onChange={e => setCoordinates(prev => ({ ...prev, lat: parseFloat(e.target.value) || 0 }))}
-                  className="rounded-2xl h-14 border-2 border-black/5 px-5 font-black text-omuto-navy bg-muted/20 focus:border-primary/20 transition-all tabular-nums"
+                  className="rounded-xl h-12 border font-bold text-sm text-omuto-navy bg-white tabular-nums"
                 />
               </FormField>
               <FormField>
-                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">Longitude</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5 text-omuto-navy/60">Longitude</label>
                 <Input
-                  type="number"
-                  step="0.000001"
-                  value={coordinates.lng}
+                  type="number" step="0.000001" value={coordinates.lng}
                   onChange={e => setCoordinates(prev => ({ ...prev, lng: parseFloat(e.target.value) || 0 }))}
-                  className="rounded-2xl h-14 border-2 border-black/5 px-5 font-black text-omuto-navy bg-muted/20 focus:border-primary/20 transition-all tabular-nums"
+                  className="rounded-xl h-12 border font-bold text-sm text-omuto-navy bg-white tabular-nums"
                 />
               </FormField>
             </FormGrid>
 
-            <FormSection title="Visual Correction" className="pt-4">
+            <FormSection title="Visual Correction" className="pt-2">
               <GPSLocationPicker 
                 coordinates={coordinates} 
                 onCoordinatesChange={(coords) => { if (coords) setCoordinates(coords); }} 
                 label="Reposition Pin" 
-                description="Drag the marker on the map to snap to the exact entrance or facility" 
+                description="Drag the marker to the exact location" 
               />
             </FormSection>
 
             {error && (
-              <div className="p-4 rounded-2xl bg-omuto-red/5 border-2 border-omuto-red/20 text-xs text-omuto-red font-black uppercase tracking-wider">
-                {error}
-              </div>
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-600 font-bold">{error}</div>
             )}
           </FormShell>
         </div>
 
-        <div className="p-6 bg-muted/30 border-t flex gap-3">
-          <Button variant="outline" onClick={onClose} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">Cancel</Button>
-          <Button onClick={handleSave} disabled={saved || isSaving} className="btn-omuto flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]">
+        <div className="p-4 bg-muted/30 border-t flex gap-2">
+          <Button variant="outline" onClick={onClose} className="flex-1 h-12 rounded-xl font-bold">Cancel</Button>
+          <Button onClick={handleSave} disabled={saved || isSaving} className="btn-omuto flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-wider">
             {isSaving ? (
-              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving...</>
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
             ) : saved ? (
-              <><Check className="h-5 w-5 mr-2" /> Updated</>
+              <><Check className="h-4 w-4 mr-2" /> Updated</>
             ) : (
-              <><Check className="h-5 w-5 mr-2" /> Save Coordinates</>
+              <><Check className="h-4 w-4 mr-2" /> Save Coordinates</>
             )}
           </Button>
         </div>
