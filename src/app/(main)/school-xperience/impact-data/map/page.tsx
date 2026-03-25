@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/sheet';
 import { InteractiveMap, type MapLocation, MetricRow, LegendItem } from '@/components/school-xperience/interactive-map';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
+import { FormShell, FormField, FormGrid, FormSection, FormStickyFooter } from '@/components/ui/form-shell';
 import { UGANDA_LOCATIONS, OMUTO_LOCATIONS, AREA_BOUNDARIES } from '@/lib/uganda-data';
 
 export default function MapPage() {
@@ -701,7 +702,8 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (submitted || isSubmitting) return;
     setError(null);
     try {
@@ -746,57 +748,91 @@ function AddPlaceModal({ type, onClose, schools, initialCoordinates }: { type: s
 
   const icons: Record<string, any> = { school: GraduationCap, water: Droplets, tree: TreePine, beneficiary: Users, training: Building2, office: Home };
   const Icon = icons[type] || Building2;
-  const canSubmit = submitted || isSubmitting || (type === 'school' ? !name || !coordinates : !selectedSchoolId || !coordinates);
+  const canSubmit = !isSubmitting && !submitted && (type === 'school' ? (name && coordinates) : (selectedSchoolId && coordinates));
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-      <Card className="w-full max-w-md border-2 shadow-2xl">
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[2000] p-0 sm:p-4">
+      <Card className="w-full max-w-lg border-2 shadow-2xl rounded-t-[2.5rem] sm:rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-8 border-b bg-muted/30">
           <div className="flex items-center justify-between">
-            <h2 className="font-black text-lg flex items-center gap-2">
-              <Icon className="h-5 w-5 text-primary" />
-              Add {type.charAt(0).toUpperCase() + type.slice(1)}
-            </h2>
-            <button onClick={onClose} className="p-1 hover:bg-muted rounded-lg"><X className="h-5 w-5" /></button>
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary rounded-2xl text-white">
+                <Icon className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="font-black text-xl uppercase tracking-tighter italic text-omuto-navy">Add {type}</h2>
+                <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">New Impact Point</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-muted rounded-2xl transition-colors"><X className="h-6 w-6 text-omuto-navy/40" /></button>
           </div>
-
-          {type !== 'school' && (
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest block mb-1">School *</label>
-              <select value={selectedSchoolId} onChange={e => setSelectedSchoolId(e.target.value)} className="w-full h-10 rounded-xl border px-3 font-bold">
-                <option value="">Select...</option>
-                {schools.map(s => <option key={s.id} value={s.id}>{s.schoolName}</option>)}
-              </select>
-            </div>
-          )}
-
-          {(type === 'school' || type === 'training') && (
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest block mb-1">{type === 'school' ? 'School Name' : 'Training Type'} *</label>
-              <Input value={name} onChange={e => setName(e.target.value)} placeholder={type === 'school' ? "St. Mary's Primary" : "Leadership Training"} className="border-lg rounded-xl h-10 font-bold" />
-            </div>
-          )}
-
-          {type === 'tree' && (
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest block mb-1">Quantity</label>
-              <Input type="number" value={quantity} onChange={e => setQuantity(Number(e.target.value))} className="border-lg rounded-xl h-10 font-bold" />
-            </div>
-          )}
-
-          {error && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-bold">
-              {error}
-            </div>
-          )}
-
-          <GPSLocationPicker coordinates={coordinates} onCoordinatesChange={setCoordinates} label="Location" description="Tap map to pin, drag marker, or enter manually" />
         </div>
 
-        <div className="p-4 border-t flex gap-2">
-          <Button variant="outline" onClick={onClose} className="flex-1 h-10 rounded-xl font-bold">Cancel</Button>
-          <Button onClick={handleSubmit} disabled={canSubmit} className="btn-omuto flex-1 h-10 rounded-xl font-black">
-            <Check className="h-4 w-4 mr-1" /> {isSubmitting ? 'Saving...' : 'Save'}
+        <div className="p-8 overflow-y-auto space-y-8 flex-1">
+          <FormShell onSubmit={handleSubmit} className="space-y-8">
+            {type !== 'school' && (
+              <FormField>
+                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">Select School *</label>
+                <select 
+                  value={selectedSchoolId} 
+                  onChange={e => setSelectedSchoolId(e.target.value)} 
+                  className="w-full h-14 rounded-2xl border-2 border-black/5 px-4 font-bold text-omuto-navy bg-muted/20 focus:border-primary/20 outline-none transition-all"
+                >
+                  <option value="">Select...</option>
+                  {schools.map(s => <option key={s.id} value={s.id}>{s.schoolName}</option>)}
+                </select>
+              </FormField>
+            )}
+
+            {(type === 'school' || type === 'training') && (
+              <FormField>
+                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">{type === 'school' ? 'School Name' : 'Training Type'} *</label>
+                <Input 
+                  value={name} 
+                  onChange={e => setName(e.target.value)} 
+                  placeholder={type === 'school' ? "St. Mary's Primary" : "Leadership Training"} 
+                  className="rounded-2xl h-14 border-2 border-black/5 px-5 font-bold text-omuto-navy bg-muted/20" 
+                />
+              </FormField>
+            )}
+
+            {type === 'tree' && (
+              <FormField>
+                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">Quantity</label>
+                <Input 
+                  type="number" 
+                  value={quantity} 
+                  onChange={e => setQuantity(Number(e.target.value))} 
+                  className="rounded-2xl h-14 border-2 border-black/5 px-5 font-bold text-omuto-navy bg-muted/20" 
+                />
+              </FormField>
+            )}
+
+            <FormSection title="Exact Location" className="pt-4">
+              <GPSLocationPicker 
+                coordinates={coordinates} 
+                onCoordinatesChange={setCoordinates} 
+                label="Geotag Point" 
+                description="Tap map or drag pin to set real-world location" 
+              />
+            </FormSection>
+
+            {error && (
+              <div className="p-4 rounded-2xl bg-omuto-red/5 border-2 border-omuto-red/20 text-xs text-omuto-red font-black uppercase tracking-wider">
+                {error}
+              </div>
+            )}
+          </FormShell>
+        </div>
+
+        <div className="p-6 bg-muted/30 border-t flex gap-3">
+          <Button variant="outline" onClick={onClose} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">Cancel</Button>
+          <Button onClick={handleSubmit} disabled={!canSubmit} className="btn-omuto flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]">
+            {isSubmitting ? (
+              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving...</>
+            ) : (
+              <><Check className="h-5 w-5 mr-2" /> Register Point</>
+            )}
           </Button>
         </div>
       </Card>
@@ -813,7 +849,8 @@ function EditPlaceModal({ location, onClose, onSave }: { location: MapLocation; 
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleSave = async () => {
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (saved || isSaving || !firestore) return;
     setError(null);
     setIsSaving(true);
@@ -842,57 +879,81 @@ function EditPlaceModal({ location, onClose, onSave }: { location: MapLocation; 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-      <Card className="w-full max-w-md border-2 shadow-2xl">
-        <div className="p-6 space-y-4">
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-[2000] p-0 sm:p-4">
+      <Card className="w-full max-w-lg border-2 shadow-2xl rounded-t-[2.5rem] sm:rounded-[3rem] overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="p-8 border-b bg-muted/40 backdrop-blur-md">
           <div className="flex items-center justify-between">
-            <h2 className="font-black text-lg flex items-center gap-2">
-              <Pencil className="h-5 w-5 text-primary" />
-              Edit Coordinates
-            </h2>
-            <button onClick={onClose} className="p-1 hover:bg-muted rounded-lg"><X className="h-5 w-5" /></button>
-          </div>
-
-          <div className="p-4 bg-muted/30 rounded-xl">
-            <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40 mb-1">Location</p>
-            <p className="font-bold text-sm text-omuto-navy">{location.name}</p>
-            <p className="text-xs text-muted-foreground mt-1">{location.type} {location.district ? `· ${location.district}` : ''}</p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest block mb-1">Latitude</label>
-              <Input
-                type="number"
-                step="0.0001"
-                value={coordinates.lat}
-                onChange={e => setCoordinates(prev => ({ ...prev, lat: parseFloat(e.target.value) || 0 }))}
-                className="rounded-xl h-10 font-bold"
-              />
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary rounded-2xl text-white shadow-lg shadow-primary/20">
+                <Pencil className="h-6 w-6" />
+              </div>
+              <div>
+                <h2 className="font-black text-xl uppercase tracking-tighter italic text-omuto-navy">Adjust Location</h2>
+                <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Correcting GPS Data</p>
+              </div>
             </div>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest block mb-1">Longitude</label>
-              <Input
-                type="number"
-                step="0.0001"
-                value={coordinates.lng}
-                onChange={e => setCoordinates(prev => ({ ...prev, lng: parseFloat(e.target.value) || 0 }))}
-                className="rounded-xl h-10 font-bold"
-              />
-            </div>
+            <button onClick={onClose} className="p-2 hover:bg-muted rounded-2xl transition-colors"><X className="h-6 w-6 text-omuto-navy/40" /></button>
           </div>
-
-          <GPSLocationPicker coordinates={coordinates} onCoordinatesChange={(coords) => { if (coords) setCoordinates(coords); }} label="Pin on Map" description="Tap the map or drag the marker to set exact coordinates" />
-
-          {error && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-bold">{error}</div>
-          )}
         </div>
 
-        <div className="p-4 border-t flex gap-2">
-          <Button variant="outline" onClick={onClose} className="flex-1 h-10 rounded-xl font-bold">Cancel</Button>
-          <Button onClick={handleSave} disabled={saved || isSaving} className="btn-omuto flex-1 h-10 rounded-xl font-black">
-            <Check className="h-4 w-4 mr-1" /> {isSaving ? 'Saving...' : saved ? 'Updated' : 'Update'}
+        <div className="p-8 overflow-y-auto space-y-8 flex-1">
+          <div className="p-6 bg-primary/5 border-2 border-primary/10 rounded-3xl">
+            <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1">Editing Point</p>
+            <p className="font-black text-lg text-omuto-navy uppercase italic tracking-tighter">{location.name}</p>
+            <p className="text-xs font-bold text-muted-foreground mt-1">{location.type} {location.district ? `· ${location.district}` : ''}</p>
+          </div>
+
+          <FormShell onSubmit={handleSave} className="space-y-8">
+            <FormGrid columns={2}>
+              <FormField>
+                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">Latitude</label>
+                <Input
+                  type="number"
+                  step="0.000001"
+                  value={coordinates.lat}
+                  onChange={e => setCoordinates(prev => ({ ...prev, lat: parseFloat(e.target.value) || 0 }))}
+                  className="rounded-2xl h-14 border-2 border-black/5 px-5 font-black text-omuto-navy bg-muted/20 focus:border-primary/20 transition-all tabular-nums"
+                />
+              </FormField>
+              <FormField>
+                <label className="text-xs font-black uppercase tracking-widest block mb-2 text-omuto-navy/60">Longitude</label>
+                <Input
+                  type="number"
+                  step="0.000001"
+                  value={coordinates.lng}
+                  onChange={e => setCoordinates(prev => ({ ...prev, lng: parseFloat(e.target.value) || 0 }))}
+                  className="rounded-2xl h-14 border-2 border-black/5 px-5 font-black text-omuto-navy bg-muted/20 focus:border-primary/20 transition-all tabular-nums"
+                />
+              </FormField>
+            </FormGrid>
+
+            <FormSection title="Visual Correction" className="pt-4">
+              <GPSLocationPicker 
+                coordinates={coordinates} 
+                onCoordinatesChange={(coords) => { if (coords) setCoordinates(coords); }} 
+                label="Reposition Pin" 
+                description="Drag the marker on the map to snap to the exact entrance or facility" 
+              />
+            </FormSection>
+
+            {error && (
+              <div className="p-4 rounded-2xl bg-omuto-red/5 border-2 border-omuto-red/20 text-xs text-omuto-red font-black uppercase tracking-wider">
+                {error}
+              </div>
+            )}
+          </FormShell>
+        </div>
+
+        <div className="p-6 bg-muted/30 border-t flex gap-3">
+          <Button variant="outline" onClick={onClose} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">Cancel</Button>
+          <Button onClick={handleSave} disabled={saved || isSaving} className="btn-omuto flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]">
+            {isSaving ? (
+              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving...</>
+            ) : saved ? (
+              <><Check className="h-5 w-5 mr-2" /> Updated</>
+            ) : (
+              <><Check className="h-5 w-5 mr-2" /> Save Coordinates</>
+            )}
           </Button>
         </div>
       </Card>

@@ -20,12 +20,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, serverTimestamp, Timestamp, query, where, limit } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
-import { Loader2, Heart, ArrowLeft } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import type { Program } from '@/lib/types';
 import { useMemo } from 'react';
+import { PageHeader } from '@/components/page-header';
+import { FormShell, FormField, FormGrid, FormSection, FormStickyFooter } from '@/components/ui/form-shell';
 
 
 const schoolVisitSchema = z.object({
@@ -93,63 +94,119 @@ export function SchoolVisitForm() {
   };
 
   return (
-    <div className="space-y-4">
-        <Button variant="outline" asChild>
-            <Link href="/meal/red-campaign">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to RED Campaign Hub
-            </Link>
-        </Button>
-        <Card className="overflow-hidden">
-            <CardHeader className="p-4 sm:p-6 lg:p-8">
-                <div className="flex items-center gap-4 flex-wrap">
-                    <Heart className="h-8 w-8 text-primary flex-shrink-0" />
-                    <div>
-                        <CardTitle className="text-xl sm:text-2xl lg:text-3xl">RED Campaign School Visit M&E</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm">Log observations and feedback from a school visit.</CardDescription>
-                    </div>
+    <div className="container max-w-2xl py-8 space-y-8 pb-32">
+        <PageHeader 
+            icon={Heart}
+            title="School Visit M&E"
+            description="Log observations and critical feedback from field visits to ensure program excellence."
+            breadcrumbs={[
+                { name: 'Xperience', href: '/school-xperience' },
+                { name: 'RED Campaign', href: '/meal/data/red-campaign' },
+                { name: 'Log Visit', href: '/meal/red-campaign/school-visit' }
+            ]}
+        />
+
+        <FormShell onSubmit={handleSubmit(onSubmit)}>
+            <FormSection title="Core Information" defaultOpen={true}>
+                <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
+                    <CardContent className="p-8 space-y-6">
+                        <FormGrid columns={2}>
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">School Name *</Label>
+                                <Input 
+                                    {...register('schoolName')} 
+                                    placeholder="e.g., St. Mary's College" 
+                                    className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy"
+                                />
+                                {errors.schoolName && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.schoolName.message}</p>}
+                            </FormField>
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Date of Visit *</Label>
+                                <Input 
+                                    type="date" 
+                                    {...register('dateOfVisit')} 
+                                    className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy tabular-nums"
+                                />
+                                {errors.dateOfVisit && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.dateOfVisit.message}</p>}
+                            </FormField>
+                        </FormGrid>
+                    </CardContent>
+                </Card>
+            </FormSection>
+
+            <FormSection title="Field Observations" defaultOpen={true}>
+                <div className="space-y-6">
+                    <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
+                        <CardContent className="p-8 space-y-6">
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Primary Objectives Met *</Label>
+                                <Textarea 
+                                    {...register('objectivesMet')} 
+                                    placeholder="Describe which goals were achieved during this visit..." 
+                                    className="min-h-[120px] rounded-3xl border-2 border-black/5 p-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy leading-relaxed"
+                                />
+                                {errors.objectivesMet && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.objectivesMet.message}</p>}
+                            </FormField>
+
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Critical Challenges</Label>
+                                <Textarea 
+                                    {...register('challengesObserved')} 
+                                    placeholder="Obstacles, resource gaps, or systemic issues observed..." 
+                                    className="min-h-[100px] rounded-3xl border-2 border-black/5 p-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy leading-relaxed"
+                                />
+                            </FormField>
+                        </CardContent>
+                    </Card>
+
+                    <FormGrid columns={2}>
+                        <Card className="border-2 shadow-lg rounded-[2.5rem] overflow-hidden">
+                            <CardHeader className="p-6 pb-0">
+                                <CardTitle className="text-xs font-black uppercase tracking-widest text-primary italic">Teacher Voice</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <Textarea 
+                                    {...register('teacherFeedback')} 
+                                    placeholder="Direct quotes or summary..." 
+                                    className="min-h-[100px] rounded-2xl border-0 p-0 font-bold bg-transparent focus:ring-0 text-omuto-navy text-sm"
+                                />
+                            </CardContent>
+                        </Card>
+                        <Card className="border-2 shadow-lg rounded-[2.5rem] overflow-hidden">
+                            <CardHeader className="p-6 pb-0">
+                                <CardTitle className="text-xs font-black uppercase tracking-widest text-pink-500 italic">Student Voice</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <Textarea 
+                                    {...register('studentFeedback')} 
+                                    placeholder="Direct quotes or summary..." 
+                                    className="min-h-[100px] rounded-2xl border-0 p-0 font-bold bg-transparent focus:ring-0 text-omuto-navy text-sm"
+                                />
+                            </CardContent>
+                        </Card>
+                    </FormGrid>
                 </div>
-          </CardHeader>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="schoolName" className="text-xs sm:text-sm truncate">School Name</Label>
-                        <Input id="schoolName" {...register('schoolName')} placeholder="e.g., St. Mary's College Kisubi" className="h-10 sm:h-11" />
-                        {errors.schoolName && <p className="text-xs sm:text-sm text-destructive">{errors.schoolName.message}</p>}
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="dateOfVisit" className="text-xs sm:text-sm">Date of Visit</Label>
-                        <Input id="dateOfVisit" type="date" {...register('dateOfVisit')} className="h-10 sm:h-11" />
-                        {errors.dateOfVisit && <p className="text-xs sm:text-sm text-destructive">{errors.dateOfVisit.message}</p>}
-                    </div>
+            </FormSection>
+
+            <FormStickyFooter>
+                <div className="container max-w-2xl flex gap-4">
+                    <Button variant="outline" type="button" asChild className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">
+                        <Link href="/meal/red-campaign">Cancel</Link>
+                    </Button>
+                    <Button 
+                        type="submit" 
+                        disabled={isSubmitting} 
+                        className="btn-omuto flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]"
+                    >
+                        {isSubmitting ? (
+                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Synchronizing...</>
+                        ) : (
+                            <><Heart className="mr-2 h-5 w-5" /> Finalize Report</>
+                        )}
+                    </Button>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="objectivesMet" className="text-xs sm:text-sm">Objectives Met</Label>
-                    <Textarea id="objectivesMet" {...register('objectivesMet')} placeholder="Describe which of the visit's goals were achieved..." className="min-h-[80px] sm:min-h-[100px]" />
-                    {errors.objectivesMet && <p className="text-xs sm:text-sm text-destructive">{errors.objectivesMet.message}</p>}
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="challengesObserved" className="text-xs sm:text-sm">Challenges Observed</Label>
-                    <Textarea id="challengesObserved" {...register('challengesObserved')} placeholder="e.g., Low student participation, lack of teacher support..." className="min-h-[80px] sm:min-h-[100px]" />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="teacherFeedback" className="text-xs sm:text-sm">Teacher Feedback</Label>
-                    <Textarea id="teacherFeedback" {...register('teacherFeedback')} placeholder="Summarize key feedback points from teachers..." className="min-h-[80px] sm:min-h-[100px]" />
-                </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="studentFeedback" className="text-xs sm:text-sm">Student Feedback</Label>
-                    <Textarea id="studentFeedback" {...register('studentFeedback')} placeholder="Summarize key feedback points from students..." className="min-h-[80px] sm:min-h-[100px]" />
-                </div>
-            </CardContent>
-            <CardFooter className="p-4 sm:p-6 lg:p-8">
-                <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
-                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Visit Report
-                </Button>
-            </CardFooter>
-          </form>
-        </Card>
+            </FormStickyFooter>
+        </FormShell>
     </div>
   );
 }

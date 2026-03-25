@@ -1,27 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter
-} from '@/components/ui/dialog';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
-} from '@/components/ui/select';
-import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
-import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
-import type { Expense } from '@/lib/types';
-import { expenseItemCategories } from '@/lib/types';
-import { formatCurrency, formatDateSafe } from '@/lib/utils';
-import { useUser } from '@/firebase';
-import { useUserProfile } from '@/hooks/use-user-profile';
-import { useToast } from '@/hooks/use-toast';
-import { Banknote, PlusCircle, Loader2 } from 'lucide-react';
+import { Banknote, PlusCircle, Loader2, Sparkles, TrendingUp, History, Receipt } from 'lucide-react';
+import { PageHeader } from '@/components/page-header';
+import { FormShell, FormField, FormSection } from '@/components/ui/form-shell';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 
 export default function PettyCashPage() {
   const firestore = useFirestore();
@@ -71,115 +53,191 @@ export default function PettyCashPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Banknote className="h-8 w-8 text-amber-500" />
-            Petty Cash Expenses
-          </h1>
-          <p className="text-muted-foreground">Small, routine expenses under 50,000 UGX that don't require approval.</p>
-        </div>
-        <Button onClick={() => setShowForm(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Log Petty Cash
-        </Button>
+    <div className="container max-w-5xl py-8 space-y-8">
+      <PageHeader 
+        icon={Banknote}
+        title="Petty Cash Desk"
+        description="Record small, routine operational expenses under 50,000 UGX."
+        breadcrumbs={[
+            { name: 'Finance', href: '/finance' },
+            { name: 'Petty Cash', href: '/finance/petty-cash' }
+        ]}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="col-span-1 md:col-span-2 border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-amber-50 to-white border-amber-100">
+            <CardContent className="p-8 flex items-center justify-between">
+                <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-700/60 mb-2">Total Reimbursable</p>
+                    {isLoading ? <Skeleton className="h-10 w-40" /> : (
+                        <h2 className="text-4xl font-black text-omuto-navy italic tracking-tighter tabular-nums leading-none">
+                            {formatCurrency(totalPettyCash)}
+                        </h2>
+                    )}
+                    <div className="flex items-center gap-2 mt-4">
+                        <Badge variant="outline" className="rounded-full bg-white border-amber-200 text-amber-700 font-bold px-3">
+                            {pettyCash.length} Records
+                        </Badge>
+                        <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">Across all programs</span>
+                    </div>
+                </div>
+                <div className="h-20 w-20 bg-amber-500/10 rounded-[2rem] flex items-center justify-center rotate-12">
+                    <TrendingUp className="h-10 w-10 text-amber-500" />
+                </div>
+            </CardContent>
+        </Card>
+
+        <Card className="border-2 shadow-comic-sm rounded-[2.5rem] bg-primary flex flex-col justify-center p-8 hover:shadow-comic transition-all cursor-pointer group" onClick={() => setShowForm(true)}>
+            <div className="h-14 w-14 bg-white/20 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <PlusCircle className="h-7 w-7 text-white" />
+            </div>
+            <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Log Expense</h3>
+            <p className="text-white/60 text-xs font-bold mt-1">Instant reconciliation</p>
+        </Card>
       </div>
 
-      <Card className="border-amber-200 bg-amber-50/50">
-        <CardContent className="p-6 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-amber-700">Total Petty Cash</p>
-            {isLoading ? <Skeleton className="h-8 w-28" /> : (
-              <p className="text-3xl font-bold text-amber-700">{formatCurrency(totalPettyCash)}</p>
-            )}
-            <p className="text-xs text-amber-600 mt-1">{pettyCash.length} entries</p>
-          </div>
-          <Banknote className="h-12 w-12 text-amber-500/20" />
-        </CardContent>
-      </Card>
+      <FormSection title="Transaction History" icon={History} defaultOpen={true}>
+        <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
+            <CardContent className="p-0">
+                <div className="sm:hidden divide-y divide-black/5">
+                    {isLoading && Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="p-6 space-y-3">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-6 w-48" />
+                        </div>
+                    ))}
+                    {pettyCash.map(expense => (
+                        <div key={expense.id} className="p-6 active:bg-muted/50 transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                                <Badge variant="outline" className="rounded-lg border-2 font-black uppercase tracking-widest text-[9px]">
+                                    {expense.items[0]?.category}
+                                </Badge>
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase">{formatDateSafe(expense.date, 'dateOnly')}</span>
+                            </div>
+                            <h4 className="font-black text-omuto-navy uppercase italic tracking-tighter mb-1">{expense.title}</h4>
+                            <p className="text-xl font-black text-primary tabular-nums italic leading-none">{formatCurrency(expense.totalAmount)}</p>
+                        </div>
+                    ))}
+                </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Petty Cash History</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="sm:hidden space-y-3">
-            {isLoading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
-            {pettyCash.map(expense => (
-              <Card key={expense.id}>
-                <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <CardTitle className="text-base truncate">{expense.title}</CardTitle>
-                    <Badge variant="outline">{expense.items[0]?.category}</Badge>
-                  </div>
-                  <CardDescription>{formatDateSafe(expense.date, 'dateOnly')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xl font-bold">{formatCurrency(expense.totalAmount)}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="hidden sm:block">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  <th className="pb-3">Date</th>
-                  <th className="pb-3">Description</th>
-                  <th className="pb-3">Category</th>
-                  <th className="pb-3 text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pettyCash.map(expense => (
-                  <tr key={expense.id} className="border-b last:border-0">
-                    <td className="py-3 text-sm">{formatDateSafe(expense.date, 'dateOnly')}</td>
-                    <td className="py-3 font-medium">{expense.title}</td>
-                    <td className="py-3"><Badge variant="outline">{expense.items[0]?.category}</Badge></td>
-                    <td className="py-3 text-right font-bold">{formatCurrency(expense.totalAmount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="bg-muted/30 border-b">
+                                <th className="p-6 text-left text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Date</th>
+                                <th className="p-6 text-left text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Description</th>
+                                <th className="p-6 text-left text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Category</th>
+                                <th className="p-6 text-right text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-black/5">
+                            {pettyCash.map(expense => (
+                                <tr key={expense.id} className="hover:bg-muted/30 transition-colors">
+                                    <td className="p-6 text-xs font-bold text-omuto-navy/60 tabular-nums">
+                                        {formatDateSafe(expense.date, 'dateOnly')}
+                                    </td>
+                                    <td className="p-6 font-black text-omuto-navy uppercase italic tracking-tighter">
+                                        {expense.title}
+                                    </td>
+                                    <td className="p-6">
+                                        <Badge variant="outline" className="rounded-lg border-2 border-black/5 font-black uppercase tracking-widest text-[9px] px-3">
+                                            {expense.items[0]?.category}
+                                        </Badge>
+                                    </td>
+                                    <td className="p-6 text-right font-black text-omuto-navy tabular-nums">
+                                        {formatCurrency(expense.totalAmount)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </CardContent>
+        </Card>
+      </FormSection>
 
-      <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Log Petty Cash Expense</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Input value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} placeholder="What was this for?" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Amount (UGX)</Label>
-                <Input type="number" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} placeholder="Max 50,000" />
-              </div>
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select value={form.category} onValueChange={v => setForm(prev => ({ ...prev, category: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {expenseItemCategories.slice(0, 10).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-            <Button onClick={handleSubmit} disabled={isSubmitting || !form.title || !form.amount}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Log
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Sheet open={showForm} onOpenChange={setShowForm}>
+        <SheetContent side="bottom" className="h-[90vh] rounded-t-[3rem] p-0 overflow-hidden border-t-4 border-primary">
+            <FormShell onSubmit={handleSubmit}>
+                <div className="p-8 border-b bg-muted/30 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-primary rounded-2xl text-white">
+                            <Receipt className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h2 className="font-black text-xl uppercase tracking-tighter italic text-omuto-navy">Log Petty Cash</h2>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Quick Expense Entry</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto">
+                    <FormField>
+                        <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Description *</Label>
+                        <Input 
+                            value={form.title} 
+                            onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} 
+                            placeholder="e.g., Office Stationery" 
+                            className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all"
+                        />
+                    </FormField>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <FormField>
+                            <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Amount (UGX) *</Label>
+                            <Input 
+                                type="number" 
+                                value={form.amount} 
+                                onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} 
+                                placeholder="Max 50,000" 
+                                className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 tabular-nums"
+                            />
+                        </FormField>
+                        <FormField>
+                            <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Category *</Label>
+                            <Select value={form.category} onValueChange={v => setForm(prev => ({ ...prev, category: v }))}>
+                                <SelectTrigger className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-2 shadow-xl">
+                                    {expenseItemCategories.slice(0, 10).map(c => (
+                                        <SelectItem key={c} value={c} className="font-bold py-3">{c}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                    </div>
+
+                    <div className="p-6 bg-amber-50 border-2 border-amber-100 rounded-3xl">
+                        <div className="flex gap-3">
+                            <Sparkles className="h-5 w-5 text-amber-600 mt-0.5" />
+                            <div>
+                                <p className="text-xs font-black text-amber-800 uppercase tracking-widest">Instant Reimbursement</p>
+                                <p className="text-[11px] font-bold text-amber-700/70 mt-1 leading-relaxed">
+                                    Expenses under 50k are auto-acknowledged and processed for reimbursement without manual approval.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-8 bg-muted/30 border-t flex gap-3">
+                    <Button variant="outline" type="button" onClick={() => setShowForm(false)} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">Cancel</Button>
+                    <Button 
+                        onClick={handleSubmit} 
+                        disabled={isSubmitting || !form.title || !form.amount}
+                        className="btn-omuto flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]"
+                    >
+                        {isSubmitting ? (
+                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Recording...</>
+                        ) : (
+                            <><PlusCircle className="mr-2 h-5 w-5" /> Log Expense</>
+                        )}
+                    </Button>
+                </div>
+            </FormShell>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

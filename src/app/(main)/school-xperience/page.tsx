@@ -371,7 +371,7 @@ function SchoolCard({ school, viewMode, visitStatus }: { school: SchoolXperience
                     'bg-emerald-500'
                 }`} />
 
-               <CardContent className="p-6">
+               <CardContent className="p-4 sm:p-6">
                     <div className="flex justify-between items-start mb-4">
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">

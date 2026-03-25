@@ -93,7 +93,7 @@ export default function IncomePage() {
       </div>
 
       <Card className="border-emerald-200 bg-emerald-50/50">
-        <CardContent className="p-6 flex items-center justify-between">
+        <CardContent className="p-4 sm:p-6 flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-emerald-700">Total Income</p>
             {isLoading ? <Skeleton className="h-8 w-28" /> : (
@@ -175,33 +175,53 @@ export default function IncomePage() {
           <DialogHeader>
             <DialogTitle>{editingIncome ? 'Edit Income' : 'Log New Income'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Source</Label>
-              <Input value={form.source} onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} placeholder="e.g., GlobalGiving Grant" />
+          <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Source</Label>
+              <Input 
+                value={form.source} 
+                onChange={e => setForm(prev => ({ ...prev, source: e.target.value }))} 
+                placeholder="e.g., GlobalGiving Grant" 
+                className="h-12 sm:h-14 text-sm sm:text-base font-medium"
+              />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Amount (UGX)</Label>
-                <Input type="number" value={form.amount} onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Amount (UGX)</Label>
+                <Input 
+                  type="number" 
+                  value={form.amount} 
+                  onChange={e => setForm(prev => ({ ...prev, amount: e.target.value }))}
+                  className="h-12 sm:h-14 text-sm sm:text-base font-medium" 
+                />
               </div>
-              <div className="space-y-2">
-                <Label>Date Received</Label>
-                <Input type="date" value={form.dateReceived} onChange={e => setForm(prev => ({ ...prev, dateReceived: e.target.value }))} />
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Date Received</Label>
+                <Input 
+                  type="date" 
+                  value={form.dateReceived} 
+                  onChange={e => setForm(prev => ({ ...prev, dateReceived: e.target.value }))}
+                  className="h-12 sm:h-14 text-sm sm:text-base font-medium" 
+                />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Type</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Type</Label>
               <Select value={form.type} onValueChange={v => setForm(prev => ({ ...prev, type: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-12 sm:h-14"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {incomeTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} placeholder="Optional notes..." />
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Notes</Label>
+              <Textarea 
+                value={form.notes} 
+                onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))} 
+                placeholder="Optional notes..."
+                className="min-h-[80px] sm:min-h-[100px]"
+              />
             </div>
           </div>
           <DialogFooter>

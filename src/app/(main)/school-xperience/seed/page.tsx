@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Plus, GraduationCap, Droplets, TreePine, Check } from 'lucide-react';
+import { Loader2, Plus, GraduationCap, Droplets, TreePine, Check, Sparkles, Users } from 'lucide-react';
 import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, setDoc, doc } from 'firebase/firestore';
 import { MIGRATION_DATA } from '@/lib/data/migration-data';
+import { PageHeader } from '@/components/page-header';
+import { FormSection, FormGrid } from '@/components/ui/form-shell';
 
 const DEMO_SCHOOLS = [
   {
@@ -675,109 +677,138 @@ export default function SeedDataPage() {
   };
 
   return (
-    <div className="container py-8 max-w-2xl">
-      <Card className="border-lg shadow-lg">
-        <CardHeader className="bg-muted/30 border-b">
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="h-6 w-6 text-primary" />
-            Seed Demo Data
-          </CardTitle>
-          <CardDescription>
-            Add sample schools with GPS coordinates and demo impact data to test the map.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 pt-6">
-          <div className="bg-muted/50 rounded-xl p-4 space-y-2">
-            <p className="font-bold text-sm">This will add:</p>
-            <ul className="text-sm space-y-1">
-              <li className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-blue-600" /> 28 schools from the application dataset</li>
-              <li className="flex items-center gap-2"><Droplets className="h-4 w-4 text-cyan-600" /> 5 sample water sources</li>
-              <li className="flex items-center gap-2"><TreePine className="h-4 w-4 text-green-600" /> 5 tree planting records</li>
-              <li className="flex items-center gap-2"><Plus className="h-4 w-4 text-pink-600" /> 6 beneficiary records</li>
-            </ul>
-            <p className="text-xs text-muted-foreground mt-2">
-              Schools already in the database will be skipped.
-            </p>
-          </div>
+    <div className="container py-8 max-w-2xl space-y-8">
+      <PageHeader 
+        icon={GraduationCap}
+        title="Institutional Data Seed"
+        description="Populate the system with authentic school, regional, and impact data for 2025."
+        breadcrumbs={[
+            { name: 'Xperience', href: '/school-xperience' },
+            { name: 'Seed Data', href: '/school-xperience/seed' }
+        ]}
+      />
 
-          <Button 
-            onClick={seedData} 
-            disabled={isLoading || isMigrating} 
-            className="w-full btn-omuto h-12 rounded-xl font-black uppercase tracking-widest"
-          >
-            {isLoading ? (
-              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Seeding data...</>
-            ) : (
-              <><Plus className="mr-2 h-5 w-5" /> Seed Demo Data</>
-            )}
-          </Button>
+      <FormSection title="Development Environment" defaultOpen={true}>
+        <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
+            <CardHeader className="bg-muted/30 border-b p-8">
+                <CardTitle className="text-xl font-black text-omuto-navy uppercase tracking-tighter italic flex items-center gap-3">
+                    <Sparkles className="h-6 w-6 text-primary" />
+                    Seed Demo Dataset
+                </CardTitle>
+                <CardDescription className="font-bold text-omuto-navy/40 uppercase tracking-widest text-[10px]">
+                    Internal test data for map validation
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 space-y-6">
+                <div className="bg-primary/5 rounded-3xl p-6 border-2 border-primary/5">
+                    <p className="font-black text-xs uppercase tracking-widest text-primary mb-4">Dataset Contents</p>
+                    <FormGrid columns={2} className="gap-4">
+                        <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-sm">
+                            <GraduationCap className="h-5 w-5 text-blue-600" />
+                            <span className="text-xs font-bold text-omuto-navy">28 Sample Schools</span>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-sm">
+                            <Droplets className="h-5 w-5 text-cyan-600" />
+                            <span className="text-xs font-bold text-omuto-navy">Water Points</span>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-sm">
+                            <TreePine className="h-5 w-5 text-green-600" />
+                            <span className="text-xs font-bold text-omuto-navy">Tree Records</span>
+                        </div>
+                        <div className="flex items-center gap-3 bg-white p-3 rounded-2xl shadow-sm">
+                            <Users className="h-5 w-5 text-pink-600" />
+                            <span className="text-xs font-bold text-omuto-navy">Beneficiaries</span>
+                        </div>
+                    </FormGrid>
+                </div>
 
-          {result.length > 0 && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-1">
-              <p className="font-bold text-green-700 flex items-center gap-2">
-                <Check className="h-4 w-4" /> Done!
-              </p>
-              {result.map((msg, i) => (
-                <p key={i} className="text-sm text-green-600">{msg}</p>
-              ))}
-              <p className="text-xs text-green-600 mt-2">
-                Refresh the map page to see the new markers.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <Button 
+                    onClick={seedData} 
+                    disabled={isLoading || isMigrating} 
+                    className="w-full btn-omuto h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]"
+                >
+                    {isLoading ? (
+                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Ingesting Data...</>
+                    ) : (
+                        <><Plus className="mr-2 h-5 w-5" /> Seed Demo Environment</>
+                    )}
+                </Button>
 
-      <Card className="border-lg shadow-lg">
-        <CardHeader className="bg-indigo-50/50 border-b">
-          <CardTitle className="text-indigo-900 flex items-center gap-2">
-            <Plus className="h-6 w-6" />
-            Institutional Migration
-          </CardTitle>
-          <CardDescription>
-            Seed the entire system with the 2025 Institutional dataset (Schools, OFA Teams, Impacts).
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 pt-6">
-          <div className="bg-indigo-50/30 rounded-xl p-4 space-y-2">
-            <p className="font-bold text-sm text-indigo-900">This will migrate:</p>
-            <ul className="text-sm space-y-1 text-indigo-800">
-              <li className="flex items-center gap-2"><GraduationCap className="h-4 w-4" /> Comprehensive School Database (60 entries)</li>
-              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> OFA Football Teams (22 entries)</li>
-              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> OFA Player Database (Individual records)</li>
-              <li className="flex items-center gap-2"><TreePine className="h-4 w-4" /> 2025 Tree Survival Data</li>
-              <li className="flex items-center gap-2"><Droplets className="h-4 w-4" /> Purifier Beneficiary Records</li>
-              <li className="flex items-center gap-2"><Plus className="h-4 w-4" /> SLF, Debate, YoSkills & Menstrual (440+ Participants)</li>
-            </ul>
-          </div>
+                {result.length > 0 && (
+                    <div className="bg-emerald-50 border-2 border-emerald-100 rounded-[2rem] p-6 animate-in zoom-in-95 duration-500">
+                        <p className="font-black text-xs text-emerald-700 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <Check className="h-4 w-4" /> Seeding Successful
+                        </p>
+                        <div className="space-y-1.5 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                            {result.map((msg, i) => (
+                                <p key={i} className="text-xs font-bold text-emerald-800/70">{msg}</p>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+      </FormSection>
 
-          <Button 
-            onClick={runInstitutionalMigration} 
-            disabled={isLoading || isMigrating} 
-            variant="outline"
-            className="w-full border-2 border-indigo-200 text-indigo-700 h-12 rounded-xl font-black uppercase tracking-widest hover:bg-indigo-50"
-          >
-            {isMigrating ? (
-              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Migrating records...</>
-            ) : (
-              <><Plus className="mr-2 h-5 w-5" /> Run Master Migration</>
-            )}
-          </Button>
+      <FormSection title="Production Migration" defaultOpen={true}>
+        <Card className="border-2 shadow-2xl rounded-[2.5rem] overflow-hidden border-indigo-100">
+            <CardHeader className="bg-indigo-50/50 border-b p-8">
+                <CardTitle className="text-xl font-black text-indigo-900 uppercase tracking-tighter italic flex items-center gap-3">
+                    <Plus className="h-6 w-6" />
+                    Master Institutional Migration
+                </CardTitle>
+                <CardDescription className="font-bold text-indigo-900/40 uppercase tracking-widest text-[10px]">
+                    2025 Verified Project Data
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 space-y-6">
+                <div className="bg-indigo-50/30 rounded-3xl p-6 border-2 border-indigo-100">
+                    <p className="font-black text-xs uppercase tracking-widest text-indigo-900 mb-4">Production Assets</p>
+                    <ul className="grid grid-cols-1 gap-2">
+                        {[
+                            { icon: GraduationCap, text: '60 Schools (Verified)' },
+                            { icon: Plus, text: '22 OFA Football Teams' },
+                            { icon: Users, text: 'Player Database (Individual Records)' },
+                            { icon: TreePine, text: '2025 Tree Survival Metrics' },
+                            { icon: Droplets, text: 'Purifier Beneficiary Records' },
+                            { icon: Users, text: '440+ Program Participants' }
+                        ].map((item, i) => (
+                            <li key={i} className="flex items-center gap-3 text-xs font-bold text-indigo-900/70">
+                                <item.icon className="h-4 w-4 text-indigo-900" />
+                                {item.text}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
 
-          {migResult.length > 0 && (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-1">
-              <p className="font-bold text-indigo-700 flex items-center gap-2">
-                <Check className="h-4 w-4" /> Migration Complete!
-              </p>
-              <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                {migResult.map((msg, i) => (
-                  <p key={i} className="text-xs text-indigo-600">{msg}</p>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <Button 
+                    onClick={runInstitutionalMigration} 
+                    disabled={isLoading || isMigrating} 
+                    variant="outline"
+                    className="w-full border-2 border-indigo-200 text-indigo-700 h-14 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:bg-indigo-50 transition-all"
+                >
+                    {isMigrating ? (
+                        <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Synchronizing...</>
+                    ) : (
+                        <><Plus className="mr-2 h-5 w-5" /> Run Master Migration</>
+                    )}
+                </Button>
+
+                {migResult.length > 0 && (
+                    <div className="bg-indigo-50 border-2 border-indigo-100 rounded-[2rem] p-6 animate-in zoom-in-95 duration-500">
+                        <p className="font-black text-xs text-indigo-700 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <Check className="h-4 w-4" /> Migration Complete
+                        </p>
+                        <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                            {migResult.map((msg, i) => (
+                                <p key={i} className="text-[10px] font-bold text-indigo-800/60 leading-relaxed">{msg}</p>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+      </FormSection>
     </div>
   );
 }
