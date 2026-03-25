@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/page-header';
 import { 
   UserCircle, Palmtree, Timer, Wallet, Sparkles, 
   ArrowRight, ShieldCheck, Clock, CheckCircle2,
-  Calendar, Briefcase, FileText, Bot
+  Calendar, Briefcase, FileText, Bot, Target
 } from 'lucide-react';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
