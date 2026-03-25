@@ -119,7 +119,7 @@ export default function SelfServicePage() {
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600/50">Annual Leave Balance</p>
                         </div>
                         <Button asChild variant="link" className="p-0 h-auto text-emerald-700 mt-8 font-black uppercase tracking-widest text-[9px] w-fit hover:no-underline hover:text-emerald-900">
-                            <Link href="/self-service/leave">View Leave History <ArrowRight className="ml-1 h-3 w-3" /></Link>
+                            <Link href="/self-service/leave">Manage Leave <ArrowRight className="ml-1 h-3 w-3" /></Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -136,7 +136,41 @@ export default function SelfServicePage() {
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/50">Engagement Score</p>
                         </div>
                         <Button asChild variant="link" className="p-0 h-auto text-primary mt-8 font-black uppercase tracking-widest text-[9px] w-fit hover:no-underline hover:text-omuto-navy">
-                            <Link href="/profile?tab=performance">Performance Review <ArrowRight className="ml-1 h-3 w-3" /></Link>
+                            <Link href="/self-service/performance">View Metrics <ArrowRight className="ml-1 h-3 w-3" /></Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* My Assets Snapshot */}
+                <Card className="border-2 border-blue-500/20 bg-blue-500/5 rounded-[2.5rem] shadow-xl overflow-hidden group">
+                    <CardContent className="p-8 pb-6 h-full flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="p-3 bg-blue-500/20 rounded-2xl text-blue-600"><Briefcase className="h-6 w-6" /></div>
+                                <Badge className="bg-blue-600 text-white border-none rounded-full px-4 py-1 text-[10px] font-black uppercase tracking-widest">Secured</Badge>
+                            </div>
+                            <p className="text-4xl font-black text-blue-700 tracking-tight leading-none mb-1">3 Items</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600/50">Assigned Equipment</p>
+                        </div>
+                        <Button asChild variant="link" className="p-0 h-auto text-blue-700 mt-8 font-black uppercase tracking-widest text-[9px] w-fit hover:no-underline hover:text-blue-900">
+                            <Link href="/self-service/assets">Asset Registry <ArrowRight className="ml-1 h-3 w-3" /></Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+
+                {/* Latest Payslip Snapshot */}
+                <Card className="border-2 border-amber-500/20 bg-amber-500/5 rounded-[2.5rem] shadow-xl overflow-hidden group">
+                    <CardContent className="p-8 pb-6 h-full flex flex-col justify-between">
+                        <div>
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="p-3 bg-amber-500/20 rounded-2xl text-amber-600"><Wallet className="h-6 w-6" /></div>
+                                <Badge className="bg-amber-600 text-white border-none rounded-full px-4 py-1 text-[10px] font-black uppercase tracking-widest">Verified</Badge>
+                            </div>
+                            <p className="text-4xl font-black text-amber-700 tracking-tight leading-none mb-1">Feb '26</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600/50">Latest Payslip Issued</p>
+                        </div>
+                        <Button asChild variant="link" className="p-0 h-auto text-amber-700 mt-8 font-black uppercase tracking-widest text-[9px] w-fit hover:no-underline hover:text-amber-900">
+                            <Link href="/self-service/payslips">View Payroll <ArrowRight className="ml-1 h-3 w-3" /></Link>
                         </Button>
                     </CardContent>
                 </Card>

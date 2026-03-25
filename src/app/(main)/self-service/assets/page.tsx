@@ -8,7 +8,7 @@ import {
   Package, Laptop, Bike, Smartphone, 
   MapPin, Clock, ShieldCheck, 
   ArrowRight, AlertTriangle, HelpCircle,
-  FileText, Zap
+  FileText, Zap, CheckCircle2
 } from 'lucide-react';
 import { useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { query, collection, where } from 'firebase/firestore';
@@ -136,9 +136,7 @@ export default function MyAssetsPage() {
   );
 }
 
-function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-muted", className)} />;
-}
+
 
 function cn(...inputs: any[]) {
     return inputs.filter(Boolean).join(' ');
