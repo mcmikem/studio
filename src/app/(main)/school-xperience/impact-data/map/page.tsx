@@ -274,10 +274,10 @@ export default function MapPage() {
   const totalPoints = filteredLocations.filter(l => l.coordinates).length;
 
   return (
-    <div className="relative h-[calc(100dvh-4rem)] overflow-hidden bg-slate-950 -mx-2 sm:-mx-4 -my-3 sm:-my-4 lg:-my-6 -mb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom,0px))] md:-mb-6">
+    <div className="fixed inset-0 z-[100] bg-slate-950">
       
       {/* ━━━ Top Search Bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div className="absolute top-4 left-4 right-4 z-[1000] flex gap-3 pointer-events-none">
+      <div className="absolute top-4 left-4 right-4 z-[110] flex gap-3 pointer-events-none pt-safe-or-4">
         <div className="flex-1 max-w-md pointer-events-auto">
           <div className="bg-white rounded-2xl shadow-xl border border-black/5 flex items-center gap-2 px-3 h-12">
             <Search className="h-4 w-4 text-muted-foreground/40 shrink-0" />
@@ -371,7 +371,7 @@ export default function MapPage() {
       {/* ━━━ Mobile Detail Sheet ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="lg:hidden">
         <Sheet open={!!selectedLocation} onOpenChange={(open) => !open && setSelectedLocation(null)}>
-          <SheetContent side="bottom" className="rounded-t-3xl bg-white border-t-2 border-primary/10 p-0 h-[75vh]">
+          <SheetContent side="bottom" className="rounded-t-3xl bg-white border-t-2 border-primary/10 p-0 h-[75vh] z-[800]">
             {selectedLocation && (
               <div className="p-6 flex flex-col h-full">
                 <div className="flex items-start justify-between mb-6">
@@ -425,7 +425,7 @@ export default function MapPage() {
 
       {/* ━━━ Desktop Detail Panel (right side) ━━━━━━━━━━━ */}
       {selectedLocation && (
-        <div className="hidden lg:block absolute top-4 bottom-4 right-4 z-[1000] w-[380px] animate-in slide-in-from-right-8 duration-500">
+        <div className="hidden lg:block absolute top-4 bottom-4 right-4 z-[700] w-[380px] animate-in slide-in-from-right-8 duration-500">
           <Card className="h-full bg-white/95 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden flex flex-col border border-black/5">
             <div className="p-5 flex justify-between items-start border-b border-black/5">
               <div className="flex items-center gap-3">
@@ -513,8 +513,8 @@ export default function MapPage() {
       )}
 
       {/* ━━━ Bottom Layer Pill Bar ━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] pointer-events-auto">
-        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-black/5 flex items-center gap-1 p-1.5 transition-all">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[110] pointer-events-auto pb-safe-or-4">
+        <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-black/5 flex items-center gap-1 p-1.5 transition-all max-w-[95vw] overflow-x-auto">
           {/* Toggle collapse button */}
           <button
             onClick={() => setLayerBarExpanded(!layerBarExpanded)}
