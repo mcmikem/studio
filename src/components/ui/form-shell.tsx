@@ -113,19 +113,23 @@ export function FormActions({ children, className, align = 'right' }: FormAction
 
 interface FormSectionProps {
   title: string;
+  icon?: React.ElementType;
   children: React.ReactNode;
   defaultOpen?: boolean;
   collapsible?: boolean;
   className?: string;
 }
 
-export function FormSection({ title, children, defaultOpen = true, collapsible = false, className }: FormSectionProps) {
+export function FormSection({ title, icon: Icon, children, defaultOpen = true, collapsible = false, className }: FormSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   if (!collapsible) {
     return (
       <div className={cn('space-y-3 sm:space-y-4', className)}>
-        <h3 className="text-sm font-black uppercase tracking-widest text-omuto-navy/70">{title}</h3>
+        <div className="flex items-center gap-2">
+            {Icon && <Icon className="h-4 w-4 text-omuto-navy/50" />}
+            <h3 className="text-sm font-black uppercase tracking-widest text-omuto-navy/70">{title}</h3>
+        </div>
         {children}
       </div>
     );
@@ -134,7 +138,10 @@ export function FormSection({ title, children, defaultOpen = true, collapsible =
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn('border border-omuto-navy/10 rounded-xl overflow-hidden', className)}>
       <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-muted/30 hover:bg-muted/50 transition-colors">
-        <h3 className="text-sm font-black uppercase tracking-widest text-omuto-navy/70">{title}</h3>
+        <div className="flex items-center gap-2">
+            {Icon && <Icon className="h-4 w-4 text-omuto-navy/50" />}
+            <h3 className="text-sm font-black uppercase tracking-widest text-omuto-navy/70">{title}</h3>
+        </div>
         <ChevronDown className={cn('h-4 w-4 text-omuto-navy/50 transition-transform', isOpen && 'rotate-180')} />
       </CollapsibleTrigger>
       <CollapsibleContent>
@@ -170,7 +177,8 @@ export function FormErrorSummary({ errors, className }: FormErrorSummaryProps) {
 }
 
 interface FormStickyFooterProps {
-  onSubmit: (e: React.FormEvent) => void;
+  children?: React.ReactNode;
+  onSubmit?: (e: React.FormEvent) => void;
   isSubmitting?: boolean;
   submitLabel?: string;
   cancelLabel?: string;
@@ -180,6 +188,7 @@ interface FormStickyFooterProps {
 }
 
 export function FormStickyFooter({
+  children,
   onSubmit,
   isSubmitting = false,
   submitLabel = 'Submit',
@@ -190,31 +199,37 @@ export function FormStickyFooter({
 }: FormStickyFooterProps) {
   return (
     <div className={cn(
-      'sticky bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t-2 border-omuto-navy/10 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]',
+      'sticky bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t-2 border-omuto-navy/10 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] z-50',
       className
     )}>
-      <div className="flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto">
-        <Button 
-          type="submit" 
-          disabled={isSubmitting}
-          className="w-full sm:w-auto h-11"
-          onClick={onSubmit as any}
-        >
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitLabel}
-        </Button>
-        
-        {showCancel && onCancel && (
+      {children ? (
+        <div className="mx-auto">
+          {children}
+        </div>
+      ) : (
+        <div className="flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto">
           <Button 
-            type="button"
-            variant="outline"
-            onClick={onCancel}
+            type="submit" 
+            disabled={isSubmitting}
             className="w-full sm:w-auto h-11"
+            onClick={onSubmit as any}
           >
-            {cancelLabel}
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {submitLabel}
           </Button>
-        )}
-      </div>
+          
+          {showCancel && onCancel && (
+            <Button 
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="w-full sm:w-auto h-11"
+            >
+              {cancelLabel}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -11,11 +11,13 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Loader2, ArrowLeft, Droplets, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Droplets, PlusCircle, Trash2, Users, ClipboardCheck, GraduationCap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { PageHeader } from '@/components/page-header';
+import { FormShell, FormField, FormGrid, FormSection, FormStickyFooter } from '@/components/ui/form-shell';
 
 const participantSchema = z.object({
   name: z.string().min(3, "Name is required."),
@@ -89,79 +91,134 @@ export function MhmTrainingForm() {
   };
 
   return (
-    <div className="space-y-4">
-      <Button variant="outline" asChild>
-        <Link href="/meal">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to MEAL Hub
-        </Link>
-      </Button>
-      <Card className="overflow-hidden">
-        <CardHeader className="p-4 sm:p-6 lg:p-8">
-          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl lg:text-3xl">
-            <Droplets className="h-6 w-6" />
-            MHM Training Report
-          </CardTitle>
-          <CardDescription>
-            Log attendance and details for a Menstrual Health Management session.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-6 p-4 sm:p-6 lg:p-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="session" className="text-xs sm:text-sm truncate">Session Title</Label>
-                <Input id="session" {...register('session')} placeholder="e.g., MHM Basics at St. Annes" className="h-10 sm:h-11" />
-                {errors.session && <p className="text-xs sm:text-sm text-destructive">{errors.session.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="date" className="text-xs sm:text-sm">Date of Training</Label>
-                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11" />
-                {errors.date && <p className="text-xs sm:text-sm text-destructive">{errors.date.message}</p>}
-              </div>
-            </div>
+    <div className="container max-w-2xl py-8 space-y-8 pb-32">
+        <PageHeader 
+            icon={GraduationCap}
+            title="MHM Training Report"
+            description="Document attendance and impact of Menstrual Health Management education sessions."
+            breadcrumbs={[
+                { name: 'Xperience', href: '/school-xperience' },
+                { name: 'RED Campaign', href: '/meal/data/red-campaign' },
+                { name: 'Log Training', href: '/meal/red-campaign/mhm-training' }
+            ]}
+        />
 
-            <div className="space-y-4 overflow-x-auto">
-              <h3 className="text-lg sm:text-xl font-semibold border-b pb-2">Participants</h3>
-               <div className="min-w-[500px]">
-                <Table>
-                 <TableHeader>
-                   <TableRow>
-                     <TableHead>Name</TableHead>
-                     <TableHead>Age</TableHead>
-                     <TableHead>Class</TableHead>
-                     <TableHead><span className="sr-only">Actions</span></TableHead>
-                   </TableRow>
-                 </TableHeader>
-                 <TableBody>
-                   {fields.map((field, index) => (
-                     <TableRow key={field.id}>
-                       <TableCell><Input {...register(`participants.${index}.name`)} placeholder="Participant's Name" className="h-10 sm:h-11" /></TableCell>
-                       <TableCell><Input type="number" {...register(`participants.${index}.age`)} placeholder="Age" className="h-10 sm:h-11" /></TableCell>
-                       <TableCell><Input {...register(`participants.${index}.class`)} placeholder="e.g. P.7" className="h-10 sm:h-11" /></TableCell>
-                       <TableCell>
-                         <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1}>
-                           <Trash2 className="h-4 w-4" />
-                         </Button>
-                       </TableCell>
-                     </TableRow>
-                   ))}
-                 </TableBody>
-                </Table>
-               </div>
-               <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', age: 0, class: '' })}><PlusCircle className="mr-2 h-4 w-4" /> Add Participant</Button>
-               {errors.participants && <p className="text-xs sm:text-sm text-destructive">{errors.participants.message}</p>}
-            </div>
+        <FormShell onSubmit={handleSubmit(onSubmit)}>
+            <FormSection title="Session Details" defaultOpen={true}>
+                <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
+                    <CardContent className="p-8 space-y-6">
+                        <FormGrid columns={2}>
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Session Title *</Label>
+                                <Input 
+                                    {...register('session')} 
+                                    placeholder="e.g., Menstrual Hygiene 101" 
+                                    className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy"
+                                />
+                                {errors.session && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.session.message}</p>}
+                            </FormField>
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Date of Training *</Label>
+                                <Input 
+                                    type="date" 
+                                    {...register('date')} 
+                                    className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy tabular-nums"
+                                />
+                                {errors.date && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.date.message}</p>}
+                            </FormField>
+                        </FormGrid>
+                    </CardContent>
+                </Card>
+            </FormSection>
 
-          </CardContent>
-          <CardFooter className="p-4 sm:p-6 lg:p-8">
-            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Training Report
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+            <FormSection title="Attendance Registry" defaultOpen={true} icon={Users}>
+                <div className="space-y-4">
+                    <div className="hidden sm:block overflow-hidden border-2 rounded-[2rem]">
+                        <Table>
+                            <TableHeader className="bg-muted/30">
+                                <TableRow>
+                                    <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Name</TableHead>
+                                    <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest w-24">Age</TableHead>
+                                    <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest w-24">Class</TableHead>
+                                    <TableHead className="px-6 py-4 text-right w-16"></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {fields.map((field, index) => (
+                                    <TableRow key={field.id} className="border-b last:border-0">
+                                        <TableCell className="p-2 px-6">
+                                            <Input {...register(`participants.${index}.name`)} placeholder="Full Name" className="h-10 border-0 bg-transparent focus:ring-0 font-bold" />
+                                        </TableCell>
+                                        <TableCell className="p-2">
+                                            <Input type="number" {...register(`participants.${index}.age`)} placeholder="Age" className="h-10 border-0 bg-transparent focus:ring-0 font-bold tabular-nums" />
+                                        </TableCell>
+                                        <TableCell className="p-2">
+                                            <Input {...register(`participants.${index}.class`)} placeholder="P.7" className="h-10 border-0 bg-transparent focus:ring-0 font-bold" />
+                                        </TableCell>
+                                        <TableCell className="p-2 text-right">
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1} className="text-omuto-red hover:bg-omuto-red/10 h-8 w-8">
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    <div className="sm:hidden space-y-4">
+                        {fields.map((field, index) => (
+                            <Card key={field.id} className="border-2 rounded-3xl overflow-hidden bg-muted/10">
+                                <CardContent className="p-6 space-y-4">
+                                    <div className="flex justify-between items-center border-b pb-4 mb-4 border-black/5">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Participant #{index + 1}</span>
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 1} className="text-omuto-red h-8 w-8">
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <FormField>
+                                        <Input {...register(`participants.${index}.name`)} placeholder="Full Name" className="h-12 rounded-xl border-2 border-black/5 font-bold px-4" />
+                                    </FormField>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Input type="number" {...register(`participants.${index}.age`)} placeholder="Age" className="h-12 rounded-xl border-2 border-black/5 font-bold px-4" />
+                                        <Input {...register(`participants.${index}.class`)} placeholder="Class" className="h-12 rounded-xl border-2 border-black/5 font-bold px-4" />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+
+                    <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => append({ name: '', age: 0, class: '' })} 
+                        className="w-full h-14 rounded-2xl border-2 border-dashed border-primary/30 text-primary font-black uppercase tracking-widest text-[10px] hover:bg-primary/5 transition-all"
+                    >
+                        <PlusCircle className="mr-2 h-5 w-5" /> Add Participant Row
+                    </Button>
+                    {errors.participants && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2 px-4">{errors.participants.message}</p>}
+                </div>
+            </FormSection>
+
+            <FormStickyFooter>
+                <div className="container max-w-2xl flex gap-4">
+                    <Button variant="outline" type="button" asChild className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">
+                        <Link href="/meal/red-campaign">Cancel</Link>
+                    </Button>
+                    <Button 
+                        type="submit" 
+                        disabled={isSubmitting} 
+                        className="btn-omuto flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]"
+                    >
+                        {isSubmitting ? (
+                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Synchronizing...</>
+                        ) : (
+                            <><ClipboardCheck className="mr-2 h-5 w-5" /> Save Training Report</>
+                        )}
+                    </Button>
+                </div>
+            </FormStickyFooter>
+        </FormShell>
     </div>
   );
 }

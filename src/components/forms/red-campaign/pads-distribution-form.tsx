@@ -11,10 +11,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Loader2, ArrowLeft, Droplets } from 'lucide-react';
+import { Loader2, ArrowLeft, Droplets, Package, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
+import { PageHeader } from '@/components/page-header';
+import { FormShell, FormField, FormGrid, FormSection, FormStickyFooter } from '@/components/ui/form-shell';
 
 const padsDistributionSchema = z.object({
   date: z.string().min(1, 'Date is required.'),
@@ -70,62 +72,103 @@ export function PadsDistributionForm() {
   };
 
   return (
-    <div className="space-y-4">
-      <Button variant="outline" size="sm" asChild className="h-10 sm:h-11">
-        <Link href="/meal/red-campaign">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to RED Campaign Hub
-        </Link>
-      </Button>
-      <Card>
-        <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-            <Droplets className="h-5 sm:h-6 w-5 sm:w-6" />
-            Pads Distribution Log
-          </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
-            Record the distribution of sanitary pads for the RED Campaign.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date" className="text-xs sm:text-sm">Date of Distribution</Label>
-                <Input id="date" type="date" {...register('date')} className="h-10 sm:h-11" />
-                {errors.date && <p className="text-xs sm:text-sm text-destructive">{errors.date.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="school" className="text-xs sm:text-sm truncate">School/Community Name</Label>
-                <Input id="school" {...register('school')} className="h-10 sm:h-11" />
-                {errors.school && <p className="text-xs sm:text-sm text-destructive">{errors.school.message}</p>}
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="numberOfPads" className="text-xs sm:text-sm">Number of Pads Distributed</Label>
-                <Input id="numberOfPads" type="number" {...register('numberOfPads')} className="h-10 sm:h-11" />
-                {errors.numberOfPads && <p className="text-xs sm:text-sm text-destructive">{errors.numberOfPads.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="girlsReached" className="text-xs sm:text-sm">Number of Girls Reached</Label>
-                <Input id="girlsReached" type="number" {...register('girlsReached')} className="h-10 sm:h-11" />
-                {errors.girlsReached && <p className="text-xs sm:text-sm text-destructive">{errors.girlsReached.message}</p>}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-xs sm:text-sm">Notes (Optional)</Label>
-              <Textarea id="notes" {...register('notes')} placeholder="e.g., Coordinated with head teacher, distributed after MHM session..." className="min-h-[80px] sm:min-h-[100px]" />
-            </div>
-          </CardContent>
-          <CardFooter className="p-4 sm:p-6 lg:p-8">
-            <Button type="submit" disabled={isSubmitting} className="w-full h-10 sm:h-11">
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Distribution Log
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+    <div className="container max-w-2xl py-8 space-y-8 pb-32">
+        <PageHeader 
+            icon={Package}
+            title="Pads Distribution Log"
+            description="Track the logistics and impact of sanitary pad distributions across partner schools."
+            breadcrumbs={[
+                { name: 'Xperience', href: '/school-xperience' },
+                { name: 'RED Campaign', href: '/meal/data/red-campaign' },
+                { name: 'Log Distribution', href: '/meal/red-campaign/pads-distribution' }
+            ]}
+        />
+
+        <FormShell onSubmit={handleSubmit(onSubmit)}>
+            <FormSection title="Distribution Details" defaultOpen={true}>
+                <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
+                    <CardContent className="p-8 space-y-6">
+                        <FormGrid columns={2}>
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">School / Community *</Label>
+                                <Input 
+                                    {...register('school')} 
+                                    placeholder="e.g., Kyebando Community" 
+                                    className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy"
+                                />
+                                {errors.school && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.school.message}</p>}
+                            </FormField>
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Date *</Label>
+                                <Input 
+                                    type="date" 
+                                    {...register('date')} 
+                                    className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy tabular-nums"
+                                />
+                                {errors.date && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.date.message}</p>}
+                            </FormField>
+                        </FormGrid>
+                    </CardContent>
+                </Card>
+            </FormSection>
+
+            <FormSection title="Impact Metrics" defaultOpen={true}>
+                <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
+                    <CardContent className="p-8 space-y-6">
+                        <FormGrid columns={2}>
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Pads Distributed *</Label>
+                                <Input 
+                                    type="number" 
+                                    {...register('numberOfPads')} 
+                                    placeholder="0" 
+                                    className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy tabular-nums"
+                                />
+                                {errors.numberOfPads && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.numberOfPads.message}</p>}
+                            </FormField>
+                            <FormField>
+                                <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Girls Rereached *</Label>
+                                <Input 
+                                    type="number" 
+                                    {...register('girlsReached')} 
+                                    placeholder="0" 
+                                    className="h-14 rounded-2xl border-2 border-black/5 px-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy tabular-nums"
+                                />
+                                {errors.girlsReached && <p className="text-[10px] font-bold text-omuto-red uppercase tracking-widest mt-2">{errors.girlsReached.message}</p>}
+                            </FormField>
+                        </FormGrid>
+
+                        <FormField>
+                            <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/60 mb-3 block">Additional Notes</Label>
+                            <Textarea 
+                                {...register('notes')} 
+                                placeholder="Coordinating teachers, distribution environment, or special cases..." 
+                                className="min-h-[120px] rounded-3xl border-2 border-black/5 p-6 font-bold bg-muted/20 focus:border-primary/20 transition-all text-omuto-navy leading-relaxed"
+                            />
+                        </FormField>
+                    </CardContent>
+                </Card>
+            </FormSection>
+
+            <FormStickyFooter>
+                <div className="container max-w-2xl flex gap-4">
+                    <Button variant="outline" type="button" asChild className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">
+                        <Link href="/meal/red-campaign">Cancel</Link>
+                    </Button>
+                    <Button 
+                        type="submit" 
+                        disabled={isSubmitting} 
+                        className="btn-omuto flex-[2] h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]"
+                    >
+                        {isSubmitting ? (
+                            <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Synchronizing...</>
+                        ) : (
+                            <><Droplets className="mr-2 h-5 w-5" /> Save Distribution</>
+                        )}
+                    </Button>
+                </div>
+            </FormStickyFooter>
+        </FormShell>
     </div>
   );
 }

@@ -305,43 +305,45 @@ export default function AccountabilitiesPage() {
               Record how funds from {selectedStaff?.userName} were spent. Balance due: {formatCurrency(selectedStaff?.balance || 0)}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Title</Label>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Title</Label>
               <Input
                 value={accountForm.title}
                 onChange={e => setAccountForm(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="e.g., Field visit transport"
+                className="h-12 sm:h-14 text-sm sm:text-base font-medium"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Amount (UGX)</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Amount (UGX)</Label>
               <Input
                 type="number"
                 value={accountForm.amount}
                 onChange={e => setAccountForm(prev => ({ ...prev, amount: e.target.value }))}
                 placeholder="Enter amount"
+                className="h-12 sm:h-14 text-sm sm:text-base font-medium"
               />
             </div>
-            <div className="space-y-2">
-              <Label>Category</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Category</Label>
               <select
                 value={accountForm.category}
                 onChange={e => setAccountForm(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                className="w-full h-12 sm:h-14 px-3 rounded-xl border border-input bg-background text-sm sm:text-base font-medium"
               >
                 {expenseItemCategories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
-              <Label>Description</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider">Description</Label>
               <Textarea
                 value={accountForm.description}
                 onChange={e => setAccountForm(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Describe how the funds were used"
-                className="min-h-[80px]"
+                className="min-h-[80px] sm:min-h-[100px]"
               />
             </div>
           </div>

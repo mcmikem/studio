@@ -1,5 +1,21 @@
 'use client';
 
+import { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useFirestore, useCollection, useMemoFirebase, addDocumentNonBlocking } from '@/firebase';
+import { collection, query, orderBy, serverTimestamp } from 'firebase/firestore';
+import type { Expense } from '@/lib/types';
+import { expenseItemCategories } from '@/lib/types';
+import { formatCurrency, formatDateSafe } from '@/lib/utils';
+import { useUser } from '@/firebase';
+import { useUserProfile } from '@/hooks/use-user-profile';
+import { useToast } from '@/hooks/use-toast';
 import { Banknote, PlusCircle, Loader2, Sparkles, TrendingUp, History, Receipt } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { FormShell, FormField, FormSection } from '@/components/ui/form-shell';
