@@ -122,7 +122,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
 
       {/* Pending Approvals - Only show if there are any */}
       {pendingApprovals.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50">
+        <Card className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30">
           <CardContent className="p-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold flex items-center gap-2">
@@ -138,7 +138,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                 const createdAt = expense.createdAt?.toDate?.() || new Date();
                 const days = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
                 return (
-                  <div key={expense.id} className="flex items-center justify-between p-2 rounded-lg bg-white border border-amber-200">
+                  <div key={expense.id} className="flex items-center justify-between p-2 rounded-lg bg-card border border-amber-200">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-bold text-omuto-navy truncate">{expense.title}</p>
                       <p className="text-xs text-muted-foreground">{expense.userName || 'Unknown'} · {days}d</p>
