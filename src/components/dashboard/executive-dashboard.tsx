@@ -13,45 +13,68 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
 import { 
   TrendingUp, DollarSign, Wallet, Clock, Activity, CheckCircle,
-  ArrowUpRight, ArrowDownRight, Users, AlertTriangle,
-  Target, BarChart3, ClipboardCheck, Calendar
+  Users, AlertTriangle, BarChart3, ClipboardCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Timestamp } from 'firebase/firestore';
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   
-  // Get this month's data only
+  // Get this month's start as Firestore Timestamp
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthStartTimestamp = Timestamp.fromDate(monthStart);
   
-  // This month's expenses
+  // Get recent expenses (last 20) and filter by month in JavaScript
   const expensesQuery = useMemo(() => 
     firestore ? query(
       collection(firestore, 'expenses'),
-      where('createdAt', '>=', monthStart),
       orderBy('createdAt', 'desc'),
-      limit(20)
+      limit(50)
     ) : null
   , [firestore]);
   const { data: expenses, isLoading: expensesLoading } = useCollection(expensesQuery);
 
-  // This month's income
+  // Get recent income (last 20) and filter by month in JavaScript
   const incomeQuery = useMemo(() => 
     firestore ? query(
       collection(firestore, 'income'),
-      where('dateReceived', '>=', monthStart.getTime()),
       orderBy('dateReceived', 'desc'),
-      limit(20)
+      limit(50)
     ) : null
   , [firestore]);
   const { data: income, isLoading: incomeLoading } = useCollection(incomeQuery);
 
-  // This month's pending approvals
-  const pendingApprovals = expenses?.filter(e => e.status === 'Pending') || [];
-  const thisMonthIncome = income?.reduce((sum, i) => sum + Number(i.amount || 0), 0) || 0;
-  const thisMonthExpenses = expenses?.reduce((sum, e) => sum + Number(e.totalAmount || 0), 0) || 0;
+  // Filter to this month only in JavaScript
+  const thisMonthExpenses = useMemo(() => {
+    if (!expenses) return 0;
+    return expenses
+      .filter(e => {
+        const created = e.createdAt?.toDate?.() || new Date(e.createdAt?.seconds ? e.createdAt.seconds * 1000 : Date.now());
+        return created >= monthStart;
+      })
+      .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
+  }, [expenses, monthStart]);
+
+  const thisMonthIncome = useMemo(() => {
+    if (!income) return 0;
+    return income
+      .filter(i => {
+        const received = i.dateReceived?.toDate?.() || new Date(typeof i.dateReceived === 'number' ? i.dateReceived : Date.now());
+        return received >= monthStart;
+      })
+      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+  }, [income, monthStart]);
+
+  const pendingApprovals = useMemo(() => {
+    if (!expenses) return [];
+    return expenses
+      .filter(e => e.status === 'Pending')
+      .slice(0, 5);
+  }, [expenses]);
+
   const balance = thisMonthIncome - thisMonthExpenses;
 
   return (
