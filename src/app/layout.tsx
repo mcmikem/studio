@@ -79,7 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
         <Toaster />
         <CommandPalette />
-        <OfflineIndicator />
+        {/* <OfflineIndicator /> */}
       </body>
     </html>
   );
