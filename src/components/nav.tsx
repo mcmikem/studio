@@ -7,7 +7,7 @@ import {
   AreaChart,
   Bell,
   LogIn,
-  Calendar as CalendarIcon,
+  Calendar,
   Video,
   BarChart3,
   Wallet,
@@ -16,6 +16,7 @@ import {
   CheckCircle,
   CheckSquare,
   LifeBuoy,
+  FileText,
   Heart,
   Swords,
   Droplets,
@@ -45,6 +46,19 @@ import {
   School,
   Building2,
   Map as MapIcon,
+  UserCircle,
+  Clock,
+  HeartHandshake,
+  UserPlus,
+  Palmtree,
+  Timer,
+  FileBadge,
+  CreditCard,
+  Target,
+  Dices,
+  MessageSquareWarning,
+  Library,
+  Bot
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -121,7 +135,7 @@ const navConfig = {
     { href: '/checkins', icon: LogIn, label: 'Check-ins' },
     { href: '/activity-log', icon: History, label: 'Activity Log' },
     { href: '/stream', icon: Wind, label: 'Reports' },
-    { href: '/calendar', icon: CalendarIcon, label: 'Calendar' },
+    { href: '/calendar', icon: Calendar, label: 'Calendar' },
   ],
   data: [
     { href: '/meal/data', icon: BarChart3, label: 'Dashboards' },
@@ -136,15 +150,36 @@ const navConfig = {
   ],
   ops: [
     { href: '/management', icon: Briefcase, label: 'Ops Desk' },
-    { href: '/finance/dashboard', icon: Wallet, label: 'Finance' },
     { href: '/resources', icon: Handshake, label: 'Grant Finder' },
-    { href: '/my-finances', icon: Wallet, label: 'My Finances' },
+  ],
+  finance: [
+    { href: '/finance/dashboard', icon: Wallet, label: 'Finance Hub' },
+    { href: '/finance/requisitions', icon: FileText, label: 'Requisitions' },
+    { href: '/finance/accountabilities', icon: ShieldCheck, label: 'Accountabilities' },
+    { href: '/finance/petty-cash', icon: Landmark, label: 'Petty Cash' },
+    { href: '/my-finances', icon: Wallet, label: 'My Wallet' },
   ],
   content: [
     { href: '/testimonies', icon: Video, label: 'Stories' },
     { href: '/record-testimony', icon: Mic, label: 'Capture Story' },
     { href: '/impact-story', icon: Wand2, label: 'Impact Narratives' },
     { href: '/pulse', icon: Heart, label: 'Pulse' },
+  ],
+  hr: [
+    { href: '/hr/dashboard', icon: LayoutDashboard, label: 'HR Dashboard' },
+    { href: '/management/users', icon: Users, label: 'Employee Data' },
+    { href: '/hr/hiring', icon: UserPlus, label: 'Hiring' },
+    { href: '/hr/leave', icon: Palmtree, label: 'Leave & Time' },
+    { href: '/hr/payroll', icon: CreditCard, label: 'Payroll' },
+    { href: '/hr/performance', icon: FileBadge, label: 'Performance' },
+  ],
+  self: [
+    { href: '/self-service', icon: LayoutDashboard, label: 'My Hub' },
+    { href: '/profile', icon: UserCircle, label: 'My Profile' },
+    { href: '/self-service/leave', icon: Palmtree, label: 'My Leave' },
+    { href: '/self-service/attendance', icon: Timer, label: 'My Attendance' },
+    { href: '/my-finances', icon: Wallet, label: 'My Wallet' },
+    { href: '/chat', icon: Bot, label: 'Dumo AI' },
   ],
   system: [
     { href: '/help', icon: LifeBuoy, label: 'Help' },
@@ -153,21 +188,21 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['daily', 'forms', 'programs', 'enterprise', 'ops', 'team', 'data', 'ai', 'content', 'system'],
-  'Executive Director': ['daily', 'forms', 'programs', 'enterprise', 'ops', 'team', 'data', 'ai', 'content', 'system'],
-  'Programs & Partnerships Manager': ['daily', 'forms', 'programs', 'enterprise', 'team', 'data', 'ai', 'content'],
-  'Operations & Field Manager': ['daily', 'forms', 'programs', 'enterprise', 'team', 'data', 'ai', 'content'],
-  'Media & Finance Lead': ['daily', 'forms', 'enterprise', 'ops', 'data', 'ai', 'content'],
-  'Media & Communications Lead': ['daily', 'forms', 'enterprise', 'data', 'ai', 'content'],
-  'Essentials Manager': ['daily', 'forms', 'enterprise', 'ops', 'data', 'ai'],
-  'Youth Center Manager': ['daily', 'forms', 'enterprise', 'team', 'data', 'ai'],
-  'Field Coordinator': ['daily', 'forms', 'programs', 'team', 'data', 'ai', 'content'],
-  'Field Staff': ['daily', 'forms', 'team', 'data', 'ai', 'content'],
-  'Media & Communications': ['daily', 'forms', 'content', 'data', 'ai'],
-  'Accountant/Finance': ['daily', 'forms', 'ops', 'data', 'ai'],
-  'Intern': ['daily', 'forms', 'team', 'content', 'ai'],
-  'Volunteer': ['daily', 'forms', 'team', 'ai'],
-  'default': ['daily', 'team', 'data'],
+  'Administrator': ['daily', 'self', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'ops', 'team', 'data', 'ai', 'content', 'system'],
+  'Executive Director': ['daily', 'self', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'ops', 'team', 'data', 'ai', 'content', 'system'],
+  'Programs & Partnerships Manager': ['daily', 'self', 'forms', 'programs', 'enterprise', 'finance', 'team', 'data', 'ai', 'content'],
+  'Operations & Field Manager': ['daily', 'self', 'forms', 'programs', 'enterprise', 'finance', 'team', 'data', 'ai', 'content'],
+  'Media & Finance Lead': ['daily', 'self', 'forms', 'enterprise', 'finance', 'ops', 'data', 'ai', 'content'],
+  'Media & Communications Lead': ['daily', 'self', 'forms', 'enterprise', 'finance', 'data', 'ai', 'content'],
+  'Essentials Manager': ['daily', 'self', 'forms', 'enterprise', 'ops', 'data', 'ai'],
+  'Youth Center Manager': ['daily', 'self', 'forms', 'enterprise', 'team', 'data', 'ai'],
+  'Field Coordinator': ['daily', 'self', 'forms', 'programs', 'team', 'data', 'ai', 'content'],
+  'Field Staff': ['daily', 'self', 'forms', 'team', 'data', 'ai', 'content'],
+  'Media & Communications': ['daily', 'self', 'forms', 'content', 'data', 'ai'],
+  'Accountant/Finance': ['daily', 'self', 'forms', 'finance', 'ops', 'data', 'ai'],
+  'Intern': ['daily', 'self', 'team', 'content', 'ai'],
+  'Volunteer': ['daily', 'self', 'team', 'ai'],
+  'default': ['daily', 'self', 'team', 'data'],
 };
 
 
@@ -244,9 +279,12 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="no-scrollbar pt-1">
         {renderNavSection('daily', 'Daily Ops')}
+        {renderNavSection('self', 'Self Service')}
+        {renderNavSection('hr', 'Human Resources')}
         {renderNavSection('forms', 'Impact Forms')}
         {renderNavSection('programs', 'Programs')}
         {renderNavSection('enterprise', 'Enterprise')}
+        {renderNavSection('finance', 'Finance')}
         {renderNavSection('ops', 'Operations')}
         {renderNavSection('team', 'Team')}
         {renderNavSection('data', 'Data')}

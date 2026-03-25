@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { roleKpis } from '@/lib/data';
 import { checkRateLimit } from '@/lib/rate-limit';
 import type { AlertInput, GrantFinderInput, GrantFinderOutput, SmartRemindersInput, SmartRemindersOutput, DailyPlannerAIInput, DailyPlannerAIOutput, GenerateTemplateInput, GenerateTemplateOutput } from '@/lib/types';
+import type { LeaveRequest, PayrollRecord } from '@/lib/types/hr';
 
 function rateLimitCheck(identifier: string, actionName: string) {
     const result = checkRateLimit(identifier, { windowMs: 60000, maxRequests: 20 });
@@ -348,3 +349,70 @@ export async function getEnterpriseInsightsAction(input: { sales: any[]; invento
   const { getEnterpriseInsights } = await import('@/ai/flows/enterprise-advisor-flow');
   return await getEnterpriseInsights(input);
 }
+
+// ─── HR & Self-Service Actions ───
+
+export async function createLeaveRequestAction(data: Omit<LeaveRequest, 'id' | 'createdAt'>) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        const docRef = await firestore.collection('leave-requests').add({
+            ...data,
+            createdAt: FieldValue.serverTimestamp(),
+            startDate: Timestamp.fromDate(new Date(data.startDate)),
+            endDate: Timestamp.fromDate(new Date(data.endDate)),
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        console.error('Server Action Error - createLeaveRequestAction:', error);
+        return { success: false, error: 'Failed to submit leave request.' };
+    }
+}
+
+export async function updateLeaveStatusAction(id: string, status: string, adminId: string, adminName: string) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        await firestore.collection('leave-requests').doc(id).update({
+            status,
+            approvedBy: adminId,
+            approvedByName: adminName,
+            updatedAt: FieldValue.serverTimestamp()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Server Action Error - updateLeaveStatusAction:', error);
+        return { success: false, error: 'Failed to update leave status.' };
+    }
+}
+
+export async function createPayrollRecordAction(data: Omit<PayrollRecord, 'id' | 'createdAt'>) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        const docRef = await firestore.collection('payroll').add({
+            ...data,
+            createdAt: FieldValue.serverTimestamp()
+        });
+        return { success: true, id: docRef.id };
+    } catch (error) {
+        console.error('Server Action Error - createPayrollRecordAction:', error);
+        return { success: false, error: 'Failed to create payroll record.' };
+    }
+}
+
+// ─── System Utilities ───
+
+export async function createSystemAlert(input: { type: string; title: string; message: string; userId?: string; link?: string }) {
+    try {
+        const { firestore } = getFirebaseAdmin();
+        const alertPayload = {
+            ...input,
+            createdAt: Timestamp.now(),
+            readBy: [],
+        };
+        await firestore.collection('alerts').add(alertPayload);
+        return { success: true };
+    } catch (error) {
+        console.error('Server Action Error - createSystemAlert:', error);
+        return { success: false };
+    }
+}
+

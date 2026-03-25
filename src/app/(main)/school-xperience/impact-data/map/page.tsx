@@ -10,7 +10,7 @@ import { collection, query, orderBy, limit, doc } from 'firebase/firestore';
 import { useFormSubmission } from '@/hooks/use-form-submission';
 import {
   MapPin, Search, X, Plus, GraduationCap, Droplets, TreePine, Users,
-  Building2, Check, Home, UsersRound, ChevronRight, Sparkles, Filter, Menu, Pencil
+  Building2, Check, Home, UsersRound, ChevronRight, Sparkles, Filter, Menu, Pencil, Loader2
 } from 'lucide-react';
 import { 
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger 

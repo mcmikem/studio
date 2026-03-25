@@ -26,10 +26,14 @@ import { useCollection, useFirestore, useMemoFirebase, deleteDocumentNonBlocking
 import { collection, query, orderBy, limit, doc } from 'firebase/firestore';
 import type { SchoolVisit, PadsDistribution } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Heart, Trash2, Edit, PlusCircle, History, ClipboardCheck, Package } from 'lucide-react';
+import { Heart, Trash2, Edit, PlusCircle, History, ClipboardCheck, Package, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { FormSection } from '@/components/ui/form-shell';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
+import { formatDateSafe } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EmptyState } from '@/components/empty-state';
 
 interface MHMTraining {
   id: string;
