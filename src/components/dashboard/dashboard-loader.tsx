@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import type { User as UserProfileType } from '@/lib/types';
 import { useUser } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
@@ -13,6 +13,7 @@ import { FieldStaffDashboard } from './field-staff-dashboard';
 import { ProgramManagerDashboard } from './program-manager-dashboard';
 import { MediaFinanceDashboard } from './media-finance-dashboard';
 import { InternDashboard } from './intern-dashboard';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 export interface DashboardProps {
   profile: UserProfileType;
@@ -56,9 +57,11 @@ export function DashboardLoader() {
   }
 
   return (
-    <div className="w-full space-y-4">
-      <NotificationPrompt />
-      <DashboardComponent profile={profile} />
-    </div>
+    <ErrorBoundary>
+      <div className="w-full space-y-4">
+        <NotificationPrompt />
+        <DashboardComponent profile={profile} />
+      </div>
+    </ErrorBoundary>
   );
 }
