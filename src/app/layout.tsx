@@ -54,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}} />
       </head>
       <body>
-        {/* <ServiceWorkerRegistration /> */}
+        <ServiceWorkerRegistration />
         <Providers>
           <FirebaseErrorListener />
           <CheckinReminderToast />
@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ViewAsBanner />
                 <main className="flex-1 w-full max-w-full overflow-x-hidden px-2 sm:px-4 py-3 sm:py-4 lg:py-6 pb-[calc(var(--mobile-nav-height)+env(safe-area-inset-bottom,0px))] md:pb-6">
                   <GlobalBackButton />
-                  {/* <Breadcrumbs /> */}
+                  <Breadcrumbs />
                   {children}
                 </main>
                 <MobileBottomNav />
@@ -78,8 +78,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </SidebarProvider>
         </Providers>
         <Toaster />
-        {/* <CommandPalette /> */}
-        {/* <OfflineIndicator /> */}
+        <CommandPalette />
+        <OfflineIndicator />
       </body>
     </html>
   );
