@@ -23,10 +23,12 @@ import { useRouter } from 'next/navigation';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { Heart, Loader2 } from 'lucide-react';
 import type { Program } from '@/lib/types';
 import { useMemo } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { FormShell, FormField, FormGrid, FormSection, FormStickyFooter } from '@/components/ui/form-shell';
+import { createSystemAlert } from '@/lib/notifications';
 
 
 const schoolVisitSchema = z.object({
@@ -83,7 +85,14 @@ export function SchoolVisitForm() {
     };
     
     await addDocumentNonBlocking(collection(firestore, 'school-visits'), visitData)
-        .then(() => {
+        .then(async () => {
+            await createSystemAlert(firestore, {
+                type: 'Info',
+                priority: 'Low',
+                message: `${profile.name} logged a school visit at ${data.schoolName}`,
+                creatorId: user.uid,
+                action: `/meal/red-campaign`
+            });
             toast({ title: "Visit Report Saved!", description: `The report for ${data.schoolName} has been logged.` });
             router.push('/meal/red-campaign');
         })
@@ -106,7 +115,7 @@ export function SchoolVisitForm() {
             ]}
         />
 
-        <FormShell onSubmit={handleSubmit(onSubmit)}>
+        <FormShell onSubmit={handleSubmit(onSubmit)} hideDefaultButtons={true}>
             <FormSection title="Core Information" defaultOpen={true}>
                 <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
                     <CardContent className="p-8 space-y-6">

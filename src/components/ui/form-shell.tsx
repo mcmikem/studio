@@ -15,6 +15,7 @@ interface FormShellProps {
   onCancel?: () => void;
   showCancel?: boolean;
   className?: string;
+  hideDefaultButtons?: boolean;
 }
 
 export function FormShell({
@@ -26,32 +27,40 @@ export function FormShell({
   onCancel,
   showCancel = false,
   className,
+  hideDefaultButtons = false,
 }: FormShellProps) {
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(e);
+  };
+
   return (
-    <form onSubmit={onSubmit} className={cn('space-y-4 sm:space-y-6', className)}>
+    <form onSubmit={handleFormSubmit} className={cn('space-y-4 sm:space-y-6', className)}>
       {children}
       
-      <div className="flex flex-col sm:flex-row gap-2 pt-2">
-        <Button 
-          type="submit" 
-          disabled={isSubmitting}
-          className="w-full sm:w-auto h-10 sm:h-11"
-        >
-          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitLabel}
-        </Button>
-        
-        {showCancel && onCancel && (
+      {!hideDefaultButtons && (
+        <div className="flex flex-col sm:flex-row gap-2 pt-2">
           <Button 
-            type="button"
-            variant="outline"
-            onClick={onCancel}
+            type="submit" 
+            disabled={isSubmitting}
             className="w-full sm:w-auto h-10 sm:h-11"
           >
-            {cancelLabel}
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {submitLabel}
           </Button>
-        )}
-      </div>
+          
+          {showCancel && onCancel && (
+            <Button 
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="w-full sm:w-auto h-10 sm:h-11"
+            >
+              {cancelLabel}
+            </Button>
+          )}
+        </div>
+      )}
     </form>
   );
 }

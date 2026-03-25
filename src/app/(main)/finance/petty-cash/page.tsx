@@ -20,6 +20,7 @@ import { Banknote, PlusCircle, Loader2, Sparkles, TrendingUp, History, Receipt }
 import { PageHeader } from '@/components/page-header';
 import { FormShell, FormField, FormSection } from '@/components/ui/form-shell';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { createSystemAlert } from '@/lib/notifications';
 
 export default function PettyCashPage() {
   const firestore = useFirestore();
@@ -58,6 +59,14 @@ export default function PettyCashPage() {
         status: 'Acknowledged',
         createdAt: serverTimestamp(),
       });
+      await createSystemAlert(firestore, {
+        type: 'Info',
+        priority: 'Low',
+        message: `${profile.name} logged a petty cash expense: ${form.title} (UGX ${form.amount})`,
+        creatorId: user.uid,
+        action: '/finance/petty-cash'
+      });
+
       toast({ title: 'Petty Cash Logged' });
       setShowForm(false);
       setForm({ title: '', amount: '', category: 'Transport' });
@@ -174,7 +183,7 @@ export default function PettyCashPage() {
 
       <Sheet open={showForm} onOpenChange={setShowForm}>
         <SheetContent side="bottom" className="h-[90vh] rounded-t-[3rem] p-0 overflow-hidden border-t-4 border-primary">
-            <FormShell onSubmit={handleSubmit}>
+            <FormShell onSubmit={handleSubmit} hideDefaultButtons={true}>
                 <div className="p-8 border-b bg-muted/30 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-primary rounded-2xl text-white">
@@ -240,7 +249,7 @@ export default function PettyCashPage() {
                 <div className="p-8 bg-muted/30 border-t flex gap-3">
                     <Button variant="outline" type="button" onClick={() => setShowForm(false)} className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest border-2">Cancel</Button>
                     <Button 
-                        onClick={handleSubmit} 
+                        type="submit"
                         disabled={isSubmitting || !form.title || !form.amount}
                         className="btn-omuto flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[11px]"
                     >

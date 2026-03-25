@@ -58,10 +58,18 @@ export function MobileBottomNav() {
   };
 
   const actions = [
-    { href: '/daily-plan', label: 'Daily Planner', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
-    { href: '/meal/activity', label: 'Log Impact', icon: BarChart3, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
-    { href: '/enterprise/essentials/sales', label: 'Point of Sale', icon: Receipt, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
-    { href: '/chat', label: 'AI Coach', icon: MessageCircle, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
+    // Quick forms - most used
+    { href: '/forms/expense', label: 'Expense Report', icon: Receipt, color: 'text-omuto-red', bg: 'bg-omuto-red/10' },
+    { href: '/forms/check-in', label: 'Morning Check-in', icon: LogIn, color: 'text-omuto-teal', bg: 'bg-omuto-teal/10' },
+    { href: '/forms/check-out', label: 'End of Day', icon: LogOut, color: 'text-omuto-yellow', bg: 'bg-omuto-yellow/10' },
+    { href: '/daily-plan', label: 'AI Planner', icon: LayoutDashboard, color: 'text-omuto-brown', bg: 'bg-omuto-brown/10' },
+    // Impact logging
+    { href: '/meal/activity', label: 'Log Activity', icon: BarChart3, color: 'text-omuto-blue', bg: 'bg-omuto-blue/10' },
+    { href: '/school-xperience/log-visit', label: 'Log Visit', icon: Home, color: 'text-green-600', bg: 'bg-green-50' },
+    // Finance
+    { href: '/finance/income', label: 'Log Income', icon: Receipt, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    // AI
+    { href: '/chat', label: 'AI Coach', icon: MessageCircle, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
   return (
@@ -81,7 +89,7 @@ export function MobileBottomNav() {
             className="absolute bottom-24 left-4 right-4 animate-in slide-in-from-bottom-6 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {actions.map((action, i) => (
                 <Link
                   key={action.href}

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Droplets, Package, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -17,6 +18,7 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { PageHeader } from '@/components/page-header';
 import { FormShell, FormField, FormGrid, FormSection, FormStickyFooter } from '@/components/ui/form-shell';
+import { createSystemAlert } from '@/lib/notifications';
 
 const padsDistributionSchema = z.object({
   date: z.string().min(1, 'Date is required.'),
@@ -32,6 +34,7 @@ export function PadsDistributionForm() {
   const router = useRouter();
   const firestore = useFirestore();
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
   const { toast } = useToast();
 
   const {
@@ -59,13 +62,19 @@ export function PadsDistributionForm() {
     };
 
     try {
-      await addDocumentNonBlocking(collection(firestore, 'pads-distributions'), formData);
-      toast({
-        title: 'Distribution Logged!',
-        description: `Distribution at ${data.school} has been recorded.`,
-      });
-      reset();
-      router.push('/meal');
+      await addDocumentNonBlocking(collection(firestore, 'pads-distributions'), formData)
+        .then(async () => {
+             await createSystemAlert(firestore, {
+                type: 'Info',
+                priority: 'Low',
+                message: `${profile?.name || user?.email} logged a pads distribution for ${data.school} (${data.numberOfPads} pads)`,
+                creatorId: user?.uid || 'system',
+                action: `/meal/red-campaign`
+            });
+            toast({ title: "Distribution Saved!", description: `Recorded ${data.numberOfPads} pads for ${data.school}.` });
+            reset();
+            router.push('/meal/red-campaign');
+        });
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -84,7 +93,7 @@ export function PadsDistributionForm() {
             ]}
         />
 
-        <FormShell onSubmit={handleSubmit(onSubmit)}>
+        <FormShell onSubmit={handleSubmit(onSubmit)} hideDefaultButtons={true}>
             <FormSection title="Distribution Details" defaultOpen={true}>
                 <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
                     <CardContent className="p-8 space-y-6">

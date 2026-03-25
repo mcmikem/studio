@@ -13,11 +13,13 @@ import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { Loader2, ArrowLeft, Droplets, PlusCircle, Trash2, Users, ClipboardCheck, GraduationCap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useUserProfile } from '@/hooks/use-user-profile';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageHeader } from '@/components/page-header';
 import { FormShell, FormField, FormGrid, FormSection, FormStickyFooter } from '@/components/ui/form-shell';
+import { createSystemAlert } from '@/lib/notifications';
 
 const participantSchema = z.object({
   name: z.string().min(3, "Name is required."),
@@ -37,6 +39,7 @@ export function MhmTrainingForm() {
   const router = useRouter();
   const firestore = useFirestore();
   const { user } = useUser();
+  const { profile } = useUserProfile(user);
   const { toast } = useToast();
 
   const {
@@ -78,13 +81,21 @@ export function MhmTrainingForm() {
     };
 
     try {
-      await addDocumentNonBlocking(collection(firestore, 'mhm-trainings'), formData);
-      toast({
-        title: 'Training Logged!',
-        description: `The MHM training session has been recorded.`,
-      });
-      reset();
-      router.push('/meal');
+      await addDocumentNonBlocking(collection(firestore, 'mhm-trainings'), formData)
+        .then(async () => {
+            await createSystemAlert(firestore, {
+                type: 'Info',
+                priority: 'Low',
+                message: `${profile?.name || user?.email} conducted an MHM Training session: ${data.session}`,
+                creatorId: user?.uid || 'system',
+                action: `/meal/red-campaign`
+            });
+            toast({
+                title: 'Training Logged!',
+                description: `MHM Session "${data.session}" has been recorded.`,
+            });
+            router.push('/meal/red-campaign');
+        });
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Submission Failed', description: error.message });
     }
@@ -103,7 +114,7 @@ export function MhmTrainingForm() {
             ]}
         />
 
-        <FormShell onSubmit={handleSubmit(onSubmit)}>
+        <FormShell onSubmit={handleSubmit(onSubmit)} hideDefaultButtons={true}>
             <FormSection title="Session Details" defaultOpen={true}>
                 <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
                     <CardContent className="p-8 space-y-6">
