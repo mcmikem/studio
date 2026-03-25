@@ -14,6 +14,8 @@ import { CheckinReminderToast } from '@/components/reminders/checkin-reminder-to
 import { RoleTour } from '@/components/role-tour';
 import { CommandPalette } from '@/components/command-palette';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { OfflineIndicator } from '@/components/offline-indicator';
+import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 
 const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -52,6 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}} />
       </head>
       <body>
+        <ServiceWorkerRegistration />
         <Providers>
           <FirebaseErrorListener />
           <CheckinReminderToast />
@@ -76,6 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
         <Toaster />
         <CommandPalette />
+        <OfflineIndicator />
       </body>
     </html>
   );

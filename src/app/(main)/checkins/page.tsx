@@ -214,7 +214,7 @@ function CheckinsPageContent() {
     return (
         <div className="flex flex-col gap-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+                <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
                 <LogIn className="h-8 w-8" />
                 Daily Check-in Stream
                 </h1>

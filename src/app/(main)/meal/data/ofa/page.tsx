@@ -37,7 +37,7 @@ function OFAPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">OFA Data Hub</h1>
+                <h1 className="font-heading text-3xl font-bold tracking-tight">OFA Data Hub</h1>
                 <p className="text-muted-foreground">
                     View and analyze all data collected for the Omuto Football Alliance.
                 </p>

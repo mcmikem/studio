@@ -223,7 +223,7 @@ function EssentialsHubPage() {
         <div className="space-y-8 pb-10">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="min-w-0">
-                     <h1 className="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-omuto-navy flex flex-wrap items-center gap-2 sm:gap-3 leading-tight">
+                     <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-omuto-navy flex flex-wrap items-center gap-2 sm:gap-3 leading-tight">
                         <Store className="h-8 w-8 sm:h-10 sm:w-10 text-primary shrink-0" />
                         Omuto <span className="text-primary">Essentials</span> Hub
                     </h1>

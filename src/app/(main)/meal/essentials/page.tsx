@@ -37,7 +37,7 @@ function EssentialsHubPage() {
             Back to MEAL Hub
           </Link>
         </Button>
-        <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Essentials</h1>
+        <h1 className="font-heading text-3xl font-bold tracking-tight">Omuto Essentials</h1>
         <p className="text-muted-foreground">
           Manage production, sales, and inventory for the social enterprise.
         </p>

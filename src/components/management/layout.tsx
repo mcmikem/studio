@@ -42,7 +42,7 @@ export default function ManagementLayoutComponent({
   if (!managementRoles.includes(effectiveRole || '')) {
       return (
           <div className="flex flex-col gap-6">
-              <h1 className="font-headline text-3xl font-bold tracking-tight">Access Denied</h1>
+              <h1 className="font-heading text-3xl font-bold tracking-tight">Access Denied</h1>
               <p className="text-muted-foreground">You do not have permission to view this section.</p>
           </div>
       )

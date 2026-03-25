@@ -433,7 +433,7 @@ export default function KnowPage() {
       <header>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             <div>
-                <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+                <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
                     <BookOpen className="h-8 w-8" />
                     Quick to Know About Omuto
                 </h1>

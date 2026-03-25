@@ -25,7 +25,7 @@ export default function FinanceSettingsPage() {
   if (!isFinanceRole) {
     return (
       <div className="flex flex-col gap-6">
-        <h1 className="font-headline text-3xl font-bold tracking-tight">Access Denied</h1>
+        <h1 className="font-heading text-3xl font-bold tracking-tight">Access Denied</h1>
         <p className="text-muted-foreground">Only finance roles can access settings.</p>
       </div>
     );
@@ -34,7 +34,7 @@ export default function FinanceSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+        <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
           <Settings className="h-8 w-8" />
           Finance Settings
         </h1>

@@ -92,7 +92,7 @@ function ProgramDashboard() {
          <Button asChild variant="outline" className="mb-4">
             <Link href="/management/programs"><ArrowLeft className="mr-2 h-4 w-4" />Back to All Programs</Link>
           </Button>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-3">
+        <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-3">
           <FolderKanban className="h-8 w-8" />
           {program.title}
         </h1>

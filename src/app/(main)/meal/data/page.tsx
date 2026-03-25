@@ -269,7 +269,7 @@ export default function DataHubPage() {
   return (
     <div className="space-y-8">
       <header className="space-y-3">
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+        <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
           <BarChart3 className="h-8 w-8" /> Data Hub
         </h1>
         <p className="text-muted-foreground">

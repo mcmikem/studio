@@ -229,7 +229,7 @@ export default function ChatPage() {
                  </div>
                 <div className='inline-flex items-center justify-center'>
                     <Wand className="h-6 w-6 mr-2 text-primary" />
-                    <h1 className="font-headline text-2xl sm:text-3xl font-bold tracking-tight">
+                    <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight">
                         Hello, {profile?.name.split(' ')[0]}!
                     </h1>
                 </div>

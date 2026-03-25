@@ -178,7 +178,7 @@ export function DashboardCalendar() {
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(subDays(currentDate, 1)); }}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <h3 className="font-headline text-lg font-semibold text-center">
+                <h3 className="font-heading text-lg font-semibold text-center">
                     {format(currentDate, "eeee, MMMM d")}
                 </h3>
                 <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(addDays(currentDate, 1)); }}>

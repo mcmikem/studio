@@ -48,7 +48,7 @@ function YoSkillsHubPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">YoSkills Entrepreneurship Circles</h1>
+                <h1 className="font-heading text-3xl font-bold tracking-tight">YoSkills Entrepreneurship Circles</h1>
                 <p className="text-muted-foreground">
                     Data collection and management forms for the YoSkills program.
                 </p>

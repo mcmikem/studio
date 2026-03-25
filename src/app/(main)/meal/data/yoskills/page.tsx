@@ -150,7 +150,7 @@ export default function YoSkillsDataPage() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+        <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
           <Zap className="h-8 w-8" />
           YoSkills Data Hub
         </h1>

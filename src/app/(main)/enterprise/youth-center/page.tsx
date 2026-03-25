@@ -44,7 +44,7 @@ function YouthCenterHubPage() {
                         Back to Enterprise Hub
                     </Link>
                 </Button>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Omuto Youth Center</h1>
+                <h1 className="font-heading text-3xl font-bold tracking-tight">Omuto Youth Center</h1>
                 <p className="text-muted-foreground">
                     Manage services like printing, design, and short courses.
                 </p>

@@ -337,7 +337,7 @@ function ProfilePageContent() {
     return (
         <div className="flex flex-col gap-6">
         <header>
-            <h1 className="font-headline text-3xl font-bold tracking-tight">
+            <h1 className="font-heading text-3xl font-bold tracking-tight">
             My Profile &amp; Tasks
             </h1>
             <p className="text-muted-foreground">

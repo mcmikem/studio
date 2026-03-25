@@ -450,7 +450,7 @@ export function ProgramActivityForm({
                           <span className="font-bold">{formatCurrency(totalValue)}</span>
                         </div>
                         <div className="flex justify-between items-center text-lg sm:text-xl">
-                          <span className="font-headline">Est. ROI:</span>
+                          <span className="font-heading">Est. ROI:</span>
                           <span className={`font-bold ${estimatedRoi >= 0 ? 'text-green-600' : 'text-red-600'}`}>{estimatedRoi.toFixed(0)}%</span>
                         </div>
                     </div>
@@ -496,7 +496,7 @@ export function ProgramActivityForm({
 
                     <div className="p-4 sm:p-6 bg-green-50 rounded-lg sm:rounded-xl">
                         <div className="flex justify-between items-center text-lg sm:text-xl">
-                            <span className="font-headline">Final ROI:</span>
+                            <span className="font-heading">Final ROI:</span>
                             <span className={`font-bold ${finalRoi >= 0 ? 'text-green-600' : 'text-red-600'}`}>{finalRoi.toFixed(0)}%</span>
                         </div>
                     </div>

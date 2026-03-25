@@ -178,7 +178,7 @@ export default function CalendarPage() {
     <div className="flex flex-col gap-6 h-full">
         <header className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
             <div>
-                <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+                <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
                 <CalendarIcon className="h-8 w-8" />
                 Team Calendar
                 </h1>

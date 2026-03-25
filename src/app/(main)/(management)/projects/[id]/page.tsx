@@ -185,7 +185,7 @@ function ProjectDashboard() {
          <Button asChild variant="outline" className="mb-4">
             <Link href="/management/projects"><ArrowLeft className="mr-2 h-4 w-4" />Back to All Projects</Link>
           </Button>
-        <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-3">
+        <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-3">
           {project.name}
         </h1>
         <p className="text-muted-foreground">

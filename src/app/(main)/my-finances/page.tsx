@@ -76,7 +76,7 @@ export default function MyFinancesPage() {
     <div className="flex flex-col gap-6">
       <header className="flex justify-between items-start">
         <div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight flex items-center gap-2">
+            <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
             <Wallet className="h-8 w-8" />
             My Finances
             </h1>

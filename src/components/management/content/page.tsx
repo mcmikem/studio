@@ -136,7 +136,7 @@ export default function ContentCommandPage() {
     return (
         <div className="space-y-6">
             <header>
-                <h1 className="font-headline text-3xl font-bold tracking-tight">Content Command</h1>
+                <h1 className="font-heading text-3xl font-bold tracking-tight">Content Command</h1>
                 <p className="text-muted-foreground">Automated pipeline for turning field data into media content.</p>
             </header>
             
