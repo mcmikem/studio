@@ -190,10 +190,11 @@ const navConfig = {
     { href: '/self-service/leave', icon: Palmtree, label: 'My Leave' },
     { href: '/self-service/attendance', icon: Timer, label: 'My Attendance' },
     { href: '/self-service/payslips', icon: CreditCard, label: 'My Payslips' },
+    { href: '/self-service/performance', icon: FileBadge, label: 'My Performance' },
     { href: '/self-service/assets', icon: Package, label: 'My Assets' },
     { href: '/self-service/grievances', icon: ShieldAlert, label: 'My Grievances' },
     { href: '/my-finances', icon: Wallet, label: 'My Wallet' },
-    { href: '/chat', icon: Bot, label: 'Dumo AI' },
+    { href: '/chat', icon: Bot, label: 'Omuto AI' },
   ],
   system: [
     { href: '/help', icon: LifeBuoy, label: 'Help' },
@@ -263,14 +264,14 @@ export function AppSidebar() {
       <Collapsible
         key={sectionName}
         asChild
-        defaultOpen={isSectionActive || sectionName === 'daily'}
+        defaultOpen={isSectionActive}
         className="group/collapsible"
       >
         <SidebarGroup className="px-3">
-          <SidebarGroupLabel asChild className="px-3 text-[10px] uppercase tracking-[0.15em] text-omuto-navy/30 font-medium mb-1 hover:bg-omuto-navy/5 rounded-md transition-colors cursor-pointer group-data-[state=open]/collapsible:text-omuto-navy/50">
-            <CollapsibleTrigger className="flex w-full items-center justify-between">
+          <SidebarGroupLabel asChild className="px-3 text-[10px] uppercase tracking-[0.2em] text-omuto-navy/40 font-bold mb-1 hover:bg-omuto-navy/5 hover:text-omuto-navy rounded-md transition-colors cursor-pointer group-data-[state=open]/collapsible:text-omuto-navy/60">
+            <CollapsibleTrigger className="flex w-full items-center justify-between py-2">
               {title}
-              <ChevronDown className="ml-auto h-3 w-3 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180" />
+              <ChevronDown className="ml-auto h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180 opacity-50 group-hover:opacity-100" />
             </CollapsibleTrigger>
           </SidebarGroupLabel>
           <CollapsibleContent>

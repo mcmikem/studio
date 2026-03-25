@@ -40,10 +40,10 @@ export function LocationPicker({
   }, [districtValue, subcountyValue]);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
       {/* District */}
       <div className="space-y-2">
-        <Label>District</Label>
+        <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">District</Label>
         <Select
           disabled={disabled}
           value={districtValue || undefined}
@@ -53,7 +53,7 @@ export function LocationPicker({
             onParishChange('');
           }}
         >
-          <SelectTrigger className="h-10 sm:h-11">
+          <SelectTrigger className="h-12 border rounded-xl font-semibold text-omuto-navy px-4">
             <SelectValue placeholder="Select District..." />
           </SelectTrigger>
           <SelectContent>
@@ -66,10 +66,10 @@ export function LocationPicker({
           </SelectContent>
         </Select>
       </div>
-
+  
       {/* Subcounty */}
       <div className="space-y-2">
-        <Label>Subcounty</Label>
+        <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Subcounty</Label>
         <Select
           disabled={disabled || !districtValue || districtValue === 'Other'}
           value={subcountyValue || undefined}
@@ -78,7 +78,7 @@ export function LocationPicker({
             onParishChange(''); // Reset child
           }}
         >
-          <SelectTrigger className="h-10 sm:h-11">
+          <SelectTrigger className="h-12 border rounded-xl font-semibold text-omuto-navy px-4">
             <SelectValue placeholder="Select Subcounty..." />
           </SelectTrigger>
           <SelectContent>
@@ -93,16 +93,16 @@ export function LocationPicker({
           </SelectContent>
         </Select>
       </div>
-
+  
       {/* Parish / Village */}
       <div className="space-y-2">
-        <Label>Parish / Village</Label>
+        <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Parish / Village</Label>
         <Select
           disabled={disabled || !subcountyValue || subcountyValue === 'Other'}
           value={parishValue || undefined}
           onValueChange={onParishChange}
         >
-          <SelectTrigger className="h-10 sm:h-11">
+          <SelectTrigger className="h-12 border rounded-xl font-semibold text-omuto-navy px-4">
             <SelectValue placeholder="Select Parish..." />
           </SelectTrigger>
           <SelectContent>

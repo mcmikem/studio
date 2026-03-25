@@ -19,7 +19,8 @@ import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, serverTimestamp } from 'firebase/firestore';
 import { Suspense, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, LogIn, Zap, Clock, Target } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 import { DailyPlannerAIOutputSchema, type DailyPlannerAIOutput } from '@/lib/types';
 import { Separator } from '../ui/separator';
 import { createAlertAction as createAlert } from '@/actions/mutations';
@@ -159,53 +160,79 @@ function CheckinFormComponent() {
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Confirm Your Daily Check-in</CardTitle>
-                    <CardDescription>
-                        Review your plan below and submit it to the team stream.
-                    </CardDescription>
+            <Card className="overflow-hidden border shadow-sm w-full">
+                <CardHeader className="bg-muted/30 border-b p-4 sm:p-6 lg:p-8">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-white border shadow-sm rounded-xl flex-shrink-0">
+                            <LogIn className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle className="text-lg font-bold tracking-tight text-omuto-navy">
+                                Confirm Daily Check-in
+                            </CardTitle>
+                            <CardDescription className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                                Mission Deployment Terminal
+                            </CardDescription>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                    <div className="space-y-2">
-                        <h3 className="font-bold text-base sm:text-lg">{primaryMission}</h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground">Your main focus for today.</p>
+                <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
+                    <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                            <Zap className="h-12 w-12 text-primary" />
+                        </div>
+                        <Label className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 block">Primary Mission</Label>
+                        <h3 className="font-heading text-xl sm:text-2xl font-bold text-omuto-navy tracking-tight leading-tight">{primaryMission}</h3>
                     </div>
 
-                    <Separator />
-                     
-                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                        <div className="space-y-3">
-                             <h4 className="font-semibold text-sm sm:text-base">Key Time Blocks</h4>
-                            <ul className="list-disc list-inside space-y-2 text-xs sm:text-sm">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 px-1">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <h4 className="font-bold text-xs uppercase tracking-wider text-omuto-navy">Strategy & Time Blocks</h4>
+                            </div>
+                            <div className="space-y-3">
                                 {submittedPlan?.timeBlocks?.map((block, index) => (
-                                    <li key={index} className="break-words"><strong>{block?.startTime} - {block?.endTime}:</strong> {block?.description}</li>
+                                    <div key={index} className="p-4 bg-muted/30 border rounded-xl flex gap-4 items-start">
+                                        <div className="text-[10px] font-bold text-primary bg-white border px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
+                                            {block?.startTime}
+                                        </div>
+                                        <p className="text-sm font-medium text-omuto-navy leading-snug">{block?.description}</p>
+                                    </div>
                                 ))}
                                 {(!submittedPlan?.timeBlocks || submittedPlan.timeBlocks.length === 0) && (
-                                    <li className="text-muted-foreground italic text-xs sm:text-sm">No time blocks generated.</li>
+                                    <p className="text-sm text-muted-foreground italic px-1">No time blocks generated.</p>
                                 )}
-                            </ul>
+                            </div>
                         </div>
-                         <div className="space-y-3">
-                             <h4 className="font-semibold text-sm sm:text-base">Strategic Alignments</h4>
-                            <ul className="list-inside space-y-2">
+
+                         <div className="space-y-4">
+                            <div className="flex items-center gap-2 px-1">
+                                <Target className="h-4 w-4 text-muted-foreground" />
+                                <h4 className="font-bold text-xs uppercase tracking-wider text-omuto-navy">Impact Alignment</h4>
+                            </div>
+                            <div className="space-y-3">
                                 {submittedPlan?.strategicAlignments?.map((align, index) => (
-                                    <li key={index} className="text-xs sm:text-sm p-3 bg-muted/50 rounded-lg">
-                                        <p className="font-bold">{align.krTitle}</p>
-                                        <p className="text-muted-foreground mt-1 text-xs">{align.alignmentJustification}</p>
-                                    </li>
+                                    <div key={index} className="p-4 bg-omuto-navy/5 border border-omuto-navy/10 rounded-xl">
+                                        <p className="font-bold text-sm text-omuto-navy">{align.krTitle}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed font-medium">{align.alignmentJustification}</p>
+                                    </div>
                                 ))}
                                 {(!submittedPlan?.strategicAlignments || submittedPlan.strategicAlignments.length === 0) && (
-                                    <li className="text-muted-foreground italic text-xs sm:text-sm">No alignments identified.</li>
+                                    <p className="text-sm text-muted-foreground italic px-1">No alignments identified.</p>
                                 )}
-                            </ul>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
-                 <CardFooter>
-                    <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Submit Check-in to Team
+                 <CardFooter className="p-4 sm:p-6 lg:p-8 bg-muted/30 border-t">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-sm group">
+                        {isSubmitting ? (
+                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        ) : (
+                            <ArrowRight className="mr-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                        )}
+                        DEPLOY MISSION TO STREAM
                     </Button>
                 </CardFooter>
             </Card>

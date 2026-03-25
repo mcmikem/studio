@@ -67,37 +67,33 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
   const content = roleData[profile.role] || defaultContent;
 
   return (
-    <Card className="rounded-[2rem] border-xl border-omuto-navy shadow-comic bg-white overflow-hidden relative">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-omuto-red/5 rounded-bl-[100px] pointer-events-none"></div>
-      <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-8 relative z-10 border-b-4 border-omuto-red overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 transform rotate-12 opacity-10">
-          <Target className="w-32 h-32 text-white" />
-        </div>
+    <Card className="border shadow-sm bg-white overflow-hidden">
+      <CardHeader className="bg-omuto-navy text-white pb-6 pt-6 px-6 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-omuto-red rounded-lg"><Users className="h-5 w-5" /></div>
+          <div className="p-2 bg-primary/20 rounded-lg"><Users className="h-5 w-5 text-primary" /></div>
           <div>
-            <CardTitle className="text-xl font-bold tracking-tight">My Role: {profile.role}</CardTitle>
-            <CardDescription className="text-white/60 font-medium text-xs">Mission & Accountability</CardDescription>
+            <CardTitle className="text-lg font-bold tracking-tight">Personnel Mission: {profile.role}</CardTitle>
+            <CardDescription className="text-white/60 font-medium text-xs">Omuto Institutional Accountability</CardDescription>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-8 bg-omuto-cream/30 space-y-8">
+      <CardContent className="p-6 space-y-6">
         <section className="space-y-2">
-            <h3 className="text-xs font-black uppercase tracking-widest text-omuto-navy/50 flex items-center gap-2 italic">
-                <Info className="h-3 w-3" /> Mission Statement
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Info className="h-3.5 w-3.5" /> Mission Statement
             </h3>
-            <p className="text-sm font-bold text-omuto-navy leading-relaxed">{content.mission}</p>
+            <p className="text-sm font-semibold text-omuto-navy leading-relaxed">{content.mission}</p>
         </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <section className="space-y-3">
-                <h3 className="text-xs font-black uppercase tracking-widest text-omuto-navy/50 flex items-center gap-2 italic">
-                    <Target className="h-3 w-3 text-omuto-red" /> Core KPIs
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Target className="h-3.5 w-3.5 text-primary" /> Core KPIs
                 </h3>
                 <ul className="space-y-2">
                     {content.kpis.map((kpi, i) => (
-                        <li key={i} className="text-xs font-bold text-omuto-navy flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-omuto-red mt-1 flex-shrink-0" />
+                        <li key={i} className="text-xs font-medium text-omuto-navy flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1 flex-shrink-0" />
                             {kpi}
                         </li>
                     ))}
@@ -105,12 +101,12 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
             </section>
 
             <section className="space-y-3">
-                <h3 className="text-xs font-black uppercase tracking-widest text-omuto-navy/50 flex items-center gap-2 italic">
-                    <ShieldAlert className="h-3 w-3 text-omuto-navy" /> Non-Negotiables
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <ShieldAlert className="h-3.5 w-3.5 text-omuto-navy" /> Non-Negotiables
                 </h3>
                 <ul className="space-y-2">
                     {content.nonNegotiables.map((nn, i) => (
-                        <li key={i} className="text-xs font-bold text-omuto-navy flex items-start gap-2">
+                        <li key={i} className="text-xs font-medium text-omuto-navy flex items-start gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-omuto-navy mt-1 flex-shrink-0" />
                             {nn}
                         </li>
@@ -119,9 +115,9 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
             </section>
         </div>
 
-        <div className="pt-6 border-t border-omuto-navy/10 flex items-center justify-between">
-            <div className="text-[10px] font-black uppercase text-omuto-navy/40">Reporting to</div>
-            <div className="text-xs font-black text-omuto-navy uppercase tracking-wider">{content.reportsTo}</div>
+        <div className="pt-4 border-t flex items-center justify-between">
+            <div className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Reporting To</div>
+            <div className="text-[10px] font-bold text-omuto-navy uppercase tracking-wider">{content.reportsTo}</div>
         </div>
       </CardContent>
     </Card>

@@ -166,53 +166,59 @@ function BeneficiaryRegistrationForm() {
   };
 
   return (
-    <Card className="w-full overflow-hidden">
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl truncate">
-          <UserPlus className="h-5 sm:h-6 w-5 sm:w-6 flex-shrink-0" />
-          {beneficiaryId ? 'Edit Profile' : 'Beneficiary Registration'}
-        </CardTitle>
-        <CardDescription className="text-xs sm:text-sm">
-          {beneficiaryId ? `Updating records for ${existingBeneficiary?.name || 'beneficiary'}` : 'Create a new profile to track their journey with Omuto.'}
-        </CardDescription>
+    <Card className="w-full overflow-hidden border shadow-sm">
+      <CardHeader className="bg-muted/30 border-b p-4 sm:p-6">
+        <div className="flex items-center gap-4">
+            <div className="p-2 bg-white border shadow-sm rounded-xl flex-shrink-0">
+                <UserPlus className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+                <CardTitle className="text-lg font-bold tracking-tight text-omuto-navy">
+                {beneficiaryId ? 'Edit Profile' : 'Beneficiary Registration'}
+                </CardTitle>
+                <CardDescription className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {beneficiaryId ? `Updating records: ${existingBeneficiary?.name}` : 'Institutional Enrollment Terminal'}
+                </CardDescription>
+            </div>
+        </div>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-          <div className="flex flex-col items-center space-y-3">
-              <Avatar className="h-20 sm:h-24 w-20 sm:w-24 border-2 border-dashed" data-ai-hint="person avatar">
+          <div className="flex flex-col items-center space-y-4 p-6 bg-muted/20 border rounded-2xl">
+              <Avatar className="h-24 w-24 border-2 border-dashed border-muted-foreground/30" data-ai-hint="person avatar">
                   <AvatarImage src={photoPreview || ''} />
-                  <AvatarFallback className="bg-muted"><UserPlus className="h-8 sm:h-10 w-8 sm:w-10 text-muted-foreground"/></AvatarFallback>
+                  <AvatarFallback className="bg-muted"><UserPlus className="h-10 w-10 text-muted-foreground/40"/></AvatarFallback>
               </Avatar>
-              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
-                  <Upload className="mr-2 h-4 w-4" /> Upload Photo
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="rounded-full px-6 font-bold text-xs uppercase tracking-widest h-8">
+                  <Upload className="mr-2 h-3.5 w-3.5" /> Upload Photo
               </Button>
               <Input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handlePhotoChange}/>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs sm:text-sm font-medium">Full Name</Label>
-              <Input id="name" {...register('name')} className="h-10 sm:h-11" />
-              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+              <Label htmlFor="name" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Full Name</Label>
+              <Input id="name" {...register('name')} className="h-12 border rounded-xl font-semibold text-omuto-navy px-4" />
+              {errors.name && <p className="text-xs text-destructive font-bold">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dob" className="text-xs sm:text-sm font-medium">Date of Birth</Label>
-              <Input id="dob" type="date" {...register('dob')} className="h-10 sm:h-11" />
+              <Label htmlFor="dob" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Date of Birth</Label>
+              <Input id="dob" type="date" {...register('dob')} className="h-12 border rounded-xl font-semibold text-omuto-navy px-4" />
             </div>
           </div>
            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-                <Label className="text-xs sm:text-sm font-medium">Gender</Label>
+                <Label className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Gender</Label>
                 <Controller name="gender" control={control} render={({ field }) => (
-                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-3 sm:gap-4 pt-2">
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male" className="text-xs sm:text-sm font-medium">Male</Label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female" className="text-xs sm:text-sm font-medium">Female</Label></div>
+                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-4 sm:gap-6 pt-2">
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Male" id="male" /><Label htmlFor="male" className="text-sm font-semibold cursor-pointer">Male</Label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Female" id="female" /><Label htmlFor="female" className="text-sm font-semibold cursor-pointer">Female</Label></div>
                     </RadioGroup>
                 )} />
-                {errors.gender && <p className="text-xs text-destructive">{errors.gender.message}</p>}
+                {errors.gender && <p className="text-xs text-destructive font-bold">{errors.gender.message}</p>}
             </div>
             </div>
-            <div className="space-y-4 pt-2 border-t">
-              <Label className="text-sm font-medium text-primary">Location Details</Label>
+            <div className="space-y-4 pt-6 border-t border-muted">
+              <Label className="text-xs font-bold uppercase tracking-widest text-primary">Location Details</Label>
               <LocationPicker
                 districtValue={watchDistrict}
                 subcountyValue={watchSubcounty}
@@ -222,19 +228,19 @@ function BeneficiaryRegistrationForm() {
                 onParishChange={(val) => setValue('parish', val)}
               />
               <div className="space-y-2">
-                <Label htmlFor="village" className="text-xs sm:text-sm font-medium">Village / Zone</Label>
-                <Input id="village" {...register('village')} className="h-10 sm:h-11" placeholder="Optional" />
+                <Label htmlFor="village" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Village / Zone</Label>
+                <Input id="village" {...register('village')} className="h-12 border rounded-xl font-semibold text-omuto-navy px-4" placeholder="Optional" />
               </div>
             </div>
             <div className="space-y-2">
-               <Label htmlFor="programEnrolled" className="text-xs sm:text-sm font-medium">Program Enrolled In</Label>
-                 {isLoadingPrograms ? <Skeleton className="h-10 sm:h-11 w-full" /> : (
+               <Label htmlFor="programEnrolled" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Program Enrolled In</Label>
+                 {isLoadingPrograms ? <Skeleton className="h-12 w-full rounded-xl" /> : (
                  <Controller
                      name="programEnrolled"
                      control={control}
                      render={({ field }) => (
                      <Select onValueChange={field.onChange} value={field.value}>
-                         <SelectTrigger id="programEnrolled" className="h-10 sm:h-11">
+                         <SelectTrigger id="programEnrolled" className="h-12 border rounded-xl font-semibold text-omuto-navy px-4">
                              <SelectValue placeholder="Select a program..." />
                          </SelectTrigger>
                          <SelectContent>
@@ -246,36 +252,36 @@ function BeneficiaryRegistrationForm() {
                      )}
                  />
                 )}
-              {errors.programEnrolled && <p className="text-xs text-destructive">{errors.programEnrolled.message}</p>}
+              {errors.programEnrolled && <p className="text-xs text-destructive font-bold">{errors.programEnrolled.message}</p>}
             </div>
            
-           <div className="border-t-2 border-dashed pt-4">
-             <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-3">Optional Information</h3>
+           <div className="border-t border-dashed pt-6">
+             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Optional Metadata</h3>
 
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                  <div className="space-y-2">
-                     <Label htmlFor="school" className="text-xs sm:text-sm font-medium">School</Label>
-                     <Input id="school" {...register('school')} className="h-10 sm:h-11" />
+                     <Label htmlFor="school" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">School</Label>
+                     <Input id="school" {...register('school')} className="h-12 border rounded-xl font-semibold text-omuto-navy px-4" />
                  </div>
                   <div className="space-y-2">
-                     <Label htmlFor="phone" className="text-xs sm:text-sm font-medium">Phone Number</Label>
-                     <Input id="phone" {...register('phone')} className="h-10 sm:h-11" />
+                     <Label htmlFor="phone" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Phone Number</Label>
+                     <Input id="phone" {...register('phone')} className="h-12 border rounded-xl font-semibold text-omuto-navy px-4" />
                  </div>
              </div>
-              <div className="space-y-2 mt-3 sm:mt-4">
-                  <Label htmlFor="guardianContact" className="text-xs sm:text-sm font-medium">Guardian's Name & Contact</Label>
-                  <Input id="guardianContact" {...register('guardianContact')} className="h-10 sm:h-11" />
+              <div className="space-y-2 mt-4">
+                  <Label htmlFor="guardianContact" className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground">Guardian&apos;s Name & Contact</Label>
+                  <Input id="guardianContact" {...register('guardianContact')} className="h-12 border rounded-xl font-semibold text-omuto-navy px-4" />
              </div>
            </div>
         </CardContent>
-        <CardFooter className="p-4 sm:p-6">
-          <Button type="submit" disabled={isSubmitting || !!(beneficiaryId && isLoadingBeneficiary)} className="w-full h-10 sm:h-11">
+        <CardFooter className="p-4 sm:p-6 bg-muted/30">
+          <Button type="submit" disabled={isSubmitting || !!(beneficiaryId && isLoadingBeneficiary)} className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-sm">
             {isSubmitting ? (
-                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             ) : (
-                beneficiaryId ? <Save className="mr-2 h-4 w-4" /> : <UserPlus className="mr-2 h-4 w-4" />
+                beneficiaryId ? <Save className="mr-2 h-5 w-5" /> : <UserPlus className="mr-2 h-5 w-5" />
             )}
-            {beneficiaryId ? 'Update Profile' : 'Register'}
+            {beneficiaryId ? 'UPDATE INSTITUTIONAL PROFILE' : 'FINALIZE REGISTRATION'}
           </Button>
         </CardFooter>
       </form>

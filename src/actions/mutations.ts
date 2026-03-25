@@ -26,6 +26,7 @@ export async function createAlertAction(input: AlertInput) {
         const { firestore } = getFirebaseAdmin();
         const alertPayload = {
             ...input,
+            targetUserIds: input.targetUserIds || [],
             createdAt: Timestamp.now(),
             readBy: [],
         };
@@ -368,13 +369,14 @@ export async function createLeaveRequestAction(data: Omit<LeaveRequest, 'id' | '
     }
 }
 
-export async function updateLeaveStatusAction(id: string, status: string, adminId: string, adminName: string) {
+export async function updateLeaveStatusAction(id: string, status: string, adminId: string, adminName: string, rejectionReason?: string) {
     try {
         const { firestore } = getFirebaseAdmin();
         await firestore.collection('leave-requests').doc(id).update({
             status,
             approvedBy: adminId,
             approvedByName: adminName,
+            rejectionReason: rejectionReason || null,
             updatedAt: FieldValue.serverTimestamp()
         });
         return { success: true };

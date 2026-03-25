@@ -33,7 +33,7 @@ export default function HRDashboard() {
       sub: 'Active Team Members',
       icon: Users,
       color: 'text-blue-600',
-      bgBase: 'bg-blue-500/10'
+      bgBase: 'bg-blue-50'
     },
     {
       title: 'Pending Leave',
@@ -41,7 +41,7 @@ export default function HRDashboard() {
       sub: 'Action Required',
       icon: Palmtree,
       color: 'text-amber-600',
-      bgBase: 'bg-amber-500/10'
+      bgBase: 'bg-amber-50'
     },
     {
       title: 'Utilization',
@@ -49,7 +49,7 @@ export default function HRDashboard() {
       sub: 'Resource Efficiency',
       icon: TrendingUp,
       color: 'text-emerald-600',
-      bgBase: 'bg-emerald-500/10'
+      bgBase: 'bg-emerald-50'
     },
     {
       title: 'Hiring Pipeline',
@@ -57,35 +57,33 @@ export default function HRDashboard() {
       sub: 'Active Vacancies',
       icon: UserPlus,
       color: 'text-primary',
-      bgBase: 'bg-primary/10'
+      bgBase: 'bg-primary/5'
     }
   ];
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex items-center justify-between">
-          <div className="space-y-1">
-              <h1 className="text-4xl font-black text-omuto-navy uppercase tracking-tight">HR Terminal</h1>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3 text-emerald-600" /> Administrative Workforce Control
-              </p>
-          </div>
-          <Button asChild className="btn-omuto shadow-comic-sm h-12 rounded-xl">
-              <Link href="/management/users"><UserPlus className="mr-2 h-4 w-4" /> Add Personnel</Link>
-          </Button>
-      </div>
+      <PageHeader
+        title="HR Dashboard"
+        description="Administrative workforce control and personnel oversight."
+        icon={LayoutDashboard}
+      >
+        <Button asChild className="btn-omuto shadow-sm">
+            <Link href="/management/users"><UserPlus className="mr-2 h-4 w-4" /> Add Personnel</Link>
+        </Button>
+      </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {metrics.map((m, i) => (
-              <Card key={i} className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
-                  <CardContent className="p-8">
+              <Card key={i} className="border shadow-sm hover:shadow-md transition-shadow cursor-default">
+                  <CardContent className="p-6">
                       <div className="flex items-center justify-between mb-4">
-                          <div className={`p-3 rounded-2xl ${m.bgBase} ${m.color}`}><m.icon className="h-6 w-6" /></div>
-                          <ArrowUpRight className="h-5 w-5 text-muted-foreground/20 group-hover:text-primary transition-colors" />
+                          <div className={`p-2.5 rounded-xl ${m.bgBase} ${m.color}`}><m.icon className="h-5 w-5" /></div>
+                          <ArrowUpRight className="h-4 w-4 text-muted-foreground/30" />
                       </div>
-                      <p className="text-4xl font-black text-omuto-navy tracking-tight">{m.value}</p>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-1">{m.title}</p>
-                      <p className="text-[9px] font-bold text-muted-foreground/40 uppercase mt-4">{m.sub}</p>
+                      <p className="text-2xl font-bold text-omuto-navy tracking-tight">{m.value}</p>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mt-1">{m.title}</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-4 font-medium uppercase">{m.sub}</p>
                   </CardContent>
               </Card>
           ))}
@@ -93,81 +91,81 @@ export default function HRDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Pending Leave Column */}
-          <Card className="lg:col-span-8 border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
-              <CardHeader className="p-8 border-b bg-muted/30">
+          <Card className="lg:col-span-8 border shadow-sm">
+              <CardHeader className="pb-4">
                   <div className="flex items-center justify-between">
-                      <div>
-                          <CardTitle className="text-xl font-black uppercase tracking-tight text-omuto-navy">Leave Approval Queue</CardTitle>
-                          <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Requests requiring immediate attention</CardDescription>
-                      </div>
-                      <Button asChild variant="ghost" className="text-primary font-black uppercase tracking-widest text-[9px] hover:bg-primary/5">
-                          <Link href="/hr/leave">View All Terminal →</Link>
+                      <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-amber-500" />
+                        Leave Approval Queue
+                      </CardTitle>
+                      <Button asChild variant="ghost" size="sm" className="text-primary font-bold text-xs hover:bg-primary/5">
+                          <Link href="/hr/leave">View All →</Link>
                       </Button>
                   </div>
               </CardHeader>
               <CardContent className="p-0">
                   {isLoadingLeave ? (
-                      <div className="p-8 space-y-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-2xl" />)}</div>
+                      <div className="p-6 space-y-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}</div>
                   ) : pendingLeave && pendingLeave.length > 0 ? (
-                      <div className="divide-y divide-omuto-navy/5">
+                      <div className="divide-y border-t">
                           {pendingLeave.map((req: any) => (
-                              <div key={req.id} className="p-8 flex items-center justify-between hover:bg-muted/10 transition-colors">
+                              <div key={req.id} className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors">
                                   <div className="flex items-center gap-4">
                                       <div className="h-10 w-10 rounded-full bg-omuto-navy/5 flex items-center justify-center font-bold text-omuto-navy uppercase text-xs">
                                           {req.userName?.[0] || 'U'}
                                       </div>
                                       <div>
-                                          <p className="text-sm font-black text-omuto-navy uppercase tracking-tight">{req.userName}</p>
-                                          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{req.type} Leave — {req.days} days</p>
+                                          <p className="text-sm font-bold text-omuto-navy">{req.userName}</p>
+                                          <p className="text-xs text-muted-foreground">{req.type} Leave · {req.days} days</p>
                                       </div>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                      <Button asChild variant="outline" size="sm" className="h-9 px-4 rounded-xl font-bold uppercase tracking-widest text-[9px] border-2">
-                                          <Link href="/hr/leave">Review Application</Link>
+                                      <Button asChild variant="outline" size="sm" className="h-8 font-bold text-[11px] uppercase tracking-wider">
+                                          <Link href="/hr/leave">Review</Link>
                                       </Button>
                                   </div>
                               </div>
                           ))}
                       </div>
                   ) : (
-                      <div className="py-20 text-center text-muted-foreground/30">
+                      <div className="py-20 text-center text-muted-foreground/30 border-t">
                           <CheckCircle2 className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                          <p className="text-[10px] font-black uppercase tracking-widest">Queue is currently clear.</p>
+                          <p className="text-xs font-bold uppercase tracking-wider">Queue is clear.</p>
                       </div>
                   )}
               </CardContent>
           </Card>
 
           {/* HR Radar / Quick Tasks */}
-          <Card className="lg:col-span-4 border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
-              <CardHeader className="p-8 pb-4">
-                  <CardTitle className="text-lg font-black uppercase tracking-tight text-omuto-navy flex items-center gap-2">
-                       <Sparkles className="h-5 w-5 text-primary" /> Personnel Radar
+          <Card className="lg:col-span-4 border shadow-sm bg-white">
+              <CardHeader className="pb-4">
+                  <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                       <Sparkles className="h-4 w-4 text-primary" /> Personnel Radar
                   </CardTitle>
               </CardHeader>
-              <CardContent className="p-8 pt-0 space-y-6">
-                  <div className="space-y-4">
-                      <div className="p-4 rounded-2xl bg-amber-500/5 border-2 border-amber-500/10 flex items-start gap-3">
-                          <Timer className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                      <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start gap-3">
+                          <Timer className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
                           <div>
-                              <p className="text-[10px] font-black text-omuto-navy uppercase tracking-tight">Performance Reviews</p>
-                              <p className="text-[9px] font-bold text-muted-foreground uppercase leading-relaxed mt-0.5">4 team members are due for their quarterly evaluation.</p>
+                              <p className="text-xs font-bold text-omuto-navy">Performance Reviews</p>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">4 team members are due for evaluation.</p>
                           </div>
                       </div>
 
-                      <div className="p-4 rounded-2xl bg-emerald-500/5 border-2 border-emerald-500/10 flex items-start gap-3">
-                          <FileBadge className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100 flex items-start gap-3">
+                          <FileBadge className="h-4 w-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                           <div>
-                              <p className="text-[10px] font-black text-omuto-navy uppercase tracking-tight">Contract Renewal</p>
-                              <p className="text-[9px] font-bold text-muted-foreground uppercase leading-relaxed mt-0.5">Grace Okello's contract expires in 14 days.</p>
+                              <p className="text-xs font-bold text-omuto-navy">Contract Renewal</p>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">Grace Okello's contract expires soon.</p>
                           </div>
                       </div>
 
-                      <Button asChild variant="ghost" className="w-full justify-between h-14 rounded-2xl bg-omuto-navy text-white hover:bg-omuto-navy/90 border-none group transition-all">
-                        <Link href="/hr/payroll" className="flex items-center">
-                            <CreditCard className="mr-3 h-5 w-5 text-primary" />
-                            <span className="font-black uppercase tracking-widest text-[10px]">Process Payroll</span>
-                            <ArrowUpRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                      <Button asChild className="w-full justify-between h-12 rounded-xl bg-omuto-navy text-white hover:bg-omuto-navy/90 border-none group transition-all mt-4">
+                        <Link href="/hr/payroll" className="flex items-center w-full">
+                            <CreditCard className="mr-3 h-4 w-4 text-primary" />
+                            <span className="font-bold uppercase tracking-widest text-[10px]">Process Payroll</span>
+                            <ArrowUpRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
                         </Link>
                     </Button>
                   </div>

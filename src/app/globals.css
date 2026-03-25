@@ -121,6 +121,26 @@
       font-size: 16px !important;
     }
   }
+
+  /* BRANDED SCROLLBARS */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(35 31 32 / 0.1);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(236 28 36 / 0.2);
+  }
 }
 
 @layer components {
