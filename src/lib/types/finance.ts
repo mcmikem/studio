@@ -36,6 +36,7 @@ export const IncomeSchema = z.object({
     dateReceived: z.any(),
     type: z.string(),
     notes: z.string().optional(),
+    status: z.enum(['Pending', 'Approved', 'Rejected']).default('Approved'), // Income can also be pending/approved/rejected
     createdAt: z.any(),
 });
 

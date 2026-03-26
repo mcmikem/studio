@@ -47,26 +47,27 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   , [firestore]);
   const { data: schools } = useCollection(schoolsQuery);
 
-  // This month calculations - only count APPROVED expenses
+  // This month calculations - show all expenses submitted this month (including Pending)
+  // Rejected expenses are excluded from calculations
   const thisMonthExpenses = useMemo(() => {
     if (!expenses) return 0;
     return expenses
       .filter(e => {
         const created = e.createdAt?.toDate?.() || new Date(e.createdAt?.seconds ? e.createdAt.seconds * 1000 : Date.now());
-        // Only count approved expenses for this month
-        return created >= monthStart && e.status === 'Approved';
+        // Include all submitted expenses (Pending, Approved, Disbursed) but exclude Rejected
+        return created >= monthStart && e.status !== 'Rejected';
       })
       .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
   }, [expenses, monthStart]);
 
-  // This month income - only count APPROVED income
+  // This month income - show all income recorded this month (no approval needed)
   const thisMonthIncome = useMemo(() => {
     if (!income) return 0;
     return income
       .filter(i => {
-        const created = i.createdAt?.toDate?.() || new Date(i.createdAt?.seconds ? i.createdAt.seconds * 1000 : Date.now());
-        // Only count approved income for this month
-        return created >= monthStart && i.status === 'Approved';
+        // Income uses dateReceived for the actual date
+        const received = i.dateReceived?.toDate?.() || new Date(i.dateReceived?.seconds ? i.dateReceived.seconds * 1000 : Date.now());
+        return received >= monthStart;
       })
       .reduce((sum, i) => sum + Number(i.amount || 0), 0);
   }, [income, monthStart]);
