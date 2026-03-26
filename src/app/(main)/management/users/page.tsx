@@ -154,7 +154,7 @@ export default function UserManagementPage() {
         />
       </div>
 
-      <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-white/50 backdrop-blur-sm rounded-[2rem]">
+      <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-card/50 backdrop-blur-sm rounded-[2rem]">
         <CardHeader className="bg-omuto-cream/20 border-b-lg border-omuto-navy/5 p-8">
             <div className="flex items-center justify-between">
                 <div>
@@ -245,7 +245,7 @@ export default function UserManagementPage() {
 
         {/* Desktop View */}
         <div className="hidden sm:block">
-            <div className="border border-omuto-navy/5 rounded-2xl overflow-hidden bg-white/50 backdrop-blur-sm m-6 mt-0">
+            <div className="border border-omuto-navy/5 rounded-2xl overflow-hidden bg-card/50 backdrop-blur-sm m-6 mt-0">
                 <div className="grid grid-cols-[1fr,250px,100px] gap-4 px-8 py-5 bg-muted/20 border-b border-omuto-navy/5 font-black uppercase text-[10px] tracking-[0.2em] text-omuto-navy/30">
                     <div>Team Member</div>
                     <div>Organizational Role</div>

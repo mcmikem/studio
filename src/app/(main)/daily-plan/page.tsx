@@ -132,7 +132,7 @@ export default function DailyPlannerPage() {
       />
 
       {!aiPlan ? (
-        <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
+        <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-card overflow-hidden">
           <CardHeader className="bg-omuto-cream/30 border-b-lg border-omuto-navy/5 pb-4 pt-7 px-8">
             <CardTitle className="font-heading text-2xl font-black tracking-tighter text-omuto-navy uppercase">Morning Briefing</CardTitle>
             <CardDescription className="font-bold text-omuto-navy/40 text-[10px] uppercase tracking-[0.2em] mt-1">Enter your main objective for today.</CardDescription>
@@ -189,7 +189,7 @@ export default function DailyPlannerPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-card overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
           <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-8 border-b-4 border-omuto-red flex flex-col justify-center">
             <CardTitle className="font-heading text-2xl font-black tracking-tighter uppercase leading-none">Your Strategic Daily Plan</CardTitle>
             <CardDescription className="text-white/60 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Review your mission-critical schedule for today.</CardDescription>

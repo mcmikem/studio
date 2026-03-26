@@ -36,7 +36,7 @@ export default function HRHiringPage() {
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border shadow-sm bg-white">
+          <Card className="border shadow-sm bg-card">
               <CardContent className="p-6">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Open Positions</p>
                   <p className="text-2xl font-bold text-omuto-navy tracking-tight">4</p>
@@ -45,7 +45,7 @@ export default function HRHiringPage() {
                   </div>
               </CardContent>
           </Card>
-          <Card className="border shadow-sm bg-white">
+          <Card className="border shadow-sm bg-card">
               <CardContent className="p-6">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Candidates</p>
                   <p className="text-2xl font-bold text-omuto-navy tracking-tight">28</p>
@@ -54,7 +54,7 @@ export default function HRHiringPage() {
                   </div>
               </CardContent>
           </Card>
-           <Card className="border shadow-sm bg-white">
+           <Card className="border shadow-sm bg-card">
               <CardContent className="p-6">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Time to Hire</p>
                   <p className="text-2xl font-bold text-omuto-navy tracking-tight">18d</p>
@@ -129,7 +129,7 @@ export default function HRHiringPage() {
           <div className="lg:col-span-4 space-y-6">
               <h3 className="text-lg font-bold text-omuto-navy tracking-tight">Active Vacancies</h3>
               <div className="space-y-4">
-                  <Card className="border shadow-sm p-5 group hover:border-primary/50 transition-colors cursor-pointer bg-white">
+                  <Card className="border shadow-sm p-5 group hover:border-primary/50 transition-colors cursor-pointer bg-card">
                       <div className="flex items-center justify-between mb-4">
                           <div className="p-2 bg-primary/5 rounded-lg text-primary"><Briefcase className="h-4 w-4" /></div>
                           <Badge className="bg-emerald-600 text-white rounded-full text-[9px] font-bold">Active</Badge>
@@ -142,7 +142,7 @@ export default function HRHiringPage() {
                       </div>
                   </Card>
 
-                  <Card className="border shadow-sm p-5 group hover:border-primary/50 transition-colors cursor-pointer bg-white">
+                  <Card className="border shadow-sm p-5 group hover:border-primary/50 transition-colors cursor-pointer bg-card">
                       <div className="flex items-center justify-between mb-4">
                           <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><GraduationCap className="h-4 w-4" /></div>
                           <Badge className="bg-emerald-600 text-white rounded-full text-[9px] font-bold">Active</Badge>
@@ -158,7 +158,7 @@ export default function HRHiringPage() {
 
               <Card className="border shadow-sm bg-muted/20 p-6 border-dashed">
                   <div className="flex flex-col items-center text-center">
-                      <div className="h-14 w-14 rounded-full bg-white border-2 border-muted flex items-center justify-center mb-4 text-muted-foreground/40">
+                      <div className="h-14 w-14 rounded-full bg-card border-2 border-muted flex items-center justify-center mb-4 text-muted-foreground/40">
                           <Sparkles className="h-6 w-6" />
                       </div>
                       <p className="text-sm font-bold text-omuto-navy mb-1 text-[13px]">AI Talent Scout</p>

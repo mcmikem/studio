@@ -134,7 +134,7 @@ export default function ContentCommandPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 {/* Incoming Feed */}
-                <Card className="bg-white/50">
+                <Card className="bg-card/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Wand className="text-primary h-5 w-5" /> Incoming Feed
@@ -150,7 +150,7 @@ export default function ContentCommandPage() {
                 </Card>
 
                 {/* AI Drafts for Review */}
-                <Card className="bg-white/50">
+                <Card className="bg-card/50">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Sparkles className="text-omuto-yellow h-5 w-5" /> AI Drafts for Review

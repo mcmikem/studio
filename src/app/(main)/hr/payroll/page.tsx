@@ -108,14 +108,14 @@ export default function HRPayrollPage() {
       >
         <div className="flex gap-2">
              <select 
-                className="h-9 px-3 rounded-lg border font-bold text-[11px] bg-white text-omuto-navy uppercase tracking-wider"
+                className="h-9 px-3 rounded-lg border font-bold text-[11px] bg-card text-omuto-navy uppercase tracking-wider"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
             >
                 {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
             </select>
             <select 
-                className="h-9 px-3 rounded-lg border font-bold text-[11px] bg-white text-omuto-navy uppercase tracking-wider"
+                className="h-9 px-3 rounded-lg border font-bold text-[11px] bg-card text-omuto-navy uppercase tracking-wider"
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value))}
             >
@@ -132,7 +132,7 @@ export default function HRPayrollPage() {
                   <p className="text-2xl font-bold text-omuto-navy tracking-tight">{formatCurrency(calculateTotalPayroll())}</p>
               </CardContent>
           </Card>
-          <Card className="border shadow-sm bg-white">
+          <Card className="border shadow-sm bg-card">
               <CardContent className="p-6">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Staff Count</p>
                   <p className="text-2xl font-bold text-omuto-navy tracking-tight">{staff?.length || 0}</p>
@@ -149,7 +149,7 @@ export default function HRPayrollPage() {
           </Card>
       </div>
 
-      <Card className="border shadow-sm overflow-hidden bg-white">
+      <Card className="border shadow-sm overflow-hidden bg-card">
         <CardHeader className="p-6 border-b">
           <div className="flex items-center justify-between">
               <div>

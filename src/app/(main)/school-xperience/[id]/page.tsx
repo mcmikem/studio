@@ -197,7 +197,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
       {flaggedVisits.length > 0 && (
         <div className="relative group">
             <div className="absolute inset-0 bg-primary/20 rounded-[2rem] blur-xl opacity-50 group-hover:opacity-100 transition-opacity" />
-            <Card className="relative border-4 border-primary/30 bg-white/80 backdrop-blur-xl shadow-2xl rounded-[2rem] overflow-hidden">
+            <Card className="relative border-4 border-primary/30 bg-card/80 backdrop-blur-xl shadow-2xl rounded-[2rem] overflow-hidden">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-primary" />
                 <CardContent className="p-6 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
@@ -247,7 +247,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
         <TabsContent value="overview" className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* Performance Pulse */}
-                <Card className="md:col-span-2 border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-white/80 overflow-hidden relative group">
+                <Card className="md:col-span-2 border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-card/80 overflow-hidden relative group">
                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                         <Star className="h-32 w-32 rotate-12" />
                     </div>
@@ -294,7 +294,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
                 {/* Impact Summary */}
                 <div className="grid md:grid-cols-1 gap-6 md:col-span-2">
                     <div className="grid grid-cols-2 gap-6">
-                        <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-white/80 p-8 flex flex-col justify-between hover:border-primary/20 transition-colors group">
+                        <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-card/80 p-8 flex flex-col justify-between hover:border-primary/20 transition-colors group">
                             <div className="p-3 rounded-2xl bg-primary/10 text-primary w-fit group-hover:scale-110 transition-transform">
                                 <Heart className="h-6 w-6" />
                             </div>
@@ -303,7 +303,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
                                 <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">RED Girls Reached</p>
                             </div>
                         </Card>
-                         <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-white/80 p-8 flex flex-col justify-between hover:border-emerald-500/20 transition-colors group">
+                         <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-card/80 p-8 flex flex-col justify-between hover:border-emerald-500/20 transition-colors group">
                             <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-600 w-fit group-hover:scale-110 transition-transform">
                                 <TreePine className="h-6 w-6" />
                             </div>
@@ -353,7 +353,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="visits" className="space-y-6">
-          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-white/80 overflow-hidden">
+          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-card/80 overflow-hidden">
             <CardHeader className="p-8 pb-4 border-b border-omuto-navy/5">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -449,7 +449,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="scorecards" className="space-y-6">
-          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-white/80 overflow-hidden">
+          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-card/80 overflow-hidden">
             <CardHeader className="p-8 pb-4 border-b border-omuto-navy/5">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -521,7 +521,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="leaders" className="space-y-6">
-          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-white/80 overflow-hidden">
+          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-card/80 overflow-hidden">
             <CardHeader className="p-8 pb-4 border-b border-omuto-navy/5">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -566,7 +566,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="info" className="space-y-6">
-          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-white/80 overflow-hidden">
+          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-card/80 overflow-hidden">
             <CardHeader className="p-8 pb-4 border-b border-omuto-navy/5">
                 <div className="space-y-1">
                   <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Institutional Profile</p>
@@ -599,7 +599,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
         </TabsContent>
 
         <TabsContent value="map" className="space-y-6">
-          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-white/80 overflow-hidden">
+          <Card className="border-4 border-omuto-navy/5 shadow-2xl rounded-[2.5rem] bg-card/80 overflow-hidden">
              <CardHeader className="p-8 pb-4 border-b border-omuto-navy/5">
                 <div className="space-y-1">
                     <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Geospatial Context</p>

@@ -64,7 +64,7 @@ export default function MyAttendancePage() {
                   <p className="text-4xl font-black text-primary tracking-tight">{calculateStreak()} <span className="text-xs font-bold uppercase opacity-40">Days</span></p>
               </CardContent>
           </Card>
-          <Card className="border-2 border-omuto-navy/10 bg-white rounded-[2.5rem] shadow-xl overflow-hidden">
+          <Card className="border-2 border-omuto-navy/10 bg-card rounded-[2.5rem] shadow-xl overflow-hidden">
               <CardContent className="p-8">
                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-4">On-Time Arrival</p>
                    <p className="text-4xl font-black text-omuto-navy tracking-tight">98%</p>
@@ -101,7 +101,7 @@ export default function MyAttendancePage() {
               {checkins.map((entry: any) => (
                 <div key={entry.id} className="p-8 flex items-center justify-between hover:bg-muted/10 transition-colors group">
                     <div className="flex items-center gap-6">
-                        <div className="h-12 w-12 rounded-2xl bg-white border-2 border-omuto-navy/5 shadow-sm flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                        <div className="h-12 w-12 rounded-2xl bg-card border-2 border-omuto-navy/5 shadow-sm flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                             <MapPin className="h-5 w-5" />
                         </div>
                         <div>

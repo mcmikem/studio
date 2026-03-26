@@ -56,7 +56,7 @@ export default function SelfServicePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Profile Snapshot */}
         <div className="lg:col-span-4 space-y-6">
-            <Card className="border shadow-sm overflow-hidden bg-white">
+            <Card className="border shadow-sm overflow-hidden bg-card">
                 <CardContent className="p-8 text-center">
                     <Avatar className="h-20 w-20 mx-auto border-2 border-primary mb-4">
                         {profile?.photoURL && <AvatarImage src={profile.photoURL} />}
@@ -97,21 +97,21 @@ export default function SelfServicePage() {
                     <CardTitle className="text-base font-bold uppercase tracking-tight">Active Terminal</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 space-y-2">
-                    <Button asChild variant="ghost" className="w-full justify-start h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white border-none group transition-all">
+                    <Button asChild variant="ghost" className="w-full justify-start h-12 rounded-xl bg-card/5 hover:bg-card/10 text-white border-none group transition-all">
                         <Link href="/forms/check-in" className="flex items-center w-full">
                             <Clock className="mr-3 h-4 w-4 text-omuto-red" />
                             <span className="font-bold uppercase tracking-wider text-[11px]">Staff Check-in</span>
                             <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
                         </Link>
                     </Button>
-                    <Button asChild variant="ghost" className="w-full justify-start h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white border-none group transition-all">
+                    <Button asChild variant="ghost" className="w-full justify-start h-12 rounded-xl bg-card/5 hover:bg-card/10 text-white border-none group transition-all">
                         <Link href="/self-service/leave" className="flex items-center w-full">
                             <Palmtree className="mr-3 h-4 w-4 text-emerald-400" />
                             <span className="font-bold uppercase tracking-wider text-[11px]">Request Leave</span>
                             <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-1 group-hover:translate-x-0" />
                         </Link>
                     </Button>
-                    <Button asChild variant="ghost" className="w-full justify-start h-12 rounded-xl bg-white/5 hover:bg-white/10 text-white border-none group transition-all">
+                    <Button asChild variant="ghost" className="w-full justify-start h-12 rounded-xl bg-card/5 hover:bg-card/10 text-white border-none group transition-all">
                         <Link href="/chat" className="flex items-center w-full">
                             <Bot className="mr-3 h-4 w-4 text-blue-400" />
                             <span className="font-bold uppercase tracking-wider text-[11px]">Ask Omuto AI</span>

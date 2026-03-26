@@ -53,7 +53,7 @@ export default function MyPayslipsPage() {
                   </p>
               </CardContent>
           </Card>
-          <Card className="border-2 border-omuto-navy/10 bg-white rounded-[2.5rem] shadow-xl overflow-hidden">
+          <Card className="border-2 border-omuto-navy/10 bg-card rounded-[2.5rem] shadow-xl overflow-hidden">
               <CardContent className="p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-2">Records Found</p>
                   <p className="text-4xl font-black text-omuto-navy tracking-tight">{records?.length || 0}</p>
@@ -83,7 +83,7 @@ export default function MyPayslipsPage() {
               {records.map((r: any) => (
                 <div key={r.id} className="p-8 flex items-center justify-between hover:bg-muted/10 transition-colors group">
                     <div className="flex items-center gap-6">
-                        <div className="h-14 w-14 rounded-2xl bg-white border-2 border-omuto-navy/5 shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                        <div className="h-14 w-14 rounded-2xl bg-card border-2 border-omuto-navy/5 shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
                             <Banknote className="h-6 w-6" />
                         </div>
                         <div>

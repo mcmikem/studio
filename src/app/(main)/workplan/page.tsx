@@ -265,7 +265,7 @@ export default function WorkplanPage() {
             {userPlan.teamPriorities && userPlan.teamPriorities.length > 0 && (
                 <div className="space-y-4">
                     <h3 className="font-black text-lg text-omuto-navy uppercase tracking-tighter">Team Priorities</h3>
-                    <div className="rounded-[1.5rem] border-lg border-omuto-navy/5 overflow-hidden bg-white shadow-sm">
+                    <div className="rounded-[1.5rem] border-lg border-omuto-navy/5 overflow-hidden bg-card shadow-sm">
                     <Table>
                         <TableHeader className="bg-omuto-cream/30">
                         <TableRow className="border-b-lg border-omuto-navy/5">
@@ -293,7 +293,7 @@ export default function WorkplanPage() {
                 <h3 className="font-black text-lg text-omuto-navy uppercase tracking-tighter">My Individual Tasks</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {userPlan.individualTasks.map((task, index) => (
-                        <div key={index} className="p-4 bg-white border-2 border-omuto-navy/5 rounded-2xl flex items-center gap-3 shadow-sm group hover:border-omuto-navy/15 transition-all">
+                        <div key={index} className="p-4 bg-card border-2 border-omuto-navy/5 rounded-2xl flex items-center gap-3 shadow-sm group hover:border-omuto-navy/15 transition-all">
                             <div className="w-8 h-8 rounded-full bg-omuto-navy/5 flex items-center justify-center text-omuto-navy/30 group-hover:bg-omuto-navy group-hover:text-white transition-all">
                                 <span className="font-black text-[10px]">{index + 1}</span>
                             </div>
@@ -350,7 +350,7 @@ export default function WorkplanPage() {
                 <AlertTitle className="font-black text-amber-900 uppercase tracking-tight mb-1">No Team Plan Published</AlertTitle>
                 <AlertDescription className="font-bold text-amber-800/70 text-sm">A team-wide plan hasn't been published by management for this week yet. You can create your own standalone plan in the meantime.</AlertDescription>
             </Alert>
-            <div className="bg-white border-lg border-omuto-navy/5 rounded-[2rem] p-8 shadow-sm">
+            <div className="bg-card border-lg border-omuto-navy/5 rounded-[2rem] p-8 shadow-sm">
                 <FinalizeWorkplanForm teamPlan={null} onPlanCreated={fetchPlans} />
             </div>
         </div>
@@ -370,7 +370,7 @@ export default function WorkplanPage() {
       />
       
       {currentDate && (
-        <Card className="rounded-[2.5rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden transition-all hover:shadow-comic">
+        <Card className="rounded-[2.5rem] border-lg border-omuto-navy shadow-comic-sm bg-card overflow-hidden transition-all hover:shadow-comic">
             <CardHeader className="bg-omuto-cream/30 border-b-lg border-omuto-navy/5 pb-4 pt-7 px-8">
                 <div className="flex justify-between items-center">
                     <CardTitle className="font-heading text-xl font-black tracking-tighter text-omuto-navy uppercase">

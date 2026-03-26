@@ -149,8 +149,8 @@ export default function HRLeaveManagement() {
               </div>
           </div>
 
-          <TabsContent value="pending" className="mt-0">
-              <Card className="border shadow-sm overflow-hidden bg-white">
+            <TabsContent value="pending" className="mt-0">
+                <Card className="border shadow-sm overflow-hidden bg-card">
                 <CardContent className="p-0">
                     {isLoading ? (
                          <div className="p-6 space-y-4">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}</div>
@@ -168,8 +168,8 @@ export default function HRLeaveManagement() {
               </Card>
           </TabsContent>
 
-          <TabsContent value="history" className="mt-0">
-               <Card className="border shadow-sm overflow-hidden bg-white">
+            <TabsContent value="history" className="mt-0">
+                <Card className="border shadow-sm overflow-hidden bg-card">
                 <CardContent className="p-0">
                     {history.length > 0 ? (
                         <div className="divide-y border-t">

@@ -137,7 +137,7 @@ export default function HRDashboard() {
           </Card>
 
           {/* HR Radar / Quick Tasks */}
-          <Card className="lg:col-span-4 border shadow-sm bg-white">
+          <Card className="lg:col-span-4 border shadow-sm bg-card">
               <CardHeader className="pb-4">
                   <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                        <Sparkles className="h-4 w-4 text-primary" /> Personnel Radar

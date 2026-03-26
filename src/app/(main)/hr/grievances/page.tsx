@@ -40,19 +40,19 @@ export default function HRGrievancesPage() {
       </PageHeader>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+          <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card">
               <CardContent className="p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Open Cases</p>
                   <p className="text-4xl font-black text-rose-600 tracking-tight">2</p>
               </CardContent>
           </Card>
-          <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+          <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card">
               <CardContent className="p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">In Resolution</p>
                   <p className="text-4xl font-black text-amber-600 tracking-tight">1</p>
               </CardContent>
           </Card>
-           <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+           <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card">
               <CardContent className="p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Resolved YTD</p>
                   <p className="text-4xl font-black text-emerald-600 tracking-tight">24</p>
@@ -86,7 +86,7 @@ export default function HRGrievancesPage() {
                           {grievances.map((g, i) => (
                               <div key={i} className="p-8 flex items-center justify-between hover:bg-muted/10 transition-colors group">
                                   <div className="flex items-center gap-6">
-                                      <div className={`h-14 w-14 rounded-2xl bg-white border-2 flex items-center justify-center group-hover:scale-105 transition-transform ${
+                                      <div className={`h-14 w-14 rounded-2xl bg-card border-2 flex items-center justify-center group-hover:scale-105 transition-transform ${
                                           g.priority === 'High' ? 'border-rose-100 text-rose-600' : 'border-omuto-navy/5 text-omuto-navy'
                                       }`}>
                                           <MessageSquare className="h-6 w-6" />

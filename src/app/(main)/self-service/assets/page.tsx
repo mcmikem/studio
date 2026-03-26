@@ -52,7 +52,7 @@ export default function MyAssetsPage() {
                       {myAssets.map((asset: any) => (
                         <div key={asset.id} className="p-8 flex items-center justify-between hover:bg-muted/10 transition-colors group">
                             <div className="flex items-center gap-6">
-                                <div className="h-16 w-16 rounded-2xl bg-white border-2 border-primary/5 shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+                                <div className="h-16 w-16 rounded-2xl bg-card border-2 border-primary/5 shadow-sm flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
                                     {asset.type === 'electronics' ? <Laptop className="h-7 w-7" /> : asset.type === 'vehicle' ? <Bike className="h-7 w-7" /> : <Package className="h-7 w-7" />}
                                 </div>
                                 <div>
@@ -102,7 +102,7 @@ export default function MyAssetsPage() {
           </div>
 
           <div className="lg:col-span-4 space-y-6">
-              <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden p-8 bg-white border-primary/10">
+              <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden p-8 bg-card border-primary/10">
                   <div className="flex flex-col items-center text-center">
                       <div className="h-16 w-16 rounded-3xl bg-primary/10 flex items-center justify-center mb-4 text-primary">
                           <HelpCircle className="h-8 w-8" />

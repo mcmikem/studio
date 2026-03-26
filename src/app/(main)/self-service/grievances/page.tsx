@@ -113,7 +113,7 @@ export default function MyGrievancesPage() {
                       {records.map((g: any) => (
                         <div key={g.id} className="p-8 flex items-center justify-between hover:bg-muted/10 transition-colors group">
                             <div className="flex items-center gap-6">
-                                <div className={`h-14 w-14 rounded-2xl bg-white border-2 flex items-center justify-center text-omuto-navy group-hover:scale-105 transition-transform ${
+                                <div className={`h-14 w-14 rounded-2xl bg-card border-2 flex items-center justify-center text-omuto-navy group-hover:scale-105 transition-transform ${
                                     g.status === 'Open' ? 'border-rose-100' : 'border-omuto-navy/5'
                                 }`}>
                                     <MessageSquare className="h-6 w-6" />
@@ -154,7 +154,7 @@ export default function MyGrievancesPage() {
                   </p>
               </Card>
 
-              <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden p-8 bg-white">
+              <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden p-8 bg-card">
                    <div className="flex items-start gap-4 h-full">
                       <div className="p-3 bg-primary/10 rounded-2xl text-primary">
                           <Scale className="h-6 w-6" />

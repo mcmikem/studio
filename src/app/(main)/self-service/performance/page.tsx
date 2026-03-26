@@ -39,7 +39,7 @@ export default function MyPerformancePage() {
               <UserPerformance userId={user?.uid || ''} />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <Card className="border shadow-sm bg-white">
+                  <Card className="border shadow-sm bg-card">
                       <CardContent className="p-6">
                           <div className="flex items-center justify-between mb-4">
                               <div className="p-2.5 bg-primary/5 rounded-xl text-primary"><Target className="h-5 w-5" /></div>
@@ -53,7 +53,7 @@ export default function MyPerformancePage() {
                       </CardContent>
                   </Card>
 
-                  <Card className="border shadow-sm bg-white">
+                  <Card className="border shadow-sm bg-card">
                       <CardContent className="p-6">
                           <div className="flex items-center justify-between mb-4">
                               <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600"><Award className="h-5 w-5" /></div>
@@ -81,7 +81,7 @@ export default function MyPerformancePage() {
                            ].map((m, i) => (
                                <div key={i} className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors">
                                    <div className="flex items-center gap-4">
-                                       <div className={`p-2 rounded-lg bg-white border shadow-sm ${m.color}`}>
+                                       <div className={`p-2 rounded-lg bg-card border shadow-sm ${m.color}`}>
                                            <m.icon className="h-4 w-4" />
                                        </div>
                                        <div>
@@ -99,7 +99,7 @@ export default function MyPerformancePage() {
 
           <div className="lg:col-span-4 space-y-6">
               <Card className="border shadow-md bg-primary/5 p-8 text-center flex flex-col items-center border-primary/10">
-                  <div className="h-16 w-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6">
+                  <div className="h-16 w-16 rounded-2xl bg-card shadow-sm flex items-center justify-center mb-6">
                       <TrendingUp className="h-8 w-8 text-primary" />
                   </div>
                   <h4 className="text-sm font-bold text-omuto-navy uppercase tracking-wider mb-2">Performance Rank</h4>
@@ -111,7 +111,7 @@ export default function MyPerformancePage() {
 
               <Card className="border shadow-sm bg-omuto-navy text-white p-6">
                   <div className="flex items-start gap-4">
-                      <div className="p-2.5 bg-white/10 rounded-xl text-white">
+                      <div className="p-2.5 bg-card/10 rounded-xl text-white">
                           <Heart className="h-4 w-4" />
                       </div>
                       <div>

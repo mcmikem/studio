@@ -526,7 +526,7 @@ export default function FinancePage() {
                 />
             </div>
 
-            <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-white/50 backdrop-blur-sm rounded-[2rem]">
+            <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-card/50 backdrop-blur-sm rounded-[2rem]">
                 <CardHeader className="bg-omuto-cream/20 border-b-lg border-omuto-navy/5 p-8">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
@@ -541,7 +541,7 @@ export default function FinancePage() {
                             </div>
                         </div>
                         
-                        <div className="flex items-center gap-2 bg-white/80 p-2 rounded-[1.5rem] border-2 border-omuto-navy/5 shadow-sm">
+                        <div className="flex items-center gap-2 bg-card/80 p-2 rounded-[1.5rem] border-2 border-omuto-navy/5 shadow-sm">
                             <Button variant="ghost" size="icon" onClick={handlePrevMonth} className="h-10 w-10 hover:bg-omuto-navy/5 rounded-xl"><ChevronLeft className="h-4 w-4" /></Button>
                             <Input 
                                 type="month" 
@@ -577,7 +577,7 @@ export default function FinancePage() {
                                 </TableRow>
                                 ))}
                                 {!isLoading && monthlyData.transactions.map((t, index) => (
-                                <TableRow key={`${t.id}-${index}`} className="border-b border-omuto-navy/5 last:border-0 group hover:bg-white transition-colors">
+                                <TableRow key={`${t.id}-${index}`} className="border-b border-omuto-navy/5 last:border-0 group hover:bg-card transition-colors">
                                     <TableCell className="px-6 py-5 text-xs font-bold text-omuto-navy/60">{formatDateSafe(t.date, 'dateOnly')}</TableCell>
                                     <TableCell className="px-6 py-5">
                                         <span className="font-heading text-base font-black text-omuto-navy group-hover:text-primary transition-colors">{t.description}</span>
@@ -688,7 +688,7 @@ export default function FinancePage() {
                 <CardContent className="p-8 pt-0 space-y-4">
                     <Dialog open={isNewIncomeDialogOpen} onOpenChange={setIsNewIncomeDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button className="w-full h-16 bg-white text-primary hover:bg-white/90 rounded-[1.5rem] font-black uppercase text-xs tracking-widest shadow-xl group">
+                            <Button className="w-full h-16 bg-card text-primary hover:bg-card/90 rounded-[1.5rem] font-black uppercase text-xs tracking-widest shadow-xl group">
                                 <ArrowUpCircle className="mr-3 h-5 w-5 group-hover:-translate-y-1 transition-transform" />
                                 Log Income
                             </Button>
@@ -718,12 +718,12 @@ export default function FinancePage() {
                         </DialogContent>
                     </Dialog>
                 </CardContent>
-                <CardFooter className="bg-white/5 p-6 border-t border-white/5">
+                <CardFooter className="bg-card/5 p-6 border-t border-white/5">
                     <p className="text-[9px] font-black uppercase tracking-widest text-white/40 text-center w-full">Double-entry verified</p>
                 </CardFooter>
             </Card>
 
-            <Card className="border-lg border-omuto-navy/5 bg-white shadow-sm rounded-[2rem] overflow-hidden">
+            <Card className="border-lg border-omuto-navy/5 bg-card shadow-sm rounded-[2rem] overflow-hidden">
                 <CardHeader className="p-6">
                     <CardTitle className="font-heading text-xl font-black uppercase text-omuto-navy">Spend Matrix</CardTitle>
                     <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-omuto-navy/30">Category Allocation</CardDescription>

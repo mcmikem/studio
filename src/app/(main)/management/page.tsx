@@ -128,7 +128,7 @@ export default function ManagementPage() {
                     </h1>
                 </div>
 
-                <div className="flex items-center gap-3 bg-white/50 backdrop-blur-sm border-2 border-omuto-navy/5 p-4 rounded-[1.5rem] shadow-sm">
+                <div className="flex items-center gap-3 bg-card/50 backdrop-blur-sm border-2 border-omuto-navy/5 p-4 rounded-[1.5rem] shadow-sm">
                     <div className="flex h-3 w-3 relative">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
@@ -144,7 +144,7 @@ export default function ManagementPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {modules.map((module) => (
                     <Link key={module.href} href={module.href} className="group">
-                        <Card className="relative h-full overflow-hidden border-2 border-omuto-navy/5 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-comic-sm group-hover:border-omuto-navy/20 rounded-[2rem]">
+                        <Card className="relative h-full overflow-hidden border-2 border-omuto-navy/5 bg-card shadow-sm transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-comic-sm group-hover:border-omuto-navy/20 rounded-[2rem]">
                             {/* Decorative Corner Element */}
                             <div className="absolute -top-6 -right-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
                             
@@ -189,7 +189,7 @@ export default function ManagementPage() {
                         <h4 className="font-heading text-lg font-black text-omuto-navy uppercase tracking-tight">Need a Report?</h4>
                         <p className="text-xs font-bold text-omuto-navy/60">Generate instant PDF summaries for stakeholders.</p>
                     </div>
-                    <Button variant="outline" className="ml-auto border-2 border-primary/20 bg-white rounded-xl font-black text-[10px] uppercase">Export Center</Button>
+                    <Button variant="outline" className="ml-auto border-2 border-primary/20 bg-card rounded-xl font-black text-[10px] uppercase">Export Center</Button>
                 </Card>
 
                 <Card className="border-lg border-amber-500/20 bg-amber-500/5 p-6 rounded-[2rem] flex items-center gap-4">
@@ -200,7 +200,7 @@ export default function ManagementPage() {
                         <h4 className="font-heading text-lg font-black text-omuto-navy uppercase tracking-tight">Audit Trail</h4>
                         <p className="text-xs font-bold text-omuto-navy/60">Review recent management changes and approvals.</p>
                     </div>
-                    <Button variant="outline" className="ml-auto border-2 border-amber-500/20 bg-white rounded-xl font-black text-[10px] uppercase">View Logs</Button>
+                    <Button variant="outline" className="ml-auto border-2 border-amber-500/20 bg-card rounded-xl font-black text-[10px] uppercase">View Logs</Button>
                 </Card>
             </div>
         </div>

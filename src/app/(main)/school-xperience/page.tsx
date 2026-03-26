@@ -248,7 +248,7 @@ export default function SchoolXperienceHubPage() {
       </div>
 
       {/* Registry Section */}
-      <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-white/50 backdrop-blur-sm">
+      <Card className="border-lg border-omuto-navy/10 shadow-comic-sm overflow-hidden bg-card/50 backdrop-blur-sm">
         <CardHeader className="bg-omuto-cream/20 border-b-lg border-omuto-navy/5 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -279,7 +279,7 @@ export default function SchoolXperienceHubPage() {
                 placeholder="Find a school..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 h-11 rounded-xl border-lg bg-white/70"
+                className="pl-10 h-11 rounded-xl border-lg bg-card/70"
               />
             </div>
             
@@ -287,7 +287,7 @@ export default function SchoolXperienceHubPage() {
                 <select
                 value={filterTier}
                 onChange={(e) => setFilterTier(e.target.value)}
-                className="h-11 rounded-xl border-lg px-4 text-[10px] font-black uppercase tracking-wider bg-white/70 cursor-pointer"
+                className="h-11 rounded-xl border-lg px-4 text-[10px] font-black uppercase tracking-wider bg-card/70 cursor-pointer"
                 >
                 <option value="All">All Tiers</option>
                 {Object.keys(TIER_COLORS).map(tier => <option key={tier} value={tier}>{tier}</option>)}
@@ -296,14 +296,14 @@ export default function SchoolXperienceHubPage() {
                 <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="h-11 rounded-xl border-lg px-4 text-[10px] font-black uppercase tracking-wider bg-white/70 cursor-pointer"
+                className="h-11 rounded-xl border-lg px-4 text-[10px] font-black uppercase tracking-wider bg-card/70 cursor-pointer"
                 >
                 <option value="All">All Status</option>
                 {Object.keys(STATUS_COLORS).map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
             </div>
 
-            <div className="flex h-11 rounded-xl border-lg overflow-hidden bg-white/70">
+            <div className="flex h-11 rounded-xl border-lg overflow-hidden bg-card/70">
               <button
                 onClick={() => setViewMode('compact')}
                 className={`px-4 flex items-center transition-all ${
@@ -361,7 +361,7 @@ export default function SchoolXperienceHubPage() {
 function SchoolCard({ school, viewMode, visitStatus }: { school: SchoolXperience, viewMode: 'compact' | 'expanded', visitStatus: any }) {
     return (
         <Link href={`/school-xperience/${school.id}`} className="group">
-            <Card className={`h-full border-2 border-omuto-navy/5 bg-white shadow-sm transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-comic-sm group-hover:border-omuto-navy/20 relative overflow-hidden ${
+            <Card className={`h-full border-2 border-omuto-navy/5 bg-card shadow-sm transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-comic-sm group-hover:border-omuto-navy/20 relative overflow-hidden ${
                 viewMode === 'compact' ? 'rounded-xl' : 'rounded-[2rem]'
             }`}>
                {/* Impact Pulse Indicator */}
@@ -432,7 +432,7 @@ function BentoButton({ href, icon: Icon, title, description, variant = 'secondar
 }) {
     const variants = {
         primary: "bg-omuto-navy text-white hover:bg-primary border-4 border-omuto-navy/10",
-        secondary: "bg-white text-omuto-navy hover:bg-primary/5 border-2 border-omuto-navy/5",
+        secondary: "bg-card text-omuto-navy hover:bg-primary/5 border-2 border-omuto-navy/5",
         accent: "bg-primary text-white hover:opacity-90 border-4 border-primary/20",
         tertiary: "bg-omuto-cream/50 text-omuto-navy hover:bg-omuto-cream border-2 border-omuto-navy/5"
     }
@@ -441,7 +441,7 @@ function BentoButton({ href, icon: Icon, title, description, variant = 'secondar
         <Link href={href} className="group h-full">
             <div className={`p-6 rounded-[2rem] h-full flex flex-col justify-between transition-all duration-300 group-hover:-translate-y-1.5 group-hover:shadow-comic-sm ${variants[variant]}`}>
                 <div className="flex justify-between items-start">
-                    <div className={`p-3 rounded-2xl ${variant === 'primary' || variant === 'accent' ? 'bg-white/10 ring-4 ring-white/5' : 'bg-primary/10 ring-4 ring-primary/5 text-primary'} transition-all group-hover:scale-110`}>
+                    <div className={`p-3 rounded-2xl ${variant === 'primary' || variant === 'accent' ? 'bg-card/10 ring-4 ring-white/5' : 'bg-primary/10 ring-4 ring-primary/5 text-primary'} transition-all group-hover:scale-110`}>
                         <Icon className={size === 'large' ? "h-7 w-7" : "h-5 w-5"} />
                     </div>
                     <ArrowRight className="h-4 w-4 opacity-30 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
@@ -470,7 +470,7 @@ function StatCard({ icon: Icon, label, value, trend, color, alertLevel }: {
   };
 
   return (
-    <Card className="relative overflow-hidden border-2 border-omuto-navy/5 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-sm rounded-[2rem]">
+    <Card className="relative overflow-hidden border-2 border-omuto-navy/5 bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-sm rounded-[2rem]">
       <CardContent className="p-6">
         <div className="flex justify-between items-start mb-4">
           <div className={`p-2.5 bg-muted/50 rounded-2xl ${color} shadow-sm ring-4 ring-muted/20`}>

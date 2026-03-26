@@ -49,7 +49,7 @@ export default function HRPerformancePage() {
                   </div>
               </CardContent>
           </Card>
-          <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+          <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card">
               <CardContent className="p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Operational Consistency</p>
                   <p className="text-4xl font-black text-omuto-navy tracking-tight">89%</p>
@@ -58,7 +58,7 @@ export default function HRPerformancePage() {
                   </div>
               </CardContent>
           </Card>
-           <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+           <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card">
               <CardContent className="p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Mission Efficiency</p>
                   <p className="text-4xl font-black text-omuto-navy tracking-tight">4.8/5</p>
@@ -151,7 +151,7 @@ export default function HRPerformancePage() {
                   ))}
               </div>
 
-              <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-white p-8">
+              <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card p-8">
                   <div className="flex items-start gap-4 h-full">
                       <div className="p-3 bg-rose-500/10 rounded-2xl text-rose-600">
                           <Heart className="h-6 w-6" />
