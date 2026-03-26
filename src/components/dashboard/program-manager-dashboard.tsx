@@ -41,13 +41,13 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
   , [firestore]);
   const { data: schools } = useCollection(schoolsQuery);
 
-  // This month
+  // This month - only approved
   const thisMonthExpenses = useMemo(() => {
     if (!expenses) return 0;
     return expenses
       .filter(e => {
         const created = e.createdAt?.toDate?.() || new Date(e.createdAt?.seconds ? e.createdAt.seconds * 1000 : Date.now());
-        return created >= monthStart;
+        return created >= monthStart && e.status === 'Approved';
       })
       .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
   }, [expenses, monthStart]);
@@ -57,7 +57,7 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
     return income
       .filter(i => {
         const created = i.createdAt?.toDate?.() || new Date(i.createdAt?.seconds ? i.createdAt.seconds * 1000 : Date.now());
-        return created >= monthStart;
+        return created >= monthStart && i.status === 'Approved';
       })
       .reduce((sum, i) => sum + Number(i.amount || 0), 0);
   }, [income, monthStart]);

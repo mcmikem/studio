@@ -9,27 +9,33 @@ export const ROLES = {
 
 /**
  * Checks if the current user can edit a specific item.
- * Rule: Only the owner (creator) can edit.
+ * Rule: Executive Director and Administrator can edit anything.
+ * Other users can only edit their own items.
  */
-export function canEdit(item: any, currentUser: AuthUser | null): boolean {
+export function canEdit(item: any, currentUser: AuthUser | null, profile?: UserProfile | null): boolean {
   if (!currentUser) return false;
   
-  const ownerId = item.userId || item.createdBy || item.id; // Fallback to id if it's the user's own profile
+  // Executive Director and Administrator can edit anything
+  if (profile?.role === ROLES.ED || profile?.role === ROLES.ADMIN) {
+    return true;
+  }
+  
+  const ownerId = item.userId || item.createdBy || item.id;
   return ownerId === currentUser.uid;
 }
 
 /**
  * Checks if the current user can delete data from the system.
- * Rule: Only the Executive Director can delete.
+ * Rule: Only the Executive Director and Administrator can delete.
  */
 export function canDelete(profile: UserProfile | null): boolean {
-  return profile?.role === ROLES.ED;
+  return profile?.role === ROLES.ED || profile?.role === ROLES.ADMIN;
 }
 
 /**
- * Higher-level check for general management permissions.
+ * Higher-level check for full admin privileges.
  */
-export function isManagement(profile: UserProfile | null): boolean {
+export function isAdmin(profile: UserProfile | null): boolean {
   if (!profile?.role) return false;
-  return [ROLES.ED, ROLES.ADMIN, ROLES.MANAGER].includes(profile.role as any);
+  return profile.role === ROLES.ED || profile.role === ROLES.ADMIN;
 }
