@@ -330,12 +330,13 @@ export default function RequisitionsPage() {
                           </TableRow>
                         ))}
                       </TableBody>
-                      <TableFooter>
-                        <TableRow className="bg-muted/50">
-                          <TableCell colSpan={2} className="font-black text-right">TOTAL</TableCell>
-                          <TableCell className="text-right font-black text-lg">{formatCurrency(selectedExpense.totalAmount)}</TableCell>
-                        </TableRow>
-                      </TableFooter>
+            <tfoot>
+                <tr>
+                  <td colSpan={Object.keys(requisitions[0] || {}).length + 3}>
+                    {isLoadingMore && <Skeleton className="h-10 w-full" />}
+                  </td>
+                </tr>
+              </tfoot>
                     </Table>
                   </div>
                 </div>
