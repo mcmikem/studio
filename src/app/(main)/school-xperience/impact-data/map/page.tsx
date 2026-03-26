@@ -311,7 +311,7 @@ export default function MapPage() {
 
           {/* Search Results */}
           {searchResults.length > 0 && (
-            <Card className="mt-2 bg-white/98 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden max-h-[50vh] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-300">
+            <Card className="mt-2 bg-card/90 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden max-h-[50vh] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-300">
               <div className="px-4 py-2.5 border-b border-black/5 bg-muted/20">
                 <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
                   {searchResults.length} results
@@ -441,7 +441,7 @@ export default function MapPage() {
       {/* ━━━ Desktop Detail Panel (right side) ━━━━━━━━━━━ */}
       {selectedLocation && (
         <div className="hidden lg:block absolute top-4 bottom-4 right-4 z-[40] w-[380px] animate-in slide-in-from-right-8 duration-500">
-          <Card className="h-full bg-white/95 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden flex flex-col border border-black/5">
+          <Card className="h-full bg-card/90 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden flex flex-col border border-black/5">
             <div className="p-5 flex justify-between items-start border-b border-black/5">
               <div className="flex items-center gap-3">
                 <div className={`p-3 rounded-xl ${selectedLocation.type === 'office' ? 'bg-red-500 text-white' : 'bg-muted text-primary'} shadow-md`}>

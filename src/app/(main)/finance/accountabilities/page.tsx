@@ -160,7 +160,7 @@ export default function AccountabilitiesPage() {
           </CardContent>
         </Card>
         
-        <Card className="border-2 border-omuto-navy/10 bg-white rounded-[2.5rem] shadow-xl overflow-hidden">
+        <Card className="border-2 border-omuto-navy/10 bg-card rounded-[2.5rem] shadow-xl overflow-hidden">
           <CardContent className="p-8 flex items-center gap-4">
             <div className="p-4 bg-omuto-navy/5 rounded-2xl text-omuto-navy/60"><Users className="h-8 w-8" /></div>
             <div>
