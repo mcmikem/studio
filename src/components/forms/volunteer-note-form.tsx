@@ -85,14 +85,18 @@ export function VolunteerNoteForm() {
   };
 
   return (
-       <Card className="w-full overflow-hidden">
-        <CardHeader className="p-4 sm:p-6 bg-muted/30 border-b">
-          <div className="flex items-center gap-3">
-            <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 text-primary flex-shrink-0" />
+       <Card className="border shadow-comic-sm w-full overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b border-omuto-navy/10 p-4 sm:p-6 lg:p-8">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 bg-white border shadow-comic-sm rounded-xl sm:rounded-2xl flex-shrink-0">
+              <MessageCircle className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
+            </div>
             <div className="min-w-0 flex-1">
-              <CardTitle className="text-lg sm:text-xl truncate">End-of-Day Note</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">
-                Share your accomplishments and learnings.
+              <CardTitle className="font-heading text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight uppercase leading-none text-omuto-navy truncate">
+                End-of-Day <span className="text-omuto-red">Note</span>
+              </CardTitle>
+              <CardDescription className="font-bold text-omuto-navy/50 text-[9px] sm:text-[10px] uppercase tracking-wider mt-1 sm:mt-2">
+                Daily Reflection Terminal
               </CardDescription>
             </div>
           </div>

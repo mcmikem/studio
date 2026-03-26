@@ -210,18 +210,24 @@ export function CaptureImpactStoryForm({ backHref = '/meal' }: { backHref?: stri
 
   return (
     <div className="flex flex-col gap-6">
-      <Button variant="outline" asChild className="self-start">
+      <Button variant="outline" asChild className="self-start rounded-xl">
         <Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" />Back</Link>
       </Button>
-      <Card>
-        <CardHeader>
-          <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
-            <Video className="h-8 w-8" />
-            {testimonyId ? 'Update' : 'Capture'} Impact Story
-          </h1>
-          <p className="text-muted-foreground">
-            {testimonyId ? `Modifying storyline: ${testimonyId}` : 'Record a success story with before/after details, quotes, and media.'}
-          </p>
+      <Card className="border shadow-comic-sm w-full overflow-hidden">
+        <CardHeader className="bg-muted/30 border-b border-omuto-navy/10 p-4 sm:p-6 lg:p-8">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 bg-white border shadow-comic-sm rounded-xl sm:rounded-2xl flex-shrink-0">
+              <Video className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <h2 className="font-heading text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight uppercase leading-none text-omuto-navy truncate">
+                {testimonyId ? 'Update' : 'Impact'} <span className="text-omuto-red">Story</span>
+              </h2>
+              <p className="font-bold text-omuto-navy/50 text-[9px] sm:text-[10px] uppercase tracking-wider mt-1 sm:mt-2">
+                {testimonyId ? `Modifying storyline: ${testimonyId}` : 'Success Story Recording Terminal'}
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="pt-4 sm:pt-6 space-y-4 sm:space-y-6 p-4 sm:p-6">

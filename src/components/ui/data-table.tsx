@@ -30,6 +30,8 @@ import { useToast } from "@/hooks/use-toast"
 import { deleteDocumentNonBlocking } from "@/firebase"
 import { doc } from "firebase/firestore"
 import { useFirestore } from "@/firebase"
+import { downloadCSV, exportToPDF } from "@/lib/export"
+import { Download, FileSpreadsheet, FileText } from "lucide-react"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -46,6 +48,11 @@ interface DataTableProps<TData, TValue> {
   viewHref?: (item: TData) => string;
   deleteCollection?: string;
   onDeleteSuccess?: (item: TData) => void;
+
+  // Export props
+  enableExport?: boolean;
+  exportFilename?: string;
+  exportTitle?: string;
 
   // Empty state
   emptyTitle?: string;
@@ -64,12 +71,38 @@ export function DataTable<TData, TValue>({
   viewHref,
   deleteCollection,
   onDeleteSuccess,
+  enableExport = false,
+  exportFilename = "export",
+  exportTitle,
   emptyTitle = "No records found",
   emptyDescription = "There are no items to display right now.",
   emptyAction,
 }: DataTableProps<TData, TValue>) {
   const firestore = useFirestore();
   const { toast } = useToast();
+
+  const handleExportCSV = () => {
+    try {
+      downloadCSV(data as Record<string, any>[], { 
+        filename: `${exportFilename}.csv` 
+      });
+      toast({ title: "Export Complete", description: "CSV file downloaded successfully" });
+    } catch (e) {
+      toast({ variant: 'destructive', title: "Export Failed", description: "Could not export data" });
+    }
+  };
+
+  const handleExportPDF = () => {
+    try {
+      exportToPDF(data as Record<string, any>[], { 
+        filename: `${exportFilename}.pdf`,
+        title: exportTitle || exportFilename 
+      });
+      toast({ title: "Export Complete", description: "PDF file downloaded successfully" });
+    } catch (e) {
+      toast({ variant: 'destructive', title: "Export Failed", description: "Could not export data" });
+    }
+  };
 
   const handleDelete = async (item: any) => {
     if (!firestore || !deleteCollection || !item.id) return;
@@ -146,6 +179,20 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
+      {/* Export Buttons */}
+      {enableExport && data.length > 0 && (
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={handleExportCSV} className="h-8 gap-2">
+            <FileSpreadsheet className="h-4 w-4" />
+            CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleExportPDF} className="h-8 gap-2">
+            <FileText className="h-4 w-4" />
+            PDF
+          </Button>
+        </div>
+      )}
+
       {/* Desktop View */}
       <div className={renderMobileCard ? "hidden md:block rounded-md border" : "rounded-md border"}>
         <Table>

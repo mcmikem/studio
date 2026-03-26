@@ -140,9 +140,9 @@ export function FormSection({ title, icon: Icon, children, defaultOpen = true, c
             <h3 className="text-sm font-black uppercase tracking-widest text-omuto-navy/70">{title}</h3>
         </div>
         {children}
-      </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className={cn('border border-omuto-navy/10 rounded-xl overflow-hidden', className)}>
@@ -159,6 +159,39 @@ export function FormSection({ title, icon: Icon, children, defaultOpen = true, c
         </div>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+interface FormCardHeaderProps {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  highlightWord?: string;
+  iconColor?: string;
+}
+
+export function FormCardHeader({ icon: Icon, title, description, highlightWord, iconColor = 'text-primary' }: FormCardHeaderProps) {
+  return (
+    <div className="flex items-start gap-3 sm:gap-4">
+      <div className="p-2 sm:p-3 bg-white border shadow-comic-sm rounded-xl sm:rounded-2xl flex-shrink-0">
+        <Icon className={`h-5 w-5 sm:h-8 sm:w-8 ${iconColor}`} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <h2 className="font-heading text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight uppercase leading-none text-omuto-navy truncate">
+          {highlightWord ? (
+            <>
+              {title.replace(highlightWord, '').trim()}{' '}
+              <span className="text-omuto-red">{highlightWord}</span>
+            </>
+          ) : (
+            title
+          )}
+        </h2>
+        <p className="font-bold text-omuto-navy/50 text-[9px] sm:text-[10px] uppercase tracking-wider mt-1 sm:mt-2">
+          {description}
+        </p>
+      </div>
+    </div>
   );
 }
 

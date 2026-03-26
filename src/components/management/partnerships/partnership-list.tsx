@@ -171,7 +171,7 @@ export function PartnershipList({ partnerships, isLoading, onEdit }: Partnership
     </div>
     {/* Desktop View */}
     <div className="hidden sm:block rounded-md border">
-      <DataTable columns={columns} data={partnerships || []} isLoading={isLoading} />
+      <DataTable columns={columns} data={partnerships || []} isLoading={isLoading} enableExport exportFilename="partnerships" exportTitle="Partnerships Report" />
     </div>
     </>
   );

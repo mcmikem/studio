@@ -6,5 +6,6 @@
     "noEmit": true,
     "noImplicitAny": false,
     "strictNullChecks": false
-  }
+  },
+  "exclude": ["src/test/**/*", "**/*.test.ts", "**/*.spec.ts"]
 }
