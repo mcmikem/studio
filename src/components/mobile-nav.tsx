@@ -159,9 +159,9 @@ export function MobileBottomNav() {
                   if (!items || items.length === 0) return null;
                   return (
                     <div key={category}>
-                      <div className="px-4 py-2 bg-muted/30 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        {category}
-                      </div>
+                   <div className="px-4 py-2 bg-muted/30 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                         {category}
+                       </div>
                       <div className="grid grid-cols-2 gap-1 p-2">
                         {items.map((action, i) => (
                           <Link

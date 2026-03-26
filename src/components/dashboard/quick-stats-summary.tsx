@@ -69,8 +69,8 @@ export function QuickStatsSummary() {
         return (
         <Link href="/management/metrics" key={metric.id} className="group">
             <Card className="relative overflow-hidden border border-omuto-navy/6 shadow-sm hover:shadow-md hover:border-omuto-navy/15 transition-all duration-300 h-40 group-hover:-translate-y-1">
-                {/* Decorative background element */}
-                <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                 {/* Decorative background element */}
+                 <div className="absolute -right-2 -top-2 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors sm:-right-4 sm:-top-4 sm:w-24 sm:h-24" />
                 
                 <CardContent className="p-5 h-full flex flex-col relative z-10">
                     <div className="flex justify-between items-start mb-3">
