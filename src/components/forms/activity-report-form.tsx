@@ -10,7 +10,7 @@ import { FormProgress } from '@/components/ui/form-progress';
 import { Separator } from '@/components/ui/separator';
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
 import { useUser, useFirestore, useCollection, useMemoFirebase, useFirebaseApp, addDocumentNonBlocking, updateDocumentNonBlocking, useDoc } from '@/firebase';
-import { uploadFile } from '@/firebase/storage';
+import { uploadFile, uploadFileWithFallback } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
 import { collection, serverTimestamp, query, orderBy, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -219,7 +219,11 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
             setIsUploading(true);
             const ext = mediaFile.name.split('.').pop() || 'jpg';
             const safeName = `media_${Date.now()}`;
-            finalMediaUrl = await uploadFile(firebaseApp, mediaFile, buildUploadPath.activityMedia(user.uid, `${safeName}.${ext}`));
+            const uploadResult = await uploadFileWithFallback(firebaseApp, mediaFile, buildUploadPath.activityMedia(user.uid, `${safeName}.${ext}`), user.uid);
+            finalMediaUrl = uploadResult?.url || '';
+            if (!uploadResult?.success && uploadResult?.error) {
+                toast({ variant: 'destructive', title: 'Upload Warning', description: `Media may not have saved. ${uploadResult.error}` });
+            }
             setIsUploading(false);
         }
 

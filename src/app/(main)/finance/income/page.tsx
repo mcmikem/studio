@@ -24,6 +24,7 @@ import { formatCurrency, formatDateSafe, cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { Loader2, PlusCircle, Edit, Trash2, ArrowUpCircle, Check, X } from 'lucide-react';
+import { notifyNewIncome } from '@/lib/integration-utils';
 
 const incomeTypes = ['Member Donations', 'Fundraising', 'In-kind Contributions', 'Grants', 'Partnerships', 'Omuto Essentials', 'Imac Enterprises', 'Other'] as const;
 
@@ -88,6 +89,9 @@ export default function IncomePage() {
       } else {
         await addDocumentNonBlocking(collection(firestore, 'income'), data);
         toast({ title: 'Income Logged' });
+        
+        // Notify admins
+        notifyNewIncome(['admin@omuto.org', 'finance@omuto.org'], form.source, form.amount, form.type).catch(console.error);
       }
       setShowForm(false);
       resetForm();

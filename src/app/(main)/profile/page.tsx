@@ -23,7 +23,7 @@ import { formatDateSafe } from '@/lib/utils';
 import { Suspense, useRef, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { uploadImageAndUpdateProfile } from '@/firebase/storage';
+import { uploadImageAndUpdateProfile, uploadFileWithFallback } from '@/firebase/storage';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuGroup } from '@/components/ui/dropdown-menu';

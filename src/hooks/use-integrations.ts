@@ -1,154 +1,77 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useFirebaseApp } from '@/firebase';
 import type { UploadResult } from '@/firebase/storage';
 
-interface UseUploadOptions {
-  onSuccess?: (result: UploadResult) => void;
-  onError?: (error: string) => void;
+export interface UploadOptions {
+  folder?: string;
+  onProgress?: (progress: number) => void;
+  onSuccess?: (url: string, provider: string) => void;
+  onError?: (error: string, provider: string) => void;
 }
 
-interface UseUploadReturn {
-  upload: (file: File, path?: string) => Promise<UploadResult | null>;
-  isUploading: boolean;
-  progress: number;
-  error: string | null;
-}
-
-export function useUploadWithFallback(options?: UseUploadOptions): UseUploadReturn {
+export function useFileUpload(options?: UploadOptions) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<UploadResult | null>(null);
+  const app = useFirebaseApp();
 
-  const upload = useCallback(async (file: File, path?: string): Promise<UploadResult | null> => {
+  const upload = useCallback(async (file: File): Promise<string | null> => {
+    if (!app) {
+      setError('Firebase not initialized');
+      return null;
+    }
+
     setIsUploading(true);
     setProgress(0);
     setError(null);
 
     try {
-      setProgress(20);
+      const { uploadFileWithFallback } = await import('@/firebase/storage');
+      const path = `${options?.folder || 'uploads'}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
       
-      const formData = new FormData();
-      formData.append('file', file);
-      if (path) formData.append('folder', path);
-
-      // Try GCS first (via Firebase Admin)
-      const response = await fetch('/api/upload/gcs-signed-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: file.name,
-          fileType: file.type,
-          folder: path || 'uploads',
-          userId: 'current-user',
-        }),
-      });
-
-      setProgress(50);
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.uploadUrl) {
-          // Upload directly to GCS
-          await fetch(data.uploadUrl, {
-            method: 'PUT',
-            headers: { 'Content-Type': file.type },
-            body: file,
-          });
-          
-          setProgress(100);
-          const result: UploadResult = {
-            success: true,
-            url: data.downloadUrl,
-            provider: 'firebase',
-            filePath: data.filePath,
-          };
-          options?.onSuccess?.(result);
-          setIsUploading(false);
-          return result;
-        }
+      const result = await uploadFileWithFallback(app, file, path);
+      
+      setLastResult(result);
+      
+      if (result.success && result.url) {
+        setProgress(100);
+        options?.onSuccess?.(result.url, result.provider || 'unknown');
+        return result.url;
+      } else {
+        throw new Error(result.error || 'Upload failed');
       }
-
-      // Fallback: Google Drive
-      const gcsResponse = await fetch('/api/upload/google-drive', {
-        method: 'POST',
-        body: formData,
-      });
-
-      setProgress(70);
-
-      if (gcsResponse.ok) {
-        const gcsData = await gcsResponse.json();
-        const result: UploadResult = {
-          success: true,
-          url: gcsData.url,
-          provider: 'google-drive',
-          filePath: gcsData.path,
-        };
-        options?.onSuccess?.(result);
-        setIsUploading(false);
-        return result;
-      }
-
-      // Fallback: GitHub
-      const base64 = await fileToBase64(file);
-      const githubResponse = await fetch('/api/upload/github', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: file.name,
-          content: base64,
-          folder: path || 'uploads',
-        }),
-      });
-
-      setProgress(90);
-
-      if (githubResponse.ok) {
-        const githubData = await githubResponse.json();
-        const result: UploadResult = {
-          success: true,
-          url: githubData.url,
-          provider: 'github',
-          filePath: githubData.path,
-        };
-        options?.onSuccess?.(result);
-        setIsUploading(false);
-        return result;
-      }
-
-      throw new Error('All upload providers failed');
     } catch (err: any) {
       const errorMsg = err.message || 'Upload failed';
       setError(errorMsg);
-      options?.onError?.(errorMsg);
-      setIsUploading(false);
+      options?.onError?.(errorMsg, 'all');
       return null;
+    } finally {
+      setIsUploading(false);
     }
-  }, [options]);
+  }, [app, options]);
 
-  return { upload, isUploading, progress, error };
-}
-
-async function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve((reader.result as string).split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+  return {
+    upload,
+    isUploading,
+    progress,
+    error,
+    lastResult,
+  };
 }
 
 export function useGoogleSheets() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async (type: string) => {
+  const fetchData = useCallback(async (type: 'expenses' | 'income' | 'beneficiaries') => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/sheets?type=${type}`);
-      const data = await response.json();
+      const res = await fetch(`/api/sheets?type=${type}`);
+      const data = await res.json();
       if (data.error) throw new Error(data.error);
       return data;
     } catch (err: any) {
@@ -159,16 +82,16 @@ export function useGoogleSheets() {
     }
   }, []);
 
-  const syncData = useCallback(async (type: string, data: any) => {
+  const syncData = useCallback(async (type: string, data: Record<string, any>) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/sheets?type=${type}`, {
+      const res = await fetch(`/api/sheets?type=${type}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'append', data }),
       });
-      const result = await response.json();
+      const result = await res.json();
       if (result.error) throw new Error(result.error);
       return result;
     } catch (err: any) {
@@ -185,40 +108,39 @@ export function useGoogleSheets() {
 export function useWebhooks() {
   const [isLoading, setIsLoading] = useState(false);
 
-  const trigger = useCallback(async (trigger: string, data: any, webhookId?: string) => {
+  const trigger = useCallback(async (trigger: string, data: Record<string, any>) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/webhooks', {
+      const res = await fetch('/api/webhooks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trigger, data, webhookId }),
+        body: JSON.stringify({ trigger, data }),
       });
-      return await response.json();
+      return await res.json();
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const getWebhooks = useCallback(async () => {
-    const response = await fetch('/api/webhooks');
-    return await response.json();
-  }, []);
-
-  return { trigger, getWebhooks, isLoading };
+  return { trigger, isLoading };
 }
 
 export function useEmail() {
   const [isSending, setIsSending] = useState(false);
 
-  const send = useCallback(async (template: string, to: string | string[], data: any) => {
+  const send = useCallback(async (
+    template: 'expense_approved' | 'expense_rejected' | 'new_expense' | 'income_received' | 'daily_checkin_reminder',
+    to: string | string[],
+    data: Record<string, any>
+  ) => {
     setIsSending(true);
     try {
-      const response = await fetch('/api/email', {
+      const res = await fetch('/api/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ template, to, data }),
       });
-      return await response.json();
+      return await res.json();
     } finally {
       setIsSending(false);
     }

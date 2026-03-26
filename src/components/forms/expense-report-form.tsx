@@ -17,7 +17,7 @@ import {
   useDoc
 } from '@/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { uploadFile } from '@/firebase/storage';
+import { uploadFile, uploadFileWithFallback } from '@/firebase/storage';
 import { buildUploadPath } from '@/lib/upload-paths';
 import { collection, serverTimestamp, doc, query, orderBy, getDocs, where } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -44,6 +44,7 @@ import { expenseItemCategories } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { FormProgress } from '@/components/ui/form-progress';
+import { triggerWebhook, sendEmailNotification, notifyNewExpense } from '@/lib/integration-utils';
 
 const expenseItemSchema = z.object({
   description: z.string(),
@@ -311,7 +312,11 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             setIsUploading(true);
             const ext = receiptFile.name.split('.').pop() || 'jpg';
             const safeName = `receipt_${Date.now()}`;
-            finalReceiptUrl = await uploadFile(firebaseApp, receiptFile, buildUploadPath.expenseReceipt(user.uid, `${safeName}.${ext}`));
+            const uploadResult = await uploadFileWithFallback(firebaseApp, receiptFile, buildUploadPath.expenseReceipt(user.uid, `${safeName}.${ext}`), user.uid);
+            finalReceiptUrl = uploadResult?.url || '';
+            if (!uploadResult?.success && uploadResult?.error) {
+                toast({ variant: 'destructive', title: 'Upload Warning', description: `Receipt may not have saved. ${uploadResult.error}` });
+            }
             setIsUploading(false);
         }
 
@@ -328,6 +333,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             const managementUsersQuery = query(collection(firestore, 'users'), where('role', 'in', ['Administrator', 'Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager', 'Media & Finance Lead']));
             const managementSnapshot = await getDocs(managementUsersQuery);
             const managerIds = managementSnapshot.docs.map(d => d.id).filter(id => id !== user.uid);
+            const managerEmails = managementSnapshot.docs.map(d => d.data()?.email).filter(Boolean);
 
             if (managerIds.length > 0) {
                  await createAlert({
@@ -338,6 +344,9 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                     creatorId: user.uid,
                     targetUserIds: managerIds,
                 });
+                
+                // Trigger integrations
+                notifyNewExpense(managerEmails, expenseUserName, data.title, formatCurrency(finalTotal), `/finance/requisitions?highlight=${docRef.id}`).catch(console.error);
             }
         }
         if (onSuccess) onSuccess();

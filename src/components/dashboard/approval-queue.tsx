@@ -12,6 +12,7 @@ import { Check, X, Wallet, Clock, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createAlertAction as createAlert } from '@/actions/mutations';
 import { formatCurrency } from '@/lib/utils';
+import { notifyExpenseApproved, notifyExpenseRejected } from '@/lib/integration-utils';
 
 import { Skeleton } from '../ui/skeleton';
 import { EmptyState } from '../ui/empty-state';
@@ -71,6 +72,14 @@ export function ApprovalQueue() {
                     creatorId: currentUser.uid,
                     targetUserIds: [expense.userId]
                 });
+                
+                // Trigger email/webhook notifications
+                const userEmail = (expense as any).userEmail || `${expense.userName.toLowerCase().replace(/\s/g, '.')}@omuto.org`;
+                if (status === 'Approved') {
+                    notifyExpenseApproved(userEmail, expense.userName, expense.title, formatCurrency(expense.totalAmount)).catch(console.error);
+                } else {
+                    notifyExpenseRejected(userEmail, expense.userName, expense.title).catch(console.error);
+                }
             }
         } catch (error) {
             toast({
