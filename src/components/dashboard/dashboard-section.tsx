@@ -43,7 +43,7 @@ export function DashboardSection({
   const shouldRenderContent = lazy ? hasLoaded : true
 
   return (
-    <Card className={cn('border-omuto-navy/6 bg-white', className)}>
+    <Card className={cn('border-omuto-navy/6', className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full text-left"

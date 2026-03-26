@@ -64,7 +64,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
 
   if (hasError) {
     return (
-      <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
+      <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm overflow-hidden">
         <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-6 border-b-4 border-omuto-red">
           <div className="flex items-center gap-2">
             <Trophy className="h-6 w-6 text-omuto-yellow fill-omuto-yellow" />
@@ -72,7 +72,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
           </div>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="text-center py-12 bg-white border-2 border-omuto-red/20 border-dashed rounded-2xl">
+          <div className="text-center py-12 bg-card border-2 border-omuto-red/20 border-dashed rounded-2xl">
             <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-omuto-red/60" />
             <p className="text-sm font-bold text-omuto-navy mb-2">Could not load leaderboard</p>
             <p className="text-xs text-omuto-navy/50 mb-4">One or more data sources failed to respond.</p>
@@ -86,7 +86,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
   }
 
   return (
-    <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
+    <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm overflow-hidden">
       <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-6 border-b-4 border-omuto-red flex flex-col justify-center">
         <div className="flex items-center justify-between">
           <div>

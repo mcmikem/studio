@@ -35,7 +35,7 @@ export function StatCard({
 
   return (
     <Card className={cn(
-        "relative overflow-hidden border-2 border-omuto-navy/5 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-sm rounded-[2rem]",
+        "relative overflow-hidden border-2 border-omuto-navy/5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-comic-sm rounded-[2rem]",
         className
     )}>
       <CardContent className="p-6">

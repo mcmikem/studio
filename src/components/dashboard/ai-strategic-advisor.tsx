@@ -118,7 +118,7 @@ export function AiStrategicAdvisor() {
   const isLoading = isLoadingData || isLoadingInsights;
 
   return (
-    <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden">
+    <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm overflow-hidden">
       <CardHeader className="bg-omuto-cream/50 border-b-lg border-omuto-navy/10 pb-4 pt-6 px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">

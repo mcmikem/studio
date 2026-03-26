@@ -227,7 +227,7 @@ export function TeamDeployment() {
   const notStartedCount = teamStatus?.filter(s => s.status.status === 'not-started').length || 0;
 
   return (
-    <Card className="rounded-[2.5rem] border-lg border-omuto-navy shadow-comic-sm bg-white overflow-hidden transition-all hover:shadow-comic">
+    <Card className="rounded-[2.5rem] border-lg border-omuto-navy shadow-comic-sm overflow-hidden transition-all hover:shadow-comic">
       <CardHeader className="bg-omuto-cream/30 border-b-lg border-omuto-navy/5 pb-4 pt-7 px-8">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
@@ -343,7 +343,7 @@ export function TeamDeployment() {
                 {selectedUserStatus.status.status === 'active' && (
                   <>
                     {selectedUserStatus.checkinTime && (
-                      <div className="flex items-center justify-between p-3 bg-white border rounded-xl">
+                      <div className="flex items-center justify-between p-3 bg-card border rounded-xl">
                         <span className="font-bold text-xs uppercase">Checked in at</span>
                         <span className="font-bold">{selectedUserStatus.checkinTime}</span>
                       </div>

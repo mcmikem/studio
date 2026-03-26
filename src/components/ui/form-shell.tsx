@@ -173,7 +173,7 @@ interface FormCardHeaderProps {
 export function FormCardHeader({ icon: Icon, title, description, highlightWord, iconColor = 'text-primary' }: FormCardHeaderProps) {
   return (
     <div className="flex items-start gap-3 sm:gap-4">
-      <div className="p-2 sm:p-3 bg-white border shadow-comic-sm rounded-xl sm:rounded-2xl flex-shrink-0">
+      <div className="p-2 sm:p-3 bg-card border shadow-comic-sm rounded-xl sm:rounded-2xl flex-shrink-0">
         <Icon className={`h-5 w-5 sm:h-8 sm:w-8 ${iconColor}`} />
       </div>
       <div className="min-w-0 flex-1">

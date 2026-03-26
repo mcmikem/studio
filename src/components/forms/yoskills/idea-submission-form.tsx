@@ -85,7 +85,7 @@ export function IdeaSubmissionForm() {
       <Card className="border shadow-comic-sm w-full overflow-hidden">
         <CardHeader className="bg-muted/30 border-b border-omuto-navy/10 p-4 sm:p-6 lg:p-8">
           <div className="flex items-start gap-3 sm:gap-4">
-            <div className="p-2 sm:p-3 bg-white border shadow-comic-sm rounded-xl sm:rounded-2xl flex-shrink-0">
+            <div className="p-2 sm:p-3 bg-card border shadow-comic-sm rounded-xl sm:rounded-2xl flex-shrink-0">
               <Lightbulb className="h-5 w-5 sm:h-8 sm:w-8 text-primary" />
             </div>
             <div className="min-w-0 flex-1">

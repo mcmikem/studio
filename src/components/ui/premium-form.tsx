@@ -41,7 +41,7 @@ export function PremiumInput({
         )}
         <Input 
           className={cn(
-            "h-12 sm:h-14 border rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold tracking-tight text-omuto-navy bg-white",
+            "h-12 sm:h-14 border rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold tracking-tight text-omuto-navy bg-card",
             icon && "pl-10",
             error && "border-omuto-red",
             className
@@ -74,7 +74,7 @@ export function PremiumTextarea({
       )}
       <Textarea 
         className={cn(
-          "min-h-[100px] sm:min-h-[120px] border rounded-xl sm:rounded-2xl font-bold text-omuto-navy bg-white",
+          "min-h-[100px] sm:min-h-[120px] border rounded-xl sm:rounded-2xl font-bold text-omuto-navy bg-card",
           error && "border-omuto-red",
           className
         )} 
@@ -113,7 +113,7 @@ export function PremiumSelect({
       )}
       <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger className={cn(
-          "h-12 sm:h-14 border rounded-xl sm:rounded-2xl font-bold text-omuto-navy bg-white",
+          "h-12 sm:h-14 border rounded-xl sm:rounded-2xl font-bold text-omuto-navy bg-card",
           error && "border-omuto-red",
           className
         )}>
