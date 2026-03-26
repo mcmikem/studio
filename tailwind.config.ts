@@ -18,6 +18,7 @@ export default {
       colors: {
         // Omuto Brand Colors (Strict from blueprint)
         // Brand colors - stay same in dark mode
+        'omuto-orange': '#FF6B35',
         'omuto-red': '#EC1C24',
         'omuto-yellow': '#FFCF5D',
         'omuto-brown': '#5D261B',

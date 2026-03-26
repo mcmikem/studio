@@ -377,4 +377,82 @@
     transform: scale(1.15);
     z-index: 1001 !important;
   }
+
+  /* Standardized Card Base */
+  .card-omuto {
+    @apply border border-omuto-navy/10 bg-card rounded-xl shadow-sm;
+  }
+
+  .card-omuto-header {
+    @apply p-4 sm:p-6 border-b border-omuto-navy/6;
+  }
+
+  .card-omuto-content {
+    @apply p-4 sm:p-6;
+  }
+
+  /* Standardized Button Variants */
+  .btn-omuto-primary {
+    @apply bg-omuto-navy text-white font-bold shadow-comic-sm hover:shadow-comic;
+  }
+
+  .btn-omuto-status-approved {
+    @apply bg-omuto-teal text-white hover:bg-omuto-teal/90;
+  }
+
+  .btn-omuto-status-rejected {
+    @apply bg-omuto-red text-white hover:bg-omuto-red/90;
+  }
+
+  /* Standardized Status Colors */
+  .omuto-success {
+    @apply bg-omuto-teal/10 text-omuto-teal border border-omuto-teal/20;
+  }
+
+  .omuto-warning {
+    @apply bg-omuto-yellow/10 text-omuto-yellow/50 border border-omuto-yellow/20;
+  }
+
+  .omuto-danger {
+    @apply bg-omuto-red/10 text-omuto-red border border-omuto-red/20;
+  }
+
+  .omuto-info {
+    @apply bg-omuto-blue/10 text-omuto-blue border border-omuto-blue/20;
+  }
+
+  /* Typography Scale */
+  .text-display {
+    @apply font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight;
+  }
+
+  .text-heading {
+    @apply font-heading text-xl sm:text-2xl font-bold tracking-tight;
+  }
+
+  .text-subheading {
+    @apply font-heading text-lg sm:text-xl font-semibold tracking-tight;
+  }
+
+  .text-body-large {
+    @apply font-body text-base leading-relaxed;
+  }
+
+  .text-label {
+    @apply font-body text-sm font-medium text-muted-foreground;
+  }
+
+  /* Form Elements */
+  .form-input-omuto {
+    @apply h-12 sm:h-14 border border-omuto-navy/20 rounded-xl bg-card font-semibold text-omuto-navy placeholder:text-omuto-navy/60 focus:border-omuto-orange focus:ring-2 focus:ring-omuto-orange/20;
+  }
+
+  /* Grid Patterns */
+  .grid-stats {
+    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4;
+  }
+
+  .grid-cards {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5;
+  }
 }
