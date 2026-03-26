@@ -97,7 +97,7 @@ export function SchoolApplicationForm() {
     <Card className="border shadow-comic-sm w-full overflow-hidden">
       <CardHeader className="bg-muted/30 border-b border-omuto-navy/10 p-4 sm:p-6 lg:p-8">
             <div className="flex items-start gap-4">
-                <div className="p-3 bg-white border shadow-comic-sm rounded-2xl flex-shrink-0">
+                <div className="p-3 bg-card border shadow-comic-sm rounded-2xl flex-shrink-0">
                     <Building className="h-8 w-8 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">

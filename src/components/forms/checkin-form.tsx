@@ -163,7 +163,7 @@ function CheckinFormComponent() {
             <Card className="overflow-hidden border shadow-sm w-full">
                 <CardHeader className="bg-muted/30 border-b p-4 sm:p-6 lg:p-8">
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-white border shadow-sm rounded-xl flex-shrink-0">
+                        <div className="p-2 bg-card border shadow-sm rounded-xl flex-shrink-0">
                             <LogIn className="h-6 w-6 text-primary" />
                         </div>
                         <div>
