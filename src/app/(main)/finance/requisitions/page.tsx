@@ -294,7 +294,7 @@ export default function RequisitionsPage() {
                       <Calendar className="h-4 w-4" />
                       <span className="text-xs font-bold uppercase">Date</span>
                     </div>
-                    <p className="font-bold text-omuto-navy">{formatDateSafe(selectedExpense.date, 'full')}</p>
+                    <p className="font-bold text-omuto-navy">{formatDateSafe(selectedExpense.date, 'dateOnly')}</p>
                   </div>
                 </div>
 
@@ -333,7 +333,6 @@ export default function RequisitionsPage() {
             <tfoot>
                 <tr>
                   <td colSpan={Object.keys(requisitions[0] || {}).length + 3}>
-                    {isLoadingMore && <Skeleton className="h-10 w-full" />}
                   </td>
                 </tr>
               </tfoot>
