@@ -11,6 +11,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
+import { TeamDeployment } from './team-deployment';
+import { TeamPerformanceLeaderboard } from './team-performance-leaderboard';
+import { ApprovalQueue } from './approval-queue';
+import { EcosystemPulse } from './ecosystem-pulse';
 import { 
   TrendingUp, DollarSign, Wallet, Clock, Activity, CheckCircle,
   Users, AlertTriangle, BarChart3, ClipboardCheck, Target,
@@ -241,6 +245,18 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
       </Card>
 
       <RoleMissionCard profile={profile} />
+
+      {/* Team Deployment - shows field staff status */}
+      <TeamDeployment />
+
+      {/* Team Performance Leaderboard */}
+      <TeamPerformanceLeaderboard />
+
+      {/* Approval Queue - pending expenses */}
+      <ApprovalQueue />
+
+      {/* Ecosystem Pulse - program health overview */}
+      <EcosystemPulse />
     </div>
   );
 }
