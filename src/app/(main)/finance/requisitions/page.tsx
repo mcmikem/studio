@@ -19,8 +19,11 @@ import { PageHeader } from '@/components/page-header';
 import { createSystemAlert } from '@/lib/notifications';
 import Link from 'next/link';
 import {
-  FileText, Check, X, CheckCheck, PlusCircle, Clock, AlertCircle, Ban, Handshake, CheckCircle2
+  FileText, Check, X, CheckCheck, PlusCircle, Clock, AlertCircle, Ban, Handshake, CheckCircle2, Eye, Receipt, Calendar, User as UserIcon
 } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
+} from '@/components/ui/dialog';
 
 const statusColors: Record<string, string> = {
   Pending: 'border-yellow-500 bg-yellow-500/10 text-yellow-600',
@@ -35,6 +38,7 @@ export default function RequisitionsPage() {
   const { user } = useUser();
   const { profile } = useUserProfile(user);
   const { toast } = useToast();
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
   const expensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: allExpenses, isLoading } = useCollection<Expense>(expensesQuery);
@@ -45,6 +49,11 @@ export default function RequisitionsPage() {
   const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
   const canApprove = profile && approvalRoles.includes(profile.role);
   const canManageFinances = profile && financeRoles.includes(profile.role);
+
+  const pending = requisitions.filter(e => e.status === 'Pending');
+  const approved = requisitions.filter(e => e.status === 'Approved');
+  const disbursed = requisitions.filter(e => e.status === 'Disbursed');
+  const acknowledged = requisitions.filter(e => e.status === 'Acknowledged');
 
   const handleStatusUpdate = async (expense: Expense, status: Expense['status']) => {
     if (!firestore || !user) return;
@@ -83,11 +92,6 @@ export default function RequisitionsPage() {
     }
   };
 
-  const pending = requisitions.filter(e => e.status === 'Pending');
-  const approved = requisitions.filter(e => e.status === 'Approved');
-  const disbursed = requisitions.filter(e => e.status === 'Disbursed');
-  const acknowledged = requisitions.filter(e => e.status === 'Acknowledged');
-
   return (
     <div className="space-y-8 pb-20">
       <PageHeader
@@ -100,42 +104,51 @@ export default function RequisitionsPage() {
         </Button>
       </PageHeader>
 
-      {/* Status Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <Card className="border-2 border-amber-500/20 bg-amber-500/5 rounded-[2.5rem] shadow-xl overflow-hidden">
-          <CardContent className="p-8 flex items-center gap-4">
-            <div className="p-3 bg-amber-500/20 rounded-2xl text-amber-600"><Clock className="h-6 w-6" /></div>
-            <div>
-                <p className="text-3xl font-black text-amber-600 leading-tight">{pending.length}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-amber-600/50">Pending Approval</p>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-yellow-600" />
+              <span className="text-xs font-bold text-yellow-700 uppercase">Pending</span>
             </div>
+            <p className="text-2xl font-black text-yellow-700 mt-1">{pending.length}</p>
           </CardContent>
         </Card>
-        <Card className="border-2 border-blue-500/20 bg-blue-500/5 rounded-[2.5rem] shadow-xl overflow-hidden">
-          <CardContent className="p-8 flex items-center gap-4">
-            <div className="p-3 bg-blue-500/20 rounded-2xl text-blue-600"><Handshake className="h-6 w-6" /></div>
-            <div>
-                <p className="text-3xl font-black text-blue-600 leading-tight">{approved.length}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600/50">Ready to Disburse</p>
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-blue-600" />
+              <span className="text-xs font-bold text-blue-700 uppercase">Approved</span>
             </div>
+            <p className="text-2xl font-black text-blue-700 mt-1">{approved.length}</p>
           </CardContent>
         </Card>
-        <Card className="border-2 border-purple-500/20 bg-purple-500/5 rounded-[2.5rem] shadow-xl overflow-hidden">
-          <CardContent className="p-8 flex items-center gap-4">
-            <div className="p-3 bg-purple-500/20 rounded-2xl text-purple-600"><CheckCircle2 className="h-6 w-6" /></div>
-            <div>
-                <p className="text-3xl font-black text-purple-600 leading-tight">{disbursed.length}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-purple-600/50">Funds Disbursed</p>
+        <Card className="bg-purple-50 border-purple-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Handshake className="h-4 w-4 text-purple-600" />
+              <span className="text-xs font-bold text-purple-700 uppercase">Disbursed</span>
             </div>
+            <p className="text-2xl font-black text-purple-700 mt-1">{disbursed.length}</p>
           </CardContent>
         </Card>
-        <Card className="border-2 border-emerald-500/20 bg-emerald-500/5 rounded-[2.5rem] shadow-xl overflow-hidden">
-          <CardContent className="p-8 flex items-center gap-4">
-            <div className="p-3 bg-emerald-500/20 rounded-2xl text-emerald-600"><CheckCheck className="h-6 w-6" /></div>
-            <div>
-                <p className="text-3xl font-black text-emerald-600 leading-tight">{acknowledged.length}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/50">Fully Acknowledged</p>
+        <Card className="bg-green-50 border-green-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <CheckCheck className="h-4 w-4 text-green-600" />
+              <span className="text-xs font-bold text-green-700 uppercase">Acknowledged</span>
             </div>
+            <p className="text-2xl font-black text-green-700 mt-1">{acknowledged.length}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-red-50 border-red-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Ban className="h-4 w-4 text-red-600" />
+              <span className="text-xs font-bold text-red-700 uppercase">Rejected</span>
+            </div>
+            <p className="text-2xl font-black text-red-700 mt-1">{requisitions.filter(e => e.status === 'Rejected').length}</p>
           </CardContent>
         </Card>
       </div>
@@ -153,7 +166,12 @@ export default function RequisitionsPage() {
               <div key={expense.id} className="p-6 space-y-4">
                   <div className="flex justify-between items-start">
                     <div className="min-w-0 flex-1 mr-3">
-                        <h4 className="font-bold text-omuto-navy truncate">{expense.title}</h4>
+                        <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-omuto-navy truncate">{expense.title}</h4>
+                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setSelectedExpense(expense)}>
+                                <Eye className="h-3 w-3" />
+                            </Button>
+                        </div>
                         <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1 tracking-wider">{expense.userName} · {formatDateSafe(expense.date, 'dateOnly')}</p>
                     </div>
                     <Badge variant="outline" className={cn('px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-widest', statusColors[expense.status])}>{expense.status}</Badge>
@@ -199,7 +217,12 @@ export default function RequisitionsPage() {
                         </div>
                     </TableCell>
                     <TableCell className="py-6 min-w-[200px]">
-                        <p className="font-bold text-omuto-navy leading-snug">{expense.title}</p>
+                        <div className="flex items-center gap-2">
+                            <p className="font-bold text-omuto-navy leading-snug">{expense.title}</p>
+                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setSelectedExpense(expense)}>
+                                <Eye className="h-3 w-3" />
+                            </Button>
+                        </div>
                         <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1 tracking-wider">{formatDateSafe(expense.date, 'dateOnly')}</p>
                     </TableCell>
                     <TableCell className="py-6">
@@ -218,13 +241,8 @@ export default function RequisitionsPage() {
                           <Button size="sm" variant="default" className="bg-purple-600 hover:bg-purple-700 text-white font-black uppercase tracking-widest text-[10px] h-10 px-6 rounded-xl shadow-lg" onClick={() => handleStatusUpdate(expense, 'Disbursed')}>Disburse</Button>
                         )}
                         {expense.status === 'Disbursed' && expense.userId === user?.uid && (
-                          <Button size="sm" variant="outline" className="border-2 border-emerald-500 text-emerald-600 font-black uppercase tracking-widest text-[10px] h-10 px-6 rounded-xl hover:bg-emerald-50" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}>
-                            Acknowledge Receipt
-                          </Button>
+                          <Button size="sm" variant="outline" className="border-green-500/50 text-green-600 hover:bg-green-50 font-black uppercase text-[10px] h-10 rounded-xl" onClick={() => handleStatusUpdate(expense, 'Acknowledged')}>Acknowledge</Button>
                         )}
-                         <Button asChild size="icon" variant="ghost" className="h-10 w-10 text-omuto-navy/30 hover:text-omuto-navy rounded-xl">
-                            <Link href={`/finance/requisitions/${expense.id}`}><FileText className="h-4 w-4" /></Link>
-                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -234,12 +252,141 @@ export default function RequisitionsPage() {
           </div>
         </CardContent>
       </Card>
-      {requisitions.length === 0 && !isLoading && (
-          <div className="text-center py-20 bg-muted/20 rounded-[2.5rem] border-2 border-dashed border-omuto-navy/10 mt-8">
-              <FileText className="h-12 w-12 text-omuto-navy/10 mx-auto mb-4" />
-              <p className="text-sm font-bold text-omuto-navy/50 uppercase tracking-widest">No requisitions found</p>
-          </div>
-      )}
+
+      {/* Expense Detail Dialog */}
+      <Dialog open={!!selectedExpense} onOpenChange={() => setSelectedExpense(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedExpense && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <FileText className="h-5 w-5" />
+                  {selectedExpense.title}
+                </DialogTitle>
+                <DialogDescription>
+                  Request details and breakdown
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* Status & Amount */}
+                <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className={cn('px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider', statusColors[selectedExpense.status])}>
+                      {selectedExpense.status}
+                    </Badge>
+                    <span className="text-sm font-medium text-muted-foreground">{selectedExpense.type}</span>
+                  </div>
+                  <p className="text-2xl font-black text-omuto-navy">{formatCurrency(selectedExpense.totalAmount)}</p>
+                </div>
+
+                {/* Requester Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <UserIcon className="h-4 w-4" />
+                      <span className="text-xs font-bold uppercase">Requested By</span>
+                    </div>
+                    <p className="font-bold text-omuto-navy">{selectedExpense.userName}</p>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span className="text-xs font-bold uppercase">Date</span>
+                    </div>
+                    <p className="font-bold text-omuto-navy">{formatDateSafe(selectedExpense.date, 'full')}</p>
+                  </div>
+                </div>
+
+                {/* Project Info */}
+                {selectedExpense.projectName && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                    <span className="text-xs font-bold uppercase text-blue-600">Project</span>
+                    <p className="font-bold text-omuto-navy mt-1">{selectedExpense.projectName}</p>
+                  </div>
+                )}
+
+                {/* Line Items Breakdown */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Receipt className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-bold uppercase text-muted-foreground">Expense Breakdown</span>
+                  </div>
+                  <div className="border rounded-xl overflow-hidden">
+                    <Table>
+                      <TableHeader className="bg-muted/30">
+                        <TableRow>
+                          <TableHead className="text-xs font-black uppercase">Description</TableHead>
+                          <TableHead className="text-xs font-black uppercase">Category</TableHead>
+                          <TableHead className="text-right text-xs font-black uppercase">Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedExpense.items?.map((item, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell className="font-medium">{item.description}</TableCell>
+                            <TableCell><Badge variant="outline" className="text-xs">{item.category}</Badge></TableCell>
+                            <TableCell className="text-right font-bold">{formatCurrency(item.amount)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                      <TableFooter>
+                        <TableRow className="bg-muted/50">
+                          <TableCell colSpan={2} className="font-black text-right">TOTAL</TableCell>
+                          <TableCell className="text-right font-black text-lg">{formatCurrency(selectedExpense.totalAmount)}</TableCell>
+                        </TableRow>
+                      </TableFooter>
+                    </Table>
+                  </div>
+                </div>
+
+                {/* Receipt */}
+                {selectedExpense.receiptUrl && (
+                  <div>
+                    <span className="text-sm font-bold uppercase text-muted-foreground">Receipt Attached</span>
+                    <a 
+                      href={selectedExpense.receiptUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="mt-2 block p-4 border rounded-xl hover:bg-muted/20 transition-colors"
+                    >
+                      <img 
+                        src={selectedExpense.receiptUrl} 
+                        alt="Receipt" 
+                        className="max-h-48 rounded-lg mx-auto"
+                      />
+                    </a>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  {canApprove && selectedExpense.status === 'Pending' && selectedExpense.userId !== user?.uid && (
+                    <>
+                      <Button onClick={() => { handleStatusUpdate(selectedExpense, 'Approved'); setSelectedExpense(null); }} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+                        <Check className="mr-2 h-4 w-4" /> Approve
+                      </Button>
+                      <Button onClick={() => { handleStatusUpdate(selectedExpense, 'Rejected'); setSelectedExpense(null); }} variant="outline" className="flex-1 border-rose-500/50 text-rose-600 hover:bg-rose-50">
+                        <X className="mr-2 h-4 w-4" /> Reject
+                      </Button>
+                    </>
+                  )}
+                  {canManageFinances && selectedExpense.status === 'Approved' && (
+                    <Button onClick={() => { handleStatusUpdate(selectedExpense, 'Disbursed'); setSelectedExpense(null); }} className="w-full bg-purple-600 hover:bg-purple-700">
+                      <Handshake className="mr-2 h-4 w-4" /> Disburse Funds
+                    </Button>
+                  )}
+                  {selectedExpense.status === 'Disbursed' && selectedExpense.userId === user?.uid && (
+                    <Button onClick={() => { handleStatusUpdate(selectedExpense, 'Acknowledged'); setSelectedExpense(null); }} className="w-full bg-green-600 hover:bg-green-700">
+                      <CheckCheck className="mr-2 h-4 w-4" /> Acknowledge Receipt
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
