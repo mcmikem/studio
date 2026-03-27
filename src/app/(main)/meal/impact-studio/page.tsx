@@ -146,42 +146,43 @@ export default function ImpactStudioPage() {
     };
 
     return (
-        <div className="space-y-6">
-            {/* Offline Status Banner */}
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${
-                isOnline 
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300' 
-                    : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
-            }`}>
-                {isOnline ? (
-                    <>
-                        <Cloud className="h-5 w-5" />
-                        <span className="font-medium text-sm">Online - Data syncs automatically</span>
-                    </>
-                ) : (
-                    <>
-                        <CloudOff className="h-5 w-5" />
-                        <span className="font-medium text-sm">Offline - Changes will sync when connected</span>
-                    </>
-                )}
-                {pendingSyncCount > 0 && (
-                    <Badge variant="secondary" className="ml-auto">
-                        {pendingSyncCount} pending
-                    </Badge>
-                )}
-            </div>
+        <div className="max-w-full overflow-hidden">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 max-w-7xl mx-auto w-full">
+                {/* Offline Status Banner */}
+                <div className={`flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 px-4 py-3 rounded-xl border ${
+                    isOnline 
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300' 
+                        : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300'
+                }`}>
+                    {isOnline ? (
+                        <>
+                            <Cloud className="h-5 w-5 flex-shrink-0" />
+                            <span className="font-medium text-sm">Online - Data syncs automatically</span>
+                        </>
+                    ) : (
+                        <>
+                            <CloudOff className="h-5 w-5 flex-shrink-0" />
+                            <span className="font-medium text-sm">Offline - Changes will sync when connected</span>
+                        </>
+                    )}
+                    {pendingSyncCount > 0 && (
+                        <Badge variant="secondary" className="sm:ml-auto">
+                            {pendingSyncCount} pending
+                        </Badge>
+                    )}
+                </div>
 
-            <Card className="border-primary/30 bg-primary/5 dark:bg-primary/10">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Database className="h-5 w-5" />
-                        Impact Studio
-                    </CardTitle>
-                    <CardDescription>Create smart forms and train app knowledge from documents/text for stronger data capture and AI support.</CardDescription>
-                </CardHeader>
-            </Card>
+                <Card className="border-primary/30 bg-primary/5 dark:bg-primary/10">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Database className="h-5 w-5" />
+                            Impact Studio
+                        </CardTitle>
+                        <CardDescription>Create smart forms and train app knowledge from documents/text for stronger data capture and AI support.</CardDescription>
+                    </CardHeader>
+                </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
                 {/* AI Form Builder */}
                 <Card>
                     <CardHeader>
@@ -384,6 +385,7 @@ export default function ImpactStudioPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+            </div>
         </div>
     );
 }
