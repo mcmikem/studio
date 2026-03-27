@@ -71,6 +71,7 @@ export default function DataManagementPage() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
     const [error, setError] = useState('');
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const adminRoles = ['Executive Director', 'Administrator'];
     if (!adminRoles.includes(effectiveRole || '')) {
@@ -84,8 +85,6 @@ export default function DataManagementPage() {
             </Card>
         );
     }
-
-    const [refreshKey, setRefreshKey] = useState(0);
 
     const collectionQuery = useMemo(() => {
         if (!firestore) return null;
@@ -175,191 +174,191 @@ export default function DataManagementPage() {
 
                 {/* Collection Selector */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-                {Object.entries(COLLECTION_INFO).map(([key, info]) => {
-                    const CIcon = info.icon;
-                    const isActive = selectedCollection === key;
-                    return (
-                        <button
-                            key={key}
-                            onClick={() => setSelectedCollection(key as DataCollection)}
-                            className={`p-3 rounded-xl border-2 transition-all text-left ${
-                                isActive 
-                                    ? 'border-primary bg-primary/5 shadow-md' 
-                                    : 'border-border hover:border-primary/50 hover:bg-muted/50'
-                            }`}
-                        >
-                            <div className="flex items-center gap-2 mb-1">
-                                <CIcon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                                <span className="font-bold text-xs">{info.label}</span>
-                            </div>
-                            <span className="text-[10px] text-muted-foreground">{documents?.length || 0} records</span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            {/* Search and Actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder={`Search ${Info.label}...`}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                    />
+                    {Object.entries(COLLECTION_INFO).map(([key, info]) => {
+                        const CIcon = info.icon;
+                        const isActive = selectedCollection === key;
+                        return (
+                            <button
+                                key={key}
+                                onClick={() => setSelectedCollection(key as DataCollection)}
+                                className={`p-3 rounded-xl border-2 transition-all text-left ${
+                                    isActive 
+                                        ? 'border-primary bg-primary/5 shadow-md' 
+                                        : 'border-border hover:border-primary/50 hover:bg-muted/50'
+                                }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <CIcon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    <span className="font-bold text-xs">{info.label}</span>
+                                </div>
+                                <span className="text-[10px] text-muted-foreground">{documents?.length || 0} records</span>
+                            </button>
+                        );
+                    })}
                 </div>
-                <Button variant="outline" onClick={() => setRefreshKey(k => k + 1)} className="gap-2">
-                    <RefreshCw className="h-4 w-4" />
-                    <span className="hidden sm:inline">Refresh</span>
-                </Button>
-            </div>
 
-            {/* Data Table */}
-            <Card>
-                <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle className="flex items-center gap-2">
-                                <Icon className="h-5 w-5 text-primary" />
-                                {Info.label}
-                            </CardTitle>
-                            <CardDescription>{Info.description}</CardDescription>
-                        </div>
-                        <Badge variant="secondary">{filteredDocs.length} records</Badge>
+                {/* Search and Actions */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder={`Search ${Info.label}...`}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10"
+                        />
                     </div>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className="space-y-3">
-                            {Array(5).fill(0).map((_, i) => (
-                                <Skeleton key={i} className="h-16 w-full" />
-                            ))}
+                    <Button variant="outline" onClick={() => setRefreshKey(k => k + 1)} className="gap-2">
+                        <RefreshCw className="h-4 w-4" />
+                        <span className="hidden sm:inline">Refresh</span>
+                    </Button>
+                </div>
+
+                {/* Data Table */}
+                <Card>
+                    <CardHeader className="pb-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Icon className="h-5 w-5 text-primary" />
+                                    {Info.label}
+                                </CardTitle>
+                                <CardDescription>{Info.description}</CardDescription>
+                            </div>
+                            <Badge variant="secondary">{filteredDocs.length} records</Badge>
                         </div>
-                    ) : filteredDocs.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground">
-                            <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                            <p className="font-medium">No records found</p>
-                            <p className="text-sm">Try changing your search or collection</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <div className="min-w-[800px] space-y-2">
-                                {filteredDocs.slice(0, 20).map((doc: any) => (
-                                    <div 
-                                        key={doc.id} 
-                                        className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
-                                    >
-                                        <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                                            <div className="truncate">
-                                                <p className="font-bold text-sm truncate">{doc.schoolName || doc.name || doc.title || doc.email || doc.id}</p>
-                                                <p className="text-xs text-muted-foreground truncate">
-                                                    {doc.district || doc.role || doc.userId || ''}
-                                                </p>
-                                            </div>
-                                            <div className="text-xs text-muted-foreground truncate">
-                                                {doc.subCounty || doc.email || ''}
-                                            </div>
-                                            <div className="text-xs text-muted-foreground truncate">
-                                                {doc.status || doc.type || ''}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2 ml-4">
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                onClick={() => openEditDialog(doc)}
-                                                className="h-8 w-8"
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                onClick={() => openDeleteDialog(doc)}
-                                                className="h-8 w-8 text-destructive hover:text-destructive"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="space-y-3">
+                                {Array(5).fill(0).map((_, i) => (
+                                    <Skeleton key={i} className="h-16 w-full" />
                                 ))}
                             </div>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* Edit Dialog */}
-            <Dialog open={isEditing} onOpenChange={setIsEditing}>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Edit {Info.label} Record</DialogTitle>
-                        <DialogDescription>Modify the fields below and save changes.</DialogDescription>
-                    </DialogHeader>
-                    {error && (
-                        <div className="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm">{error}</div>
-                    )}
-                    <div className="grid gap-4 py-4">
-                        {Object.keys(editForm)
-                            .filter(k => k !== 'id' && k !== 'createdAt' && k !== 'updatedAt')
-                            .slice(0, 15)
-                            .map(key => (
-                                <div key={key} className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase">{key}</Label>
-                                    {key.includes('Description') || key.includes('Notes') || key.includes('Feedback') || key.includes('Comment') ? (
-                                        <Textarea 
-                                            value={editForm[key] || ''} 
-                                            onChange={(e) => setEditForm({...editForm, [key]: e.target.value})}
-                                            className="min-h-[80px]"
-                                        />
-                                    ) : (
-                                        <Input 
-                                            value={editForm[key] || ''} 
-                                            onChange={(e) => setEditForm({...editForm, [key]: e.target.value})}
-                                        />
-                                    )}
+                        ) : filteredDocs.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                                <p className="font-medium">No records found</p>
+                                <p className="text-sm">Try changing your search or collection</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <div className="min-w-[800px] space-y-2">
+                                    {filteredDocs.slice(0, 20).map((doc: any) => (
+                                        <div 
+                                            key={doc.id} 
+                                            className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
+                                        >
+                                            <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                                <div className="truncate">
+                                                    <p className="font-bold text-sm truncate">{doc.schoolName || doc.name || doc.title || doc.email || doc.id}</p>
+                                                    <p className="text-xs text-muted-foreground truncate">
+                                                        {doc.district || doc.role || doc.userId || ''}
+                                                    </p>
+                                                </div>
+                                                <div className="text-xs text-muted-foreground truncate">
+                                                    {doc.subCounty || doc.email || ''}
+                                                </div>
+                                                <div className="text-xs text-muted-foreground truncate">
+                                                    {doc.status || doc.type || ''}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 ml-4">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    onClick={() => openEditDialog(doc)}
+                                                    className="h-8 w-8"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    onClick={() => openDeleteDialog(doc)}
+                                                    className="h-8 w-8 text-destructive hover:text-destructive"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
-                        <Button onClick={handleSaveEdit} disabled={loading}>
-                            {loading ? 'Saving...' : 'Save Changes'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
-            {/* Delete Dialog */}
-            <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-destructive">
-                            <AlertTriangle className="h-5 w-5" />
-                            Confirm Delete
-                        </DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to delete this record? This action cannot be undone.
-                        </DialogDescription>
-                    </DialogHeader>
-                    {error && (
-                        <div className="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm">{error}</div>
-                    )}
-                    {deletingDoc && (
-                        <div className="bg-muted p-4 rounded-lg">
-                            <p className="font-bold">{deletingDoc.schoolName || deletingDoc.name || deletingDoc.title || deletingDoc.id}</p>
-                            {deletingDoc.district && <p className="text-sm text-muted-foreground">{deletingDoc.district}</p>}
+                {/* Edit Dialog */}
+                <Dialog open={isEditing} onOpenChange={setIsEditing}>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Edit {Info.label} Record</DialogTitle>
+                            <DialogDescription>Modify the fields below and save changes.</DialogDescription>
+                        </DialogHeader>
+                        {error && (
+                            <div className="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm">{error}</div>
+                        )}
+                        <div className="grid gap-4 py-4">
+                            {Object.keys(editForm)
+                                .filter(k => k !== 'id' && k !== 'createdAt' && k !== 'updatedAt')
+                                .slice(0, 15)
+                                .map(key => (
+                                    <div key={key} className="space-y-2">
+                                        <Label className="text-xs font-bold uppercase">{key}</Label>
+                                        {key.includes('Description') || key.includes('Notes') || key.includes('Feedback') || key.includes('Comment') ? (
+                                            <Textarea 
+                                                value={editForm[key] || ''} 
+                                                onChange={(e) => setEditForm({...editForm, [key]: e.target.value})}
+                                                className="min-h-[80px]"
+                                            />
+                                        ) : (
+                                            <Input 
+                                                value={editForm[key] || ''} 
+                                                onChange={(e) => setEditForm({...editForm, [key]: e.target.value})}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
                         </div>
-                    )}
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDeleting(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete} disabled={loading}>
-                            {loading ? 'Deleting...' : 'Delete Record'}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                            <Button onClick={handleSaveEdit} disabled={loading}>
+                                {loading ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Delete Dialog */}
+                <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-destructive">
+                                <AlertTriangle className="h-5 w-5" />
+                                Confirm Delete
+                            </DialogTitle>
+                            <DialogDescription>
+                                Are you sure you want to delete this record? This action cannot be undone.
+                            </DialogDescription>
+                        </DialogHeader>
+                        {error && (
+                            <div className="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm">{error}</div>
+                        )}
+                        {deletingDoc && (
+                            <div className="bg-muted p-4 rounded-lg">
+                                <p className="font-bold">{deletingDoc.schoolName || deletingDoc.name || deletingDoc.title || deletingDoc.id}</p>
+                                {deletingDoc.district && <p className="text-sm text-muted-foreground">{deletingDoc.district}</p>}
+                            </div>
+                        )}
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDeleting(false)}>Cancel</Button>
+                            <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+                                {loading ? 'Deleting...' : 'Delete Record'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );

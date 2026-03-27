@@ -228,243 +228,243 @@ export default function SeedingBotPage() {
                 </div>
 
                 {/* Progress Steps */}
-            <div className="flex items-center gap-2 text-sm">
-                {['upload', 'map', 'preview', 'seeding', 'complete'].map((s, i) => (
-                    <div key={s} className="flex items-center">
-                        <div className={`px-3 py-1 rounded-full font-medium ${
-                            step === s ? 'bg-primary text-white' :
-                            ['seeding', 'complete'].includes(step) && i <= 4 ? 'bg-green-100 text-green-700' :
-                            'bg-muted text-muted-foreground'
-                        }`}>
-                            {i + 1}. {s.charAt(0).toUpperCase() + s.slice(1)}
-                        </div>
-                        {i < 4 && <ArrowRight className="h-4 w-4 mx-1 text-muted-foreground" />}
-                    </div>
-                ))}
-            </div>
-
-            {/* Step 1: Upload */}
-            {step === 'upload' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>1. Upload Data</CardTitle>
-                        <CardDescription>Drag & drop or select a file to upload</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div 
-                            className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:bg-muted/50 transition-colors cursor-pointer"
-                            onClick={() => fileInputRef.current?.click()}
-                            onDrop={handleDrop}
-                            onDragOver={(e) => e.preventDefault()}
-                        >
-                            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                            <p className="font-bold">Click to upload or drag & drop</p>
-                            <p className="text-sm text-muted-foreground mt-1">Supports .json and .csv files</p>
-                        </div>
-                        <input ref={fileInputRef} type="file" accept=".json,.csv" onChange={handleFileUpload} className="hidden" />
-                        
-                        {rawData.length > 0 && (
-                            <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-                                <CheckCircle className="h-5 w-5 text-green-600" />
-                                <span className="font-medium">{rawData.length} records loaded</span>
-                                <span className="text-sm text-muted-foreground">({detectedColumns.length} columns)</span>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                    {['upload', 'map', 'preview', 'seeding', 'complete'].map((s, i) => (
+                        <div key={s} className="flex items-center">
+                            <div className={`px-3 py-1 rounded-full font-medium ${
+                                step === s ? 'bg-primary text-white' :
+                                ['seeding', 'complete'].includes(step) && i <= 4 ? 'bg-green-100 text-green-700' :
+                                'bg-muted text-muted-foreground'
+                            }`}>
+                                {i + 1}. {s.charAt(0).toUpperCase() + s.slice(1)}
                             </div>
-                        )}
-                        
-                        {parseError && (
-                            <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg text-red-600 text-sm">{parseError}</div>
-                        )}
-
-                        {rawData.length > 0 && (
-                            <Button onClick={() => setStep('map')} className="w-full gap-2">
-                                Continue <ArrowRight className="h-4 w-4" />
-                            </Button>
-                        )}
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Step 2: Map Columns */}
-            {step === 'map' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>2. Map Columns</CardTitle>
-                        <CardDescription>Select which collection to seed and map columns</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                            <Label>Target Collection</Label>
-                            <Select value={selectedCollection} onValueChange={setSelectedCollection}>
-                                <SelectTrigger><SelectValue placeholder="Select collection..." /></SelectTrigger>
-                                <SelectContent>
-                                    {COLLECTIONS.map(c => (
-                                        <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            {i < 4 && <ArrowRight className="h-4 w-4 mx-1 text-muted-foreground" />}
                         </div>
+                    ))}
+                </div>
 
-                        {selectedCollection && (
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <Label>Column Mappings</Label>
-                                    <Button variant="outline" size="sm" onClick={autoMapColumns} className="gap-1">
-                                        <RefreshCw className="h-3 w-3" /> Auto-Map
-                                    </Button>
+                {/* Step 1: Upload */}
+                {step === 'upload' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>1. Upload Data</CardTitle>
+                            <CardDescription>Drag & drop or select a file to upload</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div 
+                                className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:bg-muted/50 transition-colors cursor-pointer"
+                                onClick={() => fileInputRef.current?.click()}
+                                onDrop={handleDrop}
+                                onDragOver={(e) => e.preventDefault()}
+                            >
+                                <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                <p className="font-bold">Click to upload or drag & drop</p>
+                                <p className="text-sm text-muted-foreground mt-1">Supports .json and .csv files</p>
+                            </div>
+                            <input ref={fileInputRef} type="file" accept=".json,.csv" onChange={handleFileUpload} className="hidden" />
+                            
+                            {rawData.length > 0 && (
+                                <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
+                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                    <span className="font-medium">{rawData.length} records loaded</span>
+                                    <span className="text-sm text-muted-foreground">({detectedColumns.length} columns)</span>
                                 </div>
-                                <div className="grid gap-2">
-                                    {detectedColumns.map(col => {
-                                        const mapping = columnMappings.find(m => m.source === col);
-                                        return (
-                                            <div key={col} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
-                                                <span className="flex-1 font-mono text-sm truncate">{col}</span>
-                                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                                                <Select 
-                                                    value={mapping?.target || ''} 
-                                                    onValueChange={(val) => {
-                                                        if (val) {
-                                                            setColumnMappings([...columnMappings.filter(m => m.source !== col), { source: col, target: val }]);
-                                                        }
-                                                    }}
-                                                >
-                                                    <SelectTrigger className="flex-1"><SelectValue placeholder="Skip (leave blank)" /></SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="__skip__">-- Skip --</SelectItem>
-                                                        {selectedCollectionInfo?.fields.map(f => (
-                                                            <SelectItem key={f} value={f}>{f}</SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        );
-                                    })}
+                            )}
+                            
+                            {parseError && (
+                                <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg text-red-600 text-sm">{parseError}</div>
+                            )}
+
+                            {rawData.length > 0 && (
+                                <Button onClick={() => setStep('map')} className="w-full gap-2">
+                                    Continue <ArrowRight className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Step 2: Map Columns */}
+                {step === 'map' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>2. Map Columns</CardTitle>
+                            <CardDescription>Select which collection to seed and map columns</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Target Collection</Label>
+                                <Select value={selectedCollection} onValueChange={setSelectedCollection}>
+                                    <SelectTrigger><SelectValue placeholder="Select collection..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {COLLECTIONS.map(c => (
+                                            <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {selectedCollection && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <Label>Column Mappings</Label>
+                                        <Button variant="outline" size="sm" onClick={autoMapColumns} className="gap-1">
+                                            <RefreshCw className="h-3 w-3" /> Auto-Map
+                                        </Button>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        {detectedColumns.map(col => {
+                                            const mapping = columnMappings.find(m => m.source === col);
+                                            return (
+                                                <div key={col} className="flex items-center gap-2 p-2 rounded-lg bg-muted/30">
+                                                    <span className="flex-1 font-mono text-sm truncate">{col}</span>
+                                                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                                                    <Select 
+                                                        value={mapping?.target || ''} 
+                                                        onValueChange={(val) => {
+                                                            if (val) {
+                                                                setColumnMappings([...columnMappings.filter(m => m.source !== col), { source: col, target: val }]);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <SelectTrigger className="flex-1"><SelectValue placeholder="Skip (leave blank)" /></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="__skip__">-- Skip --</SelectItem>
+                                                            {selectedCollectionInfo?.fields.map(f => (
+                                                                <SelectItem key={f} value={f}>{f}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedCollection && (
+                                <Button onClick={() => setStep('preview')} className="w-full gap-2">
+                                    Continue <ArrowRight className="h-4 w-4" />
+                                </Button>
+                            )}
+                            <Button variant="outline" onClick={() => setStep('upload')} className="w-full gap-2">
+                                <ArrowLeft className="h-4 w-4" /> Back
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Step 3: Preview */}
+                {step === 'preview' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>3. Preview & Configure</CardTitle>
+                            <CardDescription>Review what will be seeded</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div className="p-3 rounded-lg bg-muted/30">
+                                    <p className="text-muted-foreground">Records to seed</p>
+                                    <p className="text-2xl font-bold">{rawData.length}</p>
+                                </div>
+                                <div className="p-3 rounded-lg bg-muted/30">
+                                    <p className="text-muted-foreground">Target Collection</p>
+                                    <p className="text-2xl font-bold">{selectedCollectionInfo?.label}</p>
+                                </div>
+                                <div className="p-3 rounded-lg bg-muted/30">
+                                    <p className="text-muted-foreground">Fields Mapped</p>
+                                    <p className="text-2xl font-bold">{columnMappings.length}</p>
+                                </div>
+                                <div className="p-3 rounded-lg bg-muted/30">
+                                    <p className="text-muted-foreground">Extra Fields</p>
+                                    <p className="text-2xl font-bold">{detectedColumns.length - columnMappings.length}</p>
                                 </div>
                             </div>
-                        )}
 
-                        {selectedCollection && (
-                            <Button onClick={() => setStep('preview')} className="w-full gap-2">
-                                Continue <ArrowRight className="h-4 w-4" />
-                            </Button>
-                        )}
-                        <Button variant="outline" onClick={() => setStep('upload')} className="w-full gap-2">
-                            <ArrowLeft className="h-4 w-4" /> Back
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
+                            <div className="flex items-center gap-4 p-4 rounded-xl border-2 border-amber-200 dark:border-amber-800 bg-amber-50/50">
+                                <input type="checkbox" id="dryRun" checked={dryRun} onChange={(e) => setDryRun(e.target.checked)} className="h-5 w-5" />
+                                <div>
+                                    <Label htmlFor="dryRun" className="font-bold cursor-pointer">Dry Run Mode</Label>
+                                    <p className="text-sm text-muted-foreground">{dryRun ? "Preview without saving" : "Actually save to Firestore"}</p>
+                                </div>
+                            </div>
 
-            {/* Step 3: Preview */}
-            {step === 'preview' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>3. Preview & Configure</CardTitle>
-                        <CardDescription>Review what will be seeded</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div className="p-3 rounded-lg bg-muted/30">
-                                <p className="text-muted-foreground">Records to seed</p>
-                                <p className="text-2xl font-bold">{rawData.length}</p>
-                            </div>
-                            <div className="p-3 rounded-lg bg-muted/30">
-                                <p className="text-muted-foreground">Target Collection</p>
-                                <p className="text-2xl font-bold">{selectedCollectionInfo?.label}</p>
-                            </div>
-                            <div className="p-3 rounded-lg bg-muted/30">
-                                <p className="text-muted-foreground">Fields Mapped</p>
-                                <p className="text-2xl font-bold">{columnMappings.length}</p>
-                            </div>
-                            <div className="p-3 rounded-lg bg-muted/30">
-                                <p className="text-muted-foreground">Extra Fields</p>
-                                <p className="text-2xl font-bold">{detectedColumns.length - columnMappings.length}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-4 p-4 rounded-xl border-2 border-amber-200 dark:border-amber-800 bg-amber-50/50">
-                            <input type="checkbox" id="dryRun" checked={dryRun} onChange={(e) => setDryRun(e.target.checked)} className="h-5 w-5" />
-                            <div>
-                                <Label htmlFor="dryRun" className="font-bold cursor-pointer">Dry Run Mode</Label>
-                                <p className="text-sm text-muted-foreground">{dryRun ? "Preview without saving" : "Actually save to Firestore"}</p>
-                            </div>
-                        </div>
-
-                        <div className="border rounded-lg overflow-hidden">
-                            <div className="bg-muted/30 p-2 font-bold text-xs uppercase">Preview (first 3 records)</div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b">
-                                            {columnMappings.map(m => (
-                                                <th key={m.source} className="p-2 text-left font-medium">{m.target}</th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {rawData.slice(0, 3).map((row, i) => (
-                                            <tr key={i} className="border-b">
+                            <div className="border rounded-lg overflow-hidden">
+                                <div className="bg-muted/30 p-2 font-bold text-xs uppercase">Preview (first 3 records)</div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b">
                                                 {columnMappings.map(m => (
-                                                    <td key={m.source} className="p-2 truncate max-w-[150px]">{row[m.source] || '-'}</td>
+                                                    <th key={m.source} className="p-2 text-left font-medium">{m.target}</th>
                                                 ))}
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {rawData.slice(0, 3).map((row, i) => (
+                                                <tr key={i} className="border-b">
+                                                    {columnMappings.map(m => (
+                                                        <td key={m.source} className="p-2 truncate max-w-[150px]">{row[m.source] || '-'}</td>
+                                                    ))}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                        </div>
 
-                        <Button onClick={runSeeding} disabled={!firestore} className="w-full py-6 text-lg font-bold gap-2">
-                            <Play className="h-5 w-5" />
-                            {dryRun ? 'Preview Seeding' : 'Start Seeding'}
-                        </Button>
-                        <Button variant="outline" onClick={() => setStep('map')} className="w-full gap-2">
-                            <ArrowLeft className="h-4 w-4" /> Back
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
+                            <Button onClick={runSeeding} disabled={!firestore} className="w-full py-6 text-lg font-bold gap-2">
+                                <Play className="h-5 w-5" />
+                                {dryRun ? 'Preview Seeding' : 'Start Seeding'}
+                            </Button>
+                            <Button variant="outline" onClick={() => setStep('map')} className="w-full gap-2">
+                                <ArrowLeft className="h-4 w-4" /> Back
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
 
-            {/* Step 4: Seeding */}
-            {step === 'seeding' && (
-                <Card>
-                    <CardContent className="py-12 text-center">
-                        <RefreshCw className="h-16 w-16 mx-auto mb-4 animate-spin text-primary" />
-                        <p className="text-xl font-bold">Seeding data...</p>
-                        <p className="text-muted-foreground mt-2">Processing {rawData.length} records</p>
-                    </CardContent>
-                </Card>
-            )}
+                {/* Step 4: Seeding */}
+                {step === 'seeding' && (
+                    <Card>
+                        <CardContent className="py-12 text-center">
+                            <RefreshCw className="h-16 w-16 mx-auto mb-4 animate-spin text-primary" />
+                            <p className="text-xl font-bold">Seeding data...</p>
+                            <p className="text-muted-foreground mt-2">Processing {rawData.length} records</p>
+                        </CardContent>
+                    </Card>
+                )}
 
-            {/* Step 5: Complete */}
-            {step === 'complete' && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-green-600">
-                            <CheckCircle className="h-6 w-6" />
-                            Seeding Complete!
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {results.map((result, i) => (
-                            <div key={i} className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200">
-                                <p className="font-bold">{result.collection}</p>
-                                <p className="text-2xl font-black text-green-700">{result.count} records {dryRun ? 'would be' : ''} seeded</p>
-                            </div>
-                        ))}
-                        
-                        {!dryRun && (
-                            <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200">
-                                <p className="font-bold text-amber-800">Data has been saved to Firestore!</p>
-                                <p className="text-sm text-amber-700 mt-1">You can now view it in the Data Manager.</p>
-                            </div>
-                        )}
+                {/* Step 5: Complete */}
+                {step === 'complete' && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-green-600">
+                                <CheckCircle className="h-6 w-6" />
+                                Seeding Complete!
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {results.map((result, i) => (
+                                <div key={i} className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200">
+                                    <p className="font-bold">{result.collection}</p>
+                                    <p className="text-2xl font-black text-green-700">{result.count} records {dryRun ? 'would be' : ''} seeded</p>
+                                </div>
+                            ))}
+                            
+                            {!dryRun && (
+                                <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200">
+                                    <p className="font-bold text-amber-800">Data has been saved to Firestore!</p>
+                                    <p className="text-sm text-amber-700 mt-1">You can now view it in the Data Manager.</p>
+                                </div>
+                            )}
 
-                        <Button onClick={reset} className="w-full gap-2">
-                            <RefreshCw className="h-4 w-4" /> Seed More Data
-                        </Button>
-                    </CardContent>
-                </Card>
-            )}
+                            <Button onClick={reset} className="w-full gap-2">
+                                <RefreshCw className="h-4 w-4" /> Seed More Data
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </div>
     );
