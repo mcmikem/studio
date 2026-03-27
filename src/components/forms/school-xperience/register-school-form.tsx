@@ -5,9 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PremiumInput, PremiumSelect, PremiumSelectItem, PremiumTextarea } from '@/components/ui/premium-form';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { Loader2, ArrowLeft, Building2, Check } from 'lucide-react';
@@ -125,31 +123,37 @@ export function RegisterSchoolForm() {
             </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-8 pt-8">
-            <div className="space-y-2">
-              <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">School Name *</Label>
-              <Input {...register('schoolName')} placeholder="e.g., St. Mary's Primary School" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-              {errors.schoolName && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.schoolName.message}</p>}
-            </div>
+          <CardContent className="space-y-8 pt-8 px-4 sm:px-6 lg:px-8">
+            <PremiumInput
+              label="School Name *"
+              placeholder="e.g., St. Mary's Primary School"
+              {...register('schoolName')}
+              error={errors.schoolName?.message}
+            />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Location / Parish *</Label>
-                <Input {...register('location')} placeholder="e.g., Bugiri Town" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-                {errors.location && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.location.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Sub-County</Label>
-                <Input {...register('subCounty')} placeholder="e.g., Bugiri" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">District</Label>
-                <Input {...register('district')} placeholder="e.g., Bugiri District" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Enrollment Size</Label>
-                <Input type="number" {...register('enrollmentSize')} placeholder="e.g., 450" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-              </div>
+            <div className="form-grid">
+              <PremiumInput
+                label="Location / Parish *"
+                placeholder="e.g., Bugiri Town"
+                {...register('location')}
+                error={errors.location?.message}
+              />
+              <PremiumInput
+                label="Sub-County"
+                placeholder="e.g., Bugiri"
+                {...register('subCounty')}
+              />
+              <PremiumInput
+                label="District"
+                placeholder="e.g., Bugiri District"
+                {...register('district')}
+              />
+              <PremiumInput
+                type="number"
+                label="Enrollment Size"
+                placeholder="e.g., 450"
+                {...register('enrollmentSize')}
+              />
             </div>
 
             <div className="pt-4 border-t border-dashed">
@@ -167,24 +171,29 @@ export function RegisterSchoolForm() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-omuto-navy/40">Contact Details</span>
                   <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Patron Teacher *</Label>
-                  <Input {...register('patronTeacher')} placeholder="e.g., Mr. John Okello" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-                  {errors.patronTeacher && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.patronTeacher.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Patron Phone</Label>
-                  <Input {...register('patronPhone')} placeholder="e.g., 0770 000 000" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Patron Email</Label>
-                  <Input type="email" {...register('patronEmail')} placeholder="e.g., patron@school.edu" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Head Teacher</Label>
-                  <Input {...register('headTeacher')} placeholder="e.g., Mrs. Jane Akurut" className="h-14 border rounded-2xl font-bold text-base bg-white" />
-                </div>
+              <div className="form-grid">
+                <PremiumInput
+                  label="Patron Teacher *"
+                  placeholder="e.g., Mr. John Okello"
+                  {...register('patronTeacher')}
+                  error={errors.patronTeacher?.message}
+                />
+                <PremiumInput
+                  label="Patron Phone"
+                  placeholder="e.g., 0770 000 000"
+                  {...register('patronPhone')}
+                />
+                <PremiumInput
+                  type="email"
+                  label="Patron Email"
+                  placeholder="e.g., patron@school.edu"
+                  {...register('patronEmail')}
+                />
+                <PremiumInput
+                  label="Head Teacher"
+                  placeholder="e.g., Mrs. Jane Akurut"
+                  {...register('headTeacher')}
+                />
               </div>
             </div>
 
@@ -195,7 +204,7 @@ export function RegisterSchoolForm() {
                   <div className="h-1 flex-1 bg-omuto-navy/5 rounded-full" />
               </div>
               <div className="space-y-3">
-                <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Active Programmes *</Label>
+                <div className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading text-omuto-navy">Active Programmes *</div>
                 <Controller
                   name="activeProgrammes"
                   control={control}
@@ -226,72 +235,47 @@ export function RegisterSchoolForm() {
                 {errors.activeProgrammes && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.activeProgrammes.message}</p>}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="space-y-2">
-                  <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Tier</Label>
-                  <Controller name="tier" control={control} render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy bg-white"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Partner">Partner</SelectItem>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Advanced">Advanced</SelectItem>
-                            <SelectItem value="Flagship">Flagship</SelectItem>
-                        </SelectContent>
-                      </Select>
-                  )} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Pipeline Stage</Label>
-                  <Controller name="pipelineStage" control={control} render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy bg-white"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Inquiry">Inquiry</SelectItem>
-                            <SelectItem value="Meeting Booked">Meeting Booked</SelectItem>
-                            <SelectItem value="MOU Signed">MOU Signed</SelectItem>
-                            <SelectItem value="Onboarded">Onboarded</SelectItem>
-                        </SelectContent>
-                      </Select>
-                  )} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Status</Label>
-                  <Controller name="status" control={control} render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy bg-white"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Registered">Registered</SelectItem>
-                            <SelectItem value="Launched">Launched</SelectItem>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Completed">Completed</SelectItem>
-                            <SelectItem value="Inactive">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                  )} />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Current Term</Label>
-                  <Controller name="term" control={control} render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy bg-white"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Term 1">Term 1</SelectItem>
-                            <SelectItem value="Term 2">Term 2</SelectItem>
-                            <SelectItem value="Term 3">Term 3</SelectItem>
-                        </SelectContent>
-                      </Select>
-                  )} />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                <Controller name="tier" control={control} render={({ field }) => (
+                  <PremiumSelect label="Tier" value={field.value} onValueChange={field.onChange} error={errors.tier?.message}>
+                    <PremiumSelectItem value="Partner">Partner</PremiumSelectItem>
+                    <PremiumSelectItem value="Active">Active</PremiumSelectItem>
+                    <PremiumSelectItem value="Advanced">Advanced</PremiumSelectItem>
+                    <PremiumSelectItem value="Flagship">Flagship</PremiumSelectItem>
+                  </PremiumSelect>
+                )} />
+                <Controller name="pipelineStage" control={control} render={({ field }) => (
+                  <PremiumSelect label="Pipeline Stage" value={field.value} onValueChange={field.onChange} error={errors.pipelineStage?.message}>
+                    <PremiumSelectItem value="Inquiry">Inquiry</PremiumSelectItem>
+                    <PremiumSelectItem value="Meeting Booked">Meeting Booked</PremiumSelectItem>
+                    <PremiumSelectItem value="MOU Signed">MOU Signed</PremiumSelectItem>
+                    <PremiumSelectItem value="Onboarded">Onboarded</PremiumSelectItem>
+                  </PremiumSelect>
+                )} />
+                <Controller name="status" control={control} render={({ field }) => (
+                  <PremiumSelect label="Status" value={field.value} onValueChange={field.onChange} error={errors.status?.message}>
+                    <PremiumSelectItem value="Registered">Registered</PremiumSelectItem>
+                    <PremiumSelectItem value="Launched">Launched</PremiumSelectItem>
+                    <PremiumSelectItem value="Active">Active</PremiumSelectItem>
+                    <PremiumSelectItem value="Completed">Completed</PremiumSelectItem>
+                    <PremiumSelectItem value="Inactive">Inactive</PremiumSelectItem>
+                  </PremiumSelect>
+                )} />
+                <Controller name="term" control={control} render={({ field }) => (
+                  <PremiumSelect label="Current Term" value={field.value} onValueChange={field.onChange} error={errors.term?.message}>
+                    <PremiumSelectItem value="Term 1">Term 1</PremiumSelectItem>
+                    <PremiumSelectItem value="Term 2">Term 2</PremiumSelectItem>
+                    <PremiumSelectItem value="Term 3">Term 3</PremiumSelectItem>
+                  </PremiumSelect>
+                )} />
               </div>
             </div>
 
-            <div className="space-y-2 pt-8 border-t border-dashed">
-              <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Notes</Label>
-              <textarea
-                {...register('notes')}
+            <div className="pt-8 border-t border-dashed">
+              <PremiumTextarea
+                label="Notes"
                 placeholder="Any additional information about the school..."
-                className="w-full min-h-[100px] rounded-2xl border-lg border-input bg-white px-6 py-4 font-bold text-sm text-omuto-navy"
+                {...register('notes')}
               />
             </div>
           </CardContent>

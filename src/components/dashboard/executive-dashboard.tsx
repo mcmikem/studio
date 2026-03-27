@@ -47,6 +47,18 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   , [firestore]);
   const { data: schools } = useCollection(schoolsQuery);
 
+  // Tree surveys (GreenSchools)
+  const treeSurveysQuery = useMemo(() => 
+    firestore ? query(collection(firestore, 'tree-surveys'), limit(100)) : null
+  , [firestore]);
+  const { data: treeSurveys } = useCollection(treeSurveysQuery);
+
+  // Water sources (PureWater)
+  const waterSourcesQuery = useMemo(() => 
+    firestore ? query(collection(firestore, 'water-sources'), limit(100)) : null
+  , [firestore]);
+  const { data: waterSources } = useCollection(waterSourcesQuery);
+
   // This month calculations - show all expenses submitted this month (including Pending)
   // Rejected expenses are excluded from calculations
   const thisMonthExpenses = useMemo(() => {
@@ -89,6 +101,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   // Program stats
   const totalSchools = schools?.length || 0;
   const activeSchools = schools?.filter(s => s.status === 'Active').length || 0;
+  const totalTrees = treeSurveys?.reduce((sum, s) => sum + (s.numberOfTreesSurvived || s.totalTreesAtPlanting || 0), 0) || 0;
+  const totalWaterPoints = waterSources?.length || 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -193,7 +207,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30"><TreePine className="h-5 w-5 text-green-600" /></div>
               <div>
-                <p className="text-2xl font-black">-</p>
+                <p className="text-2xl font-black">{totalTrees > 0 ? totalTrees.toLocaleString() : '-'}</p>
                 <p className="text-xs font-bold text-muted-foreground uppercase">Trees</p>
               </div>
             </div>
@@ -204,7 +218,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-cyan-100 dark:bg-cyan-900/30"><Droplets className="h-5 w-5 text-cyan-600" /></div>
               <div>
-                <p className="text-2xl font-black">-</p>
+                <p className="text-2xl font-black">{totalWaterPoints > 0 ? totalWaterPoints : '-'}</p>
                 <p className="text-xs font-bold text-muted-foreground uppercase">Water Points</p>
               </div>
             </div>

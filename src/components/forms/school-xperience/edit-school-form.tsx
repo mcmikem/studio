@@ -5,9 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { PremiumInput, PremiumSelect, PremiumSelectItem, PremiumTextarea } from '@/components/ui/premium-form';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, serverTimestamp } from 'firebase/firestore';
@@ -153,60 +151,62 @@ export function EditSchoolForm({ schoolId }: { schoolId: string }) {
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-8 pt-8">
-            <div className="space-y-2">
-              <Label className="font-bold text-xs uppercase tracking-widest">School Name *</Label>
-              <Input {...register('schoolName')} className="border-lg rounded-xl h-12 font-bold" />
-              {errors.schoolName && <p className="text-xs text-destructive font-bold">{errors.schoolName.message}</p>}
+          <CardContent className="space-y-8 pt-8 px-4 sm:px-6 lg:px-8">
+            <PremiumInput
+              label="School Name *"
+              {...register('schoolName')}
+              error={errors.schoolName?.message}
+            />
+
+            <div className="form-grid">
+              <PremiumInput
+                label="Location / Parish *"
+                {...register('location')}
+                error={errors.location?.message}
+              />
+              <PremiumInput
+                label="Sub-County"
+                {...register('subCounty')}
+              />
+              <PremiumInput
+                label="District"
+                {...register('district')}
+              />
+              <PremiumInput
+                type="number"
+                label="Enrollment Size"
+                {...register('enrollmentSize')}
+              />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">Location / Parish *</Label>
-                <Input {...register('location')} className="border-lg rounded-xl h-12 font-bold" />
-                {errors.location && <p className="text-xs text-destructive font-bold">{errors.location.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">Sub-County</Label>
-                <Input {...register('subCounty')} className="border-lg rounded-xl h-12 font-bold" />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">District</Label>
-                <Input {...register('district')} className="border-lg rounded-xl h-12 font-bold" />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">Enrollment Size</Label>
-                <Input type="number" {...register('enrollmentSize')} className="border-lg rounded-xl h-12 font-bold" />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-dashed space-y-6">
-              <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Contact Details</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Patron Teacher *</Label>
-                  <Input {...register('patronTeacher')} className="border-lg rounded-xl h-12 font-bold" />
-                  {errors.patronTeacher && <p className="text-xs text-destructive font-bold">{errors.patronTeacher.message}</p>}
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Patron Phone</Label>
-                  <Input {...register('patronPhone')} className="border-lg rounded-xl h-12 font-bold" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Patron Email</Label>
-                  <Input type="email" {...register('patronEmail')} className="border-lg rounded-xl h-12 font-bold" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Head Teacher</Label>
-                  <Input {...register('headTeacher')} className="border-lg rounded-xl h-12 font-bold" />
-                </div>
+            <div className="pt-8 border-t border-dashed space-y-6">
+              <h3 className="font-bold text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground w-full text-center">Contact Details</h3>
+              <div className="form-grid">
+                <PremiumInput
+                  label="Patron Teacher *"
+                  {...register('patronTeacher')}
+                  error={errors.patronTeacher?.message}
+                />
+                <PremiumInput
+                  label="Patron Phone"
+                  {...register('patronPhone')}
+                />
+                <PremiumInput
+                  type="email"
+                  label="Patron Email"
+                  {...register('patronEmail')}
+                />
+                <PremiumInput
+                  label="Head Teacher"
+                  {...register('headTeacher')}
+                />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-dashed space-y-4">
-              <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Programme Details</h3>
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">Active Programmes *</Label>
+            <div className="pt-8 border-t border-dashed space-y-6">
+              <h3 className="font-bold text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground w-full text-center">Programme Details</h3>
+              <div className="space-y-3">
+                <div className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading text-omuto-navy">Active Programmes *</div>
                 <Controller
                   name="activeProgrammes"
                   control={control}
@@ -240,51 +240,46 @@ export function EditSchoolForm({ schoolId }: { schoolId: string }) {
                 {errors.activeProgrammes && <p className="text-xs text-destructive font-bold">{errors.activeProgrammes.message}</p>}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Tier</Label>
-                  <select {...register('tier')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="Partner">Partner</option>
-                    <option value="Active">Active</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Flagship">Flagship</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Pipeline Stage</Label>
-                  <select {...register('pipelineStage')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="Inquiry">Inquiry</option>
-                    <option value="Meeting Booked">Meeting Booked</option>
-                    <option value="MOU Signed">MOU Signed</option>
-                    <option value="Onboarded">Onboarded</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Status</Label>
-                  <select {...register('status')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="Registered">Registered</option>
-                    <option value="Launched">Launched</option>
-                    <option value="Active">Active</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Current Term</Label>
-                  <select {...register('term')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="Term 1">Term 1</option>
-                    <option value="Term 2">Term 2</option>
-                    <option value="Term 3">Term 3</option>
-                  </select>
-                </div>
+              <div className="form-grid lg:grid-cols-4">
+                <Controller name="tier" control={control} render={({ field }) => (
+                  <PremiumSelect label="Tier" value={field.value} onValueChange={field.onChange} error={errors.tier?.message}>
+                    <PremiumSelectItem value="Partner">Partner</PremiumSelectItem>
+                    <PremiumSelectItem value="Active">Active</PremiumSelectItem>
+                    <PremiumSelectItem value="Advanced">Advanced</PremiumSelectItem>
+                    <PremiumSelectItem value="Flagship">Flagship</PremiumSelectItem>
+                  </PremiumSelect>
+                )} />
+                <Controller name="pipelineStage" control={control} render={({ field }) => (
+                  <PremiumSelect label="Pipeline Stage" value={field.value} onValueChange={field.onChange} error={errors.pipelineStage?.message}>
+                    <PremiumSelectItem value="Inquiry">Inquiry</PremiumSelectItem>
+                    <PremiumSelectItem value="Meeting Booked">Meeting Booked</PremiumSelectItem>
+                    <PremiumSelectItem value="MOU Signed">MOU Signed</PremiumSelectItem>
+                    <PremiumSelectItem value="Onboarded">Onboarded</PremiumSelectItem>
+                  </PremiumSelect>
+                )} />
+                <Controller name="status" control={control} render={({ field }) => (
+                  <PremiumSelect label="Status" value={field.value} onValueChange={field.onChange} error={errors.status?.message}>
+                    <PremiumSelectItem value="Registered">Registered</PremiumSelectItem>
+                    <PremiumSelectItem value="Launched">Launched</PremiumSelectItem>
+                    <PremiumSelectItem value="Active">Active</PremiumSelectItem>
+                    <PremiumSelectItem value="Completed">Completed</PremiumSelectItem>
+                    <PremiumSelectItem value="Inactive">Inactive</PremiumSelectItem>
+                  </PremiumSelect>
+                )} />
+                <Controller name="term" control={control} render={({ field }) => (
+                  <PremiumSelect label="Current Term" value={field.value} onValueChange={field.onChange} error={errors.term?.message}>
+                    <PremiumSelectItem value="Term 1">Term 1</PremiumSelectItem>
+                    <PremiumSelectItem value="Term 2">Term 2</PremiumSelectItem>
+                    <PremiumSelectItem value="Term 3">Term 3</PremiumSelectItem>
+                  </PremiumSelect>
+                )} />
               </div>
             </div>
 
-            <div className="space-y-2 pt-4 border-t border-dashed">
-              <Label className="font-bold text-xs uppercase tracking-widest">Notes</Label>
-              <textarea
+            <div className="pt-8 border-t border-dashed">
+              <PremiumTextarea
+                label="Notes"
                 {...register('notes')}
-                className="w-full min-h-[80px] rounded-xl border-lg border-input bg-background px-3 py-2 font-bold text-sm"
               />
             </div>
           </CardContent>
