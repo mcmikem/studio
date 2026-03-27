@@ -18,7 +18,9 @@ import {
     Activity,
     ShieldCheck,
     Zap,
-    Clock
+    Clock,
+    Database,
+    FileSpreadsheet
 } from 'lucide-react';
 import { collection, query, limit } from 'firebase/firestore';
 import { useMemo } from 'react';
@@ -109,6 +111,24 @@ export default function ManagementPage() {
             metric: "2026/Q1",
             trend: "Plan active",
             variant: "primary"
+        },
+        { 
+            name: 'Data Manager', 
+            href: '/management/data', 
+            icon: Database, 
+            description: 'View & edit all records',
+            metric: "Direct Access",
+            trend: "CRUD Tools",
+            variant: "violet"
+        },
+        { 
+            name: 'Seeding Bot', 
+            href: '/management/seeding', 
+            icon: FileSpreadsheet, 
+            description: 'Import data from CSV/JSON',
+            metric: "Upload",
+            trend: "Bulk Import",
+            variant: "cyan"
         },
     ];
 
