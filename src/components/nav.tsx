@@ -323,6 +323,7 @@ export function AppSidebar() {
         {renderNavSection('finance', 'Finance')}
         {renderNavSection('impact', 'Impact')}
         {renderNavSection('hr', 'HR Admin')}
+        {renderNavSection('admin', 'Admin')}
         {renderNavSection('ai', 'AI & Strategy')}
         {renderNavSection('content', 'Content')}
         <Separator className="mx-5 my-3 bg-omuto-navy/8 border-none h-px" />
