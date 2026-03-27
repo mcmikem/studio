@@ -409,13 +409,13 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                     <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Action Type</Label>
                     <Controller name="type" control={control} render={({ field }) => (
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                            <div className="flex items-center space-x-2 sm:space-x-3 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white transition-all cursor-pointer flex-1">
+                            <div className="flex items-center space-x-2 sm:space-x-3 bg-muted/30 dark:bg-white/5 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white dark:has-[:checked]:bg-omuto-navy has-[:checked]:text-white transition-all cursor-pointer flex-1">
                                 <RadioGroupItem value="Requisition" id="req" className="border-2" />
-                                <Label htmlFor="req" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy">Requisition</Label>
+                                <Label htmlFor="req" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy dark:text-white">Requisition</Label>
                             </div>
-                            <div className="flex items-center space-x-2 sm:space-x-3 bg-muted/30 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white transition-all cursor-pointer flex-1">
+                            <div className="flex items-center space-x-2 sm:space-x-3 bg-muted/30 dark:bg-white/5 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white dark:has-[:checked]:bg-omuto-navy has-[:checked]:text-white transition-all cursor-pointer flex-1">
                                 <RadioGroupItem value="Reimbursement" id="reim" className="border-2" />
-                                <Label htmlFor="reim" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy">Reimbursement</Label>
+                                <Label htmlFor="reim" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy dark:text-white">Reimbursement</Label>
                             </div>
                         </RadioGroup>
                     )} />
@@ -487,19 +487,19 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             {/* 2. Line Items */}
             <div className="space-y-4 sm:space-y-6">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <h3 className="font-heading font-bold uppercase tracking-tight text-base sm:text-lg text-omuto-navy">Log Entries</h3>
-                    <Button type="button" onClick={() => append({ description: '', category: 'Transport', amount: 0 })} className="btn-omuto bg-omuto-navy text-white h-10 w-full sm:w-auto px-4 text-sm">
+                    <h3 className="font-heading font-bold uppercase tracking-tight text-base sm:text-lg text-omuto-navy dark:text-white">Log Entries</h3>
+                    <Button type="button" onClick={() => append({ description: '', category: 'Transport', amount: 0 })} className="btn-omuto bg-omuto-navy dark:bg-white dark:text-omuto-navy text-white h-10 w-full sm:w-auto px-4 text-sm">
                         <PlusCircle className="h-4 w-4 mr-2" /> Add
                     </Button>
                 </div>
 
                 <div className="space-y-3 sm:space-y-4">
                     {fields.map((field, index) => (
-                        <div key={field.id} className="relative p-4 sm:p-6 bg-muted/20 border border-omuto-navy/20 rounded-xl sm:rounded-2xl animate-in slide-in-from-bottom-2 duration-300">
+                        <div key={field.id} className="relative p-4 sm:p-6 bg-muted/20 dark:bg-white/5 border border-omuto-navy/20 dark:border-white/10 rounded-xl sm:rounded-2xl animate-in slide-in-from-bottom-2 duration-300">
                              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 sm:gap-4 items-end">
                                 <div className="sm:col-span-5 space-y-2">
                                     <Label className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Description</Label>
-                                    <Input {...register(`items.${index}.description`)} className="h-11 sm:h-12 border rounded-lg sm:rounded-xl font-bold bg-white text-omuto-navy text-sm" placeholder="What was this for?" />
+                                    <Input {...register(`items.${index}.description`)} className="h-11 sm:h-12 border rounded-lg sm:rounded-xl font-bold bg-white dark:bg-omuto-navy text-omuto-navy dark:text-white text-sm" placeholder="What was this for?" />
                                 </div>
                                 <div className="sm:col-span-3 space-y-2">
                                     <Label className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Category</Label>
@@ -508,7 +508,7 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                                         control={control}
                                         render={({ field }) => (
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <SelectTrigger className="h-11 sm:h-12 border rounded-lg sm:rounded-xl font-bold bg-white text-omuto-navy text-sm"><SelectValue /></SelectTrigger>
+                                                <SelectTrigger className="h-11 sm:h-12 border rounded-lg sm:rounded-xl font-bold bg-white dark:bg-omuto-navy text-omuto-navy dark:text-white text-sm"><SelectValue /></SelectTrigger>
                                                 <SelectContent>
                                                     {expenseItemCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                                 </SelectContent>
@@ -518,10 +518,10 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                                 </div>
                                 <div className="sm:col-span-3 space-y-2">
                                     <Label className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Amount (UGX)</Label>
-                                    <Input type="number" {...register(`items.${index}.amount`)} className="h-11 sm:h-12 border rounded-lg sm:rounded-xl font-bold bg-white text-omuto-navy text-sm" />
+                                    <Input type="number" {...register(`items.${index}.amount`)} className="h-11 sm:h-12 border rounded-lg sm:rounded-xl font-bold bg-white dark:bg-omuto-navy text-omuto-navy dark:text-white text-sm" />
                                 </div>
                                 <div className="sm:col-span-1 flex justify-center pb-1">
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-10 w-10 rounded-xl hover:bg-omuto-red hover:text-white transition-all text-omuto-navy/60">
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="h-10 w-10 rounded-xl hover:bg-omuto-red hover:text-white transition-all text-omuto-navy/60 dark:text-white/60">
                                         <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                                     </Button>
                                 </div>

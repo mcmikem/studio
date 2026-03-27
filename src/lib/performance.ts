@@ -63,6 +63,33 @@ export function buildPerformanceSummary(params: {
   const { users, activities, checkins, checkouts, expenses, testimonies } = params;
   if (!users) return [];
 
+  // First, deduplicate users by normalized name+role
+  const userGroups = new Map<string, User[]>();
+  users.forEach(user => {
+    const normalizedName = (user.name || '').toLowerCase().trim();
+    const normalizedRole = (user.role || '').toLowerCase().trim();
+    const key = `${normalizedName}|||${normalizedRole}`;
+    if (!userGroups.has(key)) {
+      userGroups.set(key, []);
+    }
+    userGroups.get(key)!.push(user);
+  });
+
+  // Get all unique user IDs grouped by person
+  const allUserIds = new Set<string>();
+  const primaryUsers = new Map<string, { name: string; role: string; photoURL?: string }>();
+  userGroups.forEach((groupUsers, key) => {
+    const [name, role] = key.split('|||');
+    const primaryUser = groupUsers[0];
+    const keyForStats = `${name}|||${role}`;
+    primaryUsers.set(keyForStats, {
+      name: primaryUser.name || name,
+      role: primaryUser.role || role,
+      photoURL: primaryUser.photoURL
+    });
+    groupUsers.forEach(u => allUserIds.add(u.id));
+  });
+
   const statsMap = new Map<string, PerformanceUserSummary & { qualitySamples: number[] }>();
 
   const getStats = (userId: string, userName?: string) => {
@@ -138,16 +165,47 @@ export function buildPerformanceSummary(params: {
     s.activeMinutes += minutes;
   });
 
-  return Array.from(statsMap.values())
-    .map((u) => ({
-      ...u,
-      qualityIndex: u.qualitySamples.length
-        ? Math.round(u.qualitySamples.reduce((sum, n) => sum + n, 0) / u.qualitySamples.length)
-        : 0,
-    }))
+  // Now combine stats for users with same name+role
+  const combinedStats = new Map<string, PerformanceUserSummary>();
+  
+  statsMap.forEach((stats, userId) => {
+    const normalizedName = (stats.name || '').toLowerCase().trim();
+    const normalizedRole = (stats.role || '').toLowerCase().trim();
+    const key = `${normalizedName}|||${normalizedRole}`;
+    
+    if (combinedStats.has(key)) {
+      const existing = combinedStats.get(key)!;
+      existing.totalScore += stats.totalScore;
+      existing.activeMinutes += stats.activeMinutes;
+      existing.qualityIndex = Math.round((existing.qualityIndex + stats.qualityIndex) / 2);
+      // Merge actions
+      stats.actions.forEach(action => {
+        const existingAction = existing.actions.find(a => a.type === action.type);
+        if (existingAction) {
+          existingAction.count += action.count;
+          existingAction.score += action.score;
+        } else {
+          existing.actions.push({ ...action });
+        }
+      });
+    } else {
+      combinedStats.set(key, {
+        userId: stats.userId,
+        name: stats.name,
+        photoURL: stats.photoURL,
+        role: stats.role,
+        totalScore: stats.totalScore,
+        qualityIndex: stats.qualityIndex,
+        activeMinutes: stats.activeMinutes,
+        actions: [...stats.actions],
+        recentActivity: [...stats.recentActivity]
+      });
+    }
+  });
+
+  return Array.from(combinedStats.values())
     .filter((u) => u.totalScore > 0)
-    .sort((a, b) => b.totalScore - a.totalScore)
-    .map(({ qualitySamples, ...rest }) => rest);
+    .sort((a, b) => b.totalScore - a.totalScore);
 }
 
 export function buildPerformanceResult(params: {

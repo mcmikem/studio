@@ -85,7 +85,7 @@ export default function ManagementLayoutComponent({
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-full min-w-[100vw] max-w-[100vw]">
+          <DropdownMenuContent className="w-screen min-w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)]">
             {tabs.map((tab) => (
               <DropdownMenuItem key={tab.href} asChild>
                 <Link

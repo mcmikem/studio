@@ -274,13 +274,13 @@ export function TeamDeployment() {
                 <div className="relative">
                   <Avatar className={`h-14 w-14 border-2 transition-all duration-300 group-hover:scale-105 ${
                     member.status.status === 'active' 
-                      ? 'border-green-500 shadow-lg shadow-green-100' 
+                      ? 'border-green-500 shadow-lg shadow-green-100 dark:shadow-green-900/30' 
                       : member.status.status === 'checked-out'
                         ? 'border-red-300 opacity-60'
-                        : 'border-gray-300 grayscale opacity-50'
+                        : 'border-gray-300 dark:border-white/20 grayscale opacity-50'
                   }`}>
                     <AvatarImage src={member.user.photoURL} />
-                    <AvatarFallback className="bg-muted font-bold">{getInitials(member.user.name)}</AvatarFallback>
+                    <AvatarFallback className="bg-muted dark:bg-omuto-navy dark:text-white font-bold">{getInitials(member.user.name)}</AvatarFallback>
                   </Avatar>
                   {member.status.status === 'active' && (
                     <div className="absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 bg-green-500 rounded-full border-2 border-white">
@@ -312,10 +312,10 @@ export function TeamDeployment() {
         <SheetContent className="sm:max-w-md p-0 overflow-hidden">
           {selectedUserStatus && (
             <div className="flex flex-col h-full">
-              <SheetHeader className="p-6 bg-omuto-navy text-white flex items-center flex-row gap-4 border-b-4 border-primary">
-                <Avatar className="h-16 w-16 border-4 border-white shadow-md">
+              <SheetHeader className="p-6 bg-omuto-navy dark:bg-omuto-navy/90 text-white flex items-center flex-row gap-4 border-b-4 border-primary">
+                <Avatar className="h-16 w-16 border-4 border-white dark:border-white/20 shadow-md">
                   <AvatarImage src={selectedUserStatus.user.photoURL} />
-                  <AvatarFallback className="bg-white text-omuto-navy font-bold text-xl">{getInitials(selectedUserStatus.user.name)}</AvatarFallback>
+                  <AvatarFallback className="bg-white dark:bg-card dark:text-white text-omuto-navy font-bold text-xl">{getInitials(selectedUserStatus.user.name)}</AvatarFallback>
                 </Avatar>
                 <div>
                   <SheetTitle className="text-2xl font-bold italic uppercase tracking-tighter leading-none text-white">
@@ -324,7 +324,7 @@ export function TeamDeployment() {
                   <SheetDescription className="text-white/70">{selectedUserStatus.user.role}</SheetDescription>
                 </div>
               </SheetHeader>
-              <div className="p-6 space-y-4 flex-1 overflow-y-auto bg-omuto-cream">
+              <div className="p-6 space-y-4 flex-1 overflow-y-auto bg-omuto-cream/50 dark:bg-omuto-navy/20">
                 {/* Status Badge */}
                 <div className={`flex items-center justify-center p-3 rounded-xl border-2 ${
                   selectedUserStatus.status.status === 'active' 

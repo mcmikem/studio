@@ -65,7 +65,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
   if (hasError) {
     return (
       <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm overflow-hidden">
-        <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-6 border-b-4 border-omuto-red">
+        <CardHeader className="bg-omuto-navy dark:bg-omuto-navy/80 text-white pb-6 pt-8 px-6 border-b-4 border-omuto-red">
           <div className="flex items-center gap-2">
             <Trophy className="h-6 w-6 text-omuto-yellow fill-omuto-yellow" />
             <CardTitle className="text-2xl font-bold tracking-tight">Impact Stars</CardTitle>
@@ -74,9 +74,9 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
         <CardContent className="p-6">
           <div className="text-center py-12 bg-card border-2 border-omuto-red/20 border-dashed rounded-2xl">
             <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-omuto-red/60" />
-            <p className="text-sm font-bold text-omuto-navy mb-2">Could not load leaderboard</p>
-            <p className="text-xs text-omuto-navy/50 mb-4">One or more data sources failed to respond.</p>
-            <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="border-omuto-navy">
+            <p className="text-sm font-bold text-omuto-navy dark:text-white mb-2">Could not load leaderboard</p>
+            <p className="text-xs text-omuto-navy/50 dark:text-white/50 mb-4">One or more data sources failed to respond.</p>
+            <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="border-omuto-navy dark:border-white/20 dark:text-white">
               <RefreshCw className="h-3 w-3 mr-2" /> Retry
             </Button>
           </div>
@@ -87,7 +87,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
 
   return (
     <Card className="rounded-[2rem] border-lg border-omuto-navy shadow-comic-sm overflow-hidden">
-      <CardHeader className="bg-omuto-navy text-white pb-6 pt-8 px-6 border-b-4 border-omuto-red flex flex-col justify-center">
+      <CardHeader className="bg-omuto-navy dark:bg-omuto-navy/80 text-white pb-6 pt-8 px-6 border-b-4 border-omuto-red flex flex-col justify-center">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
               <div className="relative">
                 <Avatar className="h-12 w-12 border-2 border-omuto-navy">
                   <AvatarImage src={user.photoURL} />
-                  <AvatarFallback className="bg-omuto-navy text-white font-bold">{(user.name || '??').substring(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="bg-omuto-navy dark:bg-omuto-red text-white font-bold">{(user.name || '??').substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 {index === 0 && <div className="absolute -top-1 -right-1 bg-omuto-red border-2 border-omuto-navy rounded-full p-1"><Zap className="h-2 w-2 text-white fill-white" /></div>}
               </div>
