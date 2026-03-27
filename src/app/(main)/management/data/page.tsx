@@ -12,10 +12,12 @@ import {
     RefreshCw,
     AlertTriangle,
     CheckCircle,
+    XCircle,
     Building2,
     Users,
     TreePine,
-    Droplets
+    Droplets,
+    GraduationCap
 } from 'lucide-react';
 import { collection, doc, deleteDoc, updateDoc, query, orderBy, limit } from 'firebase/firestore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -25,20 +27,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type DataCollection = 'schools' | 'users' | 'tree-surveys' | 'water-sources' | 'activities';
+type DataCollection = 'schools' | 'users' | 'tree-surveys' | 'water-sources' | 'activities' | 'checkins' | 'checkouts' | 'expenses' | 'income';
 
-const COLLECTION_INFO: Record<DataCollection, { label: string; icon: any }> = {
-    schools: { label: 'Schools', icon: Building2 },
-    users: { label: 'Users', icon: Users },
-    'tree-surveys': { label: 'Tree Surveys', icon: TreePine },
-    'water-sources': { label: 'Water Sources', icon: Droplets },
-    activities: { label: 'Activities', icon: Database },
+const COLLECTION_INFO: Record<DataCollection, { label: string; icon: any; description: string }> = {
+    schools: { label: 'Schools', icon: Building2, description: 'School profiles and details' },
+    users: { label: 'Users', icon: Users, description: 'Team members and roles' },
+    'tree-surveys': { label: 'Tree Surveys', icon: TreePine, description: 'GreenSchools tree data' },
+    'water-sources': { label: 'Water Sources', icon: Droplets, description: 'PureWater data points' },
+    activities: { label: 'Activities', icon: GraduationCap, description: 'Program activities logged' },
+    checkins: { label: 'Check-ins', icon: CheckCircle, description: 'Daily check-in records' },
+    checkouts: { label: 'Check-outs', icon: XCircle, description: 'Daily check-out reports' },
+    expenses: { label: 'Expenses', icon: AlertTriangle, description: 'Expense records' },
+    income: { label: 'Income', icon: Database, description: 'Income records' },
 };
 
 export default function DataManagementPage() {
     const { user } = useUser();
     const firestore = useFirestore();
     
+    // ALL hooks must be declared BEFORE any conditional returns
     const [selectedCollection, setSelectedCollection] = useState<DataCollection>('schools');
     const [searchQuery, setSearchQuery] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -48,7 +55,6 @@ export default function DataManagementPage() {
     const [editForm, setEditForm] = useState<any>({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
-    const [error, setError] = useState('');
 
     const collectionQuery = useMemo(() => {
         if (!firestore) return null;
@@ -70,14 +76,13 @@ export default function DataManagementPage() {
     const handleSaveEdit = async () => {
         if (!firestore || !editingDoc?.id) return;
         setLoading(true);
-        setError('');
         try {
             await updateDoc(doc(firestore, selectedCollection, editingDoc.id), editForm);
             setSuccess('Record updated successfully');
             setIsEditing(false);
             setTimeout(() => setSuccess(''), 3000);
         } catch (err: any) {
-            setError(err.message);
+            console.error('Update error:', err);
         } finally {
             setLoading(false);
         }
@@ -86,14 +91,13 @@ export default function DataManagementPage() {
     const handleDelete = async () => {
         if (!firestore || !deletingDoc?.id) return;
         setLoading(true);
-        setError('');
         try {
             await deleteDoc(doc(firestore, selectedCollection, deletingDoc.id));
             setSuccess('Record deleted successfully');
             setIsDeleting(false);
             setTimeout(() => setSuccess(''), 3000);
         } catch (err: any) {
-            setError(err.message);
+            console.error('Delete error:', err);
         } finally {
             setLoading(false);
         }
@@ -111,7 +115,7 @@ export default function DataManagementPage() {
                             <Database className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                             Data Manager
                         </h1>
-                        <p className="text-sm text-muted-foreground mt-1">View and edit records</p>
+                        <p className="text-sm text-muted-foreground mt-1">View and edit records across all collections</p>
                     </div>
                     {success && (
                         <div className="flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-lg text-sm font-medium">
@@ -140,6 +144,7 @@ export default function DataManagementPage() {
                                     <CIcon className={`h-4 w-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
                                     <span className="font-bold text-xs">{info.label}</span>
                                 </div>
+                                <span className="text-[10px] text-muted-foreground">{documents?.length || 0} records</span>
                             </button>
                         );
                     })}
@@ -166,6 +171,7 @@ export default function DataManagementPage() {
                             </CardTitle>
                             <Badge variant="secondary">{filteredDocs.length} records</Badge>
                         </div>
+                        <CardDescription>{Info.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         {isLoading ? (
@@ -178,6 +184,7 @@ export default function DataManagementPage() {
                             <div className="text-center py-12 text-muted-foreground">
                                 <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-30" />
                                 <p className="font-medium">No records found</p>
+                                <p className="text-sm">This collection may be empty or has no matching records</p>
                             </div>
                         ) : (
                             <div className="space-y-2">
@@ -186,9 +193,13 @@ export default function DataManagementPage() {
                                         key={d.id} 
                                         className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
                                     >
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-sm truncate">{d.schoolName || d.name || d.title || d.email || d.id}</p>
-                                            <p className="text-xs text-muted-foreground truncate">{d.district || d.role || ''}</p>
+                                        <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                            <div className="truncate">
+                                                <p className="font-bold text-sm truncate">{d.schoolName || d.name || d.title || d.email || d.id}</p>
+                                                <p className="text-xs text-muted-foreground truncate">{d.district || d.role || d.userId || ''}</p>
+                                            </div>
+                                            <div className="text-xs text-muted-foreground truncate">{d.subCounty || d.email || ''}</div>
+                                            <div className="text-xs text-muted-foreground truncate">{d.status || d.type || ''}</div>
                                         </div>
                                         <div className="flex items-center gap-2 ml-4">
                                             <Button 
@@ -220,16 +231,24 @@ export default function DataManagementPage() {
                     <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Edit Record</DialogTitle>
+                            <DialogDescription>Modify the fields below and save changes.</DialogDescription>
                         </DialogHeader>
-                        {error && <div className="bg-red-50 text-red-700 px-4 py-2 rounded-lg text-sm">{error}</div>}
                         <div className="grid gap-4 py-4">
-                            {Object.keys(editForm).filter(k => k !== 'id').slice(0, 10).map(key => (
+                            {Object.keys(editForm).filter(k => k !== 'id' && k !== 'createdAt' && k !== 'updatedAt').slice(0, 15).map(key => (
                                 <div key={key} className="space-y-2">
                                     <Label className="text-xs font-bold uppercase">{key}</Label>
-                                    <Input 
-                                        value={editForm[key] || ''} 
-                                        onChange={(e) => setEditForm({...editForm, [key]: e.target.value})}
-                                    />
+                                    {key.toLowerCase().includes('description') || key.toLowerCase().includes('notes') || key.toLowerCase().includes('feedback') ? (
+                                        <Textarea 
+                                            value={editForm[key] || ''} 
+                                            onChange={(e) => setEditForm({...editForm, [key]: e.target.value})}
+                                            className="min-h-[80px]"
+                                        />
+                                    ) : (
+                                        <Input 
+                                            value={editForm[key] || ''} 
+                                            onChange={(e) => setEditForm({...editForm, [key]: e.target.value})}
+                                        />
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -254,7 +273,8 @@ export default function DataManagementPage() {
                         </DialogHeader>
                         {deletingDoc && (
                             <div className="bg-muted p-4 rounded-lg">
-                                <p className="font-bold">{deletingDoc.schoolName || deletingDoc.name || deletingDoc.id}</p>
+                                <p className="font-bold">{deletingDoc.schoolName || deletingDoc.name || deletingDoc.title || deletingDoc.id}</p>
+                                {deletingDoc.district && <p className="text-sm text-muted-foreground">{deletingDoc.district}</p>}
                             </div>
                         )}
                         <DialogFooter>
