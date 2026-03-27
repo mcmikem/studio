@@ -62,7 +62,9 @@ import {
   Bot,
   ChevronDown,
   Database,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Receipt,
+  ClipboardList
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -122,13 +124,16 @@ const navConfig = {
   // Data & Impact
   impact: [
     { href: '/meal/data', icon: BarChart3, label: 'Dashboards' },
+    { href: '/meal/impact-studio', icon: Sparkles, label: 'Impact Studio' },
     { href: '/school-xperience/impact-data/map', icon: MapIcon, label: 'Impact Map' },
+    { href: '/meal/impact-studio', icon: Database, label: 'Data Studio' },
     { href: '/reports', icon: AreaChart, label: 'Reports' },
     { href: '/stream', icon: Wind, label: 'Team Stream' },
   ],
   // Programs
   programs: [
     { href: '/school-xperience', icon: Building2, label: 'School Xperience' },
+    { href: '/school-xperience/impact', icon: MapIcon, label: 'SX Impact' },
     { href: '/meal/ofa', icon: Swords, label: 'OFA Football' },
     { href: '/talents/omuto-cup', icon: Trophy, label: 'Omuto Cup' },
     { href: '/meal/red-campaign', icon: ShieldCheck, label: 'RED Campaign' },
@@ -151,6 +156,8 @@ const navConfig = {
     { href: '/finance/dashboard', icon: Wallet, label: 'Finance Hub' },
     { href: '/finance/requisitions', icon: FileText, label: 'Requisitions' },
     { href: '/finance/accountabilities', icon: ShieldCheck, label: 'Accountabilities' },
+    { href: '/finance/income', icon: TrendingUp, label: 'Income' },
+    { href: '/finance/reports', icon: BarChart3, label: 'Financial Reports' },
     { href: '/finance/petty-cash', icon: Landmark, label: 'Petty Cash' },
   ],
   // HR Admin (for admins only)
@@ -167,6 +174,8 @@ const navConfig = {
     { href: '/management/data', icon: Database, label: 'Data Manager' },
     { href: '/management/seeding', icon: FileSpreadsheet, label: 'Seeding Bot' },
     { href: '/management/metrics', icon: BarChart3, label: 'Metrics' },
+    { href: '/meal/baseline-survey', icon: ClipboardList, label: 'Baseline Survey' },
+    { href: '/meal/endline-survey', icon: ClipboardList, label: 'Endline Survey' },
   ],
   // AI & Knowledge
   ai: [
@@ -186,10 +195,13 @@ const navConfig = {
     { href: '/meal/activity', icon: BarChart3, label: 'Log Activity' },
     { href: '/forms/check-in', icon: LogIn, label: 'Check-in' },
     { href: '/forms/check-out', icon: LogOut, label: 'Check-out' },
+    { href: '/forms/expense', icon: Receipt, label: 'Submit Expense' },
+    { href: '/meal/record-testimony', icon: Mic, label: 'Record Testimony' },
   ],
   // System
   system: [
     { href: '/calendar', icon: Calendar, label: 'Calendar' },
+    { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/help', icon: LifeBuoy, label: 'Help' },
     { href: '/system/feedback', icon: Bug, label: 'Feedback' },
   ]
