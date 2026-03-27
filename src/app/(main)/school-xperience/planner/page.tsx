@@ -234,13 +234,13 @@ export default function TermPlannerPage() {
         </Card>
       </div>
 
-      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-4 shadow-comic-sm sticky top-[4.5rem] z-20 -mx-4 sm:mx-0 sm:static sm:sticky-none">
+      <div className="bg-white rounded-2xl border-lg border-omuto-navy/20 p-4 shadow-comic-sm sticky top-[4.5rem] z-20 -mx-2 sm:mx-0 sm:static sm:sticky-none">
         <div className="flex items-center gap-2 mb-3">
           <div className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-omuto-red opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-omuto-red" />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Quick Actions</span>
+          <span className="text-xs sm:text-[10px] font-black uppercase tracking-widest text-omuto-navy/50">Quick Actions</span>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <Button asChild size="sm" className="btn-omuto h-auto py-3 rounded-xl flex-col gap-1 shadow-comic-sm border-2 border-transparent hover:border-white/50">

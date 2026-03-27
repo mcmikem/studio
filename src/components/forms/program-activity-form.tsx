@@ -306,7 +306,7 @@ export function ProgramActivityForm({
           </CardHeader>
           <CardContent className="p-4 sm:p-6 lg:p-8">
             <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-                <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0 mb-4">
+                <div className="overflow-x-auto -mx-2 sm:mx-0 px-2 sm:px-0 mb-4">
                     <TabsList className="w-full min-w-max sm:w-auto sm:min-w-0">
                         <TabsTrigger value="planning" className="text-xs sm:text-sm">1. Planning</TabsTrigger>
                         <TabsTrigger value="execution" className="text-xs sm:text-sm">2. Execution</TabsTrigger>

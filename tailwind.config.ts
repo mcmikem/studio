@@ -86,9 +86,9 @@ export default {
         },
       },
       boxShadow: {
-        'comic': '2px 2px 0 rgba(29, 38, 49, 0.15)',
-        'comic-lg': '3px 3px 0 rgba(29, 38, 49, 0.15)',
-        'comic-sm': '1px 1px 0 rgba(29, 38, 49, 0.15)',
+        'comic': '2px 2px 0 hsl(var(--omuto-navy) / 0.15)',
+        'comic-lg': '3px 3px 0 hsl(var(--omuto-navy) / 0.15)',
+        'comic-sm': '1px 1px 0 hsl(var(--omuto-navy) / 0.15)',
         'soft': '0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
       },
       borderWidth: {

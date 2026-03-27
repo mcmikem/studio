@@ -289,7 +289,7 @@ export default function MapPage() {
   const totalPoints = filteredLocations.filter(l => l.coordinates).length;
 
   return (
-    <div className="relative h-[calc(100dvh-[env(safe-area-inset-top,4rem)])] lg:h-[calc(100vh-5rem)] overflow-hidden bg-slate-950 -mx-4 -my-4 lg:-mx-8 lg:-my-8 rounded-none lg:rounded-2xl z-0">
+    <div className="relative h-[calc(100dvh-[env(safe-area-inset-top,4rem)])] lg:h-[calc(100vh-5rem)] overflow-hidden bg-slate-950 -mx-2 sm:-mx-4 lg:-mx-8 -my-2 lg:-my-8 rounded-none lg:rounded-2xl z-0">
       
       {/* ━━━ Top Search Bar ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       <div className="absolute top-4 left-4 right-4 z-[40] flex gap-3 pointer-events-none pt-[env(safe-area-inset-top,0.5rem)] lg:pt-0">

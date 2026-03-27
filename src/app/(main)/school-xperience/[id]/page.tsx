@@ -119,7 +119,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
   return (
     <div className="pb-20 space-y-10 animate-in fade-in duration-700">
       {/* Immersive Premium Header */}
-      <div className="relative group overflow-hidden rounded-[3rem] border-4 border-omuto-navy/5 shadow-2xl bg-white/40 backdrop-blur-3xl min-h-[320px] flex items-center p-8 md:p-16">
+      <div className="relative group overflow-hidden rounded-[3rem] border-4 border-omuto-navy/5 shadow-2xl bg-white/40 backdrop-blur-3xl min-h-[280px] sm:min-h-[320px] flex items-center p-6 sm:p-8 md:p-16">
         {/* Abstract Background Accents */}
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-1000" />
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl group-hover:bg-emerald-500/10 transition-colors duration-1000" />
@@ -608,7 +608,7 @@ export default function SchoolProfilePage({ params }: { params: Promise<{ id: st
             </CardHeader>
             <CardContent className="p-0">
               {(school as any).coordinates ? (
-                <div className="h-[500px] w-full relative">
+                <div className="h-[300px] sm:h-[400px] md:h-[500px] w-full relative">
                   <InteractiveMap
                     locations={[{
                       id: school.id || '',

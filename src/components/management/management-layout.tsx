@@ -63,9 +63,9 @@ export default function ManagementLayoutComponent({
     return tab.roles.includes(effectiveRole || '');
   });
 
-  return (
-    <div className="flex flex-col gap-6">
-       <div className="border-b border-border -mx-4 sm:-mx-6">
+   return (
+     <div className="flex flex-col gap-6">
+       <div className="border-b border-border -mx-2 sm:-mx-6">
           <div className="flex flex-wrap items-stretch gap-1 px-4 sm:px-6 sm:gap-x-2">
               {tabs.map((tab) => (
                 <Link

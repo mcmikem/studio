@@ -84,7 +84,7 @@
 
 @layer base {
   * {
-    border-color: rgb(35 31 32 / 0.06);
+    border-color: hsl(var(--omuto-navy) / 0.06);
   }
   
   body {
@@ -141,13 +141,13 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgb(35 31 32 / 0.1);
+    background: hsl(var(--omuto-navy) / 0.1);
     border-radius: 10px;
     transition: background 0.2s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgb(236 28 36 / 0.2);
+    background: hsl(var(--primary) / 0.5);
   }
 }
 
@@ -160,66 +160,67 @@
     transition-duration: 200ms;
   }
   .btn-omuto:hover {
-    background-color: rgb(35 31 32 / 0.9);
+    background-color: hsl(var(--omuto-navy) / 0.9);
   }
   .btn-omuto:focus-visible {
-    --tw-ring-color: rgb(236 28 36 / 0.5);
+    --tw-ring-color: hsl(var(--primary) / 0.5);
   }
 
   .btn-omuto-secondary {
-    @apply h-10 px-5 bg-white text-omuto-navy font-medium text-sm rounded-lg transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2;
-    border: 1px solid rgb(35 31 32 / 0.15);
+    @apply h-10 px-5 bg-card text-omuto-navy font-medium text-sm rounded-lg transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2;
+    border: 1px solid hsl(var(--omuto-navy) / 0.15);
   }
   .btn-omuto-secondary:hover {
-    background-color: rgb(35 31 32 / 0.05);
+    background-color: hsl(var(--omuto-navy) / 0.05);
   }
   .btn-omuto-secondary:focus-visible {
-    --tw-ring-color: rgb(35 31 32 / 0.2);
+    --tw-ring-color: hsl(var(--omuto-navy) / 0.2);
   }
 
   /* BADGES - Subtle & Informative */
   .badge-omuto-solid {
     @apply px-2.5 py-0.5 text-omuto-navy rounded-full font-medium text-xs;
-    background-color: rgb(35 31 32 / 0.1);
+    background-color: hsl(var(--omuto-navy) / 0.1);
   }
   
   .badge-omuto-outline {
-    @apply px-2.5 py-0.5 bg-white text-omuto-navy rounded-full font-medium text-xs;
-    border: 1px solid rgb(35 31 32 / 0.15);
+    @apply px-2.5 py-0.5 bg-card text-omuto-navy rounded-full font-medium text-xs;
+    border: 1px solid hsl(var(--omuto-navy) / 0.15);
   }
 
   /* TABLES - Clean Data */
   .data-table-omuto {
-    @apply bg-white rounded-xl overflow-hidden;
-    border: 1px solid rgb(35 31 32 / 0.08);
+    @apply bg-card rounded-xl overflow-hidden;
+    border: 1px solid hsl(var(--omuto-navy) / 0.08);
   }
   
   .data-table-omuto thead {
     @apply text-omuto-navy text-xs font-medium uppercase tracking-wide;
-    background-color: rgb(35 31 32 / 0.05);
+    background-color: hsl(var(--omuto-navy) / 0.05);
   }
   
   .data-table-omuto tr {
     @apply last:border-0 transition-colors;
-    border-bottom: 1px solid rgb(35 31 32 / 0.05);
+    border-bottom: 1px solid hsl(var(--omuto-navy) / 0.05);
   }
   .data-table-omuto tr:hover {
-    background-color: rgb(35 31 32 / 0.02);
+    background-color: hsl(var(--omuto-navy) / 0.02);
   }
 }
 
 @layer utilities {
   /* Comic shadows - use sparingly, on interaction only */
+  /* Using Omuto Navy (340 6% 13%) for consistency */
   .shadow-comic {
-    box-shadow: 2px 2px 0 rgba(29, 38, 49, 0.15);
+    box-shadow: 2px 2px 0 hsl(var(--omuto-navy) / 0.15);
   }
   
   .shadow-comic-lg {
-    box-shadow: 3px 3px 0 rgba(29, 38, 49, 0.15);
+    box-shadow: 3px 3px 0 hsl(var(--omuto-navy) / 0.15);
   }
 
   .shadow-comic-sm {
-    box-shadow: 1px 1px 0 rgba(29, 38, 49, 0.15);
+    box-shadow: 1px 1px 0 hsl(var(--omuto-navy) / 0.15);
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -231,22 +232,13 @@
     scrollbar-width: none;
   }
 
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
   .enterprise-form-shell {
-    @apply space-y-4 pb-[calc(9rem+env(safe-area-inset-bottom))];
+    @apply space-y-4 w-full max-w-[100vw] overflow-x-hidden pb-[calc(9rem+env(safe-area-inset-bottom))];
   }
 
   .enterprise-form-footer {
     @apply bg-muted/30 p-4 sm:p-6;
-    border-top: 1px solid rgb(35 31 32 / 0.08);
+    border-top: 1px solid hsl(var(--omuto-navy) / 0.08);
   }
 
   .pb-safe {
@@ -256,7 +248,7 @@
   /* SPACING UTILITIES */
 
   .page-spacing {
-    @apply space-y-4 sm:space-y-5 lg:space-y-6;
+    @apply space-y-4 sm:space-y-5 lg:space-y-6 w-full max-w-[100vw] overflow-x-hidden;
   }
 
   .card-padding {
@@ -308,11 +300,17 @@
   }
 
   .form-grid {
-    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full;
+  }
+  .form-grid > * {
+    @apply min-w-0;
   }
 
   .form-grid-3 {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full;
+  }
+  .form-grid-3 > * {
+    @apply min-w-0;
   }
 
   /* RESPONSIVE UTILITIES */
@@ -351,13 +349,13 @@
   }
 
   .omuto-premium-popup .leaflet-popup-content-wrapper {
-    @apply rounded-xl shadow-lg p-0 overflow-hidden bg-white;
-    border: 1px solid rgb(35 31 32 / 0.08);
+    @apply rounded-xl shadow-lg p-0 overflow-hidden bg-card;
+    border: 1px solid hsl(var(--omuto-navy) / 0.08);
   }
 
   .omuto-premium-popup .leaflet-popup-tip {
-    @apply bg-white border-r border-b;
-    border-color: rgb(35 31 32 / 0.08);
+    @apply bg-card border-r border-b;
+    border-color: hsl(var(--omuto-navy) / 0.08);
   }
 
   .omuto-premium-popup .leaflet-popup-content {
@@ -370,12 +368,12 @@
 
   .marker-container:hover {
     transform: scale(1.3);
-    z-index: 1000 !important;
+    z-index: 40 !important;
   }
 
   .is-selected .marker-container {
     transform: scale(1.15);
-    z-index: 1001 !important;
+    z-index: 41 !important;
   }
 
   /* Standardized Card Base */
@@ -444,7 +442,7 @@
 
   /* Form Elements */
   .form-input-omuto {
-    @apply h-12 sm:h-14 border border-omuto-navy/20 rounded-xl bg-card font-semibold text-omuto-navy placeholder:text-omuto-navy/60 focus:border-omuto-orange focus:ring-2 focus:ring-omuto-orange/20;
+    @apply w-full h-12 sm:h-14 border border-omuto-navy/20 rounded-xl bg-card font-semibold text-omuto-navy placeholder:text-omuto-navy/60 focus:border-omuto-orange focus:ring-2 focus:ring-omuto-orange/20;
   }
 
   /* Grid Patterns */
