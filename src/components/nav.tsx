@@ -60,7 +60,9 @@ import {
   MessageSquareWarning,
   Library,
   Bot,
-  ChevronDown
+  ChevronDown,
+  Database,
+  FileSpreadsheet
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import {
@@ -160,6 +162,12 @@ const navConfig = {
     { href: '/hr/payroll', icon: CreditCard, label: 'Payroll' },
     { href: '/management/users', icon: Users, label: 'Staff Directory' },
   ],
+  // Data Management (Admin only)
+  admin: [
+    { href: '/management/data', icon: Database, label: 'Data Manager' },
+    { href: '/management/seeding', icon: FileSpreadsheet, label: 'Seeding Bot' },
+    { href: '/management/metrics', icon: BarChart3, label: 'Metrics' },
+  ],
   // AI & Knowledge
   ai: [
     { href: '/chat', icon: Bot, label: 'AI Coach' },
@@ -188,8 +196,8 @@ const navConfig = {
 };
 
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
-  'Administrator': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
-  'Executive Director': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
+  'Administrator': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system', 'admin'],
+  'Executive Director': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system', 'admin'],
   'Programs & Partnerships Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content'],
   'Operations & Field Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content'],
   'Media & Finance Lead': ['core', 'my', 'forms', 'enterprise', 'finance', 'impact', 'ai', 'content'],
