@@ -170,7 +170,7 @@ export default function UserManagementPage() {
         </CardHeader>
       <CardContent className="p-0 sm:p-6">
          {/* Mobile View */}
-        <div className="sm:hidden h-[600px] overflow-auto px-4" ref={parentRefMobile}>
+        <div className="sm:hidden h-[50vh] sm:h-[600px] overflow-auto px-4" ref={parentRefMobile}>
             {isLoading && Array.from({length: 5}).map((_, i) => <Skeleton key={i} className="h-20 w-full mb-4" />)}
             {users && users.length > 0 ? (
                 <div
@@ -251,7 +251,7 @@ export default function UserManagementPage() {
                     <div>Organizational Role</div>
                     <div className="text-right">Manage</div>
                 </div>
-                <div className="h-[600px] overflow-auto no-scrollbar" ref={parentRefDesktop}>
+                <div className="h-[50vh] lg:h-[600px] overflow-auto no-scrollbar" ref={parentRefDesktop}>
                     {isLoading && Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="grid grid-cols-[1fr,250px,100px] gap-4 px-8 py-5 border-b border-omuto-navy/5 last:border-0 items-center">
                             <div className="flex items-center gap-4">
