@@ -171,6 +171,7 @@ const navConfig = {
   ],
   // Data Management (Admin only)
   admin: [
+    { href: '/management', icon: Briefcase, label: 'Operations Desk' },
     { href: '/management/data', icon: Database, label: 'Data Manager' },
     { href: '/management/seeding', icon: FileSpreadsheet, label: 'Seeding Bot' },
     { href: '/management/metrics', icon: BarChart3, label: 'Metrics' },
