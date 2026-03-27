@@ -217,16 +217,17 @@ export default function SeedingBotPage() {
     };
 
     return (
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-4xl mx-auto">
-            <div>
-                <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-                    <Database className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-                    Data Seeding Bot
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">Upload data and map columns to seed into Firestore</p>
-            </div>
+        <div className="max-w-full overflow-hidden">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-4xl mx-auto w-full">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+                        <Database className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                        Data Seeding Bot
+                    </h1>
+                    <p className="text-sm text-muted-foreground mt-1">Upload data and map columns to seed into Firestore</p>
+                </div>
 
-            {/* Progress Steps */}
+                {/* Progress Steps */}
             <div className="flex items-center gap-2 text-sm">
                 {['upload', 'map', 'preview', 'seeding', 'complete'].map((s, i) => (
                     <div key={s} className="flex items-center">
@@ -464,6 +465,7 @@ export default function SeedingBotPage() {
                     </CardContent>
                 </Card>
             )}
+            </div>
         </div>
     );
 }
