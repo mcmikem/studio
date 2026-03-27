@@ -82,7 +82,7 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                 <Info className="h-3.5 w-3.5" /> Mission Statement
             </h3>
-            <p className="text-sm font-semibold text-omuto-navy leading-relaxed">{content.mission}</p>
+            <p className="text-sm font-semibold text-omuto-navy dark:text-white leading-relaxed">{content.mission}</p>
         </section>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -92,7 +92,7 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
                 </h3>
                 <ul className="space-y-2">
                     {content.kpis.map((kpi, i) => (
-                        <li key={i} className="text-xs font-medium text-omuto-navy flex items-start gap-2">
+                        <li key={i} className="text-xs font-medium text-omuto-navy dark:text-white/80 flex items-start gap-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1 flex-shrink-0" />
                             {kpi}
                         </li>
@@ -102,12 +102,12 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
 
             <section className="space-y-3">
                 <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <ShieldAlert className="h-3.5 w-3.5 text-omuto-navy" /> Non-Negotiables
+                    <ShieldAlert className="h-3.5 w-3.5 text-primary" /> Non-Negotiables
                 </h3>
                 <ul className="space-y-2">
                     {content.nonNegotiables.map((nn, i) => (
-                        <li key={i} className="text-xs font-medium text-omuto-navy flex items-start gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-omuto-navy mt-1 flex-shrink-0" />
+                        <li key={i} className="text-xs font-medium text-omuto-navy dark:text-white/80 flex items-start gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary mt-1 flex-shrink-0" />
                             {nn}
                         </li>
                     ))}
@@ -117,7 +117,7 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
 
         <div className="pt-4 border-t flex items-center justify-between">
             <div className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Reporting To</div>
-            <div className="text-[10px] font-bold text-omuto-navy uppercase tracking-wider">{content.reportsTo}</div>
+            <div className="text-[10px] font-bold text-omuto-navy dark:text-white uppercase tracking-wider">{content.reportsTo}</div>
         </div>
       </CardContent>
     </Card>

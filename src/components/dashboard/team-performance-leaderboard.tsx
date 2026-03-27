@@ -106,12 +106,12 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 p-6 bg-omuto-cream/50">
+      <CardContent className="space-y-4 p-6 bg-omuto-cream/50 dark:bg-omuto-navy/20">
         {leaderboard.length > 0 ? (
           leaderboard.map((user, index) => (
-            <div key={user.userId} className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all group ${index === 0 ? 'bg-omuto-yellow border-omuto-navy shadow-comic-sm' : 'bg-white border-omuto-navy/20 hover:border-omuto-navy/40 hover:bg-white'}`}>
+            <div key={user.userId} className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all group ${index === 0 ? 'bg-omuto-yellow border-omuto-navy shadow-comic-sm' : 'bg-white dark:bg-card border-omuto-navy/20 dark:border-white/20 hover:border-omuto-navy/40 hover:bg-white dark:hover:bg-omuto-navy/50'}`}>
               <div className="flex items-center justify-center w-10">
-                {index === 0 ? <Crown className="h-7 w-7 text-omuto-navy" /> : <span className="font-bold text-lg text-omuto-navy/40">#{index + 1}</span>}
+                {index === 0 ? <Crown className="h-7 w-7 text-omuto-navy" /> : <span className="font-bold text-lg text-omuto-navy/40 dark:text-white/40">#{index + 1}</span>}
               </div>
               <div className="relative">
                 <Avatar className="h-12 w-12 border-2 border-omuto-navy">
@@ -121,21 +121,21 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
                 {index === 0 && <div className="absolute -top-1 -right-1 bg-omuto-red border-2 border-omuto-navy rounded-full p-1"><Zap className="h-2 w-2 text-white fill-white" /></div>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-base truncate leading-tight text-omuto-navy">{user.name}</p>
-                <p className="text-xs text-muted-foreground truncate mt-0.5 font-medium">{user.role}</p>
-                <p className="text-[10px] text-omuto-navy/60 mt-1 font-bold uppercase">Q{user.qualityIndex} • {Math.round(user.activeMinutes / 60)}h active</p>
+                <p className="font-bold text-base truncate leading-tight text-omuto-navy dark:text-white">{user.name}</p>
+                <p className="text-xs text-muted-foreground dark:text-white/60 truncate mt-0.5 font-medium">{user.role}</p>
+                <p className="text-[10px] text-omuto-navy/60 dark:text-white/50 mt-1 font-bold uppercase">Q{user.qualityIndex} • {Math.round(user.activeMinutes / 60)}h active</p>
               </div>
               <div className="text-right">
-                <div className="px-3 py-1.5 border-2 border-omuto-navy font-bold text-sm rounded-lg bg-white shadow-comic-sm">{Math.round(user.totalScore).toLocaleString()}</div>
-                <p className="text-[9px] font-bold text-omuto-navy/50 mt-1 uppercase tracking-wider">{user.actions.reduce((s, a) => s + a.count, 0)} ACTIONS</p>
+                <div className="px-3 py-1.5 border-2 border-omuto-navy dark:border-white/20 font-bold text-sm rounded-lg bg-white dark:bg-omuto-navy dark:text-white shadow-comic-sm">{Math.round(user.totalScore).toLocaleString()}</div>
+                <p className="text-[9px] font-bold text-omuto-navy/50 dark:text-white/50 mt-1 uppercase tracking-wider">{user.actions.reduce((s, a) => s + a.count, 0)} ACTIONS</p>
               </div>
             </div>
           ))
         ) : (
-          <div className="text-center py-20 bg-white border-2 border-omuto-navy/20 border-dashed rounded-2xl">
+          <div className="text-center py-20 bg-white dark:bg-card border-2 border-omuto-navy/20 dark:border-white/10 border-dashed rounded-2xl">
             <Zap className="h-16 w-16 mx-auto mb-4 opacity-20 text-omuto-navy" />
-            <p className="text-xs font-bold text-omuto-navy/50 uppercase tracking-widest">Awaiting Team Activity</p>
-            <p className="text-[10px] text-omuto-navy/30 mt-2">Scores refresh automatically as activity is logged.</p>
+            <p className="text-xs font-bold text-omuto-navy/50 dark:text-white/50 uppercase tracking-widest">Awaiting Team Activity</p>
+            <p className="text-[10px] text-omuto-navy/30 dark:text-white/30 mt-2">Scores refresh automatically as activity is logged.</p>
           </div>
         )}
       </CardContent>

@@ -353,8 +353,8 @@ export function TeamDeployment() {
                       <div className="flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest">
                         <Target className="h-4 w-4" /> Primary Mission
                       </div>
-                      <div className="p-4 bg-white border rounded-xl">
-                        <p className="font-medium text-lg leading-tight">{selectedUserStatus.primaryMission || 'No mission set'}</p>
+                      <div className="p-4 bg-white dark:bg-card border rounded-xl">
+                        <p className="font-medium text-lg leading-tight text-omuto-navy dark:text-foreground">{selectedUserStatus.primaryMission || 'No mission set'}</p>
                       </div>
                     </div>
 
@@ -382,18 +382,18 @@ export function TeamDeployment() {
                           <Clock className="h-4 w-4" /> Full Time Stamps
                         </div>
                         <div className="space-y-2">
-                          {selectedUserStatus.timeBlocks.map((block: any, idx: number) => {
+                           {selectedUserStatus.timeBlocks.map((block: any, idx: number) => {
                              const isCurrent = selectedUserStatus.focus.task === block.description;
                              return (
-                               <div key={idx} className={`p-3 rounded-xl border-lg transition-all ${isCurrent ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white border-omuto-navy/5 opacity-70'}`}>
+                               <div key={idx} className={`p-3 rounded-xl border-lg transition-all ${isCurrent ? 'bg-primary/5 border-primary shadow-sm' : 'bg-white dark:bg-card border-omuto-navy/5 dark:border-white/10 opacity-70'}`}>
                                  <div className="flex justify-between items-center mb-1">
-                                    <span className="font-black text-[10px] text-primary">{block.startTime} - {block.endTime}</span>
-                                    {isCurrent && <span className="text-[10px] font-black uppercase text-primary animate-pulse">Now</span>}
+                                     <span className="font-black text-[10px] text-primary">{block.startTime} - {block.endTime}</span>
+                                     {isCurrent && <span className="text-[10px] font-black uppercase text-primary animate-pulse">Now</span>}
                                  </div>
-                                 <p className="text-xs font-bold text-omuto-navy leading-tight">{block.description}</p>
+                                 <p className="text-xs font-bold text-omuto-navy dark:text-white/80 leading-tight">{block.description}</p>
                                </div>
                              );
-                          })}
+                           })}
                         </div>
                       </div>
                     )}

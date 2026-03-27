@@ -191,8 +191,8 @@ export function ApprovalQueue() {
                         )}
                     </TableBody>
                 </Table>
-                <div className="mt-auto p-4 border-t border-omuto-navy/10 bg-muted/20">
-                    <Button variant="outline" asChild className="w-full bg-white hover:bg-omuto-cream border-omuto-navy text-omuto-navy font-bold shadow-sm hover:-translate-y-0.5 transition-all">
+                <div className="mt-auto p-4 border-t border-omuto-navy/10 bg-muted/20 dark:bg-omuto-navy/20">
+                    <Button variant="outline" asChild className="w-full bg-white dark:bg-omuto-navy hover:bg-omuto-cream dark:hover:bg-omuto-navy/80 border-omuto-navy dark:border-white/20 text-omuto-navy dark:text-white font-bold shadow-sm hover:-translate-y-0.5 transition-all">
                         <Link href="/finance/requisitions">View All Expenses</Link>
                     </Button>
                 </div>

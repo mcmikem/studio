@@ -5,9 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { PremiumInput, PremiumSelect, PremiumSelectItem, PremiumTextarea } from '@/components/ui/premium-form';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -150,37 +148,35 @@ function LogVisitFormInner() {
           </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-8 pt-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">School *</Label>
-                <Controller
-                  name="schoolId"
-                  control={control}
-                  render={({ field }) => (
-                    <select
-                      value={field.value}
-                      onChange={(e) => {
-                        const school = schools?.find((s) => s.id === e.target.value);
-                        field.onChange(e.target.value);
-                        setValue('schoolName', school?.schoolName || '');
-                      }}
-                      className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
-                    >
-                      <option value="">Select school...</option>
-                      {schools?.map((s) => (
-                        <option key={s.id} value={s.id}>{s.schoolName}</option>
-                      ))}
-                    </select>
-                  )}
-                />
-                {errors.schoolId && <p className="text-xs text-destructive font-bold">{errors.schoolId.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">Visit Date *</Label>
-                <Input type="date" {...register('date')} className="border-lg rounded-xl h-12 font-bold" />
-                {errors.date && <p className="text-xs text-destructive font-bold">{errors.date.message}</p>}
-              </div>
+          <CardContent className="space-y-8 pt-8 px-4 sm:px-6 lg:px-8">
+            <div className="form-grid">
+              <Controller
+                name="schoolId"
+                control={control}
+                render={({ field }) => (
+                  <PremiumSelect
+                    label="School *"
+                    value={field.value}
+                    onValueChange={(val) => {
+                      const school = schools?.find((s) => s.id === val);
+                      field.onChange(val);
+                      setValue('schoolName', school?.schoolName || '');
+                    }}
+                    error={errors.schoolId?.message}
+                    placeholder="Select school..."
+                  >
+                    {schools?.map((s) => (
+                      <PremiumSelectItem key={s.id} value={s.id}>{s.schoolName}</PremiumSelectItem>
+                    ))}
+                  </PremiumSelect>
+                )}
+              />
+              <PremiumInput
+                type="date"
+                label="Visit Date *"
+                {...register('date')}
+                error={errors.date?.message}
+              />
             </div>
 
             {selectedSchool && (
@@ -195,14 +191,15 @@ function LogVisitFormInner() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="form-grid">
+              <PremiumInput
+                label="Visitor Name *"
+                placeholder="e.g., Dianah Nakato"
+                {...register('visitor')}
+                error={errors.visitor?.message}
+              />
               <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">Visitor Name *</Label>
-                <Input {...register('visitor')} placeholder="e.g., Dianah Nakato" className="border-lg rounded-xl h-12 font-bold" />
-                {errors.visitor && <p className="text-xs text-destructive font-bold">{errors.visitor.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">Programmes Covered *</Label>
+                <div className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading text-omuto-navy">Programmes Covered *</div>
                 <Controller
                   name="programmesCovered"
                   control={control}
@@ -237,34 +234,35 @@ function LogVisitFormInner() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-dashed space-y-6">
-              <h3 className="font-bold text-sm uppercase tracking-widest text-muted-foreground">Visit Report</h3>
-              <div className="space-y-2">
-                <Label className="font-bold text-xs uppercase tracking-widest">Objectives Met *</Label>
-                <Textarea
-                  {...register('objectivesMet')}
-                  placeholder="Describe what objectives were achieved during this visit..."
-                  className="border-lg rounded-xl min-h-[100px] font-bold"
+            <div className="pt-8 border-t border-dashed space-y-6">
+              <h3 className="font-bold text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground w-full text-center">Visit Report</h3>
+              <PremiumTextarea
+                label="Objectives Met *"
+                placeholder="Describe what objectives were achieved during this visit..."
+                {...register('objectivesMet')}
+                error={errors.objectivesMet?.message}
+              />
+              <div className="form-grid">
+                <PremiumTextarea
+                  label="Challenges Observed"
+                  placeholder="Any challenges encountered..."
+                  {...register('challengesObserved')}
                 />
-                {errors.objectivesMet && <p className="text-xs text-destructive font-bold">{errors.objectivesMet.message}</p>}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Challenges Observed</Label>
-                  <Textarea {...register('challengesObserved')} placeholder="Any challenges encountered..." className="border-lg rounded-xl min-h-[80px] font-bold" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Teacher Feedback</Label>
-                  <Textarea {...register('teacherFeedback')} placeholder="Feedback from the patron teacher..." className="border-lg rounded-xl min-h-[80px] font-bold" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Student Feedback</Label>
-                  <Textarea {...register('studentFeedback')} placeholder="Feedback from students..." className="border-lg rounded-xl min-h-[80px] font-bold" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-bold text-xs uppercase tracking-widest">Follow-up Actions</Label>
-                  <Textarea {...register('followUpActions')} placeholder="What needs to be done next..." className="border-lg rounded-xl min-h-[80px] font-bold" />
-                </div>
+                <PremiumTextarea
+                  label="Teacher Feedback"
+                  placeholder="Feedback from the patron teacher..."
+                  {...register('teacherFeedback')}
+                />
+                <PremiumTextarea
+                  label="Student Feedback"
+                  placeholder="Feedback from students..."
+                  {...register('studentFeedback')}
+                />
+                <PremiumTextarea
+                  label="Follow-up Actions"
+                  placeholder="What needs to be done next..."
+                  {...register('followUpActions')}
+                />
               </div>
 
               <div className="pt-4 border-t border-dashed">
