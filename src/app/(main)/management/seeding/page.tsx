@@ -195,13 +195,11 @@ export default function SeedingBotPage() {
                 }
             } else if (selectedCollection === 'water-sources' && MIGRATION_DATA.water) {
                 for (const w of MIGRATION_DATA.water) {
-                    const subcounty = w.sc || '';
-                    const coords = getSubcountyCoordinates(subcounty, 'Mpigi');
+                    const coords = getSubcountyCoordinates('', 'Mpigi');
                     const docData = {
                         name: w.name || '',
                         status: w.status || 'working',
                         location: w.village || '',
-                        subCounty: subcounty,
                         district: 'Mpigi',
                         coordinates: coords,
                         createdAt: new Date(),
