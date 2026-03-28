@@ -22,7 +22,7 @@ export function MyTasksSummary() {
       orderBy('createdAt', 'desc'),
       limit(3)
     );
-  }, [user?.uid]);
+  }, [user]);
 
   const { data: tasks, isLoading } = useCollection<Task>(tasksQuery);
 

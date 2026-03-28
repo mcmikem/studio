@@ -4,7 +4,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import type { Expense } from "@/lib/types"
 import { useCollection, useFirestore, useUser, updateDocumentNonBlocking } from "@/firebase"
-import { collection, query, where, orderBy, doc, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, doc, onSnapshot, Timestamp, limit } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Button } from "../ui/button";
@@ -34,7 +34,8 @@ export function ApprovalQueue() {
         const q = query(
             collection(firestore, 'expenses'),
             where('status', '==', 'Pending'),
-            orderBy('createdAt', 'desc')
+            orderBy('createdAt', 'desc'),
+            limit(20)
         );
 
         const unsubscribe = onSnapshot(q, 

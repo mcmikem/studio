@@ -9,14 +9,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { buildPerformanceSummary } from '@/lib/performance';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, Timestamp, limit } from 'firebase/firestore';
 import { subDays, formatDistanceToNow } from 'date-fns';
 
 interface TeamPerformanceLeaderboardProps {}
 
 export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProps) {
   const firestore = useFirestore();
-  const thirtyDaysAgo = useMemo(() => subDays(new Date(), 30), []);
+  const thirtyDaysAgo = useMemo(() => subDays(new Date(), 7), []);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   useEffect(() => {
@@ -27,12 +27,12 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
   const queries = useMemo(() => {
     if (!firestore) return null;
     return {
-      activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc')),
-      checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')),
-      checkouts: query(collection(firestore, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc')),
-      expenses: query(collection(firestore, 'expenses'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc')),
-      testimonies: query(collection(firestore, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc')),
-      users: query(collection(firestore, 'users'), orderBy('name')),
+      activities: query(collection(firestore, 'activities'), where('loggedAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('loggedAt', 'desc'), limit(100)),
+      checkins: query(collection(firestore, 'checkins'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc'), limit(100)),
+      checkouts: query(collection(firestore, 'checkouts'), where('timestamp', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('timestamp', 'desc'), limit(100)),
+      expenses: query(collection(firestore, 'expenses'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc'), limit(100)),
+      testimonies: query(collection(firestore, 'testimonies'), where('createdAt', '>=', Timestamp.fromDate(thirtyDaysAgo)), orderBy('createdAt', 'desc'), limit(50)),
+      users: query(collection(firestore, 'users'), orderBy('name'), limit(50)),
     };
   }, [firestore, thirtyDaysAgo]);
 

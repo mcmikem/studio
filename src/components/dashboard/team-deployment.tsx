@@ -126,20 +126,21 @@ export function TeamDeployment() {
   const firestore = useFirestore();
 
   const queries = useMemo(() => {
-    // Don't run queries until user is authenticated
     if (!firestore || !user) return null;
-    const since = subHours(new Date(), 24);
+    const since = subHours(new Date(), 12);
     return {
-      users: query(collection(firestore, 'users')),
+      users: query(collection(firestore, 'users'), limit(50)),
       checkins: query(
         collection(firestore, 'checkins'), 
         where('timestamp', '>=', Timestamp.fromDate(since)),
-        orderBy('timestamp', 'desc')
+        orderBy('timestamp', 'desc'),
+        limit(100)
       ),
       checkouts: query(
         collection(firestore, 'checkouts'), 
         where('timestamp', '>=', Timestamp.fromDate(since)),
-        orderBy('timestamp', 'desc')
+        orderBy('timestamp', 'desc'),
+        limit(100)
       ),
     };
   }, [firestore, user]);

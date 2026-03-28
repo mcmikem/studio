@@ -102,3 +102,32 @@ export function DashboardSection({
     </Card>
   )
 }
+
+interface CompactStatCardProps {
+  label: string;
+  value: string | number;
+  icon?: React.ElementType;
+  color?: string;
+  href?: string;
+}
+
+export function CompactStatCard({ label, value, icon: Icon, color = "bg-primary", href }: CompactStatCardProps) {
+  const content = (
+    <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer">
+      {Icon && (
+        <div className={cn("p-2 rounded-md", color)}>
+          <Icon className="h-4 w-4 text-white" />
+        </div>
+      )}
+      <div>
+        <p className="text-xs text-muted-foreground uppercase font-medium">{label}</p>
+        <p className="text-lg font-black">{value}</p>
+      </div>
+    </div>
+  );
+  
+  if (href) {
+    return <a href={href} className="block">{content}</a>;
+  }
+  return content;
+}

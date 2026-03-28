@@ -16,12 +16,12 @@ export function EcosystemPulse() {
     
     const activitiesQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'), limit(500));
+        return query(collection(firestore, 'activities'), orderBy('loggedAt', 'desc'), limit(100));
     }, [firestore]);
     
     const programsQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'programs'), limit(100));
+        return query(collection(firestore, 'programs'), limit(50));
     }, [firestore]);
 
     const { data: activities, isLoading: isActivitiesLoading } = useCollection<Activity>(activitiesQuery);

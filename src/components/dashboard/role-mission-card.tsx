@@ -54,6 +54,18 @@ const roleData: Record<string, RoleContent> = {
     nonNegotiables: ['Data privacy & security', 'Regular database backups'],
     reportsTo: 'Executive Director',
   },
+  'Field Coordinator': {
+    mission: 'Coordinate field activities, manage field staff schedules, and ensure program delivery in assigned areas.',
+    kpis: ['Team deployment efficiency', 'Visit completion rate', 'Community engagement scores'],
+    nonNegotiables: ['Daily team check-ins', 'Accurate activity logging'],
+    reportsTo: 'Operations & Field Manager',
+  },
+  'Media & Communications Lead': {
+    mission: 'Drive organizational visibility through strategic media content and communications.',
+    kpis: ['Content engagement rate', 'Story publication frequency', 'Partner visibility'],
+    nonNegotiables: ['Brand consistency', 'Weekly content calendar'],
+    reportsTo: 'Executive Director',
+  },
 };
 
 const defaultContent: RoleContent = {

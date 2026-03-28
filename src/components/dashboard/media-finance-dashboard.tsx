@@ -209,7 +209,7 @@ function BudgetHealth() {
     
     const incomeQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'income'), orderBy('createdAt', 'desc'), limit(1000));
+        return query(collection(firestore, 'income'), orderBy('dateReceived', 'desc'), limit(1000));
     }, [firestore]);
 
     const { data: expenses } = useCollection<Expense>(expensesQuery);
