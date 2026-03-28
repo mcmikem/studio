@@ -255,24 +255,24 @@ export function OFATeamRegistrationForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="teamName" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Team Name *</Label>
-                  <Input id="teamName" {...register('teamName')} placeholder="e.g., Kasanje Lions FC" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="teamName" {...register('teamName')} placeholder="e.g., Kasanje Lions FC" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                   {errors.teamName && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.teamName.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="yearOfEstablishment" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Year Established</Label>
-                  <Input id="yearOfEstablishment" type="number" {...register('yearOfEstablishment')} placeholder="e.g., 2012" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="yearOfEstablishment" type="number" {...register('yearOfEstablishment')} placeholder="e.g., 2012" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="teamColours" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Team Colours</Label>
-                  <Input id="teamColours" {...register('teamColours')} placeholder="e.g., Red and White" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="teamColours" {...register('teamColours')} placeholder="e.g., Red and White" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="homePitchName" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Home Pitch Name</Label>
-                  <Input id="homePitchName" {...register('homePitchName')} placeholder="e.g., Kasanje Ground" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="homePitchName" {...register('homePitchName')} placeholder="e.g., Kasanje Ground" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="motto" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Motto</Label>
-                  <Input id="motto" {...register('motto')} placeholder="e.g., Excellence Through Sport" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="motto" {...register('motto')} placeholder="e.g., Excellence Through Sport" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
               </div>
             </div>
@@ -294,7 +294,7 @@ export function OFATeamRegistrationForm({
               />
               <div className="space-y-2">
                 <Label htmlFor="village" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Village / Zone</Label>
-                <Input id="village" {...register('village')} placeholder="Optional" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                <Input id="village" {...register('village')} placeholder="Optional" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
               </div>
             </div>
 
@@ -308,23 +308,23 @@ export function OFATeamRegistrationForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="headCoachName" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Head Coach Name</Label>
-                  <Input id="headCoachName" {...register('headCoachName')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="headCoachName" {...register('headCoachName')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="headCoachPhone" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Head Coach Phone</Label>
-                  <Input id="headCoachPhone" {...register('headCoachPhone')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="headCoachPhone" {...register('headCoachPhone')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="assistantCoachName" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Assistant Coach Name</Label>
-                  <Input id="assistantCoachName" {...register('assistantCoachName')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="assistantCoachName" {...register('assistantCoachName')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="assistantCoachPhone" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Assistant Coach Phone</Label>
-                  <Input id="assistantCoachPhone" {...register('assistantCoachPhone')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="assistantCoachPhone" {...register('assistantCoachPhone')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2 sm:col-span-2 pt-4 border-t">
                   <Label htmlFor="captainName" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Team Captain Name</Label>
-                  <Input id="captainName" {...register('captainName')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input id="captainName" {...register('captainName')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
               </div>
             </div>
@@ -339,37 +339,37 @@ export function OFATeamRegistrationForm({
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
                 <div className="space-y-2">
                   <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Total</Label>
-                  <Input type="number" {...register('totalPlayers')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input type="number" {...register('totalPlayers')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">U13</Label>
-                  <Input type="number" {...register('u13')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input type="number" {...register('u13')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">U15</Label>
-                  <Input type="number" {...register('u15')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input type="number" {...register('u15')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">U17</Label>
-                  <Input type="number" {...register('u17')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input type="number" {...register('u17')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">U19</Label>
-                  <Input type="number" {...register('u19')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input type="number" {...register('u19')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">% in School</Label>
-                  <Input type="number" {...register('percentageInSchool')} placeholder="0-100" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input type="number" {...register('percentageInSchool')} placeholder="0-100" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Enforcement</Label>
-                  <Input {...register('enforceSchoolAttendance')} placeholder="e.g., Weekly checks" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                  <Input {...register('enforceSchoolAttendance')} placeholder="e.g., Weekly checks" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="mainAcademicChallenges" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Academic Challenges</Label>
-                  <Textarea id="mainAcademicChallenges" {...register('mainAcademicChallenges')} placeholder="List challenges separated by commas..." className="min-h-[100px] rounded-2xl border-lg p-4 font-bold text-omuto-navy bg-white" />
+                  <Textarea id="mainAcademicChallenges" {...register('mainAcademicChallenges')} placeholder="List challenges separated by commas..." className="min-h-[100px] rounded-2xl border-lg p-4 font-bold text-omuto-navy bg-white dark:bg-omuto-navy" />
                 </div>
               </div>
             </div>
@@ -384,11 +384,11 @@ export function OFATeamRegistrationForm({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Weekly Sessions</Label>
-                    <Input type="number" {...register('trainingDaysPerWeek')} placeholder="0-7" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                    <Input type="number" {...register('trainingDaysPerWeek')} placeholder="0-7" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                   </div>
                   <div className="space-y-2">
                     <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Attendance %</Label>
-                    <Input type="number" {...register('avgTrainingAttendance')} placeholder="0-100" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                    <Input type="number" {...register('avgTrainingAttendance')} placeholder="0-100" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                   </div>
                   <div className="space-y-2">
                     <Label className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Community Support</Label>
@@ -397,7 +397,7 @@ export function OFATeamRegistrationForm({
                       control={control}
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger className="h-14 border rounded-2xl font-bold text-base bg-white"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Low">Low</SelectItem>
                             <SelectItem value="Moderate">Moderate</SelectItem>
@@ -414,7 +414,7 @@ export function OFATeamRegistrationForm({
                       control={control}
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger className="h-14 border rounded-2xl font-bold text-base bg-white"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="Low">Low</SelectItem>
                             <SelectItem value="Moderate">Moderate</SelectItem>

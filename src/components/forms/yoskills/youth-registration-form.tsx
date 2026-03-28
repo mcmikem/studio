@@ -105,7 +105,7 @@ export function YouthRegistrationForm() {
                   control={control}
                   render={({ field }) => (
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger id="circleId" className="h-14 border rounded-2xl font-bold text-base bg-white"><SelectValue placeholder="Select a circle..." /></SelectTrigger>
+                      <SelectTrigger id="circleId" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy"><SelectValue placeholder="Select a circle..." /></SelectTrigger>
                       <SelectContent>
                         {circles?.map(c => <SelectItem key={c.id} value={c.id}>{c.circleName}</SelectItem>)}
                       </SelectContent>
@@ -118,26 +118,26 @@ export function YouthRegistrationForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="name" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Full Name *</Label>
-                    <Input id="name" {...register('name')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                    <Input id="name" {...register('name')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                     {errors.name && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.name.message}</p>}
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="age" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Age *</Label>
-                    <Input id="age" type="number" {...register('age')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                    <Input id="age" type="number" {...register('age')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                     {errors.age && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.age.message}</p>}
                 </div>
             </div>
              <div className="space-y-2">
                 <Label htmlFor="phone" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Phone Number</Label>
-                <Input id="phone" type="tel" {...register('phone')} className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                <Input id="phone" type="tel" {...register('phone')} className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
             </div>
              <div className="space-y-2">
                 <Label htmlFor="educationLevel" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Education Level</Label>
-                <Input id="educationLevel" {...register('educationLevel')} placeholder="e.g., S.4 Leaver" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                <Input id="educationLevel" {...register('educationLevel')} placeholder="e.g., S.4 Leaver" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="businessInterest" className="font-bold text-[10px] uppercase tracking-wider pl-1 font-heading">Business Interest *</Label>
-                <Input id="businessInterest" {...register('businessInterest')} placeholder="e.g., Poultry, Tailoring" className="h-14 border rounded-2xl font-bold text-base bg-white" />
+                <Input id="businessInterest" {...register('businessInterest')} placeholder="e.g., Poultry, Tailoring" className="h-14 border rounded-2xl font-bold text-base bg-white dark:bg-omuto-navy" />
                 {errors.businessInterest && <p className="text-xs text-destructive font-bold uppercase pl-1">{errors.businessInterest.message}</p>}
             </div>
           </CardContent>

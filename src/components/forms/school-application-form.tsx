@@ -123,12 +123,12 @@ export function SchoolApplicationForm() {
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="contactName" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">Full Name</Label>
-                    <Input id="contactName" {...register('contactName')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white" />
+                    <Input id="contactName" {...register('contactName')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white dark:bg-omuto-navy" />
                     {errors.contactName && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.contactName.message}</p>}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="contactPhone" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">Phone Number</Label>
-                    <Input id="contactPhone" {...register('contactPhone')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white" />
+                    <Input id="contactPhone" {...register('contactPhone')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white dark:bg-omuto-navy" />
                     {errors.contactPhone && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.contactPhone.message}</p>}
                 </div>
              </div>
@@ -144,7 +144,7 @@ export function SchoolApplicationForm() {
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                  <div className="space-y-2">
                      <Label htmlFor="schoolName" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">School Name</Label>
-                     <Input id="schoolName" {...register('schoolName')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white" />
+                     <Input id="schoolName" {...register('schoolName')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white dark:bg-omuto-navy" />
                  </div>
              </div>
               <div className="space-y-4 pt-2 border-t">
@@ -166,11 +166,11 @@ export function SchoolApplicationForm() {
                      <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">Institution Type</Label>
                      <Controller name="schoolType" control={control} render={({ field }) => (
                          <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col sm:flex-row gap-3">
-                             <div className="flex items-center space-x-2 bg-muted/30 px-6 py-4 rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white has-[:checked]:shadow-comic-sm transition-all cursor-pointer flex-1">
+                             <div className="flex items-center space-x-2 bg-muted/30 px-6 py-4 rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white dark:bg-omuto-navy has-[:checked]:shadow-comic-sm transition-all cursor-pointer flex-1">
                                  <RadioGroupItem value="Primary" id="primary" className="border-2" />
                                  <Label htmlFor="primary" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy">Primary</Label>
                              </div>
-                             <div className="flex items-center space-x-2 bg-muted/30 px-6 py-4 rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white has-[:checked]:shadow-comic-sm transition-all cursor-pointer flex-1">
+                             <div className="flex items-center space-x-2 bg-muted/30 px-6 py-4 rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white dark:bg-omuto-navy has-[:checked]:shadow-comic-sm transition-all cursor-pointer flex-1">
                                  <RadioGroupItem value="Secondary" id="secondary" className="border-2" />
                                  <Label htmlFor="secondary" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy">Secondary</Label>
                              </div>
@@ -179,7 +179,7 @@ export function SchoolApplicationForm() {
                  </div>
                  <div className="space-y-2">
                      <Label htmlFor="studentCount" className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 font-heading">Population</Label>
-                     <Input id="studentCount" type="number" {...register('studentCount')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white" />
+                     <Input id="studentCount" type="number" {...register('studentCount')} className="h-14 border rounded-2xl text-omuto-navy font-bold text-base bg-white dark:bg-omuto-navy" />
                  </div>
               </div>
 
@@ -197,7 +197,7 @@ export function SchoolApplicationForm() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                          {programs.map((item) => (
                             <div key={item.id} className="relative group h-full">
-                                <div className={`h-full p-6 border-lg rounded-2xl transition-all cursor-pointer flex flex-col justify-between ${field.value?.includes(item.id) ? 'border-omuto-red bg-white shadow-comic-sm' : 'border-omuto-navy/5 bg-muted/30 hover:border-omuto-navy/20'}`}>
+                                <div className={`h-full p-6 border-lg rounded-2xl transition-all cursor-pointer flex flex-col justify-between ${field.value?.includes(item.id) ? 'border-omuto-red bg-white dark:bg-omuto-navy shadow-comic-sm' : 'border-omuto-navy/5 bg-muted/30 hover:border-omuto-navy/20'}`}>
                                     <Checkbox
                                         id={item.id}
                                         checked={field.value?.includes(item.id)}
@@ -214,7 +214,7 @@ export function SchoolApplicationForm() {
                                             {field.value?.includes(item.id) ? (
                                                 <Sparkles className="h-4 w-4 text-omuto-yellow" />
                                             ) : (
-                                                <div className="h-4 w-4 rounded-full border border-omuto-navy/10 bg-white" />
+                                                <div className="h-4 w-4 rounded-full border border-omuto-navy/10 bg-white dark:bg-omuto-navy" />
                                             )}
                                         </div>
                                         <p className={`text-[10px] font-bold uppercase tracking-wider mt-2 ${field.value?.includes(item.id) ? 'text-omuto-navy/60' : 'text-muted-foreground'}`}>{item.desc}</p>
@@ -235,7 +235,7 @@ export function SchoolApplicationForm() {
              </div>
               <div className="space-y-2">
                 <Label htmlFor="sustainabilityPlan" className="font-bold text-[10px] uppercase tracking-widest pl-1 font-heading">Sustainability Strategy</Label>
-                <Textarea id="sustainabilityPlan" {...register('sustainabilityPlan')} className="min-h-[140px] border-lg rounded-2xl p-6 text-omuto-navy font-bold bg-white" placeholder="How will your school maintain impact after Omuto's support?" />
+                <Textarea id="sustainabilityPlan" {...register('sustainabilityPlan')} className="min-h-[140px] border-lg rounded-2xl p-6 text-omuto-navy font-bold bg-white dark:bg-omuto-navy" placeholder="How will your school maintain impact after Omuto's support?" />
                 {errors.sustainabilityPlan && <p className="text-xs font-bold text-destructive pl-1 uppercase">{errors.sustainabilityPlan.message}</p>}
             </div>
              <div className="space-y-4">
@@ -245,7 +245,7 @@ export function SchoolApplicationForm() {
                         {['1', '2', '3', 'More than 3'].map(val => (
                              <div key={val} className="flex flex-col items-center gap-2 flex-1">
                                 <RadioGroupItem value={val} id={`t-${val}`} className="hidden" />
-                                <Label htmlFor={`t-${val}`} className="w-full text-center py-4 bg-muted/30 border-lg border-transparent rounded-2xl font-black text-xs cursor-pointer hover:bg-white hover:border-omuto-navy/20 transition-all has-[:checked]:border-omuto-navy has-[:checked]:bg-omuto-yellow has-[:checked]:shadow-comic-sm has-[:checked]:text-omuto-navy">
+                                <Label htmlFor={`t-${val}`} className="w-full text-center py-4 bg-muted/30 border-lg border-transparent rounded-2xl font-black text-xs cursor-pointer hover:bg-white dark:bg-omuto-navy hover:border-omuto-navy/20 transition-all has-[:checked]:border-omuto-navy has-[:checked]:bg-omuto-yellow has-[:checked]:shadow-comic-sm has-[:checked]:text-omuto-navy">
                                     {val}
                                 </Label>
                              </div>

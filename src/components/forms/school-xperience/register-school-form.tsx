@@ -222,7 +222,7 @@ export function RegisterSchoolForm() {
                             }
                           }}
                           className={`h-14 px-4 border-lg rounded-2xl transition-all cursor-pointer flex items-center justify-center text-center font-bold text-[10px] uppercase tracking-wider ${
-                            field.value?.includes(p) ? 'border-omuto-red bg-white text-omuto-red shadow-comic-sm' : 'border-omuto-navy/5 bg-muted/30 text-omuto-navy/60 hover:border-omuto-navy/20'
+                            field.value?.includes(p) ? 'border-omuto-red bg-white dark:bg-omuto-navy text-omuto-red shadow-comic-sm' : 'border-omuto-navy/5 bg-muted/30 text-omuto-navy/60 hover:border-omuto-navy/20'
                           }`}
                         >
                           {field.value?.includes(p) && <Check className="mr-1.5 h-3 w-3" />}

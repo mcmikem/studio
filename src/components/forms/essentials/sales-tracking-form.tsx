@@ -193,7 +193,7 @@ export function SalesTrackingForm() {
                             <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Existing Partner (Auto-fill)</Label>
                             {isLoadingPartners ? <Skeleton className="h-11 rounded-xl" /> : (
                                 <Select onValueChange={handlePartnerChange}>
-                                    <SelectTrigger className="h-11 border-lg rounded-xl font-bold bg-white"><SelectValue placeholder="Select partner..." /></SelectTrigger>
+                                    <SelectTrigger className="h-11 border-lg rounded-xl font-bold bg-white dark:bg-omuto-navy"><SelectValue placeholder="Select partner..." /></SelectTrigger>
                                     <SelectContent>{partners?.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
                                 </Select>
                             )}
@@ -203,11 +203,11 @@ export function SalesTrackingForm() {
                         </div>
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Customer Name</Label>
-                            <Input {...form.register('customer_name')} className="h-11 border-lg rounded-xl font-bold bg-white" placeholder="Manual entry if guest" />
+                            <Input {...form.register('customer_name')} className="h-11 border-lg rounded-xl font-bold bg-white dark:bg-omuto-navy" placeholder="Manual entry if guest" />
                         </div>
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">Phone Number</Label>
-                            <Input {...form.register('customer_phone')} className="h-11 border-lg rounded-xl font-bold bg-white" />
+                            <Input {...form.register('customer_phone')} className="h-11 border-lg rounded-xl font-bold bg-white dark:bg-omuto-navy" />
                         </div>
                     </div>
                  </div>
@@ -219,7 +219,7 @@ export function SalesTrackingForm() {
                             <div key={field.id} className="grid grid-cols-12 gap-3 items-end p-4 bg-muted/20 border-lg rounded-2xl relative">
                                 <div className="col-span-12 sm:col-span-4 space-y-2">
 </div>
-                                <div className="col-span-4 sm:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Qty</Label><Input type="number" {...form.register(`items.${index}.quantity`)} className="h-11 border-lg rounded-xl font-bold bg-white" onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}/></div>
+                                <div className="col-span-4 sm:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Qty</Label><Input type="number" {...form.register(`items.${index}.quantity`)} className="h-11 border-lg rounded-xl font-bold bg-white dark:bg-omuto-navy" onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}/></div>
                                 <div className="col-span-4 sm:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price</Label><Input type="number" readOnly value={form.watch(`items.${index}.unit_price`)} className="h-11 border-lg rounded-xl font-bold bg-muted/50" /></div>
                                 <div className="col-span-4 sm:col-span-3 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total</Label><div className="h-11 border-lg rounded-xl flex items-center px-4 bg-muted/50 font-bold text-omuto-navy">{formatCurrency(form.watch(`items.${index}.total`))}</div></div>
                                 <div className="col-span-12 sm:col-span-1"><Button type="button" variant="ghost" size="icon" className="h-11 w-11 text-destructive hover:bg-destructive/10 rounded-xl" onClick={() => remove(index)}><Trash2 className="h-5 w-5"/></Button></div>

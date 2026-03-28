@@ -194,7 +194,7 @@ function CheckinFormComponent() {
                             <div className="space-y-3">
                                 {submittedPlan?.timeBlocks?.map((block, index) => (
                                     <div key={index} className="p-4 bg-muted/30 border rounded-xl flex gap-4 items-start">
-                                        <div className="text-[10px] font-bold text-primary bg-white border px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
+                                        <div className="text-[10px] font-bold text-primary bg-white dark:bg-card border px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
                                             {block?.startTime}
                                         </div>
                                         <p className="text-sm font-medium text-omuto-navy leading-snug">{block?.description}</p>

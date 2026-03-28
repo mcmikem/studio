@@ -316,7 +316,7 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
                         <div className="space-y-3 sm:space-y-4">
                             <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Ecosystem Phase</Label>
                             <Select onValueChange={(value: any) => setEcosystemPhase(value)} value={ecosystemPhase}>
-                                <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy bg-white"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy dark:bg-omuto-navy text-omuto-navy dark:text-white"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Identify & Inspire">Identify & Inspire</SelectItem>
                                     <SelectItem value="Equip & Empower">Equip & Empower</SelectItem>
@@ -327,7 +327,7 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
                         <div className="space-y-3 sm:space-y-4">
                             <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Impact Vector</Label>
                             <Select onValueChange={(value: any) => setGoalType(value)} value={goalType}>
-                                <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy bg-white"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy dark:bg-omuto-navy text-omuto-navy dark:text-white"><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Metric">KPI Metric</SelectItem>
                                     <SelectItem value="Program">Program Objective</SelectItem>
@@ -343,7 +343,7 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Primary Metric</Label>
                                 {overallLoading ? <Skeleton className="h-14 rounded-2xl" /> : (
                                     <Select onValueChange={setSelectedGoalId} value={selectedGoalId || undefined}>
-                                        <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy bg-white"><SelectValue placeholder="Select a metric..." /></SelectTrigger>
+                                        <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy dark:bg-omuto-navy text-omuto-navy dark:text-white"><SelectValue placeholder="Select a metric..." /></SelectTrigger>
                                         <SelectContent>
                                             {metrics?.map(metric => (
                                                 <SelectItem key={metric.id} value={metric.id}>{metric.metric}</SelectItem>
@@ -405,7 +405,7 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
 
                         <div className="p-6 sm:p-8 bg-omuto-navy text-white rounded-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="flex items-center gap-3 sm:gap-4">
-                                <div className="p-2 sm:p-3 bg-white/10 rounded-xl"><Target className="h-6 w-6 sm:h-8 sm:w-8 text-primary" /></div>
+                                <div className="p-2 sm:p-3 dark:bg-omuto-navy text-omuto-navy dark:text-white/10 rounded-xl"><Target className="h-6 w-6 sm:h-8 sm:w-8 text-primary" /></div>
                                 <div>
                                     <p className="text-[10px] sm:text-xs font-bold text-white/40 uppercase tracking-wider">Potential Value</p>
                                     <p className="font-heading text-2xl sm:text-3xl font-bold tracking-tight">{formatCurrency(directValue)}</p>
@@ -421,21 +421,21 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                             <div className="p-4 sm:p-6 bg-muted/20 border-lg border-transparent rounded-2xl space-y-2">
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider">Transport</Label>
-                                <Input type="number" value={costs.transport} onChange={(e) => setCosts(prev => ({...prev, transport: Number(e.target.value)}))} className="h-12 border-lg rounded-xl font-bold text-omuto-navy bg-white" />
+                                <Input type="number" value={costs.transport} onChange={(e) => setCosts(prev => ({...prev, transport: Number(e.target.value)}))} className="h-12 border-lg rounded-xl font-bold text-omuto-navy dark:bg-omuto-navy text-omuto-navy dark:text-white" />
                             </div>
                              <div className="p-4 sm:p-6 bg-muted/20 border-lg border-transparent rounded-2xl space-y-2">
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider">Staff Time</Label>
-                                <Input type="number" value={costs.staffTime} onChange={(e) => setCosts(prev => ({...prev, staffTime: Number(e.target.value)}))} className="h-12 border-lg rounded-xl font-bold text-omuto-navy bg-white" />
+                                <Input type="number" value={costs.staffTime} onChange={(e) => setCosts(prev => ({...prev, staffTime: Number(e.target.value)}))} className="h-12 border-lg rounded-xl font-bold text-omuto-navy dark:bg-omuto-navy text-omuto-navy dark:text-white" />
                             </div>
                              <div className="p-4 sm:p-6 bg-muted/20 border-lg border-transparent rounded-2xl space-y-2">
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider">Materials</Label>
-                                <Input type="number" value={costs.materials} onChange={(e) => setCosts(prev => ({...prev, materials: Number(e.target.value)}))} className="h-12 border-lg rounded-xl font-bold text-omuto-navy bg-white" />
+                                <Input type="number" value={costs.materials} onChange={(e) => setCosts(prev => ({...prev, materials: Number(e.target.value)}))} className="h-12 border-lg rounded-xl font-bold text-omuto-navy dark:bg-omuto-navy text-omuto-navy dark:text-white" />
                             </div>
                         </div>
 
                         <div className="p-6 sm:p-8 bg-omuto-navy rounded-2xl shadow-comic flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="flex items-center gap-3 sm:gap-4">
-                                <div className="p-2 sm:p-3 bg-white/10 rounded-2xl"><Wallet className="h-6 w-6 sm:h-8 sm:w-8 text-omuto-yellow" /></div>
+                                <div className="p-2 sm:p-3 dark:bg-omuto-navy text-omuto-navy dark:text-white/10 rounded-2xl"><Wallet className="h-6 w-6 sm:h-8 sm:w-8 text-omuto-yellow" /></div>
                                 <div>
                                     <p className="text-[10px] sm:text-xs font-bold text-white/40 uppercase tracking-wider">Estimated Cost</p>
                                     <p className="font-heading text-2xl sm:text-3xl font-bold text-white tracking-tight">{formatCurrency(preActivityCost)}</p>
@@ -447,8 +447,8 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
                             <h3 className="font-heading font-bold uppercase tracking-tight text-base sm:text-lg text-omuto-navy">Value Multipliers</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 {multipliers.map((m) => (
-                                    <div key={m.id} className={`p-4 sm:p-6 border-lg rounded-2xl transition-all cursor-pointer flex items-center gap-4 group ${selectedMultipliers.includes(m.id) ? 'border-omuto-red bg-white shadow-comic-sm' : 'border-omuto-navy/5 bg-muted/30 hover:border-omuto-navy/20'}`} onClick={() => handleMultiplierChange(m.id, !selectedMultipliers.includes(m.id))}>
-                                        <div className={`p-3 rounded-2xl border-lg ${selectedMultipliers.includes(m.id) ? 'bg-omuto-red text-white border-omuto-red' : 'bg-white text-muted-foreground border-omuto-navy/5'} group-hover:scale-105 transition-transform`}><m.icon className="h-5 w-5" /></div>
+                                    <div key={m.id} className={`p-4 sm:p-6 border-lg rounded-2xl transition-all cursor-pointer flex items-center gap-4 group ${selectedMultipliers.includes(m.id) ? 'border-omuto-red dark:bg-omuto-navy text-omuto-navy dark:text-white shadow-comic-sm' : 'border-omuto-navy/5 bg-muted/30 hover:border-omuto-navy/20'}`} onClick={() => handleMultiplierChange(m.id, !selectedMultipliers.includes(m.id))}>
+                                        <div className={`p-3 rounded-2xl border-lg ${selectedMultipliers.includes(m.id) ? 'bg-omuto-red text-white border-omuto-red' : 'dark:bg-omuto-navy text-omuto-navy dark:text-white text-muted-foreground border-omuto-navy/5'} group-hover:scale-105 transition-transform`}><m.icon className="h-5 w-5" /></div>
                                         <div className="flex-1 min-w-0">
                                             <p className={`font-bold text-xs leading-tight uppercase truncate ${selectedMultipliers.includes(m.id) ? 'text-omuto-navy' : 'text-omuto-navy/60'}`}>{m.label}</p>
                                             <p className={`text-[10px] font-bold mt-1 ${selectedMultipliers.includes(m.id) ? 'text-omuto-red' : 'text-muted-foreground'}`}>+{formatCurrency(m.value)}</p>
@@ -460,7 +460,7 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
 
                         <div className="p-6 sm:p-8 bg-omuto-navy rounded-2xl shadow-comic flex flex-col sm:flex-row items-center justify-between gap-4">
                              <div className="flex items-center gap-3 sm:gap-4">
-                                <div className="p-2 sm:p-3 bg-white/10 rounded-2xl"><Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-omuto-yellow" /></div>
+                                <div className="p-2 sm:p-3 dark:bg-omuto-navy text-omuto-navy dark:text-white/10 rounded-2xl"><Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-omuto-yellow" /></div>
                                 <div>
                                     <p className="text-[10px] sm:text-xs font-bold text-white/40 uppercase tracking-wider">Total Impact</p>
                                     <p className="font-heading text-2xl sm:text-3xl font-bold text-white tracking-tight">{formatCurrency(totalValue)}</p>
@@ -481,7 +481,7 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
                             <div className="space-y-3 sm:space-y-4">
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Strategic Alignment</Label>
                                 <Select onValueChange={setKeyResultId} value={keyResultId || undefined}>
-                                    <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy bg-white"><SelectValue placeholder="Link to Key Result..." /></SelectTrigger>
+                                    <SelectTrigger className="h-14 border rounded-2xl font-bold text-omuto-navy dark:bg-omuto-navy text-omuto-navy dark:text-white"><SelectValue placeholder="Link to Key Result..." /></SelectTrigger>
                                     <SelectContent>
                                         {keyResults?.map(kr => (
                                             <SelectItem key={kr.id} value={kr.id}>{kr.title}</SelectItem>
@@ -495,15 +495,15 @@ function ActivityReportFormComponent({ activity: initialActivity, onSuccess }: A
                             <h3 className="font-heading font-bold uppercase tracking-tight text-base sm:text-lg text-omuto-navy">Mission Debrief & Story</h3>
                             <div className="space-y-3 sm:space-y-4">
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 flex items-center gap-2"><MessageCircle className="h-3 w-3 text-muted-foreground" /> Memorable Moment</Label>
-                                <Textarea value={memorableMoment} onChange={e => setMemorableMoment(e.target.value)} className="min-h-[100px] border-lg rounded-2xl p-6 text-sm text-omuto-navy font-bold bg-white" placeholder="Describe a specific moment..." />
+                                <Textarea value={memorableMoment} onChange={e => setMemorableMoment(e.target.value)} className="min-h-[100px] border-lg rounded-2xl p-6 text-sm text-omuto-navy font-bold dark:bg-omuto-navy text-omuto-navy dark:text-white" placeholder="Describe a specific moment..." />
                             </div>
                             <div className="space-y-3 sm:space-y-4">
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 flex items-center gap-2"><Sparkles className="h-3 w-3 text-muted-foreground" /> Beneficiary Quote</Label>
-                                <Textarea value={beneficiaryQuote} onChange={e => setBeneficiaryQuote(e.target.value)} className="min-h-[100px] border-lg rounded-2xl p-6 text-sm text-omuto-navy font-bold bg-white" placeholder='e.g., "I never knew..."' />
+                                <Textarea value={beneficiaryQuote} onChange={e => setBeneficiaryQuote(e.target.value)} className="min-h-[100px] border-lg rounded-2xl p-6 text-sm text-omuto-navy font-bold dark:bg-omuto-navy text-omuto-navy dark:text-white" placeholder='e.g., "I never knew..."' />
                             </div>
                             <div className="space-y-3 sm:space-y-4">
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1 flex items-center gap-2"><Clock className="h-3 w-3 text-muted-foreground" /> Challenges & Learnings</Label>
-                                <Textarea value={challengesLearned} onChange={e => setChallengesLearned(e.target.value)} className="min-h-[100px] border-lg rounded-2xl p-6 text-sm text-omuto-navy font-bold bg-white" placeholder="What challenges did you face?" />
+                                <Textarea value={challengesLearned} onChange={e => setChallengesLearned(e.target.value)} className="min-h-[100px] border-lg rounded-2xl p-6 text-sm text-omuto-navy font-bold dark:bg-omuto-navy text-omuto-navy dark:text-white" placeholder="What challenges did you face?" />
                             </div>
                             <div className="space-y-3 pt-4">
                                 <Label className="font-bold text-[10px] sm:text-xs uppercase tracking-wider pl-1">Attach Media</Label>

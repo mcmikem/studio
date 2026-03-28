@@ -244,7 +244,7 @@ export function CheckoutForm() {
       <Card className="overflow-hidden border shadow-sm w-full">
         <CardHeader className="bg-muted/30 border-b p-4 sm:p-6 lg:p-8">
             <div className="flex items-center gap-4">
-                <div className="p-2 bg-white border shadow-sm rounded-xl flex-shrink-0">
+                <div className="p-2 bg-white dark:bg-card border shadow-sm rounded-xl flex-shrink-0">
                     <LogOut className="h-6 w-6 text-primary" />
                 </div>
                 <div>
@@ -359,7 +359,7 @@ export function CheckoutForm() {
       <Card className="overflow-hidden border shadow-sm w-full">
         <CardHeader className="bg-muted/30 border-b p-4 sm:p-6 lg:p-8">
             <div className="flex items-center gap-4">
-                <div className="p-2 bg-white border shadow-sm rounded-xl flex-shrink-0">
+                <div className="p-2 bg-white dark:bg-card border shadow-sm rounded-xl flex-shrink-0">
                     <CheckCircle className="h-6 w-6 text-primary" />
                 </div>
                 <div>
@@ -465,7 +465,7 @@ export function CheckoutForm() {
           <Card className="overflow-hidden border shadow-sm w-full animate-in fade-in slide-in-from-right-4 duration-500">
             <CardHeader className="bg-muted/30 border-b p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center gap-4">
-                    <div className="p-2 bg-white border shadow-sm rounded-xl flex-shrink-0">
+                    <div className="p-2 bg-white dark:bg-card border shadow-sm rounded-xl flex-shrink-0">
                         <ArrowLeft className="h-6 w-6 text-primary cursor-pointer" onClick={() => setStep(0)} />
                     </div>
                     <div>
