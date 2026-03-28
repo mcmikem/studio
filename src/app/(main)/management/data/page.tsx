@@ -27,14 +27,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type DataCollection = 'schools' | 'users' | 'tree-surveys' | 'water-sources' | 'activities' | 'checkins' | 'checkouts' | 'expenses' | 'income' | 'beneficiaries' | 'testimonies' | 'dynamic-forms';
+type DataCollection = 'sx-schools' | 'sx-beneficiaries' | 'sx-visits' | 'sx-water-sources' | 'users' | 'tree-surveys' | 'water-sources' | 'activities' | 'checkins' | 'checkouts' | 'expenses' | 'income' | 'beneficiaries' | 'testimonies' | 'dynamic-forms' | 'slf-schools';
 
 const COLLECTION_INFO: Record<DataCollection, { label: string; icon: any; description: string }> = {
-    schools: { label: 'Schools', icon: Building2, description: 'School profiles and details' },
+    'sx-schools': { label: 'Schools (SX)', icon: Building2, description: 'School-Xperience schools' },
+    'slf-schools': { label: 'Schools (SLF)', icon: Building2, description: 'Student Leaders Forum schools' },
+    'sx-beneficiaries': { label: 'Beneficiaries (SX)', icon: Users, description: 'School-Xperience beneficiaries' },
+    'sx-visits': { label: 'School Visits', icon: GraduationCap, description: 'School visit records' },
+    'sx-water-sources': { label: 'Water Sources (SX)', icon: Droplets, description: 'School-Xperience water data' },
     users: { label: 'Users', icon: Users, description: 'Team members and roles' },
-    beneficiaries: { label: 'Beneficiaries', icon: Users, description: 'Program beneficiaries' },
+    beneficiaries: { label: 'Beneficiaries (Legacy)', icon: Users, description: 'Legacy beneficiary data' },
     'tree-surveys': { label: 'Tree Surveys', icon: TreePine, description: 'GreenSchools tree data' },
-    'water-sources': { label: 'Water Sources', icon: Droplets, description: 'PureWater data points' },
+    'water-sources': { label: 'Water Sources (Legacy)', icon: Droplets, description: 'Legacy water data' },
     activities: { label: 'Activities', icon: GraduationCap, description: 'Program activities logged' },
     checkins: { label: 'Check-ins', icon: CheckCircle, description: 'Daily check-in records' },
     checkouts: { label: 'Check-outs', icon: XCircle, description: 'Daily check-out reports' },
@@ -49,7 +53,7 @@ export default function DataManagementPage() {
     const firestore = useFirestore();
     
     // ALL hooks must be declared BEFORE any conditional returns
-    const [selectedCollection, setSelectedCollection] = useState<DataCollection>('schools');
+    const [selectedCollection, setSelectedCollection] = useState<DataCollection>('sx-schools');
     const [searchQuery, setSearchQuery] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [editingDoc, setEditingDoc] = useState<any>(null);

@@ -37,7 +37,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   const { data: income, isLoading: incomeLoading } = useCollection(incomeQuery);
 
   const schoolsQuery = useMemo(() => 
-    firestore ? query(collection(firestore, 'schools'), limit(50)) : null
+    firestore ? query(collection(firestore, 'sx-schools'), limit(50)) : null
   , [firestore]);
   const { data: schools } = useCollection(schoolsQuery);
 
