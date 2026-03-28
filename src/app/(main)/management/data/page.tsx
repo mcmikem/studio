@@ -19,7 +19,7 @@ import {
     Droplets,
     GraduationCap
 } from 'lucide-react';
-import { collection, doc, deleteDoc, updateDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, doc, deleteDoc, updateDoc, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,6 +58,8 @@ export default function DataManagementPage() {
     const [editForm, setEditForm] = useState<any>({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState('');
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [clearConfirmText, setClearConfirmText] = useState('');
 
     const collectionQuery = useMemo(() => {
         if (!firestore) return null;
@@ -101,6 +103,23 @@ export default function DataManagementPage() {
             setTimeout(() => setSuccess(''), 3000);
         } catch (err: any) {
             console.error('Delete error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleClearCollection = async () => {
+        if (!firestore || clearConfirmText !== selectedCollection) return;
+        setLoading(true);
+        try {
+            const snap = await getDocs(collection(firestore, selectedCollection));
+            await Promise.all(snap.docs.map(d => deleteDoc(doc(firestore, selectedCollection, d.id))));
+            setSuccess(`All ${COLLECTION_INFO[selectedCollection].label} records deleted`);
+            setShowClearConfirm(false);
+            setClearConfirmText('');
+            setTimeout(() => setSuccess(''), 3000);
+        } catch (err: any) {
+            console.error('Clear error:', err);
         } finally {
             setLoading(false);
         }
@@ -154,14 +173,25 @@ export default function DataManagementPage() {
                 </div>
 
                 {/* Search */}
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder={`Search ${Info.label}...`}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10"
-                    />
+                <div className="flex gap-3">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder={`Search ${Info.label}...`}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10"
+                        />
+                    </div>
+                    <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => setShowClearConfirm(true)}
+                        className="gap-1"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="hidden sm:inline">Clear All</span>
+                    </Button>
                 </div>
 
                 {/* Data List */}
@@ -284,6 +314,38 @@ export default function DataManagementPage() {
                             <Button variant="outline" onClick={() => setIsDeleting(false)}>Cancel</Button>
                             <Button variant="destructive" onClick={handleDelete} disabled={loading}>
                                 {loading ? 'Deleting...' : 'Delete'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Clear Collection Dialog */}
+                <Dialog open={showClearConfirm} onOpenChange={(open) => { setShowClearConfirm(open); if (!open) setClearConfirmText(''); }}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-destructive">
+                                <AlertTriangle className="h-5 w-5" />
+                                Clear All Records
+                            </DialogTitle>
+                            <DialogDescription>
+                                This will permanently delete ALL records in the <strong>{COLLECTION_INFO[selectedCollection].label}</strong> collection.
+                                Type <strong>{selectedCollection}</strong> to confirm.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <Input 
+                            value={clearConfirmText}
+                            onChange={(e) => setClearConfirmText(e.target.value)}
+                            placeholder={`Type "${selectedCollection}" to confirm`}
+                            className="font-mono"
+                        />
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => { setShowClearConfirm(false); setClearConfirmText(''); }}>Cancel</Button>
+                            <Button 
+                                variant="destructive" 
+                                onClick={handleClearCollection} 
+                                disabled={loading || clearConfirmText !== selectedCollection}
+                            >
+                                {loading ? 'Clearing...' : 'Clear All Records'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
