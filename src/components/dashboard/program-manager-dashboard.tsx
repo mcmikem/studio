@@ -9,13 +9,24 @@ import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
+import { DashboardSection, CompactStatCard } from './dashboard-section';
+import { NotificationsWidget } from './notifications-widget';
+import { TeamDeployment } from './team-deployment';
+import { ApprovalQueue } from './approval-queue';
+import { EcosystemPulse } from './ecosystem-pulse';
+import dynamic from 'next/dynamic';
+
+const ProgramHealthScore = dynamic(() => import('@/components/dashboard/program-health-score').then(mod => mod.ProgramHealthScore), {
+  loading: () => <Card><CardContent className="p-4">Loading...</CardContent></Card>,
+  ssr: false,
+});
+
 import { 
-  TrendingUp, DollarSign, Wallet, Clock, Activity, CheckCircle,
+  TrendingUp, DollarSign, Wallet, Clock, Activity, 
   Users, AlertTriangle, BarChart3, ClipboardCheck, Target,
-  Heart, GraduationCap, Building2, Handshake
+  Heart, GraduationCap, Handshake
 } from 'lucide-react';
 import Link from 'next/link';
-import { DashboardSection, CompactStatCard } from './dashboard-section';
 
 export function ProgramManagerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
@@ -60,12 +71,12 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
 
   const pendingForPM = useMemo(() => {
     if (!expenses) return [];
-    return expenses.filter(e => e.status === 'Pending').slice(0, 3);
+    return expenses.filter(e => e.status === 'Pending').slice(0, 5);
   }, [expenses]);
 
   const readyForDisbursement = useMemo(() => {
     if (!expenses) return [];
-    return expenses.filter(e => e.status === 'Approved').slice(0, 3);
+    return expenses.filter(e => e.status === 'Approved').slice(0, 5);
   }, [expenses]);
 
   const totalSchools = schools?.length || 0;
@@ -106,98 +117,126 @@ export function ProgramManagerDashboard({ profile }: DashboardProps) {
         />
       </div>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-4 gap-2">
-        <Button asChild size="sm" variant="outline" className="h-auto py-2 bg-omuto-navy text-white hover:bg-omuto-navy/90">
-          <Link href="/forms/expense" className="flex flex-col items-center gap-1">
-            <DollarSign className="h-4 w-4" />
-            <span className="text-xs font-bold">Requisition</span>
-          </Link>
-        </Button>
-        <Button asChild size="sm" variant="outline" className="h-auto py-2">
-          <Link href="/school-xperience/log-visit" className="flex flex-col items-center gap-1">
-            <ClipboardCheck className="h-4 w-4" />
-            <span className="text-xs font-bold">Log Visit</span>
-          </Link>
-        </Button>
-        <Button asChild size="sm" variant="outline" className="h-auto py-2">
-          <Link href="/school-xperience/register-school" className="flex flex-col items-center gap-1">
-            <GraduationCap className="h-4 w-4" />
-            <span className="text-xs font-bold">Add School</span>
-          </Link>
-        </Button>
-        <Button asChild size="sm" variant="outline" className="h-auto py-2">
-          <Link href="/finance/reports" className="flex flex-col items-center gap-1">
-            <BarChart3 className="h-4 w-4" />
-            <span className="text-xs font-bold">Reports</span>
-          </Link>
-        </Button>
-      </div>
-
-      {/* Program Overview - Compact */}
-      <div className="grid grid-cols-3 gap-2">
-        <Card className="py-3">
-          <CardContent className="p-0 text-center">
-            <GraduationCap className="h-5 w-5 mx-auto text-blue-500 mb-1" />
-            <p className="text-xl font-black">{totalSchools}</p>
-            <p className="text-[10px] uppercase text-muted-foreground">Schools</p>
-          </CardContent>
-        </Card>
-        <Card className="py-3">
-          <CardContent className="p-0 text-center">
-            <Heart className="h-5 w-5 mx-auto text-pink-500 mb-1" />
-            <p className="text-xl font-black">{activeSchools}</p>
-            <p className="text-[10px] uppercase text-muted-foreground">Active</p>
-          </CardContent>
-        </Card>
-        <Card className="py-3">
-          <CardContent className="p-0 text-center">
-            <Target className="h-5 w-5 mx-auto text-green-500 mb-1" />
-            <p className="text-xl font-black">{Math.round((activeSchools / (totalSchools || 1)) * 100)}%</p>
-            <p className="text-[10px] uppercase text-muted-foreground">Coverage</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Action Items - Collapsible */}
-      {(pendingForPM.length > 0 || readyForDisbursement.length > 0) && (
-        <DashboardSection 
-          title="Action Items" 
-          icon={AlertTriangle}
-          badge={`${pendingForPM.length + readyForDisbursement.length}`}
-          badgeColor={pendingForPM.length > 0 ? 'red' : 'green'}
-          defaultOpen={true}
-        >
-          <div className="space-y-2">
-            {pendingForPM.map(expense => (
-              <div key={expense.id} className="flex items-center justify-between p-2 rounded-lg bg-amber-50 border border-amber-200">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold truncate">{expense.title}</p>
-                  <p className="text-xs text-muted-foreground">{expense.userName || 'Unknown'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
-                  <Button asChild size="sm" variant="ghost" className="h-8 text-xs">
-                    <Link href={`/finance/requisitions?id=${expense.id}`}>Review</Link>
-                  </Button>
-                </div>
-              </div>
-            ))}
-            {readyForDisbursement.map(expense => (
-              <div key={expense.id} className="flex items-center justify-between p-2 rounded-lg bg-blue-50 border border-blue-200">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold truncate">{expense.title}</p>
-                  <p className="text-xs text-muted-foreground">{expense.userName || 'Unknown'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
-                  <span className="text-xs text-blue-600 font-medium">Ready</span>
-                </div>
-              </div>
-            ))}
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-4 gap-2">
+            <Button asChild size="sm" variant="outline" className="h-auto py-2 bg-omuto-navy text-white hover:bg-omuto-navy/90">
+              <Link href="/forms/expense" className="flex flex-col items-center gap-1">
+                <DollarSign className="h-4 w-4" />
+                <span className="text-xs font-bold">Requisition</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="h-auto py-2">
+              <Link href="/school-xperience/log-visit" className="flex flex-col items-center gap-1">
+                <ClipboardCheck className="h-4 w-4" />
+                <span className="text-xs font-bold">Log Visit</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="h-auto py-2">
+              <Link href="/school-xperience/register-school" className="flex flex-col items-center gap-1">
+                <GraduationCap className="h-4 w-4" />
+                <span className="text-xs font-bold">Add School</span>
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="h-auto py-2">
+              <Link href="/finance/reports" className="flex flex-col items-center gap-1">
+                <BarChart3 className="h-4 w-4" />
+                <span className="text-xs font-bold">Reports</span>
+              </Link>
+            </Button>
           </div>
-        </DashboardSection>
-      )}
+
+          {/* Program Overview */}
+          <div className="grid grid-cols-3 gap-2">
+            <Card className="py-3">
+              <CardContent className="p-0 text-center">
+                <GraduationCap className="h-5 w-5 mx-auto text-blue-500 mb-1" />
+                <p className="text-xl font-black">{totalSchools}</p>
+                <p className="text-[10px] uppercase text-muted-foreground">Schools</p>
+              </CardContent>
+            </Card>
+            <Card className="py-3">
+              <CardContent className="p-0 text-center">
+                <Heart className="h-5 w-5 mx-auto text-pink-500 mb-1" />
+                <p className="text-xl font-black">{activeSchools}</p>
+                <p className="text-[10px] uppercase text-muted-foreground">Active</p>
+              </CardContent>
+            </Card>
+            <Card className="py-3">
+              <CardContent className="p-0 text-center">
+                <Target className="h-5 w-5 mx-auto text-green-500 mb-1" />
+                <p className="text-xl font-black">{Math.round((activeSchools / (totalSchools || 1)) * 100)}%</p>
+                <p className="text-[10px] uppercase text-muted-foreground">Coverage</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Pending Approvals */}
+          {(pendingForPM.length > 0 || readyForDisbursement.length > 0) && (
+            <DashboardSection 
+              title="Action Items" 
+              icon={AlertTriangle}
+              badge={`${pendingForPM.length + readyForDisbursement.length}`}
+              badgeColor={pendingForPM.length > 0 ? 'red' : 'green'}
+              defaultOpen={true}
+            >
+              <div className="space-y-2">
+                {pendingForPM.map(expense => (
+                  <div key={expense.id} className="flex items-center justify-between p-2 rounded-lg bg-amber-50 border border-amber-200">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold truncate">{expense.title}</p>
+                      <p className="text-xs text-muted-foreground">{expense.userName || 'Unknown'}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
+                      <Button asChild size="sm" variant="ghost" className="h-8 text-xs">
+                        <Link href={`/finance/requisitions?id=${expense.id}`}>Review</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                {readyForDisbursement.map(expense => (
+                  <div key={expense.id} className="flex items-center justify-between p-2 rounded-lg bg-blue-50 border border-blue-200">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold truncate">{expense.title}</p>
+                      <p className="text-xs text-muted-foreground">{expense.userName || 'Unknown'}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
+                      <span className="text-xs text-blue-600 font-medium">Ready</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </DashboardSection>
+          )}
+
+          {/* Team Deployment */}
+          <TeamDeployment />
+
+          {/* Program Health */}
+          <ProgramHealthScore />
+
+          {/* Ecosystem Pulse */}
+          <EcosystemPulse />
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="space-y-4">
+          <Card className="bg-omuto-navy text-white">
+            <CardContent className="p-4">
+              <p className="text-xs font-bold uppercase opacity-60 mb-1">Your Focus</p>
+              <p className="text-sm font-semibold">
+                Program quality, partnerships, and impact reporting
+              </p>
+            </CardContent>
+          </Card>
+
+          <NotificationsWidget />
+        </div>
+      </div>
     </div>
   );
 }

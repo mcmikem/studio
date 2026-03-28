@@ -2,23 +2,38 @@
 'use client';
 
 import { DashboardHeader } from "./dashboard-header"
-import { RoleMissionCard } from "./role-mission-card"
 import type { DashboardProps } from "./dashboard-loader"
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
 import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
 import { DashboardSection, CompactStatCard } from './dashboard-section';
+import { NotificationsWidget } from './notifications-widget';
+import { TeamDeployment } from './team-deployment';
+import { TeamPerformanceLeaderboard } from './team-performance-leaderboard';
+import { ApprovalQueue } from './approval-queue';
+import { EcosystemPulse } from './ecosystem-pulse';
+import { GrantDeadlineAlert } from './grant-deadline-alert';
+import dynamic from 'next/dynamic';
+
+const ProgramHealthScore = dynamic(() => import('@/components/dashboard/program-health-score').then(mod => mod.ProgramHealthScore), {
+  loading: () => <Card className="h-64"><CardContent className="p-4 flex items-center justify-center">Loading program health...</CardContent></Card>,
+  ssr: false,
+});
+
+const DashboardCalendar = dynamic(() => import('@/components/dashboard/dashboard-calendar').then(mod => mod.DashboardCalendar), {
+  loading: () => <Card className="h-64"><CardContent className="p-4 flex items-center justify-center">Loading calendar...</CardContent></Card>,
+  ssr: false,
+});
+
 import { 
-  TrendingUp, DollarSign, Wallet, Clock, Activity, CheckCircle,
+  TrendingUp, DollarSign, Wallet, Clock, Activity, 
   Users, AlertTriangle, BarChart3, ClipboardCheck, Target,
-  Heart, GraduationCap, TreePine, Droplets, ArrowRight
+  Heart, GraduationCap, Calendar
 } from 'lucide-react';
 import Link from 'next/link';
-import { NotificationsWidget } from './notifications-widget';
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
@@ -29,27 +44,17 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   const expensesQuery = useMemo(() => 
     firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(50)) : null
   , [firestore]);
-  const { data: expenses, isLoading: expensesLoading } = useCollection(expensesQuery);
+  const { data: expenses } = useCollection(expensesQuery);
 
   const incomeQuery = useMemo(() => 
     firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc'), limit(50)) : null
   , [firestore]);
-  const { data: income, isLoading: incomeLoading } = useCollection(incomeQuery);
+  const { data: income } = useCollection(incomeQuery);
 
   const schoolsQuery = useMemo(() => 
     firestore ? query(collection(firestore, 'sx-schools'), limit(50)) : null
   , [firestore]);
   const { data: schools } = useCollection(schoolsQuery);
-
-  const treesQuery = useMemo(() => 
-    firestore ? query(collection(firestore, 'sx-trees'), limit(100)) : null
-  , [firestore]);
-  const { data: trees } = useCollection(treesQuery);
-
-  const waterQuery = useMemo(() => 
-    firestore ? query(collection(firestore, 'sx-water-sources'), limit(100)) : null
-  , [firestore]);
-  const { data: waterSources } = useCollection(waterQuery);
 
   const thisMonthExpenses = useMemo(() => {
     if (!expenses) return 0;
@@ -84,14 +89,12 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   const balance = thisMonthIncome - thisMonthExpenses;
   const totalSchools = schools?.length || 0;
   const activeSchools = schools?.filter(s => s.status === 'Active').length || 0;
-  const totalTrees = trees?.reduce((sum, t) => sum + (t.quantity || t.numberOfTreesSurvived || t.totalTreesAtPlanting || 0), 0) || 0;
-  const totalWaterPoints = waterSources?.length || 0;
 
   return (
     <div className="flex flex-col gap-4">
       <DashboardHeader profile={profile} />
       
-      {/* Top Row - Key Metrics - Compact Grid */}
+      {/* Top Row - Key Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <CompactStatCard 
           label="Income (MTD)" 
@@ -124,10 +127,10 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
 
       {/* Main Content - 2 Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Left Column - Priority Actions (2/3 width) */}
+        {/* Left Column - Primary Content */}
         <div className="lg:col-span-2 space-y-4">
           
-          {/* Pending Approvals - Inline Alert */}
+          {/* Pending Approvals Alert */}
           {pendingApprovals.length > 0 && (
             <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/30">
               <CardContent className="p-3">
@@ -137,14 +140,14 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                     <span className="text-sm font-bold">{pendingApprovals.length} pending approvals</span>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="/finance/requisitions?status=Pending">Review <ArrowRight className="ml-1 h-3 w-3" /></Link>
+                    <Link href="/finance/requisitions?status=Pending">Review</Link>
                   </Button>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Quick Stats - Schools Overview */}
+          {/* Schools Overview */}
           <div className="grid grid-cols-3 gap-2">
             <Card className="py-3">
               <CardContent className="p-0 text-center">
@@ -170,7 +173,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
           </div>
 
           {/* Quick Actions */}
-          <DashboardSection title="Quick Actions" icon={Target} defaultOpen={true} className="mb-4">
+          <DashboardSection title="Quick Actions" icon={Target} defaultOpen={true}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <Button asChild size="sm" className="h-auto py-2 bg-omuto-navy">
                 <Link href="/forms/expense" className="flex flex-col items-center gap-1">
@@ -198,23 +201,30 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
               </Button>
             </div>
           </DashboardSection>
+
+          {/* Team Deployment - Live */}
+          <TeamDeployment />
+
+          {/* Team Performance Leaderboard */}
+          <TeamPerformanceLeaderboard />
+
+          {/* Program Health Score */}
+          <ProgramHealthScore />
         </div>
 
-        {/* Right Column - Sidebar (1/3 width) */}
+        {/* Right Column - Sidebar */}
         <div className="space-y-4">
-          {/* Role Mission - Compact */}
+          {/* Role Mission */}
           <Card className="bg-omuto-navy text-white">
             <CardContent className="p-4">
               <p className="text-xs font-bold uppercase opacity-60 mb-1">Your Focus</p>
-              <p className="text-sm font-semibold line-clamp-2">
-                {profile.role === 'Executive Director' 
-                  ? 'Strategic leadership, partnerships, and organizational impact'
-                  : 'Pending approvals and team performance monitoring'}
+              <p className="text-sm font-semibold">
+                Strategic leadership, partnerships, and organizational impact
               </p>
             </CardContent>
           </Card>
 
-          {/* Pending Items Summary */}
+          {/* Action Items */}
           <DashboardSection 
             title="Action Items" 
             icon={Clock} 
@@ -243,6 +253,12 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
 
           {/* Notifications */}
           <NotificationsWidget />
+
+          {/* Grant Deadlines */}
+          <GrantDeadlineAlert />
+
+          {/* Calendar Preview */}
+          <DashboardCalendar />
         </div>
       </div>
     </div>
