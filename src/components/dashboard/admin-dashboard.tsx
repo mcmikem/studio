@@ -131,7 +131,7 @@ export function AdminDashboard({ profile }: DashboardProps) {
                   </div>
                   <div className="text-right flex-shrink-0 ml-2">
                     <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
-                    <Button asChild size="sm" variant="ghost" className="h-6 text-[10px] font-bold text-primary">
+                    <Button asChild size="sm" variant="ghost" className="h-10 sm:h-6 text-[10px] font-bold text-primary">
                       <Link href={`/finance/requisitions?id=${expense.id}`}>Review</Link>
                     </Button>
                   </div>

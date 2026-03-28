@@ -283,12 +283,12 @@ function ProgramCard({ program, Icon }: { program: ProgramScore; Icon: React.Ele
             <TrendIcon trend={program.trend} recent={program.recentActivity} previous={program.previousActivity} />
           </div>
           <p className="text-[13px] font-black text-omuto-navy">{program.recentActivity}</p>
-          <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Activities</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Activities</p>
         </div>
         <div className="text-center">
           <Users className="h-3 w-3 text-muted-foreground mx-auto" />
           <p className="text-[13px] font-black text-omuto-navy">{program.beneficiaries}</p>
-          <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Beneficiaries</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Beneficiaries</p>
         </div>
         <div className="text-center">
           <div className="flex items-center justify-center gap-1">
@@ -297,7 +297,7 @@ function ProgramCard({ program, Icon }: { program: ProgramScore; Icon: React.Ele
           <p className="text-[13px] font-black text-omuto-navy">
             {program.collectionsActive}/{program.collectionsTotal}
           </p>
-          <p className="text-[8px] text-muted-foreground uppercase tracking-widest">Forms</p>
+          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Forms</p>
         </div>
       </div>
       <div className="w-full bg-black/5 rounded-full h-1.5 overflow-hidden">

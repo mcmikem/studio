@@ -251,10 +251,10 @@ export function TeamDeployment() {
             </div>
           </div>
           <div className="flex gap-2">
-            <div className="px-4 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-black text-[9px] uppercase tracking-wider shadow-sm">
+            <div className="px-4 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-black text-[10px] uppercase tracking-wider shadow-sm">
               {activeCount} Active Now
             </div>
-            <div className="px-4 py-1.5 bg-gray-50 text-gray-400 border border-gray-200 rounded-full font-black text-[9px] uppercase tracking-wider">
+            <div className="px-4 py-1.5 bg-gray-50 text-gray-400 border border-gray-200 rounded-full font-black text-[10px] uppercase tracking-wider">
               {notStartedCount} Offline
             </div>
           </div>

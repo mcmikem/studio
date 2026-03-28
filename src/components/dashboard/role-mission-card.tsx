@@ -116,7 +116,7 @@ export function RoleMissionCard({ profile }: { profile: UserProfileType }) {
         </div>
 
         <div className="pt-4 border-t flex items-center justify-between">
-            <div className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest">Reporting To</div>
+            <div className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Reporting To</div>
             <div className="text-[10px] font-bold text-omuto-navy dark:text-white uppercase tracking-wider">{content.reportsTo}</div>
         </div>
       </CardContent>

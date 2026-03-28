@@ -175,13 +175,13 @@ export function DashboardCalendar() {
       <CardContent className="flex-grow flex flex-col">
           {currentDate && (
               <div className="flex items-center justify-between mb-4">
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(subDays(currentDate, 1)); }}>
+                <Button variant="outline" size="icon" className="h-10 w-10 sm:h-8 sm:w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(subDays(currentDate, 1)); }}>
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <h3 className="font-heading text-lg font-semibold text-center">
                     {format(currentDate, "eeee, MMMM d")}
                 </h3>
-                <Button variant="outline" size="icon" className="h-8 w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(addDays(currentDate, 1)); }}>
+                <Button variant="outline" size="icon" className="h-10 w-10 sm:h-8 sm:w-8" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentDate(addDays(currentDate, 1)); }}>
                     <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>

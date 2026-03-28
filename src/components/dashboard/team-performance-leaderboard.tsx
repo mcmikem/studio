@@ -127,7 +127,7 @@ export function TeamPerformanceLeaderboard(props: TeamPerformanceLeaderboardProp
               </div>
               <div className="text-right">
                 <div className="px-3 py-1.5 border-2 border-omuto-navy dark:border-white/20 font-bold text-sm rounded-lg bg-white dark:bg-omuto-navy dark:text-white shadow-comic-sm">{Math.round(user.totalScore).toLocaleString()}</div>
-                <p className="text-[9px] font-bold text-omuto-navy/50 dark:text-white/50 mt-1 uppercase tracking-wider">{user.actions.reduce((s, a) => s + a.count, 0)} ACTIONS</p>
+                <p className="text-[10px] font-bold text-omuto-navy/50 dark:text-white/50 mt-1 uppercase tracking-wider">{user.actions.reduce((s, a) => s + a.count, 0)} ACTIONS</p>
               </div>
             </div>
           ))

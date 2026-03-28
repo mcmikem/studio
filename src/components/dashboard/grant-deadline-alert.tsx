@@ -296,11 +296,11 @@ function DeadlineRow({ item }: { item: DeadlineItem }) {
         </div>
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
-        <Button variant="ghost" size="sm" className="h-7 text-[11px] font-bold text-muted-foreground hover:text-omuto-navy" onClick={addToCalendar}>
+        <Button variant="ghost" size="sm" className="h-10 sm:h-7 text-[11px] font-bold text-muted-foreground hover:text-omuto-navy" onClick={addToCalendar}>
           <Calendar className="h-3 w-3 mr-0.5" />
           Add to Calendar
         </Button>
-        <Button asChild variant="ghost" size="sm" className="h-7 text-[11px] font-bold">
+        <Button asChild variant="ghost" size="sm" className="h-10 sm:h-7 text-[11px] font-bold">
           <Link href="/management/resources">
             {item.status === 'Draft' ? 'Start Draft' : 'Update'}
             <ChevronRight className="ml-0.5 h-3 w-3" />

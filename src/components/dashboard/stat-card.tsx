@@ -46,7 +46,7 @@ export function StatCard({
           {alertLevel && (
             <div className="flex items-center gap-1.5 px-2 py-1 bg-muted/30 rounded-full border border-omuto-navy/5">
                 <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", alertColors[alertLevel] || 'bg-gray-400')} />
-                <span className="text-[9px] font-black uppercase tracking-wider text-omuto-navy/40">{alertLevel}</span>
+                <span className="text-[10px] font-black uppercase tracking-wider text-omuto-navy/40">{alertLevel}</span>
             </div>
           )}
         </div>

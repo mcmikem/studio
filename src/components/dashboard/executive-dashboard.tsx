@@ -139,7 +139,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
                       <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
-                      <Button asChild size="sm" variant="ghost" className="h-6 text-[10px] font-bold text-primary"><Link href={`/finance/requisitions?id=${expense.id}`}>Review</Link></Button>
+                      <Button asChild size="sm" variant="ghost" className="h-10 sm:h-6 text-[10px] font-bold text-primary"><Link href={`/finance/requisitions?id=${expense.id}`}>Review</Link></Button>
                     </div>
                   </div>
                 );
@@ -169,7 +169,7 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
                   </div>
                   <div className="text-right flex-shrink-0 ml-2">
                     <p className="text-sm font-bold">{formatCurrency(expense.totalAmount, true)}</p>
-                    <Button asChild size="sm" variant="ghost" className="h-6 text-[10px] font-bold text-blue-600"><Link href={`/finance/requisitions?id=${expense.id}`}>Disburse</Link></Button>
+                    <Button asChild size="sm" variant="ghost" className="h-10 sm:h-6 text-[10px] font-bold text-blue-600"><Link href={`/finance/requisitions?id=${expense.id}`}>Disburse</Link></Button>
                   </div>
                 </div>
               ))}
@@ -294,10 +294,10 @@ function StatCard({ title, value, change, changeType, icon: Icon, iconBg, iconCo
       <CardContent className="p-3 sm:p-4">
         <div className="flex items-start justify-between">
           <div className="space-y-0.5">
-            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{title}</p>
+            <p className="text-[10px] sm:text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{title}</p>
             <p className="text-lg sm:text-xl font-black">{value}</p>
             {change && (
-              <p className={`text-[9px] sm:text-[10px] font-semibold ${
+              <p className={`text-[10px] sm:text-[10px] font-semibold ${
                 changeType === 'positive' ? 'text-green-600' : 
                 changeType === 'negative' ? 'text-red-600' : 
                 changeType === 'warning' ? 'text-amber-600' : 'text-muted-foreground'
