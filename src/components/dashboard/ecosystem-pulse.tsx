@@ -21,7 +21,7 @@ export function EcosystemPulse() {
     
     const programsQuery = useMemo(() => {
         if (!firestore) return null;
-        return query(collection(firestore, 'programs'), limit(50));
+        return query(collection(firestore, 'sx-schools'), limit(100));
     }, [firestore]);
 
     const { data: activities, isLoading: isActivitiesLoading } = useCollection<Activity>(activitiesQuery);
@@ -35,14 +35,14 @@ export function EcosystemPulse() {
         }
 
         const totalPrograms = programs.length || 1;
-        const inspire = programs.filter(p => p.status === 'On Track').length;
-        const equip = activities.filter(a => a.ecosystem_phase === 'Equip & Empower').length;
+        const inspire = programs.filter((p: any) => p.status === 'Active' || p.status === 'On Track').length;
+        const equip = activities.filter((a: any) => a.ecosystem_phase === 'Equip & Empower').length;
         const sustain = activities
-            .filter(a => a.ecosystem_phase === 'Activate & Sustain')
-            .reduce((sum, act) => sum + (act.totalValue || 0), 0);
+            .filter((a: any) => a.ecosystem_phase === 'Activate & Sustain')
+            .reduce((sum, act: any) => sum + (act.totalValue || 0), 0);
 
         const totalActivities = activities.length || 1;
-        const totalValue = activities.reduce((sum, a) => sum + (a.totalValue || 0), 0) || 1;
+        const totalValue = activities.reduce((sum, a: any) => sum + (a.totalValue || 0), 0) || 1;
 
         return {
             inspire,
@@ -51,7 +51,7 @@ export function EcosystemPulse() {
             total: activities.length,
             inspireProgress: Math.round((inspire / totalPrograms) * 100),
             equipProgress: Math.round((equip / totalActivities) * 100),
-            sustainProgress: Math.round((sustain / totalValue) * 100),
+            sustainProgress: Math.round((sustain / (totalValue || 1)) * 100),
         };
 
     }, [activities, programs]);

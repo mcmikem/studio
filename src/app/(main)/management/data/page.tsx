@@ -27,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type DataCollection = 'sx-schools' | 'sx-beneficiaries' | 'sx-visits' | 'sx-water-sources' | 'users' | 'tree-surveys' | 'water-sources' | 'activities' | 'checkins' | 'checkouts' | 'expenses' | 'income' | 'beneficiaries' | 'testimonies' | 'dynamic-forms' | 'slf-schools';
+type DataCollection = 'sx-schools' | 'sx-beneficiaries' | 'sx-visits' | 'sx-water-sources' | 'sx-trees' | 'users' | 'tree-surveys' | 'water-sources' | 'activities' | 'checkins' | 'checkouts' | 'expenses' | 'income' | 'beneficiaries' | 'testimonies' | 'dynamic-forms' | 'slf-schools';
 
 const COLLECTION_INFO: Record<DataCollection, { label: string; icon: any; description: string }> = {
     'sx-schools': { label: 'Schools (SX)', icon: Building2, description: 'School-Xperience schools' },
@@ -35,9 +35,10 @@ const COLLECTION_INFO: Record<DataCollection, { label: string; icon: any; descri
     'sx-beneficiaries': { label: 'Beneficiaries (SX)', icon: Users, description: 'School-Xperience beneficiaries' },
     'sx-visits': { label: 'School Visits', icon: GraduationCap, description: 'School visit records' },
     'sx-water-sources': { label: 'Water Sources (SX)', icon: Droplets, description: 'School-Xperience water data' },
+    'sx-trees': { label: 'Tree Surveys (SX)', icon: TreePine, description: 'School-Xperience tree data' },
     users: { label: 'Users', icon: Users, description: 'Team members and roles' },
     beneficiaries: { label: 'Beneficiaries (Legacy)', icon: Users, description: 'Legacy beneficiary data' },
-    'tree-surveys': { label: 'Tree Surveys', icon: TreePine, description: 'GreenSchools tree data' },
+    'tree-surveys': { label: 'Tree Surveys (Legacy)', icon: TreePine, description: 'Legacy GreenSchools tree data' },
     'water-sources': { label: 'Water Sources (Legacy)', icon: Droplets, description: 'Legacy water data' },
     activities: { label: 'Activities', icon: GraduationCap, description: 'Program activities logged' },
     checkins: { label: 'Check-ins', icon: CheckCircle, description: 'Daily check-in records' },

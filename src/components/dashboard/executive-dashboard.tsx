@@ -41,6 +41,16 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   , [firestore]);
   const { data: schools } = useCollection(schoolsQuery);
 
+  const treesQuery = useMemo(() => 
+    firestore ? query(collection(firestore, 'sx-trees'), limit(100)) : null
+  , [firestore]);
+  const { data: trees } = useCollection(treesQuery);
+
+  const waterQuery = useMemo(() => 
+    firestore ? query(collection(firestore, 'sx-water-sources'), limit(100)) : null
+  , [firestore]);
+  const { data: waterSources } = useCollection(waterQuery);
+
   const thisMonthExpenses = useMemo(() => {
     if (!expenses) return 0;
     return expenses
@@ -74,6 +84,8 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   const balance = thisMonthIncome - thisMonthExpenses;
   const totalSchools = schools?.length || 0;
   const activeSchools = schools?.filter(s => s.status === 'Active').length || 0;
+  const totalTrees = trees?.reduce((sum, t) => sum + (t.quantity || t.numberOfTreesSurvived || t.totalTreesAtPlanting || 0), 0) || 0;
+  const totalWaterPoints = waterSources?.length || 0;
 
   return (
     <div className="flex flex-col gap-4">
