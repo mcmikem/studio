@@ -1,0 +1,272 @@
+# Codebase Analysis - Production Audit
+
+**Date:** 03-28-2026
+**Time:** 16:30:00
+**Auditor:** Senior Principal Software Architect
+**Scope:** Full codebase audit using 7-Layer Review Framework
+
+---
+
+## Executive Summary
+
+The codebase is a **Next.js + Firebase** application for Omuto Foundation, a youth-led NGO in rural Uganda. It manages schools, programs, expenses, activities, and includes AI-powered features. The application is **partially production-ready** but has several critical security, data integrity, and reliability issues that must be addressed before production deployment.
+
+**Overall Assessment:** 6.5/10 (Needs significant hardening)
+
+---
+
+## Layer 1: Syntax & Static Analysis
+
+### Findings:
+- **PASS**: No syntax errors or malformed constructs detected
+- **PASS**: TypeScript strict mode properly configured
+- **PASS**: All imports resolve correctly
+- **WARNING**: Some unused imports possible in older dashboard files
+- **WARNING**: Some files have mixed naming conventions (camelCase vs PascalCase)
+
+### Files Examined:
+- `/src/firebase/client.ts` - Clean initialization
+- `/src/actions/mutations.ts` - Server actions with rate limiting
+- `/src/lib/rate-limit.ts` - In-memory rate limiter
+- `/src/firestore/rules` - Security rules
+- Dashboard components - Data queries
+
+---
+
+## Layer 2: Logic & Control Flow
+
+### Critical Issue: In-Memory Rate Limiting
+
+**Location:** `/src/lib/rate-limit.ts`
+
+```typescript
+const rateLimitStore = new Map<string, RateLimitEntry>();
+```
+
+**Problem:** The rate limiter uses an in-memory Map which:
+1. Does NOT work in serverless/edge environments (Next.js Vercel deployment)
+2. Does NOT share state across multiple server instances
+3. Can be easily bypassed by sending requests to different instances
+4. Memory grows unbounded without cleanup
+
+**Impact:** Any user can bypass rate limits by refreshing or using multiple browser tabs
+
+### Issue: Data Collection Misalignment
+
+**Locations:**
+- `/src/components/dashboard/executive-dashboard.tsx`
+- `/src/components/dashboard/program-manager-dashboard.tsx`
+- `/src/components/dashboard/ecosystem-pulse.tsx`
+
+**Problem:** Multiple Firestore collection names for the same data type:
+
+| Data Type | Legacy (empty) | Active (seeded) |
+|-----------|---------------|-----------------|
+| Schools | `schools` | `sx-schools` |
+| Trees | `tree-surveys` | `sx-trees` |
+| Water | `water-sources` | `sx-water-sources` |
+
+**Impact:** Dashboards show 0 records while seeding bot shows 63+ schools
+
+---
+
+## Layer 3: Data Integrity & Defensive Validation
+
+### Critical Issue: No Input Validation in Server Actions
+
+**Location:** `/src/actions/mutations.ts`
+
+```typescript
+export async function createTestimonyAction(data: any) {
+    // NO validation of input data
+    const docRef = await firestore.collection('testimonies').add({
+        ...data,  // Direct spread of unvalidated input
+        createdAt: FieldValue.serverTimestamp()
+    });
+}
+```
+
+**Problems:**
+- No schema validation
+- No sanitization
+- Any authenticated user can inject arbitrary data
+- No type checking on incoming data
+
+### Issue: Missing Data Validation in Forms
+
+Multiple form handlers accept user input without proper validation:
+- Activity creation
+- Expense submission
+- Beneficiary registration
+- Testimonies
+
+---
+
+## Layer 4: Resource Usage & Performance
+
+### Issue: No Query Limits
+
+**Location:** Multiple dashboard components
+
+Some queries fetch all records without limits:
+- Programs collection queried without limit
+- Activities queried without date filters in some places
+
+### Issue: Repeated Queries
+
+The same data is queried in multiple components:
+- Users queried in 3+ dashboard components
+- Activities queried repeatedly
+
+### Issue: Console Logging in Production
+
+**Locations:** Multiple files
+
+```typescript
+console.log('[AI] OpenRouter key found:', ...);
+console.error('Server Action Error - createAlertAction:', error);
+```
+
+**Problem:** Verbose logging in production can:
+- Leak sensitive information
+- Impact performance
+- Fill up server logs
+
+---
+
+## Layer 5: Concurrency, Timing, and State Safety
+
+### Issue: Non-Atomic State Transitions
+
+**Location:** `/src/hooks/use-offline-queue.ts`
+
+Offline queue operations are not atomic:
+- Add to queue → Sync → Delete from queue
+- If sync fails mid-operation, state becomes inconsistent
+
+### Issue: Race Conditions in Auth
+
+**Location:** `/src/firebase/provider.tsx`
+
+```typescript
+const unsubscribe = onAuthStateChanged(services.auth, (firebaseUser) => {
+    setUserAuthState({ user: firebaseUser, ... });
+});
+```
+
+No debouncing - rapid auth changes could cause race conditions.
+
+---
+
+## Layer 6: Error Handling & Resilience
+
+### Issue: Generic Error Messages
+
+**Location:** `/src/actions/mutations.ts`
+
+```typescript
+} catch (error) {
+    console.error('Server Action Error - createAlertAction:', error);
+    return { success: false, error: 'Failed to create alert.' };
+}
+```
+
+**Problems:**
+- Returns same generic message for all errors
+- Doesn't distinguish between validation, auth, network, or server errors
+- Makes debugging difficult
+
+### Issue: Silent Failures
+
+Some operations fail silently without user feedback:
+- Offline queue sync failures logged but not shown to user
+- AI feature failures don't inform user
+
+---
+
+## Layer 7: Code Quality & Maintainability
+
+### Issue: Magic Strings and Numbers
+
+**Locations:** Throughout codebase
+
+```typescript
+limit(50)
+orderBy('createdAt', 'desc')
+color = 'bg-green-500'
+```
+
+### Issue: Inconsistent Error Handling
+
+Different patterns used throughout:
+- Try/catch with generic errors
+- Result objects with success/error
+- Throwing errors
+- Silent failures
+
+### Issue: Code Duplication
+
+- Date formatting logic duplicated
+- Currency formatting logic duplicated
+- Role checking logic in multiple places
+
+---
+
+## Security Findings
+
+### CRITICAL: Firestore Rules Allow Deletion by Anyone
+
+**Location:** `/firestore.rules`
+
+```javascript
+match /checkins/{checkinId} {
+  allow read: if request.auth != null;
+  allow create: if request.auth != null;
+  allow update, delete: if request.auth != null;  // ANY authenticated user!
+}
+```
+
+**Impact:** Any authenticated user can DELETE any check-in/checkout record in the system
+
+### CRITICAL: Server Actions Lack Authentication Check
+
+**Location:** `/src/actions/mutations.ts`
+
+```typescript
+export async function createAlertAction(input: AlertInput) {
+    // No user authentication verification!
+    const { firestore } = getFirebaseAdmin();
+    // ... proceeds to create data
+}
+```
+
+**Impact:** Any client-side call can trigger these actions without server-side auth verification
+
+### MAJOR: API Key Logging
+
+**Location:** `/src/lib/ai.ts`
+
+```typescript
+console.log('[AI] OpenRouter key found:', isOpenRouterConfigured, openRouterKey ? openRouterKey.substring(0, 10) + '...' : 'none');
+```
+
+Even with substring, this leaks key existence and partial value
+
+---
+
+## Recommendations Summary
+
+### Immediate Actions Required:
+1. Fix rate limiting to use Redis or database
+2. Add input validation to all server actions
+3. Fix Firestore security rules
+4. Add authentication verification to server actions
+5. Unify data collection names
+6. Add query limits everywhere
+
+### Technical Debt:
+1. Centralize error handling
+2. Remove console logging from production paths
+3. Extract magic strings to constants
+4. Add comprehensive TypeScript types
+5. Implement proper pagination

@@ -1,0 +1,176 @@
+# Changelog - Production Hardening
+
+**Date:** 03-28-2026
+**Time:** 16:30:00
+
+---
+
+## Summary
+
+This changelog documents critical security fixes, data integrity corrections, and production hardening changes made to the Omuto Foundation application.
+
+---
+
+## Changes
+
+### 1. CRITICAL - Data Collection Alignment
+
+**What Changed:** Fixed dashboard queries to use correct Firestore collection names
+
+**Why:** Dashboards queried empty legacy collections while seeding bot added to new collections
+
+**Bug/Risk Addressed:** Data misalignment causing dashboards to show 0 records
+
+**Files Affected:**
+- `src/components/dashboard/executive-dashboard.tsx`
+- `src/components/dashboard/program-manager-dashboard.tsx`
+- `src/components/dashboard/ecosystem-pulse.tsx`
+- `src/app/(main)/management/data/page.tsx`
+
+**Behavioral Impact:**
+- Executive dashboard now displays actual school count (126)
+- Tree and water source counts now visible
+- Data Manager shows all active collections
+
+---
+
+### 2. CRITICAL - Added Query Limits
+
+**What Changed:** Added pagination limits to all Firestore queries
+
+**Why:** Prevent unbounded data fetching causing performance issues
+
+**Bug/Risk Addressed:** Memory growth, slow loads, potential DoS
+
+**Files Affected:**
+- `src/components/dashboard/team-performance-leaderboard.tsx`
+- `src/components/dashboard/team-deployment.tsx`
+- `src/components/dashboard/approval-queue.tsx`
+- `src/components/dashboard/ecosystem-pulse.tsx`
+
+**Behavioral Impact:**
+- Faster dashboard loads
+- Reduced Firestore read costs
+- Better mobile performance
+
+---
+
+### 3. MAJOR - Dashboard UI/UX Improvements
+
+**What Changed:** Redesigned dashboards with compact layouts, collapsible sections
+
+**Why:** Improve usability, reduce visual clutter, better mobile experience
+
+**Bug/Risk Addressed:** Large cards taking excessive screen space
+
+**Files Affected:**
+- `src/components/dashboard/executive-dashboard.tsx`
+- `src/components/dashboard/admin-dashboard.tsx`
+- `src/components/dashboard/program-manager-dashboard.tsx`
+- `src/components/dashboard/dashboard-section.tsx`
+
+**Behavioral Impact:**
+- 2-column layouts on desktop
+- Collapsible sections to reduce initial load
+- Consistent stat card sizing
+
+---
+
+### 4. MAJOR - New Role Dashboards and Widgets
+
+**What Changed:** Added VolunteerDashboard, CheckinWidget, NotificationsWidget, LeaveRequestsWidget, OfflineIndicator
+
+**Why:** Provide role-specific functionality
+
+**Bug/Risk Addressed:** Missing features for certain roles
+
+**Files Affected:**
+- `src/components/dashboard/dashboard-loader.tsx`
+- `src/components/dashboard/volunteer-dashboard.tsx`
+- `src/components/dashboard/checkin-widget.tsx`
+- `src/components/dashboard/notifications-widget.tsx`
+- `src/components/dashboard/leave-requests-widget.tsx`
+- `src/components/dashboard/offline-indicator.tsx`
+- `src/components/dashboard/dashboard-header.tsx`
+
+**Behavioral Impact:**
+- Volunteers see action-focused dashboard
+- Field staff see check-in status prominently
+- All users see online/offline indicator
+
+---
+
+### 5. MINOR - Added Missing Role Definitions
+
+**What Changed:** Added Field Coordinator and Media & Communications Lead to role-mission-card
+
+**Why:** Ensure all roles have mission statements
+
+**Bug/Risk Addressed:** Missing role content
+
+**Files Affected:**
+- `src/components/dashboard/role-mission-card.tsx`
+
+**Behavioral Impact:**
+- More complete user experience
+
+---
+
+### 6. BUG FIX - Income Query Ordering
+
+**What Changed:** Changed orderBy from 'createdAt' to 'dateReceived' for income queries
+
+**Why:** Income should be sorted by actual date received, not document creation time
+
+**Bug/Risk Addressed:** Incorrect sorting of income records
+
+**Files Affected:**
+- `src/components/dashboard/executive-dashboard.tsx`
+- `src/components/dashboard/program-manager-dashboard.tsx`
+- `src/components/dashboard/media-finance-dashboard.tsx`
+
+**Behavioral Impact:**
+- Income displayed in correct chronological order
+
+---
+
+### 7. BUG FIX - Dependency Array Fix
+
+**What Changed:** Fixed useMemo dependency array in my-tasks-summary
+
+**Why:** React useMemo requires stable dependency references
+
+**Bug/Risk Addressed:** Potential stale closure issues
+
+**Files Affected:**
+- `src/components/dashboard/my-tasks-summary.tsx`
+
+---
+
+### 8. BUG FIX - Removed Unused Import
+
+**What Changed:** Removed unused UserProfileType import
+
+**Why:** Clean code, prevent confusion
+
+**Files Affected:**
+- `src/components/dashboard/admin-dashboard.tsx`
+
+---
+
+## Known Issues Not Yet Fixed (Roadmap)
+
+1. **In-Memory Rate Limiter** - Needs Redis or database-backed implementation
+2. **Server Action Authentication** - Needs auth verification in mutations
+3. **Firestore Delete Rules** - Any user can delete checkins/checkouts
+4. **Input Validation** - No schema validation on server actions
+5. **Console Logging** - Needs production log level control
+
+---
+
+## Migration Notes
+
+- No database migration required
+- No breaking changes to existing functionality
+- Users will see improved dashboard performance
+- New widgets available immediately
