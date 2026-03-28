@@ -1,11 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseAdmin } from '@/firebase/server-only';
 
-export async function POST(request: NextRequest) {
-  try {
-    const { fileName, fileType, folder, userId } = await request.json();
+async function verifyAuthToken(request: NextRequest): Promise<boolean> {
+  const authHeader = request.headers.get('Authorization');
+  const internalKey = process.env.INTERNAL_API_KEY;
+  
+  if (internalKey && authHeader === `Bearer ${internalKey}`) {
+    return true;
+  }
+  
+  const apiKey = request.headers.get('X-API-Key');
+  if (internalKey && apiKey === internalKey) {
+    return true;
+  }
+  
+  return false;
+}
 
-    if (!fileName || !fileType || !folder || !userId) {
+export async function POST(request: NextRequest) {
+  const isAuthorized = await verifyAuthToken(request);
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const { fileName, fileType, folder } = await request.json();
+
+    if (!fileName || !fileType || !folder) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -16,29 +37,26 @@ export async function POST(request: NextRequest) {
     
     if (!storage) {
       return NextResponse.json(
-        { error: 'Storage service not available. Please configure service account.' },
+        { error: 'Storage service not available.' },
         { status: 500 }
       );
     }
     
-    // Generate a unique file path
     const timestamp = Date.now();
     const sanitizedName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const filePath = `${folder}/${userId}/${timestamp}-${sanitizedName}`;
+    const filePath = `${folder}/${timestamp}-${sanitizedName}`;
     
-    // Get a signed URL for upload (valid for 5 minutes)
     const [signedUrl] = await storage.bucket().file(filePath).getSignedUrl({
       version: 'v4',
       action: 'write',
-      expires: Date.now() + 5 * 60 * 1000, // 5 minutes
+      expires: Date.now() + 5 * 60 * 1000,
       contentType: fileType,
     });
 
-    // Also get a signed URL for reading (valid for 1 year)
     const [readUrl] = await storage.bucket().file(filePath).getSignedUrl({
       version: 'v4',
       action: 'read',
-      expires: Date.now() + 365 * 24 * 60 * 60 * 1000, // 1 year
+      expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
     });
 
     return NextResponse.json({
@@ -47,9 +65,8 @@ export async function POST(request: NextRequest) {
       filePath,
     });
   } catch (error: any) {
-    console.error('GCS signed URL error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to generate upload URL' },
+      { error: 'Failed to generate upload URL' },
       { status: 500 }
     );
   }

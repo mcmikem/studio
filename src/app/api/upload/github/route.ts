@@ -1,7 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFirebaseAdmin } from '@/firebase/server-only';
+
+async function verifyAuthToken(request: NextRequest): Promise<boolean> {
+  const authHeader = request.headers.get('Authorization');
+  const internalKey = process.env.INTERNAL_API_KEY;
+  
+  if (internalKey && authHeader === `Bearer ${internalKey}`) {
+    return true;
+  }
+  
+  const apiKey = request.headers.get('X-API-Key');
+  if (internalKey && apiKey === internalKey) {
+    return true;
+  }
+  
+  return false;
+}
 
 export async function POST(request: NextRequest) {
+  const isAuthorized = await verifyAuthToken(request);
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { fileName, content, folder } = body;
@@ -15,7 +35,7 @@ export async function POST(request: NextRequest) {
     const githubBranch = process.env.GITHUB_BRANCH || 'main';
 
     if (!githubToken) {
-      return NextResponse.json({ error: 'GitHub not configured. Set GITHUB_TOKEN in environment.' }, { status: 500 });
+      return NextResponse.json({ error: 'GitHub not configured.' }, { status: 500 });
     }
 
     const safeName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
@@ -41,9 +61,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (!response.ok) {
-      const error = await response.json();
-      console.error('[GitHub Upload] API error:', error);
-      return NextResponse.json({ error: error.message || 'GitHub upload failed' }, { status: response.status });
+      return NextResponse.json({ error: 'GitHub upload failed' }, { status: response.status });
     }
 
     const data = await response.json();
@@ -56,7 +74,6 @@ export async function POST(request: NextRequest) {
       provider: 'github'
     });
   } catch (error: any) {
-    console.error('[GitHub Upload API] Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

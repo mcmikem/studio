@@ -1,7 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseAdmin } from '@/firebase/server-only';
 
+async function verifyAuthToken(request: NextRequest): Promise<boolean> {
+  const authHeader = request.headers.get('Authorization');
+  const internalKey = process.env.INTERNAL_API_KEY;
+  
+  if (internalKey && authHeader === `Bearer ${internalKey}`) {
+    return true;
+  }
+  
+  const apiKey = request.headers.get('X-API-Key');
+  if (internalKey && apiKey === internalKey) {
+    return true;
+  }
+  
+  return false;
+}
+
 export async function POST(request: NextRequest) {
+  const isAuthorized = await verifyAuthToken(request);
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -46,7 +67,6 @@ export async function POST(request: NextRequest) {
       provider: 'google-cloud-storage'
     });
   } catch (error: any) {
-    console.error('[GCS Upload API] Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

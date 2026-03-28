@@ -48,7 +48,28 @@ function getSheetsKey(): string {
   return process.env.GOOGLE_SHEETS_API_KEY || process.env.GEMINI_API_KEY || '';
 }
 
+async function verifyAuthToken(request: NextRequest): Promise<boolean> {
+  const authHeader = request.headers.get('Authorization');
+  const internalKey = process.env.INTERNAL_API_KEY;
+  
+  if (internalKey && authHeader === `Bearer ${internalKey}`) {
+    return true;
+  }
+  
+  const apiKey = request.headers.get('X-API-Key');
+  if (internalKey && apiKey === internalKey) {
+    return true;
+  }
+  
+  return false;
+}
+
 export async function GET(request: NextRequest) {
+  const isAuthorized = await verifyAuthToken(request);
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const type = searchParams.get('type') || 'expenses';
   
@@ -56,7 +77,7 @@ export async function GET(request: NextRequest) {
   const apiKey = getSheetsKey();
 
   if (!config?.spreadsheetId || !apiKey) {
-    return NextResponse.json({ error: 'Google Sheets not configured. Set GOOGLE_SHEET_ID and GOOGLE_SHEETS_API_KEY in environment.' }, { status: 500 });
+    return NextResponse.json({ error: 'Google Sheets not configured.' }, { status: 500 });
   }
 
   try {
@@ -64,7 +85,7 @@ export async function GET(request: NextRequest) {
     const url = `${GOOGLE_SHEETS_API}/${config.spreadsheetId}/values/${range}?key=${apiKey}&majorDimension=ROWS`;
     
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`Sheets API error: ${response.status}`);
+    if (!response.ok) throw new Error('Sheets API error');
     
     const data = await response.json();
     const rows = data.values || [];
@@ -79,56 +100,50 @@ export async function GET(request: NextRequest) {
       });
       return obj;
     });
-
-    return NextResponse.json({ data: records, count: records.length });
+    
+    return NextResponse.json({ data: records });
   } catch (error: any) {
-    console.error('[Sheets GET] Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const type = searchParams.get('type') || 'expenses';
-  
-  const config = SHEET_CONFIGS[type];
-  const apiKey = getSheetsKey();
-
-  if (!config?.spreadsheetId || !apiKey) {
-    return NextResponse.json({ error: 'Google Sheets not configured' }, { status: 500 });
+  const isAuthorized = await verifyAuthToken(request);
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const apiKey = getSheetsKey();
+  
   try {
-    const body = await request.json();
-    const { action, data } = body;
+    const { type, data } = await request.json();
+    const config = SHEET_CONFIGS[type];
 
-    if (action === 'append') {
-      const values = Object.values(config.dataMapping).map(col => data[col.toLowerCase().replace(/\s+/g, '_')] || '');
-      const range = `${config.sheetName}!A${(await getNextRow(config.spreadsheetId, config.sheetName, apiKey))}`;
-      
-      const url = `${GOOGLE_SHEETS_API}/${config.spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED&key=${apiKey}`;
-      
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: [values] }),
-      });
-
-      if (!response.ok) throw new Error(`Sheets API error: ${response.status}`);
-      
-      return NextResponse.json({ success: true, message: 'Data synced to Google Sheets' });
+    if (!config?.spreadsheetId || !apiKey) {
+      return NextResponse.json({ error: 'Google Sheets not configured.' }, { status: 500 });
     }
 
-    return NextResponse.json({ error: 'Invalid action. Use action=append' }, { status: 400 });
-  } catch (error: any) {
-    console.error('[Sheets POST] Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+    const values = Object.keys(config.dataMapping).map((field) => data[field] || '');
+    
+    const nextRowResponse = await fetch(
+      `${GOOGLE_SHEETS_API}/${config.spreadsheetId}/values/${config.sheetName}!A:A?key=${apiKey}`
+    );
+    const nextRowData = await nextRowResponse.json();
+    const nextRow = (nextRowData.values?.length || 0) + 1;
+    
+    const range = `${config.sheetName}!A${nextRow}`;
+    const url = `${GOOGLE_SHEETS_API}/${config.spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED&key=${apiKey}`;
+    
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ values: [values] }),
+    });
 
-async function getNextRow(spreadsheetId: string, sheetName: string, apiKey: string): Promise<number> {
-  const url = `${GOOGLE_SHEETS_API}/${spreadsheetId}/values/${sheetName}!A:A?key=${apiKey}`;
-  const response = await fetch(url);
-  const data = await response.json();
-  return (data.values?.length || 0) + 1;
+    if (!response.ok) throw new Error('Sheets API error');
+    
+    return NextResponse.json({ success: true, row: nextRow });
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to write data' }, { status: 500 });
+  }
 }
