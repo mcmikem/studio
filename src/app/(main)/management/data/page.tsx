@@ -27,11 +27,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
-type DataCollection = 'schools' | 'users' | 'tree-surveys' | 'water-sources' | 'activities' | 'checkins' | 'checkouts' | 'expenses' | 'income';
+type DataCollection = 'schools' | 'users' | 'tree-surveys' | 'water-sources' | 'activities' | 'checkins' | 'checkouts' | 'expenses' | 'income' | 'beneficiaries' | 'testimonies' | 'dynamic-forms';
 
 const COLLECTION_INFO: Record<DataCollection, { label: string; icon: any; description: string }> = {
     schools: { label: 'Schools', icon: Building2, description: 'School profiles and details' },
     users: { label: 'Users', icon: Users, description: 'Team members and roles' },
+    beneficiaries: { label: 'Beneficiaries', icon: Users, description: 'Program beneficiaries' },
     'tree-surveys': { label: 'Tree Surveys', icon: TreePine, description: 'GreenSchools tree data' },
     'water-sources': { label: 'Water Sources', icon: Droplets, description: 'PureWater data points' },
     activities: { label: 'Activities', icon: GraduationCap, description: 'Program activities logged' },
@@ -39,6 +40,8 @@ const COLLECTION_INFO: Record<DataCollection, { label: string; icon: any; descri
     checkouts: { label: 'Check-outs', icon: XCircle, description: 'Daily check-out reports' },
     expenses: { label: 'Expenses', icon: AlertTriangle, description: 'Expense records' },
     income: { label: 'Income', icon: Database, description: 'Income records' },
+    testimonies: { label: 'Testimonies', icon: Database, description: 'Impact stories' },
+    'dynamic-forms': { label: 'Dynamic Forms', icon: Database, description: 'Generated forms' },
 };
 
 export default function DataManagementPage() {

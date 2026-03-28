@@ -180,7 +180,7 @@ export default function SeedingBotPage() {
                     const subcounty = t.subcounty || '';
                     const coords = getSubcountyCoordinates(subcounty, 'Mpigi');
                     const docData = {
-                        schoolName: t.school || '',
+                        schoolName: t.school || '',  // maps from "school" field
                         subCounty: subcounty,
                         district: 'Mpigi',
                         totalTreesAtPlanting: parseInt(t.qty) || 0,
@@ -201,6 +201,7 @@ export default function SeedingBotPage() {
                         status: w.status || 'working',
                         location: w.village || '',
                         district: 'Mpigi',
+                        subCounty: 'Mpigi',
                         coordinates: coords,
                         createdAt: new Date(),
                         createdBy: 'seeding-bot'
