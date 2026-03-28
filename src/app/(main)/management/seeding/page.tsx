@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { collection, addDoc, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { MIGRATION_DATA } from '@/lib/data/migration-data';
+import { getSubcountyCoordinates } from '@/lib/uganda-data';
 
 interface ColumnMapping {
     source: string;
@@ -156,13 +157,18 @@ export default function SeedingBotPage() {
             
             if (selectedCollection === 'schools' && MIGRATION_DATA.schools) {
                 for (const s of MIGRATION_DATA.schools) {
+                    const subcounty = s.sc || '';
+                    const coords = getSubcountyCoordinates(subcounty, 'Mpigi');
                     const docData = {
                         schoolName: s.name,
                         patron: s.patron || 'Head Teacher',
-                        subCounty: s.sc || '',
+                        subCounty: subcounty,
                         district: 'Mpigi',
                         status: 'Active',
                         programs: s.progs || [],
+                        coordinates: coords,
+                        latitude: coords?.lat || 0,
+                        longitude: coords?.lng || 0,
                         createdAt: new Date(),
                         createdBy: 'seeding-bot'
                     };
@@ -171,12 +177,16 @@ export default function SeedingBotPage() {
                 }
             } else if (selectedCollection === 'tree-surveys' && MIGRATION_DATA.trees) {
                 for (const t of MIGRATION_DATA.trees) {
+                    const subcounty = t.subcounty || '';
+                    const coords = getSubcountyCoordinates(subcounty, 'Mpigi');
                     const docData = {
                         schoolName: t.school || '',
-                        subCounty: t.subcounty || '',
+                        subCounty: subcounty,
+                        district: 'Mpigi',
                         totalTreesAtPlanting: parseInt(t.qty) || 0,
                         surveyDate: t.date || '',
                         category: t.category || 'Tree Planting',
+                        coordinates: coords,
                         createdAt: new Date(),
                         createdBy: 'seeding-bot'
                     };
@@ -185,10 +195,15 @@ export default function SeedingBotPage() {
                 }
             } else if (selectedCollection === 'water-sources' && MIGRATION_DATA.water) {
                 for (const w of MIGRATION_DATA.water) {
+                    const subcounty = w.sc || '';
+                    const coords = getSubcountyCoordinates(subcounty, 'Mpigi');
                     const docData = {
                         name: w.name || '',
                         status: w.status || 'working',
                         location: w.village || '',
+                        subCounty: subcounty,
+                        district: 'Mpigi',
+                        coordinates: coords,
                         createdAt: new Date(),
                         createdBy: 'seeding-bot'
                     };
@@ -203,7 +218,7 @@ export default function SeedingBotPage() {
                         program: b.prog || '',
                         gender: b.gender || '',
                         subCounty: b.subcounty || '',
-                        district: b.district || 'Mpigi',
+                        district: 'Mpigi',
                         createdAt: new Date(),
                         createdBy: 'seeding-bot'
                     };

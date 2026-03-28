@@ -680,3 +680,76 @@ export const UGANDA_STATS = {
     teenagePregnancy: 15,
   },
 };
+
+// Helper function to get coordinates for a subcounty
+// Falls back to district center if subcounty coordinates not found
+export function getSubcountyCoordinates(subcountyName: string, districtName: string): { lat: number; lng: number } | null {
+  if (!subcountyName) return null;
+  
+  const scLower = subcountyName.toLowerCase().trim();
+  
+  // Subcounty approximate coordinates (center points)
+  const subcountyCoords: Record<string, { lat: number; lng: number }> = {
+    // Mpigi subcounties
+    'mpigi town council': { lat: 0.233, lng: 32.333 },
+    'mpigi': { lat: 0.233, lng: 32.333 },
+    'kammengo': { lat: 0.095, lng: 32.250 },
+    'nabbuzi': { lat: 0.090, lng: 32.246 },
+    'kiringente': { lat: 0.180, lng: 32.280 },
+    'muduuma': { lat: 0.200, lng: 32.300 },
+    'buwama': { lat: 0.220, lng: 32.400 },
+    'buwama town council': { lat: 0.220, lng: 32.400 },
+    'nkozi': { lat: 0.150, lng: 32.350 },
+    'kituntu': { lat: 0.160, lng: 32.320 },
+    'kayabwe': { lat: 0.180, lng: 32.280 },
+    // Wakiso subcounties
+    'kyebando': { lat: 0.3512, lng: 32.4985 },
+    'kira': { lat: 0.390, lng: 32.640 },
+    'nansana': { lat: 0.360, lng: 32.530 },
+    'entebbe': { lat: 0.050, lng: 32.460 },
+    'makindye ssaabagabo': { lat: 0.260, lng: 32.580 },
+    'kasangati': { lat: 0.380, lng: 32.550 },
+    // Butambala subcounties
+    'gombe': { lat: 0.180, lng: 32.180 },
+    'bujjuko': { lat: 0.160, lng: 32.150 },
+    'kibibi': { lat: 0.140, lng: 32.120 },
+    // Masaka subcounties
+    'masaka': { lat: -0.330, lng: 31.730 },
+    'nyendo': { lat: -0.320, lng: 31.740 },
+    // Kalungu subcounties
+    'kalungu': { lat: -0.180, lng: 31.760 },
+    'lukaya': { lat: -0.150, lng: 31.780 },
+    // Kampala
+    'kampala': { lat: 0.3476, lng: 32.5825 },
+    'kawempe': { lat: 0.370, lng: 32.570 },
+    'rubaga': { lat: 0.310, lng: 32.550 },
+    'nakawa': { lat: 0.340, lng: 32.600 },
+    'makindye': { lat: 0.290, lng: 32.580 },
+    'central': { lat: 0.3476, lng: 32.5825 },
+  };
+  
+  // Try exact match first
+  if (subcountyCoords[scLower]) {
+    return subcountyCoords[scLower];
+  }
+  
+  // Try partial match
+  for (const [key, coords] of Object.entries(subcountyCoords)) {
+    if (scLower.includes(key) || key.includes(scLower)) {
+      return coords;
+    }
+  }
+  
+  // Fall back to district center
+  const districtCoords: Record<string, { lat: number; lng: number }> = {
+    'mpigi': { lat: 0.233, lng: 32.333 },
+    'wakiso': { lat: 0.350, lng: 32.500 },
+    'butambala': { lat: 0.180, lng: 32.150 },
+    'masaka': { lat: -0.330, lng: 31.730 },
+    'kalungu': { lat: -0.180, lng: 31.760 },
+    'kampala': { lat: 0.3476, lng: 32.5825 },
+  };
+  
+  const distLower = districtName?.toLowerCase().trim() || '';
+  return districtCoords[distLower] || { lat: 0.233, lng: 32.333 }; // Default to Mpigi center
+}
