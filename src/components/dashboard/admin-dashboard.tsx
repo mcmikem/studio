@@ -13,6 +13,7 @@ import Link from "next/link"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatCurrency, formatDateSafe } from "@/lib/utils"
 import { DashboardSection, CompactStatCard } from "./dashboard-section"
+import { LeaveRequestsWidget } from "./leave-requests-widget"
 
 export function AdminDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
@@ -144,6 +145,9 @@ export function AdminDashboard({ profile }: DashboardProps) {
           </div>
         </DashboardSection>
       )}
+
+      {/* Leave Requests */}
+      <LeaveRequestsWidget />
     </div>
   )
 }

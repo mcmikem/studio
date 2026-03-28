@@ -18,6 +18,7 @@ import {
   Heart, GraduationCap, TreePine, Droplets, ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
+import { NotificationsWidget } from './notifications-widget';
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
@@ -227,6 +228,9 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
               )}
             </div>
           </DashboardSection>
+
+          {/* Notifications */}
+          <NotificationsWidget />
         </div>
       </div>
     </div>

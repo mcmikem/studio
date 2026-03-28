@@ -2,11 +2,11 @@
 "use client"
 
 import type { User } from "@/lib/types"
-import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { ShieldCheck, Zap } from 'lucide-react'
+import { OfflineIndicator } from './offline-indicator'
  
 export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
@@ -33,10 +33,13 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
                 {greeting}, <span className="text-primary">{profile?.name?.split(' ')[0] || "User"}</span>
               </h1>
             </div>
-            <div className="flex items-center gap-1.5 bg-omuto-navy/5 px-2.5 py-1 rounded-full text-xs font-medium text-omuto-navy/70">
-              {isED ? <ShieldCheck className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
-              <span className="hidden sm:inline">{profile?.role}</span>
-              <span className="sm:hidden">{profile?.role?.split(' ')[0]}</span>
+            <div className="flex items-center gap-2">
+              <OfflineIndicator />
+              <div className="flex items-center gap-1.5 bg-omuto-navy/5 px-2.5 py-1 rounded-full text-xs font-medium text-omuto-navy/70">
+                {isED ? <ShieldCheck className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
+                <span className="hidden sm:inline">{profile?.role}</span>
+                <span className="sm:hidden">{profile?.role?.split(' ')[0]}</span>
+              </div>
             </div>
           </div>
           

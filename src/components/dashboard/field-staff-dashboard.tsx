@@ -12,6 +12,7 @@ import { ClipboardCheck, BarChart3, Plus, GraduationCap, Heart, Flower2, Droplet
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { DashboardProps } from './dashboard-loader'
+import { CheckinWidget } from './checkin-widget';
 
 const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan').then(mod => mod.MyWeeklyPlan), {
   loading: () => <Skeleton className="h-48" />,
@@ -39,8 +40,12 @@ const QUICK_ACTIONS = [
 
 export function FieldStaffDashboard({ profile }: DashboardProps) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <DashboardHeader profile={profile} />
+      
+      {/* Check-in Status */}
+      <CheckinWidget />
+      
       <Tabs defaultValue="quick" className="w-full">
         <TabsList className="h-11 rounded-xl bg-omuto-cream/50 border border-omuto-navy/10 p-1 mb-2">
           <TabsTrigger
