@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useFirestore } from '@/firebase';
 import { collection, getDocs, query, where, or, Timestamp } from 'firebase/firestore';
 import {
@@ -99,77 +99,18 @@ const PROGRAMS = [
   },
 ];
 
-function ScoreRing({ score, size = 48, strokeWidth = 5 }: { score: number; size?: number; strokeWidth?: number }) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (score / 100) * circumference;
-  const health = score >= 70 ? 'green' : score >= 40 ? 'amber' : 'red';
-  const color = health === 'green' ? '#22c55e' : health === 'amber' ? '#f59e0b' : '#ef4444';
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          className="text-muted"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke={color}
-          strokeWidth={strokeWidth}
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className="transition-all duration-700"
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-[10px] font-black text-muted-foreground">{score}</span>
-      </div>
-    </div>
-  );
-}
-
-function TrendIcon({ trend, recent, previous }: { trend: 'up' | 'down' | 'stable'; recent: number; previous: number }) {
-  if (trend === 'up') {
-    return <TrendingUp className="h-3.5 w-3.5 text-green-500" />;
-  }
-  if (trend === 'down') {
-    return <TrendingDown className="h-3.5 w-3.5 text-red-500" />;
-  }
-  return <Minus className="h-3.5 w-3.5 text-muted-foreground" />;
-}
-
-function HealthDot({ health }: { health: 'green' | 'amber' | 'red' }) {
-  return (
-    <span className={cn(
-      'h-2.5 w-2.5 rounded-full flex-shrink-0',
-      health === 'green' && 'bg-green-500',
-      health === 'amber' && 'bg-amber-500',
-      health === 'red' && 'bg-red-500',
-    )} />
-  );
-}
-
-function calculateScore(program: { id: string; name: string; icon: any; color: string; bgColor: string; collections: string[] }, recentActivity: number, previousActivity: number, beneficiaries: number, activeCollections: number): ProgramScore {
-  const activityScore = Math.min(100, recentActivity * 10);
-  const prevScore = Math.min(100, previousActivity * 10);
-  const activityTrend = recentActivity > previousActivity ? 'up' : recentActivity < previousActivity ? 'down' : 'stable';
-
-  const beneficiaryScore = Math.min(100, beneficiaries * 2);
-  const submissionScore = (activeCollections / program.collections.length) * 100;
-
-  const overall = Math.round(activityScore * 0.4 + beneficiaryScore * 0.35 + submissionScore * 0.25);
-  const health: 'green' | 'amber' | 'red' =
-    overall >= 70 ? 'green' : overall >= 40 ? 'amber' : 'red';
+function calculateScore(program: any, recentActivity: number, previousActivity: number, beneficiaries: number, activeCollections: number): ProgramScore {
+  const activityTrend = previousActivity === 0 ? (recentActivity > 0 ? 'up' : 'stable') : recentActivity > previousActivity ? 'up' : recentActivity < previousActivity ? 'down' : 'stable';
+  
+  const activityWeight = Math.min((recentActivity / 50) * 100, 100) * 0.4;
+  const beneficiaryWeight = Math.min((beneficiaries / 100) * 100, 100) * 0.3;
+  const collectionWeight = (activeCollections / program.collections.length) * 100 * 0.3;
+  
+  const overall = Math.round(activityWeight + beneficiaryWeight + collectionWeight);
+  
+  let health: 'green' | 'amber' | 'red' = 'red';
+  if (overall >= 70) health = 'green';
+  else if (overall >= 40) health = 'amber';
 
   return {
     id: program.id,
@@ -184,7 +125,7 @@ function calculateScore(program: { id: string; name: string; icon: any; color: s
     collectionsTotal: program.collections.length,
     overallScore: overall,
     health,
-    trend: activityTrend,
+    trend: activityTrend as any,
     collections: program.collections,
   };
 }
@@ -199,22 +140,18 @@ async function fetchProgramData(program: { collections: string[] }, firestore: a
   const results = await Promise.allSettled(
     program.collections.map(async (colName: string) => {
       try {
-        const snap = await getDocs(query(collection(firestore, colName)));
+        const snap = await getDocs(query(collection(firestore, colName), where('createdAt', '>=', Timestamp.fromDate(sixtyDaysAgo))));
         let recentActivity = 0;
         let previousActivity = 0;
         let beneficiaries = 0;
 
         snap.docs.forEach((doc: any) => {
           const data = doc.data();
-          if (!data.createdAt) {
-            recentActivity++;
-            return;
-          }
           const createdAt = data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt);
           if (createdAt >= thirtyDaysAgo) {
             recentActivity++;
             if (beneficiaryCollections.has(colName)) beneficiaries++;
-          } else if (createdAt >= sixtyDaysAgo) {
+          } else {
             previousActivity++;
           }
         });
@@ -242,7 +179,7 @@ async function fetchProgramData(program: { collections: string[] }, firestore: a
   return totals;
 }
 
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 function getCache(key: string): ProgramScore[] | null {
   try {
@@ -266,42 +203,64 @@ function setCache(key: string, data: ProgramScore[]) {
 
 function ProgramCard({ program, Icon }: { program: ProgramScore; Icon: React.ElementType }) {
   return (
-    <div className={cn('rounded-xl border p-3 flex flex-col gap-3 hover:shadow-md transition-shadow min-w-[220px] snap-start', program.bgColor)}>
+    <div className={cn('rounded-xl border p-3 flex flex-col gap-3 hover:shadow-md transition-shadow', program.bgColor)}>
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Icon className={cn('h-4 w-4', program.color)} />
-          <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground line-clamp-1">
+        <div className="flex items-center gap-2 min-w-0">
+          <Icon className={cn('h-4 w-4 flex-shrink-0', program.color)} />
+          <span className="font-bold text-xs uppercase tracking-wider text-muted-foreground truncate">
             {program.name}
           </span>
         </div>
-        <ScoreRing score={program.overallScore} size={40} strokeWidth={4} />
+        <ScoreRing score={program.overallScore} size={36} strokeWidth={3} />
       </div>
-      <div className="grid grid-cols-3 gap-2">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1">
-            <Activity className="h-3 w-3 text-muted-foreground" />
-            <TrendIcon trend={program.trend} recent={program.recentActivity} previous={program.previousActivity} />
-          </div>
-          <p className="text-[13px] font-black text-omuto-navy">{program.recentActivity}</p>
-          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Activities</p>
+      <div className="grid grid-cols-3 gap-1.5 text-center">
+        <div>
+          <p className="text-sm font-black">{program.recentActivity}</p>
+          <p className="text-[9px] text-muted-foreground uppercase">Activities</p>
         </div>
-        <div className="text-center">
-          <Users className="h-3 w-3 text-muted-foreground mx-auto" />
-          <p className="text-[13px] font-black text-omuto-navy">{program.beneficiaries}</p>
-          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Beneficiaries</p>
+        <div>
+          <p className="text-sm font-black">{program.beneficiaries}</p>
+          <p className="text-[9px] text-muted-uppercase">Beneficiaries</p>
         </div>
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-1">
-            <HealthDot health={program.health} />
-          </div>
-          <p className="text-[13px] font-black text-omuto-navy">
-            {program.collectionsActive}/{program.collectionsTotal}
-          </p>
-          <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Forms</p>
+        <div>
+          <p className="text-sm font-black">{program.collectionsActive}/{program.collectionsTotal}</p>
+          <p className="text-[9px] text-muted-foreground uppercase">Active</p>
         </div>
       </div>
-      <div className="w-full bg-black/5 rounded-full h-1.5 overflow-hidden">
-        <div className={cn('h-full rounded-full transition-all', program.health === 'green' && 'bg-green-500', program.health === 'amber' && 'bg-amber-500', program.health === 'red' && 'bg-red-500')} style={{ width: `${program.overallScore}%` }} />
+      <div className="flex items-center justify-between text-[10px]">
+        <span className={cn(
+          'font-bold',
+          program.trend === 'up' && 'text-green-600',
+          program.trend === 'down' && 'text-red-600',
+          program.trend === 'stable' && 'text-muted-foreground',
+        )}>
+          {program.trend === 'up' && <TrendingUp className="h-3 w-3 inline mr-1" />}
+          {program.trend === 'down' && <TrendingDown className="h-3 w-3 inline mr-1" />}
+          {program.trend === 'stable' && <Minus className="h-3 w-3 inline mr-1" />}
+          {program.trend}
+        </span>
+        <Link href={`/meal/data/${program.id}`} className="text-primary hover:underline flex items-center gap-0.5">
+          View <ChevronRight className="h-3 w-3" />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function ScoreRing({ score, size, strokeWidth }: { score: number; size: number; strokeWidth: number }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+  const color = score >= 70 ? '#22c55e' : score >= 40 ? '#f59e0b' : '#ef4444';
+
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e5e7eb" strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-[10px] font-black">{score}</span>
       </div>
     </div>
   );
@@ -312,18 +271,22 @@ export function ProgramHealthScore() {
   const [scores, setScores] = useState<ProgramScore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
+    
     if (!firestore) return;
 
     const CACHE_KEY = 'sx_program_health_v1';
     const cached = getCache(CACHE_KEY);
-    if (cached) {
+    if (cached && mountedRef.current) {
       setScores(cached);
       setIsLoading(false);
     }
 
     const load = async () => {
+      if (!mountedRef.current) return;
       setIsRefreshing(true);
       try {
         const results = await Promise.all(
@@ -332,16 +295,26 @@ export function ProgramHealthScore() {
             return calculateScore(program, data.recentActivity, data.previousActivity, data.beneficiaries, data.activeCollections);
           })
         );
-        const sorted = results.sort((a, b) => a.overallScore - b.overallScore);
-        setScores(sorted);
-        setCache(CACHE_KEY, sorted);
+        if (mountedRef.current) {
+          const sorted = results.sort((a, b) => a.overallScore - b.overallScore);
+          setScores(sorted);
+          setCache(CACHE_KEY, sorted);
+        }
+      } catch {
+        // Error handled silently
       } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
+        if (mountedRef.current) {
+          setIsLoading(false);
+          setIsRefreshing(false);
+        }
       }
     };
 
     load();
+
+    return () => {
+      mountedRef.current = false;
+    };
   }, [firestore]);
 
   const greenCount = scores.filter(s => s.health === 'green').length;
@@ -350,67 +323,60 @@ export function ProgramHealthScore() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center gap-2 text-base">
+              <BarChart3 className="h-4 w-4 text-primary" />
               Program Health Score
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               {isRefreshing ? (
                 <span className="text-amber-600">Refreshing...</span>
               ) : scores.length > 0 ? (
-                <span>Last 30 days · {scores.reduce((s, p) => s + p.recentActivity, 0)} activities logged</span>
+                <span>Last 30 days · {scores.reduce((s, p) => s + p.recentActivity, 0)} activities</span>
               ) : (
                 <span>Loading programme data...</span>
               )}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-4 text-[11px] font-bold flex-shrink-0">
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-green-500" />
-              <span>{greenCount} Healthy</span>
+          {scores.length > 0 && (
+            <div className="flex items-center gap-3 text-[10px] font-bold flex-shrink-0">
+              <div className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                <span>{greenCount}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                <span>{amberCount}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                <span>{redCount}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-500" />
-              <span>{amberCount} Attention</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-red-500" />
-              <span>{redCount} Critical</span>
-            </div>
-          </div>
+          )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         {scores.length === 0 && isLoading ? (
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
+          <div className="flex items-center justify-center py-8 text-muted-foreground">
             <div className="text-center">
-              <Activity className="h-8 w-8 mx-auto mb-2 opacity-30 animate-pulse" />
-              <p className="text-sm font-bold">Loading programme data...</p>
-              <p className="text-xs mt-1">This may take a moment on slow connections</p>
+              <Activity className="h-6 w-6 mx-auto mb-2 opacity-30 animate-pulse" />
+              <p className="text-xs font-bold">Loading programme data...</p>
             </div>
           </div>
         ) : scores.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-muted-foreground">
-            <p className="text-sm font-bold">No programme data yet</p>
+          <div className="flex items-center justify-center py-8 text-muted-foreground">
+            <p className="text-xs font-bold">No programme data yet</p>
           </div>
         ) : (
-          <>
-            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-3">
-              {scores.map(program => {
-                const Icon = program.icon;
-                return <ProgramCard key={program.id} program={program} Icon={Icon} />;
-              })}
-            </div>
-            <div className="flex md:hidden gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
-              {scores.map(program => {
-                const Icon = program.icon;
-                return <ProgramCard key={program.id} program={program} Icon={Icon} />;
-              })}
-            </div>
-          </>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            {scores.map(program => {
+              const Icon = program.icon;
+              return <ProgramCard key={program.id} program={program} Icon={Icon} />;
+            })}
+          </div>
         )}
       </CardContent>
     </Card>

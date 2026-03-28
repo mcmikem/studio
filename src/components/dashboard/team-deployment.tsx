@@ -178,8 +178,8 @@ export function TeamDeployment() {
     });
 
     const uniqueUsers = Array.from(
-      new Map(users.data.map(u => [`${u.id}`, u])).values()
-    );
+      new Map(users.data.map(u => [u.id, u])).values()
+    ).filter(u => u.name);
 
     return uniqueUsers.map((user) => {
       const userCheckins = byUserCheckins.get(user.id) || [];
