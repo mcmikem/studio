@@ -13,6 +13,7 @@ import { FieldStaffDashboard } from './field-staff-dashboard';
 import { ProgramManagerDashboard } from './program-manager-dashboard';
 import { MediaFinanceDashboard } from './media-finance-dashboard';
 import { InternDashboard } from './intern-dashboard';
+import { VolunteerDashboard } from './volunteer-dashboard';
 
 export interface DashboardProps {
   profile: UserProfileType;
@@ -49,6 +50,8 @@ export function DashboardLoader() {
     DashboardComponent = MediaFinanceDashboard;
   } else if (role === 'Intern') {
     DashboardComponent = InternDashboard;
+  } else if (role === 'Volunteer') {
+    DashboardComponent = VolunteerDashboard;
   }
 
   if (!DashboardComponent) {
