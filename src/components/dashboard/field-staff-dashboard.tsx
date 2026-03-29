@@ -1,18 +1,22 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { DashboardHeader } from "./dashboard-header"
 import { RoleMissionCard } from "./role-mission-card"
 import { DashboardSection } from "./dashboard-section"
 import dynamic from 'next/dynamic'
 import { Skeleton } from '../ui/skeleton';
+import { Card, CardContent } from '../ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ClipboardCheck, BarChart3, Plus, GraduationCap, Heart, Flower2, Droplets, Users, Calendar, Building2, Video } from 'lucide-react';
+import { ClipboardCheck, BarChart3, Plus, GraduationCap, Heart, Flower2, Droplets, Users, Calendar, Building2, Video, MapPin, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import type { DashboardProps } from './dashboard-loader'
 import { CheckinWidget } from './checkin-widget';
+import { useFirestore, useCollection, useUser } from '@/firebase';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
+import { formatDistanceToNow } from 'date-fns';
 
 const MyWeeklyPlan = dynamic(() => import('@/components/dashboard/my-weekly-plan').then(mod => mod.MyWeeklyPlan), {
   loading: () => <Skeleton className="h-48" />,
@@ -39,6 +43,32 @@ const QUICK_ACTIONS = [
 ];
 
 export function FieldStaffDashboard({ profile }: DashboardProps) {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const visitsQuery = useMemo(() => {
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'sx-visits'),
+      where('visitorId', '==', user.uid),
+      orderBy('createdAt', 'desc'),
+      limit(5)
+    );
+  }, [firestore, user]);
+
+  const { data: visits } = useCollection(visitsQuery);
+
+  const recentSchools = useMemo(() => {
+    if (!visits) return [];
+    const seen = new Set<string>();
+    return visits.filter((v: any) => {
+      const key = v.schoolName || v.schoolId;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 5);
+  }, [visits]);
+
   return (
     <div className="flex flex-col gap-4">
       <DashboardHeader profile={profile} />
@@ -102,7 +132,38 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
             icon={Building2}
             defaultOpen={true}
           >
-            <p className="text-sm text-muted-foreground text-center py-4">Visit logs will appear here after your first visit.</p>
+            {recentSchools.length > 0 ? (
+              <div className="space-y-2">
+                {recentSchools.map((visit: any) => (
+                  <div key={visit.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-2 bg-blue-50 rounded-lg">
+                        <GraduationCap className="h-4 w-4 text-blue-500" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold truncate">{visit.schoolName || 'School'}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {visit.district || visit.subcounty || 'Location'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      {visit.createdAt?.toDate && (
+                        <p className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(visit.createdAt.toDate(), { addSuffix: true })}
+                        </p>
+                      )}
+                      <Button asChild variant="ghost" size="sm" className="h-6 text-xs">
+                        <Link href={`/school-xperience/log-visit?school=${visit.schoolId || visit.id}`}>Visit</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">Visit logs will appear here after your first visit.</p>
+            )}
           </DashboardSection>
         </TabsContent>
 
@@ -135,4 +196,3 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
     </div>
   );
 }
-

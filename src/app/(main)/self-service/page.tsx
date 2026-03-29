@@ -24,11 +24,24 @@ export default function SelfServicePage() {
   const { profile, isLoading } = useUserProfile(user);
   const firestore = useFirestore();
 
-  // Dynamic Data Fetching
   const leaveQuery = useMemoFirebase(() => 
     firestore && user ? query(collection(firestore, 'leave-requests'), where('userId', '==', user.uid)) : null
   , [firestore, user]);
   const { data: leaveRequests, isLoading: isLoadingLeave } = useCollection(leaveQuery);
+
+  const leaveBalance = React.useMemo(() => {
+    if (!leaveRequests) return null;
+    const ANNUAL_ENTITLEMENT = 21;
+    const usedDays = leaveRequests
+      .filter((l: any) => l.status === 'Approved')
+      .reduce((sum: number, l: any) => {
+        const start = l.startDate?.toDate?.() || new Date(l.startDate);
+        const end = l.endDate?.toDate?.() || new Date(l.endDate);
+        const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        return sum + Math.max(0, days);
+      }, 0);
+    return Math.max(0, ANNUAL_ENTITLEMENT - usedDays);
+  }, [leaveRequests]);
 
   const assetsQuery = useMemoFirebase(() => 
     firestore && user ? query(collection(firestore, 'assets'), where('assignedToId', '==', user.uid)) : null
@@ -136,7 +149,7 @@ export default function SelfServicePage() {
                                 </Badge>
                             </div>
                             <p className="text-3xl font-bold text-omuto-navy tracking-tight leading-none mb-1">
-                                {isLoadingLeave ? <Skeleton className="h-8 w-20" /> : '0 Days'}
+                                {isLoadingLeave ? <Skeleton className="h-8 w-20" /> : `${leaveBalance ?? 21} Days`}
                             </p>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Annual Leave Balance</p>
                         </div>

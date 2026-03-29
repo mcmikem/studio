@@ -17,23 +17,35 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { collection, serverTimestamp } from 'firebase/firestore';
-import { Suspense, useEffect, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, ArrowRight, LogIn, Zap, Clock, Target } from 'lucide-react';
+import { Loader2, ArrowRight, LogIn, Zap, Clock, Target, Sparkles } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { DailyPlannerAIOutputSchema, type DailyPlannerAIOutput } from '@/lib/types';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '../ui/separator';
 import { createAlertAction as createAlert } from '@/actions/mutations';
 
-const checkinSchema = z.object({
+const quickCheckinSchema = z.object({
+  primaryMission: z.string().min(5, "What's your main focus today? (at least 5 characters)"),
+  mood: z.string().min(1, "How are you feeling?"),
+});
+
+const fullCheckinSchema = z.object({
   primaryMission: z.string().min(1, "Primary mission is required."),
   mood: z.string().min(1, "Mood is required."),
   workingStartTime: z.string().optional(),
   workingEndTime: z.string().optional(),
-  details: DailyPlannerAIOutputSchema,
+  details: z.any().optional(),
 });
 
-type CheckinFormValues = z.infer<typeof checkinSchema>;
+type CheckinFormValues = z.infer<typeof fullCheckinSchema>;
+
+const MOOD_OPTIONS = [
+  { value: 'good', label: 'Great', emoji: '😊' },
+  { value: 'neutral', label: 'Okay', emoji: '😐' },
+  { value: 'bad', label: 'Tough', emoji: '😤' },
+];
 
 function CheckinFormComponent() {
     const searchParams = useSearchParams();
@@ -42,18 +54,21 @@ function CheckinFormComponent() {
     const firestore = useFirestore();
     const { user } = useUser();
     const { profile } = useUserProfile(user);
+    const [useQuickMode, setUseQuickMode] = useState(false);
 
-    const { handleSubmit, setValue, watch, formState: { isSubmitting } } = useForm<CheckinFormValues>({
-        resolver: zodResolver(checkinSchema),
+    const { handleSubmit, setValue, watch, register, formState: { isSubmitting, errors } } = useForm<CheckinFormValues>({
+        resolver: zodResolver(fullCheckinSchema),
         defaultValues: {
             primaryMission: '',
             mood: '',
-            // We need to cast this because zodResolver expect a complete object
-            details: undefined as unknown as DailyPlannerAIOutput, 
+            workingStartTime: '08:30',
+            workingEndTime: '17:00',
+            details: undefined,
         }
     });
 
     const planDataString = searchParams.get('plan');
+    const hasAIData = !!planDataString;
     
     useEffect(() => {
         if (planDataString) {
@@ -66,17 +81,13 @@ function CheckinFormComponent() {
                 if (planData.workingEndTime) setValue('workingEndTime', planData.workingEndTime);
             } catch (error) {
                 console.error("Failed to parse plan data:", error);
-                toast({
-                    variant: "destructive",
-                    title: "Error loading plan",
-                    description: "There was an issue loading your daily plan. Please try generating it again."
-                });
             }
         }
-    }, [planDataString, setValue, toast]);
+    }, [planDataString, setValue]);
     
     const submittedPlan = watch('details');
     const primaryMission = watch('primaryMission');
+    const selectedMood = watch('mood');
 
     const onSubmit = async (data: CheckinFormValues) => {
         if (!firestore || !user || !profile) {
@@ -95,7 +106,7 @@ function CheckinFormComponent() {
             mood: data.mood,
             workingStartTime: data.workingStartTime || "08:30",
             workingEndTime: data.workingEndTime || "17:00",
-            details: data.details,
+            details: data.details || null,
             timestamp: serverTimestamp(),
         };
 
@@ -104,7 +115,6 @@ function CheckinFormComponent() {
         try {
             await addDocumentNonBlocking(checkinsCollection, checkinData);
             
-             // Create an alert for the check-in
              try {
                 await createAlert({
                     type: 'Info',
@@ -114,7 +124,7 @@ function CheckinFormComponent() {
                     creatorId: user.uid,
                 });
             } catch (alertError) {
-                console.error("Failed to create alert for check-in:", alertError);
+                // Alert failure is non-critical
             }
 
             toast({
@@ -123,7 +133,6 @@ function CheckinFormComponent() {
             });
             router.push('/');
         } catch (error) {
-            console.error("Failed to submit check-in:", error);
             toast({
                 variant: 'destructive',
                 title: 'Submission Error',
@@ -131,32 +140,6 @@ function CheckinFormComponent() {
             });
         }
     };
-
-    const shouldRenderPlan = useMemo(() => {
-        return !!(planDataString && primaryMission);
-    }, [planDataString, primaryMission]);
-
-    if (!shouldRenderPlan) {
-        return (
-             <Card>
-                <CardHeader>
-                    <CardTitle>Daily Check-in</CardTitle>
-                    <CardDescription>
-                        First, generate a daily plan with the AI coach.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center py-12">
-                    <p className="text-muted-foreground">It looks like you haven't generated a plan yet or the plan is incomplete.</p>
-                    <Button asChild className="mt-4">
-                        <Link href="/daily-plan">
-                            Go to AI Daily Planner
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        )
-    }
 
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -168,83 +151,145 @@ function CheckinFormComponent() {
                         </div>
                         <div>
                             <CardTitle className="text-lg font-bold tracking-tight text-omuto-navy">
-                                Confirm Daily Check-in
+                                {hasAIData ? 'Confirm Daily Check-in' : 'Quick Check-in'}
                             </CardTitle>
                             <CardDescription className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                                Mission Deployment Terminal
+                                {hasAIData ? 'AI-Assisted Plan' : 'Manual Check-in'}
                             </CardDescription>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-6 lg:p-8 space-y-6">
-                    <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                            <Zap className="h-12 w-12 text-primary" />
+                    {!hasAIData && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Sparkles className="h-4 w-4 text-blue-500" />
+                                <span className="text-sm font-bold text-blue-700">Want an AI-generated plan?</span>
+                            </div>
+                            <p className="text-xs text-blue-600 mb-3">
+                                Use the AI Daily Planner for a structured plan with time blocks and strategic alignments.
+                            </p>
+                            <Button asChild variant="outline" size="sm">
+                                <Link href="/daily-plan">
+                                    <Sparkles className="h-3 w-3 mr-1" />
+                                    Generate AI Plan
+                                </Link>
+                            </Button>
                         </div>
-                        <Label className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 block">Primary Mission</Label>
-                        <h3 className="font-heading text-xl sm:text-2xl font-bold text-omuto-navy tracking-tight leading-tight">{primaryMission}</h3>
-                    </div>
+                    )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-2 px-1">
-                                <Clock className="h-4 w-4 text-muted-foreground" />
-                                <h4 className="font-bold text-xs uppercase tracking-wider text-omuto-navy">Strategy & Time Blocks</h4>
-                            </div>
-                            <div className="space-y-3">
-                                {submittedPlan?.timeBlocks?.map((block, index) => (
-                                    <div key={index} className="p-4 bg-muted/30 border rounded-xl flex gap-4 items-start">
-                                        <div className="text-[10px] font-bold text-primary bg-white dark:bg-card border px-2 py-1 rounded-md whitespace-nowrap shadow-sm">
-                                            {block?.startTime}
-                                        </div>
-                                        <p className="text-sm font-medium text-omuto-navy leading-snug">{block?.description}</p>
-                                    </div>
-                                ))}
-                                {(!submittedPlan?.timeBlocks || submittedPlan.timeBlocks.length === 0) && (
-                                    <p className="text-sm text-muted-foreground italic px-1">No time blocks generated.</p>
-                                )}
-                            </div>
-                        </div>
-
-                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 px-1">
-                                <Target className="h-4 w-4 text-muted-foreground" />
-                                <h4 className="font-bold text-xs uppercase tracking-wider text-omuto-navy">Impact Alignment</h4>
-                            </div>
-                            <div className="space-y-3">
-                                {submittedPlan?.strategicAlignments?.map((align, index) => (
-                                    <div key={index} className="p-4 bg-omuto-navy/5 border border-omuto-navy/10 rounded-xl">
-                                        <p className="font-bold text-sm text-omuto-navy">{align.krTitle}</p>
-                                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed font-medium">{align.alignmentJustification}</p>
-                                    </div>
-                                ))}
-                                {(!submittedPlan?.strategicAlignments || submittedPlan.strategicAlignments.length === 0) && (
-                                    <p className="text-sm text-muted-foreground italic px-1">No alignments identified.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-                 <CardFooter className="p-4 sm:p-6 lg:p-8 bg-muted/30 border-t">
-                    <Button type="submit" disabled={isSubmitting} className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl transition-all shadow-sm group">
-                        {isSubmitting ? (
-                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        ) : (
-                            <ArrowRight className="mr-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    <div className="space-y-2">
+                        <Label className="font-bold text-sm">What is your #1 mission for today?</Label>
+                        <Textarea
+                            {...register('primaryMission')}
+                            placeholder="e.g., Visit 3 schools in Mpigi district for GreenSchools tree surveys"
+                            className="min-h-[80px]"
+                        />
+                        {errors.primaryMission && (
+                            <p className="text-xs text-destructive">{errors.primaryMission.message}</p>
                         )}
-                        DEPLOY MISSION TO STREAM
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="font-bold text-sm">How are you feeling?</Label>
+                        <div className="flex gap-3">
+                            {MOOD_OPTIONS.map(mood => (
+                                <button
+                                    key={mood.value}
+                                    type="button"
+                                    onClick={() => setValue('mood', mood.value)}
+                                    className={`flex-1 py-3 px-2 rounded-lg border-2 transition-all text-center ${
+                                        selectedMood === mood.value 
+                                            ? 'border-primary bg-primary/10 shadow-md' 
+                                            : 'border-muted hover:border-primary/30'
+                                    }`}
+                                >
+                                    <span className="text-2xl block">{mood.emoji}</span>
+                                    <span className="text-xs font-bold mt-1 block">{mood.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                        {errors.mood && (
+                            <p className="text-xs text-destructive">{errors.mood.message}</p>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label className="font-bold text-sm flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                Start Time
+                            </Label>
+                            <Input
+                                type="time"
+                                {...register('workingStartTime')}
+                                defaultValue="08:30"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="font-bold text-sm flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                End Time
+                            </Label>
+                            <Input
+                                type="time"
+                                {...register('workingEndTime')}
+                                defaultValue="17:00"
+                            />
+                        </div>
+                    </div>
+
+                    {hasAIData && submittedPlan && (
+                        <>
+                            <Separator />
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-bold flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4 text-amber-500" />
+                                    AI-Generated Time Blocks
+                                </h4>
+                                <div className="space-y-2">
+                                    {(submittedPlan as any)?.timeBlocks?.map((block: any, i: number) => (
+                                        <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
+                                            <span className="text-xs font-bold text-primary whitespace-nowrap">
+                                                {block.startTime} - {block.endTime}
+                                            </span>
+                                            <span className="text-xs truncate flex-1">{block.description}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </CardContent>
+                <CardFooter className="bg-muted/30 border-t p-4 sm:p-6 lg:p-8">
+                    <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full"
+                        size="lg"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Checking In...
+                            </>
+                        ) : (
+                            <>
+                                <LogIn className="mr-2 h-4 w-4" />
+                                Check In
+                            </>
+                        )}
                     </Button>
                 </CardFooter>
             </Card>
         </form>
-    )
+    );
 }
-
 
 export function CheckinForm() {
     return (
-        <Suspense fallback={<Card><CardContent><Loader2 className="h-8 w-8 animate-spin" /></CardContent></Card>}>
+        <Suspense fallback={<Card><CardContent className="p-8 text-center">Loading...</CardContent></Card>}>
             <CheckinFormComponent />
         </Suspense>
-    )
+    );
 }
