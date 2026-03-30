@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useFirestore, useCollection, addDocumentNonBlocking } from '@/firebase';
 import { collection, query, orderBy, serverTimestamp, Timestamp } from 'firebase/firestore';
 import type { Proposal } from '@/lib/types';
@@ -62,53 +62,66 @@ function HealthBadge({ health, days }: { health: 'red' | 'amber' | 'green'; days
 
 export function GrantDeadlineAlert() {
   const firestore = useFirestore();
-  const proposalsQuery = firestore ? query(collection(firestore, 'proposals'), orderBy('createdAt', 'desc')) : null;
-  const { data: proposals, isLoading } = useCollection<Proposal>(proposalsQuery as any);
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
-  const items = (proposals || []).map(p => {
-    const submissionDate = parseDate(p.submissionDate);
-    const decisionDate = parseDate(p.decisionDate);
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
 
-    const deadlines: DeadlineItem[] = [];
+  const proposalsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'proposals'), orderBy('createdAt', 'desc'));
+  }, [firestore]);
 
-    if (submissionDate) {
-      const days = differenceInDays(submissionDate, new Date());
-      const health: 'red' | 'amber' | 'green' =
-        days < 0 ? 'red' : days <= 14 ? 'amber' : 'green';
-      deadlines.push({
-        id: `${p.id}-sub`,
-        title: p.title,
-        partnerName: p.partnerName,
-        amountRequested: p.amountRequested,
-        status: p.status,
-        deadlineDate: submissionDate,
-        deadlineType: 'submission',
-        daysRemaining: days,
-        health,
-        hasProposal: p.status !== 'Draft' && !!p.status,
-      });
-    }
+  const { data: proposals, isLoading } = useCollection<Proposal>(proposalsQuery);
 
-    if (decisionDate) {
-      const days = differenceInDays(decisionDate, new Date());
-      const health: 'red' | 'amber' | 'green' =
-        days < 0 ? 'red' : days <= 14 ? 'amber' : 'green';
-      deadlines.push({
-        id: `${p.id}-dec`,
-        title: p.title,
-        partnerName: p.partnerName,
-        amountRequested: p.amountRequested,
-        status: p.status,
-        deadlineDate: decisionDate,
-        deadlineType: 'decision',
-        daysRemaining: days,
-        health,
-        hasProposal: p.status !== 'Draft',
-      });
-    }
+  const items = useMemo(() => {
+    if (!currentDate) return [];
+    return (proposals || []).map(p => {
+      const submissionDate = parseDate(p.submissionDate);
+      const decisionDate = parseDate(p.decisionDate);
 
-    return deadlines;
-  }).flat().filter(item => item.daysRemaining <= 30);
+      const deadlines: DeadlineItem[] = [];
+
+      if (submissionDate) {
+        const days = differenceInDays(submissionDate, currentDate);
+        const health: 'red' | 'amber' | 'green' =
+          days < 0 ? 'red' : days <= 14 ? 'amber' : 'green';
+        deadlines.push({
+          id: `${p.id}-sub`,
+          title: p.title,
+          partnerName: p.partnerName,
+          amountRequested: p.amountRequested,
+          status: p.status,
+          deadlineDate: submissionDate,
+          deadlineType: 'submission',
+          daysRemaining: days,
+          health,
+          hasProposal: p.status !== 'Draft' && !!p.status,
+        });
+      }
+
+      if (decisionDate) {
+        const days = differenceInDays(decisionDate, currentDate);
+        const health: 'red' | 'amber' | 'green' =
+          days < 0 ? 'red' : days <= 14 ? 'amber' : 'green';
+        deadlines.push({
+          id: `${p.id}-dec`,
+          title: p.title,
+          partnerName: p.partnerName,
+          amountRequested: p.amountRequested,
+          status: p.status,
+          deadlineDate: decisionDate,
+          deadlineType: 'decision',
+          daysRemaining: days,
+          health,
+          hasProposal: p.status !== 'Draft',
+        });
+      }
+
+      return deadlines;
+    }).flat().filter(item => item.daysRemaining <= 30);
+  }, [proposals, currentDate]);
 
   const sorted = items.sort((a, b) => {
     if (a.health === 'red' && b.health !== 'red') return -1;
@@ -313,23 +326,36 @@ function DeadlineRow({ item }: { item: DeadlineItem }) {
 
 export function GrantDeadlineBanner() {
   const firestore = useFirestore();
-  const proposalsQuery = firestore ? query(collection(firestore, 'proposals'), orderBy('createdAt', 'desc')) : null;
-  const { data: proposals } = useCollection<Proposal>(proposalsQuery as any);
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
-  const urgent = (proposals || []).map(p => {
-    const submissionDate = parseDate(p.submissionDate);
-    const decisionDate = parseDate(p.decisionDate);
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
 
-    if (submissionDate && differenceInDays(submissionDate, new Date()) <= 14) {
-      return { title: p.title, days: differenceInDays(submissionDate, new Date()), type: 'submission' as const, status: p.status };
-    }
-    if (decisionDate && differenceInDays(decisionDate, new Date()) <= 14) {
-      return { title: p.title, days: differenceInDays(decisionDate, new Date()), type: 'decision' as const, status: p.status };
-    }
-    return null;
-  }).filter(Boolean);
+  const proposalsQuery = useMemo(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'proposals'), orderBy('createdAt', 'desc'));
+  }, [firestore]);
 
-  if (urgent.length === 0) return null;
+  const { data: proposals } = useCollection<Proposal>(proposalsQuery);
+
+  const urgent = useMemo(() => {
+    if (!currentDate) return [];
+    return (proposals || []).map(p => {
+      const submissionDate = parseDate(p.submissionDate);
+      const decisionDate = parseDate(p.decisionDate);
+
+      if (submissionDate && differenceInDays(submissionDate, currentDate) <= 14) {
+        return { title: p.title, days: differenceInDays(submissionDate, currentDate), type: 'submission' as const, status: p.status };
+      }
+      if (decisionDate && differenceInDays(decisionDate, currentDate) <= 14) {
+        return { title: p.title, days: differenceInDays(decisionDate, currentDate), type: 'decision' as const, status: p.status };
+      }
+      return null;
+    }).filter(Boolean);
+  }, [proposals, currentDate]);
+
+  if (!currentDate || urgent.length === 0) return null;
 
   return (
     <Link href="/management/resources" className="block">

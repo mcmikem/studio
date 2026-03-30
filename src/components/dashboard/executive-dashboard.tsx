@@ -5,7 +5,7 @@ import { DashboardHeader } from "./dashboard-header"
 import type { DashboardProps } from "./dashboard-loader"
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, orderBy, limit } from 'firebase/firestore';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
@@ -37,9 +37,17 @@ import Link from 'next/link';
 
 export function ExecutiveDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
-  
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const monthStart = useMemo(() => {
+    if (!mounted) return new Date(0);
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  }, [mounted]);
   
   const expensesQuery = useMemo(() => 
     firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(50)) : null
@@ -57,20 +65,22 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
   const { data: schools } = useCollection(schoolsQuery);
 
   const thisMonthExpenses = useMemo(() => {
-    if (!expenses) return 0;
+    if (!expenses || !mounted) return 0;
+    const now = new Date();
     return expenses
       .filter(e => {
-        const created = e.createdAt?.toDate?.() || new Date(e.createdAt?.seconds ? e.createdAt.seconds * 1000 : Date.now());
+        const created = e.createdAt?.toDate?.() || new Date(e.createdAt?.seconds ? e.createdAt.seconds * 1000 : now.getTime());
         return created >= monthStart && e.status !== 'Rejected';
       })
       .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
-  }, [expenses, monthStart]);
+  }, [expenses, monthStart, mounted]);
 
   const thisMonthIncome = useMemo(() => {
-    if (!income) return 0;
+    if (!income || !mounted) return 0;
+    const now = new Date();
     return income
       .filter(i => {
-        const received = i.dateReceived?.toDate?.() || new Date(i.dateReceived?.seconds ? i.dateReceived.seconds * 1000 : Date.now());
+        const received = i.dateReceived?.toDate?.() || new Date(i.dateReceived?.seconds ? i.dateReceived.seconds * 1000 : now.getTime());
         return received >= monthStart;
       })
       .reduce((sum, i) => sum + Number(i.amount || 0), 0);
