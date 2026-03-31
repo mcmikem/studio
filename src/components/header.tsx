@@ -203,16 +203,7 @@ export function AppHeader() {
   const managementRoles = ['Administrator', 'Executive Director', 'Programs & Partnerships Manager', 'Operations & Field Manager'];
   const canViewAs = profile && managementRoles.includes(profile.role);
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setOpen((open) => !open)
-      }
-    }
-    document.addEventListener("keydown", down)
-    return () => document.removeEventListener("keydown", down)
-  }, [setOpen]);
+  // Cmd+K is handled by CommandPalette component
 
   // Page title mapping
   const getPageTitle = () => {
@@ -327,7 +318,7 @@ function UserMenu() {
             <span>Profile</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem disabled>
+        <DropdownMenuItem disabled title="Settings coming soon">
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>

@@ -1,14 +1,21 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Home } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEffect, useState } from 'react';
 
 const rootPaths = new Set(['/', '/login']);
 
 export function GlobalBackButton() {
   const router = useRouter();
   const pathname = usePathname();
+  const [canGoBack, setCanGoBack] = useState(false);
+
+  useEffect(() => {
+    // Check if there's meaningful navigation history within the app
+    setCanGoBack(window.history.length > 1 && document.referrer.includes(window.location.origin));
+  }, []);
 
   if (!pathname || rootPaths.has(pathname)) {
     return null;
@@ -21,15 +28,15 @@ export function GlobalBackButton() {
         variant="outline"
         className="h-9 px-3"
         onClick={() => {
-          if (window.history.length > 1) {
+          if (canGoBack) {
             router.back();
-            return;
+          } else {
+            router.push('/');
           }
-          router.push('/');
         }}
       >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back
+        {canGoBack ? <ArrowLeft className="mr-2 h-4 w-4" /> : <Home className="mr-2 h-4 w-4" />}
+        {canGoBack ? 'Back' : 'Home'}
       </Button>
     </div>
   );

@@ -107,14 +107,14 @@ export function ApprovalQueue() {
                         <div className="p-2 bg-primary/10 rounded-xl text-primary"><Wallet className="h-5 w-5" /></div>
                         <div>
                             <CardTitle className="font-heading text-xl font-bold tracking-tight text-omuto-navy">Financial Queue</CardTitle>
-                            <CardDescription className="font-bold text-omuto-navy/50 text-[10px] uppercase tracking-widest mt-1">
+                            <CardDescription className="font-bold text-omuto-navy/50 text-xs uppercase tracking-widest mt-1">
                                 Action new expense reports
                             </CardDescription>
                         </div>
                     </div>
                     {pendingExpenses && pendingExpenses.length > 0 && (
                         <div className="flex items-center gap-2">
-                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                            <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                                 pendingExpenses.length > 5 ? 'bg-red-100 text-red-600 border border-red-200' :
                                 pendingExpenses.length > 2 ? 'bg-yellow-100 text-yellow-600 border border-yellow-200' :
                                 'bg-green-100 text-green-600 border border-green-200'
@@ -161,7 +161,7 @@ export function ApprovalQueue() {
                                                 <div className="font-medium">{expense.userName}</div>
                                                 <div className="text-sm text-muted-foreground flex items-center gap-2">
                                                     {expense.title} - {formatCurrency(expense.totalAmount)}
-                                                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${urgency.color}`}>
+                                                    <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${urgency.color}`}>
                                                         {urgency.label}
                                                     </span>
                                                 </div>
@@ -170,10 +170,18 @@ export function ApprovalQueue() {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" className="text-green-500 hover:text-green-600 hover:bg-green-50" onClick={() => handleStatusUpdate(expense, 'Approved')}>
+                                            <Button variant="ghost" size="icon" aria-label={`Approve expense from ${expense.userName}`} className="text-green-500 hover:text-green-600 hover:bg-green-50" onClick={() => {
+                                              if (window.confirm(`Approve expense "${expense.title}" from ${expense.userName}?`)) {
+                                                handleStatusUpdate(expense, 'Approved');
+                                              }
+                                            }}>
                                                 <Check className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleStatusUpdate(expense, 'Rejected')}>
+                                            <Button variant="ghost" size="icon" aria-label={`Reject expense from ${expense.userName}`} className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => {
+                                              if (window.confirm(`Reject expense "${expense.title}" from ${expense.userName}?`)) {
+                                                handleStatusUpdate(expense, 'Rejected');
+                                              }
+                                            }}>
                                                 <X className="h-4 w-4" />
                                             </Button>
                                         </div>

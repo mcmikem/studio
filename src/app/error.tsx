@@ -40,7 +40,7 @@ export default function Error({
             <Button onClick={() => reset()} className="btn-omuto h-14 rounded-2xl px-12 font-black uppercase tracking-widest text-[10px] w-full sm:w-auto shadow-comic bg-omuto-navy hover:bg-omuto-navy/90">
                 <RefreshCw className="mr-2 h-4 w-4" /> Reset Environment
             </Button>
-            <Button variant="outline" className="h-14 rounded-2xl px-8 border-2 font-black uppercase tracking-widest text-[10px] w-full sm:w-auto">
+            <Button variant="outline" className="h-14 rounded-2xl px-8 border-2 font-black uppercase tracking-widest text-[10px] w-full sm:w-auto" onClick={() => window.open('mailto:support@omuto.org?subject=Error Report&body=' + encodeURIComponent(error.message || 'Technical divergence occurred'))}>
                 <MessageSquare className="mr-2 h-4 w-4" /> Report to Support
             </Button>
         </div>

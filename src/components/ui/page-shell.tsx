@@ -56,7 +56,7 @@ export function PageHeader({
             {description && (
               <p className={cn(
                 'font-bold text-omuto-navy/60 uppercase tracking-widest truncate',
-                compact ? 'text-[8px] sm:text-[10px]' : 'text-[10px] sm:text-xs'
+                 compact ? 'text-xs sm:text-sm' : 'text-sm sm:text-xs'
               )}>
                 {description}
               </p>

@@ -71,7 +71,7 @@ export function CommandPalette() {
       {/* Keyboard hint badge */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 lg:hidden bg-omuto-navy text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold"
+        className="fixed bottom-20 right-6 z-[900] lg:hidden bg-omuto-navy text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold"
       >
         <Search className="h-4 w-4" />
         <span className="text-xs">Search</span>
@@ -81,7 +81,7 @@ export function CommandPalette() {
         open={open}
         onOpenChange={setOpen}
         label="Command Menu"
-        className="fixed inset-0 z-[100] flex items-start justify-center pt-[20vh] px-4"
+        className="fixed inset-0 z-[900] flex items-start justify-center pt-[20vh] px-4"
       >
         {/* Backdrop */}
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
@@ -94,7 +94,7 @@ export function CommandPalette() {
               placeholder="Search pages, actions..."
               className="flex-1 h-14 bg-transparent outline-none text-base font-medium placeholder:text-muted-foreground/50"
             />
-            <kbd className="hidden sm:flex h-6 items-center gap-1 rounded-md border bg-muted px-2 text-[10px] font-medium text-muted-foreground">
+            <kbd className="hidden sm:flex h-6 items-center gap-1 rounded-md border bg-muted px-2 text-xs font-medium text-muted-foreground">
               ESC
             </kbd>
           </div>
@@ -111,7 +111,7 @@ export function CommandPalette() {
                 heading={category}
                 className="mb-2"
               >
-                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 px-3 py-2">
+                <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 px-3 py-2">
                   {category}
                 </div>
                 {NAV_ITEMS.filter(item => item.category === category).map((item) => {
@@ -138,11 +138,11 @@ export function CommandPalette() {
           </Command.List>
 
           <div className="border-t border-black/5 px-4 py-3 bg-muted/30 flex items-center justify-between">
-            <p className="text-[10px] text-muted-foreground">
-              <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border text-[9px]">↵</kbd> to select
+            <p className="text-xs text-muted-foreground">
+              <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border text-[10px]">↵</kbd> to select
             </p>
-            <p className="text-[10px] text-muted-foreground">
-              <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border text-[9px]">↑↓</kbd> to navigate
+            <p className="text-xs text-muted-foreground">
+              <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border text-[10px]">↑↓</kbd> to navigate
             </p>
           </div>
         </div>

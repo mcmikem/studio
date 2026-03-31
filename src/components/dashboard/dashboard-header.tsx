@@ -43,7 +43,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
             </div>
           </div>
           
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground hidden sm:block">
             Tap <span className="font-bold text-primary">+</span> to quickly log activities, expenses, and more.
           </p>
       </div>

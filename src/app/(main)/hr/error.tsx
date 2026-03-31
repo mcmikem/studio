@@ -40,7 +40,7 @@ export default function HRError({
             <Button onClick={() => reset()} className="btn-omuto h-12 rounded-2xl px-8 font-black uppercase tracking-widest text-[9px] w-full sm:w-auto shadow-comic bg-omuto-navy text-white hover:bg-omuto-navy/90">
                 <RefreshCw className="mr-2 h-4 w-4" /> Reload HR Core
             </Button>
-            <Button variant="outline" className="h-12 rounded-2xl px-6 border-2 font-black uppercase tracking-widest text-[9px] w-full sm:w-auto text-omuto-navy bg-white">
+            <Button variant="outline" className="h-12 rounded-2xl px-6 border-2 font-black uppercase tracking-widest text-[9px] w-full sm:w-auto text-omuto-navy bg-white" onClick={() => window.open('mailto:support@omuto.org?subject=HR Error&body=' + encodeURIComponent(error.message || 'HR error occurred'))}>
                 <MessageSquare className="mr-2 h-4 w-4" /> Report to Support
             </Button>
         </div>

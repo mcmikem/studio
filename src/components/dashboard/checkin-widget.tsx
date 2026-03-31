@@ -56,11 +56,15 @@ export function CheckinWidget() {
   const latestCheckin = checkins?.[0] as CheckinStatus | undefined;
   const latestCheckout = checkouts?.[0] as CheckoutStatus | undefined;
 
-  const isCheckedIn = latestCheckin && (!latestCheckout || 
-    (latestCheckin.timestamp?.toDate()?.getTime() || 0) > (latestCheckout.timestamp?.toDate()?.getTime() || 0));
-
   const checkinTime = latestCheckin?.timestamp?.toDate();
   const checkoutTime = latestCheckout?.timestamp?.toDate();
+
+  const isCheckedIn = latestCheckin
+    && checkinTime
+    && isToday(checkinTime)
+    && (!latestCheckout
+      || !checkoutTime
+      || checkinTime.getTime() > checkoutTime.getTime());
 
   const isLoading = isCheckinLoading || isCheckoutLoading;
 

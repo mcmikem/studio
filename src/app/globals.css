@@ -77,8 +77,10 @@
     --ring: 358 86% 52%;
   }
 
-  .dark * {
-    border-color: hsl(224 15% 25%);
+  .dark {
+    --border: 224 15% 25%;
+    --input: 224 15% 25%;
+    --ring: 358 86% 52%;
   }
 }
 
@@ -113,7 +115,6 @@
   }
 
   table {
-    display: block;
     overflow-x: auto;
     max-width: 100%;
   }
