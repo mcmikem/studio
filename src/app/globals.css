@@ -155,7 +155,7 @@
 @layer components {
   /* BUTTONS - Clean & Confident */
   .btn-omuto {
-    @apply h-10 px-5 bg-omuto-navy text-white font-medium text-sm rounded-lg transition-all duration-200 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2;
+    @apply h-11 px-5 bg-omuto-navy text-white font-medium text-sm rounded-lg transition-all duration-200 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2;
     transition-property: all;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 200ms;
@@ -168,14 +168,14 @@
   }
 
   .btn-omuto-secondary {
-    @apply h-10 px-5 bg-card text-omuto-navy font-medium text-sm rounded-lg transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2;
+    @apply h-11 px-5 bg-card text-omuto-navy font-medium text-sm rounded-lg transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2;
     border: 1px solid hsl(var(--omuto-navy) / 0.15);
   }
   .btn-omuto-secondary:hover {
     background-color: hsl(var(--omuto-navy) / 0.05);
   }
   .btn-omuto-secondary:focus-visible {
-    --tw-ring-color: hsl(var(--omuto-navy) / 0.2);
+    --tw-ring-color: hsl(var(--primary) / 0.5);
   }
 
   /* BADGES - Subtle & Informative */

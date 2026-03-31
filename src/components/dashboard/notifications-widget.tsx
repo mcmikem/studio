@@ -6,10 +6,11 @@ import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Bell, AlertCircle, Info, CheckCircle } from 'lucide-react';
+import { Bell, AlertCircle, Info, CheckCircle, BellOff } from 'lucide-react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface NotificationItem {
   id: string;
@@ -17,6 +18,7 @@ interface NotificationItem {
   title?: string;
   message?: string;
   read?: boolean;
+  action?: string;
   createdAt?: { toDate?: () => Date };
 }
 
@@ -77,23 +79,27 @@ export function NotificationsWidget({ compact = false }: NotificationsWidgetProp
         </div>
 
         {!notifications || notifications.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No notifications
-          </p>
+          <EmptyState icon={BellOff} title="No notifications" description="You're all caught up!" className="border-none bg-transparent" />
         ) : (
           <div className="space-y-2">
-            {notifications.slice(0, compact ? 3 : 5).map((notification: any) => (
+            {notifications.slice(0, compact ? 3 : 5).map((notification) => (
               <div 
                 key={notification.id} 
                 className={cn(
-                  "flex items-start gap-2 p-2 rounded",
-                  notification.read ? 'bg-muted/30' : 'bg-blue-50 border border-blue-100'
+                  "flex items-start gap-2 p-2 rounded transition-colors",
+                  notification.read ? 'bg-muted/30' : 'bg-blue-50 border border-blue-100',
+                  notification.action ? 'cursor-pointer hover:bg-blue-100' : ''
                 )}
+                onClick={() => {
+                  if (notification.action) {
+                    window.location.href = notification.action;
+                  }
+                }}
               >
                 {getIcon(notification.type)}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{notification.title || 'Notification'}</p>
-                  <p className="text-xs text-muted-foreground truncate">
+                  <p className="text-xs text-muted-foreground line-clamp-2">
                     {notification.message}
                   </p>
                   {notification.createdAt?.toDate && (

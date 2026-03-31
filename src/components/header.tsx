@@ -30,21 +30,23 @@ import { SyncBadge } from './offline/offline-indicator';
 
 
 function ThemeToggle() {
-    const [isDark, setIsDark] = useState(false);
+    const [isDark, setIsDark] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark') return true;
+            if (saved === 'light') return false;
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        return false;
+    });
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        const saved = localStorage.getItem('theme');
-        if (saved === 'dark') {
+        if (isDark) {
             document.documentElement.classList.add('dark');
-            setIsDark(true);
-        } else if (saved === 'light') {
+        } else {
             document.documentElement.classList.remove('dark');
-            setIsDark(false);
-        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.documentElement.classList.add('dark');
-            setIsDark(true);
         }
     }, []);
 
@@ -59,15 +61,6 @@ function ThemeToggle() {
             localStorage.setItem('theme', 'light');
         }
     };
-
-    if (!mounted) {
-        return (
-            <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50">
-                <Moon className="h-5 w-5" />
-                <span className="sr-only">Toggle theme</span>
-            </Button>
-        );
-    }
 
     return (
         <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted/50" onClick={toggleTheme}>

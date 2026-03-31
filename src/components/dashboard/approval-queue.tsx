@@ -91,12 +91,12 @@ export function ApprovalQueue() {
         }
     };
     
-    const getUrgency = (expense: Expense): { color: string; label: string } => {
+    const getUrgency = (expense: Expense): { color: string; label: string; daysOld: number } => {
         const createdAt = expense.createdAt instanceof Timestamp ? expense.createdAt.toDate() : new Date(expense.createdAt || Date.now());
         const daysOld = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysOld >= 7) return { color: 'text-red-600 bg-red-100', label: `${daysOld}d old` };
-        if (daysOld >= 3) return { color: 'text-yellow-600 bg-yellow-100', label: `${daysOld}d old` };
-        return { color: 'text-green-600 bg-green-100', label: `${daysOld}d old` };
+        if (daysOld >= 7) return { color: 'text-red-600 bg-red-100', label: `${daysOld}d old`, daysOld };
+        if (daysOld >= 3) return { color: 'text-yellow-600 bg-yellow-100', label: `${daysOld}d old`, daysOld };
+        return { color: 'text-green-600 bg-green-100', label: `${daysOld}d old`, daysOld };
     };
 
     return (
@@ -152,7 +152,7 @@ export function ApprovalQueue() {
                                 <TableRow key={expense.id} className="border-l-2 border-l-transparent hover:border-l-primary/30 transition-colors">
                                     <TableCell>
                                         <div className="flex items-center gap-2">
-                                            {urgency.label.includes('7d') || urgency.label.includes('8d') || urgency.label.includes('9d') || urgency.label.includes('10d') || parseInt(urgency.label) >= 7 ? (
+                                            {urgency.daysOld >= 7 ? (
                                                 <AlertCircle className="h-3 w-3 text-red-500 flex-shrink-0" />
                                             ) : (
                                                 <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
