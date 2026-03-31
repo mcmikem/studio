@@ -16,7 +16,7 @@ import {
   CardTitle,
   CardFooter,
 } from "../ui/card"
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Button } from "../ui/button"
 import Link from "next/link"
 import { formatDateSafe } from "@/lib/utils"
@@ -35,30 +35,33 @@ const TeamPerformanceLeaderboard = dynamic(() => import('@/components/dashboard/
 });
 
 const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
+    const safeValue = Number.isFinite(value) ? value : 0;
+    if (safeValue >= 1000000) {
         return new Intl.NumberFormat('en-UG', {
             style: 'currency',
             currency: 'UGX',
             minimumFractionDigits: 1,
             maximumFractionDigits: 1,
             notation: 'compact'
-        }).format(value);
+        }).format(safeValue);
     }
     return new Intl.NumberFormat('en-UG', { 
         style: 'currency', 
         currency: 'UGX',
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
-    }).format(value);
+    }).format(safeValue);
 };
 
 function MediaOpportunities() {
     const firestore = useFirestore();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
     const thirtyDaysAgo = useMemo(() => {
         const d = new Date();
         d.setDate(d.getDate() - 30);
         return d;
-    }, []);
+    }, [mounted]);
     
     const queries = useMemo(() => {
         if (!firestore) return null;
@@ -131,11 +134,13 @@ function MediaOpportunities() {
 
 function LatestTestimonies() {
     const firestore = useFirestore();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
     const thirtyDaysAgo = useMemo(() => {
         const d = new Date();
         d.setDate(d.getDate() - 30);
         return d;
-    }, []);
+    }, [mounted]);
     
     const queries = useMemo(() => {
         if (!firestore) return null;
@@ -218,8 +223,12 @@ function BudgetHealth() {
     const { totalIncome, totalExpenses, cashBalance } = useMemo(() => {
         if (!income || !expenses) return { totalIncome: 0, totalExpenses: 0, cashBalance: 0 };
         
-        const allTimeIncome = income.reduce((sum, i) => sum + i.amount, 0);
-        const allTimeClearedExpenses = expenses.filter(e => e.status === 'Acknowledged' || e.status === 'Disbursed').reduce((sum, e) => sum + e.totalAmount, 0);
+        const allTimeIncome = income
+            .filter(i => i.status === 'Approved')
+            .reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+        const allTimeClearedExpenses = expenses
+            .filter(e => e.status === 'Acknowledged' || e.status === 'Disbursed')
+            .reduce((sum, e) => sum + (Number(e.totalAmount) || 0), 0);
 
         return { 
             totalIncome: allTimeIncome, 

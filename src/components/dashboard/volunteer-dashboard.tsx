@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { DashboardSection, CompactStatCard } from './dashboard-section';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { differenceInHours, startOfWeek } from 'date-fns';
 import { CheckinWidget } from './checkin-widget';
 
@@ -28,8 +28,13 @@ const QUICK_ACTIONS = [
 export function VolunteerDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
   const userId = profile.id;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
-  const weekStart = useMemo(() => startOfWeek(new Date(), { weekStartsOn: 1 }), []);
+  const weekStart = useMemo(() => {
+    if (!mounted) return new Date(0);
+    return startOfWeek(new Date(), { weekStartsOn: 1 });
+  }, [mounted]);
 
   const checkinsQuery = useMemo(() => {
     if (!firestore || !userId) return null;
@@ -68,18 +73,22 @@ export function VolunteerDashboard({ profile }: DashboardProps) {
   const { data: activities } = useCollection(activitiesQuery);
 
   const stats = useMemo(() => {
+    const usedCheckouts = new Set<string>();
     const totalHours = (checkins || []).reduce((sum, c) => {
       const checkinTime = c.timestamp?.toDate?.();
       if (!checkinTime) return sum;
       const matchingCheckout = (checkouts || []).find(co => {
+        if (usedCheckouts.has(co.id)) return false;
         const coTime = co.timestamp?.toDate?.();
         return coTime && coTime > checkinTime;
       });
       if (matchingCheckout) {
+        usedCheckouts.add(matchingCheckout.id);
         const coTime = matchingCheckout.timestamp?.toDate?.();
-        return sum + Math.max(0, differenceInHours(coTime!, checkinTime));
+        if (!coTime) return sum;
+        return sum + Math.max(0, differenceInHours(coTime, checkinTime));
       }
-      return sum + 8;
+      return sum;
     }, 0);
 
     const activitiesThisWeek = (activities || []).filter(a => {
@@ -88,12 +97,12 @@ export function VolunteerDashboard({ profile }: DashboardProps) {
     }).length;
 
     const impactPoints = (activities || []).reduce((sum, a) => {
-      return sum + (a.totalValue || 0);
+      return sum + (Number(a.totalValue) || 0);
     }, 0);
 
     return {
       hours: Math.round(totalHours),
-      activities: activitiesThisWeek || (activities?.length || 0),
+      activities: activitiesThisWeek,
       impactPoints,
     };
   }, [checkins, checkouts, activities, weekStart]);
@@ -169,7 +178,7 @@ export function VolunteerDashboard({ profile }: DashboardProps) {
       {activities && activities.length > 0 && (
         <DashboardSection title="Recent Activities" icon={Calendar} defaultOpen={false}>
           <div className="space-y-2">
-            {activities.slice(0, 5).map((activity: any) => (
+            {activities.slice(0, 5).map((activity) => (
               <div key={activity.id} className="flex items-center justify-between p-2 rounded-lg border">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold truncate">{activity.title}</p>

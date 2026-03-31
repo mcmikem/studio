@@ -44,7 +44,8 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
         setServices(initializedServices);
       }
     }
-  }, [services]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!services?.auth) {

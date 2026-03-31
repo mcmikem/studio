@@ -165,7 +165,7 @@ function ProposalForm({ proposal, onFormSubmit }: { proposal?: Partial<Proposal>
 }
 
 function GrantDiscovery() {
-  const [query, setQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<GrantFinderOutput | null>(null);
   const { toast } = useToast();
@@ -174,12 +174,12 @@ function GrantDiscovery() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    if (!searchQuery.trim()) return;
 
     setIsLoading(true);
     setResults(null);
     try {
-      const response = await runGrantFinder({ query });
+      const response = await runGrantFinder({ query: searchQuery });
       setResults(response);
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: err.message || 'Failed to find grants.' });
@@ -210,8 +210,8 @@ function GrantDiscovery() {
         <form onSubmit={handleSearch} className="flex items-center gap-2">
           <Input 
             placeholder="Enter keywords, e.g., 'youth empowerment'"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Button type="submit" disabled={isLoading}>
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
@@ -225,7 +225,7 @@ function GrantDiscovery() {
         )}
         {results && (
           <div className="pt-4 space-y-3">
-             <h3 className="font-semibold">{results.opportunities.length} opportunities found for "{query}"</h3>
+             <h3 className="font-semibold">{results.opportunities.length} opportunities found for "{searchQuery}"</h3>
             {results.opportunities.map((op, i) => (
               <Card key={i} className="p-4">
                 <div className="flex flex-col sm:flex-row sm:justify-between">

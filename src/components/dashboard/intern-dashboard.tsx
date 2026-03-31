@@ -13,8 +13,8 @@ import { RoleMissionCard } from './role-mission-card';
 import type { DashboardProps } from './dashboard-loader';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '../ui/skeleton';
-import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, limit, orderBy } from 'firebase/firestore';
+import { useFirestore, useCollection, useUser } from '@/firebase';
+import { collection, query, limit, orderBy, where } from 'firebase/firestore';
 import { useMemo } from 'react';
 import type { Checkout } from '@/lib/types';
 
@@ -35,11 +35,17 @@ const RecentCheckouts = dynamic(() => import('./recent-checkouts').then(mod => m
 
 export function InternDashboard({ profile }: DashboardProps) {
   const firestore = useFirestore();
+  const { user } = useUser();
   
   const checkoutsQuery = useMemo(() => {
-    if (!firestore) return null;
-    return query(collection(firestore, 'checkouts'), orderBy('timestamp', 'desc'), limit(10));
-  }, [firestore]);
+    if (!firestore || !user) return null;
+    return query(
+      collection(firestore, 'checkouts'),
+      where('userId', '==', user.uid),
+      orderBy('timestamp', 'desc'),
+      limit(10)
+    );
+  }, [firestore, user]);
 
   const { data: checkouts } = useCollection<Checkout>(checkoutsQuery);
 

@@ -61,9 +61,9 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
   const recentSchools = useMemo(() => {
     if (!visits) return [];
     const seen = new Set<string>();
-    return visits.filter((v: any) => {
-      const key = v.schoolName || v.schoolId;
-      if (seen.has(key)) return false;
+    return visits.filter((v) => {
+      const key = v.schoolName ?? v.schoolId;
+      if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;
     }).slice(0, 5);
@@ -134,7 +134,7 @@ export function FieldStaffDashboard({ profile }: DashboardProps) {
           >
             {recentSchools.length > 0 ? (
               <div className="space-y-2">
-                {recentSchools.map((visit: any) => (
+                {recentSchools.map((visit) => (
                   <div key={visit.id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="p-2 bg-blue-50 rounded-lg">

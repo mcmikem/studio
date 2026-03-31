@@ -11,13 +11,13 @@ import { OfflineIndicator } from './offline-indicator'
 export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
   const [currentDate, setCurrentDate] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
     setCurrentDate(format(new Date(), 'EEEE, do MMMM'));
+    const hour = new Date().getHours();
+    setGreeting(hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening');
   }, []);
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
  
   const isED = profile?.role === 'Executive Director';
   const isField = profile?.role?.toLowerCase().includes('field');
