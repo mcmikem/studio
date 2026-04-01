@@ -111,6 +111,7 @@ const navConfig = {
     { href: '/daily-plan', icon: Zap, label: 'AI Planner' },
     { href: '/workplan', icon: CheckCircle, label: 'Weekly Goals' },
     { href: '/profile?tab=tasks', icon: Bell, label: 'Tasks' },
+    { href: '/calendar', icon: Calendar, label: 'Calendar' },
   ],
   // My Self Service
   my: [
@@ -201,7 +202,6 @@ const navConfig = {
   ],
   // System
   system: [
-    { href: '/calendar', icon: Calendar, label: 'Calendar' },
     { href: '/notifications', icon: Bell, label: 'Notifications' },
     { href: '/help', icon: LifeBuoy, label: 'Help' },
     { href: '/system/feedback', icon: Bug, label: 'Feedback' },
@@ -211,19 +211,19 @@ const navConfig = {
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
   'Administrator': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system', 'admin'],
   'Executive Director': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system', 'admin'],
-  'Programs & Partnerships Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content'],
-  'Operations & Field Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content'],
-  'Media & Finance Lead': ['core', 'my', 'forms', 'enterprise', 'finance', 'impact', 'ai', 'content'],
-  'Media & Communications Lead': ['core', 'my', 'forms', 'enterprise', 'finance', 'impact', 'ai', 'content'],
-  'Essentials Manager': ['core', 'my', 'forms', 'enterprise', 'impact', 'ai'],
-  'Youth Center Manager': ['core', 'my', 'forms', 'enterprise', 'impact', 'ai'],
-  'Field Coordinator': ['core', 'my', 'forms', 'programs', 'impact', 'ai', 'content'],
-  'Field Staff': ['core', 'my', 'forms', 'impact', 'ai', 'content'],
-  'Media & Communications': ['core', 'my', 'forms', 'content', 'impact', 'ai'],
-  'Accountant/Finance': ['core', 'my', 'forms', 'finance', 'impact', 'ai'],
-  'Intern': ['core', 'my', 'impact', 'content', 'ai'],
-  'Volunteer': ['core', 'my', 'impact', 'ai'],
-  'default': ['core', 'my', 'impact', 'ai'],
+  'Programs & Partnerships Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
+  'Operations & Field Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
+  'Media & Finance Lead': ['core', 'my', 'forms', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
+  'Media & Communications Lead': ['core', 'my', 'forms', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
+  'Essentials Manager': ['core', 'my', 'forms', 'enterprise', 'impact', 'ai', 'system'],
+  'Youth Center Manager': ['core', 'my', 'forms', 'enterprise', 'impact', 'ai', 'system'],
+  'Field Coordinator': ['core', 'my', 'forms', 'programs', 'impact', 'ai', 'content', 'system'],
+  'Field Staff': ['core', 'my', 'forms', 'impact', 'ai', 'content', 'system'],
+  'Media & Communications': ['core', 'my', 'forms', 'content', 'impact', 'ai', 'system'],
+  'Accountant/Finance': ['core', 'my', 'forms', 'finance', 'impact', 'ai', 'system'],
+  'Intern': ['core', 'my', 'impact', 'content', 'ai', 'system'],
+  'Volunteer': ['core', 'my', 'impact', 'ai', 'system'],
+  'default': ['core', 'my', 'impact', 'ai', 'system'],
 };
 
 

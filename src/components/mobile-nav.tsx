@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard, Search, DollarSign, TrendingUp, Users, Wallet, FileText, Sparkles, ClipboardCheck, Heart, Building2 } from 'lucide-react';
+import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard, Search, DollarSign, TrendingUp, Users, Wallet, FileText, Sparkles, ClipboardCheck, Heart, Building2, Calendar, LifeBuoy } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -58,7 +58,9 @@ export function MobileBottomNav() {
 
   const isActive = (path: string) => {
     if (path === '/' && pathname === '/') return true;
-    if (path !== '/' && pathname.startsWith(path)) return true;
+    // Handle query param paths like /profile?tab=tasks
+    const basePath = path.split('?')[0];
+    if (basePath !== '/' && pathname.startsWith(basePath)) return true;
     return false;
   };
 
@@ -68,6 +70,7 @@ export function MobileBottomNav() {
     { href: '/forms/check-in', label: 'Morning Check-in', icon: LogIn, category: 'Daily' },
     { href: '/forms/check-out', label: 'End of Day', icon: LogOut, category: 'Daily' },
     { href: '/daily-plan', label: 'AI Planner', icon: LayoutDashboard, category: 'Daily' },
+    { href: '/calendar', label: 'Calendar', icon: Calendar, category: 'Daily' },
     // Impact logging
     { href: '/meal/activity', label: 'Log Activity', icon: BarChart3, category: 'Impact' },
     { href: '/school-xperience/log-visit', label: 'Log School Visit', icon: Building2, category: 'Impact' },
@@ -81,6 +84,8 @@ export function MobileBottomNav() {
     { href: '/impact-story', label: 'Impact Story', icon: Sparkles, category: 'Content' },
     { href: '/pulse', label: 'Omuto Pulse', icon: Heart, category: 'Content' },
     { href: '/testimonies', label: 'Capture Story', icon: ClipboardCheck, category: 'Content' },
+    // System
+    { href: '/help', label: 'Help', icon: LifeBuoy, category: 'System' },
   ];
 
   const filteredActions = searchQuery 
@@ -93,7 +98,7 @@ export function MobileBottomNav() {
     return acc;
   }, {} as Record<string, typeof allActions>);
 
-  const categories = ['Daily', 'Finance', 'Impact', 'Content', 'AI'];
+  const categories = ['Daily', 'Finance', 'Impact', 'Content', 'AI', 'System'];
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe" aria-label="Mobile navigation">
