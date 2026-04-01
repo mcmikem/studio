@@ -256,27 +256,7 @@
     @apply space-y-4 sm:space-y-5 lg:space-y-6 w-full max-w-[100vw] overflow-x-hidden;
   }
 
-  .card-padding {
-    @apply p-3 sm:p-4 lg:p-5;
-  }
-
-  .section-spacing {
-    @apply space-y-3 sm:space-y-4;
-  }
-
-  .grid-gap {
-    @apply gap-3 sm:gap-4 lg:gap-5;
-  }
-
   /* FORM UTILITIES */
-
-  .form-field {
-    @apply space-y-1.5;
-  }
-
-  .form-input {
-    @apply h-10 px-3 text-sm;
-  }
 
   .form-grid {
     @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full;
@@ -293,20 +273,6 @@
   }
 
   /* RESPONSIVE UTILITIES */
-
-  .hide-mobile {
-    @apply hidden md:block;
-  }
-
-  .show-mobile {
-    @apply md:hidden;
-  }
-
-  /* TOUCH & INTERACTION */
-
-  .touch-target {
-    @apply min-h-11 min-w-11;
-  }
 
   .safe-bottom {
     @apply pb-[calc(1rem+env(safe-area-inset-bottom))];
@@ -351,60 +317,8 @@
     z-index: 41 !important;
   }
 
-  /* Standardized Card Base */
-  .card-omuto {
-    @apply border border-omuto-navy/10 bg-card rounded-xl shadow-sm;
-  }
-
-  .card-omuto-header {
-    @apply p-4 sm:p-6 border-b border-omuto-navy/6;
-  }
-
-  .card-omuto-content {
-    @apply p-4 sm:p-6;
-  }
-
-  /* Standardized Button Variants */
-  .btn-omuto-primary {
-    @apply bg-omuto-navy text-white font-bold shadow-comic-sm hover:shadow-comic;
-  }
-
-  .btn-omuto-status-approved {
-    @apply bg-omuto-teal text-white hover:bg-omuto-teal/90;
-  }
-
-  .btn-omuto-status-rejected {
-    @apply bg-omuto-red text-white hover:bg-omuto-red/90;
-  }
-
-  /* Standardized Status Colors */
-  .omuto-success {
-    @apply bg-omuto-teal/10 text-omuto-teal border border-omuto-teal/20;
-  }
-
-  .omuto-warning {
-    @apply bg-omuto-yellow/10 text-omuto-yellow/50 border border-omuto-yellow/20;
-  }
-
-  .omuto-danger {
-    @apply bg-omuto-red/10 text-omuto-red border border-omuto-red/20;
-  }
-
-  .omuto-info {
-    @apply bg-omuto-blue/10 text-omuto-blue border border-omuto-blue/20;
-  }
-
   /* Form Elements */
   .form-input-omuto {
-    @apply w-full h-12 sm:h-14 border border-omuto-navy/20 rounded-xl bg-card font-semibold text-omuto-navy placeholder:text-omuto-navy/60 focus:border-omuto-orange focus:ring-2 focus:ring-omuto-orange/20;
-  }
-
-  /* Grid Patterns */
-  .grid-stats {
-    @apply grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4;
-  }
-
-  .grid-cards {
-    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5;
+    @apply w-full h-12 sm:h-14 border border-omuto-navy/20 rounded-xl bg-card font-semibold text-omuto-navy placeholder:text-omuto-navy/60 focus:border-primary focus:ring-2 focus:ring-primary/20;
   }
 }

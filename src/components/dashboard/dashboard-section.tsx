@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useId, type ReactNode } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ChevronDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -33,6 +33,7 @@ export function DashboardSection({
 }: DashboardSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const [hasLoaded, setHasLoaded] = useState(defaultOpen)
+  const contentId = useId()
 
   useEffect(() => {
     if (isOpen && lazy && !hasLoaded) {
@@ -47,6 +48,8 @@ export function DashboardSection({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full text-left"
+        aria-expanded={isOpen}
+        aria-controls={contentId}
       >
         <CardHeader className="py-3.5 px-5 hover:bg-omuto-navy/[0.02] transition-colors border-b border-omuto-navy/6">
           <div className="flex items-center justify-between gap-4">
@@ -63,7 +66,7 @@ export function DashboardSection({
                   </CardTitle>
                   {badge && (
                     <span className={cn(
-                      'text-[10px] font-black px-2 py-0.5 rounded-full',
+                      'text-xs font-black px-2 py-0.5 rounded-full',
                       badgeColor === 'green' && 'bg-green-100 text-green-700',
                       badgeColor === 'yellow' && 'bg-yellow-100 text-yellow-700',
                       badgeColor === 'red' && 'bg-red-100 text-red-700',
@@ -87,7 +90,7 @@ export function DashboardSection({
           </div>
         </CardHeader>
       </button>
-      <div className={cn('overflow-hidden transition-all duration-300', isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0')}>
+      <div id={contentId} className={cn('overflow-hidden transition-all duration-300', isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0')}>
         {shouldRenderContent && (
           <div className="p-5">
             {children}
@@ -95,8 +98,8 @@ export function DashboardSection({
         )}
       </div>
       {!isOpen && (
-        <div className="px-5 pb-3 text-[10px] text-muted-foreground font-medium">
-          Click to expand · data loads on open
+        <div className="px-5 pb-3 text-xs text-muted-foreground font-medium">
+          Click to expand
         </div>
       )}
     </Card>
