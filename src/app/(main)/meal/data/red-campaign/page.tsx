@@ -33,7 +33,7 @@ import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { formatDateSafe } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EmptyState } from '@/components/empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
 
 interface MHMTraining {
   id: string;

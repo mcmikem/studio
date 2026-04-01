@@ -6,7 +6,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
 import { ShieldCheck, Zap } from 'lucide-react'
-import { OfflineIndicator } from './offline-indicator'
+import { SyncBadge } from '@/components/offline/offline-indicator'
  
 export function DashboardHeader({ profile, title }: { profile: User, title?: string }) {
   const headerImage = PlaceHolderImages.find(p => p.id === 'dashboard-header');
@@ -34,7 +34,7 @@ export function DashboardHeader({ profile, title }: { profile: User, title?: str
               </h1>
             </div>
             <div className="flex items-center gap-2">
-              <OfflineIndicator />
+              <SyncBadge />
               <div className="flex items-center gap-1.5 bg-omuto-navy/5 px-2.5 py-1 rounded-full text-xs font-medium text-omuto-navy/70">
                 {isED ? <ShieldCheck className="h-3 w-3" /> : <Zap className="h-3 w-3" />}
                 <span className="hidden sm:inline">{profile?.role}</span>

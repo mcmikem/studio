@@ -215,7 +215,11 @@
   .shadow-comic {
     box-shadow: 2px 2px 0 hsl(var(--omuto-navy) / 0.15);
   }
-  
+
+  .shadow-comic-md {
+    box-shadow: 2px 2px 0 hsl(var(--omuto-navy) / 0.2);
+  }
+
   .shadow-comic-lg {
     box-shadow: 3px 3px 0 hsl(var(--omuto-navy) / 0.15);
   }
@@ -264,32 +268,6 @@
     @apply gap-3 sm:gap-4 lg:gap-5;
   }
 
-  /* TYPOGRAPHY UTILITIES */
-
-  .heading-xl {
-    @apply text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight;
-  }
-
-  .heading-lg {
-    @apply text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight;
-  }
-
-  .heading-md {
-    @apply text-base sm:text-lg font-semibold tracking-tight;
-  }
-
-  .text-meta {
-    @apply text-xs sm:text-sm text-muted-foreground;
-  }
-
-  .text-label {
-    @apply text-xs sm:text-sm font-medium;
-  }
-
-  .text-caption {
-    @apply text-[10px] sm:text-xs text-muted-foreground font-medium;
-  }
-
   /* FORM UTILITIES */
 
   .form-field {
@@ -315,10 +293,6 @@
   }
 
   /* RESPONSIVE UTILITIES */
-
-  .truncate {
-    @apply overflow-hidden text-ellipsis whitespace-nowrap;
-  }
 
   .hide-mobile {
     @apply hidden md:block;
@@ -418,27 +392,6 @@
 
   .omuto-info {
     @apply bg-omuto-blue/10 text-omuto-blue border border-omuto-blue/20;
-  }
-
-  /* Typography Scale */
-  .text-display {
-    @apply font-heading text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight;
-  }
-
-  .text-heading {
-    @apply font-heading text-xl sm:text-2xl font-bold tracking-tight;
-  }
-
-  .text-subheading {
-    @apply font-heading text-lg sm:text-xl font-semibold tracking-tight;
-  }
-
-  .text-body-large {
-    @apply font-body text-base leading-relaxed;
-  }
-
-  .text-label {
-    @apply font-body text-sm font-medium text-muted-foreground;
   }
 
   /* Form Elements */

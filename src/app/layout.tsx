@@ -1,7 +1,6 @@
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
-import { GeistSans } from 'geist/font/sans';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { AppSidebar } from '@/components/nav';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -14,7 +13,6 @@ import { CheckinReminderToast } from '@/components/reminders/checkin-reminder-to
 import { RoleTour } from '@/components/role-tour';
 import { CommandPalette } from '@/components/command-palette';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { OfflineIndicator } from '@/components/offline-indicator';
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 
 const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' });
@@ -24,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${GeistSans.variable}`}
+      className={`${inter.variable} ${spaceGrotesk.variable}`}
     >
       <head>
         <meta name="theme-color" content="#F9F8F3" media="(prefers-color-scheme: light)" />
@@ -79,7 +77,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
         <Toaster />
         <CommandPalette />
-        <OfflineIndicator />
       </body>
     </html>
   );
