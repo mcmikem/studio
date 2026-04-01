@@ -62,7 +62,15 @@ const withPWA = require('next-pwa')({
 });
 
 const nextConfig = {
+  reactStrictMode: true,
+  poweredByHeader: false,
   turbopack: {},
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error'] } : false,
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns', '@radix-ui/react-icons'],
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'placehold.co', pathname: '/**' },

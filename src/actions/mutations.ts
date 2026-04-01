@@ -8,8 +8,8 @@ import { checkRateLimit } from '@/lib/rate-limit';
 import type { AlertInput, GrantFinderInput, GrantFinderOutput, SmartRemindersInput, SmartRemindersOutput, DailyPlannerAIInput, DailyPlannerAIOutput, GenerateTemplateInput, GenerateTemplateOutput } from '@/lib/types';
 import type { LeaveRequest, PayrollRecord } from '@/lib/types/hr';
 
-function rateLimitCheck(identifier: string, actionName: string) {
-    const result = checkRateLimit(identifier, { windowMs: 60000, maxRequests: 20 });
+async function rateLimitCheck(identifier: string, actionName: string) {
+    const result = await checkRateLimit(identifier, 60000, 20);
     if (!result.allowed) {
         console.warn(`Rate limit exceeded for ${identifier} on ${actionName}`);
         return { allowed: false, error: 'Rate limit exceeded. Please try again later.' };
@@ -18,7 +18,7 @@ function rateLimitCheck(identifier: string, actionName: string) {
 }
 
 export async function createAlertAction(input: AlertInput) {
-    const rateLimit = rateLimitCheck('createAlertAction', 'createAlertAction');
+    const rateLimit = await rateLimitCheck('createAlertAction', 'createAlertAction');
     if (!rateLimit.allowed) {
         return { success: false, error: rateLimit.error };
     }
@@ -38,121 +38,134 @@ export async function createAlertAction(input: AlertInput) {
     }
 }
 
-export async function createTestimonyAction(data: any) {
+export async function createTestimonyAction(data: Record<string, unknown>) {
+    const rateLimit = await rateLimitCheck('createTestimonyAction', 'createTestimonyAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
-        
+        const { title, content, authorName, mediaType, mediaUrl, status } = data;
         const docRef = await firestore.collection('testimonies').add({
-            ...data,
+            title, content, authorName, mediaType, mediaUrl, status,
             createdAt: FieldValue.serverTimestamp()
         });
-        
         return { success: true, id: docRef.id };
     } catch (error) {
-        console.error('Server Action Error - createTestimonyAction:', error);
         return { success: false, error: 'Failed to create the testimony record.' };
     }
 }
 
-export async function updateTestimonyAction(id: string, data: any) {
+export async function updateTestimonyAction(id: string, data: Record<string, unknown>) {
+    const rateLimit = await rateLimitCheck('updateTestimonyAction', 'updateTestimonyAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
+        const { title, content, authorName, mediaType, mediaUrl, status } = data;
         await firestore.collection('testimonies').doc(id).update({
-            ...data,
+            title, content, authorName, mediaType, mediaUrl, status,
             updatedAt: FieldValue.serverTimestamp()
         });
         return { success: true };
     } catch (error) {
-        console.error('Server Action Error - updateTestimonyAction:', error);
         return { success: false, error: 'Failed to update the testimony record.' };
     }
 }
 
 export async function deleteTestimonyAction(id: string) {
+    const rateLimit = await rateLimitCheck('deleteTestimonyAction', 'deleteTestimonyAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
         await firestore.collection('testimonies').doc(id).delete();
         return { success: true };
     } catch (error) {
-        console.error('Server Action Error - deleteTestimonyAction:', error);
         return { success: false, error: 'Failed to delete the testimony record.' };
     }
 }
 
-export async function createBeneficiaryAction(data: any) {
+export async function createBeneficiaryAction(data: Record<string, unknown>) {
+    const rateLimit = await rateLimitCheck('createBeneficiaryAction', 'createBeneficiaryAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
+        const { name, dateOfBirth, gender, school, program, guardianName, guardianPhone, location } = data;
         const docRef = await firestore.collection('beneficiaries').add({
-            ...data,
+            name, dateOfBirth, gender, school, program, guardianName, guardianPhone, location,
             createdAt: FieldValue.serverTimestamp()
         });
         return { success: true, id: docRef.id };
     } catch (error) {
-        console.error('Server Action Error - createBeneficiaryAction:', error);
         return { success: false, error: 'Failed to register beneficiary.' };
     }
 }
 
-export async function updateBeneficiaryAction(id: string, data: any) {
+export async function updateBeneficiaryAction(id: string, data: Record<string, unknown>) {
+    const rateLimit = await rateLimitCheck('updateBeneficiaryAction', 'updateBeneficiaryAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
+        const { name, dateOfBirth, gender, school, program, guardianName, guardianPhone, location } = data;
         await firestore.collection('beneficiaries').doc(id).update({
-            ...data,
+            name, dateOfBirth, gender, school, program, guardianName, guardianPhone, location,
             updatedAt: FieldValue.serverTimestamp()
         });
         return { success: true };
     } catch (error) {
-        console.error('Server Action Error - updateBeneficiaryAction:', error);
         return { success: false, error: 'Failed to update beneficiary record.' };
     }
 }
 
 export async function deleteBeneficiaryAction(id: string) {
+    const rateLimit = await rateLimitCheck('deleteBeneficiaryAction', 'deleteBeneficiaryAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
         await firestore.collection('beneficiaries').doc(id).delete();
         return { success: true };
     } catch (error) {
-        console.error('Server Action Error - deleteBeneficiaryAction:', error);
         return { success: false, error: 'Failed to delete beneficiary record.' };
     }
 }
 
-export async function createAttendanceAction(data: any) {
+export async function createAttendanceAction(data: Record<string, unknown>) {
+    const rateLimit = await rateLimitCheck('createAttendanceAction', 'createAttendanceAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
+        const { userId, userName, date, status: attendanceStatus, program, notes } = data;
         const docRef = await firestore.collection('attendance-records').add({
-            ...data,
+            userId, userName, date, status: attendanceStatus, program, notes,
             createdAt: FieldValue.serverTimestamp()
         });
         return { success: true, id: docRef.id };
     } catch (error) {
-        console.error('Server Action Error - createAttendanceAction:', error);
         return { success: false, error: 'Failed to record attendance.' };
     }
 }
 
-export async function updateAttendanceAction(id: string, data: any) {
+export async function updateAttendanceAction(id: string, data: Record<string, unknown>) {
+    const rateLimit = await rateLimitCheck('updateAttendanceAction', 'updateAttendanceAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
+        const { status: attendanceStatus, notes } = data;
         await firestore.collection('attendance-records').doc(id).update({
-            ...data,
+            status: attendanceStatus, notes,
             updatedAt: FieldValue.serverTimestamp()
         });
         return { success: true };
     } catch (error) {
-        console.error('Server Action Error - updateAttendanceAction:', error);
         return { success: false, error: 'Failed to update attendance record.' };
     }
 }
 
 export async function deleteAttendanceAction(id: string) {
+    const rateLimit = await rateLimitCheck('deleteAttendanceAction', 'deleteAttendanceAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
         await firestore.collection('attendance-records').doc(id).delete();
         return { success: true };
     } catch (error) {
-        console.error('Server Action Error - deleteAttendanceAction:', error);
         return { success: false, error: 'Failed to delete attendance record.' };
     }
 }
@@ -354,6 +367,8 @@ export async function getEnterpriseInsightsAction(input: { sales: any[]; invento
 // ─── HR & Self-Service Actions ───
 
 export async function createLeaveRequestAction(data: Omit<LeaveRequest, 'id' | 'createdAt'>) {
+    const rateLimit = await rateLimitCheck('createLeaveRequestAction', 'createLeaveRequestAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
         const docRef = await firestore.collection('leave-requests').add({
@@ -364,12 +379,13 @@ export async function createLeaveRequestAction(data: Omit<LeaveRequest, 'id' | '
         });
         return { success: true, id: docRef.id };
     } catch (error) {
-        console.error('Server Action Error - createLeaveRequestAction:', error);
         return { success: false, error: 'Failed to submit leave request.' };
     }
 }
 
 export async function updateLeaveStatusAction(id: string, status: string, adminId: string, adminName: string, rejectionReason?: string) {
+    const rateLimit = await rateLimitCheck('updateLeaveStatusAction', 'updateLeaveStatusAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
         await firestore.collection('leave-requests').doc(id).update({
@@ -381,12 +397,13 @@ export async function updateLeaveStatusAction(id: string, status: string, adminI
         });
         return { success: true };
     } catch (error) {
-        console.error('Server Action Error - updateLeaveStatusAction:', error);
         return { success: false, error: 'Failed to update leave status.' };
     }
 }
 
 export async function createPayrollRecordAction(data: Omit<PayrollRecord, 'id' | 'createdAt'>) {
+    const rateLimit = await rateLimitCheck('createPayrollRecordAction', 'createPayrollRecordAction');
+    if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
     try {
         const { firestore } = getFirebaseAdmin();
         const docRef = await firestore.collection('payroll').add({
@@ -395,7 +412,6 @@ export async function createPayrollRecordAction(data: Omit<PayrollRecord, 'id' |
         });
         return { success: true, id: docRef.id };
     } catch (error) {
-        console.error('Server Action Error - createPayrollRecordAction:', error);
         return { success: false, error: 'Failed to create payroll record.' };
     }
 }

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseAdmin } from '@/firebase/server-only';
 
+function verifyAuth(request: NextRequest): boolean {
+  const authHeader = request.headers.get('authorization');
+  const internalKey = process.env.INTERNAL_API_KEY;
+  if (!internalKey) return false;
+  return authHeader === 'Bearer ' + internalKey;
+}
+
 interface WebhookConfig {
   id: string;
   name: string;
@@ -41,7 +48,10 @@ const webhookConfigs: Record<string, WebhookConfig> = {
   },
 };
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const webhooks = Object.values(webhookConfigs).map(w => ({
     id: w.id,
     name: w.name,
@@ -54,6 +64,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const body = await request.json();
   const { trigger, data, webhookId } = body;
 
@@ -106,6 +119,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const body = await request.json();
   const { webhookId, url, active, headers } = body;
 
@@ -124,6 +140,9 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
   const searchParams = request.nextUrl.searchParams;
   const webhookId = searchParams.get('id');
 

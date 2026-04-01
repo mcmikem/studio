@@ -43,6 +43,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { useMemo, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
+import DOMPurify from 'dompurify';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CallsToAction } from '@/components/know/calls-to-action';
 
@@ -309,7 +310,7 @@ export default function KnowPage() {
                             </AccordionTrigger>
                             <AccordionContent className="space-y-4">
                                <div className="prose prose-sm dark:prose-invert max-w-none">
-                                {isEditMode ? <Textarea value={section.summary} onChange={(e) => handleContentChange('sections', index, 'summary', e.target.value)} className="min-h-24"/> : <div dangerouslySetInnerHTML={{ __html: section.summary }} />}
+                                {isEditMode ? <Textarea value={section.summary} onChange={(e) => handleContentChange('sections', index, 'summary', e.target.value)} className="min-h-24"/> : <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(section.summary) }} />}
                                </div>
                                {section.subsections && section.subsections.length > 0 && (
                                    <div className="space-y-3 pl-4 border-l-2">
@@ -317,7 +318,7 @@ export default function KnowPage() {
                                             <div key={subIndex}>
                                                 {isEditMode ? <Input value={sub.title} onChange={(e) => handleContentChange('sections', index, 'title', e.target.value, subIndex)} className="font-semibold" /> : <h4 className="font-semibold">{sub.title}</h4>}
                                                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                                                    {isEditMode ? <Textarea value={sub.summary} onChange={(e) => handleContentChange('sections', index, 'summary', e.target.value, subIndex)} /> : <div dangerouslySetInnerHTML={{ __html: sub.summary }} />}
+                                                    {isEditMode ? <Textarea value={sub.summary} onChange={(e) => handleContentChange('sections', index, 'summary', e.target.value, subIndex)} /> : <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(sub.summary) }} />}
                                                 </div>
                                             </div>
                                        ))}

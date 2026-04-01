@@ -17,9 +17,6 @@ const geminiKey = getGeminiKey();
 const isOpenRouterConfigured = Boolean(openRouterKey && openRouterKey.startsWith('sk-or-'));
 const isGeminiConfigured = Boolean(geminiKey && geminiKey.startsWith('AIza'));
 
-console.log('[AI] OpenRouter key found:', isOpenRouterConfigured, openRouterKey ? openRouterKey.substring(0, 10) + '...' : 'none');
-console.log('[AI] Gemini key found:', isGeminiConfigured, geminiKey ? geminiKey.substring(0, 10) + '...' : 'none');
-
 export const aiConfig = {
   openRouterApiKey: openRouterKey,
   geminiApiKey: geminiKey,

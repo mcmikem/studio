@@ -17,6 +17,7 @@ import type { Message } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDateSafe, cn } from '@/lib/utils';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { omutoAI } from '@/ai/actions';
 import { callAIOfflineFirst, offlineOmutoAI } from '@/lib/offline-ai';
 import { SmartReminders } from '@/components/dashboard/smart-reminders';
@@ -39,7 +40,7 @@ function MessageItem({ message }: { message: Message }) {
   const isAI = message.userId === 'omuto-ai';
   const getInitials = (name: string) => name.split(' ').map(n => n[0]).join('');
 
-  const renderedText = { __html: marked.parse(message.text || "") as string };
+  const renderedText = { __html: DOMPurify.sanitize(marked.parse(message.text || "") as string) };
 
   return (
     <div className={cn('flex items-start gap-3', isCurrentUser && 'flex-row-reverse', isAI && 'justify-start')}>
