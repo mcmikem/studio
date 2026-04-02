@@ -20,6 +20,13 @@ import { Suspense, useState, useEffect } from 'react';
 import { useAutoSave, loadDraft, clearDraft } from '@/hooks/use-auto-save';
 import { GPSLocationPicker } from '@/components/ui/gps-location-picker';
 import type { SchoolXperience } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const beneficiarySchema = z.object({
   schoolId: z.string().min(1, 'School is required'),
@@ -293,19 +300,18 @@ function LogImpactFormInner() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">School *</Label>
-                  <select
+                  <Select
                     value={beneficiaryForm.watch('schoolId')}
-                    onChange={(e) => {
-                      const school = schools?.find((s) => s.id === e.target.value);
-                      handleSchoolChange(e.target.value, school?.schoolName || '');
+                    onValueChange={(val) => {
+                      const school = schools?.find((s) => s.id === val);
+                      handleSchoolChange(val, school?.schoolName || '');
                     }}
-                    className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
                   >
-                    <option value="">Select school...</option>
-                    {schools?.map((s) => (
-                      <option key={s.id} value={s.id}>{s.schoolName}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm">
+                      <SelectValue placeholder="Select school..." />
+                    </SelectTrigger>
+                    <SelectContent>{schools?.map((s) => (<SelectItem key={s.id} value={s.id}>{s.schoolName}</SelectItem>))}</SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Date *</Label>
@@ -316,41 +322,53 @@ function LogImpactFormInner() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Beneficiary Type *</Label>
-                  <select {...beneficiaryForm.register('beneficiaryType')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="student">Student</option>
-                    <option value="teacher">Teacher</option>
-                    <option value="parent">Parent</option>
-                    <option value="community_member">Community Member</option>
-                  </select>
+                  <Select onValueChange={(val) => beneficiaryForm.setValue('beneficiaryType', val as any)} value={beneficiaryForm.watch('beneficiaryType')}>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="teacher">Teacher</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
+                      <SelectItem value="community_member">Community Member</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Gender *</Label>
-                  <select {...beneficiaryForm.register('gender')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <Select onValueChange={(val) => beneficiaryForm.setValue('gender', val as any)} value={beneficiaryForm.watch('gender')}>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Age Group *</Label>
-                  <select {...beneficiaryForm.register('ageGroup')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="under_10">Under 10</option>
-                    <option value="10_14">10-14</option>
-                    <option value="15_19">15-19</option>
-                    <option value="20_24">20-24</option>
-                    <option value="25_plus">25+</option>
-                  </select>
+                  <Select onValueChange={(val) => beneficiaryForm.setValue('ageGroup', val as any)} value={beneficiaryForm.watch('ageGroup')}>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="under_10">Under 10</SelectItem>
+                      <SelectItem value="10_14">10-14</SelectItem>
+                      <SelectItem value="15_19">15-19</SelectItem>
+                      <SelectItem value="20_24">20-24</SelectItem>
+                      <SelectItem value="25_plus">25+</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label className="font-bold text-xs uppercase tracking-widest">Programme *</Label>
-                <select {...beneficiaryForm.register('programme')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                  <option value="RED">RED Campaign</option>
-                  <option value="PureWater">PureWater</option>
-                  <option value="GreenSchools">GreenSchools</option>
-                  <option value="SLF">SLF</option>
-                </select>
+                <Select onValueChange={(val) => beneficiaryForm.setValue('programme', val as any)} value={beneficiaryForm.watch('programme')}>
+                  <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="RED">RED Campaign</SelectItem>
+                    <SelectItem value="PureWater">PureWater</SelectItem>
+                    <SelectItem value="GreenSchools">GreenSchools</SelectItem>
+                    <SelectItem value="SLF">SLF</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -405,19 +423,18 @@ function LogImpactFormInner() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">School *</Label>
-                  <select
+                  <Select
                     value={waterForm.watch('schoolId')}
-                    onChange={(e) => {
-                      const school = schools?.find((s) => s.id === e.target.value);
-                      handleSchoolChange(e.target.value, school?.schoolName || '');
+                    onValueChange={(val) => {
+                      const school = schools?.find((s) => s.id === val);
+                      handleSchoolChange(val, school?.schoolName || '');
                     }}
-                    className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
                   >
-                    <option value="">Select school...</option>
-                    {schools?.map((s) => (
-                      <option key={s.id} value={s.id}>{s.schoolName}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm">
+                      <SelectValue placeholder="Select school..." />
+                    </SelectTrigger>
+                    <SelectContent>{schools?.map((s) => (<SelectItem key={s.id} value={s.id}>{s.schoolName}</SelectItem>))}</SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Date *</Label>
@@ -428,30 +445,39 @@ function LogImpactFormInner() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Source Type *</Label>
-                  <select {...waterForm.register('sourceType')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="borehole">Borehole</option>
-                    <option value="rainwater_harvest">Rainwater Harvest</option>
-                    <option value="protected_well">Protected Well</option>
-                    <option value="spring">Spring</option>
-                    <option value="pipeline">Pipeline</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <Select onValueChange={(val) => waterForm.setValue('sourceType', val as any)} value={waterForm.watch('sourceType')}>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="borehole">Borehole</SelectItem>
+                      <SelectItem value="rainwater_harvest">Rainwater Harvest</SelectItem>
+                      <SelectItem value="protected_well">Protected Well</SelectItem>
+                      <SelectItem value="spring">Spring</SelectItem>
+                      <SelectItem value="pipeline">Pipeline</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Status *</Label>
-                  <select {...waterForm.register('status')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="functional">Functional</option>
-                    <option value="needs_repair">Needs Repair</option>
-                    <option value="non_functional">Non-Functional</option>
-                  </select>
+                  <Select onValueChange={(val) => waterForm.setValue('status', val as any)} value={waterForm.watch('status')}>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="functional">Functional</SelectItem>
+                      <SelectItem value="needs_repair">Needs Repair</SelectItem>
+                      <SelectItem value="non_functional">Non-Functional</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Water Quality *</Label>
-                  <select {...waterForm.register('waterQuality')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="safe">Safe</option>
-                    <option value="needs_treatment">Needs Treatment</option>
-                    <option value="unsafe">Unsafe</option>
-                  </select>
+                  <Select onValueChange={(val) => waterForm.setValue('waterQuality', val as any)} value={waterForm.watch('waterQuality')}>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="safe">Safe</SelectItem>
+                      <SelectItem value="needs_treatment">Needs Treatment</SelectItem>
+                      <SelectItem value="unsafe">Unsafe</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -486,19 +512,18 @@ function LogImpactFormInner() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">School *</Label>
-                  <select
+                  <Select
                     value={treeForm.watch('schoolId')}
-                    onChange={(e) => {
-                      const school = schools?.find((s) => s.id === e.target.value);
-                      handleSchoolChange(e.target.value, school?.schoolName || '');
+                    onValueChange={(val) => {
+                      const school = schools?.find((s) => s.id === val);
+                      handleSchoolChange(val, school?.schoolName || '');
                     }}
-                    className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
                   >
-                    <option value="">Select school...</option>
-                    {schools?.map((s) => (
-                      <option key={s.id} value={s.id}>{s.schoolName}</option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm">
+                      <SelectValue placeholder="Select school..." />
+                    </SelectTrigger>
+                    <SelectContent>{schools?.map((s) => (<SelectItem key={s.id} value={s.id}>{s.schoolName}</SelectItem>))}</SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Date *</Label>
@@ -509,14 +534,17 @@ function LogImpactFormInner() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Tree Type *</Label>
-                  <select {...treeForm.register('treeType')} className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm">
-                    <option value="fruit">Fruit Trees</option>
-                    <option value="timber">Timber Trees</option>
-                    <option value="shade">Shade Trees</option>
-                    <option value="medicinal">Medicinal Trees</option>
-                    <option value="native">Native Trees</option>
-                    <option value="mixed">Mixed</option>
-                  </select>
+                  <Select onValueChange={(val) => treeForm.setValue('treeType', val as any)} value={treeForm.watch('treeType')}>
+                    <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="fruit">Fruit Trees</SelectItem>
+                      <SelectItem value="timber">Timber Trees</SelectItem>
+                      <SelectItem value="shade">Shade Trees</SelectItem>
+                      <SelectItem value="medicinal">Medicinal Trees</SelectItem>
+                      <SelectItem value="native">Native Trees</SelectItem>
+                      <SelectItem value="mixed">Mixed</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label className="font-bold text-xs uppercase tracking-widest">Quantity *</Label>

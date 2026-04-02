@@ -19,6 +19,13 @@ import Link from 'next/link';
 import { useState, Suspense, useEffect } from 'react';
 import { useAutoSave, loadDraft, clearDraft } from '@/hooks/use-auto-save';
 import type { SchoolXperience } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const scorecardSchema = z.object({
   schoolId: z.string().min(1, 'School is required'),
@@ -197,20 +204,19 @@ function ScorecardFormInner() {
                   name="schoolId"
                   control={control}
                   render={({ field }) => (
-                    <select
+                    <Select
                       value={field.value}
-                      onChange={(e) => {
-                        const school = schools?.find((s) => s.id === e.target.value);
-                        field.onChange(e.target.value);
+                      onValueChange={(val) => {
+                        const school = schools?.find((s) => s.id === val);
+                        field.onChange(val);
                         setValue('schoolName', school?.schoolName || '');
                       }}
-                      className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
                     >
-                      <option value="">Select school...</option>
-                      {schools?.map((s) => (
-                        <option key={s.id} value={s.id}>{s.schoolName}</option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm">
+                        <SelectValue placeholder="Select school..." />
+                      </SelectTrigger>
+                      <SelectContent>{schools?.map((s) => (<SelectItem key={s.id} value={s.id}>{s.schoolName}</SelectItem>))}</SelectContent>
+                    </Select>
                   )}
                 />
                 {errors.schoolId && <p className="text-xs text-destructive font-bold">{errors.schoolId.message}</p>}
@@ -221,16 +227,16 @@ function ScorecardFormInner() {
                   name="term"
                   control={control}
                   render={({ field }) => (
-                    <select
+                    <Select
                       value={field.value}
-                      onChange={(e) => {
-                        field.onChange(e.target.value as any);
-                        setValue('month', TERMS_MONTHS[e.target.value]?.[0] || '');
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        setValue('month', TERMS_MONTHS[val]?.[0] || '');
                       }}
-                      className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
                     >
-                      {TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
+                      <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>{TERMS.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                    </Select>
                   )}
                 />
               </div>
@@ -240,15 +246,10 @@ function ScorecardFormInner() {
                   name="month"
                   control={control}
                   render={({ field }) => (
-                    <select
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
-                    >
-                      {(TERMS_MONTHS[selectedTerm] || MONTHS).map((m) => (
-                        <option key={m} value={m}>{m}</option>
-                      ))}
-                    </select>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>{(TERMS_MONTHS[selectedTerm] || MONTHS).map((m) => (<SelectItem key={m} value={m}>{m}</SelectItem>))}</SelectContent>
+                    </Select>
                   )}
                 />
               </div>

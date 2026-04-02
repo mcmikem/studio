@@ -18,6 +18,13 @@ import Link from 'next/link';
 import { Suspense, useEffect } from 'react';
 import { useAutoSave, loadDraft, clearDraft } from '@/hooks/use-auto-save';
 import type { SchoolXperience } from '@/lib/types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const leaderSchema = z.object({
   schoolId: z.string().min(1, 'School is required'),
@@ -124,20 +131,19 @@ function LeaderFormInner() {
                   name="schoolId"
                   control={control}
                   render={({ field }) => (
-                    <select
+                    <Select
                       value={field.value}
-                      onChange={(e) => {
-                        const school = schools?.find((s) => s.id === e.target.value);
-                        field.onChange(e.target.value);
+                      onValueChange={(val) => {
+                        const school = schools?.find((s) => s.id === val);
+                        field.onChange(val);
                         setValue('schoolName', school?.schoolName || '');
                       }}
-                      className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
                     >
-                      <option value="">Select school...</option>
-                      {schools?.map((s) => (
-                        <option key={s.id} value={s.id}>{s.schoolName}</option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm">
+                        <SelectValue placeholder="Select school..." />
+                      </SelectTrigger>
+                      <SelectContent>{schools?.map((s) => (<SelectItem key={s.id} value={s.id}>{s.schoolName}</SelectItem>))}</SelectContent>
+                    </Select>
                   )}
                 />
                 {errors.schoolId && <p className="text-xs text-destructive font-bold">{errors.schoolId.message}</p>}
@@ -153,14 +159,10 @@ function LeaderFormInner() {
                   name="role"
                   control={control}
                   render={({ field }) => (
-                    <select
-                      value={field.value}
-                      onChange={field.onChange}
-                      className="w-full h-12 rounded-xl border-lg border-input bg-background px-3 font-bold text-sm"
-                    >
-                      <option value="">Select role...</option>
-                      {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-                    </select>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="h-12 rounded-xl border-lg font-bold text-sm"><SelectValue placeholder="Select role..." /></SelectTrigger>
+                      <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                    </Select>
                   )}
                 />
                 {errors.role && <p className="text-xs text-destructive font-bold">{errors.role.message}</p>}

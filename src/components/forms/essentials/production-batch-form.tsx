@@ -477,14 +477,14 @@ export function ProductionBatchForm() {
                         </Select>
                       </div>
                       <div className="sm:col-span-2">
-                        <Input type="number" value={line.quantity_used} onChange={(e) => updateMaterialLine(index, { quantity_used: Number(e.target.value || 0) })} placeholder="Qty" />
+                        <Input type="number" value={line.quantity_used} onChange={(e) => updateMaterialLine(index, { quantity_used: Number(e.target.value || 0) })} placeholder="Qty" className="h-10" />
                       </div>
                       <div className="sm:col-span-2">
-</div>
+                        <Input value={line.unit} readOnly placeholder="Unit" className="h-10 bg-muted/50" />
+                      </div>
                       <div className="sm:col-span-2">
-</div>
-                      <div className="sm:col-span-2">
-</div>
+                        <Input type="number" value={line.unit_cost} onChange={(e) => updateMaterialLine(index, { unit_cost: Number(e.target.value || 0) })} placeholder="Cost" className="h-10" />
+                      </div>
                       <div className="sm:col-span-1 flex items-center text-sm font-semibold">{formatCurrency(line.total_cost || 0)}</div>
                       <div className="sm:col-span-1 flex items-center justify-end">
                         <Button type="button" variant="ghost" size="icon" onClick={() => removeMaterialLine(index)}>

@@ -218,7 +218,14 @@ export function SalesTrackingForm() {
                         {fields.map((field, index) => (
                             <div key={field.id} className="grid grid-cols-12 gap-3 items-end p-4 bg-muted/20 border-lg rounded-2xl relative">
                                 <div className="col-span-12 sm:col-span-4 space-y-2">
-</div>
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Product</Label>
+                                    {isLoadingProducts ? <Skeleton className="h-11 rounded-xl" /> : (
+                                        <Select onValueChange={(val) => handleProductChange(index, val)} value={form.watch(`items.${index}.product_id`)}>
+                                            <SelectTrigger className="h-11 border-lg rounded-xl font-bold bg-white dark:bg-omuto-navy"><SelectValue placeholder="Select product..." /></SelectTrigger>
+                                            <SelectContent>{products?.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    )}
+                                </div>
                                 <div className="col-span-4 sm:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Qty</Label><Input type="number" {...form.register(`items.${index}.quantity`)} className="h-11 border-lg rounded-xl font-bold bg-white dark:bg-omuto-navy" onChange={(e) => handleQuantityChange(index, parseInt(e.target.value, 10))}/></div>
                                 <div className="col-span-4 sm:col-span-2 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price</Label><Input type="number" readOnly value={form.watch(`items.${index}.unit_price`)} className="h-11 border-lg rounded-xl font-bold bg-muted/50" /></div>
                                 <div className="col-span-4 sm:col-span-3 space-y-2"><Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total</Label><div className="h-11 border-lg rounded-xl flex items-center px-4 bg-muted/50 font-bold text-omuto-navy">{formatCurrency(form.watch(`items.${index}.total`))}</div></div>
