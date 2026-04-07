@@ -4,7 +4,8 @@
 import { DashboardHeader } from "./dashboard-header"
 import type { DashboardProps } from "./dashboard-loader"
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { Income, Expense } from '@/lib/types';
 import { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { TeamPerformanceLeaderboard } from './team-performance-leaderboard';
 import { ApprovalQueue } from './approval-queue';
 import { EcosystemPulse } from './ecosystem-pulse';
 import { GrantDeadlineAlert } from './grant-deadline-alert';
+import { calculateFinancialSnapshot, getPendingExpenses, getApprovedNotDisbursed } from '@/lib/finance-utils';
 import dynamic from 'next/dynamic';
 
 const ProgramHealthScore = dynamic(() => import('@/components/dashboard/program-health-score').then(mod => mod.ProgramHealthScore), {
@@ -43,60 +45,37 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
     setMounted(true);
   }, []);
 
-  const monthStart = useMemo(() => {
-    if (!mounted) return new Date(0);
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  }, [mounted]);
-  
   const expensesQuery = useMemo(() => 
-    firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc'), limit(50)) : null
+    firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null
   , [firestore]);
-  const { data: expenses } = useCollection(expensesQuery);
+  const { data: expenses } = useCollection<Expense>(expensesQuery);
 
   const incomeQuery = useMemo(() => 
-    firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc'), limit(50)) : null
+    firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc')) : null
   , [firestore]);
-  const { data: income } = useCollection(incomeQuery);
+  const { data: income } = useCollection<Income>(incomeQuery);
 
   const schoolsQuery = useMemo(() => 
-    firestore ? query(collection(firestore, 'sx-schools'), limit(50)) : null
+    firestore ? query(collection(firestore, 'sx-schools')) : null
   , [firestore]);
   const { data: schools } = useCollection(schoolsQuery);
 
-  const thisMonthExpenses = useMemo(() => {
-    if (!expenses || !mounted) return 0;
-    const now = new Date();
-    return expenses
-      .filter(e => {
-        const created = e.createdAt?.toDate?.() || new Date(e.createdAt?.seconds ? e.createdAt.seconds * 1000 : now.getTime());
-        return created >= monthStart && e.status !== 'Rejected';
-      })
-      .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
-  }, [expenses, monthStart, mounted]);
-
-  const thisMonthIncome = useMemo(() => {
-    if (!income || !mounted) return 0;
-    const now = new Date();
-    return income
-      .filter(i => {
-        const received = i.dateReceived?.toDate?.() || new Date(i.dateReceived?.seconds ? i.dateReceived.seconds * 1000 : now.getTime());
-        return received >= monthStart;
-      })
-      .reduce((sum, i) => sum + Number(i.amount || 0), 0);
-  }, [income, monthStart]);
+  const financialSnapshot = useMemo(() => {
+    if (!income || !expenses || !mounted) return null;
+    return calculateFinancialSnapshot(income, expenses);
+  }, [income, expenses, mounted]);
 
   const pendingApprovals = useMemo(() => {
     if (!expenses) return [];
-    return expenses.filter(e => e.status === 'Pending').slice(0, 5);
+    return getPendingExpenses(expenses);
   }, [expenses]);
 
   const approvedNotDisbursed = useMemo(() => {
     if (!expenses) return [];
-    return expenses.filter(e => e.status === 'Approved').slice(0, 5);
+    return getApprovedNotDisbursed(expenses);
   }, [expenses]);
 
-  const balance = thisMonthIncome - thisMonthExpenses;
+  const balance = financialSnapshot?.availableBalance ?? 0;
   const totalSchools = schools?.length || 0;
   const activeSchools = schools?.filter(s => s.status === 'Active').length || 0;
 
@@ -107,21 +86,21 @@ export function ExecutiveDashboard({ profile }: DashboardProps) {
       {/* Top Row - Key Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <CompactStatCard 
-          label="Income (MTD)" 
-          value={formatCurrency(thisMonthIncome, true)} 
+          label="Confirmed Income" 
+          value={formatCurrency(financialSnapshot?.confirmedIncome ?? 0, true)} 
           icon={DollarSign} 
           color="bg-green-500"
           href="/finance/income"
         />
         <CompactStatCard 
-          label="Expenses (MTD)" 
-          value={formatCurrency(thisMonthExpenses, true)} 
+          label="Total Spent" 
+          value={formatCurrency(financialSnapshot?.totalSpent ?? 0, true)} 
           icon={Wallet} 
           color="bg-red-500"
           href="/finance/requisitions"
         />
         <CompactStatCard 
-          label="Net" 
+          label="Available Balance" 
           value={formatCurrency(balance, true)} 
           icon={TrendingUp} 
           color={balance >= 0 ? "bg-green-500" : "bg-red-500"}

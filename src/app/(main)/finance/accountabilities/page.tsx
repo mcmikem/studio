@@ -28,16 +28,8 @@ import {
   PlusCircle, Loader2, Wallet, Users, ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface StaffAccountability {
-  userId: string;
-  userName: string;
-  totalDisbursed: number;
-  totalAccounted: number;
-  totalPending: number;
-  balance: number;
-  expenses: Expense[];
-}
+import { calculateStaffAccountabilities, EXPENSE_STATUS } from '@/lib/finance-utils';
+import type { StaffAccountabilitySummary } from '@/lib/finance-utils';
 
 export default function AccountabilitiesPage() {
   const firestore = useFirestore();
@@ -48,7 +40,7 @@ export default function AccountabilitiesPage() {
   const expensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
   const { data: allExpenses, isLoading } = useCollection<Expense>(expensesQuery);
 
-  const [selectedStaff, setSelectedStaff] = useState<StaffAccountability | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState<StaffAccountabilitySummary | null>(null);
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [accountForm, setAccountForm] = useState({ title: '', amount: '', category: 'Transport' as string, description: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,51 +48,9 @@ export default function AccountabilitiesPage() {
   const financeRoles = ['Executive Director', 'Media & Finance Lead', 'Administrator', 'Media & Communications Lead'];
   const canManage = profile && financeRoles.includes(profile.role);
 
-  const staffAccountabilities = useMemo((): StaffAccountability[] => {
+  const staffAccountabilities = useMemo(() => {
     if (!allExpenses) return [];
-
-    const staffMap = new Map<string, StaffAccountability>();
-
-    // Get all disbursed requisitions (money given to staff)
-    allExpenses
-      .filter(e => e.type === 'Requisition' && e.status === 'Disbursed')
-      .forEach(e => {
-        const existing = staffMap.get(e.userId);
-        if (existing) {
-          existing.totalDisbursed += Number(e.totalAmount || 0);
-          existing.expenses.push(e);
-        } else {
-          staffMap.set(e.userId, {
-            userId: e.userId,
-            userName: e.userName,
-            totalDisbursed: Number(e.totalAmount || 0),
-            totalAccounted: 0,
-            totalPending: 0,
-            balance: 0,
-            expenses: [e],
-          });
-        }
-      });
-
-    // Get all acknowledged expenses (money accounted for)
-    allExpenses
-      .filter(e => (e.status === 'Acknowledged' || e.status === 'Disbursed') && e.type === 'Requisition')
-      .forEach(e => {
-        const staff = staffMap.get(e.userId);
-        if (staff && e.status === 'Acknowledged') {
-          staff.totalAccounted += Number(e.totalAmount || 0);
-        }
-      });
-
-    // Calculate balances
-    staffMap.forEach(staff => {
-      staff.totalPending = staff.totalDisbursed - staff.totalAccounted;
-      staff.balance = staff.totalDisbursed - staff.totalAccounted;
-    });
-
-    return Array.from(staffMap.values())
-      .filter(s => s.balance > 0)
-      .sort((a, b) => b.balance - a.balance);
+    return calculateStaffAccountabilities(allExpenses);
   }, [allExpenses]);
 
   const totalUnaccounted = staffAccountabilities.reduce((sum, s) => sum + s.balance, 0);

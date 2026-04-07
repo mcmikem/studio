@@ -9,6 +9,7 @@ import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, orderBy, where, limit } from 'firebase/firestore';
 import type { Income, Expense, User } from '@/lib/types';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
+import { calculateFinancialSnapshot, calculateStaffAccountabilities } from '@/lib/finance-utils';
 import Link from 'next/link';
 import {
   ArrowUpRight, ArrowDownRight, Wallet, AlertTriangle, CheckCircle2,
@@ -31,45 +32,25 @@ export default function FinanceDashboardPage() {
   const stats = useMemo(() => {
     if (!allIncome || !allExpenses) return null;
 
-    const totalIncome = allIncome.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-
-    const acknowledgedExpenses = allExpenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
-    const totalSpent = acknowledgedExpenses.reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
-
-    const pendingExpenses = allExpenses.filter(e => e.status === 'Pending');
-    const approvedExpenses = allExpenses.filter(e => e.status === 'Approved');
-    const rejectedExpenses = allExpenses.filter(e => e.status === 'Rejected');
+    const snapshot = calculateFinancialSnapshot(allIncome, allExpenses);
+    const staffAccountabilities = calculateStaffAccountabilities(allExpenses);
 
     const requisitions = allExpenses.filter(e => e.type === 'Requisition');
     const reimbursements = allExpenses.filter(e => e.type === 'Reimbursement');
 
-    // Funds held by staff (disbursed requisitions not yet acknowledged)
-    const fundsHeldByStaff = requisitions
-      .filter(e => e.status === 'Disbursed')
-      .reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
-
-    // Pending accountabilities (staff who received funds)
-    const staffWithFunds = new Map<string, { name: string; amount: number }>();
-    requisitions.filter(e => e.status === 'Disbursed').forEach(e => {
-      const existing = staffWithFunds.get(e.userId);
-      if (existing) {
-        existing.amount += Number(e.totalAmount || 0);
-      } else {
-        staffWithFunds.set(e.userId, { name: e.userName, amount: Number(e.totalAmount || 0) });
-      }
-    });
-
     return {
-      totalIncome,
-      totalSpent,
-      balance: totalIncome - totalSpent,
-      pendingCount: pendingExpenses.length,
-      approvedCount: approvedExpenses.length,
-      rejectedCount: rejectedExpenses.length,
+      totalIncome: snapshot.totalIncome,
+      confirmedIncome: snapshot.confirmedIncome,
+      pendingIncome: snapshot.pendingIncome,
+      totalSpent: snapshot.totalSpent,
+      balance: snapshot.availableBalance,
+      netBalance: snapshot.netBalance,
+      pendingCount: snapshot.pendingExpenses > 0 ? Math.ceil(snapshot.pendingExpenses / 1000) : 0,
+      approvedCount: snapshot.approvedNotDisbursed > 0 ? Math.ceil(snapshot.approvedNotDisbursed / 1000) : 0,
       requisitionCount: requisitions.length,
       reimbursementCount: reimbursements.length,
-      fundsHeldByStaff,
-      staffWithFunds: Array.from(staffWithFunds.values()),
+      fundsHeldByStaff: snapshot.fundsHeldByStaff,
+      staffWithFunds: staffAccountabilities.map(s => ({ name: s.userName, amount: s.balance })),
       recentTransactions: [
         ...allIncome.slice(0, 5).map(i => ({
           id: i.id,

@@ -18,6 +18,7 @@ export const AuditResourceType = z.enum([
   'USER',
   'PROJECT',
   'EXPENSE',
+  'INCOME',
   'ATTENDANCE',
   'TESTIMONY',
   'REPORT',

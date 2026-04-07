@@ -13,7 +13,9 @@ export type TeamMemberRole =
   | 'Youth Center Manager'
   | 'Accountant/Finance'
   | 'Intern'
-  | 'Volunteer';
+  | 'Volunteer'
+  | 'Board Chair'
+  | 'Board Member';
 
 export const UserSchema = z.object({
     id: z.string(),

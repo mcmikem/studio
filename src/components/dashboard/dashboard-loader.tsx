@@ -14,6 +14,7 @@ import { ProgramManagerDashboard } from './program-manager-dashboard';
 import { MediaFinanceDashboard } from './media-finance-dashboard';
 import { InternDashboard } from './intern-dashboard';
 import { VolunteerDashboard } from './volunteer-dashboard';
+import { BoardMemberDashboard } from './board-member-dashboard';
 
 export interface DashboardProps {
   profile: UserProfileType;
@@ -52,6 +53,8 @@ export function DashboardLoader() {
     DashboardComponent = InternDashboard;
   } else if (role === 'Volunteer') {
     DashboardComponent = VolunteerDashboard;
+  } else if (role === 'Board Chair' || role === 'Board Member') {
+    DashboardComponent = BoardMemberDashboard;
   }
 
   if (!DashboardComponent) {

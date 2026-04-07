@@ -9,7 +9,15 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import type { Income, Expense } from '@/lib/types';
 import { expenseItemCategories } from '@/lib/types';
 import { formatCurrency } from '@/lib/utils';
-import { PiggyBank, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { 
+  calculateTotalSpent, 
+  calculateTotalIncome, 
+  getConfirmedIncome,
+  getActualExpenses,
+  calculateSpendingByCategory,
+  getPendingIncome
+} from '@/lib/finance-utils';
+import { PiggyBank, AlertTriangle, CheckCircle2, Clock } from 'lucide-react';
 
 export default function BudgetingPage() {
   const firestore = useFirestore();
@@ -23,34 +31,35 @@ export default function BudgetingPage() {
   const isLoading = isLoadingIncome || isLoadingExpenses;
 
   const budgetData = useMemo(() => {
-    if (!allIncome || !allExpenses) return { totalBudget: 0, totalSpent: 0, remaining: 0, categories: [] };
+    if (!allIncome || !allExpenses) return { 
+      confirmedBudget: 0, 
+      pendingBudget: 0,
+      totalBudget: 0, 
+      totalSpent: 0, 
+      remaining: 0, 
+      available: 0,
+      categories: [] 
+    };
 
-    const totalBudget = allIncome.reduce((sum, i) => sum + Number(i.amount || 0), 0);
-    const acknowledgedExpenses = allExpenses.filter(e => e.status === 'Disbursed' || e.status === 'Acknowledged');
-    const totalSpent = acknowledgedExpenses.reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
-
-    const categoryTotals: Record<string, number> = {};
-    acknowledgedExpenses.forEach(e => {
-      e.items?.forEach(item => {
-        categoryTotals[item.category] = (categoryTotals[item.category] || 0) + Number(item.amount || 0);
-      });
-    });
-
-    const categories = expenseItemCategories.map(cat => ({
-      name: cat,
-      spent: categoryTotals[cat] || 0,
-      percent: totalSpent > 0 ? ((categoryTotals[cat] || 0) / totalSpent) * 100 : 0,
-    })).filter(c => c.spent > 0).sort((a, b) => b.spent - a.spent);
+    const confirmedIncome = calculateTotalIncome(allIncome, true);
+    const pendingIncome = calculateTotalIncome(getPendingIncome(allIncome));
+    const totalIncome = confirmedIncome + pendingIncome;
+    
+    const totalSpent = calculateTotalSpent(allExpenses);
+    const categories = calculateSpendingByCategory(allExpenses);
 
     return {
-      totalBudget,
+      confirmedBudget: confirmedIncome,
+      pendingBudget: pendingIncome,
+      totalBudget: totalIncome,
       totalSpent,
-      remaining: totalBudget - totalSpent,
+      remaining: confirmedIncome - totalSpent,
+      available: confirmedIncome - totalSpent,
       categories,
     };
   }, [allIncome, allExpenses]);
 
-  const utilization = budgetData.totalBudget > 0 ? (budgetData.totalSpent / budgetData.totalBudget) * 100 : 0;
+  const utilization = budgetData.confirmedBudget > 0 ? (budgetData.totalSpent / budgetData.confirmedBudget) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -62,12 +71,20 @@ export default function BudgetingPage() {
         <p className="text-muted-foreground">Track budget utilization and spending by category.</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2"><CardDescription>Total Budget (Income)</CardDescription></CardHeader>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-green-200">
+          <CardHeader className="pb-2"><CardDescription className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Confirmed Budget</CardDescription></CardHeader>
           <CardContent>
             {isLoading ? <Skeleton className="h-8 w-28" /> : (
-              <p className="text-2xl font-bold text-emerald-600">{formatCurrency(budgetData.totalBudget)}</p>
+              <p className="text-2xl font-bold text-emerald-600">{formatCurrency(budgetData.confirmedBudget)}</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="border-amber-200">
+          <CardHeader className="pb-2"><CardDescription className="flex items-center gap-1"><Clock className="h-3 w-3" /> Pending Income</CardDescription></CardHeader>
+          <CardContent>
+            {isLoading ? <Skeleton className="h-8 w-28" /> : (
+              <p className="text-2xl font-bold text-amber-600">{formatCurrency(budgetData.pendingBudget)}</p>
             )}
           </CardContent>
         </Card>
@@ -80,7 +97,7 @@ export default function BudgetingPage() {
           </CardContent>
         </Card>
         <Card className={budgetData.remaining >= 0 ? 'border-green-200' : 'border-red-200'}>
-          <CardHeader className="pb-2"><CardDescription>Remaining</CardDescription></CardHeader>
+          <CardHeader className="pb-2"><CardDescription>Available Balance</CardDescription></CardHeader>
           <CardContent>
             {isLoading ? <Skeleton className="h-8 w-28" /> : (
               <p className={`text-2xl font-bold ${budgetData.remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -94,7 +111,7 @@ export default function BudgetingPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Budget Utilization</CardTitle>
-          <CardDescription>{utilization.toFixed(1)}% of total budget used</CardDescription>
+          <CardDescription>{utilization.toFixed(1)}% of confirmed budget used</CardDescription>
         </CardHeader>
         <CardContent>
           <Progress value={Math.min(100, utilization)} className="h-4" />

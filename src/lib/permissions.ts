@@ -5,6 +5,8 @@ export const ROLES = {
   ED: 'Executive Director',
   ADMIN: 'Administrator',
   MANAGER: 'Programs & Partnerships Manager',
+  BOARD_CHAIR: 'Board Chair',
+  BOARD_MEMBER: 'Board Member',
 } as const;
 
 /**
