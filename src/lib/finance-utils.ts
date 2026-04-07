@@ -1,4 +1,4 @@
-import type { Income, Expense } from './types/finance';
+import type { Income, Expense, FiscalYear, BudgetPeriod, BankAccount, PettyCashFloat } from './types/finance';
 
 export const EXPENSE_STATUS = {
   PENDING: 'Pending',
@@ -191,4 +191,146 @@ export function calculateSpendingByCategory(expenses: Expense[]): CategorySpendi
       percent: totalSpent > 0 ? (spent / totalSpent) * 100 : 0,
     }))
     .sort((a, b) => b.spent - a.spent);
+}
+
+export function getActiveFiscalYear(fiscalYears: FiscalYear[]): FiscalYear | undefined {
+  return fiscalYears.find(fy => fy.isActive);
+}
+
+export function getCurrentFiscalYear(): { name: string; start: Date; end: Date } {
+  const now = new Date();
+  const month = now.getMonth();
+  let year = now.getFullYear();
+  
+  if (month >= 9) {
+    return {
+      name: `FY ${year}-${year + 1}`,
+      start: new Date(year, 9, 1),
+      end: new Date(year + 1, 8, 30),
+    };
+  }
+  return {
+    name: `FY ${year - 1}-${year}`,
+    start: new Date(year - 1, 9, 1),
+    end: new Date(year, 8, 30),
+  };
+}
+
+export function filterByFiscalYear<T extends { dateReceived?: any; date?: any; createdAt?: any }>(
+  items: T[],
+  fiscalYear: FiscalYear
+): T[] {
+  const start = fiscalYear.startDate?.toDate?.() || new Date(fiscalYear.startDate);
+  const end = fiscalYear.endDate?.toDate?.() || new Date(fiscalYear.endDate);
+  
+  return items.filter(item => {
+    const date = item.dateReceived?.toDate?.() || item.date?.toDate?.() || item.createdAt?.toDate?.() || new Date();
+    return date >= start && date <= end;
+  });
+}
+
+export function filterByBudgetPeriod<T extends { date?: any; dateReceived?: any }>(
+  items: T[],
+  period: BudgetPeriod
+): T[] {
+  const start = period.startDate?.toDate?.() || new Date(period.startDate);
+  const end = period.endDate?.toDate?.() || new Date(period.endDate);
+  
+  return items.filter(item => {
+    const date = item.date?.toDate?.() || item.dateReceived?.toDate?.() || new Date();
+    return date >= start && date <= end;
+  });
+}
+
+export interface BudgetUtilization {
+  category: string;
+  budgeted: number;
+  spent: number;
+  variance: number;
+  percentUsed: number;
+}
+
+export function calculateBudgetUtilization(
+  budget: BudgetPeriod,
+  actualExpenses: Expense[]
+): BudgetUtilization[] {
+  const categoryBudgets = budget.categoryLimits || {};
+  const periodExpenses = filterByBudgetPeriod(actualExpenses, budget);
+  const spentByCategory: Record<string, number> = {};
+  
+  periodExpenses.forEach(e => {
+    if (e.status === 'Acknowledged') {
+      e.items?.forEach(item => {
+        spentByCategory[item.category] = (spentByCategory[item.category] || 0) + Number(item.amount || 0);
+      });
+    }
+  });
+  
+  const allCategories = new Set([...Object.keys(categoryBudgets), ...Object.keys(spentByCategory)]);
+  
+  return Array.from(allCategories).map(category => {
+    const budgeted = categoryBudgets[category] || 0;
+    const spent = spentByCategory[category] || 0;
+    return {
+      category,
+      budgeted,
+      spent,
+      variance: budgeted - spent,
+      percentUsed: budgeted > 0 ? (spent / budgeted) * 100 : 0,
+    };
+  }).sort((a, b) => b.percentUsed - a.percentUsed);
+}
+
+export function calculateCashOnHand(
+  bankAccounts: BankAccount[],
+  pettyCashFloats: PettyCashFloat[]
+): number {
+  const bankTotal = bankAccounts.reduce((sum, acc) => sum + Number(acc.currentBalance || 0), 0);
+  const pettyTotal = pettyCashFloats.reduce((sum, fc) => sum + Number(fc.currentBalance || 0), 0);
+  return bankTotal + pettyTotal;
+}
+
+export interface MonthlyTrend {
+  month: string;
+  income: number;
+  expenses: number;
+  net: number;
+}
+
+export function calculateMonthlyTrends(
+  income: Income[],
+  expenses: Expense[],
+  months: number = 12
+): MonthlyTrend[] {
+  const now = new Date();
+  const trends: MonthlyTrend[] = [];
+  
+  for (let i = months - 1; i >= 0; i--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+    const monthName = monthDate.toLocaleString('default', { month: 'short', year: '2-digit' });
+    
+    const monthIncome = income
+      .filter(inc => {
+        const d = inc.dateReceived?.toDate?.() || new Date(inc.dateReceived);
+        return d >= monthDate && d <= monthEnd && (!inc.status || inc.status === 'Approved');
+      })
+      .reduce((sum, inc) => sum + Number(inc.amount || 0), 0);
+    
+    const monthExpenses = expenses
+      .filter(exp => {
+        const d = exp.date?.toDate?.() || new Date(exp.date);
+        return d >= monthDate && d <= monthEnd && exp.status === 'Acknowledged';
+      })
+      .reduce((sum, exp) => sum + Number(exp.totalAmount || 0), 0);
+    
+    trends.push({
+      month: monthName,
+      income: monthIncome,
+      expenses: monthExpenses,
+      net: monthIncome - monthExpenses,
+    });
+  }
+  
+  return trends;
 }

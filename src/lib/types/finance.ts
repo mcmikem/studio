@@ -36,7 +36,12 @@ export const IncomeSchema = z.object({
     dateReceived: z.any(),
     type: z.string(),
     notes: z.string().optional(),
-    status: z.enum(['Pending', 'Approved', 'Rejected']).default('Approved'), // Income can also be pending/approved/rejected
+    status: z.enum(['Pending', 'Approved', 'Rejected']).default('Approved'),
+    projectId: z.string().optional(),
+    projectName: z.string().optional(),
+    donorName: z.string().optional(),
+    restricted: z.boolean().default(false),
+    receiptUrl: z.string().optional(),
     createdAt: z.any(),
 });
 
@@ -82,6 +87,57 @@ export const RecurringExpenseSchema = z.object({
 });
 
 export type RecurringExpense = z.infer<typeof RecurringExpenseSchema>;
+
+export const FiscalYearSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    startDate: z.any(),
+    endDate: z.any(),
+    isActive: z.boolean().default(true),
+    createdAt: z.any(),
+});
+
+export type FiscalYear = z.infer<typeof FiscalYearSchema>;
+
+export const BudgetPeriodSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    fiscalYearId: z.string().optional(),
+    startDate: z.any(),
+    endDate: z.any(),
+    totalBudget: z.coerce.number(),
+    categoryLimits: z.record(z.coerce.number()).optional(),
+    isActive: z.boolean().default(true),
+    createdAt: z.any(),
+});
+
+export type BudgetPeriod = z.infer<typeof BudgetPeriodSchema>;
+
+export const BankAccountSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    accountNumber: z.string().optional(),
+    bankName: z.string(),
+    currency: z.enum(['UGX', 'USD', 'EUR']).default('UGX'),
+    openingBalance: z.coerce.number().default(0),
+    currentBalance: z.coerce.number().default(0),
+    isActive: z.boolean().default(true),
+    createdAt: z.any(),
+});
+
+export type BankAccount = z.infer<typeof BankAccountSchema>;
+
+export const PettyCashFloatSchema = z.object({
+    id: z.string(),
+    custodianId: z.string(),
+    custodianName: z.string(),
+    floatAmount: z.coerce.number(),
+    currentBalance: z.coerce.number(),
+    lastReplenished: z.any(),
+    createdAt: z.any(),
+});
+
+export type PettyCashFloat = z.infer<typeof PettyCashFloatSchema>;
 
 export const generateNextDueDate = (
     currentDate: Date,

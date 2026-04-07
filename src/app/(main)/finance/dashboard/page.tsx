@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, where, limit } from 'firebase/firestore';
-import type { Income, Expense, User } from '@/lib/types';
+import { collection, query, orderBy } from 'firebase/firestore';
+import type { Income, Expense, User, BankAccount, PettyCashFloat, BudgetPeriod } from '@/lib/types';
 import { formatCurrency, formatDateSafe } from '@/lib/utils';
-import { calculateFinancialSnapshot, calculateStaffAccountabilities } from '@/lib/finance-utils';
+import { calculateFinancialSnapshot, calculateStaffAccountabilities, calculateCashOnHand, getCurrentFiscalYear, filterByBudgetPeriod } from '@/lib/finance-utils';
 import Link from 'next/link';
 import {
   ArrowUpRight, ArrowDownRight, Wallet, AlertTriangle, CheckCircle2,
-  Clock, Banknote, FileText, ShieldCheck, ReceiptText, TrendingUp, TrendingDown
+  Clock, Banknote, FileText, ShieldCheck, ReceiptText, TrendingUp, Building2, Target, Coins
 } from 'lucide-react';
 
 export default function FinanceDashboardPage() {
@@ -21,13 +21,39 @@ export default function FinanceDashboardPage() {
 
   const incomeQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'income'), orderBy('dateReceived', 'desc')) : null, [firestore]);
   const expensesQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'expenses'), orderBy('createdAt', 'desc')) : null, [firestore]);
-  const usersQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'users')) : null, [firestore]);
+  const bankAccountsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'bankAccounts'), orderBy('name')) : null, [firestore]);
+  const pettyCashQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'pettyCashFloats')) : null, [firestore]);
+  const budgetsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'budgets'), orderBy('startDate', 'desc')) : null, [firestore]);
 
   const { data: allIncome, isLoading: isLoadingIncome } = useCollection<Income>(incomeQuery);
   const { data: allExpenses, isLoading: isLoadingExpenses } = useCollection<Expense>(expensesQuery);
-  const { data: users } = useCollection<User>(usersQuery);
+  const { data: bankAccounts } = useCollection<BankAccount>(bankAccountsQuery);
+  const { data: pettyCashFloats } = useCollection<PettyCashFloat>(pettyCashQuery);
+  const { data: budgets } = useCollection<BudgetPeriod>(budgetsQuery);
 
   const isLoading = isLoadingIncome || isLoadingExpenses;
+
+  const fiscalYear = getCurrentFiscalYear();
+
+  const activeBudget = budgets?.find(b => b.isActive);
+  const budgetUtilization = useMemo(() => {
+    if (!activeBudget || !allExpenses) return { spent: 0, total: 0, percent: 0 };
+    const periodExpenses = filterByBudgetPeriod(allExpenses, activeBudget);
+    const actualExpenses = periodExpenses.filter(e => e.status === 'Acknowledged');
+    const spent = actualExpenses.reduce((sum, e) => sum + Number(e.totalAmount || 0), 0);
+    return {
+      spent,
+      total: activeBudget.totalBudget,
+      percent: activeBudget.totalBudget > 0 ? (spent / activeBudget.totalBudget) * 100 : 0
+    };
+  }, [activeBudget, allExpenses]);
+
+  const cashOnHand = useMemo(() => {
+    if (!bankAccounts && !pettyCashFloats) return 0;
+    const bankTotal = bankAccounts?.reduce((sum, acc) => sum + Number(acc.currentBalance || 0), 0) || 0;
+    const pettyTotal = pettyCashFloats?.reduce((sum, fc) => sum + Number(fc.currentBalance || 0), 0) || 0;
+    return bankTotal + pettyTotal;
+  }, [bankAccounts, pettyCashFloats]);
 
   const stats = useMemo(() => {
     if (!allIncome || !allExpenses) return null;
@@ -128,6 +154,59 @@ export default function FinanceDashboardPage() {
             {isLoading ? <Skeleton className="h-8 w-28" /> : (
               <p className="text-2xl font-bold text-amber-600">{formatCurrency(stats?.fundsHeldByStaff || 0)}</p>
             )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Second Row - Cash, Budget, Fiscal Year */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-2 text-xs">
+              <Building2 className="h-3.5 w-3.5 text-blue-500" /> Cash on Hand
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Skeleton className="h-8 w-28" /> : (
+              <p className="text-2xl font-bold text-blue-600">{formatCurrency(cashOnHand)}</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-2 text-xs">
+              <Target className="h-3.5 w-3.5 text-purple-500" /> Budget Utilization
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Skeleton className="h-8 w-28" /> : (
+              <p className={`text-2xl font-bold ${budgetUtilization.percent > 100 ? 'text-red-600' : budgetUtilization.percent > 80 ? 'text-amber-600' : 'text-green-600'}`}>
+                {budgetUtilization.percent.toFixed(1)}%
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-2 text-xs">
+              <Coins className="h-3.5 w-3.5 text-green-500" /> Budget Spent
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Skeleton className="h-8 w-28" /> : (
+              <p className="text-2xl font-bold text-green-600">{formatCurrency(budgetUtilization.spent)}</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription className="flex items-center gap-2 text-xs">
+              <Clock className="h-3.5 w-3.5 text-primary" /> {fiscalYear.name}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm font-bold">{fiscalYear.start.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })} - {fiscalYear.end.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' })}</p>
+            <p className="text-xs text-muted-foreground">Current Fiscal Year</p>
           </CardContent>
         </Card>
       </div>

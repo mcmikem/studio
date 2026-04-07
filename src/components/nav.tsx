@@ -34,6 +34,7 @@ import {
   GraduationCap,
   Flower2,
   Landmark,
+  Coins,
   LogOut,
   History,
   ListChecks,
@@ -158,8 +159,10 @@ const navConfig = {
     { href: '/finance/requisitions', icon: FileText, label: 'Requisitions' },
     { href: '/finance/accountabilities', icon: ShieldCheck, label: 'Accountabilities' },
     { href: '/finance/income', icon: TrendingUp, label: 'Income' },
-    { href: '/finance/reports', icon: BarChart3, label: 'Financial Reports' },
-    { href: '/finance/petty-cash', icon: Landmark, label: 'Petty Cash' },
+    { href: '/finance/budgets', icon: Target, label: 'Budgets' },
+    { href: '/finance/bank-accounts', icon: Landmark, label: 'Bank Accounts' },
+    { href: '/finance/reports', icon: BarChart3, label: 'Reports' },
+    { href: '/finance/petty-cash', icon: Coins, label: 'Petty Cash' },
   ],
   // HR Admin (for admins only)
   hr: [
@@ -211,6 +214,8 @@ const navConfig = {
 const roleNavConfig: { [key: string]: (keyof typeof navConfig)[] } = {
   'Administrator': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system', 'admin'],
   'Executive Director': ['core', 'my', 'hr', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system', 'admin'],
+  'Board Chair': ['core', 'my', 'finance', 'impact', 'ai', 'system'],
+  'Board Member': ['core', 'my', 'finance', 'impact', 'ai', 'system'],
   'Programs & Partnerships Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
   'Operations & Field Manager': ['core', 'my', 'forms', 'programs', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
   'Media & Finance Lead': ['core', 'my', 'forms', 'enterprise', 'finance', 'impact', 'ai', 'content', 'system'],
