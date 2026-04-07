@@ -31,7 +31,9 @@ export function isExpenseHeldByStaff(expense: Expense): boolean {
 }
 
 export function isIncomeConfirmed(income: Income): boolean {
-  return income.status === INCOME_STATUS.APPROVED;
+  // If no status field exists, treat as confirmed (backwards compatibility)
+  // Otherwise, only 'Approved' status counts as confirmed
+  return !income.status || income.status === INCOME_STATUS.APPROVED;
 }
 
 export function isIncomePending(income: Income): boolean {
