@@ -2,17 +2,6 @@
 'use client';
 
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Controller } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import {
   Card,
   CardContent,
   CardDescription,
@@ -28,11 +17,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, addDocumentNonBlocking } from '@/firebase';
 import { collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import { Suspense } from 'react';
+import { Loader2, ArrowLeft, Save, RotateCcw } from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
+import { Controller } from 'react-hook-form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { useAutosave } from '@/hooks/use-autosave';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
 
 const programOptions = [
     { id: 'YAC', label: 'Young Alive Clubs (Adolescent Health, SRHR & Mental Health)' },
@@ -83,6 +77,30 @@ function SchoolApplicationForm() {
 
   const interestedPrograms = watch('interestedPrograms');
 
+  // Auto-save functionality
+  const formData = watch();
+  const { debouncedSave, clearSaved, getSavedData, hasSavedData, lastSaved, isSaving } = useAutosave({
+    storageKey: 'omuto-school-application',
+    debounceMs: 2000,
+  });
+
+
+  // Auto-save when form data changes
+  useEffect(() => {
+    debouncedSave(formData);
+  }, [formData, debouncedSave]);
+
+  // Load saved data on mount
+  useEffect(() => {
+    if (hasSavedData()) {
+      const savedData = getSavedData();
+      if (savedData) {
+        // Could implement form reset with saved data here if needed
+        console.log('Saved form data available');
+      }
+    }
+  }, [getSavedData, hasSavedData]);
+
   const onSubmit = async (data: SchoolApplicationFormData) => {
     if (!firestore) {
       toast({ variant: 'destructive', title: 'Database connection failed.' });
@@ -91,11 +109,12 @@ function SchoolApplicationForm() {
       
     const applicationData = {
       ...data,
-      createdAt: serverTimestamp() as Timestamp,
+      createdAt: serverTimestamp(),
     };
 
     await addDocumentNonBlocking(collection(firestore, 'school-applications'), applicationData)
         .then(() => {
+            clearSaved(); // Clear autosaved data on successful submission
             toast({ title: "Application Submitted!", description: "Your application has been successfully submitted." });
             router.push('/meal');
         })
@@ -108,15 +127,34 @@ function SchoolApplicationForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Omuto School Programs Application Form</CardTitle>
-        <CardDescription>
-          Thank you for your interest in bringing Omuto programs to your school! This form will help us understand your needs and match you with the most impactful program for your students.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Omuto School Programs Application Form</CardTitle>
+            <CardDescription>
+              Thank you for your interest in bringing Omuto programs to your school! This form will help us understand your needs and match you with the most impactful program for your students.
+            </CardDescription>
+          </div>
+          {isSaving && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Save className="h-3 w-3 animate-pulse" />
+              <span>Saving...</span>
+            </div>
+          )}
+          {!isSaving && lastSaved && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Save className="h-3 w-3 text-green-500" />
+              <span>Saved</span>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <form onSubmit={handleSubmit(onSubmit)}>
         <CardContent className="space-y-8">
+            <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+                <span className="text-destructive font-bold">*</span> Required fields
+            </p>
             <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email <span className="text-destructive">*</span></Label>
                 <Input id="email" {...register('email')} />
                 {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>

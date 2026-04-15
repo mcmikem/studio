@@ -48,7 +48,9 @@ const userRoles = [
     'Field Coordinator',
     'Administrator',
     'Intern',
-    'Volunteer'
+    'Volunteer',
+    'Board Chair',
+    'Board Member'
 ];
 
 export default function UserManagementPage() {

@@ -42,9 +42,12 @@ const fullCheckinSchema = z.object({
 type CheckinFormValues = z.infer<typeof fullCheckinSchema>;
 
 const MOOD_OPTIONS = [
-  { value: 'good', label: 'Great', emoji: '😊' },
-  { value: 'neutral', label: 'Okay', emoji: '😐' },
-  { value: 'bad', label: 'Tough', emoji: '😤' },
+  { value: 'great', label: 'Great', emoji: '😊' },
+  { value: 'good', label: 'Good', emoji: '🙂' },
+  { value: 'okay', label: 'Okay', emoji: '😐' },
+  { value: 'tired', label: 'Tired', emoji: '😫' },
+  { value: 'stressed', label: 'Stressed', emoji: '😤' },
+  { value: 'excited', label: 'Excited', emoji: '🤩' },
 ];
 
 function CheckinFormComponent() {

@@ -45,3 +45,4 @@ firebase-debug.log
 firestore-debug.log
 
 secrets/serviceAccountKey.json
+.aider*

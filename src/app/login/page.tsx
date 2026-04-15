@@ -14,7 +14,7 @@ import { Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { FirebaseError } from 'firebase/app';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Info } from 'lucide-react';
+import { Info, Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { validateAccessCodeAction } from '@/actions/auth-actions';
@@ -119,6 +119,7 @@ export default function LoginPage() {
   // Form State
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [accessCode, setAccessCode] = useState('');
   const [fullName, setFullName] = useState('');
   const [selectedRole, setSelectedRole] = useState<'Volunteer' | 'Intern'>('Volunteer');
@@ -297,15 +298,30 @@ export default function LoginPage() {
                                     <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-omuto-navy/70">Password</Label>
                                     {activeTab === 'login' && <ForgotPasswordDialog />}
                                 </div>
-                                <Input 
-                                    id="password" 
-                                    type="password" 
-                                    required 
-                                    placeholder="••••••••"
-                                    className="h-12 border-lg rounded-xl"
-                                    value={password} 
-                                    onChange={(e) => setPassword(e.target.value)} 
-                                />
+                                <div className="relative">
+                                    <Input 
+                                        id="password" 
+                                        type={showPassword ? 'text' : 'password'}
+                                        required 
+                                        placeholder="••••••••"
+                                        className="h-12 border-lg rounded-xl pr-10"
+                                        value={password} 
+                                        onChange={(e) => setPassword(e.target.value)} 
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </button>
+                                </div>
+                                {activeTab === 'signup' && (
+                                    <p className="text-[10px] text-muted-foreground">
+                                        Password must be at least 6 characters
+                                    </p>
+                                )}
                             </div>
 
                             {activeTab === 'signup' && (

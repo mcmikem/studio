@@ -2,12 +2,11 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LifeBuoy, Mail, Bug, MessageSquare, Loader2 } from "lucide-react";
+import { LifeBuoy, Mail, Bug, MessageSquare, Loader2, LayoutDashboard } from "lucide-react";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { useUser, addDocumentNonBlocking } from "@/firebase";
 import { useViewAs } from "@/hooks/use-view-as";
 import { Button } from "@/components/ui/button";
-import Image from 'next/image';
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
@@ -159,7 +158,12 @@ const InternVolunteerManual = () => (
         <h3>1. Your Dashboard: Your Mission Control</h3>
         <p>When you log in, you'll land on your personal dashboard. Think of this as your daily mission control.</p>
         
-        <Image src="https://i.imgur.com/AuhF19l.jpeg" alt="Your Dashboard" width={800} height={450} className="rounded-lg border" data-ai-hint="dashboard screenshot" />
+        {/* Dashboard screenshot placeholder - add local image to /public/help/dashboard.png */}
+        <div className="bg-muted/20 rounded-lg border p-8 text-center my-4">
+            <LayoutDashboard className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+            <p className="text-sm text-muted-foreground">Dashboard screenshot</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Add /public/help/dashboard.png to display</p>
+        </div>
 
         <p>Here you will find:</p>
         <ul>

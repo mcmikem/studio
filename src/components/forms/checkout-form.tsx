@@ -298,7 +298,7 @@ export function CheckoutForm() {
                 </div>
                 <div className="space-y-3">
                     <Label htmlFor="tomorrowPlan" className="text-xs font-bold uppercase tracking-widest text-omuto-navy">
-                        #1 Priority for Tomorrow
+                        #1 Priority for Tomorrow <span className="text-destructive">*</span>
                     </Label>
                     <Textarea
                         id="tomorrowPlan"
@@ -505,11 +505,13 @@ export function CheckoutForm() {
                     id="tomorrowPlan"
                     placeholder="Focus your intent for the next mission cycle..."
                     className="min-h-[150px] border rounded-xl font-medium focus-visible:ring-primary"
-                    {...register('tomorrowPlan')}
+                    {...register('tomorrowPlan', {
+                        required: 'Please set a priority for tomorrow.',
+                    })}
                   />
                   {errors.tomorrowPlan && (
                     <p className="text-xs text-destructive font-bold mt-2">
-                      {`${errors.tomorrowPlan.message}`}
+                      {errors.tomorrowPlan.message}
                     </p>
                   )}
                 </div>

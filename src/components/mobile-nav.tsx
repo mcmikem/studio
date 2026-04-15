@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard, Search, DollarSign, TrendingUp, Users, Wallet, FileText, Sparkles, ClipboardCheck, Heart, Building2, Calendar, LifeBuoy } from 'lucide-react';
+import { Home, Menu, Plus, BarChart3, LogIn, LogOut, Receipt, MessageCircle, X, CheckCircle, LayoutDashboard, Search, DollarSign, TrendingUp, Users, Wallet, FileText, Sparkles, ClipboardCheck, Heart, Building2, Calendar, LifeBuoy, Wand2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -59,6 +59,8 @@ export function MobileBottomNav() {
   const isActive = (path: string) => {
     if (path === '/' && pathname === '/') return true;
     // Handle query param paths like /profile?tab=tasks
+    if (pathname === path) return true;
+    // Handle base path matching for parent routes
     const basePath = path.split('?')[0];
     if (basePath !== '/' && pathname.startsWith(basePath)) return true;
     return false;
@@ -66,24 +68,26 @@ export function MobileBottomNav() {
 
   const allActions = [
     // Quick forms - most used
-    { href: '/forms/expense', label: 'Expense Report', icon: Receipt, category: 'Finance' },
-    { href: '/forms/check-in', label: 'Morning Check-in', icon: LogIn, category: 'Daily' },
-    { href: '/forms/check-out', label: 'End of Day', icon: LogOut, category: 'Daily' },
-    { href: '/daily-plan', label: 'AI Planner', icon: LayoutDashboard, category: 'Daily' },
-    { href: '/calendar', label: 'Calendar', icon: Calendar, category: 'Daily' },
-    // Impact logging
-    { href: '/meal/activity', label: 'Log Activity', icon: BarChart3, category: 'Impact' },
-    { href: '/school-xperience/log-visit', label: 'Log School Visit', icon: Building2, category: 'Impact' },
-    { href: '/meal/beneficiary-registration', label: 'Register Beneficiary', icon: Users, category: 'Impact' },
+    { href: '/forms/check-in', label: 'Morning Check-in', icon: LogIn, category: 'Forms' },
+    { href: '/forms/check-out', label: 'End of Day', icon: LogOut, category: 'Forms' },
+    { href: '/meal/activity', label: 'Log Activity', icon: BarChart3, category: 'Forms' },
+    { href: '/forms/expense', label: 'Expense Report', icon: Receipt, category: 'Forms' },
+    // Programs
+    { href: '/school-xperience/log-visit', label: 'Log School Visit', icon: Building2, category: 'Programs' },
+    { href: '/meal/beneficiary-registration', label: 'Register Beneficiary', icon: Users, category: 'Programs' },
     // Finance
     { href: '/finance/income', label: 'Log Income', icon: DollarSign, category: 'Finance' },
     { href: '/finance/requisitions', label: 'View Requisitions', icon: FileText, category: 'Finance' },
     { href: '/finance/petty-cash', label: 'Petty Cash', icon: Wallet, category: 'Finance' },
+    // Planning
+    { href: '/daily-plan', label: 'AI Planner', icon: Sparkles, category: 'Planning' },
+    { href: '/calendar', label: 'Calendar', icon: Calendar, category: 'Planning' },
+    // Content
+    { href: '/impact-story', label: 'Impact Story', icon: Wand2, category: 'Content' },
+    { href: '/testimonies', label: 'Capture Story', icon: ClipboardCheck, category: 'Content' },
+    { href: '/pulse', label: 'Omuto Pulse', icon: Heart, category: 'Content' },
     // AI
     { href: '/chat', label: 'AI Coach', icon: MessageCircle, category: 'AI' },
-    { href: '/impact-story', label: 'Impact Story', icon: Sparkles, category: 'Content' },
-    { href: '/pulse', label: 'Omuto Pulse', icon: Heart, category: 'Content' },
-    { href: '/testimonies', label: 'Capture Story', icon: ClipboardCheck, category: 'Content' },
     // System
     { href: '/help', label: 'Help', icon: LifeBuoy, category: 'System' },
   ];
@@ -98,7 +102,7 @@ export function MobileBottomNav() {
     return acc;
   }, {} as Record<string, typeof allActions>);
 
-  const categories = ['Daily', 'Finance', 'Impact', 'Content', 'AI', 'System'];
+  const categories = ['Forms', 'Programs', 'Finance', 'Planning', 'Content', 'AI', 'System'];
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 z-[600] w-full pb-safe" aria-label="Mobile navigation">

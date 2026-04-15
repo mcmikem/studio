@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import type { User, Checkin, Checkout } from '@/lib/types';
@@ -152,11 +152,16 @@ export function TeamDeployment() {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [selectedUserStatus, setSelectedUserStatus] = useState<any | null>(null);
   const greeting = getTimeOfDayGreeting();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setCurrentTime(new Date());
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(timer);
+    timerRef.current = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
   }, []);
 
   const teamStatus = useMemo(() => {
@@ -185,15 +190,21 @@ export function TeamDeployment() {
       const userCheckins = byUserCheckins.get(user.id) || [];
       const userCheckouts = byUserCheckouts.get(user.id) || [];
       
-      const latestCheckin = userCheckins.sort((a, b) => 
-        (b.timestamp?.toDate?.()?.getTime?.() || 0) - (a.timestamp?.toDate?.()?.getTime?.() || 0)
-      )[0];
-      
-      const latestCheckout = userCheckouts.sort((a, b) => 
-        (b.timestamp?.toDate?.()?.getTime?.() || 0) - (a.timestamp?.toDate?.()?.getTime?.() || 0)
-      )[0];
+       let latestCheckin = null;
+       if (userCheckins.length > 0) {
+         latestCheckin = userCheckins.sort((a, b) => 
+           (b.timestamp?.toDate?.()?.getTime?.() || 0) - (a.timestamp?.toDate?.()?.getTime?.() || 0)
+         )[0];
+       }
+       
+       let latestCheckout = null;
+       if (userCheckouts.length > 0) {
+         latestCheckout = userCheckouts.sort((a, b) => 
+           (b.timestamp?.toDate?.()?.getTime?.() || 0) - (a.timestamp?.toDate?.()?.getTime?.() || 0)
+         )[0];
+       }
 
-      const status = getUserStatus(latestCheckin, latestCheckout, currentTime);
+       const status = getUserStatus(latestCheckin || null, latestCheckout || null, currentTime);
       const checkinDate = latestCheckin?.timestamp?.toDate?.();
       const minutesSinceCheckin = checkinDate ? differenceInMinutes(currentTime, checkinDate) : null;
       

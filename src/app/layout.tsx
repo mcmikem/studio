@@ -14,6 +14,7 @@ import { RoleTour } from '@/components/role-tour';
 import { CommandPalette } from '@/components/command-palette';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
+import { FloatingAIButton } from '@/components/floating-ai-button';
 
 const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -77,6 +78,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
         <Toaster />
         <CommandPalette />
+        <FloatingAIButton />
       </body>
     </html>
   );
