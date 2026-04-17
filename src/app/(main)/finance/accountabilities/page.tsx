@@ -111,7 +111,7 @@ export default function AccountabilitiesPage() {
             <div className="p-4 bg-amber-500/20 rounded-2xl text-amber-600"><AlertTriangle className="h-8 w-8" /></div>
             <div>
                 <div className="text-3xl font-black text-amber-600 leading-tight">{isLoading ? <Skeleton className="h-8 w-24" /> : formatCurrency(totalUnaccounted)}</div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-amber-600/50">Total Unaccounted</p>
+                <div className="text-[10px] font-black uppercase tracking-widest text-amber-600/50">Total Unaccounted</div>
             </div>
           </CardContent>
         </Card>
@@ -121,7 +121,7 @@ export default function AccountabilitiesPage() {
             <div className="p-4 bg-omuto-navy/5 rounded-2xl text-omuto-navy/60"><Users className="h-8 w-8" /></div>
             <div>
                 <div className="text-3xl font-black text-omuto-navy leading-tight">{isLoading ? <Skeleton className="h-8 w-12" /> : staffCount}</div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Staff with Funds</p>
+                <div className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Staff with Funds</div>
             </div>
           </CardContent>
         </Card>
