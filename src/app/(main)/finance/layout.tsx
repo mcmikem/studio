@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, PiggyBank, ArrowUpCircle, Banknote, FileText,
-  ShieldCheck, ReceiptText, BarChart3, Settings, ChevronDown, Menu, FileText
+  ShieldCheck, ReceiptText, BarChart3, Settings, ChevronDown, Menu
 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
