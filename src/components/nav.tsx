@@ -267,35 +267,11 @@ export function AppSidebar() {
   const effectiveRole = viewAsRole || realProfile?.role || 'default';
   const userId = user?.uid || 'anonymous';
   const storageKey = `${STORAGE_KEY_PREFIX}${userId}`;
-
-  // UseEffect runs unconditionally on every render but only acts when ready
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (favorites.length === 0 && saved && realProfile) {
-        setFavorites(JSON.parse(saved));
-      } else if (favorites.length === 0 && realProfile) {
-        setFavorites(defaultFavorites[effectiveRole] || defaultFavorites['default']);
-      }
-    } catch {
-      if (favorites.length === 0) {
-        setFavorites(defaultFavorites[effectiveRole] || defaultFavorites['default']);
-      }
-    }
-  }, []); // Empty deps - runs once on mount
   
-  // Can render loading state via conditional UI, not early return
   const isLoaded = !isProfileLoading && realProfile;
-  
-  if (!isLoaded) {
-    return (
-      <div className="p-6 space-y-6 h-full bg-omuto-cream border-r-lg border-omuto-navy/20">
-        <OmutoLogo />
-        <SidebarMenuSkeleton showIcon />
-        <SidebarMenuSkeleton showIcon />
-      </div>
-    );
-  }
+
+  // NEVER early return - always render the same hooks
+  // Use conditional rendering instead for loading state
   const saveFavorites = (newFavorites: string[]) => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(newFavorites));
