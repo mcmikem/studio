@@ -261,36 +261,41 @@ export function AppSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
   const { viewAsRole } = useViewAs();
   const [searchQuery, setSearchQuery] = useState('');
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
-
-  // Load favorites lazily to avoid hooks order issues
+  
   const effectiveRole = viewAsRole || realProfile?.role || 'default';
   const userId = user?.uid || 'anonymous';
   const storageKey = `${STORAGE_KEY_PREFIX}${userId}`;
-  
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    if (isProfileLoading || !realProfile) return [];
+
+  // UseEffect runs unconditionally on every render but only acts when ready
+  useEffect(() => {
     try {
       const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved);
-      return defaultFavorites[effectiveRole] || defaultFavorites['default'];
+      if (favorites.length === 0 && saved && realProfile) {
+        setFavorites(JSON.parse(saved));
+      } else if (favorites.length === 0 && realProfile) {
+        setFavorites(defaultFavorites[effectiveRole] || defaultFavorites['default']);
+      }
     } catch {
-      return defaultFavorites[effectiveRole] || defaultFavorites['default'];
+      if (favorites.length === 0) {
+        setFavorites(defaultFavorites[effectiveRole] || defaultFavorites['default']);
+      }
     }
-  });
+  }, []); // Empty deps - runs once on mount
   
-  // Early return AFTER all hooks
-  if (isProfileLoading || !realProfile) {
+  // Can render loading state via conditional UI, not early return
+  const isLoaded = !isProfileLoading && realProfile;
+  
+  if (!isLoaded) {
     return (
-        <div className="p-6 space-y-6 h-full bg-omuto-cream border-r-lg border-omuto-navy/20">
-            <OmutoLogo />
-            <SidebarMenuSkeleton showIcon />
-            <SidebarMenuSkeleton showIcon />
-        </div>
-    )
+      <div className="p-6 space-y-6 h-full bg-omuto-cream border-r-lg border-omuto-navy/20">
+        <OmutoLogo />
+        <SidebarMenuSkeleton showIcon />
+        <SidebarMenuSkeleton showIcon />
+      </div>
+    );
   }
-  
-  // Save favorites to localStorage
   const saveFavorites = (newFavorites: string[]) => {
     try {
       localStorage.setItem(storageKey, JSON.stringify(newFavorites));
