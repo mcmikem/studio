@@ -25,6 +25,7 @@ export const ExpenseSchema = z.object({
     projectId: z.string().optional(),
     projectName: z.string().optional(),
     receiptUrl: z.string().optional(),
+    notes: z.string().optional(),
 });
 
 export type Expense = z.infer<typeof ExpenseSchema>;

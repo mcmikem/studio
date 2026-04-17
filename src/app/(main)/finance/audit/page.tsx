@@ -174,7 +174,7 @@ export default function AuditReportsPage() {
   const executiveSummary = useMemo(() => {
     if (!allIncome || !allExpenses) return null;
     const snapshot = calculateFinancialSnapshot(allIncome, allExpenses);
-    const cashOnHand = calculateCashOnHand(bankAccounts, pettyCash);
+    const cashOnHand = calculateCashOnHand(bankAccounts || [], pettyCash || []);
     const staffAccountabilities = calculateStaffAccountabilities(allExpenses || []);
     
     const totalIncome = fyIncome.reduce((s, i) => s + Number(i.amount || 0), 0);
@@ -286,11 +286,11 @@ export default function AuditReportsPage() {
       });
       allData.push('');
 
-      // Section 6: Petty Cash
+      // Sheet 6: Petty Cash
       allData.push('PETTY CASH FLOATS');
-      allData.push('Float Name,Current Balance,Status');
+      allData.push('Float Name,Custodian,Current Balance,Status');
       pettyCash?.forEach(p => {
-        allData.push(`${p.name},${p.currentBalance},Active`);
+        allData.push(`${p.custodianName || p.custodianId},${p.custodianName},${p.currentBalance},Active`);
       });
       allData.push('');
 
@@ -568,7 +568,10 @@ export default function AuditReportsPage() {
                   <div className="space-y-3">
                     {pettyCash?.map(p => (
                       <div key={p.id} className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                        <span className="font-medium">{p.name}</span>
+                        <div>
+                          <p className="font-medium">{p.custodianName}</p>
+                          <p className="text-xs text-muted-foreground">Float: {formatCurrency(p.floatAmount || 0)}</p>
+                        </div>
                         <span className="font-bold">{formatCurrency(p.currentBalance || 0)}</span>
                       </div>
                     ))}
@@ -754,7 +757,7 @@ export default function AuditReportsPage() {
                       <tbody>
                         {pettyCash?.map(p => (
                           <tr key={p.id} className="border-b">
-                            <td className="py-2">{p.name}</td>
+                            <td className="py-2">{p.custodianName || p.custodianId}</td>
                             <td className="py-2 text-green-600">Active</td>
                             <td className="py-2 text-right font-medium">{formatCurrency(p.currentBalance || 0)}</td>
                           </tr>
