@@ -110,8 +110,8 @@ export default function AccountabilitiesPage() {
           <CardContent className="p-8 flex items-center gap-4">
             <div className="p-4 bg-amber-500/20 rounded-2xl text-amber-600"><AlertTriangle className="h-8 w-8" /></div>
             <div>
-                <p className="text-3xl font-black text-amber-600 leading-tight">{isLoading ? <Skeleton className="h-8 w-24" /> : formatCurrency(totalUnaccounted)}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-amber-600/50">Total Unaccounted</p>
+                <div className="text-3xl font-black text-amber-600 leading-tight">{isLoading ? <Skeleton className="h-8 w-24" /> : formatCurrency(totalUnaccounted)}</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-amber-600/50">Total Unaccounted</p>
             </div>
           </CardContent>
         </Card>
@@ -120,8 +120,8 @@ export default function AccountabilitiesPage() {
           <CardContent className="p-8 flex items-center gap-4">
             <div className="p-4 bg-omuto-navy/5 rounded-2xl text-omuto-navy/60"><Users className="h-8 w-8" /></div>
             <div>
-                <p className="text-3xl font-black text-omuto-navy leading-tight">{isLoading ? <Skeleton className="h-8 w-12" /> : staffCount}</p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Staff with Funds</p>
+                <div className="text-3xl font-black text-omuto-navy leading-tight">{isLoading ? <Skeleton className="h-8 w-12" /> : staffCount}</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-omuto-navy/40">Staff with Funds</p>
             </div>
           </CardContent>
         </Card>
@@ -130,10 +130,10 @@ export default function AccountabilitiesPage() {
           <CardContent className="p-8 flex items-center gap-4">
             <div className="p-4 bg-emerald-500/20 rounded-2xl text-emerald-600"><CheckCircle2 className="h-8 w-8" /></div>
             <div>
-                <p className="text-3xl font-black text-emerald-600 leading-tight">
+                <div className="text-3xl font-black text-emerald-600 leading-tight">
                     {isLoading ? <Skeleton className="h-8 w-12" /> : (allExpenses?.filter(e => e.type === 'Requisition' && e.status === 'Acknowledged').length || 0)}
                 </p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600/50">Settled Logs</p>
+                <div className="text-[10px] font-black uppercase tracking-widest text-emerald-600/50">Settled Logs</p>
             </div>
           </CardContent>
         </Card>
@@ -152,7 +152,7 @@ export default function AccountabilitiesPage() {
             {!isLoading && staffAccountabilities.length === 0 && (
               <div className="py-20 text-center">
                   <CheckCircle2 className="h-12 w-12 text-emerald-500/20 mx-auto mb-4" />
-                  <p className="text-sm font-bold text-omuto-navy/40 uppercase tracking-widest">A clean slate! All funds accounted for.</p>
+                  <div className="text-sm font-bold text-omuto-navy/40 uppercase tracking-widest">A clean slate! All funds accounted for.</p>
               </div>
             )}
             {staffAccountabilities.map(staff => (
@@ -160,7 +160,7 @@ export default function AccountabilitiesPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h4 className="font-bold text-omuto-navy">{staff.userName}</h4>
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Staff Terminal</p>
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Staff Terminal</p>
                     </div>
                     <Badge variant="outline" className={cn('px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider', staff.balance > 0 ? 'bg-amber-500/10 text-amber-600 border-amber-200' : 'bg-emerald-500/10 text-emerald-600 border-emerald-200')}>
                       {staff.balance > 0 ? 'Due' : 'Clear'}
@@ -169,19 +169,19 @@ export default function AccountabilitiesPage() {
                 
                 <div className="grid grid-cols-2 gap-4 bg-muted/20 p-4 rounded-2xl border border-omuto-navy/5">
                     <div>
-                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Disbursed</p>
-                        <p className="font-bold text-sm">{formatCurrency(staff.totalDisbursed)}</p>
+                        <div className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Disbursed</p>
+                        <div className="font-bold text-sm">{formatCurrency(staff.totalDisbursed)}</p>
                     </div>
                     <div>
-                        <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Accounted</p>
-                        <p className="font-bold text-sm text-emerald-600">{formatCurrency(staff.totalAccounted)}</p>
+                        <div className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Accounted</p>
+                        <div className="font-bold text-sm text-emerald-600">{formatCurrency(staff.totalAccounted)}</p>
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Balance Due</p>
-                        <p className="text-xl font-black text-amber-600 tracking-tight">{formatCurrency(staff.balance)}</p>
+                        <div className="text-[9px] font-black text-amber-600 uppercase tracking-widest">Balance Due</p>
+                        <div className="text-xl font-black text-amber-600 tracking-tight">{formatCurrency(staff.balance)}</p>
                     </div>
                     {canManage && staff.balance > 0 && (
                         <Button size="sm" variant="default" className="bg-omuto-navy text-white font-black uppercase tracking-widest text-[10px] h-11 px-6 rounded-xl shadow-lg" onClick={() => { setSelectedStaff(staff); setShowAccountForm(true); }}>
@@ -215,7 +215,7 @@ export default function AccountabilitiesPage() {
                     <TableCell colSpan={6} className="h-48 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <CheckCircle2 className="h-12 w-12 text-emerald-500/20" />
-                        <p className="text-sm font-bold text-omuto-navy/40 uppercase tracking-widest">All staff have fully accounted for their funds.</p>
+                        <div className="text-sm font-bold text-omuto-navy/40 uppercase tracking-widest">All staff have fully accounted for their funds.</p>
                       </div>
                     </TableCell>
                   </TableRow>
