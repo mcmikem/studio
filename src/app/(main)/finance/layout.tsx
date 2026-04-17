@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, PiggyBank, ArrowUpCircle, Banknote, FileText,
-  ShieldCheck, ReceiptText, BarChart3, Settings, ChevronDown, Menu
+  ShieldCheck, ReceiptText, BarChart3, Settings, ChevronDown, Menu, FileText
 } from 'lucide-react';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import { useUser } from '@/firebase';
@@ -61,6 +61,7 @@ export default function FinanceLayout({
     { name: 'Petty Cash', href: '/finance/petty-cash', icon: Banknote },
     { name: 'Budgeting', href: '/finance/budgeting', icon: PiggyBank },
     { name: 'Reports', href: '/finance/reports', icon: BarChart3 },
+    { name: 'Audit', href: '/finance/audit', icon: BarChart3 },
     ...(canManageAll ? [{ name: 'Settings', href: '/finance/settings', icon: Settings }] : []),
   ];
 

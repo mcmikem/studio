@@ -199,20 +199,24 @@ export function getActiveFiscalYear(fiscalYears: FiscalYear[]): FiscalYear | und
 
 export function getCurrentFiscalYear(): { name: string; start: Date; end: Date } {
   const now = new Date();
-  const month = now.getMonth();
-  let year = now.getFullYear();
+  const year = now.getFullYear();
   
-  if (month >= 9) {
-    return {
-      name: `FY ${year}-${year + 1}`,
-      start: new Date(year, 9, 1),
-      end: new Date(year + 1, 8, 30),
-    };
-  }
+  // Standard calendar fiscal year (Jan 1 - Dec 31)
   return {
-    name: `FY ${year - 1}-${year}`,
-    start: new Date(year - 1, 9, 1),
-    end: new Date(year, 8, 30),
+    name: `FY ${year}`,
+    start: new Date(year, 0, 1),
+    end: new Date(year, 11, 31),
+  };
+}
+
+export function getFiscalYearByName(name: string): { name: string; start: Date; end: Date } | null {
+  const match = name.match(/FY\s*(\d{4})/);
+  if (!match) return null;
+  const year = parseInt(match[1]);
+  return {
+    name: `FY ${year}`,
+    start: new Date(year, 0, 1),
+    end: new Date(year, 11, 31),
   };
 }
 
