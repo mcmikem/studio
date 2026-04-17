@@ -263,7 +263,27 @@ export function AppSidebar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+
+  // Load favorites from localStorage - MUST be at top level, not after conditional
+  const effectiveRole = viewAsRole || realProfile?.role || 'default';
+  const userId = user?.uid || 'anonymous';
+  const storageKey = `${STORAGE_KEY_PREFIX}${userId}`;
   
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        setFavorites(JSON.parse(saved));
+      } else {
+        const roleDefaults = defaultFavorites[effectiveRole] || defaultFavorites['default'];
+        setFavorites(roleDefaults);
+      }
+    } catch (e) {
+      console.warn('Failed to load sidebar favorites:', e);
+    }
+  }, [storageKey, effectiveRole]);
+  
+  // Early return AFTER all hooks
   if (isProfileLoading || !realProfile) {
     return (
         <div className="p-6 space-y-6 h-full bg-omuto-cream border-r-lg border-omuto-navy/20">
@@ -273,26 +293,6 @@ export function AppSidebar() {
         </div>
     )
   }
-
-  const effectiveRole = viewAsRole || realProfile?.role || 'default';
-  const userId = user?.uid || 'anonymous';
-  const storageKey = `${STORAGE_KEY_PREFIX}${userId}`;
-  
-  // Load favorites from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        setFavorites(JSON.parse(saved));
-      } else {
-        // Use default favorites for role
-        const roleDefaults = defaultFavorites[effectiveRole] || defaultFavorites['default'];
-        setFavorites(roleDefaults);
-      }
-    } catch (e) {
-      console.warn('Failed to load sidebar favorites:', e);
-    }
-  }, [storageKey, effectiveRole]);
   
   // Save favorites to localStorage
   const saveFavorites = (newFavorites: string[]) => {

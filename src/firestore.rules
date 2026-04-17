@@ -137,6 +137,12 @@ service cloud.firestore {
       allow write: if request.auth != null && isStaff();
     }
 
+    // Notifications - readable by all authenticated, writable by staff
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && isStaff();
+    }
+
     // Finance - readable by staff, writable by admin/executive
     match /finance/{financeId} {
       allow read: if request.auth != null && isStaff();
