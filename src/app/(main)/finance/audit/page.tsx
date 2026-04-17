@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, orderBy, getDocs } from 'firebase/firestore';
 import type { Income, Expense, BankAccount, PettyCashFloat, BudgetPeriod } from '@/lib/types';
@@ -124,13 +125,13 @@ export default function AuditReportsPage() {
   const budgetsQuery = useMemoFirebase(() => 
     firestore ? query(collection(firestore, 'budgets'), orderBy('startDate', 'desc')) : null, [firestore]);
 
-  const { data: allIncome } = useCollection<Income>(incomeQuery);
-  const { data: allExpenses } = useCollection<Expense>(expensesQuery);
+  const { data: allIncome, isLoading: incomeLoading } = useCollection<Income>(incomeQuery);
+  const { data: allExpenses, isLoading: expensesLoading } = useCollection<Expense>(expensesQuery);
   const { data: bankAccounts } = useCollection<BankAccount>(bankAccountsQuery);
   const { data: pettyCash } = useCollection<PettyCashFloat>(pettyCashQuery);
   const { data: budgets } = useCollection<BudgetPeriod>(budgetsQuery);
 
-  const isLoading = !allIncome || !allExpenses;
+  const isLoading = incomeLoading || expensesLoading;
 
   // Filter data by fiscal year
   const fyIncome = useMemo(() => 
