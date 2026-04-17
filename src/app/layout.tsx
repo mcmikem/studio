@@ -58,6 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <FirebaseErrorListener />
           <CheckinReminderToast />
           <RoleTour />
+          <FloatingAIButton />
           <SidebarProvider>
             <Sidebar>
               <AppSidebar />
@@ -78,7 +79,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Providers>
         <Toaster />
         <CommandPalette />
-        <FloatingAIButton />
       </body>
     </html>
   );
