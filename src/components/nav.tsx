@@ -261,27 +261,23 @@ export function AppSidebar() {
   const { isMobile, setOpenMobile } = useSidebar();
   const { viewAsRole } = useViewAs();
   const [searchQuery, setSearchQuery] = useState('');
-  const [favorites, setFavorites] = useState<string[]>([]);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
-  // Load favorites from localStorage - MUST be at top level, not after conditional
+  // Load favorites lazily to avoid hooks order issues
   const effectiveRole = viewAsRole || realProfile?.role || 'default';
   const userId = user?.uid || 'anonymous';
   const storageKey = `${STORAGE_KEY_PREFIX}${userId}`;
   
-  useEffect(() => {
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    if (isProfileLoading || !realProfile) return [];
     try {
       const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        setFavorites(JSON.parse(saved));
-      } else {
-        const roleDefaults = defaultFavorites[effectiveRole] || defaultFavorites['default'];
-        setFavorites(roleDefaults);
-      }
-    } catch (e) {
-      console.warn('Failed to load sidebar favorites:', e);
+      if (saved) return JSON.parse(saved);
+      return defaultFavorites[effectiveRole] || defaultFavorites['default'];
+    } catch {
+      return defaultFavorites[effectiveRole] || defaultFavorites['default'];
     }
-  }, [storageKey, effectiveRole]);
+  });
   
   // Early return AFTER all hooks
   if (isProfileLoading || !realProfile) {
