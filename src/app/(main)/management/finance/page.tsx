@@ -57,7 +57,7 @@ import { collection, query, orderBy, serverTimestamp, Timestamp, doc } from 'fir
 import type { Income, Expense, User, ExpenseItem } from '@/lib/types';
 import { expenseItemCategories } from '@/lib/types';
 import { format, startOfMonth, endOfMonth, subMonths, addMonths } from 'date-fns';
-import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
+import { DollarSign, PlusCircle, ArrowUpCircle, ArrowDownCircle, Loader2, ChevronLeft, ChevronRight, Edit, Trash2, Download } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { formatDateSafe, formatCurrency } from '@/lib/utils';
@@ -480,14 +480,90 @@ export default function FinancePage() {
     setTransactionTypeToEdit(null);
   }
 
+  const handleExportFinancials = () => {
+    if (!allIncome || !allExpenses) return;
+
+    const auditHeaders = [
+      'Date',
+      'Type',
+      'Description',
+      'Category',
+      'Amount (UGX)',
+      'Status',
+      'Source/Payee',
+      'Reference/Notes',
+      'Month',
+      'Year'
+    ];
+
+    const auditRows: string[][] = [];
+
+    allIncome.forEach(income => {
+      const date = new Date(income.dateReceived);
+      auditRows.push([
+        format(date, 'yyyy-MM-dd'),
+        'Income',
+        income.source,
+        income.type || 'N/A',
+        String(income.amount || 0),
+        income.status || 'Approved',
+        income.source,
+        income.notes || '',
+        format(date, 'MMMM'),
+        String(date.getFullYear())
+      ]);
+    });
+
+    allExpenses.forEach(expense => {
+      const date = new Date(expense.date);
+      const category = expense.items?.[0]?.category || expense.category || 'General';
+      const description = expense.items?.map(i => i.description).join('; ') || expense.title;
+      auditRows.push([
+        format(date, 'yyyy-MM-dd'),
+        'Expense',
+        description,
+        category,
+        String(expense.totalAmount || 0),
+        expense.status || 'Pending',
+        expense.userName || expense.submittedFor || 'Staff',
+        expense.notes || '',
+        format(date, 'MMMM'),
+        String(date.getFullYear())
+      ]);
+    });
+
+    auditRows.sort((a, b) => new Date(a[0]).getTime() - new Date(b[0]).getTime());
+
+    const csvContent = [auditHeaders, ...auditRows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `omuto_financial_audit_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    toast({ title: 'Financial Export Ready', description: 'CSV file ready for auditors (opens in Excel).' });
+  };
+
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-10 px-4 sm:px-0">
       <PageHeader
         icon={DollarSign}
         title="Financial Ledger"
         description="Real-time tracking of organizational income, operational expenses, and cashflow health."
         breadcrumbs={[{ name: 'Dashboard', href: '/' }, { name: 'Management', href: '/management' }, { name: 'Finance', href: '/management/finance' }]}
-      />
+      >
+        {canManageFinances && (
+          <Button variant="outline" onClick={handleExportFinancials} className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Export Audit CSV</span>
+          </Button>
+        )}
+      </PageHeader>
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Main Ledger Area */}

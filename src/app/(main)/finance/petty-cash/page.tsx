@@ -78,7 +78,7 @@ export default function PettyCashPage() {
   };
 
   return (
-    <div className="container max-w-5xl py-8 space-y-8">
+    <div className="container max-w-5xl py-8 space-y-8 px-4 sm:px-0">
       <PageHeader 
         icon={Banknote}
         title="Petty Cash Desk"

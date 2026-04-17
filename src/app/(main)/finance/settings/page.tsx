@@ -32,13 +32,13 @@ export default function FinanceSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-0">
       <div>
-        <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Settings className="h-8 w-8" />
+        <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+          <Settings className="h-6 w-6 sm:h-8 sm:w-8" />
           Finance Settings
         </h1>
-        <p className="text-muted-foreground">Configure finance permissions and preferences.</p>
+        <p className="text-muted-foreground text-sm">Configure finance permissions and preferences.</p>
       </div>
 
       <Card>

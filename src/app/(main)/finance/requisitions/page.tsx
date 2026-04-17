@@ -93,7 +93,7 @@ export default function RequisitionsPage() {
   };
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="space-y-8 pb-20 overflow-x-hidden">
       <PageHeader
         title="Requisitions"
         description="Request and track project funds. Maintain full transparency from request to disbursement."

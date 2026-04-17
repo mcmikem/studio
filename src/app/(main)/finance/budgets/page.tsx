@@ -127,7 +127,7 @@ export default function BudgetsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-20 px-4 sm:px-0">
       <PageHeader
         icon={PiggyBank}
         title="Budget Management"

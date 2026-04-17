@@ -91,7 +91,7 @@ export default function AccountabilitiesPage() {
   };
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="space-y-8 pb-20 px-4 sm:px-0">
       <PageHeader
         title="Accountabilities"
         description="Monitor funds held by the team. Ensure every shilling disbursed is accounted for with receipts."

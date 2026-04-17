@@ -126,7 +126,7 @@ export function ProductionBatchForm() {
 
   const productsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'products'), where('type', '==', 'finished'));
+    return query(collection(firestore, 'products'), where('type', '==', 'finished'), orderBy('name'));
   }, [firestore]);
 
   const materialsQuery = useMemoFirebase(() => {
@@ -290,8 +290,18 @@ export function ProductionBatchForm() {
     }
   };
 
-  const onSubmit = async (data: ProductionBatchFormData) => {
-    if (!firestore || !user || !profile) return;
+   const onSubmit = async (data: ProductionBatchFormData) => {
+    console.log('[ProductionBatch] onSubmit called', { data, firestore: !!firestore, user: !!user, profile: !!profile, profileId: profile?.id });
+    
+    if (!firestore || !user || !profile) {
+      console.warn('[ProductionBatch] Missing required data - firestore:', !!firestore, 'user:', !!user, 'profile:', !!profile);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Missing required data to save batch. Please try again.',
+      });
+      return;
+    }
 
     try {
       await runTransaction(firestore, async (transaction) => {
@@ -331,8 +341,10 @@ export function ProductionBatchForm() {
       });
 
       resetForm();
+      console.log('[ProductionBatch] Save completed successfully');
     } catch (e: any) {
-      console.error('Batch save failed:', e);
+      console.error('[ProductionBatch] Save failed:', e);
+      const isOffline = !navigator.onLine;
       const isOffline = !navigator.onLine;
       if (isOffline && (e.code === 'unavailable' || e.message?.includes('offline') || e.message?.includes('Failed to get document'))) {
         toast({ title: 'Saved Offline', description: 'Production batch will sync when back online.' });

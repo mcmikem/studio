@@ -62,13 +62,13 @@ export default function BudgetingPage() {
   const utilization = budgetData.confirmedBudget > 0 ? (budgetData.totalSpent / budgetData.confirmedBudget) * 100 : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-0">
       <div>
-        <h1 className="font-heading text-3xl font-bold tracking-tight flex items-center gap-2">
-          <PiggyBank className="h-8 w-8 text-green-500" />
+        <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
+          <PiggyBank className="h-6 w-6 sm:h-8 sm:w-8 text-green-500" />
           Budgeting
         </h1>
-        <p className="text-muted-foreground">Track budget utilization and spending by category.</p>
+        <p className="text-muted-foreground text-sm">Track budget utilization and spending by category.</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
