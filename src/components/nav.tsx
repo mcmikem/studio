@@ -208,19 +208,14 @@ const allNavItems = [
 
 // Section colors and labels
 const sectionConfig: Record<string, { label: string; defaultOpen: boolean; icon?: any }> = {
-  core: { label: '🚀 Core', defaultOpen: true },
-  daily: { label: '📋 Daily Standup', defaultOpen: true },
-  my: { label: '👤 My Service', defaultOpen: true, icon: UserCircle },
-  record: { label: '📝 Record & Log', defaultOpen: false, icon: ClipboardList },
-  programs: { label: '🎯 Programs', defaultOpen: false, icon: Trophy },
-  enterprise: { label: '🏪 Enterprise', defaultOpen: false, icon: Store },
-  finance: { label: '💰 Finance', defaultOpen: false, icon: Wallet },
-  impact: { label: '📊 Impact', defaultOpen: false, icon: BarChart3 },
-  content: { label: '✨ Content', defaultOpen: false, icon: Video },
-  ai: { label: '🤖 AI & Strategy', defaultOpen: false, icon: Bot },
-  admin: { label: '⚙️ Management', defaultOpen: false, icon: Briefcase },
-  hr: { label: '👥 HR', defaultOpen: false, icon: Users },
-  system: { label: '🔧 System', defaultOpen: false, icon: LifeBuoy },
+core: { label: 'Core', defaultOpen: true },
+  finance: { label: 'Finance', defaultOpen: false, icon: Wallet },
+  impact: { label: 'Impact', defaultOpen: false, icon: BarChart3 },
+  content: { label: 'Content', defaultOpen: false, icon: Video },
+  ai: { label: 'AI & Strategy', defaultOpen: false, icon: Bot },
+  admin: { label: 'Management', defaultOpen: false, icon: Briefcase },
+  hr: { label: 'HR', defaultOpen: false, icon: Users },
+  system: { label: 'System', defaultOpen: false, icon: LifeBuoy },
 };
 
 // Define which sections each role can see
