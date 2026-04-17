@@ -17,7 +17,7 @@ export const ExpenseSchema = z.object({
     submittedFor: z.string().optional(),
     date: z.any(),
     title: z.string(),
-    type: z.enum(["Requisition", "Reimbursement"]),
+    type: z.enum(["Requisition", "Reimbursement", "Accountability"]),
     items: z.array(ExpenseItemSchema),
     totalAmount: z.number(),
     status: z.enum(["Pending", "Approved", "Rejected", "Disbursed", "Acknowledged"]),

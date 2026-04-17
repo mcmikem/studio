@@ -54,7 +54,7 @@ const expenseItemSchema = z.object({
 
 const expenseSchema = z.object({
   title: z.string().min(3, 'Please provide a title for the report.'),
-  type: z.enum(["Requisition", "Reimbursement"]),
+  type: z.enum(["Requisition", "Reimbursement", "Accountability"]),
   date: z.string().min(1, 'Date is required.'),
   projectId: z.string().optional(),
   items: z.array(expenseItemSchema),
@@ -325,7 +325,14 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
             await updateDocumentNonBlocking(docRef, { ...expenseData, receiptUrl: finalReceiptUrl });
             toast({ title: 'Report Updated!' });
         } else {
-            const newExpenseData = { ...expenseData, receiptUrl: finalReceiptUrl, status: 'Pending' as const, createdAt: serverTimestamp() };
+            // Accountability type is auto-acknowledged since funds already accounted for
+            const isAccountability = data.type === 'Accountability';
+            const newExpenseData = { 
+              ...expenseData, 
+              receiptUrl: finalReceiptUrl, 
+              status: isAccountability ? 'Acknowledged' as const : 'Pending' as const, 
+              createdAt: serverTimestamp() 
+            };
             const expensesCollection = collection(firestore, 'expenses');
             const docRef = await addDocumentNonBlocking(expensesCollection, newExpenseData);
             toast({ title: 'Report Submitted!' });
@@ -416,6 +423,10 @@ export function ExpenseReportForm({ expense, onSuccess }: ExpenseReportFormProps
                             <div className="flex items-center space-x-2 sm:space-x-3 bg-muted/30 dark:bg-white/5 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white dark:has-[:checked]:bg-omuto-navy has-[:checked]:text-white transition-all cursor-pointer flex-1">
                                 <RadioGroupItem value="Reimbursement" id="reim" className="border-2" />
                                 <Label htmlFor="reim" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy dark:text-white">Reimbursement</Label>
+                            </div>
+                            <div className="flex items-center space-x-2 sm:space-x-3 bg-muted/30 dark:bg-white/5 px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border border-transparent has-[:checked]:border-omuto-red has-[:checked]:bg-white dark:has-[:checked]:bg-omuto-navy has-[:checked]:text-white transition-all cursor-pointer flex-1">
+                                <RadioGroupItem value="Accountability" id="acc" className="border-2" />
+                                <Label htmlFor="acc" className="font-bold uppercase text-[10px] sm:text-xs cursor-pointer text-omuto-navy dark:text-white">Accountability</Label>
                             </div>
                         </RadioGroup>
                     )} />
