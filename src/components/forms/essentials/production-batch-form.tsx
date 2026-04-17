@@ -345,7 +345,6 @@ export function ProductionBatchForm() {
     } catch (e: any) {
       console.error('[ProductionBatch] Save failed:', e);
       const isOffline = !navigator.onLine;
-      const isOffline = !navigator.onLine;
       if (isOffline && (e.code === 'unavailable' || e.message?.includes('offline') || e.message?.includes('Failed to get document'))) {
         toast({ title: 'Saved Offline', description: 'Production batch will sync when back online.' });
         resetForm();
