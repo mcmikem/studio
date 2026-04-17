@@ -516,7 +516,7 @@ export default function FinancePage() {
 
     allExpenses.forEach(expense => {
       const date = new Date(expense.date);
-      const category = expense.items?.[0]?.category || expense.category || 'General';
+      const category = expense.items?.[0]?.category || 'General';
       const description = expense.items?.map(i => i.description).join('; ') || expense.title;
       auditRows.push([
         format(date, 'yyyy-MM-dd'),
