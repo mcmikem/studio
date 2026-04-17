@@ -96,7 +96,13 @@ export default function AccountabilitiesPage() {
         title="Accountabilities"
         description="Monitor funds held by the team. Ensure every shilling disbursed is accounted for with receipts."
         icon={ShieldCheck}
-      />
+      >
+        {canManage && (
+          <Button onClick={() => setShowAccountForm(true)} className="gap-2">
+            <PlusCircle className="h-4 w-4" /> Add Accountability
+          </Button>
+        )}
+      </PageHeader>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
