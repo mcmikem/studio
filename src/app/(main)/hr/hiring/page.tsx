@@ -105,7 +105,7 @@ export default function HRHiringPage() {
                               <div key={c.id} className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors group">
                                   <div className="flex items-center gap-4">
                                       <div className="h-10 w-10 rounded-full bg-omuto-navy/5 flex items-center justify-center font-bold text-omuto-navy text-sm">
-                                          {c.name?.[0]}
+                                          {c.name?.[0] || '?'}
                                       </div>
                                       <div>
                                           <p className="text-sm font-bold text-omuto-navy">{c.name}</p>
