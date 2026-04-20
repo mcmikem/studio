@@ -338,7 +338,7 @@ export default function LoginPage() {
                                         />
                                     </div>
                                     
-                                    {!isOrgEmail && (
+                                    {!isOrgEmailAddr && (
                                         <>
                                             <div className="space-y-2">
                                                 <Label className="text-xs font-black uppercase tracking-widest text-omuto-navy/70">Join as...</Label>
