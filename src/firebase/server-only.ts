@@ -158,34 +158,41 @@ async function seedDatabase(db: Firestore) {
  * This function ensures that Firebase Admin is initialized only once.
  * @returns An object containing the initialized Firestore and Storage instances.
  */
+export function getAdminApp(): App {
+  if (adminApp) return adminApp;
+
+  const appName = 'firebase-admin-app-e9d6a3c2'; 
+  const existingApp = getApps().find(app => app.name === appName);
+
+  if (existingApp) {
+    adminApp = existingApp;
+    return adminApp;
+  }
+
+  if (!serviceAccount) {
+    console.error("CRITICAL ERROR: Service account credentials are not available.");
+    console.error("Ensure `secrets/serviceAccountKey.json` exists or SERVICE_ACCOUNT environment variable is set.");
+    throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
+  }
+
+  try {
+    adminApp = initializeApp({
+      credential: cert(serviceAccount as any),
+      projectId: firebaseConfig.projectId,
+    }, appName);
+    console.log("Firebase Admin SDK initialized successfully using service account key.");
+    return adminApp;
+  } catch (e) {
+    console.error("CRITICAL ERROR: Failed to initialize Firebase Admin SDK.", e);
+    throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
+  }
+}
+
 export function getFirebaseAdmin() {
   if (adminApp && firestoreInstance) {
     return { firestore: firestoreInstance, storage: storageInstance };
   }
-
-  const appName = 'firebase-admin-app-e9d6a3c2'; 
-  const existingApp = getApps().find(app => app.name === appName);
-  
-  if (existingApp) {
-    adminApp = existingApp;
-  } else {
-     if (!serviceAccount) {
-      console.error("CRITICAL ERROR: Service account credentials are not available.");
-      console.error("Ensure `secrets/serviceAccountKey.json` exists or SERVICE_ACCOUNT environment variable is set.");
-      throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
-    }
-
-    try {
-      adminApp = initializeApp({
-        credential: cert(serviceAccount as any),
-        projectId: firebaseConfig.projectId,
-      }, appName);
-      console.log("Firebase Admin SDK initialized successfully using service account key.");
-    } catch (e) {
-      console.error("CRITICAL ERROR: Failed to initialize Firebase Admin SDK.", e);
-      throw new Error("Could not initialize Firebase Admin SDK. The application cannot start.");
-    }
-  }
+  adminApp = getAdminApp();
 
   firestoreInstance = getFirestore(adminApp);
   
@@ -197,6 +204,9 @@ export function getFirebaseAdmin() {
     console.warn("Firebase Admin Storage initialization failed:", storageError);
   }
   
-  seedDatabase(firestoreInstance).catch(console.error);
+  const shouldSeed = process.env.NODE_ENV !== 'production' && process.env.ALLOW_RUNTIME_SEED === 'true';
+  if (shouldSeed) {
+    seedDatabase(firestoreInstance).catch(console.error);
+  }
   return { firestore: firestoreInstance, storage: storageInstance };
 }

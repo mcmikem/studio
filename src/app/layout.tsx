@@ -1,7 +1,6 @@
 import './globals.css';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/toaster';
-import { Inter, Space_Grotesk } from 'next/font/google';
 import { AppSidebar } from '@/components/nav';
 import { Sidebar, SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { AppHeader } from '@/components/header';
@@ -13,17 +12,13 @@ import { CheckinReminderToast } from '@/components/reminders/checkin-reminder-to
 import { RoleTour } from '@/components/role-tour';
 import { CommandPalette } from '@/components/command-palette';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import { ServiceWorkerRegistration } from '@/components/service-worker-registration';
 import { FloatingAIButton } from '@/components/floating-ai-button';
-
-const inter = Inter({ subsets: ['latin'], style: ['normal', 'italic'], variable: '--font-inter' });
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable}`}
+      className="font-sans"
     >
       <head>
         <meta name="theme-color" content="#F9F8F3" media="(prefers-color-scheme: light)" />
@@ -53,7 +48,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         `}} />
       </head>
       <body>
-        <ServiceWorkerRegistration />
         <Providers>
           <FirebaseErrorListener />
           <CheckinReminderToast />

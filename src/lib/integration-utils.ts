@@ -1,10 +1,20 @@
 'use client';
 
+import { auth } from '@/firebase';
+
+async function authHeaders(): Promise<Record<string, string>> {
+  const user = auth?.currentUser;
+  if (!user) return {};
+  const token = await user.getIdToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export async function triggerWebhook(trigger: string, data: Record<string, any>): Promise<boolean> {
   try {
+    const headers = await authHeaders();
     const response = await fetch('/api/webhooks', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify({ trigger, data }),
     });
     return response.ok;
@@ -20,9 +30,10 @@ export async function sendEmailNotification(
   data: Record<string, any>
 ): Promise<boolean> {
   try {
+    const headers = await authHeaders();
     const response = await fetch('/api/email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify({ template, to, data }),
     });
     return response.ok;
@@ -34,10 +45,11 @@ export async function sendEmailNotification(
 
 export async function syncToGoogleSheet(type: string, data: Record<string, any>): Promise<boolean> {
   try {
+    const headers = await authHeaders();
     const response = await fetch(`/api/sheets?type=${type}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'append', data }),
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({ type, data }),
     });
     return response.ok;
   } catch (error) {
@@ -48,7 +60,8 @@ export async function syncToGoogleSheet(type: string, data: Record<string, any>)
 
 export async function fetchFromGoogleSheet(type: string): Promise<any[] | null> {
   try {
-    const response = await fetch(`/api/sheets?type=${type}`);
+    const headers = await authHeaders();
+    const response = await fetch(`/api/sheets?type=${type}`, { headers });
     const data = await response.json();
     return data.data || null;
   } catch (error) {

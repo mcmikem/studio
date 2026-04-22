@@ -17,11 +17,16 @@ interface OfflineQueueDB {
 }
 
 const DB_NAME = 'omuto-offline';
+const DB_VERSION = 2;
 const STORE_NAME = 'offlineQueue';
+const LEGACY_SYNC_STORE = 'pending-sync';
 
 async function getDB(): Promise<IDBPDatabase<OfflineQueueDB>> {
-  return openDB<OfflineQueueDB>(DB_NAME, 1, {
+  return openDB<OfflineQueueDB>(DB_NAME, DB_VERSION, {
     upgrade(db) {
+      if (!db.objectStoreNames.contains(LEGACY_SYNC_STORE)) {
+        db.createObjectStore(LEGACY_SYNC_STORE, { keyPath: 'id' });
+      }
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
