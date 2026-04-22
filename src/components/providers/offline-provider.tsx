@@ -1,8 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { initOfflineDB, getPendingSyncs, removePendingSync, syncPendingChanges, type PendingSync } from '@/lib/offline-sync';
+import { initOfflineDB, getPendingSyncs, syncPendingChanges, type PendingSync } from '@/lib/offline-sync';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore } from '@/firebase';
 
 interface OfflineContextValue {
   isOnline: boolean;
@@ -27,6 +28,7 @@ export function useOffline() {
 }
 
 export function OfflineProvider({ children }: { children: React.ReactNode }) {
+  const firestore = useFirestore();
   const [isOnline, setIsOnline] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
@@ -46,12 +48,12 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const syncNow = useCallback(async () => {
-    if (syncInProgressRef.current || !navigator.onLine) return;
+    if (syncInProgressRef.current || !navigator.onLine || !firestore) return;
     syncInProgressRef.current = true;
     setIsSyncing(true);
 
     try {
-      const { synced, failed } = await syncPendingChanges();
+      const { synced, failed } = await syncPendingChanges(firestore);
       setLastSyncTime(new Date());
       await refreshPending();
 
@@ -67,22 +69,24 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
       syncInProgressRef.current = false;
       setIsSyncing(false);
     }
-  }, [refreshPending, toast]);
+  }, [firestore, refreshPending, toast]);
 
   useEffect(() => {
     initOfflineDB().then(() => refreshPending()).catch(console.warn);
 
     const handleOnline = () => {
       setIsOnline(true);
-      syncPendingChanges().then(() => refreshPending()).catch(console.warn);
+      if (firestore) {
+        syncPendingChanges(firestore).then(() => refreshPending()).catch(console.warn);
+      }
     };
     const handleOffline = () => {
       setIsOnline(false);
     };
 
     setIsOnline(navigator.onLine);
-    if (navigator.onLine) {
-      syncPendingChanges().then(() => refreshPending()).catch(console.warn);
+    if (navigator.onLine && firestore) {
+      syncPendingChanges(firestore).then(() => refreshPending()).catch(console.warn);
     }
 
     window.addEventListener('online', handleOnline);
@@ -92,7 +96,7 @@ export function OfflineProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [refreshPending]);
+  }, [firestore, refreshPending]);
 
   const value: OfflineContextValue = {
     isOnline,

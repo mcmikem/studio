@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useFirebaseApp } from '@/firebase';
+import { useUser } from '@/firebase';
 import type { UploadResult } from '@/firebase/storage';
 
 export interface UploadOptions {
@@ -65,12 +66,19 @@ export function useFileUpload(options?: UploadOptions) {
 export function useGoogleSheets() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useUser();
+
+  const authHeaders = useCallback(async (): Promise<Record<string, string>> => {
+    const token = user ? await user.getIdToken() : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }, [user]);
 
   const fetchData = useCallback(async (type: 'expenses' | 'income' | 'beneficiaries') => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/sheets?type=${type}`);
+      const headers = await authHeaders();
+      const res = await fetch(`/api/sheets?type=${type}`, { headers });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       return data;
@@ -80,16 +88,17 @@ export function useGoogleSheets() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [authHeaders]);
 
   const syncData = useCallback(async (type: string, data: Record<string, any>) => {
     setIsLoading(true);
     setError(null);
     try {
+      const headers = await authHeaders();
       const res = await fetch(`/api/sheets?type=${type}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'append', data }),
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({ type, data }),
       });
       const result = await res.json();
       if (result.error) throw new Error(result.error);
@@ -100,33 +109,36 @@ export function useGoogleSheets() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [authHeaders]);
 
   return { fetchData, syncData, isLoading, error };
 }
 
 export function useWebhooks() {
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useUser();
 
   const trigger = useCallback(async (trigger: string, data: Record<string, any>) => {
     setIsLoading(true);
     try {
+      const token = user ? await user.getIdToken() : null;
       const res = await fetch('/api/webhooks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ trigger, data }),
       });
       return await res.json();
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   return { trigger, isLoading };
 }
 
 export function useEmail() {
   const [isSending, setIsSending] = useState(false);
+  const { user } = useUser();
 
   const send = useCallback(async (
     template: 'expense_approved' | 'expense_rejected' | 'new_expense' | 'income_received' | 'daily_checkin_reminder',
@@ -135,16 +147,17 @@ export function useEmail() {
   ) => {
     setIsSending(true);
     try {
+      const token = user ? await user.getIdToken() : null;
       const res = await fetch('/api/email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ template, to, data }),
       });
       return await res.json();
     } finally {
       setIsSending(false);
     }
-  }, []);
+  }, [user]);
 
   return { send, isSending };
 }

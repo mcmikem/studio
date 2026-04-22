@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { addDoc, collection, deleteDoc, doc, Firestore, setDoc } from 'firebase/firestore';
 
 const PendingSyncSchema = z.object({
   id: z.string(),
@@ -118,7 +119,35 @@ export function isOnline(): boolean {
   return typeof navigator !== 'undefined' ? navigator.onLine : true;
 }
 
-export async function syncPendingChanges(): Promise<{ synced: number; failed: number }> {
-  const { syncPendingChangesToServer } = await import('./offline-sync.server');
-  return syncPendingChangesToServer();
+export async function syncPendingChanges(firestore: Firestore): Promise<{ synced: number; failed: number }> {
+  if (!isOnline()) {
+    return { synced: 0, failed: 0 };
+  }
+
+  const pendingSyncs = await getPendingSyncs();
+  let synced = 0;
+  let failed = 0;
+
+  for (const sync of pendingSyncs) {
+    try {
+      if (sync.type === 'create') {
+        await addDoc(collection(firestore, sync.collection), sync.data);
+      } else if (sync.type === 'update') {
+        const docId = sync.data?.id || sync.id;
+        await setDoc(doc(firestore, sync.collection, docId), sync.data, { merge: true });
+      } else if (sync.type === 'delete') {
+        const docId = sync.data?.id || sync.id;
+        await deleteDoc(doc(firestore, sync.collection, docId));
+      }
+
+      await removePendingSync(sync.id);
+      synced++;
+    } catch (error) {
+      console.error('Sync failed for:', sync.id, error);
+      await updateSyncRetry(sync.id);
+      failed++;
+    }
+  }
+
+  return { synced, failed };
 }

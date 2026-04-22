@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyApiAuth } from '@/lib/api-auth';
 
 interface EmailTemplate {
   to: string | string[];
@@ -90,24 +91,8 @@ const TEMPLATES: Record<string, (data: any) => EmailTemplate> = {
   }),
 };
 
-async function verifyAuthToken(request: NextRequest): Promise<boolean> {
-  const authHeader = request.headers.get('Authorization');
-  const internalKey = process.env.INTERNAL_API_KEY;
-  
-  if (internalKey && authHeader === `Bearer ${internalKey}`) {
-    return true;
-  }
-  
-  const apiKey = request.headers.get('X-API-Key');
-  if (internalKey && apiKey === internalKey) {
-    return true;
-  }
-  
-  return false;
-}
-
 export async function GET(request: NextRequest) {
-  const isAuthorized = await verifyAuthToken(request);
+  const isAuthorized = await verifyApiAuth(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -126,7 +111,7 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 
-  const isAuthorized = await verifyAuthToken(request);
+  const isAuthorized = await verifyApiAuth(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

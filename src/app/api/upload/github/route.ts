@@ -1,23 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-async function verifyAuthToken(request: NextRequest): Promise<boolean> {
-  const authHeader = request.headers.get('Authorization');
-  const internalKey = process.env.INTERNAL_API_KEY;
-  
-  if (internalKey && authHeader === `Bearer ${internalKey}`) {
-    return true;
-  }
-  
-  const apiKey = request.headers.get('X-API-Key');
-  if (internalKey && apiKey === internalKey) {
-    return true;
-  }
-  
-  return false;
-}
+import { verifyApiAuth } from '@/lib/api-auth';
 
 export async function POST(request: NextRequest) {
-  const isAuthorized = await verifyAuthToken(request);
+  const isAuthorized = await verifyApiAuth(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

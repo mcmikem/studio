@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFirebaseAdmin } from '@/firebase/server-only';
+import { verifyApiAuth } from '@/lib/api-auth';
 
 const GOOGLE_SHEETS_API = 'https://sheets.googleapis.com/v4/spreadsheets';
 
@@ -48,24 +48,8 @@ function getSheetsKey(): string {
   return process.env.GOOGLE_SHEETS_API_KEY || process.env.GEMINI_API_KEY || '';
 }
 
-async function verifyAuthToken(request: NextRequest): Promise<boolean> {
-  const authHeader = request.headers.get('Authorization');
-  const internalKey = process.env.INTERNAL_API_KEY;
-  
-  if (internalKey && authHeader === `Bearer ${internalKey}`) {
-    return true;
-  }
-  
-  const apiKey = request.headers.get('X-API-Key');
-  if (internalKey && apiKey === internalKey) {
-    return true;
-  }
-  
-  return false;
-}
-
 export async function GET(request: NextRequest) {
-  const isAuthorized = await verifyAuthToken(request);
+  const isAuthorized = await verifyApiAuth(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -108,7 +92,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const isAuthorized = await verifyAuthToken(request);
+  const isAuthorized = await verifyApiAuth(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
