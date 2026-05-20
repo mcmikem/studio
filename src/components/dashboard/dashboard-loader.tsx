@@ -45,10 +45,12 @@ export function DashboardLoader() {
     DashboardComponent = ExecutiveDashboard;
   } else if (role === 'Programs & Partnerships Manager') {
     DashboardComponent = ProgramManagerDashboard;
-  } else if (role === 'Operations & Field Manager' || role === 'Field Coordinator') {
+  } else if (role === 'Operations & Field Manager' || role === 'Field Coordinator' || role === 'Field Staff' || role === 'Essentials Manager' || role === 'Youth Center Manager') {
     DashboardComponent = FieldStaffDashboard;
-  } else if (role === 'Media & Finance Lead' || role === 'Media & Communications Lead') {
+  } else if (role === 'Media & Finance Lead' || role === 'Media & Communications Lead' || role === 'Accountant/Finance') {
     DashboardComponent = MediaFinanceDashboard;
+  } else if (role === 'Resource Mobilization Lead') {
+    DashboardComponent = ProgramManagerDashboard;
   } else if (role === 'Intern') {
     DashboardComponent = InternDashboard;
   } else if (role === 'Volunteer') {

@@ -14,15 +14,14 @@ import {
 import { useCollection, useMemoFirebase } from '@/firebase';
 import { query, collection, orderBy } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
-
-const candidates = [
-    { name: 'Alice Nambogo', role: 'Field Coordinator', status: 'Interviewing', source: 'LinkedIn', date: '2 days ago' },
-    { name: 'Robert Kato', role: 'Finance Assistant', status: 'Applied', source: 'Referral', date: '5 days ago' },
-    { name: 'Sarah Nakato', role: 'Social Worker', status: 'Offered', source: 'Portal', date: '1 week ago' },
-    { name: 'John Doe', role: 'Software Intern', status: 'Screening', source: 'Indeed', date: '3 days ago' },
-];
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function HRHiringPage() {
+  const candidatesQuery = useMemoFirebase((db) =>
+    query(collection(db, 'hiring-candidates'), orderBy('createdAt', 'desc'))
+  );
+  const { data: candidates, isLoading } = useCollection<any>(candidatesQuery);
+
   return (
     <div className="space-y-8 pb-20">
       <PageHeader
@@ -39,16 +38,16 @@ export default function HRHiringPage() {
           <Card className="border shadow-sm bg-card">
               <CardContent className="p-6">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Open Positions</p>
-                  <p className="text-2xl font-bold text-omuto-navy tracking-tight">4</p>
+                  <p className="text-2xl font-bold text-omuto-navy tracking-tight">{isLoading ? '—' : (candidates?.length ?? 0)}</p>
                   <div className="flex items-center gap-1 mt-4 text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">
-                      <TrendingUp className="h-3 w-3" /> 2 New this week
+                      <TrendingUp className="h-3 w-3" /> Active Pipeline
                   </div>
               </CardContent>
           </Card>
           <Card className="border shadow-sm bg-card">
               <CardContent className="p-6">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Candidates</p>
-                  <p className="text-2xl font-bold text-omuto-navy tracking-tight">28</p>
+                  <p className="text-2xl font-bold text-omuto-navy tracking-tight">{isLoading ? '—' : (candidates?.length ?? 0)}</p>
                   <div className="flex items-center gap-1 mt-4 text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">
                       Active pipeline
                   </div>
@@ -91,11 +90,22 @@ export default function HRHiringPage() {
               <Card className="border shadow-sm">
                   <CardContent className="p-0">
                       <div className="divide-y">
-                          {candidates.map((c, i) => (
-                              <div key={i} className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors group">
+                          {isLoading && (
+                            <div className="p-6 space-y-4">
+                              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
+                            </div>
+                          )}
+                          {!isLoading && (!candidates || candidates.length === 0) && (
+                            <div className="p-12 text-center text-muted-foreground">
+                              <UserCheck className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                              <p className="font-bold text-sm">No candidates in the pipeline yet.</p>
+                            </div>
+                          )}
+                          {candidates?.map((c: any) => (
+                              <div key={c.id} className="p-6 flex items-center justify-between hover:bg-muted/30 transition-colors group">
                                   <div className="flex items-center gap-4">
                                       <div className="h-10 w-10 rounded-full bg-omuto-navy/5 flex items-center justify-center font-bold text-omuto-navy text-sm">
-                                          {c.name[0]}
+                                          {c.name?.[0] || '?'}
                                       </div>
                                       <div>
                                           <p className="text-sm font-bold text-omuto-navy">{c.name}</p>

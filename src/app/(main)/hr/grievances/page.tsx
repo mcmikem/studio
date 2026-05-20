@@ -1,27 +1,31 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { 
-  ShieldAlert, Search, Filter, 
-  MessageSquare, Plus, ArrowRight,
-  AlertCircle, CheckCircle2, Clock,
+  ShieldAlert, Filter, 
+  MessageSquare,
   ChevronRight, User, ShieldCheck,
   Scale, HelpingHand
 } from 'lucide-react';
 import { useCollection, useMemoFirebase } from '@/firebase';
 import { query, collection, orderBy } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
-
-const grievances = [
-    { id: 'GV-001', subject: 'Inconsistent Field Allowance', user: 'Robert Kato', status: 'In Review', priority: 'High', date: 'Yesterday' },
-    { id: 'GV-002', subject: 'Equipment Malfunction (Yamaha AG100)', user: 'Sarah Nakato', status: 'Resolved', priority: 'Medium', date: '3 days ago' },
-    { id: 'GV-003', subject: 'Workspace Lighting Issue', user: 'Alice Nambogo', status: 'Open', priority: 'Low', date: '5 days ago' },
-];
+import { formatDateSafe } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function HRGrievancesPage() {
+  const grievancesQuery = useMemoFirebase((db) =>
+    query(collection(db, 'grievances'), orderBy('createdAt', 'desc'))
+  );
+  const { data: grievances, isLoading } = useCollection<any>(grievancesQuery);
+
+  const openCount = grievances?.filter((g: any) => g.status === 'Open').length ?? 0;
+  const inReviewCount = grievances?.filter((g: any) => g.status === 'In Review').length ?? 0;
+  const resolvedCount = grievances?.filter((g: any) => g.status === 'Resolved').length ?? 0;
+
   return (
     <div className="space-y-8 pb-20">
       <PageHeader
@@ -43,27 +47,27 @@ export default function HRGrievancesPage() {
           <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card">
               <CardContent className="p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Open Cases</p>
-                  <p className="text-4xl font-black text-rose-600 tracking-tight">2</p>
+                  <p className="text-4xl font-black text-rose-600 tracking-tight">{isLoading ? '—' : openCount}</p>
               </CardContent>
           </Card>
           <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card">
               <CardContent className="p-8">
                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">In Resolution</p>
-                  <p className="text-4xl font-black text-amber-600 tracking-tight">1</p>
+                  <p className="text-4xl font-black text-amber-600 tracking-tight">{isLoading ? '—' : inReviewCount}</p>
               </CardContent>
           </Card>
            <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-card">
               <CardContent className="p-8">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Resolved YTD</p>
-                  <p className="text-4xl font-black text-emerald-600 tracking-tight">24</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Resolved</p>
+                  <p className="text-4xl font-black text-emerald-600 tracking-tight">{isLoading ? '—' : resolvedCount}</p>
               </CardContent>
           </Card>
            <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden bg-omuto-navy text-white">
               <CardContent className="p-8">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-1">Response Time</p>
-                  <p className="text-4xl font-black tracking-tight">1.2d</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/50 mb-1">Total Logged</p>
+                  <p className="text-4xl font-black tracking-tight">{isLoading ? '—' : (grievances?.length ?? 0)}</p>
                    <div className="flex items-center gap-1 mt-4 text-[9px] font-bold text-emerald-500 uppercase tracking-widest">
-                      <ShieldCheck className="h-3 w-3" /> Within SLA
+                      <ShieldCheck className="h-3 w-3" /> Tracked
                   </div>
               </CardContent>
           </Card>
@@ -83,8 +87,19 @@ export default function HRGrievancesPage() {
               <Card className="border-2 shadow-xl rounded-[2.5rem] overflow-hidden">
                   <CardContent className="p-0">
                       <div className="divide-y divide-omuto-navy/5">
-                          {grievances.map((g, i) => (
-                              <div key={i} className="p-8 flex items-center justify-between hover:bg-muted/10 transition-colors group">
+                          {isLoading && (
+                            <div className="p-8 space-y-4">
+                              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
+                            </div>
+                          )}
+                          {!isLoading && (!grievances || grievances.length === 0) && (
+                            <div className="p-12 text-center text-muted-foreground">
+                              <MessageSquare className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                              <p className="font-bold text-sm">No grievances on record.</p>
+                            </div>
+                          )}
+                          {grievances?.map((g: any) => (
+                              <div key={g.id} className="p-8 flex items-center justify-between hover:bg-muted/10 transition-colors group">
                                   <div className="flex items-center gap-6">
                                       <div className={`h-14 w-14 rounded-2xl bg-card border-2 flex items-center justify-center group-hover:scale-105 transition-transform ${
                                           g.priority === 'High' ? 'border-rose-100 text-rose-600' : 'border-omuto-navy/5 text-omuto-navy'
@@ -94,11 +109,9 @@ export default function HRGrievancesPage() {
                                       <div>
                                           <p className="text-lg font-black text-omuto-navy uppercase tracking-tight">{g.subject}</p>
                                           <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
-                                              <span className="text-primary">{g.id}</span>
+                                              <span className="flex items-center gap-1"><User className="h-3 w-3" /> {g.userName || g.user || 'Unknown'}</span>
                                               <span className="h-1 w-1 bg-muted-foreground/30 rounded-full" />
-                                              <span className="flex items-center gap-1"><User className="h-3 w-3" /> {g.user}</span>
-                                              <span className="h-1 w-1 bg-muted-foreground/30 rounded-full" />
-                                              <span>{g.date}</span>
+                                              <span>{formatDateSafe(g.createdAt)}</span>
                                           </div>
                                       </div>
                                   </div>
@@ -125,5 +138,3 @@ export default function HRGrievancesPage() {
     </div>
   );
 }
-
-
